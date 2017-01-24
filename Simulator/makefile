@@ -30,7 +30,7 @@ sqlite:
 	echo $(git log -1 --format=format:%H) > manifest.uuid
 	mkdir external
 	cd external ; \
-	./../../external/sqlite/configure ; \
+	./../../external/sqlite/configure --disable-tcl ; \
 	make sqlite3.o
 	mv external/sqlite3.o sqlite3.o
 	rm -rf external/
