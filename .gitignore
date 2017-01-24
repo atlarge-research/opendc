@@ -15,3 +15,8 @@ Simulator/Release
 Testing/x64
 Testing/Debug
 Testing/LastCoverageResults.log
+
+*.o
+Simulator/simulator
+*.user
+Simulator/external/
