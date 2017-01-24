@@ -1,0 +1,4246 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.1.0",
+    "title": "OpenDC API",
+    "description": "OpenDC is an open-source datacenter simulator for education, featuring real-time online collaboration, diverse simulation models, and detailed performance feedback statistics."
+  },
+  "host": "opendc.ewi.tudelft.nl",
+  "basePath": "/v1",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Search for a User using their email address.",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "User's email address.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully searched Users.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "description": "Add a new User.",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "body",
+            "description": "The new User.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added User.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "409": {
+            "description": "User already exists."
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Get this User.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved User.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "description": "Update this User's given name and/ or family name.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "user",
+            "in": "body",
+            "description": "User's new properties.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "givenName": {
+                  "type": "string"
+                },
+                "familyName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated User.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from updating User."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "description": "Delete this User.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted User.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting User."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      }
+    },
+    "/users/{userId}/authorizations": {
+      "get": {
+        "tags": [
+          "authorizations",
+          "users"
+        ],
+        "description": "Get this User's Authorizations.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved User's Authorizations.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Authorization"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing parameter or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from viewing User's Authorizations."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      }
+    },
+    "/simulations": {
+      "post": {
+        "tags": [
+          "simulations"
+        ],
+        "description": "Add a Simulation.",
+        "parameters": [
+          {
+            "name": "simulation",
+            "in": "body",
+            "description": "The new Simulation.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added Simulation.",
+            "schema": {
+              "$ref": "#/definitions/Simulation"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}": {
+      "get": {
+        "tags": [
+          "simulations"
+        ],
+        "description": "Get this Simulation.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Simulation.",
+            "schema": {
+              "$ref": "#/definitions/Simulation"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Simulation."
+          },
+          "404": {
+            "description": "Simulation not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "simulations"
+        ],
+        "description": "Update this Simulation's name.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "simulation",
+            "in": "body",
+            "description": "Simulation's new properties.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated Simulation.",
+            "schema": {
+              "$ref": "#/definitions/Simulation"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from updating Simulation."
+          },
+          "404": {
+            "description": "Simulation not found."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "simulations"
+        ],
+        "description": "Delete this simulation.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted Simulation.",
+            "schema": {
+              "$ref": "#/definitions/Simulation"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting Simulation."
+          },
+          "404": {
+            "description": "Simulation not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/authorizations": {
+      "get": {
+        "tags": [
+          "authorizations"
+        ],
+        "description": "Get this Simulation's Authorizations.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Simulation's Authorizations.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Authorization"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving this Simulation's Authorizations."
+          },
+          "404": {
+            "description": "Simulation not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/authorizations/{userId}": {
+      "get": {
+        "tags": [
+          "authorizations"
+        ],
+        "description": "Get this User's Authorization over this Simulation.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Authorization.",
+            "schema": {
+              "$ref": "#/definitions/Authorization"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Authorizations for this Simulation."
+          },
+          "404": {
+            "description": "Authorization not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "authorizations"
+        ],
+        "description": "Add an Authorization to this Simulation for this User.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "authorization",
+            "in": "body",
+            "description": "The new Authorization.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "authorizationLevel": {
+                  "type": "string",
+                  "description": "The authorization level, which can be 'VIEW', 'EDIT' or 'OWN'."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added Authorization to Simulation.",
+            "schema": {
+              "$ref": "#/definitions/Authorization"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter, or invalid authorization level."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from adding an Authorization to Simulation."
+          },
+          "404": {
+            "description": "Simulation or User not found."
+          },
+          "409": {
+            "description": "An Authorization already exists for User and Simulation."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "authorizations"
+        ],
+        "description": "Update this User's authorization level over this Simulation.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "authorization",
+            "in": "body",
+            "description": "Authorization's new properties.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "authorizationLevel": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated Authorization.",
+            "schema": {
+              "$ref": "#/definitions/Authorization"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter, or invalid authorization level."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from updating Authorization."
+          },
+          "404": {
+            "description": "Authorization not found."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "authorizations"
+        ],
+        "description": "Delete this User's Authorization over this Simulation.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted Authorization.",
+            "schema": {
+              "$ref": "#/definitions/Authorization"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting Authorization."
+          },
+          "404": {
+            "description": "Authorization not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}": {
+      "get": {
+        "tags": [
+          "datacenterDesign"
+        ],
+        "description": "Get this Datacenter.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Datacenter.",
+            "schema": {
+              "$ref": "#/definitions/Datacenter"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Datacenter."
+          },
+          "404": {
+            "description": "Datacenter not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms": {
+      "get": {
+        "tags": [
+          "datacenterDesign",
+          "rooms"
+        ],
+        "description": "Get this Datacenter's Rooms.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Datacenter's Rooms.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Room"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from getting Datacenter's Rooms."
+          },
+          "404": {
+            "description": "Datacenter not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "datacenterDesign",
+          "rooms"
+        ],
+        "description": "Add a Room.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "room",
+            "in": "body",
+            "description": "The new Room.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Room"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added Room.",
+            "schema": {
+              "$ref": "#/definitions/Room"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter, or ID mismatch."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from adding a Room to this Datacetner."
+          },
+          "404": {
+            "description": "Datacenter not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}": {
+      "get": {
+        "tags": [
+          "datacenterDesign",
+          "rooms"
+        ],
+        "description": "Get this Room.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Room.",
+            "schema": {
+              "$ref": "#/definitions/Room"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from getting this room"
+          },
+          "404": {
+            "description": "Room not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "datacenterDesign",
+          "rooms"
+        ],
+        "description": "Update a Room's name or type.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "room",
+            "in": "body",
+            "description": "Room's new properties.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "roomType": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated Room.",
+            "schema": {
+              "$ref": "#/definitions/Room"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter, or invalid room type."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from updating this Room."
+          },
+          "404": {
+            "description": "Room not found."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "datacenterDesign",
+          "rooms"
+        ],
+        "description": "Delete this Room.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted Room.",
+            "schema": {
+              "$ref": "#/definitions/Room"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting this Room."
+          },
+          "404": {
+            "description": "Room not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles": {
+      "get": {
+        "tags": [
+          "datacenterDesign",
+          "rooms",
+          "tiles"
+        ],
+        "description": "Get this Room's Tiles.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Tiles.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Tile"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from getting Room's Tiles."
+          },
+          "404": {
+            "description": "Room not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "datacenterDesign",
+          "rooms",
+          "tiles"
+        ],
+        "description": "Add a Tile to this Room.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tile",
+            "in": "body",
+            "description": "Tile to add.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Tile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added tile.",
+            "schema": {
+              "$ref": "#/definitions/Tile"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter, or invalid tile position."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from adding a Tile to this Room."
+          },
+          "404": {
+            "description": "Room not found."
+          },
+          "409": {
+            "description": "Tile location occupied."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}": {
+      "get": {
+        "tags": [
+          "datacenterDesign",
+          "tiles"
+        ],
+        "description": "Get this Tile.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Tile.",
+            "schema": {
+              "$ref": "#/definitions/Tile"
+            }
+          },
+          "400": {
+            "description": "Mising or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Tile."
+          },
+          "404": {
+            "description": "Tile not found."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "datacenterDesign",
+          "tiles"
+        ],
+        "description": "Delete this Tile.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted Tile.",
+            "schema": {
+              "$ref": "#/definitions/Tile"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting Tile."
+          },
+          "404": {
+            "description": "Tile not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/cooling-item": {
+      "get": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Get this Tile's Cooling Item.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Tile's Cooling Item.",
+            "schema": {
+              "$ref": "#/definitions/CoolingItem"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Tile's Cooling Item."
+          },
+          "404": {
+            "description": "Tile or Cooling Item not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Add a Cooling Item to this Tile if it is empty.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "coolingItemId",
+            "in": "body",
+            "description": "Cooling Item's ID.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added Cooling Item to Tile.",
+            "schema": {
+              "$ref": "#/definitions/CoolingItem"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from adding a Cooling Item to Tile."
+          },
+          "404": {
+            "description": "Tile or Cooling Item not found."
+          },
+          "409": {
+            "description": "Tile occupied."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Update which Cooling Item is on this Tile.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "coolingItemId",
+            "in": "body",
+            "description": "Cooling Item's ID.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated Cooling Item on Tile.",
+            "schema": {
+              "$ref": "#/definitions/CoolingItem"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from updating Cooling Item on Tile."
+          },
+          "404": {
+            "description": "Tile or Cooling Item not found."
+          },
+          "409": {
+            "description": "Tile occupied with non-Cooling Item object."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Delete this Tile's Cooling Item.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted Tile's Cooling Item.",
+            "schema": {
+              "$ref": "#/definitions/CoolingItem"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting Tile's Cooling Item."
+          },
+          "404": {
+            "description": "Tile or Cooling Item not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/psu": {
+      "get": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Get this Tile's PSU.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Tile's PSU.",
+            "schema": {
+              "$ref": "#/definitions/PSU"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Tile's PSU."
+          },
+          "404": {
+            "description": "Tile or PSU not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Add a PSU to this Tile if it is empty.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "psuId",
+            "in": "body",
+            "description": "PSU's ID.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added PSU to Tile.",
+            "schema": {
+              "$ref": "#/definitions/PSU"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from adding a PSU to Tile."
+          },
+          "404": {
+            "description": "Tile or PSU not found."
+          },
+          "409": {
+            "description": "Tile occupied."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Update which PSU is on this Tile.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "psuId",
+            "in": "body",
+            "description": "PSU's ID.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated PSU on Tile.",
+            "schema": {
+              "$ref": "#/definitions/PSU"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from updating PSU on Tile."
+          },
+          "404": {
+            "description": "Tile or PSU not found."
+          },
+          "409": {
+            "description": "Tile occupied with non-PSU object."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Delete this Tile's PSU.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted Tile's PSU.",
+            "schema": {
+              "$ref": "#/definitions/PSU"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting Tile's PSU."
+          },
+          "404": {
+            "description": "Tile or PSU not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/rack": {
+      "get": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Get this Tile's Rack.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Tile's Rack.",
+            "schema": {
+              "$ref": "#/definitions/Rack"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Tile's Rack."
+          },
+          "404": {
+            "description": "Tile or Rack not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Add a Rack to this Tile if it is empty.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "rack",
+            "in": "body",
+            "description": "The new Rack.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "capacity": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added Rack to Tile.",
+            "schema": {
+              "$ref": "#/definitions/Rack"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from adding a Rack on Tile."
+          },
+          "404": {
+            "description": "Tile not found."
+          },
+          "409": {
+            "description": "Tile occupied."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Update the Rack on this Tile.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "rack",
+            "in": "body",
+            "description": "PSU's ID.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "capacity": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated Rack on Tile.",
+            "schema": {
+              "$ref": "#/definitions/Rack"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from updating Rack on Tile."
+          },
+          "404": {
+            "description": "Tile not found."
+          },
+          "409": {
+            "description": "Tile occupied with non-Rack object."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "tiles",
+          "objects"
+        ],
+        "description": "Delete this Tile's Rack.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted Tile's Rack.",
+            "schema": {
+              "$ref": "#/definitions/Rack"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting Tile's Rack."
+          },
+          "404": {
+            "description": "Tile or Rack not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/rack/machines": {
+      "get": {
+        "tags": [
+          "objects",
+          "machines"
+        ],
+        "description": "Get this Rack's Machines.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Machines.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Machine"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from getting Rack's Machines."
+          },
+          "404": {
+            "description": "Tile or Rack not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "objects",
+          "machines"
+        ],
+        "description": "Add a Machine to this rack",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "machine",
+            "in": "body",
+            "description": "Machine to add to this Rack.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Machine"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added Machine to this Rack.",
+            "schema": {
+              "$ref": "#/definitions/Machine"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter, or invalid machine."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from adding a Machine to Rack."
+          },
+          "404": {
+            "description": "Tile or Rack not found."
+          },
+          "409": {
+            "description": "Machine location already occupied in Rack."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/rack/machines/{position}": {
+      "get": {
+        "tags": [
+          "machines"
+        ],
+        "description": "Get the Machine at this location in this Rack.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "position",
+            "in": "path",
+            "description": "Machine's position in the Rack.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved machine",
+            "schema": {
+              "$ref": "#/definitions/Machine"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden from getting this machine"
+          },
+          "404": {
+            "description": "Machine not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "machines"
+        ],
+        "description": "Update the Machine at this location in this Rack.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "position",
+            "in": "path",
+            "description": "Machine's position in the Rack.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "machine",
+            "in": "body",
+            "description": "Updated machine (ID field must match ID in path)",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Machine"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated machine",
+            "schema": {
+              "$ref": "#/definitions/Machine"
+            }
+          },
+          "400": {
+            "description": "Incorrect machine specification"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden from updating this machine"
+          },
+          "404": {
+            "description": "Machine not found"
+          },
+          "409": {
+            "description": "Machine location already occupied in rack"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "machines"
+        ],
+        "description": "Delete the Machine at this location in this Rack.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "datacenterId",
+            "in": "path",
+            "description": "Datacenter's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Room's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tileId",
+            "in": "path",
+            "description": "Tile's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "position",
+            "in": "path",
+            "description": "Machine's position in the Rack.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted machine",
+            "schema": {
+              "$ref": "#/definitions/Machine"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden from deleting this machine"
+          },
+          "404": {
+            "description": "Machine not found"
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/experiments": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Get this Simulation's Experiments.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Experiments.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Experiment"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Simulation's Experiments."
+          },
+          "404": {
+            "description": "Simulation not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Add a new Experiment for this Simulation.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experiment",
+            "in": "body",
+            "description": "Experiment to add to this Simulation.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Experiment"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added new Experiment.",
+            "schema": {
+              "$ref": "#/definitions/Experiment"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from adding an Experiment to this Simulation."
+          },
+          "404": {
+            "description": "Simulation, Path, Scheduler or Trace not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/experiments/{experimentId}": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Get this Experiment.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experimentId",
+            "in": "path",
+            "description": "Experiment's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Experiment.",
+            "schema": {
+              "$ref": "#/definitions/Experiment"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Experiment."
+          },
+          "404": {
+            "description": "Experiment not found."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Update this Experiment's Path, Trace, Scheduler, and/ or name.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experimentId",
+            "in": "path",
+            "description": "Experiment's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experiment",
+            "in": "body",
+            "description": "Experiment's new properties.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "pathId": {
+                  "type": "integer"
+                },
+                "traceId": {
+                  "type": "integer"
+                },
+                "schedulerName": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully updated Experiment.",
+            "schema": {
+              "$ref": "#/definitions/Experiment"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from updating Experiment."
+          },
+          "404": {
+            "description": "Experiment, Path, Trace, or Scheduler not found."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "experiment"
+        ],
+        "description": "Delete this Experiment.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experimentId",
+            "in": "path",
+            "description": "Experiment's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted Experiment.",
+            "schema": {
+              "$ref": "#/definitions/Experiment"
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from deleting Experiment."
+          },
+          "404": {
+            "description": "Experiment not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/experiments/{experimentId}/last-simulated-tick": {
+      "get": {
+        "tags": [
+          "simulations"
+        ],
+        "description": "Get this Experiment's last simulated tick.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experimentId",
+            "in": "path",
+            "description": "Experiment's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Experiment's last simulated tick.",
+            "schema": {
+              "properties": {
+                "lastSimulatedTick": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden from getting this simulation"
+          },
+          "404": {
+            "description": "Simulation not found"
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/experiments/{experimentId}/machine-states": {
+      "get": {
+        "tags": [
+          "simulations",
+          "machines",
+          "states"
+        ],
+        "description": "Get this experiment's Machine States.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experimentId",
+            "in": "path",
+            "description": "Experiment's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tick",
+            "in": "query",
+            "description": "Tick to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "machineId",
+            "in": "query",
+            "description": "Machine's ID to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "rackId",
+            "in": "query",
+            "description": "Rack's ID to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "query",
+            "description": "Room's ID to filter on.",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Machine States.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MachineState"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from getting Experiment's Machine States."
+          },
+          "404": {
+            "description": "Experiment, Machine, Rack, Room or Tick not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/experiments/{experimentId}/rack-states": {
+      "get": {
+        "tags": [
+          "simulations",
+          "objects",
+          "states"
+        ],
+        "description": "Get this Experiment's Rack States.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experimentId",
+            "in": "path",
+            "description": "Experiment's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tick",
+            "in": "query",
+            "description": "Tick to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "rackId",
+            "in": "query",
+            "description": "Rack's ID to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "query",
+            "description": "Room's ID to filter on.",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Rack States.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RackState"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from getting Experiment's Rack States."
+          },
+          "404": {
+            "description": "Experiment, Room, Rack or Tick not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/experiments/{experimentId}/room-states": {
+      "get": {
+        "tags": [
+          "simulations",
+          "rooms",
+          "states"
+        ],
+        "description": "Get this Experiment's Room States.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experimentId",
+            "in": "path",
+            "description": "Experiment's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tick",
+            "in": "query",
+            "description": "Tick to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "query",
+            "description": "Room's ID to filter on.",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Room States.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RoomState"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from getting Experiment's Room States."
+          },
+          "404": {
+            "description": "Experiment, Room or Tick not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/experiments/{experimentId}/task-states": {
+      "get": {
+        "tags": [
+          "simulations",
+          "tasks",
+          "states"
+        ],
+        "description": "Get this Experiment's Task States.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "experimentId",
+            "in": "path",
+            "description": "Experiment's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tick",
+            "in": "query",
+            "description": "Tick to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "taskId",
+            "in": "query",
+            "description": "Task's ID to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "machineId",
+            "in": "query",
+            "description": "Machine's ID to filter on.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "rackId",
+            "in": "query",
+            "description": "ID the rack whose machines' task states to get",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "roomId",
+            "in": "query",
+            "description": "ID of the room whose racks' machines' states to get",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Task States.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TaskState"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Experiment's Task States."
+          },
+          "404": {
+            "description": "Experiment, Tick, Task, Machine, Rack or Room not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/paths": {
+      "get": {
+        "tags": [
+          "paths"
+        ],
+        "description": "Get this Simulation's Paths.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Simulation's Paths.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Path"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Simulation's Paths."
+          },
+          "404": {
+            "description": "Simulation not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/paths/{pathId}": {
+      "get": {
+        "tags": [
+          "paths"
+        ],
+        "description": "Get this Path.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "pathId",
+            "in": "path",
+            "description": "Path's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Path.",
+            "schema": {
+              "$ref": "#/definitions/Path"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving this Path."
+          },
+          "404": {
+            "description": "Path not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/paths/{pathId}/branches": {
+      "get": {
+        "tags": [
+          "paths"
+        ],
+        "description": "Get this Path's branches - Paths that start with this Path's Sections.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "pathId",
+            "in": "path",
+            "description": "Path's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Paths.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Path"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Path's branches."
+          },
+          "404": {
+            "description": "Path not found."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "paths"
+        ],
+        "description": "Create a new Path that branches off of this Path at the specified tick.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "pathId",
+            "in": "path",
+            "description": "Path's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "section",
+            "in": "body",
+            "description": "New Path's Section.",
+            "required": true,
+            "schema": {
+              "properties": {
+                "startTick": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully added Path.",
+            "schema": {
+              "$ref": "#/definitions/Path"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from branching off this Path."
+          },
+          "404": {
+            "description": "Path not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/paths/{pathId}/sections": {
+      "get": {
+        "tags": [
+          "paths"
+        ],
+        "description": "Get this Path's Sections.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "pathId",
+            "in": "path",
+            "description": "Path's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Sections.",
+            "schema": {
+              "$ref": "#/definitions/Section"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from retrieving Path's Sections."
+          },
+          "404": {
+            "description": "Path not found."
+          }
+        }
+      }
+    },
+    "/simulations/{simulationId}/paths/{pathId}/sections/{sectionId}": {
+      "get": {
+        "tags": [
+          "simulations"
+        ],
+        "description": "Get this Section.",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "description": "Simulation's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "pathId",
+            "in": "path",
+            "description": "Path's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "sectionId",
+            "in": "path",
+            "description": "Section's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Section.",
+            "schema": {
+              "$ref": "#/definitions/Section"
+            }
+          },
+          "400": {
+            "description": "Missing or incorrectly typed parameter."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden from getting Section."
+          },
+          "404": {
+            "description": "Section not found."
+          }
+        }
+      }
+    },
+    "/schedulers": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Get all available Schedulers",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Schedulers.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scheduler"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/traces": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Get all avaialble Traces.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Traces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Trace"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/traces/{traceId}": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Get this Trace.",
+        "parameters": [
+          {
+            "name": "traceId",
+            "in": "path",
+            "description": "Trace's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Trace.",
+            "schema": {
+              "$ref": "#/definitions/Trace"
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Trace not found."
+          }
+        }
+      }
+    },
+    "/traces/{traceId}/tasks": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Get this Trace's Tasks.",
+        "parameters": [
+          {
+            "name": "traceId",
+            "in": "path",
+            "description": "Trace's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Tasks.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Task"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Trace not found."
+          }
+        }
+      }
+    },
+    "/room-types": {
+      "get": {
+        "tags": [
+          "datacenterDesign",
+          "rooms"
+        ],
+        "description": "Get all available room types.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Room Types.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RoomType"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/room-types/{name}/allowed-objects": {
+      "get": {
+        "tags": [
+          "datacenterDesign",
+          "rooms",
+          "objects"
+        ],
+        "description": "Get this room's allowed objects.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "Room Type's name.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved allowed object types.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Room Type not found."
+          }
+        }
+      }
+    },
+    "/specifications/cooling-items": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get all Cooling Items.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Cooling Items.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CoolingItem"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/specifications/cooling-items/{id}": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get this Cooling Item.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Cooling Item's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Cooling Item.",
+            "schema": {
+              "$ref": "#/definitions/CoolingItem"
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Cooling Item not found."
+          }
+        }
+      }
+    },
+    "/specifications/cpus": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get a list of the specifications of all CPUs.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the CPU spec list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CPU"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/specifications/cpus/{id}": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get the specs of a CPU.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the CPU whose specs to get",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the CPU specs",
+            "schema": {
+              "$ref": "#/definitions/CPU"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "CPU specs not found"
+          }
+        }
+      }
+    },
+    "/specifications/failure-models": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get all Failure Models.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Failure Models.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FailureModel"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/specifications/failure-models/{id}": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get this Failure Model.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Failure Model's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Failure Model.",
+            "schema": {
+              "$ref": "#/definitions/FailureModel"
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Failure Model not found."
+          }
+        }
+      }
+    },
+    "/specifications/gpus": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get a list of the specifications of all GPUs.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the GPU spec list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GPU"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/specifications/gpus/{id}": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get the specs of a GPU.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the GPU whose specs to get",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the GPU specs",
+            "schema": {
+              "$ref": "#/definitions/GPU"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "GPU specs not found"
+          }
+        }
+      }
+    },
+    "/specifications/memories": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get a list of the specifications of all memory devices.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the memory spec list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Memory"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/specifications/memories/{id}": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get the specs of a memory device.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the memory device whose specs to get",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the memory device specs",
+            "schema": {
+              "$ref": "#/definitions/Memory"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Memory device specs not found"
+          }
+        }
+      }
+    },
+    "/specifications/psus": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get all PSUs.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved PSUs.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PSU"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/specifications/psus/{id}": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get this PSU.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "PSU's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved PSU.",
+            "schema": {
+              "$ref": "#/definitions/PSU"
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "PSU not found."
+          }
+        }
+      }
+    },
+    "/specifications/storages": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get a list of the specifications of all storage devices.",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the storage spec list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Storage"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/specifications/storages/{id}": {
+      "get": {
+        "tags": [
+          "devices",
+          "machines"
+        ],
+        "description": "Get the specs of a storage device.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the storage device whose specs to get",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the storage device specs",
+            "schema": {
+              "$ref": "#/definitions/Storage"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Storage device specs not found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Authorization": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "integer"
+        },
+        "simulationId": {
+          "type": "integer"
+        },
+        "authorizationLevel": {
+          "type": "string"
+        }
+      }
+    },
+    "CoolingItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "energyConsumptionW": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        },
+        "failureModelId": {
+          "type": "integer"
+        }
+      }
+    },
+    "CPU": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "generation": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "clockRateMhz": {
+          "type": "integer"
+        },
+        "numberOfCores": {
+          "type": "integer"
+        },
+        "energyConsumptionW": {
+          "type": "number",
+          "format": "float"
+        },
+        "failureModelId": {
+          "type": "integer"
+        }
+      }
+    },
+    "Datacenter": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      }
+    },
+    "Experiment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "simulationId": {
+          "type": "integer"
+        },
+        "pathId": {
+          "type": "integer"
+        },
+        "traceId": {
+          "type": "integer"
+        },
+        "schedulerName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "FailureModel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rate": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "GPU": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "generation": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "clockRateMhz": {
+          "type": "integer"
+        },
+        "numberOfCores": {
+          "type": "integer"
+        },
+        "energyConsumptionW": {
+          "type": "number",
+          "format": "float"
+        },
+        "failureModelId": {
+          "type": "integer"
+        }
+      }
+    },
+    "Machine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "rackId": {
+          "type": "integer"
+        },
+        "position": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cpuIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "gpuIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "memoryIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "storageIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "MachineState": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "machineId": {
+          "type": "integer"
+        },
+        "experimentId": {
+          "type": "integer"
+        },
+        "tick": {
+          "type": "integer"
+        },
+        "temperatureC": {
+          "type": "number",
+          "format": "float"
+        },
+        "inUseMemoryMb": {
+          "type": "integer"
+        },
+        "loadFraction": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "Memory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "generation": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "speedMbPerS": {
+          "type": "integer"
+        },
+        "sizeMb": {
+          "type": "integer"
+        },
+        "energyConsumptionW": {
+          "type": "number",
+          "format": "float"
+        },
+        "failureModelId": {
+          "type": "integer"
+        }
+      }
+    },
+    "Path": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "simulationId": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "datetimeCreated": {
+          "type": "string"
+        }
+      }
+    },
+    "PSU": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "energyKwh": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        },
+        "failureModelId": {
+          "type": "integer"
+        }
+      }
+    },
+    "Rack": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "capacity": {
+          "type": "integer"
+        },
+        "powerCapacityW": {
+          "type": "integer"
+        }
+      }
+    },
+    "RackState": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "rackId": {
+          "type": "integer"
+        },
+        "experimentId": {
+          "type": "integer"
+        },
+        "tick": {
+          "type": "integer"
+        },
+        "temperatureC": {
+          "type": "number",
+          "format": "float"
+        },
+        "inUseMemoryMb": {
+          "type": "integer"
+        },
+        "loadFraction": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "Room": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "datacenterId": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roomType": {
+          "type": "string"
+        }
+      }
+    },
+    "RoomState": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "roomId": {
+          "type": "integer"
+        },
+        "experimentId": {
+          "type": "integer"
+        },
+        "tick": {
+          "type": "integer"
+        },
+        "temperatureC": {
+          "type": "number",
+          "format": "float"
+        },
+        "inUseMemoryMb": {
+          "type": "integer"
+        },
+        "loadFraction": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "RoomType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "Scheduler": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "Simulation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "datetimeCreated": {
+          "type": "string",
+          "format": "dateTime"
+        },
+        "datetimeLastEdited": {
+          "type": "string",
+          "format": "dateTime"
+        }
+      }
+    },
+    "Section": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "pathId": {
+          "type": "integer"
+        },
+        "datacenterId": {
+          "type": "integer"
+        },
+        "startTick": {
+          "type": "integer"
+        }
+      }
+    },
+    "Storage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "generation": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "speedMbPerS": {
+          "type": "integer"
+        },
+        "sizeMb": {
+          "type": "integer"
+        },
+        "energyConsumptionW": {
+          "type": "number",
+          "format": "float"
+        },
+        "failureModelId": {
+          "type": "integer"
+        }
+      }
+    },
+    "Task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "startTick": {
+          "type": "integer"
+        },
+        "totalFlopCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "TaskState": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "taskId": {
+          "type": "integer"
+        },
+        "experimentId": {
+          "type": "integer"
+        },
+        "tick": {
+          "type": "integer"
+        },
+        "flopsLeft": {
+          "type": "integer"
+        }
+      }
+    },
+    "Tile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "roomId": {
+          "type": "integer"
+        },
+        "objectId": {
+          "type": "integer"
+        },
+        "objectType": {
+          "type": "string"
+        },
+        "positionX": {
+          "type": "integer"
+        },
+        "positionY": {
+          "type": "integer"
+        }
+      }
+    },
+    "Trace": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "googleId": {
+          "type": "integer"
+        },
+        "email": {
+          "type": "string"
+        },
+        "givenName": {
+          "type": "string"
+        },
+        "familyName": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
