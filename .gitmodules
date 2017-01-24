@@ -2,3 +2,7 @@
 	path = opendc-web-server
 	url = git@github.com:tudelft-atlarge/opendc-web-server.git
 	branch = master
+[submodule "opendc-frontend"]
+	path = opendc-frontend
+	url = git@github.com:tudelft-atlarge/opendc-frontend.git
+	branch = master
