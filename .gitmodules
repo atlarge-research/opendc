@@ -6,3 +6,7 @@
 	path = opendc-frontend
 	url = git@github.com:tudelft-atlarge/opendc-frontend.git
 	branch = master
+[submodule "opendc-simulator"]
+	path = opendc-simulator
+	url = git@github.com:tudelft-atlarge/opendc-simulator.git
+	branch = master
