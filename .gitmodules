@@ -1,0 +1,6 @@
+[submodule "external/sqlite"]
+	path = external/sqlite
+	url = https://github.com/mackyle/sqlite.git
+[submodule "external/googletest"]
+	path = external/googletest
+	url = https://github.com/google/googletest

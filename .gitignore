@@ -1,0 +1,17 @@
+.vs
+x64
+Simulator.sdf
+Simulator.v11.suo
+Simulator.VC.db
+Simulator.VC.VC.db
+Simulator.VC.VC.opendb
+Debug
+
+Simulator/x64
+Simulator/*.db
+Simulator/docs
+Simulator/Release
+
+Testing/x64
+Testing/Debug
+Testing/LastCoverageResults.log
