@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenDC</title>
+
+    <meta name="description" content="Collaborative Datacenter Simulation and Exploration for Everybody">
+    <meta name="author" content="Alexandru Iosup, Leon Overweel, Georgios Andreadis, Matthijs Bijman">
+    <meta name="keywords" content="OpenDC, Datacenter, Simulation, Simulator, Collaborative, Distributed, Cluster">
+
+    <!-- OpenGraph meta tags -->
+    <meta property="og:title" content="OpenDC: Collaborative Datacenter Simulation and Exploration for Everybody">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://opendc.ewi.tudelft.nl/img/opendc-splash.png">
+    <meta property="og:url" content="https://opendc.ewi.tudelft.nl">
+    <meta property="og:description"
+          content="OpenDC provides collaborative online datacenter modeling, diverse and effective datacenter
+          simulation, and exploratory datacenter performance feedback.">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Google Sign-in -->
+    <meta name="google-signin-client_id"
+          content="184853849394-v89e96desio4dub3360vg32p1l4r3jqd.apps.googleusercontent.com">
+
+    <!-- Set viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!-- Style sheets -->
+    <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="styles/splash.css" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link href="img/logo.png" rel="icon">
+
+    <!-- humans.txt -->
+    <link type="text/plain" rel="author" href="humans.txt">
+</head>
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+<div class="body-wrapper">
+
+    <nav class="navbar navbar-inverse navbar-fixed-top navbar-transparent" role="navigation">
+        <div class="container">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand page-scroll" href="#page-top">
+                    <img src="img/logo.png" alt="OpenDC Logo">
+                </a>
+            </div>
+
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="hidden">
+                        <a class="page-scroll" href="#page-top"></a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#stakeholders">Stakeholders</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#modeling">Modeling</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#simulation">Simulation</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#technologies">Technologies</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#team">Team</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#contact">Contact</a>
+                    </li>
+                </ul>
+                <div id="google-signin" class="navbar-right"></div>
+                <div class="logged-in navbar-right">
+                    <a class="projects-btn" href="projects">My Projects</a>
+                    <a class="sign-out glyphicon glyphicon-off" title="Sign out" href="javascript:void(0)"></a>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <section class="header-section">
+        <div class="container">
+            <div class="jumbotron">
+                <h1>Open<span class="dc">DC</span></h1>
+                <h2>
+                    Collaborative Datacenter Simulation and Exploration for Everybody
+                </h2>
+            </div>
+        </div>
+    </section>
+
+    <section id="intro" class="intro-section">
+        <div class="container">
+            <div class="row">
+                <div class="row pitch-container">
+                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8
+                        col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-2 pitch-column">
+                        <h3>The datacenter (DC) industry...</h3>
+                        <ul class="info-points">
+                            <li>Is worth over $15 bn, and growing</li>
+                            <li>Has many hard-to-grasp concepts</li>
+                            <li>Needs to become accessible to many</li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8
+                        col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-2">
+                        <img src="img/datacenter-drawing.png" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 dc-image"
+                             alt="Schematic top-down view on a datacenter">
+                        <p class="col-lg-12 col-md-12 col-sm-12 col-xs-12 img-source">Image source:
+                            <a href="http://www.dolphinhosts.co.uk/wp-content/uploads/2013/07/data-centers.gif">
+                                http://www.dolphinhosts.co.uk/wp-content/uploads/2013/07/data-centers.gif
+                            </a>
+                        </p>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8
+                        col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-2 pitch-column">
+                        <h3>OpenDC provides...</h3>
+                        <ul class="info-points">
+                            <li>Collaborative online DC modeling</li>
+                            <li>Diverse and effective DC simulation</li>
+                            <li>Exploratory DC performance feedback</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="stakeholders" class="stakeholder-section content-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 col-md-10 col-sm-10 col-xs-12 col-lg-offset-1 col-md-offset-1 col-sm-offset-1 col-xs-offset-0">
+                    <h1>Stakeholders</h1>
+                    <div class="row stakeholder-container">
+                        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                            <img src="img/stakeholders/Manager.png" class="col-lg-4 col-md-4 col-sm-4 col-xs-2"
+                                 alt="Managers">
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-10">
+                                <h3>Managers</h3>
+                                <p>Seeing is deciding</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                            <img src="img/stakeholders/Sales.png" class="col-lg-4 col-md-4 col-sm-4 col-xs-2"
+                                 alt="Sales">
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-10">
+                                <h3>Sales</h3>
+                                <p>Demo concepts</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                            <img src="img/stakeholders/Developer.png" class="col-lg-4 col-md-4 col-sm-4 col-xs-2"
+                                 alt="DevOps">
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-10">
+                                <h3>DevOps</h3>
+                                <p>Develop & tune</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 col-lg-offset-2 col-md-offset-2 col-sm-offset-0 col-xs-offset-0">
+                            <img src="img/stakeholders/Researcher.png" class="col-lg-4 col-md-4 col-sm-4 col-xs-2"
+                                 alt="Researchers">
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-10">
+                                <h3>Researchers</h3>
+                                <p>Understand & design</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 col-md-offset-0 col-sm-offset-3 col-xs-offset-0">
+                            <img src="img/stakeholders/Student.png" class="col-lg-4 col-md-4 col-sm-4 col-xs-2"
+                                 alt="Students">
+                            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-10">
+                                <h3>Students</h3>
+                                <p>Grasp complex concepts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="modeling" class="modeling-section content-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <h1>Datacenter Modeling</h1>
+                    <div class="row">
+                        <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12 text-left">
+                            <strong class="info-points">Collaboratively...</strong>
+                            <ul class="info-points key-points">
+                                <li>Model DC layout, and room locations and types</li>
+                                <li>Place racks in rooms and nodes in racks</li>
+                                <li>Add real-world CPU, GPU, memory, storage and network units to each node</li>
+                                <li>Select from diverse scheduling policies</li>
+                            </ul>
+                        </div>
+
+
+                        <div class="col-lg-7 col-md-7 col-sm-7 col-xs-12">
+                            <img src="img/mockups/construction-node.png" class="col-lg-12 col-md-12 col-sm-12 col-xs-10
+                                  col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-1"
+                                 alt="Mockup of the datacenter construction interface">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 img-caption">
+                                Mockup of the datacenter construction interface
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="simulation" class="simulation-section content-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <h1>Datacenter Simulation</h1>
+                    <div class="row simulation-building-row">
+                        <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12 text-left">
+                            <strong class="info-points">Working with OpenDC:</strong>
+                            <ul class="info-points key-points">
+                                <li>Seamlessly switch between construction and simulation modes
+                                <li>Choose one of several predefined workloads (Big Data, Bag of Tasks,
+                                    Hadoop, etc.)
+                                <li>Play, pause, and skip around the informative simulation timeline
+                                <li>Visualize and demo live
+                            </ul>
+                        </div>
+                        <div class="col-lg-7 col-md-7 col-sm-7 col-xs-12">
+                            <img src="img/mockups/simulation-room.png" class="col-lg-12 col-md-12 col-sm-12 col-xs-10
+                                  col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-1"
+                                 alt="Mockup of the datacenter simulation interface at room level">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 img-caption">
+                                Mockup of the datacenter simulation interface at room level
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12 text-left">
+                            <strong class="info-points">Key features:</strong>
+                            <ul class="info-points key-points">
+                                <li>Live load or power use metrics on building, room, and rack levels
+                                <li>Diverse scenarios from common operation to model-based failures
+                                <li>Retrospective performance review of datacenter simulations
+                                <li>Compare resource management practices
+                            </ul>
+                        </div>
+                        <div class="col-lg-7 col-md-7 col-sm-7 col-xs-12">
+                            <img src="img/mockups/simulation-node.png" class="col-lg-12 col-md-12 col-sm-12 col-xs-10
+                                  col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-1"
+                                 alt="Mockup of the same simulation at node level">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 img-caption">
+                                Mockup of the same simulation at node level
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="technologies" class="technologies-section content-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <h1>Technologies</h1>
+                    <div class="tech-rows row col-lg-6 col-md-6 col-sm-12 col-xs-12
+                            col-lg-offset-3 col-md-offset-3 col-sm-offset-0 col-xs-offset-0">
+                        <div class="browser-tech tech-row row">
+                            <img src="img/technologies/www-icon.png" class="col-lg-2 col-md-2 col-sm-2 col-xs-2"
+                                 alt="Web browser">
+                            <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 text-left">
+                                <h3>Browser</h3>
+                                <p class="info-points">HTML5 canvas, CreateJS, TypeScript, SocketIO</p>
+                            </div>
+                        </div>
+                        <div class="server-tech tech-row row">
+                            <img src="img/technologies/webserver-icon.png" class="col-lg-2 col-md-2 col-sm-2 col-xs-2"
+                                 alt="Web Server">
+                            <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 text-left">
+                                <h3>Web Server</h3>
+                                <p class="info-points">Python, Flask, FlaskSocketIO, OpenAPI</p>
+                            </div>
+                        </div>
+                        <div class="database-tech tech-row row">
+                            <img src="img/technologies/database-icon.png" class="col-lg-2 col-md-2 col-sm-2 col-xs-2"
+                                 alt="Database">
+                            <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 text-left">
+                                <h3>Database</h3>
+                                <p class="info-points">SQLite</p>
+                            </div>
+                        </div>
+                        <div class="simulator-tech tech-row row">
+                            <img src="img/technologies/cogs-icon.png" class="col-lg-2 col-md-2 col-sm-2 col-xs-2"
+                                 alt="Simulator">
+                            <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 text-left">
+                                <h3>Simulator</h3>
+                                <p class="info-points">C++</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="team" class="team-section content-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <h1 class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row">The Team</h1>
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row">
+                        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                            <img src="img/portraits/aiosup.png" class="col-lg-12 col-md-12 col-sm-12 col-xs-6
+                        col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-3">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <h3>Prof. dr. ir. Alexandru Iosup</h3>
+                                <div class="team-member-description">
+                                    Project Lead
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                            <img src="img/portraits/loverweel.png" class="col-lg-12 col-md-12 col-sm-12 col-xs-6
+                        col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-3">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <h3>Leon Overweel</h3>
+                                <div class="team-member-description">
+                                    Project Manager and Software Engineer responsible for the web server, database, and
+                                    API
+                                    specification
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                            <img src="img/portraits/gandreadis.png" class="col-lg-12 col-md-12 col-sm-12 col-xs-6
+                        col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-3">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <h3>Georgios Andreadis</h3>
+                                <div class="team-member-description">
+                                    Software Engineer responsible for the frontend web application and splash page
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                            <img src="img/portraits/mbijman.png" class="col-lg-12 col-md-12 col-sm-12 col-xs-6
+                        col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-3">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <h3>Matthijs Bijman</h3>
+                                <div class="team-member-description">
+                                    Software Engineer responsible for the datacenter simulator
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section content-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <h1>Contact</h1>
+                    <div class="row">
+                        <img src="img/tudelfticon.png" class="col-lg-2 col-md-2 col-sm-3 col-xs-6
+                    col-lg-offset-4 col-md-offset-4 col-sm-offset-3 col-xs-offset-3 tudelft-icon"
+                             alt="TU Delft Logo">
+                        <div class="col-lg-4 col-md-5 col-sm-6 col-xs-10 col-lg-offset-0 col-md-offset-0 col-sm-offset-0 col-xs-offset-1 text-left">
+                            <div class="row vcenter">
+                                <img src="img/email-icon.png" class="col-lg-2 col-md-2 col-sm-2 col-xs-2"
+                                     alt="Email Icon">
+                                <div class="info-points col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                                    <a href="mailto:opendc.tudelft@gmail.com">opendc.tudelft@gmail.com</a>
+                                </div>
+                            </div>
+                            <div class="row vcenter">
+                                <img src="img/github-icon.png" class="col-lg-2 col-md-2 col-sm-2 col-xs-2"
+                                     alt="Github Icon">
+                                <div class="info-points col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                                    <a href="#">Coming Soon</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="scripts/splash.entry.js"></script>
+
+    <!-- Bower dependencies -->
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <!-- Google API -->
+    <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
+
+</div>
+
+</body>
+</html>

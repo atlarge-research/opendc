@@ -1,0 +1,14 @@
+# NPM dependencies
+node_modules/
+
+# Generated assets
+build/
+
+# TypeScript specific file
+src/scripts/.baseDir.ts
+
+# TypeScript definitions
+typings/
+
+# Yarn lockfile
+yarn.lock
