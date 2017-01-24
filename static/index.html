@@ -1,0 +1,55 @@
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<meta name="google-signin-client_id" content="184853849394-v89e96desio4dub3360vg32p1l4r3jqd.apps.googleusercontent.com">
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script>
+function onSignIn(googleUser) {
+	var id_token = googleUser.getAuthResponse().id_token;
+	
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'https://opendc.ewi.tudelft.nl/tokensignin');
+	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	
+	xhr.onload = function() {
+		console.log('Signed in as: ' + xhr.responseText);
+		console.log('Token: ' + id_token);
+	};
+	xhr.send('idtoken=' + id_token);
+
+	var profile = googleUser.getBasicProfile();
+
+	var socket = io.connect('https://' + document.domain + ':' + location.port);
+	socket.on('connect', function() {
+        	socket.emit('request', {
+			id: 234,
+			path: "/v1/simulations/{simulationId}/experiments/{experimentId}/statistics/task-durations",
+			method: "GET",
+			parameters: {
+				body: {
+				},
+				path: {
+					simulationId: 1,
+					experimentId: 1
+				},
+				query: {email:'l.overweel@gmail.com'}
+			},
+			token: id_token
+		});
+	})
+	
+	socket.on('response', function(response) {
+		console.log(JSON.parse(response));
+	});
+}
+
+</script>
+<div class="g-signin2" data-onsuccess="onSignIn"></div>
+<a href="#" onclick="signOut();">Sign out</a>
+<script>
+  function signOut() {
+	var auth2 = gapi.auth2.getAuthInstance();
+	auth2.signOut().then(function () {
+		console.log('User signed out.');
+	});
+}
+</script>
+
