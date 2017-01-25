@@ -34,16 +34,23 @@ const bower = require('gulp-bower');
  * @returns {Object} the config file contents.
  */
 function getConfigFile() {
-    const configFilePath = argv.config;
+    const configInput = argv.config;
 
-    if (configFilePath === undefined) {
-        gulpUtil.log(gulpUtil.colors.red('Config file argument missing\n'), "Usage:\n" +
-            " $ gulp --config=config.json");
+    if (configInput === undefined) {
+        gulpUtil.log(gulpUtil.colors.red('Config file argument missing\n'), 'Usage:\n' +
+            ' $ gulp --config=config.json');
         throw new Exception();
     }
 
     try {
-        return require('./' + configFilePath);
+        let configFilePath;
+        if (configInput.indexOf('/') === -1) {
+            configFilePath = './' + configInput;
+        } else {
+            configFilePath = configInput;
+        }
+
+        return require(configFilePath);
     } catch (error) {
         gulpUtil.log(gulpUtil.colors.red('Config file could not be read'), error);
         throw new Exception();
@@ -83,7 +90,7 @@ const scriptsFilePaths = scriptsFileNames.map(function (fileName) {
 });
 
 gulp.task('scripts', function () {
-    var tasks = scriptsFilePaths.map(function (entry, index) {
+    const tasks = scriptsFilePaths.map(function (entry, index) {
         return browserify({entries: [entry]})
             .plugin(tsify, {insertGlobals: true})
             .bundle()
