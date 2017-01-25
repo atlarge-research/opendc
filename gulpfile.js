@@ -1,5 +1,14 @@
+/**
+ * Build file for the frontend codebase of OpenDC.
+ *
+ * Usage:
+ *  $ gulp config.json        # for a single build
+ *  $ gulp watch config.json  # to run once, watch for changes, and rebuild when something changed
+ */
+
 'use strict';
 
+const runSequence = require('run-sequence');
 const gulp = require('gulp');
 const notify = require('gulp-notify');
 const source = require('vinyl-source-stream');
@@ -15,7 +24,7 @@ const bower = require('gulp-bower');
 
 
 /**
- * STYLES
+ * Stylesheet task.
  */
 const stylesRootDir = './src/styles/';
 const stylesDestDir = './build/styles/';
@@ -34,7 +43,7 @@ gulp.task('styles', function () {
 
 
 /**
- * SCRIPTS
+ * Script task.
  */
 const scriptsRootDir = './src/scripts/';
 const scriptsDestDir = './build/scripts/';
@@ -59,7 +68,7 @@ gulp.task('scripts', function () {
 
 
 /**
- * TYPESCRIPT DEFINITIONS
+ * TypeScript definitions.
  */
 gulp.task("typings", function () {
     return gulp.src("./typings.json")
@@ -69,7 +78,7 @@ gulp.task("typings", function () {
 
 
 /**
- * HTML
+ * HTML task.
  */
 const htmlRootDir = './src/';
 const htmlDestDir = './build/';
@@ -88,7 +97,7 @@ gulp.task('html', function () {
 
 
 /**
- * IMAGES
+ * Images task.
  */
 const imagesRootDir = './src/img/';
 const imagesDestDir = './build/img/';
@@ -103,7 +112,7 @@ gulp.task('images', function () {
 
 
 /**
- * CLEAN
+ * Clean task.
  */
 gulp.task('clean', function () {
     return del(['./build']);
@@ -111,7 +120,7 @@ gulp.task('clean', function () {
 
 
 /**
- * BOWER
+ * Bower task.
  */
 gulp.task('bower', function () {
     return bower({cmd: 'install'}, ['--allow-root'])
@@ -120,15 +129,15 @@ gulp.task('bower', function () {
 
 
 /**
- * DEFAULT TASK
+ * Default build task.
  */
-gulp.task('default', ['clean', 'typings'], function () {
-    gulp.start('styles', 'bower', 'scripts', 'html', 'images');
+gulp.task('default', function () {
+    runSequence('clean', 'typings', 'styles', 'bower', 'scripts', 'html', 'images');
 });
 
 
 /**
- * WATCH
+ * Watch task.
  */
 gulp.task('watch', ['default'], function () {
     gulp.watch(stylesRootDir + '**/*.less', ['styles']);
