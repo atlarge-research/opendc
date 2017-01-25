@@ -12,3 +12,6 @@ typings/
 
 # Yarn lockfile
 yarn.lock
+
+# WebStorm
+.idea/
