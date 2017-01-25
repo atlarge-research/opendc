@@ -16,7 +16,7 @@ from opendc.util import exceptions, rest
 with open('/var/www/opendc.ewi.tudelft.nl/web-server/config/keys.json') as file:
     KEYS = json.load(file)
 
-STATIC_ROOT = os.path.join(KEYS['ROOT_DIR'], 'static', 'build')
+STATIC_ROOT = os.path.join(KEYS['ROOT_DIR'], 'opendc-frontend', 'build')
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='')
 FLASK_CORE_APP.config['SECREY_KEY'] = KEYS['FLASK_SECRET']
@@ -55,7 +55,7 @@ def serve_projects():
 def serve_web_server_test():
     """Serve the web server test."""
 
-    return send_from_directory(os.path.join(KEYS['ROOT_DIR'], 'web-server', 'static'), 'index.html')
+    return send_from_directory(os.path.join(KEYS['ROOT_DIR'], 'opendc-web-server', 'static'), 'index.html')
 
 @FLASK_CORE_APP.route('/<path:folder>/<path:filepath>')
 def serve_static(folder, filepath):
@@ -64,7 +64,7 @@ def serve_static(folder, filepath):
     if not folder in ['bower_components', 'img', 'scripts', 'styles']:
         abort(404)
 
-    return send_from_directory(os.path.join(KEYS['ROOT_DIR'], 'static', 'build', folder), filepath)
+    return send_from_directory(os.path.join(STATIC_ROOT, folder), filepath)
 
 @FLASK_CORE_APP.route('/tokensignin', methods=['POST'])
 def sign_in():
