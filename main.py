@@ -12,8 +12,12 @@ from oauth2client import client, crypt
 from opendc.models.user import User
 from opendc.util import exceptions, rest
 
+if len(sys.argv) < 2:
+    print "config file path not given as argument"
+    sys.exit(1)
+
 # Get keys from config file
-with open('/var/www/opendc.ewi.tudelft.nl/web-server/config/keys.json') as file:
+with open(sys.argv[1]) as file:
     KEYS = json.load(file)
 
 STATIC_ROOT = os.path.join(KEYS['ROOT_DIR'], 'opendc-frontend', 'build')
@@ -144,5 +148,5 @@ def receive_message(message):
     )
 
 
-SOCKET_IO_CORE.run(FLASK_CORE_APP, port=8081)
+SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)
 

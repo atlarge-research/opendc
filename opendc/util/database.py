@@ -1,9 +1,10 @@
 from datetime import datetime
 import json
 import sqlite3
+import sys
 
 # Get keys from config file
-with open('/var/www/opendc.ewi.tudelft.nl/web-server/config/keys.json') as file:
+with open(sys.argv[1]) as file:
     KEYS = json.load(file)
 
 DATETIME_STRING_FORMAT = '%Y-%m-%dT%H:%M:%S'
