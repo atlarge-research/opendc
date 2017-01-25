@@ -7,7 +7,7 @@ from oauth2client import client, crypt
 
 from opendc.util import exceptions, parameter_checker
 
-with open('/var/www/opendc.ewi.tudelft.nl/web-server/config/keys.json') as file:
+with open(sys.argv[1]) as file:
     KEYS = json.load(file)
 
 class Request(object):
