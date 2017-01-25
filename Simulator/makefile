@@ -18,21 +18,12 @@ src/modeling/Rack.cpp
 all: sqlite simulator
 
 clean:
-	rm -rf simulator external/
+	rm -f simulator sqlite3.o
 
 simulator:
-	$(CXX) -o simulator -Iexternal $(SOURCE) $(CFLAGS)
+	$(CXX) -o simulator $(SOURCE) $(CFLAGS)
 
-sqlite:
-	cd ../external/sqlite ; \
-	git rev-parse --git-dir >/dev/null || exit 1 ; \
-	git log -1 --format=format:%ci%n | sed -e 's/ [-+].*$//;s/ /T/;s/^/D /' > manifest ; \
-	echo $(git log -1 --format=format:%H) > manifest.uuid
-	mkdir external
-	cd external ; \
-	./../../external/sqlite/configure --disable-tcl ; \
-	make sqlite3.o
-	mv external/sqlite3.o sqlite3.o
-	rm -rf external/
+sqlite: 
+	$(CC) -o sqlite3.o -c ../opendc-simulator-dependencies/sqlite/sqlite3.c
 
 .PHONY: all, clean

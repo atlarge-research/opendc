@@ -4,3 +4,6 @@
 [submodule "external/googletest"]
 	path = external/googletest
 	url = https://github.com/google/googletest
+[submodule "opendc-simulator-dependencies"]
+	path = opendc-simulator-dependencies
+	url = https://github.com/tudelft-atlarge/opendc-simulator-dependencies.git
