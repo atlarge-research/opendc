@@ -529,6 +529,11 @@ export class Util {
         let hour = Math.floor(seconds / 3600);
         let minute = Math.floor(seconds / 60) % 60;
         let second = seconds % 60;
+
+        hour = isNaN(hour) ? 0 : hour;
+        minute = isNaN(minute) ? 0 : minute;
+        second = isNaN(second) ? 0 : second;
+
         return this.addPaddingToTwo(hour) + ":" +
             this.addPaddingToTwo(minute) + ":" +
             this.addPaddingToTwo(second);
