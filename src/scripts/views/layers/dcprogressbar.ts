@@ -30,7 +30,7 @@ export class DCProgressBar {
     public static drawItemProgressRectangle(position: IGridPosition, color: string,
                                             container: createjs.Container, distanceFromBottom: number,
                                             fractionFilled: number): createjs.Shape {
-        let shape = new createjs.Shape();
+        const shape = new createjs.Shape();
         shape.graphics.beginFill(color);
         let x = position.x * CELL_SIZE + DCObjectLayer.ITEM_MARGIN + DCObjectLayer.ITEM_PADDING;
         let y = (position.y + 1) * CELL_SIZE - DCObjectLayer.ITEM_MARGIN - DCObjectLayer.ITEM_PADDING -
@@ -67,7 +67,7 @@ export class DCProgressBar {
      */
     public static drawProgressbarIcon(position: IGridPosition, container: createjs.Container, originBitmap: createjs.Bitmap,
                                       distanceFromBottom: number): createjs.Bitmap {
-        let bitmap = originBitmap.clone();
+        const bitmap = originBitmap.clone();
         container.addChild(bitmap);
         bitmap.x = (position.x + 0.5) * CELL_SIZE - DCProgressBar.PROGRESS_BAR_WIDTH * 0.5;
         bitmap.y = (position.y + 1) * CELL_SIZE - DCObjectLayer.ITEM_MARGIN - DCObjectLayer.ITEM_PADDING -

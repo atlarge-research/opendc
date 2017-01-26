@@ -31,7 +31,7 @@ export class DCObjectLayer implements Layer {
 
 
     public static drawHoverRack(position: IGridPosition): createjs.Container {
-        let result = new createjs.Container();
+        const result = new createjs.Container();
 
         DCObjectLayer.drawItemRectangle(
             position, Colors.RACK_BACKGROUND, Colors.RACK_BORDER, result
@@ -47,7 +47,7 @@ export class DCObjectLayer implements Layer {
     }
 
     public static drawHoverPSU(position: IGridPosition): createjs.Container {
-        let result = new createjs.Container();
+        const result = new createjs.Container();
 
         DCObjectLayer.drawItemRectangle(
             position, Colors.PSU_BACKGROUND, Colors.PSU_BORDER, result
@@ -57,7 +57,7 @@ export class DCObjectLayer implements Layer {
     }
 
     public static drawHoverCoolingItem(position: IGridPosition): createjs.Container {
-        let result = new createjs.Container();
+        const result = new createjs.Container();
 
         DCObjectLayer.drawItemRectangle(
             position, Colors.COOLING_ITEM_BACKGROUND, Colors.COOLING_ITEM_BORDER, result
@@ -77,7 +77,7 @@ export class DCObjectLayer implements Layer {
      */
     private static drawItemRectangle(position: IGridPosition, color: string, borderColor: string,
                                      container: createjs.Container): createjs.Shape {
-        let shape = new createjs.Shape();
+        const shape = new createjs.Shape();
         shape.graphics.beginStroke(borderColor);
         shape.graphics.setStrokeStyle(DCObjectLayer.STROKE_WIDTH);
         shape.graphics.beginFill(color);
@@ -101,7 +101,7 @@ export class DCObjectLayer implements Layer {
      */
     private static drawItemIcon(position: IGridPosition, container: createjs.Container,
                                 originBitmap: createjs.Bitmap): createjs.Bitmap {
-        let bitmap = originBitmap.clone();
+        const bitmap = originBitmap.clone();
         container.addChild(bitmap);
         bitmap.x = position.x * CELL_SIZE + DCObjectLayer.ITEM_MARGIN + DCObjectLayer.ITEM_PADDING * 1.5;
         bitmap.y = position.y * CELL_SIZE + DCObjectLayer.ITEM_MARGIN + DCObjectLayer.ITEM_PADDING * 1.5;
@@ -157,7 +157,7 @@ export class DCObjectLayer implements Layer {
         this.mapView.currentDatacenter.rooms.forEach((room: IRoom) => {
             room.tiles.forEach((tile: ITile) => {
                 if (tile.object !== undefined) {
-                    let index = tile.position.y * MapView.MAP_SIZE + tile.position.x;
+                    const index = tile.position.y * MapView.MAP_SIZE + tile.position.x;
 
                     switch (tile.objectType) {
                         case "RACK":
@@ -194,15 +194,13 @@ export class DCObjectLayer implements Layer {
     }
 
     public draw(): void {
-        let currentObject;
-
         this.container.removeAllChildren();
 
         this.container.cursor = "pointer";
 
         for (let property in this.dcObjectMap) {
             if (this.dcObjectMap.hasOwnProperty(property)) {
-                currentObject = this.dcObjectMap[property];
+                const currentObject = this.dcObjectMap[property];
 
                 switch (currentObject.type) {
                     case "RACK":

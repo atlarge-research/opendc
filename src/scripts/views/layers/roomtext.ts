@@ -42,15 +42,15 @@ export class RoomTextLayer implements Layer {
             return;
         }
 
-        let textPos = Util.calculateRoomNamePosition(room);
+        const textPos = Util.calculateRoomNamePosition(room);
 
-        let bottomY = this.renderText(room.name, "12px Arial", textPos,
+        const bottomY = this.renderText(room.name, "12px Arial", textPos,
             textPos.topLeft.y * CELL_SIZE + RoomTextLayer.TEXT_PADDING);
         this.renderText("Type: " + Util.toSentenceCase(room.roomType), "10px Arial", textPos, bottomY + 5);
     }
 
     private renderText(text: string, font: string, textPos: IRoomNamePos, startY: number): number {
-        let name = new createjs.Text(text, font, Colors.ROOM_NAME_COLOR);
+        const name = new createjs.Text(text, font, Colors.ROOM_NAME_COLOR);
 
         if (name.getMeasuredWidth() > textPos.length * CELL_SIZE - RoomTextLayer.TEXT_PADDING * 2) {
             name.scaleX = name.scaleY = (textPos.length * CELL_SIZE - RoomTextLayer.TEXT_PADDING * 2) /

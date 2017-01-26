@@ -36,7 +36,7 @@ window["gapiSigninButton"] = () => {
     gapi.signin2.render('google-signin', {
         'scope': 'profile email',
         'onsuccess': (googleUser) => {
-            let auth2 = gapi.auth2.getAuthInstance();
+            const auth2 = gapi.auth2.getAuthInstance();
 
             // Handle signout click
             $("nav .user .sign-out").click(() => {
@@ -47,12 +47,12 @@ window["gapiSigninButton"] = () => {
             });
 
             // Check if the token has expired
-            let currentTime = (new Date()).getTime() / 1000;
+            const currentTime = (new Date()).getTime() / 1000;
 
             if (parseInt(localStorage.getItem("googleTokenExpiration")) - currentTime <= 0) {
                 auth2.signIn().then(() => {
                     localStorage.setItem("googleToken", googleUser.getAuthResponse().id_token);
-                    let expirationTime = (new Date()).getTime() / 1000 + parseInt(googleUser.getAuthResponse().expires_in) - 5;
+                    const expirationTime = (new Date()).getTime() / 1000 + parseInt(googleUser.getAuthResponse().expires_in) - 5;
                     localStorage.setItem("googleTokenExpiration", expirationTime.toString());
                 });
             }

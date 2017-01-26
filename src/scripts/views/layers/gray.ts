@@ -33,9 +33,9 @@ export class GrayLayer implements Layer {
 
         this.container.removeAllChildren();
 
-        let roomBounds = Util.calculateRoomBounds(this.currentRoom);
+        const roomBounds = Util.calculateRoomBounds(this.currentRoom);
 
-        let shape = new createjs.Shape();
+        const shape = new createjs.Shape();
         shape.graphics.beginFill(Colors.GRAYED_OUT_AREA);
         shape.cursor = "pointer";
 

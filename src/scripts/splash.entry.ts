@@ -15,7 +15,7 @@ $(document).ready(() => {
      * jQuery for page scrolling feature
      */
     $('a.page-scroll').bind('click', function (event) {
-        let $anchor = $(this);
+        const $anchor = $(this);
         $('html, body').stop().animate({
             scrollTop: $($anchor.attr('href')).offset().top
         }, 1000, 'easeInOutExpo', () => {
@@ -28,7 +28,7 @@ $(document).ready(() => {
         event.preventDefault();
     });
 
-    let checkScrollState = () => {
+    const checkScrollState = () => {
         const startY = 100;
 
         if ($(window).scrollTop() > startY || window.innerWidth < 768) {
@@ -44,7 +44,7 @@ $(document).ready(() => {
 
     checkScrollState();
 
-    let googleSigninBtn = $("#google-signin");
+    const googleSigninBtn = $("#google-signin");
     googleSigninBtn.click(() => {
         hasClickedLogin = true;
     });
@@ -56,7 +56,7 @@ $(document).ready(() => {
         googleSigninBtn.hide();
         $(".navbar .logged-in").css("display", "inline-block");
         $(".logged-in .sign-out").click(() => {
-            let auth2 = gapi.auth2.getAuthInstance();
+            const auth2 = gapi.auth2.getAuthInstance();
 
             auth2.signOut().then(() => {
                 // Remove session storage items
@@ -72,12 +72,12 @@ $(document).ready(() => {
         });
 
         // Check whether Google auth. token has expired and signin again if necessary
-        let currentTime = (new Date()).getTime();
+        const currentTime = (new Date()).getTime();
         if (parseInt(localStorage.getItem("googleTokenExpiration")) - currentTime <= 0) {
             gapi.auth2.getAuthInstance().signIn().then(() => {
-                let authResponse = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse();
+                const authResponse = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse();
                 localStorage.setItem("googleToken", authResponse.id_token);
-                let expirationTime = (new Date()).getTime() / 1000 + parseInt(authResponse.expires_in) - 5;
+                const expirationTime = (new Date()).getTime() / 1000 + parseInt(authResponse.expires_in) - 5;
                 localStorage.setItem("googleTokenExpiration", expirationTime.toString());
             });
         }
@@ -98,13 +98,10 @@ window["renderButton"] = () => {
             let api;
             new APIController((apiInstance: APIController) => {
                 api = apiInstance;
-                let email = googleUser.getBasicProfile().getEmail();
+                const email = googleUser.getBasicProfile().getEmail();
 
-                let getUser = (userId: number) => {
-                    let reload = true;
-                    if (localStorage.getItem("userId") !== null) {
-                        reload = false;
-                    }
+                const getUser = (userId: number) => {
+                    const reload = localStorage.getItem("userId") === null;
 
                     localStorage.setItem("userId", userId.toString());
 
@@ -118,9 +115,9 @@ window["renderButton"] = () => {
                 };
 
                 // Send the token to the server
-                let id_token = googleUser.getAuthResponse().id_token;
+                const id_token = googleUser.getAuthResponse().id_token;
                 // Calculate token expiration time (in seconds since epoch)
-                let expirationTime = (new Date()).getTime() / 1000 + googleUser.getAuthResponse().expires_in - 5;
+                const expirationTime = (new Date()).getTime() / 1000 + googleUser.getAuthResponse().expires_in - 5;
 
                 $.post('https://opendc.ewi.tudelft.nl/tokensignin', {
                     idtoken: id_token

@@ -6,14 +6,14 @@ window["jQuery"] = $;
 
 
 $(document).ready(() => {
-    let api = new APIController(() => {
+    const api = new APIController(() => {
     });
 
     $("#delete-account").on("click", () => {
-        let modalDialog = <any>$("#confirm-delete-account");
+        const modalDialog = <any>$("#confirm-delete-account");
 
         // Function called on delete confirmation
-        let callback = () => {
+        const callback = () => {
             api.deleteUser(parseInt(localStorage.getItem("userId"))).then(() => {
                 removeUserInfo();
                 gapi.auth2.getAuthInstance().signOut().then(() => {
@@ -23,7 +23,7 @@ $(document).ready(() => {
                 modalDialog.find("button.confirm").off();
                 modalDialog.modal("hide");
 
-                let alert = $(".account-delete-alert");
+                const alert = $(".account-delete-alert");
                 alert.find("code").text(reason.code + ": " + reason.description);
 
                 alert.slideDown(200);

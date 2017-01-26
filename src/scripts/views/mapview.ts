@@ -70,7 +70,7 @@ export class MapView {
      */
     public static drawLine(x1: number, y1: number, x2: number, y2: number,
                            lineWidth: number, color: string, container: createjs.Container): createjs.Shape {
-        let line = new createjs.Shape();
+        const line = new createjs.Shape();
         line.graphics.setStrokeStyle(lineWidth).beginStroke(color);
         line.graphics.moveTo(x1, y1);
         line.graphics.lineTo(x2, y2);
@@ -89,7 +89,7 @@ export class MapView {
      */
     public static drawRectangle(position: IGridPosition, color: string, container: createjs.Container,
                                 sizeX?: number, sizeY?: number): createjs.Shape {
-        let tile = new createjs.Shape();
+        const tile = new createjs.Shape();
         tile.graphics.setStrokeStyle(0);
         tile.graphics.beginFill(color);
         tile.graphics.drawRect(
@@ -125,14 +125,14 @@ export class MapView {
 
     constructor(simulation: ISimulation, stage: createjs.Stage) {
         this.simulation = simulation;
-        let path = this.simulation.paths[this.simulation.paths.length - 1];
+        const path = this.simulation.paths[this.simulation.paths.length - 1];
         this.currentDatacenter = path.sections[path.sections.length - 1].datacenter;
 
         this.stage = stage;
 
         console.log("THE DATA", simulation);
 
-        let canvas = $("#main-canvas");
+        const canvas = $("#main-canvas");
         this.canvasWidth = canvas.width();
         this.canvasHeight = canvas.height();
 
@@ -207,22 +207,22 @@ export class MapView {
 
         // Calculate position difference if zoomed, in order to later compensate for this
         // unwanted movement
-        let oldPosition = [
+        const oldPosition = [
             position[0] - this.mapContainer.x, position[1] - this.mapContainer.y
         ];
-        let newPosition = [
+        const newPosition = [
             (oldPosition[0] / this.mapContainer.scaleX) * newZoom,
             (oldPosition[1] / this.mapContainer.scaleX) * newZoom
         ];
-        let positionDelta = [
+        const positionDelta = [
             newPosition[0] - oldPosition[0], newPosition[1] - oldPosition[1]
         ];
 
         // Apply the transformation operation to keep the selected position static
-        let newX = this.mapContainer.x - positionDelta[0];
-        let newY = this.mapContainer.y - positionDelta[1];
+        const newX = this.mapContainer.x - positionDelta[0];
+        const newY = this.mapContainer.y - positionDelta[1];
 
-        let finalPos = this.mapController.checkCanvasMovement(newX, newY, newZoom);
+        const finalPos = this.mapController.checkCanvasMovement(newX, newY, newZoom);
 
         if (!this.animating) {
             this.animate(this.mapContainer, {
@@ -270,24 +270,24 @@ export class MapView {
      * @param rooms The array of rooms to be viewed
      */
     private zoomInOnRooms(rooms: IRoom[]): void {
-        let bounds = Util.calculateRoomListBounds(rooms);
-        let newScale = this.calculateNewScale(bounds);
+        const bounds = Util.calculateRoomListBounds(rooms);
+        const newScale = this.calculateNewScale(bounds);
 
         // Coordinates of the center of the room, relative to the global origin of the map
-        let roomCenterCoords = [
+        const roomCenterCoords = [
             bounds.center[0] * CELL_SIZE * newScale,
             bounds.center[1] * CELL_SIZE * newScale
         ];
         // Coordinates of the center of the stage (the visible part of the canvas), relative to the global map origin
-        let stageCenterCoords = [
+        const stageCenterCoords = [
             -this.mapContainer.x + this.canvasWidth / 2,
             -this.mapContainer.y + this.canvasHeight / 2
         ];
 
-        let newX = this.mapContainer.x - roomCenterCoords[0] + stageCenterCoords[0];
-        let newY = this.mapContainer.y - roomCenterCoords[1] + stageCenterCoords[1];
+        const newX = this.mapContainer.x - roomCenterCoords[0] + stageCenterCoords[0];
+        const newY = this.mapContainer.y - roomCenterCoords[1] + stageCenterCoords[1];
 
-        let newPosition = this.mapController.checkCanvasMovement(newX, newY, newScale);
+        const newPosition = this.mapController.checkCanvasMovement(newX, newY, newScale);
 
         this.animate(this.mapContainer, {
             scaleX: newScale, scaleY: newScale,
@@ -299,11 +299,11 @@ export class MapView {
         const viewPadding = 30;
         const sideMenuWidth = 350;
 
-        let width = bounds.max[0] - bounds.min[0];
-        let height = bounds.max[1] - bounds.min[1];
+        const width = bounds.max[0] - bounds.min[0];
+        const height = bounds.max[1] - bounds.min[1];
 
-        let scaleX = (this.canvasWidth - 2 * sideMenuWidth) / (width * CELL_SIZE + 2 * viewPadding);
-        let scaleY = this.canvasHeight / (height * CELL_SIZE + 2 * viewPadding);
+        const scaleX = (this.canvasWidth - 2 * sideMenuWidth) / (width * CELL_SIZE + 2 * viewPadding);
+        const scaleY = this.canvasHeight / (height * CELL_SIZE + 2 * viewPadding);
 
         let newScale = Math.min(scaleX, scaleY);
 
@@ -321,10 +321,10 @@ export class MapView {
      */
     private drawMap(): void {
         // Create and draw the container for the entire map
-        let gridPixelSize = CELL_SIZE * MapView.MAP_SIZE;
+        const gridPixelSize = CELL_SIZE * MapView.MAP_SIZE;
 
         // Add a white background to the entire container
-        let background = new createjs.Shape();
+        const background = new createjs.Shape();
         background.graphics.beginFill("#fff");
         background.graphics.drawRect(0, 0,
             gridPixelSize, gridPixelSize);
