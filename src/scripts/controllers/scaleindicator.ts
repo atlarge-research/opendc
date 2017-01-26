@@ -24,7 +24,7 @@ export class ScaleIndicatorController {
     }
 
     public update(): void {
-        let currentZoom = this.mapView.mapContainer.scaleX;
+        const currentZoom = this.mapView.mapContainer.scaleX;
         let newWidth;
         do {
             newWidth = (currentZoom * CELL_SIZE) / this.currentDivisor;

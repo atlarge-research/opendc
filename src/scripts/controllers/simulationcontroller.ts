@@ -278,7 +278,7 @@ export class SimulationController {
                 return;
             }
 
-            let row = $(event.target).closest(".experiment-row");
+            const row = $(event.target).closest(".experiment-row");
             this.prepareAndLaunchExperiment(this.experiments[row.index()]);
         });
 
@@ -298,7 +298,7 @@ export class SimulationController {
         });
 
         $("#new-experiment-btn").click(() => {
-            let nameInput = $("#new-experiment-name-input");
+            const nameInput = $("#new-experiment-name-input");
             if (nameInput.val() === "") {
                 $(".experiment-name-alert").show();
                 return;
@@ -306,7 +306,7 @@ export class SimulationController {
                 $(".experiment-name-alert").hide();
             }
 
-            let newExperiment: IExperiment = {
+            const newExperiment: IExperiment = {
                 id: -1,
                 name: nameInput.val(),
                 pathId: parseInt($("#new-experiment-path-select").val()),
@@ -394,7 +394,7 @@ export class SimulationController {
      * Populates the list of experiments.
      */
     private populateExperimentsList(): void {
-        let table = $(".experiment-list .list-body");
+        const table = $(".experiment-list .list-body");
         table.empty();
 
         console.log("EXPERIMENT", this.experiments);
@@ -531,7 +531,7 @@ export class SimulationController {
         $("#room-name-field").text(this.mapController.roomModeController.currentRoom.name);
         $("#room-type-field").text(this.mapController.roomModeController.currentRoom.roomType);
 
-        let container = $(".room-stats-list");
+        const container = $(".room-stats-list");
 
         container.children().remove("div");
 
@@ -550,13 +550,13 @@ export class SimulationController {
     }
 
     private setupColorMenu(): void {
-        let html =
+        const html =
             '<select class="form-control" title="Color Representation" id="color-representation-select">' +
             '   <option value="1" selected>Load</option>' +
             '   <option value="2">Power use</option>' +
             '</select>';
 
-        let indicator = $(".color-indicator");
+        const indicator = $(".color-indicator");
         indicator["popover"]({
             animation: true,
             content: html,
@@ -572,7 +572,7 @@ export class SimulationController {
             } else {
                 indicator["popover"]("show");
 
-                let selectElement = $("#color-representation-select");
+                const selectElement = $("#color-representation-select");
                 selectElement.change(() => {
                     console.log(selectElement.val());
                 });

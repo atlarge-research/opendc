@@ -63,9 +63,9 @@ export class RoomModeController {
         MapController.hideAndShowMenus("#room-menu");
 
         // Pre-select the type of the current room in the dropdown
-        let roomTypeDropdown = $("#roomtype-select");
+        const roomTypeDropdown = $("#roomtype-select");
         roomTypeDropdown.find('option').prop("selected", "false");
-        let roomTypeIndex = this.roomTypes.indexOf(this.currentRoom.roomType);
+        const roomTypeIndex = this.roomTypes.indexOf(this.currentRoom.roomType);
         if (roomTypeIndex !== -1) {
             roomTypeDropdown.find('option[value="' + roomTypeIndex + '"]').prop("selected", "true");
         } else {
@@ -106,11 +106,11 @@ export class RoomModeController {
 
     public setupEventListeners(): void {
         // Component buttons
-        let addRackBtn = $("#add-rack-btn");
-        let addPSUBtn = $("#add-psu-btn");
-        let addCoolingItemBtn = $("#add-cooling-item-btn");
+        const addRackBtn = $("#add-rack-btn");
+        const addPSUBtn = $("#add-psu-btn");
+        const addCoolingItemBtn = $("#add-cooling-item-btn");
 
-        let roomTypeDropdown = $("#roomtype-select");
+        const roomTypeDropdown = $("#roomtype-select");
 
         addRackBtn.on("click", () => {
             this.handleItemClick("RACK");
@@ -137,7 +137,7 @@ export class RoomModeController {
             MapController.showConfirmDeleteDialog("room", () => {
                 this.mapController.api.deleteRoom(this.mapView.simulation.id,
                     this.mapView.currentDatacenter.id, this.currentRoom.id).then(() => {
-                    let roomIndex = this.mapView.currentDatacenter.rooms.indexOf(this.currentRoom);
+                    const roomIndex = this.mapView.currentDatacenter.rooms.indexOf(this.currentRoom);
                     this.mapView.currentDatacenter.rooms.splice(roomIndex, 1);
 
                     this.mapView.redrawMap();
@@ -148,7 +148,7 @@ export class RoomModeController {
 
         // Handler for the room type dropdown component
         roomTypeDropdown.on("change", () => {
-            let newRoomType = this.roomTypes[roomTypeDropdown.val()];
+            const newRoomType = this.roomTypes[roomTypeDropdown.val()];
             if (!this.checkRoomTypeLegality(newRoomType)) {
                 roomTypeDropdown.val(this.roomTypes.indexOf(this.currentRoom.roomType));
                 this.mapController.showInfoBalloon("Room type couldn't be changed, illegal objects", "warning");
@@ -167,10 +167,10 @@ export class RoomModeController {
 
     public handleCanvasMouseClick(gridPos: IGridPosition): void {
         if (this.roomInteractionMode === RoomInteractionMode.DEFAULT) {
-            let tileIndex = Util.tileListPositionIndexOf(this.currentRoom.tiles, gridPos);
+            const tileIndex = Util.tileListPositionIndexOf(this.currentRoom.tiles, gridPos);
 
             if (tileIndex !== -1) {
-                let tile = this.currentRoom.tiles[tileIndex];
+                const tile = this.currentRoom.tiles[tileIndex];
 
                 if (tile.object !== undefined) {
                     this.mapController.interactionLevel = InteractionLevel.OBJECT;
@@ -192,11 +192,11 @@ export class RoomModeController {
     }
 
     private handleItemClick(type: string): void {
-        let addRackBtn = $("#add-rack-btn");
-        let addPSUBtn = $("#add-psu-btn");
-        let addCoolingItemBtn = $("#add-cooling-item-btn");
-        let allObjectContainers = $(".dc-component-container");
-        let objectTypes = [
+        const addRackBtn = $("#add-rack-btn");
+        const addPSUBtn = $("#add-psu-btn");
+        const addCoolingItemBtn = $("#add-cooling-item-btn");
+        const allObjectContainers = $(".dc-component-container");
+        const objectTypes = [
             {
                 type: "RACK",
                 mode: RoomInteractionMode.ADD_RACK,
@@ -264,7 +264,7 @@ export class RoomModeController {
             return;
         }
 
-        let tileList = this.mapView.mapController.roomModeController.currentRoom.tiles;
+        const tileList = this.mapView.mapController.roomModeController.currentRoom.tiles;
 
         for (let i = 0; i < tileList.length; i++) {
             if (tileList[i].position.x === position.x && tileList[i].position.y === position.y) {
@@ -320,7 +320,7 @@ export class RoomModeController {
      * Populates the room-type dropdown element with all available room types
      */
     private populateRoomTypeDropdown(): void {
-        let dropdown = $("#roomtype-select");
+        const dropdown = $("#roomtype-select");
 
         this.roomTypes.forEach((type: string, index: number) => {
             dropdown.append($('<option>').text(Util.toSentenceCase(type)).val(index));
@@ -331,9 +331,9 @@ export class RoomModeController {
      * Loads all object types that are allowed in the current room into the menu.
      */
     private populateAllowedObjectTypes(): void {
-        let addObjectsLabel = $("#add-objects-label");
-        let noObjectsInfo = $("#no-objects-info");
-        let allowedObjectTypes = this.roomTypeMap[this.currentRoom.roomType];
+        const addObjectsLabel = $("#add-objects-label");
+        const noObjectsInfo = $("#no-objects-info");
+        const allowedObjectTypes = this.roomTypeMap[this.currentRoom.roomType];
 
         $(".dc-component-container").addClass("hidden");
 

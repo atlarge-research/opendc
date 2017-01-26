@@ -45,8 +45,8 @@ export class TimelineController {
         });
 
         $(".timeline-container .timeline").on("click", (event: JQueryEventObject) => {
-            let parentOffset = $(event.target).closest(".timeline").offset();
-            let clickX = event.pageX - parentOffset.left;
+            const parentOffset = $(event.target).closest(".timeline").offset();
+            const clickX = event.pageX - parentOffset.left;
 
             let newTick = Math.round(clickX / (this.timelineWidth * this.timeUnitFraction));
 
@@ -111,7 +111,7 @@ export class TimelineController {
     private updateTaskIndicators(): void {
         $(".task-indicator").remove();
 
-        let tickStateTypes = {
+        const tickStateTypes = {
             "queueEntryTick": "task-queued",
             "startTick": "task-started",
             "finishedTick": "task-finished"
@@ -121,7 +121,7 @@ export class TimelineController {
             return;
         }
 
-        let indicatorCountList = new Array(this.simulationController.stateCache.lastCachedTick);
+        const indicatorCountList = new Array(this.simulationController.stateCache.lastCachedTick);
         let indicator;
         this.simulationController.currentExperiment.trace.tasks.forEach((task: ITask) => {
             for (let tickStateType in tickStateTypes) {

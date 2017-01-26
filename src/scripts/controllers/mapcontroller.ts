@@ -178,7 +178,7 @@ export class MapController {
      * Does not change the x and y coordinates, only returns.
      */
     public checkCanvasMovement(x: number, y: number, scale: number): IGridPosition {
-        let result: IGridPosition = {x: x, y: y};
+        const result: IGridPosition = {x: x, y: y};
         if (x + this.mapView.gridLayer.gridPixelSize * scale < this.mapView.canvasWidth) {
             result.x = this.mapView.canvasWidth - this.mapView.gridLayer.gridPixelSize *
                 this.mapView.mapContainer.scaleX;
@@ -211,10 +211,10 @@ export class MapController {
     }
 
     public static showConfirmDeleteDialog(itemType: string, onConfirm: () => void): void {
-        let modalDialog = <any>$("#confirm-delete");
+        const modalDialog = <any>$("#confirm-delete");
         modalDialog.find(".modal-body").text("Are you sure you want to delete this " + itemType + "?");
 
-        let callback = () => {
+        const callback = () => {
             onConfirm();
             modalDialog.modal("hide");
             modalDialog.find("button.confirm").first().off("click");
@@ -241,16 +241,16 @@ export class MapController {
      * @param type The severity of the message; Currently supported: "info" and "warning"
      */
     public showInfoBalloon(message: string, type: string): void {
-        let balloon = $(".info-balloon");
+        const balloon = $(".info-balloon");
         balloon.html('<span></span>' + message);
-        let callback = () => {
+        const callback = () => {
             balloon.fadeOut(300);
 
             this.infoTimeOut = undefined;
         };
         const DISPLAY_TIME = 3000;
 
-        let balloonIcon = balloon.find("span").first();
+        const balloonIcon = balloon.find("span").first();
         balloonIcon.removeClass();
 
         balloon.css("background", Colors.INFO_BALLOON_MAP[type]);
@@ -278,9 +278,9 @@ export class MapController {
             this.currentStageMouseX = event.stageX;
             this.currentStageMouseY = event.stageY;
 
-            let gridPos = this.convertScreenCoordsToGridCoords([event.stageX, event.stageY]);
-            let tileX = gridPos.x;
-            let tileY = gridPos.y;
+            const gridPos = this.convertScreenCoordsToGridCoords([event.stageX, event.stageY]);
+            const tileX = gridPos.x;
+            const tileY = gridPos.y;
 
             // Check whether the coordinates of the hover location have changed since the last draw
             if (this.mapView.hoverLayer.hoverTilePosition.x !== tileX) {
@@ -339,7 +339,7 @@ export class MapController {
 
         // Relay scroll events to the MapView zoom handler
         $("#main-canvas").on("mousewheel", (event: JQueryEventObject) => {
-            let originalEvent = (<any>event.originalEvent);
+            const originalEvent = (<any>event.originalEvent);
             this.mapView.zoom([this.currentStageMouseX, this.currentStageMouseY], -0.7 * originalEvent.deltaY);
             this.scaleIndicatorController.update();
         });
@@ -369,7 +369,7 @@ export class MapController {
 
         // Menu panels
         $(".menu-header-bar .menu-collapse").on("click", (event: JQueryEventObject) => {
-            let container = $(event.target).closest(".menu-container");
+            const container = $(event.target).closest(".menu-container");
             if (this.appMode === AppMode.CONSTRUCTION) {
                 container.children(".menu-body.construction").first().slideToggle(300);
             } else if (this.appMode === AppMode.SIMULATION) {
@@ -380,7 +380,7 @@ export class MapController {
 
         // Menu close button
         $(".menu-header-bar .menu-exit").on("click", (event: JQueryEventObject) => {
-            let nearestMenuContainer = $(event.target).closest(".menu-container");
+            const nearestMenuContainer = $(event.target).closest(".menu-container");
             if (nearestMenuContainer.is("#node-menu")) {
                 this.interactionLevel = InteractionLevel.OBJECT;
                 $(".node-element-overlay").addClass("hidden");
@@ -400,10 +400,10 @@ export class MapController {
 
         // Handler for the version-save button
         $("#save-version-btn").on("click", (event: JQueryEventObject) => {
-            let target = $(event.target);
+            const target = $(event.target);
 
             target.attr("data-saved", "false");
-            let lastPath = this.mapView.simulation.paths[this.mapView.simulation.paths.length - 1];
+            const lastPath = this.mapView.simulation.paths[this.mapView.simulation.paths.length - 1];
             this.api.branchFromPath(
                 this.mapView.simulation.id, lastPath.id, lastPath.sections[lastPath.sections.length - 1].startTick + 1
             ).then((data: IPath) => {
@@ -437,11 +437,11 @@ export class MapController {
      * @param stageY The y coordinate of the location in pixels on the stage
      */
     private handleCanvasMouseClick(stageX: number, stageY: number): void {
-        let gridPos = this.convertScreenCoordsToGridCoords([stageX, stageY]);
+        const gridPos = this.convertScreenCoordsToGridCoords([stageX, stageY]);
 
         if (this.interactionLevel === InteractionLevel.BUILDING) {
             if (this.interactionMode === InteractionMode.DEFAULT) {
-                let roomIndex = Util.roomCollisionIndexOf(this.mapView.currentDatacenter.rooms, gridPos);
+                const roomIndex = Util.roomCollisionIndexOf(this.mapView.currentDatacenter.rooms, gridPos);
 
                 if (roomIndex !== -1) {
                     this.interactionLevel = InteractionLevel.ROOM;
@@ -474,7 +474,7 @@ export class MapController {
      * @returns {Array} The corresponding grid cell coordinates
      */
     private convertScreenCoordsToGridCoords(stagePosition: number[]): IGridPosition {
-        let result = {x: 0, y: 0};
+        const result = {x: 0, y: 0};
         result.x = Math.floor((stagePosition[0] - this.mapView.mapContainer.x) /
             (this.mapView.mapContainer.scaleX * CELL_SIZE));
         result.y = Math.floor((stagePosition[1] - this.mapView.mapContainer.y) /
@@ -486,7 +486,7 @@ export class MapController {
      * Adjusts the canvas size to fit the window perfectly.
      */
     private onWindowResize() {
-        let parent = this.canvas.parent(".app-content");
+        const parent = this.canvas.parent(".app-content");
         parent.height($(window).height() - 50);
         this.canvas.attr("width", parent.width());
         this.canvas.attr("height", parent.height());
@@ -505,15 +505,15 @@ export class MapController {
     }
 
     private matchUserAuthLevel() {
-        let authLevel = localStorage.getItem("simulationAuthLevel");
+        const authLevel = localStorage.getItem("simulationAuthLevel");
         if (authLevel === "VIEW") {
             $(".side-menu-container.right-middle-side, .side-menu-container.right-side").hide();
         }
     }
 
     private exportCanvasToImage() {
-        let canvasData = (<HTMLCanvasElement>this.canvas.get(0)).toDataURL("image/png");
-        let newWindow = window.open('about:blank', 'OpenDC Canvas Export');
+        const canvasData = (<HTMLCanvasElement>this.canvas.get(0)).toDataURL("image/png");
+        const newWindow = window.open('about:blank', 'OpenDC Canvas Export');
         newWindow.document.write("<img src='" + canvasData + "' alt='Canvas Image Export'/>");
         newWindow.document.title = "OpenDC Canvas Export";
     }

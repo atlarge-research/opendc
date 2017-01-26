@@ -73,7 +73,7 @@ export class StateCache {
     }
 
     private cache(): void {
-        let tick = this.lastCachedTick + 1;
+        const tick = this.lastCachedTick + 1;
 
         this.updateLastTick().then(() => {
             // Check if end of simulated region has been reached
@@ -85,7 +85,7 @@ export class StateCache {
                 this.stateList = data;
 
                 // Determine last cached tick
-                let ticks = Object.keys(this.stateList).sort((a, b) => {
+                const ticks = Object.keys(this.stateList).sort((a, b) => {
                     return parseInt(a) - parseInt(b);
                 });
                 if (ticks.length > 0) {
@@ -209,7 +209,7 @@ export class StateCache {
         );
 
         return Promise.all(promises).then(() => {
-            let tickStates: {[key: number]: ITickState} = {};
+            const tickStates: {[key: number]: ITickState} = {};
 
             machineStates.forEach((machineState: IMachineState) => {
                 if (tickStates[machineState.tick] === undefined) {
@@ -269,7 +269,7 @@ export class StateCache {
     }
 
     private fetchAllStatesOfTick(tick: number): Promise<ITickState> {
-        let tickState: ITickState = {
+        const tickState: ITickState = {
             tick,
             machineStates: [],
             rackStates: [],
