@@ -22,6 +22,9 @@ To build and run the full OpenDC stack locally:
 # Clone the repo and its submodules
 git clone --recursive git@github.com:tudelft-atlarge/opendc.git
 
+# Enter the directory
+cd opendc/
+
 # Build the Docker image
 docker build -t="opendc" .
 
