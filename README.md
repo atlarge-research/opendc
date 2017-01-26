@@ -14,5 +14,7 @@ Run the following commands from this directory to fetch dependencies and compile
 
 ```
 $ yarn
-$ gulp
+$ gulp --config=config.json
 ```
+
+**Note:** You need to replace `config.json` with the name / path of a real config file. This config file can be created by making a copy of the `sample_config.json` template and replacing the entries with your setup data. Make sure not to check this new config file into the VCS, as it is unique to each deployment situation.
