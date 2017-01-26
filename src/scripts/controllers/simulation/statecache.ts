@@ -84,14 +84,16 @@ export class StateCache {
             this.fetchAllAvailableStates().then((data) => {
                 this.stateList = data;
 
-                this.updateTasks(tick);
-
                 // Determine last cached tick
                 let ticks = Object.keys(this.stateList).sort((a, b) => {
                     return parseInt(a) - parseInt(b);
                 });
                 if (ticks.length > 0) {
                     this.lastCachedTick = parseInt(ticks[ticks.length - 1]);
+                }
+
+                for (let i = 1; i <= this.lastCachedTick; i++) {
+                    this.updateTasksForNewTick(i);
                 }
 
                 // Update chart cache
@@ -111,7 +113,7 @@ export class StateCache {
         });
     }
 
-    private updateTasks(tick: number): void {
+    private updateTasksForNewTick(tick: number): void {
         const taskIDsInTick = [];
 
         this.stateList[tick].taskStates.forEach((taskState: ITaskState) => {
