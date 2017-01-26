@@ -1,11 +1,11 @@
 {
-  "name": "open-dc",
+  "name": "opendc",
   "version": "0.0.1",
   "description": "Datacenter simulator",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/leonoverweel/open-dc.git"
+    "url": "https://github.com/tudelft-atlarge/opendc"
   },
   "dependencies": {
     "bower": "^1.7.9",
