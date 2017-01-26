@@ -1,21 +1,65 @@
+/**
+ * Build file for the frontend codebase of OpenDC.
+ *
+ * Usage:
+ *  $ gulp --config=config.json        # for a single build
+ *  $ gulp watch --config=config.json  # to run once, watch for changes, and rebuild when something changed
+ */
+
 'use strict';
+
+const argv = require('yargs').argv;
 
 const gulp = require('gulp');
 const notify = require('gulp-notify');
+const gulpUtil = require('gulp-util');
+const rename = require('gulp-rename');
+const replace = require('gulp-replace');
+const del = require('del');
+const runSequence = require('run-sequence');
 const source = require('vinyl-source-stream');
 const es = require('event-stream');
 const less = require('gulp-less');
 const browserify = require('browserify');
 const tsify = require('tsify');
 const gulpTypings = require("gulp-typings");
-const rename = require('gulp-rename');
 const processHTML = require('gulp-processhtml');
-const del = require('del');
 const bower = require('gulp-bower');
 
 
 /**
- * STYLES
+ * Checks whether the configuration file is specified and reads its contents.
+ *
+ * @throws an Exception if the config file could not be found or read (logs appropriately to the console)
+ * @returns {Object} the config file contents.
+ */
+function getConfigFile() {
+    const configInput = argv.config;
+
+    if (configInput === undefined) {
+        gulpUtil.log(gulpUtil.colors.red('Config file argument missing\n'), 'Usage:\n' +
+            ' $ gulp --config=config.json');
+        throw new Exception();
+    }
+
+    try {
+        let configFilePath;
+        if (configInput.indexOf('/') === -1) {
+            configFilePath = './' + configInput;
+        } else {
+            configFilePath = configInput;
+        }
+
+        return require(configFilePath);
+    } catch (error) {
+        gulpUtil.log(gulpUtil.colors.red('Config file could not be read'), error);
+        throw new Exception();
+    }
+}
+
+
+/**
+ * Stylesheet task.
  */
 const stylesRootDir = './src/styles/';
 const stylesDestDir = './build/styles/';
@@ -34,7 +78,7 @@ gulp.task('styles', function () {
 
 
 /**
- * SCRIPTS
+ * Script task.
  */
 const scriptsRootDir = './src/scripts/';
 const scriptsDestDir = './build/scripts/';
@@ -46,7 +90,7 @@ const scriptsFilePaths = scriptsFileNames.map(function (fileName) {
 });
 
 gulp.task('scripts', function () {
-    var tasks = scriptsFilePaths.map(function (entry, index) {
+    const tasks = scriptsFilePaths.map(function (entry, index) {
         return browserify({entries: [entry]})
             .plugin(tsify, {insertGlobals: true})
             .bundle()
@@ -59,7 +103,7 @@ gulp.task('scripts', function () {
 
 
 /**
- * TYPESCRIPT DEFINITIONS
+ * TypeScript definitions.
  */
 gulp.task("typings", function () {
     return gulp.src("./typings.json")
@@ -69,7 +113,7 @@ gulp.task("typings", function () {
 
 
 /**
- * HTML
+ * HTML task.
  */
 const htmlRootDir = './src/';
 const htmlDestDir = './build/';
@@ -80,7 +124,10 @@ const htmlFilePaths = htmlFileNames.map(function (fileName) {
 });
 
 gulp.task('html', function () {
+    const configFile = getConfigFile();
+
     return gulp.src(htmlFilePaths)
+        .pipe(replace('GOOGLE_OAUTH_CLIENT_ID', configFile.GOOGLE_OAUTH_CLIENT_ID))
         .pipe(processHTML())
         .pipe(gulp.dest(htmlDestDir))
         .pipe(notify({message: 'HTML task complete', onLast: true}));
@@ -88,7 +135,7 @@ gulp.task('html', function () {
 
 
 /**
- * IMAGES
+ * Images task.
  */
 const imagesRootDir = './src/img/';
 const imagesDestDir = './build/img/';
@@ -103,7 +150,7 @@ gulp.task('images', function () {
 
 
 /**
- * CLEAN
+ * Clean task.
  */
 gulp.task('clean', function () {
     return del(['./build']);
@@ -111,7 +158,7 @@ gulp.task('clean', function () {
 
 
 /**
- * BOWER
+ * Bower task.
  */
 gulp.task('bower', function () {
     return bower({cmd: 'install'}, ['--allow-root'])
@@ -120,17 +167,30 @@ gulp.task('bower', function () {
 
 
 /**
- * DEFAULT TASK
+ * Default build task.
  */
-gulp.task('default', ['clean', 'typings'], function () {
-    gulp.start('styles', 'bower', 'scripts', 'html', 'images');
+gulp.task('default', function () {
+    try {
+        getConfigFile();
+    } catch (error) {
+        return;
+    }
+    runSequence('clean', 'typings', 'styles', 'bower', 'scripts', 'html', 'images');
 });
 
 
 /**
- * WATCH
+ * Watch task.
  */
-gulp.task('watch', ['default'], function () {
+gulp.task('watch', function () {
+    try {
+        getConfigFile();
+    } catch (error) {
+        return;
+    }
+
+    runSequence('default');
+
     gulp.watch(stylesRootDir + '**/*.less', ['styles']);
     gulp.watch(scriptsRootDir + '**/*.ts', ['scripts']);
     gulp.watch(htmlRootDir + '**/*.html', ['html']);
