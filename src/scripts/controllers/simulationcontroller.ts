@@ -504,8 +504,6 @@ export class SimulationController {
             return;
         }
 
-        console.log(this.stateCache);
-
         let html;
         let container = $(".building-stats-list");
 

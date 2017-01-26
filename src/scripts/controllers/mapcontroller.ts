@@ -12,7 +12,7 @@ import {ObjectModeController} from "./modes/object";
 import {NodeModeController} from "./modes/node";
 import {ScaleIndicatorController} from "./scaleindicator";
 
-export var CELL_SIZE = 50;
+export const CELL_SIZE = 50;
 
 
 export enum AppMode {

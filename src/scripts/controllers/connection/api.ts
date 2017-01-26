@@ -1067,8 +1067,15 @@ export class APIController {
     ///
 
     // METHOD: GET
-    public getMachineStatesByTick(simulationId: number, experimentId: number, tick: number,
-                                  machines: {[keys: number]: IMachine}): Promise<IMachineState[]> {
+    public getMachineStates(simulationId: number, experimentId: number, machines: {[keys: number]: IMachine},
+                            tick?: number): Promise<IMachineState[]> {
+        let query;
+        if (tick !== undefined) {
+            query = {tick};
+        } else {
+            query = {};
+        }
+
         return ServerConnection.send({
             path: "/simulations/{simulationId}/experiments/{experimentId}/machine-states",
             method: "GET",
@@ -1078,9 +1085,7 @@ export class APIController {
                     simulationId,
                     experimentId
                 },
-                query: {
-                    tick
-                }
+                query
             }
         }).then((data: any) => {
             data.forEach((item: any) => {
@@ -1096,8 +1101,15 @@ export class APIController {
     ///
 
     // METHOD: GET
-    public getRackStatesByTick(simulationId: number, experimentId: number, tick: number,
-                               racks: {[keys: number]: IRack}): Promise<IRackState[]> {
+    public getRackStates(simulationId: number, experimentId: number, racks: {[keys: number]: IRack},
+                         tick?: number): Promise<IRackState[]> {
+        let query;
+        if (tick !== undefined) {
+            query = {tick};
+        } else {
+            query = {};
+        }
+
         return ServerConnection.send({
             path: "/simulations/{simulationId}/experiments/{experimentId}/rack-states",
             method: "GET",
@@ -1107,9 +1119,7 @@ export class APIController {
                     simulationId,
                     experimentId
                 },
-                query: {
-                    tick
-                }
+                query: query
             }
         }).then((data: any) => {
             let promises = data.map((item: any) => {
@@ -1127,8 +1137,15 @@ export class APIController {
     ///
 
     // METHOD: GET
-    public getRoomStatesByTick(simulationId: number, experimentId: number, tick: number,
-                               rooms: {[keys: number]: IRoom}): Promise<IRoomState[]> {
+    public getRoomStates(simulationId: number, experimentId: number, rooms: {[keys: number]: IRoom},
+                         tick?: number): Promise<IRoomState[]> {
+        let query;
+        if (tick !== undefined) {
+            query = {tick};
+        } else {
+            query = {};
+        }
+
         return ServerConnection.send({
             path: "/simulations/{simulationId}/experiments/{experimentId}/room-states",
             method: "GET",
@@ -1138,9 +1155,7 @@ export class APIController {
                     simulationId,
                     experimentId
                 },
-                query: {
-                    tick
-                }
+                query
             }
         }).then((data: any) => {
             let promises = data.map((item: any) => {
@@ -1158,8 +1173,15 @@ export class APIController {
     ///
 
     // METHOD: GET
-    public getTaskStatesByTick(simulationId: number, experimentId: number, tick: number,
-                               tasks: {[keys: number]: ITask}): Promise<ITaskState[]> {
+    public getTaskStates(simulationId: number, experimentId: number, tasks: {[keys: number]: ITask},
+                         tick?: number): Promise<ITaskState[]> {
+        let query;
+        if (tick === undefined) {
+            query = {tick};
+        } else {
+            query = {};
+        }
+
         return ServerConnection.send({
             path: "/simulations/{simulationId}/experiments/{experimentId}/task-states",
             method: "GET",
@@ -1169,9 +1191,7 @@ export class APIController {
                     simulationId,
                     experimentId
                 },
-                query: {
-                    tick
-                }
+                query
             }
         }).then((data: any) => {
             let promises = data.map((item: any) => {
