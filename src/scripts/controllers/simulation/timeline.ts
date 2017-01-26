@@ -153,9 +153,9 @@ export class TimelineController {
         let correction = 0;
         if (this.timeUnitFraction * this.timelineWidth > this.timeMarkerWidth) {
             correction = (this.timeUnitFraction * this.timelineWidth - this.timeMarkerWidth) *
-                (tick / this.simulationController.lastSimulatedTick);
+                ((tick - 1) / this.simulationController.lastSimulatedTick);
         }
 
-        return (100 * (this.timeUnitFraction * tick + correction / this.timelineWidth)) + "%";
+        return (100 * (this.timeUnitFraction * (tick - 1) + correction / this.timelineWidth)) + "%";
     }
 }

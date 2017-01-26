@@ -72,7 +72,7 @@ export class SimulationController {
         this.experimentSelectionMode = true;
         this.sectionIndex = 0;
 
-        this.currentTick = 0;
+        this.currentTick = 1;
         this.playing = false;
         this.stateCache = new StateCache(this);
         this.colorRepresentation = ColorRepresentation.LOAD;
@@ -340,7 +340,7 @@ export class SimulationController {
         this.currentPath = this.getPathById(this.currentExperiment.pathId);
         this.sections = this.currentPath.sections;
         this.sectionIndex = 0;
-        this.currentTick = 0;
+        this.currentTick = 1;
         this.playing = false;
         this.stateCache = new StateCache(this);
         this.colorRepresentation = ColorRepresentation.LOAD;
