@@ -30,7 +30,7 @@ window["___gcfg"] = {
 };
 
 /**
- * Google signin button
+ * Google signin button.
  */
 window["gapiSigninButton"] = () => {
     gapi.signin2.render('google-signin', {
@@ -65,8 +65,10 @@ window["gapiSigninButton"] = () => {
 };
 
 
+/**
+ * Removes session storage items.
+ */
 export function removeUserInfo() {
-    // Remove session storage items
     localStorage.removeItem("googleToken");
     localStorage.removeItem("googleTokenExpiration");
     localStorage.removeItem("googleName");
