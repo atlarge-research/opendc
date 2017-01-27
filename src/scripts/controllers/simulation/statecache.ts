@@ -94,10 +94,10 @@ export class StateCache {
 
                 for (let i = 1; i <= this.lastCachedTick; i++) {
                     this.updateTasksForNewTick(i);
-                }
 
-                // Update chart cache
-                this.simulationController.chartController.tickUpdated(tick);
+                    // Update chart cache
+                    this.simulationController.chartController.tickUpdated(i);
+                }
 
                 if (!this.cacheBlock && this.lastCachedTick - this.simulationController.currentTick <= 0) {
                     this.cacheBlock = true;
