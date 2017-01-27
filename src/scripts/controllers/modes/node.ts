@@ -53,17 +53,17 @@ export class NodeModeController {
      * Connects all DOM event listeners to their respective element targets.
      */
     public setupEventListeners(): void {
-        let nodeMenu = $("#node-menu");
+        const nodeMenu = $("#node-menu");
 
         nodeMenu.find(".panel-group").on("click", ".remove-unit", (event: JQueryEventObject) => {
             MapController.showConfirmDeleteDialog("unit", () => {
-                let index = $(event.target).closest(".panel").index();
+                const index = $(event.target).closest(".panel").index();
 
                 if (index === -1) {
                     return;
                 }
 
-                let closestTabPane = $(event.target).closest(".panel-group");
+                const closestTabPane = $(event.target).closest(".panel-group");
 
                 let objectList, idList;
                 if (closestTabPane.is("#cpu-accordion")) {
@@ -94,9 +94,9 @@ export class NodeModeController {
         });
 
         nodeMenu.find(".add-unit").on("click", (event: JQueryEventObject) => {
-            let dropdown = $(event.target).closest(".input-group-btn").siblings("select").first();
+            const dropdown = $(event.target).closest(".input-group-btn").siblings("select").first();
 
-            let closestTabPane = $(event.target).closest(".input-group").siblings(".panel-group").first();
+            const closestTabPane = $(event.target).closest(".input-group").siblings(".panel-group").first();
             let objectList, idList, typePlural;
             if (closestTabPane.is("#cpu-accordion")) {
                 objectList = this.currentMachine.cpus;
@@ -121,7 +121,7 @@ export class NodeModeController {
                 return;
             }
 
-            let id = parseInt(dropdown.val(), 10);
+            const id = parseInt(dropdown.val());
             idList.push(id);
             this.mapController.api.getSpecificationOfType(typePlural, id).then((spec: INodeUnit) => {
                 objectList.push(spec);
@@ -141,10 +141,10 @@ export class NodeModeController {
      * Populates the "add" dropdowns with all available unit options.
      */
     private loadAddDropdowns(): void {
-        let unitTypes = [
+        const unitTypes = [
             "cpus", "gpus", "memories", "storages"
         ];
-        let dropdowns = [
+        const dropdowns = [
             $("#add-cpu-form").find("select"),
             $("#add-gpu-form").find("select"),
             $("#add-memory-form").find("select"),
@@ -166,7 +166,7 @@ export class NodeModeController {
      */
     private populateUnitLists(): void {
         // Contains the skeleton of a unit element and inserts the given data into it
-        let generatePanel = (type: string, index: number, list: any, specSection: string): string => {
+        const generatePanel = (type: string, index: number, list: any, specSection: string): string => {
             return '<div class="panel panel-default">' +
                 '  <div class="panel-heading">' +
                 '    <h4 class="panel-title">' +
@@ -188,7 +188,7 @@ export class NodeModeController {
         };
 
         // Generates the structure of the specification list of a processing unit
-        let generateProcessingUnitHtml = (element: IProcessingUnit) => {
+        const generateProcessingUnitHtml = (element: IProcessingUnit) => {
             return '        <tr>' +
                 '          <td class="glyphicon glyphicon-tasks"></td>' +
                 '          <td>Number of Cores</td>' +
@@ -212,7 +212,7 @@ export class NodeModeController {
         };
 
         // Generates the structure of the spec list of a storage unit
-        let generateStorageUnitHtml = (element: IStorageUnit) => {
+        const generateStorageUnitHtml = (element: IStorageUnit) => {
             return '        <tr>' +
                 '          <td class="glyphicon glyphicon-floppy-disk"></td>' +
                 '          <td>Size (Mb)</td>' +
@@ -236,7 +236,7 @@ export class NodeModeController {
         };
 
         // Inserts a "No units" message into the container of the given unit type
-        let addNoUnitsMessage = (type: string) => {
+        const addNoUnitsMessage = (type: string) => {
             $("#" + type + "-accordion").append("<p>There are currently no units present here. " +
                 "<em>Add some with the dropdown below!</em></p>");
         };
@@ -249,8 +249,8 @@ export class NodeModeController {
             addNoUnitsMessage("cpu");
         } else {
             this.currentMachine.cpus.forEach((element: ICPU, i: number) => {
-                let specSection = generateProcessingUnitHtml(element);
-                let content = generatePanel("cpu", i, this.currentMachine.cpus, specSection);
+                const specSection = generateProcessingUnitHtml(element);
+                const content = generatePanel("cpu", i, this.currentMachine.cpus, specSection);
                 container.append(content);
             });
         }
@@ -262,8 +262,8 @@ export class NodeModeController {
             addNoUnitsMessage("gpu");
         } else {
             this.currentMachine.gpus.forEach((element: IGPU, i: number) => {
-                let specSection = generateProcessingUnitHtml(element);
-                let content = generatePanel("gpu", i, this.currentMachine.gpus, specSection);
+                const specSection = generateProcessingUnitHtml(element);
+                const content = generatePanel("gpu", i, this.currentMachine.gpus, specSection);
                 container.append(content);
             });
         }
@@ -275,8 +275,8 @@ export class NodeModeController {
             addNoUnitsMessage("memory");
         } else {
             this.currentMachine.memories.forEach((element: IMemory, i: number) => {
-                let specSection = generateStorageUnitHtml(element);
-                let content = generatePanel("memory", i, this.currentMachine.memories, specSection);
+                const specSection = generateStorageUnitHtml(element);
+                const content = generatePanel("memory", i, this.currentMachine.memories, specSection);
                 container.append(content);
             });
         }
@@ -288,8 +288,8 @@ export class NodeModeController {
             addNoUnitsMessage("storage");
         } else {
             this.currentMachine.storages.forEach((element: IMemory, i: number) => {
-                let specSection = generateStorageUnitHtml(element);
-                let content = generatePanel("storage", i, this.currentMachine.storages, specSection);
+                const specSection = generateStorageUnitHtml(element);
+                const content = generatePanel("storage", i, this.currentMachine.storages, specSection);
                 container.append(content);
             });
         }

@@ -21,6 +21,7 @@ const source = require('vinyl-source-stream');
 const es = require('event-stream');
 const less = require('gulp-less');
 const browserify = require('browserify');
+const watchify = require('watchify');
 const tsify = require('tsify');
 const gulpTypings = require("gulp-typings");
 const processHTML = require('gulp-processhtml');
@@ -91,8 +92,14 @@ const scriptsFilePaths = scriptsFileNames.map(function (fileName) {
 
 gulp.task('scripts', function () {
     const tasks = scriptsFilePaths.map(function (entry, index) {
-        return browserify({entries: [entry]})
-            .plugin(tsify, {insertGlobals: true})
+        return browserify({
+            entries: [entry],
+            debug: false,
+            insertGlobals: true,
+            cache: {},
+            packageCache: {}
+        })
+            .plugin(tsify)
             .bundle()
             .pipe(source(scriptsFileNames[index] + postfix + '.js'))
             .pipe(gulp.dest(scriptsDestDir));
@@ -101,9 +108,40 @@ gulp.task('scripts', function () {
         .pipe(notify({message: 'Scripts task complete', onLast: true}));
 });
 
+function getWatchifyHandler(bundler, fileName) {
+    return () => {
+        gulpUtil.log("Beginning build for " + fileName);
+        return bundler
+            .bundle()
+            .pipe(source(fileName + postfix + '.js'))
+            .pipe(gulp.dest(scriptsDestDir));
+    };
+}
+
+gulp.task('watch-scripts', function () {
+    const tasks = scriptsFilePaths.map(function (entry, index) {
+        const watchedBrowserify = watchify(browserify({
+            entries: [entry],
+            debug: false,
+            cache: {},
+            packageCache: {},
+            insertGlobals: true,
+            poll: 100
+        }).plugin(tsify));
+        const watchFunction = getWatchifyHandler(watchedBrowserify, scriptsFileNames[index]);
+
+        watchedBrowserify.on('update', watchFunction);
+        watchedBrowserify.on('log', gulpUtil.log);
+        return watchFunction();
+    });
+
+    return es.merge.apply(null, tasks)
+        .pipe(notify({message: 'Scripts watch task complete', onLast: true}));
+});
+
 
 /**
- * TypeScript definitions.
+ * TypeScript definitions task.
  */
 gulp.task("typings", function () {
     return gulp.src("./typings.json")
@@ -189,10 +227,10 @@ gulp.task('watch', function () {
         return;
     }
 
-    runSequence('default');
-
-    gulp.watch(stylesRootDir + '**/*.less', ['styles']);
-    gulp.watch(scriptsRootDir + '**/*.ts', ['scripts']);
-    gulp.watch(htmlRootDir + '**/*.html', ['html']);
-    gulp.watch(imagesRootDir + '**/*.png', ['images']);
+    runSequence('default', () => {
+        gulp.watch(stylesRootDir + '**/*.less', ['styles']);
+        gulp.start('watch-scripts');
+        gulp.watch(htmlRootDir + '**/*.html', ['html']);
+        gulp.watch(imagesRootDir + '**/*.png', ['images']);
+    });
 });

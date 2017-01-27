@@ -65,7 +65,7 @@ export class RoomLayer implements Layer {
     public addSelectedTile(tile: ITile): void {
         this.selectedTiles.push(tile);
 
-        let tileObject = MapView.drawRectangle(tile.position, Colors.ROOM_SELECTED, this.container);
+        const tileObject = MapView.drawRectangle(tile.position, Colors.ROOM_SELECTED, this.container);
         this.selectedTileObjects.push({
             position: {x: tile.position.x, y: tile.position.y},
             tileObject: tileObject
@@ -84,7 +84,7 @@ export class RoomLayer implements Layer {
      * @param objectIndex The index of the tile in the selectedTileObjects array
      */
     public removeSelectedTile(position: IGridPosition, objectIndex: number): void {
-        let index = Util.tileListPositionIndexOf(this.selectedTiles, position);
+        const index = Util.tileListPositionIndexOf(this.selectedTiles, position);
 
         // Check whether the given position doesn't belong to an already removed tile
         if (index === -1) {

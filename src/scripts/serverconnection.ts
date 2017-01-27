@@ -11,7 +11,7 @@ export class ServerConnection {
 
     public static send(request: IRequest): Promise<any> {
         return new Promise((resolve, reject) => {
-            let checkUnimplemented = ServerConnection.interceptUnimplementedEndpoint(request);
+            const checkUnimplemented = ServerConnection.interceptUnimplementedEndpoint(request);
             if (checkUnimplemented) {
                 resolve(checkUnimplemented.content);
                 return;
@@ -28,7 +28,7 @@ export class ServerConnection {
     }
 
     public static convertFlatToNestedPositionData(responseContent, resolve): void {
-        let nestPositionCoords = (content: any) => {
+        const nestPositionCoords = (content: any) => {
             if (content["positionX"] !== undefined) {
                 content["position"] = {
                     x: content["positionX"],

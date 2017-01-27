@@ -12,7 +12,7 @@ $(document).ready(() => {
     new APIController((apiInstance: APIController) => {
         api = apiInstance;
         api.getAuthorizationsByUser(parseInt(localStorage.getItem("userId"))).then((data: any) => {
-            let projectsController = new ProjectsController(data, api);
+            const projectsController = new ProjectsController(data, api);
             new WindowController(projectsController, api);
         });
     });
@@ -54,7 +54,7 @@ class ProjectsController {
      * @param list The list of authorizations to be displayed
      */
     public static populateList(list: IAuthorization[]): void {
-        let body = $(".project-list .list-body");
+        const body = $(".project-list .list-body");
         body.empty();
 
         list.forEach((element: IAuthorization) => {
@@ -82,7 +82,7 @@ class ProjectsController {
      * @returns {IAuthorization[]} A filtered list of authorizations
      */
     public static filterList(list: IAuthorization[], ownedByUser: boolean): IAuthorization[] {
-        let resultList: IAuthorization[] = [];
+        const resultList: IAuthorization[] = [];
 
         list.forEach((element: IAuthorization) => {
             if (element.authorizationLevel === "OWN") {
@@ -160,12 +160,12 @@ class ProjectsController {
      * @param target The element that was clicked on to launch this view
      */
     private displayProjectView(target: JQuery): void {
-        let closestRow = target.closest(".project-row");
-        let activeElement = $(".project-row.active");
+        const closestRow = target.closest(".project-row");
+        const activeElement = $(".project-row.active");
 
         // Disable previously selected row elements and remove any project-views, to have only one view open at a time
         if (activeElement.length > 0) {
-            let view = $(".project-view").first();
+            const view = $(".project-view").first();
 
             view.slideUp(200, () => {
                 activeElement.removeClass("active");
@@ -177,19 +177,19 @@ class ProjectsController {
             }
         }
 
-        let simulationId = parseInt(closestRow.attr("data-id"), 10);
+        const simulationId = parseInt(closestRow.attr("data-id"), 10);
 
         // Generate a list of participants of this project
         this.api.getAuthorizationsBySimulation(simulationId).then((data: any) => {
-            let simAuthorizations = data;
-            let participants = [];
+            const simAuthorizations = data;
+            const participants = [];
 
             Util.sortAuthorizations(simAuthorizations);
 
             // For each participant of this simulation, include his/her name along with an icon of their authorization
             // level in the list
             simAuthorizations.forEach((authorization: IAuthorization) => {
-                let authorizationString = ' (<span class="glyphicon ' +
+                const authorizationString = ' (<span class="glyphicon ' +
                     ProjectsController.authIconMap[authorization.authorizationLevel] + '"></span>)';
                 if (authorization.userId === this.currentUserId) {
                     participants.push(
@@ -203,7 +203,7 @@ class ProjectsController {
             });
 
             // Generate a project view component with participants and relevant actions
-            let object = $('<div class="project-view">').append(
+            const object = $('<div class="project-view">').append(
                 $('<div class="participants">').append(
                     $('<strong>').text("Participants"),
                     $('<div>').html(participants.join(", "))
@@ -217,7 +217,7 @@ class ProjectsController {
             closestRow.after(object);
 
             // Hide the 'edit' button for non-owners and -editors
-            let currentAuth = this.authorizationsFiltered[closestRow.index(".project-row")];
+            const currentAuth = this.authorizationsFiltered[closestRow.index(".project-row")];
             if (currentAuth.authorizationLevel !== "OWN") {
                 $(".project-view .inline-btn.edit").hide();
             }
@@ -380,7 +380,7 @@ class WindowController {
         $(".project-name-form input").val(authorizations[0].simulation.name);
 
         $(".project-name-form .btn").css("display", "inline-block").click(() => {
-            let nameInput = $(".project-name-form input").val();
+            const nameInput = $(".project-name-form input").val();
             if (nameInput !== "") {
                 authorizations[0].simulation.name = nameInput;
                 this.api.updateSimulation(authorizations[0].simulation);
@@ -528,7 +528,7 @@ class WindowController {
      * @param name A selector that uniquely identifies the alert body to be shown.
      */
     private showAlert(name): void {
-        let alert = $(name);
+        const alert = $(name);
         alert.slideDown(200);
 
         setTimeout(() => {
@@ -556,7 +556,7 @@ class WindowController {
         $(event.target).closest(".participant-level").find("div").removeClass("active");
         $(event.target).addClass("active");
 
-        let affectedRow = $(event.target).closest(".participant-row");
+        const affectedRow = $(event.target).closest(".participant-row");
 
         for (let level in ProjectsController.authIconMap) {
             if (!ProjectsController.authIconMap.hasOwnProperty(level)) {
@@ -576,7 +576,7 @@ class WindowController {
      * @param callback The function to be called if the participant could be found and can be added.
      */
     private handleParticipantAdd(callback: (userId: number) => any): void {
-        let inputForm = $(".participant-add-form input");
+        const inputForm = $(".participant-add-form input");
         this.api.getUserByEmail(inputForm.val()).then((data: any) => {
             let insert = true;
             for (let i = 0; i < this.simAuthorizations.length; i++) {
@@ -585,7 +585,7 @@ class WindowController {
                 }
             }
 
-            let simulationId = this.editMode ? this.simulationId : -1;
+            const simulationId = this.editMode ? this.simulationId : -1;
             if (data.id !== this.projectsController.currentUserId && insert) {
                 this.simAuthorizations.push({
                     userId: data.id,
@@ -614,9 +614,9 @@ class WindowController {
      * @param callback The function to be executed on removal of the participant from the internal list
      */
     private handleParticipantDelete(event: JQueryEventObject, callback: (authorization: IAuthorization) => any): void {
-        let affectedRow = $(event.target).closest(".participant-row");
-        let index = affectedRow.index();
-        let authorization = this.simAuthorizations[index];
+        const affectedRow = $(event.target).closest(".participant-row");
+        const index = affectedRow.index();
+        const authorization = this.simAuthorizations[index];
         this.simAuthorizations.splice(index, 1);
         this.populateParticipantList();
         callback(authorization);

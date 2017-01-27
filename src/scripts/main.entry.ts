@@ -27,8 +27,8 @@ class Display {
      * Adjusts the canvas size to fit the window's initial dimensions (full expansion).
      */
     private static fitCanvasSize() {
-        let canvas = $("#main-canvas");
-        let parent = canvas.parent();
+        const canvas = $("#main-canvas");
+        const parent = canvas.parent();
         parent.height($(window).height() - 50);
         canvas.attr("width", parent.width());
         canvas.attr("height", parent.height());

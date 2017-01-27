@@ -52,7 +52,7 @@ export class ChartController {
 
                 room.tiles.forEach((tile: ITile) => {
                     if (tile.object !== undefined && tile.objectType === "RACK" && this.rackSeries[tile.objectId] === undefined) {
-                        let objectName = (<IRack>tile.object).name;
+                        const objectName = (<IRack>tile.object).name;
                         this.names["ra" + tile.objectId] = objectName === "" || objectName === undefined ?
                             "Unnamed rack" : objectName;
 
@@ -177,7 +177,7 @@ export class ChartController {
             machineId = this.mapController.nodeModeController.currentMachine.id;
         }
 
-        let unloads: string[] = [];
+        const unloads: string[] = [];
         for (let id in this.names) {
             if (this.names.hasOwnProperty(id)) {
                 if (machineId === -1) {
@@ -211,17 +211,17 @@ export class ChartController {
     }
 
     public tickUpdated(tick: number): void {
-        let roomStates: IRoomState[] = this.simulationController.stateCache.stateList[tick].roomStates;
+        const roomStates: IRoomState[] = this.simulationController.stateCache.stateList[tick].roomStates;
         roomStates.forEach((roomState: IRoomState) => {
             ChartController.insertAtIndex(this.roomSeries[roomState.roomId].loadFractions, tick + 1, roomState.loadFraction);
         });
 
-        let rackStates: IRackState[] = this.simulationController.stateCache.stateList[tick].rackStates;
+        const rackStates: IRackState[] = this.simulationController.stateCache.stateList[tick].rackStates;
         rackStates.forEach((rackState: IRackState) => {
             ChartController.insertAtIndex(this.rackSeries[rackState.rackId].loadFractions, tick + 1, rackState.loadFraction);
         });
 
-        let machineStates: IMachineState[] = this.simulationController.stateCache.stateList[tick].machineStates;
+        const machineStates: IMachineState[] = this.simulationController.stateCache.stateList[tick].machineStates;
         machineStates.forEach((machineState: IMachineState) => {
             ChartController.insertAtIndex(this.machineSeries[machineState.machineId].loadFractions, tick + 1, machineState.loadFraction);
         });

@@ -22,7 +22,7 @@ export class BuildingModeController {
      * Connects all DOM event listeners to their respective element targets.
      */
     public setupEventListeners() {
-        let resetConstructionButtons = () => {
+        const resetConstructionButtons = () => {
             this.mapController.interactionMode = InteractionMode.DEFAULT;
             this.mapView.hoverLayer.setHoverTileVisibility(false);
             $("#room-construction").text("Construct new room");
@@ -79,7 +79,7 @@ export class BuildingModeController {
      * @param position The new tile position to be added
      */
     public addSelectedTile(position: IGridPosition): void {
-        let tile = {
+        const tile = {
             id: -1,
             roomId: this.newRoomId,
             position: {x: position.x, y: position.y}
@@ -96,11 +96,10 @@ export class BuildingModeController {
      * @param position The position of the tile to be removed
      */
     public removeSelectedTile(position: IGridPosition): void {
-        let tile;
         let objectIndex = -1;
 
         for (let i = 0; i < this.mapView.roomLayer.selectedTileObjects.length; i++) {
-            tile = this.mapView.roomLayer.selectedTileObjects[i];
+            const tile = this.mapView.roomLayer.selectedTileObjects[i];
             if (tile.position.x === position.x && tile.position.y === position.y) {
                 objectIndex = i;
             }

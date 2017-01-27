@@ -2,7 +2,7 @@ import {SimulationController} from "../simulationcontroller";
 
 
 export class StateCache {
-    public static CACHE_INTERVAL = 3000;
+    public static CACHE_INTERVAL = 10000;
     private static PREFERRED_CACHE_ADVANCE = 5;
 
     public stateList: {[key: number]: ITickState};
@@ -22,7 +22,7 @@ export class StateCache {
 
     constructor(simulationController: SimulationController) {
         this.stateList = {};
-        this.lastCachedTick = -1;
+        this.lastCachedTick = 0;
         this.cacheBlock = true;
         this.simulationController = simulationController;
         this.caching = false;
@@ -73,7 +73,7 @@ export class StateCache {
     }
 
     private cache(): void {
-        let tick = this.lastCachedTick + 1;
+        const tick = this.lastCachedTick + 1;
 
         this.updateLastTick().then(() => {
             // Check if end of simulated region has been reached
@@ -81,15 +81,23 @@ export class StateCache {
                 return;
             }
 
-            this.fetchAllStatesOfTick(tick).then((data: ITickState) => {
-                this.stateList[tick] = data;
+            this.fetchAllAvailableStates().then((data) => {
+                this.stateList = data;
 
-                this.updateTasks(tick);
+                // Determine last cached tick
+                const ticks = Object.keys(this.stateList).sort((a, b) => {
+                    return parseInt(a) - parseInt(b);
+                });
+                if (ticks.length > 0) {
+                    this.lastCachedTick = parseInt(ticks[ticks.length - 1]);
+                }
 
-                // Update chart cache
-                this.simulationController.chartController.tickUpdated(tick);
+                for (let i = 1; i <= this.lastCachedTick; i++) {
+                    this.updateTasksForNewTick(i);
 
-                this.lastCachedTick++;
+                    // Update chart cache
+                    this.simulationController.chartController.tickUpdated(i);
+                }
 
                 if (!this.cacheBlock && this.lastCachedTick - this.simulationController.currentTick <= 0) {
                     this.cacheBlock = true;
@@ -105,7 +113,7 @@ export class StateCache {
         });
     }
 
-    private updateTasks(tick: number): void {
+    private updateTasksForNewTick(tick: number): void {
         const taskIDsInTick = [];
 
         this.stateList[tick].taskStates.forEach((taskState: ITaskState) => {
@@ -160,8 +168,108 @@ export class StateCache {
         });
     }
 
+    private fetchAllAvailableStates(): Promise<{[key: number]: ITickState}> {
+        let machineStates, rackStates, roomStates, taskStates;
+        const promises = [];
+
+        promises.push(
+            this.simulationController.mapController.api.getMachineStates(
+                this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
+                this.machineCache
+            ).then((states: IMachineState[]) => {
+                machineStates = states;
+            })
+        );
+
+        promises.push(
+            this.simulationController.mapController.api.getRackStates(
+                this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
+                this.rackCache
+            ).then((states: IRackState[]) => {
+                rackStates = states;
+            })
+        );
+
+        promises.push(
+            this.simulationController.mapController.api.getRoomStates(
+                this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
+                this.roomCache
+            ).then((states: IRoomState[]) => {
+                roomStates = states;
+            })
+        );
+
+        promises.push(
+            this.simulationController.mapController.api.getTaskStates(
+                this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
+                this.taskCache
+            ).then((states: ITaskState[]) => {
+                taskStates = states;
+            })
+        );
+
+        return Promise.all(promises).then(() => {
+            const tickStates: {[key: number]: ITickState} = {};
+
+            machineStates.forEach((machineState: IMachineState) => {
+                if (tickStates[machineState.tick] === undefined) {
+                    tickStates[machineState.tick] = {
+                        tick: machineState.tick,
+                        machineStates: [machineState],
+                        rackStates: [],
+                        roomStates: [],
+                        taskStates: []
+                    };
+                } else {
+                    tickStates[machineState.tick].machineStates.push(machineState);
+                }
+            });
+            rackStates.forEach((rackState: IRackState) => {
+                if (tickStates[rackState.tick] === undefined) {
+                    tickStates[rackState.tick] = {
+                        tick: rackState.tick,
+                        machineStates: [],
+                        rackStates: [rackState],
+                        roomStates: [],
+                        taskStates: []
+                    };
+                } else {
+                    tickStates[rackState.tick].rackStates.push(rackState);
+                }
+            });
+            roomStates.forEach((roomState: IRoomState) => {
+                if (tickStates[roomState.tick] === undefined) {
+                    tickStates[roomState.tick] = {
+                        tick: roomState.tick,
+                        machineStates: [],
+                        rackStates: [],
+                        roomStates: [roomState],
+                        taskStates: []
+                    };
+                } else {
+                    tickStates[roomState.tick].roomStates.push(roomState);
+                }
+            });
+            taskStates.forEach((taskState: ITaskState) => {
+                if (tickStates[taskState.tick] === undefined) {
+                    tickStates[taskState.tick] = {
+                        tick: taskState.tick,
+                        machineStates: [],
+                        rackStates: [],
+                        roomStates: [],
+                        taskStates: [taskState]
+                    };
+                } else {
+                    tickStates[taskState.tick].taskStates.push(taskState);
+                }
+            });
+
+            return tickStates;
+        });
+    }
+
     private fetchAllStatesOfTick(tick: number): Promise<ITickState> {
-        let tickState: ITickState = {
+        const tickState: ITickState = {
             tick,
             machineStates: [],
             rackStates: [],
@@ -170,33 +278,41 @@ export class StateCache {
         };
         const promises = [];
 
-        promises.push(this.simulationController.mapController.api.getMachineStatesByTick(
-            this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
-            tick, this.machineCache
-        ).then((states: IMachineState[]) => {
-            tickState.machineStates = states;
-        }));
+        promises.push(
+            this.simulationController.mapController.api.getMachineStates(
+                this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
+                this.machineCache, tick
+            ).then((states: IMachineState[]) => {
+                tickState.machineStates = states;
+            })
+        );
 
-        promises.push(this.simulationController.mapController.api.getRackStatesByTick(
-            this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
-            tick, this.rackCache
-        ).then((states: IRackState[]) => {
-            tickState.rackStates = states;
-        }));
+        promises.push(
+            this.simulationController.mapController.api.getRackStates(
+                this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
+                this.rackCache, tick
+            ).then((states: IRackState[]) => {
+                tickState.rackStates = states;
+            })
+        );
 
-        promises.push(this.simulationController.mapController.api.getRoomStatesByTick(
-            this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
-            tick, this.roomCache
-        ).then((states: IRoomState[]) => {
-            tickState.roomStates = states;
-        }));
+        promises.push(
+            this.simulationController.mapController.api.getRoomStates(
+                this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
+                this.roomCache, tick
+            ).then((states: IRoomState[]) => {
+                tickState.roomStates = states;
+            })
+        );
 
-        promises.push(this.simulationController.mapController.api.getTaskStatesByTick(
-            this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
-            tick, this.taskCache
-        ).then((states: ITaskState[]) => {
-            tickState.taskStates = states;
-        }));
+        promises.push(
+            this.simulationController.mapController.api.getTaskStates(
+                this.simulationController.mapView.simulation.id, this.simulationController.currentExperiment.id,
+                this.taskCache, tick
+            ).then((states: ITaskState[]) => {
+                tickState.taskStates = states;
+            })
+        );
 
         return Promise.all(promises).then(() => {
             return tickState;

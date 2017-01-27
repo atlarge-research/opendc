@@ -19,7 +19,7 @@ export class SocketController {
         this._socket.on('connect', onConnect);
 
         this._socket.on('response', (jsonResponse: string) => {
-            let response: IResponse = JSON.parse(jsonResponse);
+            const response: IResponse = JSON.parse(jsonResponse);
             console.log("Response, ID:", response.id, response);
             this.callbacks[response.id](response);
             delete this.callbacks[response.id];
@@ -34,7 +34,7 @@ export class SocketController {
      */
     public sendRequest(request: IRequest, callback: (response: IResponse) => any): void {
         // Check local cache, in case request is for cachable GET route
-        let cacheStatus = this._cacheController.checkCache(request);
+        const cacheStatus = this._cacheController.checkCache(request);
 
         if (cacheStatus === CacheStatus.HIT) {
             callback({

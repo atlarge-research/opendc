@@ -97,12 +97,12 @@ export class ObjectModeController {
                 });
         });
 
-        let nodeListContainer = $(".node-list-container");
+        const nodeListContainer = $(".node-list-container");
 
         // Handler for the 'add' button of each machine slot of the rack
         nodeListContainer.on("click", ".add-node", (event: JQueryEventObject) => {
             // Convert the DOM element index to a JS array index
-            let index = this.currentRack.machines.length - $(event.target).closest(".node-element").index() - 1;
+            const index = this.currentRack.machines.length - $(event.target).closest(".node-element").index() - 1;
 
             // Insert an empty machine at the selected position
             this.mapController.api.addMachineToRack(this.mapView.simulation.id,
@@ -127,10 +127,10 @@ export class ObjectModeController {
 
         // Handler for the 'remove' button of each machine slot of the rack
         nodeListContainer.on("click", ".remove-node", (event: JQueryEventObject) => {
-            let target = $(event.target);
+            const target = $(event.target);
             MapController.showConfirmDeleteDialog("machine", () => {
                 // Convert the DOM element index to a JS array index
-                let index = this.currentRack.machines.length - target.closest(".node-element").index() - 1;
+                const index = this.currentRack.machines.length - target.closest(".node-element").index() - 1;
 
                 this.mapController.api.deleteMachine(this.mapView.simulation.id,
                     this.mapView.currentDatacenter.id, this.mapController.roomModeController.currentRoom.id,
@@ -146,9 +146,9 @@ export class ObjectModeController {
 
         // Handler for every node element, triggering node mode
         nodeListContainer.on("click", ".node-element", (event: JQueryEventObject) => {
-            let domIndex = $(event.target).closest(".node-element").index();
-            let index = this.currentRack.machines.length - domIndex - 1;
-            let machine = this.currentRack.machines[index];
+            const domIndex = $(event.target).closest(".node-element").index();
+            const index = this.currentRack.machines.length - domIndex - 1;
+            const machine = this.currentRack.machines[index];
 
             if (machine != null) {
                 this.mapController.interactionLevel = InteractionLevel.NODE;
@@ -222,8 +222,8 @@ export class ObjectModeController {
                 continue;
             }
 
-            let container = this.mapController.appMode === AppMode.CONSTRUCTION ? ".construction" : ".simulation";
-            let element = $(container + " .node-element").eq(this.currentRack.machines.length - i - 1);
+            const container = this.mapController.appMode === AppMode.CONSTRUCTION ? ".construction" : ".simulation";
+            const element = $(container + " .node-element").eq(this.currentRack.machines.length - i - 1);
             if (this.currentRack.machines[i].cpus.length !== 0) {
                 element.find(".overlay-cpu").addClass("hidden");
             } else {
@@ -251,8 +251,7 @@ export class ObjectModeController {
      * Dynamically generates and inserts HTML code for every node in the current rack.
      */
     private populateNodeList(): void {
-        let type, content;
-        let container = $(".node-list-container");
+        const container = $(".node-list-container");
 
         // Remove any previously present node elements
         container.children().remove(".node-element");
@@ -260,8 +259,8 @@ export class ObjectModeController {
         for (let i = 0; i < this.currentRack.machines.length; i++) {
             // Depending on whether the current machine slot is filled, allow removing or adding a new machine by adding
             // the appropriate button next to the machine slot
-            type = (this.currentRack.machines[i] == null ? "glyphicon-plus add-node" : "glyphicon-remove remove-node");
-            content =
+            const type = (this.currentRack.machines[i] == null ? "glyphicon-plus add-node" : "glyphicon-remove remove-node");
+            let content =
                 '<div class="node-element" data-id="' + (this.currentRack.machines[i] === null ?
                     "" : this.currentRack.machines[i].id) + '">' +
                 '  <div class="node-element-overlay hidden"></div>' +
@@ -291,7 +290,7 @@ export class ObjectModeController {
     }
 
     private scrollToBottom(): void {
-        let scrollContainer = $('.node-list-container');
+        const scrollContainer = $('.node-list-container');
         scrollContainer.scrollTop(scrollContainer[0].scrollHeight);
     }
 }

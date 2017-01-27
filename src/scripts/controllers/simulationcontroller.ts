@@ -72,7 +72,7 @@ export class SimulationController {
         this.experimentSelectionMode = true;
         this.sectionIndex = 0;
 
-        this.currentTick = 0;
+        this.currentTick = 1;
         this.playing = false;
         this.stateCache = new StateCache(this);
         this.colorRepresentation = ColorRepresentation.LOAD;
@@ -278,15 +278,15 @@ export class SimulationController {
                 return;
             }
 
-            let row = $(event.target).closest(".experiment-row");
+            const row = $(event.target).closest(".experiment-row");
             this.prepareAndLaunchExperiment(this.experiments[row.index()]);
         });
 
         $(".experiment-list .list-body").on("click", ".remove-experiment", (event: JQueryEventObject) => {
             event.stopPropagation();
-            let affectedRow = $(event.target).closest(".experiment-row");
-            let index = affectedRow.index();
-            let affectedExperiment = this.experiments[index];
+            const affectedRow = $(event.target).closest(".experiment-row");
+            const index = affectedRow.index();
+            const affectedExperiment = this.experiments[index];
 
             MapController.showConfirmDeleteDialog("experiment", () => {
                 this.mapController.api.deleteExperiment(affectedExperiment.simulationId, affectedExperiment.id)
@@ -298,7 +298,7 @@ export class SimulationController {
         });
 
         $("#new-experiment-btn").click(() => {
-            let nameInput = $("#new-experiment-name-input");
+            const nameInput = $("#new-experiment-name-input");
             if (nameInput.val() === "") {
                 $(".experiment-name-alert").show();
                 return;
@@ -306,7 +306,7 @@ export class SimulationController {
                 $(".experiment-name-alert").hide();
             }
 
-            let newExperiment: IExperiment = {
+            const newExperiment: IExperiment = {
                 id: -1,
                 name: nameInput.val(),
                 pathId: parseInt($("#new-experiment-path-select").val()),
@@ -340,7 +340,7 @@ export class SimulationController {
         this.currentPath = this.getPathById(this.currentExperiment.pathId);
         this.sections = this.currentPath.sections;
         this.sectionIndex = 0;
-        this.currentTick = 0;
+        this.currentTick = 1;
         this.playing = false;
         this.stateCache = new StateCache(this);
         this.colorRepresentation = ColorRepresentation.LOAD;
@@ -361,9 +361,9 @@ export class SimulationController {
     }
 
     private populateDropdowns(): void {
-        let pathDropdown = $("#new-experiment-path-select");
-        let traceDropdown = $("#new-experiment-trace-select");
-        let schedulerDropdown = $("#new-experiment-scheduler-select");
+        const pathDropdown = $("#new-experiment-path-select");
+        const traceDropdown = $("#new-experiment-trace-select");
+        const schedulerDropdown = $("#new-experiment-scheduler-select");
 
         pathDropdown.empty();
         for (let i = 0; i < this.simulation.paths.length; i++) {
@@ -394,7 +394,7 @@ export class SimulationController {
      * Populates the list of experiments.
      */
     private populateExperimentsList(): void {
-        let table = $(".experiment-list .list-body");
+        const table = $(".experiment-list .list-body");
         table.empty();
 
         console.log("EXPERIMENT", this.experiments);
@@ -504,16 +504,13 @@ export class SimulationController {
             return;
         }
 
-        console.log(this.stateCache);
-
-        let html;
-        let container = $(".building-stats-list");
+        const container = $(".building-stats-list");
 
         container.children().remove("div");
 
         this.stateCache.stateList[this.currentTick].roomStates.forEach((roomState: IRoomState) => {
             if (this.colorRepresentation === ColorRepresentation.LOAD && roomState.room !== undefined) {
-                html = '<div>' +
+                const html = '<div>' +
                     '  <h4>' + roomState.room.name + '</h4>' +
                     '  <p>Load: ' + Math.round(roomState.loadFraction * 100) + '%</p>' +
                     '</div>';
@@ -534,8 +531,7 @@ export class SimulationController {
         $("#room-name-field").text(this.mapController.roomModeController.currentRoom.name);
         $("#room-type-field").text(this.mapController.roomModeController.currentRoom.roomType);
 
-        let html;
-        let container = $(".room-stats-list");
+        const container = $(".room-stats-list");
 
         container.children().remove("div");
 
@@ -544,7 +540,7 @@ export class SimulationController {
                 return;
             }
             if (this.colorRepresentation === ColorRepresentation.LOAD) {
-                html = '<div>' +
+                const html = '<div>' +
                     '  <h4>' + rackState.rack.name + '</h4>' +
                     '  <p>Load: ' + Math.round(rackState.loadFraction * 100) + '%</p>' +
                     '</div>';
@@ -554,13 +550,13 @@ export class SimulationController {
     }
 
     private setupColorMenu(): void {
-        let html =
+        const html =
             '<select class="form-control" title="Color Representation" id="color-representation-select">' +
             '   <option value="1" selected>Load</option>' +
             '   <option value="2">Power use</option>' +
             '</select>';
 
-        let indicator = $(".color-indicator");
+        const indicator = $(".color-indicator");
         indicator["popover"]({
             animation: true,
             content: html,
@@ -576,7 +572,7 @@ export class SimulationController {
             } else {
                 indicator["popover"]("show");
 
-                let selectElement = $("#color-representation-select");
+                const selectElement = $("#color-representation-select");
                 selectElement.change(() => {
                     console.log(selectElement.val());
                 });

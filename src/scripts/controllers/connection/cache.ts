@@ -62,7 +62,7 @@ export class CacheController {
     }
 
     public onFetch(request: IRequest, response: IResponse): any {
-        let pathWithoutVersion = request.path.replace(/\/v\d+/, "");
+        const pathWithoutVersion = request.path.replace(/\/v\d+/, "");
         this.routeCaches[pathWithoutVersion][request.parameters.path["id"]].status = CacheStatus.HIT;
         this.routeCaches[pathWithoutVersion][request.parameters.path["id"]].object = response.content;
 

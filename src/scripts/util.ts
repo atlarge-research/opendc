@@ -22,12 +22,12 @@ export class Util {
      * Does so by computing an outline around all tiles in the rooms.
      */
     public static deriveWallLocations(rooms: IRoom[]): IRoomWall[] {
-        let verticalWalls = {};
-        let horizontalWalls = {};
+        const verticalWalls = {};
+        const horizontalWalls = {};
         let doInsert;
         rooms.forEach((room: IRoom) => {
             room.tiles.forEach((tile: ITile) => {
-                let x = tile.position.x, y = tile.position.y;
+                const x = tile.position.x, y = tile.position.y;
                 for (let dX = -1; dX <= 1; dX++) {
                     for (let dY = -1; dY <= 1; dY++) {
                         if (Math.abs(dX) === Math.abs(dY)) {
@@ -77,10 +77,10 @@ export class Util {
             });
         });
 
-        let result: IRoomWall[] = [];
-        let walls = [verticalWalls, horizontalWalls];
+        const result: IRoomWall[] = [];
+        const walls = [verticalWalls, horizontalWalls];
         for (let i = 0; i < 2; i++) {
-            let wallList = walls[i];
+            const wallList = walls[i];
             for (let a in wallList) {
                 if (!wallList.hasOwnProperty(a)) {
                     return;
@@ -91,7 +91,7 @@ export class Util {
                 });
 
                 let startPos = wallList[a][0];
-                let positionArray = (i === 1 ? <number[]>[startPos, parseInt(a)] : <number[]>[parseInt(a), startPos]);
+                const positionArray = (i === 1 ? <number[]>[startPos, parseInt(a)] : <number[]>[parseInt(a), startPos]);
 
                 if (wallList[a].length === 1) {
                     result.push({
@@ -144,11 +144,11 @@ export class Util {
      * @returns {Array} A 2D list of tile positions that are valid next tile choices.
      */
     public static deriveValidNextTilePositions(rooms: IRoom[], selectedTiles: ITile[]): IGridPosition[] {
-        let result = [], newPosition = {x: 0, y: 0};
+        const result = [], newPosition = {x: 0, y: 0};
         let isSurroundingTile;
 
         selectedTiles.forEach((tile: ITile) => {
-            let x = tile.position.x, y = tile.position.y;
+            const x = tile.position.x, y = tile.position.y;
             for (let dX = -1; dX <= 1; dX++) {
                 for (let dY = -1; dY <= 1; dY++) {
                     if (Math.abs(dX) === Math.abs(dY)) {
@@ -195,10 +195,9 @@ export class Util {
      */
     public static tileListPositionIndexOf(list: ITile[], position: IGridPosition): number {
         let index = -1;
-        let element;
 
         for (let i = 0; i < list.length; i++) {
-            element = list[i];
+            const element = list[i];
             if (position.x === element.position.x && position.y === element.position.y) {
                 index = i;
                 break;
@@ -228,10 +227,9 @@ export class Util {
      */
     public static positionListPositionIndexOf(list: IGridPosition[], position: IGridPosition): number {
         let index = -1;
-        let element;
 
         for (let i = 0; i < list.length; i++) {
-            element = list[i];
+            const element = list[i];
             if (position.x === element.x && position.y === element.y) {
                 index = i;
                 break;
@@ -252,10 +250,9 @@ export class Util {
      */
     public static roomCollisionIndexOf(rooms: IRoom[], position: IGridPosition): number {
         let index = -1;
-        let room;
 
         for (let i = 0; i < rooms.length; i++) {
-            room = rooms[i];
+            const room = rooms[i];
             if (Util.tileListContainsPosition(room.tiles, position)) {
                 index = i;
                 break;
@@ -285,8 +282,8 @@ export class Util {
      * @returns {IBounds} The coordinates of the minimum, center, and maximum
      */
     public static calculateRoomListBounds(rooms: IRoom[]): IBounds {
-        let min = [Number.MAX_VALUE, Number.MAX_VALUE];
-        let max = [-1, -1];
+        const min = [Number.MAX_VALUE, Number.MAX_VALUE];
+        const max = [-1, -1];
 
         rooms.forEach((room: IRoom) => {
             room.tiles.forEach((tile: ITile) => {
@@ -309,7 +306,7 @@ export class Util {
         max[0]++;
         max[1]++;
 
-        let gridCenter = [min[0] + (max[0] - min[0]) / 2.0, min[1] + (max[1] - min[1]) / 2.0];
+        const gridCenter = [min[0] + (max[0] - min[0]) / 2.0, min[1] + (max[1] - min[1]) / 2.0];
 
         return {
             min: min,
@@ -329,7 +326,7 @@ export class Util {
     }
 
     public static calculateRoomNamePosition(room: IRoom): IRoomNamePos {
-        let result: IRoomNamePos = {
+        const result: IRoomNamePos = {
             topLeft: {x: 0, y: 0},
             length: 0
         };
@@ -348,14 +345,14 @@ export class Util {
         }
 
         // Find the left-most tile at the top and the length of its adjacent tiles to the right
-        let topTilePositions: number[] = [];
+        const topTilePositions: number[] = [];
         room.tiles.forEach((tile: ITile) => {
             if (tile.position.y === topMin) {
                 topTilePositions.push(tile.position.x);
             }
         });
         topTilePositions.sort();
-        let leftMin = topTilePositions[0];
+        const leftMin = topTilePositions[0];
         let length = 0;
 
         while (length < topTilePositions.length && topTilePositions[length] - leftMin === length) {
@@ -428,7 +425,7 @@ export class Util {
      * @returns {IDateTime} A DateTime object with the parsed date and time information as content
      */
     public static parseDateTime(input: string): IDateTime {
-        let output: IDateTime = {
+        const output: IDateTime = {
             year: 0,
             month: 0,
             day: 0,
@@ -437,13 +434,13 @@ export class Util {
             second: 0
         };
 
-        let dateAndTime = input.split("T");
-        let dateComponents = dateAndTime[0].split("-");
+        const dateAndTime = input.split("T");
+        const dateComponents = dateAndTime[0].split("-");
         output.year = parseInt(dateComponents[0], 10);
         output.month = parseInt(dateComponents[1], 10);
         output.day = parseInt(dateComponents[2], 10);
 
-        let timeComponents = dateAndTime[1].split(":");
+        const timeComponents = dateAndTime[1].split(":");
         output.hour = parseInt(timeComponents[0], 10);
         output.minute = parseInt(timeComponents[1], 10);
         output.second = parseInt(timeComponents[2], 10);
@@ -453,7 +450,7 @@ export class Util {
 
     public static formatDateTime(input: IDateTime) {
         let date;
-        let currentDate = new Date();
+        const currentDate = new Date();
 
         date = Util.addPaddingToTwo(input.day) + "/" +
             Util.addPaddingToTwo(input.month) + "/" +
@@ -474,10 +471,10 @@ export class Util {
     }
 
     public static getCurrentDateTime(): string {
-        let date = new Date();
-        return date.getFullYear() + "-" + Util.addPaddingToTwo(date.getMonth() + 1) + "-" +
-            Util.addPaddingToTwo(date.getDate()) + "T" + Util.addPaddingToTwo(date.getHours()) + ":" +
-            Util.addPaddingToTwo(date.getMinutes()) + ":" + Util.addPaddingToTwo(date.getSeconds());
+        const currentDate = new Date();
+        return currentDate.getFullYear() + "-" + Util.addPaddingToTwo(currentDate.getMonth() + 1) + "-" +
+            Util.addPaddingToTwo(currentDate.getDate()) + "T" + Util.addPaddingToTwo(currentDate.getHours()) + ":" +
+            Util.addPaddingToTwo(currentDate.getMinutes()) + ":" + Util.addPaddingToTwo(currentDate.getSeconds());
     }
 
     /**
@@ -493,7 +490,7 @@ export class Util {
      * @returns {any} A copy of the object without any populated properties (of type object).
      */
     public static packageForSending(object: any) {
-        let result: any = {};
+        const result: any = {};
         for (let prop in object) {
             if (object.hasOwnProperty(prop)) {
                 if (typeof object[prop] !== "object") {
@@ -529,6 +526,11 @@ export class Util {
         let hour = Math.floor(seconds / 3600);
         let minute = Math.floor(seconds / 60) % 60;
         let second = seconds % 60;
+
+        hour = isNaN(hour) ? 0 : hour;
+        minute = isNaN(minute) ? 0 : minute;
+        second = isNaN(second) ? 0 : second;
+
         return this.addPaddingToTwo(hour) + ":" +
             this.addPaddingToTwo(minute) + ":" +
             this.addPaddingToTwo(second);

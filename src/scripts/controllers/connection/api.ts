@@ -121,7 +121,7 @@ export class APIController {
             authorizations = data;
             return this.getUser(userId);
         }).then((userData: any) => {
-            let promises = [];
+            const promises = [];
             authorizations.forEach((authorization: IAuthorization) => {
                 authorization.user = userData;
                 promises.push(this.getSimulation(authorization.simulationId).then((simulationData: any) => {
@@ -234,7 +234,7 @@ export class APIController {
             authorizations = data;
             return this.getSimulation(simulationId);
         }).then((simulationData: any) => {
-            let promises = [];
+            const promises = [];
             authorizations.forEach((authorization: IAuthorization) => {
                 authorization.simulation = simulationData;
                 promises.push(this.getUser(authorization.userId).then((userData: any) => {
@@ -362,7 +362,7 @@ export class APIController {
         }).then((data: any) => {
             rooms = data;
 
-            let promises = [];
+            const promises = [];
             rooms.forEach((room: IRoom) => {
                 promises.push(this.loadRoomTiles(simulationId, datacenterId, room));
             });
@@ -412,7 +412,7 @@ export class APIController {
                 query: {}
             }
         }).then((data: any) => {
-            let result = [];
+            const result = [];
             data.forEach((roomType: any) => {
                 result.push(roomType.name);
             });
@@ -519,7 +519,7 @@ export class APIController {
                 query: {}
             }
         }).then((data: any) => {
-            let promises = data.map((item) => {
+            const promises = data.map((item) => {
                 return this.loadTileObject(simulationId, datacenterId, roomId, item);
             });
 
@@ -740,7 +740,7 @@ export class APIController {
             rack = data;
             return this.getMachinesByRack(simulationId, datacenterId, roomId, tileId);
         }).then((machines: any) => {
-            let promises = machines.map((machine) => {
+            const promises = machines.map((machine) => {
                 return this.loadMachineUnits(machine);
             });
 
@@ -857,7 +857,7 @@ export class APIController {
                 query: {}
             }
         }).then((data: any) => {
-            let promises = data.map((machine) => {
+            const promises = data.map((machine) => {
                 return this.loadMachineUnits(machine);
             });
 
@@ -959,7 +959,7 @@ export class APIController {
                 query: {}
             }
         }).then((data: any) => {
-            let promises = data.map((item: any) => {
+            const promises = data.map((item: any) => {
                 return this.getTrace(item.traceId).then((traceData: any) => {
                     item.trace = traceData;
                 });
@@ -1067,8 +1067,15 @@ export class APIController {
     ///
 
     // METHOD: GET
-    public getMachineStatesByTick(simulationId: number, experimentId: number, tick: number,
-                                  machines: {[keys: number]: IMachine}): Promise<IMachineState[]> {
+    public getMachineStates(simulationId: number, experimentId: number, machines: {[keys: number]: IMachine},
+                            tick?: number): Promise<IMachineState[]> {
+        let query;
+        if (tick !== undefined) {
+            query = {tick};
+        } else {
+            query = {};
+        }
+
         return ServerConnection.send({
             path: "/simulations/{simulationId}/experiments/{experimentId}/machine-states",
             method: "GET",
@@ -1078,9 +1085,7 @@ export class APIController {
                     simulationId,
                     experimentId
                 },
-                query: {
-                    tick
-                }
+                query
             }
         }).then((data: any) => {
             data.forEach((item: any) => {
@@ -1096,8 +1101,15 @@ export class APIController {
     ///
 
     // METHOD: GET
-    public getRackStatesByTick(simulationId: number, experimentId: number, tick: number,
-                               racks: {[keys: number]: IRack}): Promise<IRackState[]> {
+    public getRackStates(simulationId: number, experimentId: number, racks: {[keys: number]: IRack},
+                         tick?: number): Promise<IRackState[]> {
+        let query;
+        if (tick !== undefined) {
+            query = {tick};
+        } else {
+            query = {};
+        }
+
         return ServerConnection.send({
             path: "/simulations/{simulationId}/experiments/{experimentId}/rack-states",
             method: "GET",
@@ -1107,18 +1119,14 @@ export class APIController {
                     simulationId,
                     experimentId
                 },
-                query: {
-                    tick
-                }
+                query: query
             }
         }).then((data: any) => {
-            let promises = data.map((item: any) => {
+            data.forEach((item: any) => {
                 item.rack = racks[item.rackId];
             });
 
-            return Promise.all(promises).then(() => {
-                return data;
-            });
+            return data;
         });
     }
 
@@ -1127,8 +1135,15 @@ export class APIController {
     ///
 
     // METHOD: GET
-    public getRoomStatesByTick(simulationId: number, experimentId: number, tick: number,
-                               rooms: {[keys: number]: IRoom}): Promise<IRoomState[]> {
+    public getRoomStates(simulationId: number, experimentId: number, rooms: {[keys: number]: IRoom},
+                         tick?: number): Promise<IRoomState[]> {
+        let query;
+        if (tick !== undefined) {
+            query = {tick};
+        } else {
+            query = {};
+        }
+
         return ServerConnection.send({
             path: "/simulations/{simulationId}/experiments/{experimentId}/room-states",
             method: "GET",
@@ -1138,18 +1153,14 @@ export class APIController {
                     simulationId,
                     experimentId
                 },
-                query: {
-                    tick
-                }
+                query
             }
         }).then((data: any) => {
-            let promises = data.map((item: any) => {
+            data.forEach((item: any) => {
                 item.room = rooms[item.roomId];
             });
 
-            return Promise.all(promises).then(() => {
-                return data;
-            });
+            return data;
         });
     }
 
@@ -1158,8 +1169,15 @@ export class APIController {
     ///
 
     // METHOD: GET
-    public getTaskStatesByTick(simulationId: number, experimentId: number, tick: number,
-                               tasks: {[keys: number]: ITask}): Promise<ITaskState[]> {
+    public getTaskStates(simulationId: number, experimentId: number, tasks: {[keys: number]: ITask},
+                         tick?: number): Promise<ITaskState[]> {
+        let query;
+        if (tick === undefined) {
+            query = {tick};
+        } else {
+            query = {};
+        }
+
         return ServerConnection.send({
             path: "/simulations/{simulationId}/experiments/{experimentId}/task-states",
             method: "GET",
@@ -1169,18 +1187,14 @@ export class APIController {
                     simulationId,
                     experimentId
                 },
-                query: {
-                    tick
-                }
+                query
             }
         }).then((data: any) => {
-            let promises = data.map((item: any) => {
+            data.forEach((item: any) => {
                 item.task = tasks[item.taskId];
             });
 
-            return Promise.all(promises).then(() => {
-                return data;
-            });
+            return data;
         });
     }
 
@@ -1201,7 +1215,7 @@ export class APIController {
                 query: {}
             }
         }).then((data: any) => {
-            let promises = data.map((item: any) => {
+            const promises = data.map((item: any) => {
                 return this.getSectionsByPath(simulationId, item.id).then((sectionsData: any) => {
                     item.sections = sectionsData;
                 });
@@ -1255,7 +1269,7 @@ export class APIController {
                 query: {}
             }
         }).then((data: any) => {
-            let promises = data.map((item: any) => {
+            const promises = data.map((item: any) => {
                 return this.getSectionsByPath(simulationId, item.id).then((sectionsData: any) => {
                     item.sections = sectionsData;
                 });
@@ -1309,7 +1323,7 @@ export class APIController {
                 query: {}
             }
         }).then((data: any) => {
-            let promises = data.map((path: ISection) => {
+            const promises = data.map((path: ISection) => {
                 return this.getDatacenter(simulationId, path.datacenterId).then((datacenter: any) => {
                     path.datacenter = datacenter;
                 });
@@ -1364,7 +1378,7 @@ export class APIController {
         }).then((data: any) => {
             psus = data;
 
-            let promises = [];
+            const promises = [];
             data.forEach((psu: IPSU) => {
                 promises.push(this.getFailureModel(psu.failureModelId));
             });
@@ -1420,7 +1434,7 @@ export class APIController {
         }).then((data: any) => {
             coolingItems = data;
 
-            let promises = [];
+            const promises = [];
             data.forEach((item: ICoolingItem) => {
                 promises.push(this.getFailureModel(item.failureModelId));
             });
@@ -1591,7 +1605,7 @@ export class APIController {
         }).then((data: any) => {
             specs = data;
 
-            let promises = [];
+            const promises = [];
             data.forEach((unit: INodeUnit) => {
                 promises.push(this.getFailureModel(unit.failureModelId));
             });
@@ -1685,7 +1699,7 @@ export class APIController {
     private loadUnitsOfType(idListName: string, objectListName: string, machine: IMachine): Promise<IMachine> {
         machine[objectListName] = [];
 
-        let promises = machine[idListName].map((item) => {
+        const promises = machine[idListName].map((item) => {
             return this.getSpecificationOfType(objectListName, item).then((data) => {
                 machine[objectListName].push(data);
             });
@@ -1697,7 +1711,7 @@ export class APIController {
     }
 
     private loadMachineUnits(machine: IMachine): Promise<IMachine> {
-        let listNames = [
+        const listNames = [
             {
                 idListName: "cpuIds",
                 objectListName: "cpus"
@@ -1713,7 +1727,7 @@ export class APIController {
             }
         ];
 
-        let promises = listNames.map((item: any) => {
+        const promises = listNames.map((item: any) => {
             return this.loadUnitsOfType(item.idListName, item.objectListName, machine);
         });
 
