@@ -14,12 +14,24 @@ The simulator monitors this `queued_experiments` table, and simulates experiment
 
 ## Setup
 
+The official way to run OpenDC is using Docker.
+
 To build and run the full OpenDC stack locally:
 
-First, clone this repository and its submodules:
-
 ```bash
+# Clone the repo and its submodules
 git clone --recursive https://github.com/tudelft-atlarge/opendc.git
+
+# Enter the directory
+cd opendc/
+
+# Build the Docker image
+docker build -t="opendc" .
+
+# Start a container with the image
+docker run -d --name opendc -p 8081:8081 -e 'SERVER_URL=http://localhost:8081' -e 'OAUTH_CLIENT_ID=your-google-oauth-client-id' -e 'OAUTH_CLIENT_SECRET=your-google-oauth-secret' opendc
+
+# Wait a few seconds and open http://localhost:8081 in your browser
 ```
 
-Then... [TO DO]
+

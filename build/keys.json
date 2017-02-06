@@ -1,0 +1,7 @@
+{
+    "OAUTH_CLIENT_ID": "client-id",
+    "OAUTH_CLIENT_SECRET": "client-secret",
+    "ROOT_DIR": "/opendc",
+    "FLASK_SECRET": "This is a super duper secret flask key",
+    "DATABASE_LOCATION": "/data/database/opendc.db"
+}
