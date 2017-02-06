@@ -19,7 +19,7 @@ To build and run the full OpenDC stack locally:
 First, clone this repository and its submodules:
 
 ```bash
-git clone --recursive git@github.com:tudelft-atlarge/opendc.git
+git clone --recursive https://github.com/tudelft-atlarge/opendc.git
 ```
 
 Then... [TO DO]
