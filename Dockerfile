@@ -22,7 +22,7 @@ RUN mkdir -p /data/database \
 	&& rm -f ./simulator ./sqlite3.o \
 	&& make \
 	&& chmod 555 ./simulator \
-	&& git config --global url."https://".insteadOf git:// #needed for gulp to work \ 
+	&& git config --global url."https://".insteadOf git:// \
 	&& cd /opendc/opendc-frontend \
 	&& rm -rf /opendc/opendc-frontend/build \
 	&& yarn \
