@@ -20,7 +20,13 @@ The official way to run OpenDC is using Docker. Other options include building a
 
 For all of these options, you have to create a Google API Console project and client ID, which the OpenDC frontend and web server will use to authenticate users and requests. Follow [these steps](https://developers.google.com/identity/sign-in/web/devconsole-project) to make such a project. Download the JSON of the OAuth 2.0 client ID you created from the Credentials tab, and specifically note the `client_id` and the `client_secret`, which you'll need to build OpenDC.
 
-### Running OpenDC locally
+### Installing Docker
+
+GNU/Linux, macOS and Windows 10 Professional users can install Docker by following the instructions [here](https://www.docker.com/products/docker). 
+
+Users of Windows 10 Home and previous editions of windows can use [Docker Toolbox](https://www.docker.com/products/docker-toolbox). 
+
+### Running OpenDC
 
 To build and run the full OpenDC stack locally on Linux or Mac, run the commands bellow. Replace `your-google-oauth-client-id` with your `client_id` from the OAuth 2.0 client ID you created, and replace `your-google-oauth-secret` with your `client_secret`.
 
