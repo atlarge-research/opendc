@@ -76,6 +76,12 @@ namespace Database
 		});
 
 		history.clearHistory();
+
+		uint32_t lastSimulatedTick = experiment.getCurrentTick() - 1;
+		QueryExecuter<> writeLastSimulatedTick(db);
+		writeLastSimulatedTick.setQuery(Queries::WRITE_EXPERIMENT_LAST_SIMULATED_TICK)
+			.bindParams<int, int>(lastSimulatedTick, experiment.getId())
+			.executeOnce();
 	}
 
 	int Database::pollQueuedExperiments() const
@@ -91,10 +97,19 @@ namespace Database
 	void Database::dequeueExperiment(int experimentId) const
 	{
 		QueryExecuter<> q(db);
-		q.setQuery(Queries::REMOVE_QUEUED_EXPERIMENT)
+		q.setQuery(Queries::SET_EXPERIMENT_STATE_SIMULATING)
 			.bindParams<int>(experimentId)
 			.executeOnce();
 	}
+
+	void Database::finishExperiment(int id) const
+	{
+		QueryExecuter<> q(db);
+		q.setQuery(Queries::SET_EXPERIMENT_STATE_FINISHED)
+			.bindParams<int>(id)
+			.executeOnce();
+	}
+
 
 	Simulation::Experiment Database::createExperiment(uint32_t experimentId)
 	{

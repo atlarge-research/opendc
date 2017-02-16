@@ -21,9 +21,6 @@
     <Filter Include="Source Files\Database">
       <UniqueIdentifier>{d9c26546-3166-46e6-ac93-5559d5ab32b8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Math">
-      <UniqueIdentifier>{0717ffeb-69ab-4832-904c-3041b3b86ac5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Simulation\Workloads">
       <UniqueIdentifier>{f9450bee-6bd3-4870-ae67-d4e1a5c5c800}</UniqueIdentifier>
     </Filter>
@@ -35,6 +32,18 @@
     </Filter>
     <Filter Include="Header Files\Simulation\Workloads">
       <UniqueIdentifier>{ec05c495-e179-4db3-b21c-fd2292482f95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Modeling\Machine">
+      <UniqueIdentifier>{f691ce9e-8a17-4f0a-b661-7e8734ce37b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Simulation\Schedulers">
+      <UniqueIdentifier>{a5b36e44-8d0c-477b-a833-55467dc0cad1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Simulation\History">
+      <UniqueIdentifier>{70aa99d9-c949-42b9-905a-6fcb59c259a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Modeling\Machine">
+      <UniqueIdentifier>{0bbea619-1ef1-4e50-b32e-fe9a4099a23a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -50,28 +59,25 @@
     <ClCompile Include="src\modeling\Entity.cpp">
       <Filter>Source Files\Modeling</Filter>
     </ClCompile>
-    <ClCompile Include="src\modeling\machine\CPU.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modeling\machine\Machine.cpp">
-      <Filter>Source Files\Modeling</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modeling\machine\GPU.cpp">
+    <ClCompile Include="src\Simulator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\simulation\workloads\WorkloadPool.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Simulation\Workloads</Filter>
     </ClCompile>
-    <ClCompile Include="src\Simulator.cpp">
-      <Filter>Source Files\Simulation</Filter>
+    <ClCompile Include="src\modeling\machine\Machine.cpp">
+      <Filter>Source Files\Modeling\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modeling\machine\CPU.cpp">
+      <Filter>Source Files\Modeling\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modeling\machine\GPU.cpp">
+      <Filter>Source Files\Modeling\Machine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\database\Database.h">
       <Filter>Header Files\Database</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Simulator.h">
-      <Filter>Header Files\Simulation</Filter>
     </ClInclude>
     <ClInclude Include="include\simulation\workloads\Workload.h">
       <Filter>Header Files\Simulation\Workloads</Filter>
@@ -91,19 +97,10 @@
     <ClInclude Include="include\modeling\Datacenter.h">
       <Filter>Header Files\Modeling</Filter>
     </ClInclude>
-    <ClInclude Include="include\modeling\ModelingTypes.h">
-      <Filter>Header Files\Modeling</Filter>
-    </ClInclude>
     <ClInclude Include="include\modeling\Room.h">
       <Filter>Header Files\Modeling</Filter>
     </ClInclude>
     <ClInclude Include="include\modeling\TypeIndex.h">
-      <Filter>Header Files\Modeling</Filter>
-    </ClInclude>
-    <ClInclude Include="include\modeling\machine\CPU.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\modeling\machine\Machine.h">
       <Filter>Header Files\Modeling</Filter>
     </ClInclude>
     <ClInclude Include="include\modeling\Entity.h">
@@ -112,41 +109,53 @@
     <ClInclude Include="include\modeling\Rack.h">
       <Filter>Header Files\Modeling</Filter>
     </ClInclude>
-    <ClInclude Include="include\modeling\machine\GPU.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\simulation\workloads\WorkloadPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\simulation\schedulers\FirstInFirstOutScheduler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\simulation\schedulers\Scheduler.h">
-      <Filter>Header Files\Simulation\Workloads</Filter>
-    </ClInclude>
-    <ClInclude Include="include\simulation\schedulers\ShortestRemainingTimeScheduler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\simulation\history\SimulationHistory.h">
-      <Filter>Header Files\Simulation</Filter>
-    </ClInclude>
-    <ClInclude Include="include\simulation\history\History.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\simulation\history\MachineSnapshot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\simulation\history\WorkloadSnapshot.h">
-      <Filter>Header Files\Simulation\Workloads</Filter>
-    </ClInclude>
     <ClInclude Include="include\simulation\Section.h">
       <Filter>Header Files\Simulation</Filter>
     </ClInclude>
-    <ClInclude Include="include\simulation\Path.h">
+    <ClInclude Include="include\Simulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\simulation\Path.h">
+      <Filter>Header Files\Simulation</Filter>
+    </ClInclude>
     <ClInclude Include="include\simulation\Experiment.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\simulation\schedulers\FirstInFirstOutScheduler.h">
+      <Filter>Header Files\Simulation\Schedulers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\simulation\schedulers\ShortestRemainingTimeScheduler.h">
+      <Filter>Header Files\Simulation\Schedulers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\simulation\schedulers\Scheduler.h">
+      <Filter>Header Files\Simulation\Schedulers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\simulation\history\History.h">
+      <Filter>Header Files\Simulation\History</Filter>
+    </ClInclude>
+    <ClInclude Include="include\simulation\history\MachineSnapshot.h">
+      <Filter>Header Files\Simulation\History</Filter>
+    </ClInclude>
+    <ClInclude Include="include\simulation\history\SimulationHistory.h">
+      <Filter>Header Files\Simulation\History</Filter>
+    </ClInclude>
+    <ClInclude Include="include\simulation\history\WorkloadSnapshot.h">
+      <Filter>Header Files\Simulation\History</Filter>
+    </ClInclude>
+    <ClInclude Include="include\simulation\workloads\WorkloadPool.h">
+      <Filter>Header Files\Simulation\Workloads</Filter>
+    </ClInclude>
+    <ClInclude Include="include\modeling\machine\CPU.h">
+      <Filter>Header Files\Modeling\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\modeling\machine\GPU.h">
+      <Filter>Header Files\Modeling\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\modeling\ModelingTypes.h">
+      <Filter>Header Files\Modeling</Filter>
+    </ClInclude>
+    <ClInclude Include="include\modeling\machine\Machine.h">
+      <Filter>Header Files\Modeling\Machine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

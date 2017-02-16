@@ -72,6 +72,7 @@ namespace Simulation
 				if ((*it).second.isFinished())
 				{
 					std::cout << "Finished simulation." << std::endl;
+					database.finishExperiment((*it).first);
 					it = experiments.erase(it);
 				}
 				else

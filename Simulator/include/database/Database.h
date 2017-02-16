@@ -49,6 +49,10 @@ namespace Database
 		*/
 		void dequeueExperiment(int id) const;
 
+		/*
+			Marks the given experiment as finished in the database.
+		*/
+		void finishExperiment(int id) const;
 
 		/*
 			Creates a simulation object from a simulation in the database.

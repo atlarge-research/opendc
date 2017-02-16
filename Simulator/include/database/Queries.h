@@ -6,11 +6,15 @@ namespace Database
 	namespace Queries
 	{
 		Query<int> GET_QUEUED_EXPERIMENTS(std::string(R"query(
-			SELECT experiment_id FROM queued_experiments;
+			SELECT id FROM experiments WHERE state LIKE 'QUEUED';
 		)query"));
 
-		Query<> REMOVE_QUEUED_EXPERIMENT(std::string(R"query(
-			DELETE FROM queued_experiments WHERE experiment_id = $id;
+		Query<> SET_EXPERIMENT_STATE_SIMULATING(std::string(R"query(
+			UPDATE experiments SET state='SIMULATING' WHERE id=$id;		
+		)query"));
+
+		Query<> SET_EXPERIMENT_STATE_FINISHED(std::string(R"query(
+			UPDATE experiments SET state='FINISHED' WHERE id=$id;		
 		)query"));
 
 		Query<int, int, int, int, std::string, std::string> GET_EXPERIMENT_BY_ID(std::string(R"query(
@@ -25,7 +29,10 @@ namespace Database
 			SELECT id, path_id, datacenter_id, start_tick FROM sections WHERE path_id = $id;
 		)query"));
 
-
+		Query<> WRITE_EXPERIMENT_LAST_SIMULATED_TICK(std::string(R"query(
+			UPDATE experiments SET last_simulated_tick = $val WHERE id = $id;
+		)query"));
+		
 		/*
 			Returns the type of the scheduler of the given simulation section.
 			Returns: <std::string : scheduler_name>
