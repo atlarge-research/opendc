@@ -46,10 +46,10 @@ INSERT INTO tasks (start_tick, total_flop_count, trace_id) VALUES (26, 10000, 1)
 INSERT INTO tasks (start_tick, total_flop_count, trace_id, task_dependency_id) VALUES (80, 200000, 1, 1);
 
 -- Experiments
-INSERT INTO experiments (simulation_id, path_id, trace_id, scheduler_name, name)
-    VALUES (1, 1, 1, 'DEFAULT', 'Experiment 1');
-INSERT INTO experiments (simulation_id, path_id, trace_id, scheduler_name, name)
-    VALUES (1, 2, 1, 'DEFAULT', 'Experiment 2');
+INSERT INTO experiments (simulation_id, path_id, trace_id, scheduler_name, name, state, last_simulated_tick)
+    VALUES (1, 1, 1, 'DEFAULT', 'Experiment 1', 'QUEUED', 0);
+INSERT INTO experiments (simulation_id, path_id, trace_id, scheduler_name, name, state, last_simulated_tick)
+    VALUES (1, 2, 1, 'DEFAULT', 'Experiment 2', 'QUEUED', 0);
 
 -- Rooms
 INSERT INTO rooms (name, datacenter_id, type) VALUES ('room 1', 1, 'SERVER');
@@ -224,8 +224,3 @@ INSERT INTO memories (manufacturer, family, generation, model, speed_mb_per_s, s
 
 INSERT INTO storages (manufacturer, family, generation, model, speed_mb_per_s, size_mb, energy_consumption_w, 
 	failure_model_id) VALUES ('samsung', 'EVO', '2016', 'SATA III', 6000, 250000, 10, 1);
-
--- Simulation queue
-INSERT INTO queued_experiments (experiment_id) VALUES (1);
-INSERT INTO queued_experiments (experiment_id) VALUES (2);
-

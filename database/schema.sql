@@ -74,18 +74,13 @@ CREATE TABLE IF NOT EXISTS experiments (
     trace_id                INTEGER                 NOT NULL,
     scheduler_name          TEXT                    NOT NULL,
     name                    TEXT                    NOT NULL,
+	state					TEXT					NOT NULL,
+	last_simulated_tick		INTEGER					NOT NULL DEFAULT 0 CHECK (last_simulated_tick >= 0),
 
     FOREIGN KEY (simulation_id) REFERENCES simulations (id) ON DELETE CASCADE ON UPDATE CASCADE
     FOREIGN KEY (path_id) REFERENCES paths (id) ON DELETE CASCADE ON UPDATE CASCADE
     FOREIGN KEY (trace_id) REFERENCES traces (id) ON DELETE CASCADE ON UPDATE CASCADE
     FOREIGN KEY (scheduler_name) REFERENCES schedulers (name) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- Queued experiments are ready to be run by the simulator
-CREATE TABLE IF NOT EXISTS queued_experiments (
-    experiment_id           INTEGER                 NOT NULL,
-
-    FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 /*
