@@ -297,7 +297,11 @@ export class SimulationController {
             });
         });
 
-        $("#new-experiment-btn").click(() => {
+        let newExperimentBtn = $("#new-experiment-btn");
+        // Remove previously added event handlers
+        newExperimentBtn.off();
+
+        newExperimentBtn.click(() => {
             const nameInput = $("#new-experiment-name-input");
             if (nameInput.val() === "") {
                 $(".experiment-name-alert").show();
