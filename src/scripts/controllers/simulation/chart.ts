@@ -92,7 +92,7 @@ export class ChartController {
         return c3.generate({
             bindto: chartId,
             data: {
-                xFormat: '%S',
+                // xFormat: '%S',
                 x: "time",
                 columns: this.chartData,
                 names: this.names
@@ -141,7 +141,7 @@ export class ChartController {
     }
 
     public update(): void {
-        this.xSeries = (<(number|string)[]>["time"]).concat(Util.range(this.simulationController.currentTick));
+        this.xSeries = (<(number|string)[]>["time"]).concat(<any[]> Util.timeRange(this.simulationController.currentTick));
 
         this.chartData = [this.xSeries];
 

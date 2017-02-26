@@ -599,4 +599,15 @@ export class Util {
             return i.toString();
         })
     }
+
+    /**
+     * Returns an array containing all numbers of a range from 0 to x (including x).
+     */
+    public static timeRange(x: number): Date[] {
+        return Util.range(x).map((tick: number) => {
+            const t = new Date(1970, 0, 1); // Epoch
+            t.setSeconds(tick);
+            return t;
+        });
+    }
 }
