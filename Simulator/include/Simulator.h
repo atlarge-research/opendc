@@ -10,7 +10,6 @@ namespace Simulation
 	/*
 		The Simulator class controls (the creation of) all experiments, and providing access to the database.
 	*/
-	template<typename SimulationType>
 	class Simulator
 	{
 	public:
