@@ -89,6 +89,8 @@ def POST(request):
     # Instantiate an Experiment
 
     experiment = Experiment.from_JSON(request.params_body['experiment'])
+    experiment.state = 'QUEUED'
+    experiment.last_simulated_tick = 0
 
     # Try to insert this Experiment
 
@@ -96,15 +98,10 @@ def POST(request):
         experiment.insert()
     
     except exceptions.ForeignKeyError as e:
-        return Response(400, 'Foreign key constraint not met.')
-
-    # Queue this Experiment for simulation
-
-    queued_experiment = QueuedExperiment(experiment_id = experiment.id)
-    queued_experiment.insert()
+        return Response(400, 'Foreign key constraint not met.' + e.message)
 
     # Return this Experiment
-
+    
     experiment.read()
 
     return Response(

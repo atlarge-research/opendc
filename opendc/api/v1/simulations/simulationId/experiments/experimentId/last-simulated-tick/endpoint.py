@@ -30,14 +30,10 @@ def GET(request):
     # Make sure this user is authorized to view this Experiment's last simulated tick
 
     if not experiment.google_id_has_at_least(request.google_id, 'VIEW'):
-        return Response(403, 'Forbidden from viewing Room States for {}.'.format(experiment))
-
-    # Get and return the last simulated tick
-
-    last_simulated_tick = experiment.get_last_simulated_tick()
+        return Response(403, 'Forbidden from viewing last simulated tick for {}.'.format(experiment))
 
     return Response(
         200,
-        'Successfully retrieved Room States for {}.'.format(experiment),
-        {'lastSimulatedTick': last_simulated_tick}
+        'Successfully retrieved last simulated tick for {}.'.format(experiment),
+        {'lastSimulatedTick': experiment.last_simulated_tick}
     )
