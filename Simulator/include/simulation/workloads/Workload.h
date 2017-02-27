@@ -47,10 +47,20 @@ namespace Simulation
 		/**
 		 * \return The start tick of this workload.
 		 */
-		uint32_t getStartTick() const
+		uint32_t getStartTick()
 		{
 			return START_TICK;
 		}
+
+		/**
+		* \brief Sets the coresUsed of this workload to the given number of cores.
+		*/
+		void setCoresUsed(uint32_t cores);
+
+		/**
+		* \return Returns the number of cores used by this workload.
+		*/
+		uint32_t getCoresUsed();
 
 		// True if the dependency of this workload has finished.
 		bool dependencyFinished = false;
@@ -76,5 +86,8 @@ namespace Simulation
 
 		// The id of the trace this workload belongs to in the database.
 		uint32_t TRACE_ID;
+
+		// The number of cores that this workload is occupying
+		uint32_t coresUsed = 0;
 	};
 }

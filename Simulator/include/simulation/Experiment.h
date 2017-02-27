@@ -60,7 +60,8 @@ namespace Simulation
 					currentTick,
 					WorkloadSnapshot(
 						workload->getId(),
-						workload->getRemainingOperations()
+						workload->getRemainingOperations(),
+						workload->getCoresUsed()
 					)
 				);
 			}

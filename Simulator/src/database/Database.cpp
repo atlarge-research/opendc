@@ -50,8 +50,9 @@ namespace Database
 
 			uint32_t id = snapshot.id;
 			uint32_t flopsDone = snapshot.flopsDone;
+			uint32_t coresUsed = snapshot.coresUsed;
 			writeWorkloadStateQuery.reset()
-				.bindParams<int, int, int, int>(id, experiment.getId(), tick, flopsDone)
+				.bindParams<int, int, int, int, int>(id, experiment.getId(), tick, flopsDone, coresUsed)
 				.executeOnce();
 		});
 

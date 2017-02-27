@@ -12,13 +12,18 @@ namespace Simulation
 		}
 
 	public:
-		/*
-			Distribute workloads according to the srtf principle
+		/**
+		* \brief Distribute workloads according to the srtf principle.
 		*/
 		void schedule(std::vector<std::reference_wrapper<Modeling::Machine>>& machines, std::vector<Workload*> workloads) override
 		{
 			if (workloads.size() == 0)
 				return;
+
+			for (auto workload : workloads)
+			{
+				workload->setCoresUsed(0);
+			}
 
 			std::sort(
 				workloads.begin(), 
@@ -30,17 +35,18 @@ namespace Simulation
 
 			int taskIndex = 0;
 
-			std::for_each(
-				machines.begin(),
-				machines.end(),
-				[&workloads, &taskIndex](Modeling::Machine& machine) {
-					while (!workloads.at(taskIndex)->dependencyFinished)
-						taskIndex = (++taskIndex) % workloads.size();
-
-					machine.giveTask(workloads.at(taskIndex));
+			for (auto machine : machines)
+			{
+				while (!workloads.at(taskIndex)->dependencyFinished)
 					taskIndex = (++taskIndex) % workloads.size();
-				}
-			);
+
+				machine.get().giveTask(workloads.at(taskIndex));
+				workloads.at(taskIndex)->setCoresUsed(
+					workloads.at(taskIndex)->getCoresUsed() + machine.get().getNumberOfCores()
+				);
+
+				taskIndex = (++taskIndex) % workloads.size();
+			}
 		}
 	};
 }

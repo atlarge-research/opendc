@@ -1,4 +1,5 @@
 #include "simulation/workloads/WorkloadPool.h"
+#include "simulation/workloads/Workload.h"
 
 #include <iostream>
 #include <algorithm>

@@ -5,27 +5,30 @@ namespace Modeling
 	class CPU
 	{
 	public:
+		/**
+		* \brief Creates a CPU with the given speed/core, number of cores, energy consumption, and failure model id.
+		*/
 		CPU(int speed, int cores, int energyConsumption, int failureModelId);
 
-		/*
-			Returns the speed of this CPU.
+		/**
+		* \return the speed of this CPU.
 		*/
-		int getSpeed();
+		int getSpeed() const;
 
-		/*
-			Returns the nr of cores of this CPU.
+		/**
+		* \return The nr of cores of this CPU.
 		*/
-		int getCores();
+		int getCores() const;
 
-		/*
-			Returns the energy consumed by this CPU. 
+		/**
+		* \return The energy consumed by this CPU. 
 		*/
-		int getEnergyConsumption();
+		int getEnergyConsumption() const;
 
-		/*
-			Returns the failure model id of this CPU. 
+		/**
+		* \return The failure model id of this CPU. 
 		*/
-		int getFailureModelId();
+		int getFailureModelId() const;
 
 
 	private:

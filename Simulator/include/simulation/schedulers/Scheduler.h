@@ -1,5 +1,4 @@
 #pragma once
-#include "simulation/workloads/Workload.h"
 #include "modeling/machine/Machine.h"
 
 #include <vector>

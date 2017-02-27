@@ -1,7 +1,5 @@
 #include "simulation/workloads/Workload.h"
 
-#include <iostream>
-
 namespace Simulation
 {
 	Workload::Workload(int size, int startTick, int dbId, int traceId, int dependency) : dependencyId(dependency), remainingFlops(size), TOTAL_FLOPS(size), START_TICK(startTick), ID(dbId), TRACE_ID(traceId) {}
@@ -43,5 +41,15 @@ namespace Simulation
 	int Workload::getDependencyId() const
 	{
 		return this->dependencyId;
+	}
+
+	void Workload::setCoresUsed(uint32_t cores)
+	{
+		this->coresUsed = cores;
+	}
+
+	uint32_t Workload::getCoresUsed()
+	{
+		return coresUsed;
 	}
 }

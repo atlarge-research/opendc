@@ -77,4 +77,13 @@ namespace Modeling
 	{
 		return this->load;
 	}
+
+	uint32_t Machine::getNumberOfCores() const
+	{
+		uint32_t cores = 0;
+		for (auto& processor : cpus) {
+			cores += processor.getCores();
+		}
+		return cores;
+	}
 }

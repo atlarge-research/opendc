@@ -118,11 +118,11 @@ namespace Database
 		/*
 			Inserts the state of a workload into the task_state table.
 			Returns: <>
-			Binds: <int : task_id, int : experiment_id, int : tick, int : flops_left>
+			Binds: <int : task_id, int : experiment_id, int : tick, int : flops_left, int : cores_used>
 		*/
 		Query<> WRITE_WORKLOAD_STATE(std::string(R"query(
-			INSERT INTO task_states (task_id, experiment_id, tick, flops_left)
-			VALUES ($tid, $ssid, $tick, $flops);
+			INSERT INTO task_states (task_id, experiment_id, tick, flops_left, cores_used)
+			VALUES ($tid, $ssid, $tick, $flops, $cores_used);
 		)query"));
 	
 		/*

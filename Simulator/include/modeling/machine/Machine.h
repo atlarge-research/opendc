@@ -76,6 +76,11 @@ namespace Modeling
 		*/
 		float getLoad() const;
 
+		/**
+		* \return The number of cores in this machine. 
+		*/
+		uint32_t getNumberOfCores() const;
+
 	private:
 		// A list of cpus in this machine.
 		std::vector<CPU> cpus;

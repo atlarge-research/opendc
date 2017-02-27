@@ -12,8 +12,8 @@ namespace Simulation
 		}
 
 	public:
-		/*
-			Distribute workloads according to the FIFO principle
+		/**
+		* \brief Distribute workloads according to the FIFO principle.
 		*/
 		void schedule(std::vector<std::reference_wrapper<Modeling::Machine>>& machines, std::vector<Workload*> workloads) override
 		{
@@ -25,13 +25,20 @@ namespace Simulation
 			while(!workloads.at(index)->dependencyFinished)
 				index = (++index) % workloads.size();
 
-			std::for_each(
-				machines.begin(), 
-				machines.end(), 
-				[index, &workloads](std::reference_wrapper<Modeling::Machine>& machine) {
-					machine.get().giveTask(workloads.at(index));
-				}
-			);
+			// Reset the number of cores used for each workload
+			for (auto workload : workloads) 
+			{
+				workload->setCoresUsed(0);
+			}
+
+			// Distribute tasks across machines and set cores used of workloads
+			for (auto machine : machines) 
+			{
+				machine.get().giveTask(workloads.at(index));
+				workloads.at(index)->setCoresUsed(
+					workloads.at(index)->getCoresUsed() + machine.get().getNumberOfCores()
+				);
+			}
 		}
 	};
 }
