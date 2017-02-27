@@ -9,13 +9,14 @@ class TaskState(Model):
             'taskId': 'task_id',
             'experimentId': 'experiment_id',
             'tick': 'tick',
-            'flopsLeft': 'flops_left'
+            'flopsLeft': 'flops_left',
+            'coresUsed': 'cores_used'
         }
     }
 
     TABLE_NAME = 'task_states'
 
-    COLUMNS = ['id', 'task_id', 'experiment_id', 'tick', 'flops_left']
+    COLUMNS = ['id', 'task_id', 'experiment_id', 'tick', 'flops_left', 'cores_used']
     COLUMNS_PRIMARY_KEY = ['id']
 
     @classmethod
