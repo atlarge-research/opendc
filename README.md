@@ -26,7 +26,7 @@ Set up the database, replacing `PATH_TO_DATABASE` with where you'd like to creat
 python opendc/database/rebuild-database.py "PATH_TO_DATABASE"
 ```
 
-Create a file `KEYS.json` in `opendc-web-server`, containing the following. Replace `BASE_DIRECTORY` with the base directory in which you cloned `opendc` and `opendc-web-server`. Replace `OAUTH_CLIENT_ID` with your OAuth client ID (see the [OpenDC README](https://github.com/tudelft-atlarge/opendc#preamble)). Replace `PATH_TO_DATABASE` with where you created the database.
+Create a file `config.json` in `opendc-web-server`, containing the following. Replace `BASE_DIRECTORY` with the base directory in which you cloned `opendc` and `opendc-web-server`. Replace `OAUTH_CLIENT_ID` with your OAuth client ID (see the [OpenDC README](https://github.com/tudelft-atlarge/opendc#preamble)). Replace `PATH_TO_DATABASE` with where you created the database.
 
 ```json
 {
@@ -37,11 +37,10 @@ Create a file `KEYS.json` in `opendc-web-server`, containing the following. Repl
 }
 ```
 
-In `opendc-web-server/static/index.html`, add your own `OAUTH_CLIENT_ID` in `control=`.
+In `opendc-web-server/static/index.html`, add your own `OAUTH_CLIENT_ID` in `content=""`.
 
 Run the server.
 
 ```bash
-cd ../opendc-web-server
-python main.py "PATH_TO_DATABASE\\opendc.db"
+python opendc-web-server/main.py config.json
 ```
