@@ -12,7 +12,7 @@ namespace Simulation
 		/*
 			Initializes the TOTAL_FLOPS and the remainingFlops to the size.
 		*/
-		Workload(int size, int startTick, int dbId, int traceId, int dependency);
+		Workload(int size, int startTick, int dbId, int traceId, int dependency, bool parallel);
 
 		/*
 			Decreases the remainingFlops by the given amount.
@@ -62,6 +62,11 @@ namespace Simulation
 		*/
 		uint32_t getCoresUsed();
 
+		/**
+		* \return Whether this workload can be spread across machines.
+		*/
+		bool isParallelizable();
+
 		// True if the dependency of this workload has finished.
 		bool dependencyFinished = false;
 
@@ -89,5 +94,8 @@ namespace Simulation
 
 		// The number of cores that this workload is occupying
 		uint32_t coresUsed = 0;
+
+		// Whether this task can be parallelized across multiple machines.
+		bool isParallel = false;
 	};
 }

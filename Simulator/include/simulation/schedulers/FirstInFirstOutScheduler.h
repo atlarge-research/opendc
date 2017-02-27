@@ -22,8 +22,10 @@ namespace Simulation
 
 			// Find the first workload with dependencies finished
 			int index = 0;
-			while(!workloads.at(index)->dependencyFinished)
-				index = (++index) % workloads.size();
+
+			std::remove_if(workloads.begin(), workloads.end(), [](Workload* workload) {
+				return !workload->dependencyFinished;
+			});
 
 			// Reset the number of cores used for each workload
 			for (auto workload : workloads) 
@@ -38,6 +40,19 @@ namespace Simulation
 				workloads.at(index)->setCoresUsed(
 					workloads.at(index)->getCoresUsed() + machine.get().getNumberOfCores()
 				);
+
+				if (!workloads.at(index)->isParallelizable())
+				{
+					workloads.erase(workloads.begin() + index);
+					if (workloads.size() == 0)
+						break;
+
+					index %= workloads.size();
+				}
+				else
+				{
+					index = (++index) % workloads.size();
+				}
 			}
 		}
 	};

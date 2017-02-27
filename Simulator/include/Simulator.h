@@ -64,7 +64,7 @@ namespace Simulation
 			auto it = experiments.begin();
 			while(it != experiments.end())
 			{
-				auto history = (*it).second.getHistory();
+				auto& history = (*it).second.getHistory();
 				if (history.historySize() > 3000 || (*it).second.isFinished())
 					write((*it).first);
 

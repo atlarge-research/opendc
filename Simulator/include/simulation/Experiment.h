@@ -110,7 +110,7 @@ namespace Simulation
 		/**
 		 * \return The history of this experiment that has no yet been written to the database.
 		 */
-		SimulationHistory getHistory() const
+		SimulationHistory& getHistory()
 		{
 			return history;
 		}

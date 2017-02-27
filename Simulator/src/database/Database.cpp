@@ -260,7 +260,7 @@ namespace Database
 	{
 		Simulation::WorkloadPool pool;
 
-		std::vector<QueryResult<int, int, int, int, int>> tasks;
+		std::vector<QueryResult<int, int, int, int, int, std::string>> tasks;
 		// Fetch tasks from database
 		{
 			// Retrieves the traceId corresponding to the simulation section
@@ -272,7 +272,7 @@ namespace Database
 				.get<int, 0>();
 
 			// Retrieves the tasks that belong to the traceId
-			QueryExecuter<int, int, int, int, int> q2(db);
+			QueryExecuter<int, int, int, int, int, std::string> q2(db);
 			tasks = q2
 				.setQuery(Queries::GET_TASKS_OF_TRACE)
 				.bindParams<int>(traceId)
@@ -287,9 +287,15 @@ namespace Database
 			int totalFlopCount = row.get<int, 2>();
 			int traceId = row.get<int, 3>();
 			int dependency = row.get<int, 4>();
+			std::string parallelizability = row.get<std::string, 5>();
+			bool parallel = false;
+			if (parallelizability == "PARALLEL")
+			{
+				parallel = true;
+			}
 
 			// TODO possibly wait and batch?
-			Simulation::Workload workload(totalFlopCount, startTick, id, traceId, dependency);
+			Simulation::Workload workload(totalFlopCount, startTick, id, traceId, dependency, parallel);
 			if(dependency == 0)
 				workload.dependencyFinished = true;
 

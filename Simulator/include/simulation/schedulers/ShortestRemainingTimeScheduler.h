@@ -20,6 +20,10 @@ namespace Simulation
 			if (workloads.size() == 0)
 				return;
 
+			std::remove_if(workloads.begin(), workloads.end(), [](Workload* workload) {
+				return !workload->dependencyFinished;
+			});
+
 			for (auto workload : workloads)
 			{
 				workload->setCoresUsed(0);
@@ -34,18 +38,26 @@ namespace Simulation
 			);
 
 			int taskIndex = 0;
-
 			for (auto machine : machines)
 			{
-				while (!workloads.at(taskIndex)->dependencyFinished)
-					taskIndex = (++taskIndex) % workloads.size();
-
 				machine.get().giveTask(workloads.at(taskIndex));
+ 
 				workloads.at(taskIndex)->setCoresUsed(
 					workloads.at(taskIndex)->getCoresUsed() + machine.get().getNumberOfCores()
 				);
 
-				taskIndex = (++taskIndex) % workloads.size();
+				if (!workloads.at(taskIndex)->isParallelizable())
+				{
+					workloads.erase(workloads.begin() + taskIndex);
+					if (workloads.size() == 0)
+						break;
+
+					taskIndex %= workloads.size();
+				}
+				else
+				{
+					taskIndex = (++taskIndex) % workloads.size();
+				}
 			}
 		}
 	};

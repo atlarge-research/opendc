@@ -84,10 +84,10 @@ namespace Database
 
 		/*
 			Returns all columns of each task belonging to the given trace.
-			Returns: <int : id, int : start_tick, inn : total_flop_count, int : trace_id, int : task_dependency_id>
+			Returns: <int : id, int : start_tick, inn : total_flop_count, int : trace_id, int : task_dependency_id, std::string : parallelizability>
 			Binds: <int : trace_id>
 		*/
-		Query<int, int, int, int, int> GET_TASKS_OF_TRACE(std::string(R"query(
+		Query<int, int, int, int, int, std::string> GET_TASKS_OF_TRACE(std::string(R"query(
 			SELECT * FROM tasks WHERE trace_id = $id;
 		)query"));
 
