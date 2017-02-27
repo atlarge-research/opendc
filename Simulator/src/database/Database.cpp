@@ -78,7 +78,7 @@ namespace Database
 
 		history.clearHistory();
 
-		uint32_t lastSimulatedTick = experiment.getCurrentTick() - 1;
+		uint32_t lastSimulatedTick = experiment.getCurrentTick() != 0 ? experiment.getCurrentTick() - 1 : 0;
 		QueryExecuter<> writeLastSimulatedTick(db);
 		writeLastSimulatedTick.setQuery(Queries::WRITE_EXPERIMENT_LAST_SIMULATED_TICK)
 			.bindParams<int, int>(lastSimulatedTick, experiment.getId())

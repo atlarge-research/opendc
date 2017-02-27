@@ -32,6 +32,12 @@ namespace Simulation
 
 			auto machineAccumulator = path.getCurrentSection(currentTick).getMachines();
 
+			if (machineAccumulator.size() == 0)
+			{
+				finished = true;
+				return;
+			}
+
 			// Schedule the workload over each machine
 			scheduler->schedule(machineAccumulator, workloadPool.getWorkloads(currentTick));
 
@@ -159,7 +165,7 @@ namespace Simulation
 		/**
 		 * \brief The number of ticks that have passed.
 		 */
-		uint32_t currentTick;
+		uint32_t currentTick = 0;
 
 		/**
 		 * \brief The pool of workloads in this simulation, to be distributed by the scheduler.
