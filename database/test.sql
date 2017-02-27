@@ -39,11 +39,11 @@ INSERT INTO sections (path_id, datacenter_id, start_tick) VALUES (2, 3, 0);
 INSERT INTO traces (name) VALUES ('test trace');
 
 -- Tasks
-INSERT INTO tasks (id, start_tick, total_flop_count, trace_id) VALUES (1, 0, 40000000, 1);
-INSERT INTO tasks (start_tick, total_flop_count, trace_id) VALUES (25, 10000, 1);
-INSERT INTO tasks (start_tick, total_flop_count, trace_id) VALUES (25, 10000, 1);
-INSERT INTO tasks (start_tick, total_flop_count, trace_id) VALUES (26, 10000, 1);
-INSERT INTO tasks (start_tick, total_flop_count, trace_id, task_dependency_id) VALUES (80, 200000, 1, 1);
+INSERT INTO tasks (id, start_tick, total_flop_count, trace_id, parallelizability) VALUES (1, 0, 40000000, 1, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (25, 10000, 1, 'PARALLEL');
+INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (25, 10000, 1, 'PARALLEL');
+INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (26, 10000, 1, 'PARALLEL');
+INSERT INTO tasks (start_tick, total_flop_count, trace_id, task_dependency_id, parallelizability) VALUES (80, 200000, 1, 1, 'PARALLEL');
 
 -- Experiments
 INSERT INTO experiments (simulation_id, path_id, trace_id, scheduler_name, name, state, last_simulated_tick)

@@ -115,6 +115,8 @@ CREATE TABLE IF NOT EXISTS schedulers (
     name                    TEXT PRIMARY KEY        NOT NULL
 );
 INSERT INTO schedulers (name) VALUES ("DEFAULT");
+INSERT INTO schedulers (name) VALUES ("SRTF");
+INSERT INTO schedulers (name) VALUES ("FIFO");
 
 /*
 *   Each simulation has a single trace. A trace contains tasks and their start times.
@@ -133,6 +135,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     total_flop_count        INTEGER                 NOT NULL,
     trace_id                INTEGER                 NOT NULL,
     task_dependency_id      INTEGER                 NULL,
+	parallelizability		TEXT					NOT NULL,
 
     FOREIGN KEY (trace_id) REFERENCES traces (id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (task_dependency_id) REFERENCES tasks (id) ON DELETE CASCADE ON UPDATE CASCADE
