@@ -111,7 +111,6 @@ INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VA
 INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (21, 100000, 2, 'SEQUENTIAL');
 
 -- Path Planning Trace
-
 INSERT INTO traces (name) VALUES ('Path planning');
 
 INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (0, 1000000, 2, 'PARALLEL');
@@ -131,6 +130,18 @@ INSERT INTO tasks (start_tick, total_flop_count, trace_id, task_dependency_id, p
 INSERT INTO tasks (start_tick, total_flop_count, trace_id, task_dependency_id, parallelizability) VALUES (12, 200000, 1, 66, 'SEQUENTIAL');
 INSERT INTO tasks (start_tick, total_flop_count, trace_id, task_dependency_id, parallelizability) VALUES (13, 200000, 1, 66, 'SEQUENTIAL');
 INSERT INTO tasks (start_tick, total_flop_count, trace_id, task_dependency_id, parallelizability) VALUES (14, 200000, 1, 66, 'SEQUENTIAL');
+
+-- Parallelizable Trace
+INSERT INTO traces (name) VALUES ('Parallel heavy trace');
+
+INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (0, 100000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (0, 900000, 3, 'PARALLEL');
+
+-- Sequential Trace
+INSERT INTO traces (name) VALUES ('Sequential heavy trace');
+
+INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (0, 100000, 4, 'PARALLEL');
+INSERT INTO tasks (start_tick, total_flop_count, trace_id, parallelizability) VALUES (0, 900000, 4, 'SEQUENTIAL');
 
 -- Experiments
 INSERT INTO experiments (simulation_id, path_id, trace_id, scheduler_name, name, state, last_simulated_tick)
