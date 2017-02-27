@@ -36,7 +36,9 @@ CREATE UNIQUE INDEX authorizations_index ON authorizations (
 CREATE TABLE IF NOT EXISTS authorization_levels (
     level                   TEXT PRIMARY KEY        NOT NULL
 );
-INSERT INTO authorization_levels (level) VALUES ("OWN"), ("EDIT"), ("VIEW");
+INSERT INTO authorization_levels (level) VALUES ("OWN");
+INSERT INTO authorization_levels (level) VALUES ("EDIT");
+INSERT INTO authorization_levels (level) VALUES ("VIEW");
 
 /*
 *   A Simulation has several Paths, which define the topology of the datacenter at different times. A Simulation also
@@ -209,7 +211,11 @@ CREATE TABLE IF NOT EXISTS rooms (
 CREATE TABLE IF NOT EXISTS room_types (
     name                    TEXT PRIMARY KEY        NOT NULL
 );
-INSERT INTO room_types (name) VALUES ('SERVER'), ('HALLWAY'), ('OFFICE'), ('POWER'), ('COOLING');
+INSERT INTO room_types (name) VALUES ('SERVER');
+INSERT INTO room_types (name) VALUES ('HALLWAY');
+INSERT INTO room_types (name) VALUES ('OFFICE');
+INSERT INTO room_types (name) VALUES ('POWER');
+INSERT INTO room_types (name) VALUES ('COOLING');
 
 /*
 *   A room consists of tiles that have a quantized (x,y) position. The same tile can't be in multiple rooms. All tiles 
@@ -297,7 +303,9 @@ CREATE TABLE IF NOT EXISTS objects (
 CREATE TABLE IF NOT EXISTS object_types (
     name                    TEXT PRIMARY KEY        NOT NULL
 );
-INSERT INTO object_types (name) VALUES ('PSU'), ('COOLING_ITEM'), ('RACK');
+INSERT INTO object_types (name) VALUES ('PSU');
+INSERT INTO object_types (name) VALUES ('COOLING_ITEM');
+INSERT INTO object_types (name) VALUES ('RACK');
 
 -- Allowed objects table
 CREATE TABLE IF NOT EXISTS allowed_objects (
