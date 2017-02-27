@@ -148,8 +148,9 @@ CREATE TABLE IF NOT EXISTS task_states (
     id                      INTEGER PRIMARY KEY     NOT NULL,
     task_id                 INTEGER                 NOT NULL,
     experiment_id           INTEGER                 NOT NULL,
-    tick                    INTEGER                 NOT NULL,
-    flops_left              INTEGER                 NOT NULL,
+    tick                    INTEGER                 NOT NULL CHECK (tick >= 0),
+    flops_left              INTEGER                 NOT NULL CHECK (flops_left >= 0),
+	cores_used				INTEGER					NOT NULL CHECK (cores_used >= 0),
 
     FOREIGN KEY (task_id) REFERENCES tasks (id),
     FOREIGN KEY (experiment_id) REFERENCES experiments (id)
