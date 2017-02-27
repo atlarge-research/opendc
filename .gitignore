@@ -11,4 +11,4 @@ _mailinglist
 .tox
 .cache/
 .idea/
-config/
+*.json
