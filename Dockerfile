@@ -12,6 +12,9 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 	&& npm install -g gulp-cli \
 	&& rm -rf /var/lib/apt/lists/*
 
+# Fix for Bower issue https://github.com/bower/bower/issues/1492
+ENV GIT_DIR=/opendc
+
 # Copy opendc
 COPY ./ /opendc
 
