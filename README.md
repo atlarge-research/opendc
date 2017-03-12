@@ -1,5 +1,15 @@
 # OpenDC
 
+![opendc-frontend-construction](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-frontend-construction.PNG)
+
+OpenDC is an open-source simulator for datacenters aimed at both research and education. Users can construct datacenters (see above) and define experiments to see how these datacenters perform under different workloads and schedulers (see below). 
+
+![opendc-frontend-simulation](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-frontend-simulation.PNG)
+
+The simulator is accessible both as a ready-to-use website hosted by Delft University of Technology at [opendc.org](http://opendc.org), and as source code that users can run locally on their own machine.
+
+OpenDC is a project by the [@Large Research Group](http://atlarge-research.com).
+
 ## Architecture
 
 OpenDC consists of four components: a C++ simulator, a SQLite database, a Python Flask web server, and a TypeScript frontend.
