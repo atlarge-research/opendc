@@ -1,8 +1,10 @@
 # OpenDC
 
+OpenDC is an open-source simulator for datacenters aimed at both research and education.
+
 ![opendc-frontend-construction](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-frontend-construction.PNG)
 
-OpenDC is an open-source simulator for datacenters aimed at both research and education. Users can construct datacenters (see above) and define experiments to see how these datacenters perform under different workloads and schedulers (see below). 
+Users can construct datacenters (see above) and define experiments to see how these datacenters perform under different workloads and schedulers (see below). 
 
 ![opendc-frontend-simulation](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-frontend-simulation.PNG)
 
