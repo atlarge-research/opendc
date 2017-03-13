@@ -50,7 +50,7 @@ To build and run the full OpenDC stack locally on Linux or Mac, run the commands
 
 ```bash
 # Clone the repo and its submodules
-git clone --recursive https://github.com/tudelft-atlarge/opendc.git
+git clone --recursive https://github.com/atlarge-research/opendc.git
 
 # Enter the directory
 cd opendc/
