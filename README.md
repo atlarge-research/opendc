@@ -1,6 +1,6 @@
 # OpenDC Web Server
 
-The OpenDC web server is the bridge between OpenDC's frontend and database. It is built with Flask/SocketIO in Python and implements the OpenAPI-compliant [OpenDC API specification](https://github.com/tudelft-atlarge/opendc/blob/master/opendc-api-spec.json).
+The OpenDC web server is the bridge between OpenDC's frontend and database. It is built with Flask/SocketIO in Python and implements the OpenAPI-compliant [OpenDC API specification](https://github.com/atlarge-research/opendc/blob/master/opendc-api-spec.json).
 
 ## Setup
 
@@ -18,8 +18,8 @@ pip install eventlet
 Clone both this repository and the main OpenDC repository, from the same base directory.
 
 ```bash
-git clone https://github.com/tudelft-atlarge/opendc-web-server.git
-git clone https://github.com/tudelft-atlarge/opendc.git
+git clone https://github.com/atlarge-research/opendc-web-server.git
+git clone https://github.com/atlarge-research/opendc.git
 ```
 
 Set up the database, replacing `PATH_TO_DATABASE` with where you'd like to create the SQLite database. (This will replace any file named `opendc.db` at the location `PATH_TO_DATABASE`.)
@@ -28,7 +28,7 @@ Set up the database, replacing `PATH_TO_DATABASE` with where you'd like to creat
 python opendc/database/rebuild-database.py "PATH_TO_DATABASE"
 ```
 
-Create a file `config.json` in `opendc-web-server`, containing the following. Replace `BASE_DIRECTORY` with the base directory in which you cloned `opendc` and `opendc-web-server`. Replace `OAUTH_CLIENT_ID` with your OAuth client ID (see the [OpenDC README](https://github.com/tudelft-atlarge/opendc#preamble)). Replace `PATH_TO_DATABASE` with where you created the database.
+Create a file `config.json` in `opendc-web-server`, containing the following. Replace `BASE_DIRECTORY` with the base directory in which you cloned `opendc` and `opendc-web-server`. Replace `OAUTH_CLIENT_ID` with your OAuth client ID (see the [OpenDC README](https://github.com/atlarge-research/opendc#preamble)). Replace `PATH_TO_DATABASE` with where you created the database.
 
 ```json
 {
