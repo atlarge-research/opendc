@@ -51,6 +51,25 @@ python opendc-web-server/main.py config.json
 
 ## Architecture
 
-The following diagram shows a high-level view of the architecture of the OpenDC web server.
+The following diagram shows a high-level view of the architecture of the OpenDC web server. Squared-off colored boxes indicate packages (colors become more saturated as packages are nested); rounded-off boxes indicate individual components; dotted lines indicate control flow; and solid lines indicate data flow.
 
 ![OpenDC Web Server Component Diagram](https://raw.githubusercontent.com/atlarge-research/opendc-web-server/master/images/opendc-web-server-component-diagram.png)
+
+The OpenDC API is implemented by the `Main Server Loop`, which is the only component in the base package.
+
+### Util Package
+
+The `Util` package handles several miscellaneous tasks:
+
+* `REST`: Parses SockerIO messages into `Request` objects, and calls the appropriate `API` endpoint to get a `Response` object to return to the `Main Server Loop`.
+* `Param Checker`: Recursively checks whether required `Request` parameters are present and correctly typed.
+* `Exceptions`: Holds definitions for exceptions used throughough the web server.
+* `Database API`: Wraps SQLite functionality used by `Models` to read themselves from/ write themselves into the database.
+
+### API Package
+
+[TO DO]
+
+### Models Package
+
+[TO DO]
