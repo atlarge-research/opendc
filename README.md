@@ -68,8 +68,14 @@ The `Util` package handles several miscellaneous tasks:
 
 ### API Package
 
-[TO DO]
+The `API` package contains the logic for the HTTP methods in each API endpoint. Packages are structured to mirror the API: the code for the endpoint `GET simulations/authorizations`, for example, would be located at the `Endpoint` inside the `authorizations` package, inside the `simulations` package (so at `api/simulations/authorizations/endpoint.py`).
+
+An `Endpoint` contains methods for each HTTP method it supports, which takes a request as input (such as `def GET(request):`). Typically, such a method checks whether the parameters were passed correctly (using the `Param Checker`); fetches some model from the database; checks whether the data exists and is accessible by the user who made the request; possibly modifies this data and writes it back to the database; and returns a JSON representation of the model.
+
+The `REST` component dynamically imports the appropriate method from the appropriate `Endpoint`, according to request it receives, and executes it.
 
 ### Models Package
 
-[TO DO]
+The `Models` package contains the logic for mapping Python objects to their database representations. This involves an abstract `model` which has methods to `read`, `insert`, `update` and `delete` objects. Extensions of `model`, such as a `User` or `Simulation`, specify some metadata such as their tabular representation in the database and how they map to a JSON object, which the code in `model` uses in the database interaction methods.
+
+`Endpoint`s import these `Models` and use them to execute requests.
