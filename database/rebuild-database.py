@@ -10,8 +10,9 @@ except:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 db_location = os.path.join(BASE_DIR, 'opendc.db')
 
-print "Removing old database..."
-os.remove(db_location)
+if os.path.exists(db_location):
+    print "Removing old database..."
+    os.remove(db_location)
 
 print "Connecting to new database..."
 conn = sqlite3.connect(db_location)
