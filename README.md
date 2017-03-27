@@ -2,10 +2,9 @@
 
 The OpenDC web server is the bridge between OpenDC's frontend and database. It is built with Flask/SocketIO in Python and implements the OpenAPI-compliant [OpenDC API specification](https://github.com/atlarge-research/opendc/blob/master/opendc-api-spec.json).
 
-This document describes how to set up the web server for local development, and explains a high-level view of the web server architecture.
+This document explains a high-level view of the web server architecture ([jump](#architecture)), and describes how to set up the web server for local development ([jump](#setup-for-local-development)).
 
 ## Architecture
-
 
 The following diagram shows a high-level view of the architecture of the OpenDC web server. Squared-off colored boxes indicate packages (colors become more saturated as packages are nested); rounded-off boxes indicate individual components; dotted lines indicate control flow; and solid lines indicate data flow.
 
