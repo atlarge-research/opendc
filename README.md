@@ -27,7 +27,8 @@ git clone https://github.com/atlarge-research/opendc.git
 Set up the database, replacing `PATH_TO_DATABASE` with where you'd like to create the SQLite database. (This will replace any file named `opendc.db` at the location `PATH_TO_DATABASE`.)
 
 ```bash
-python opendc/database/rebuild-database.py "PATH_TO_DATABASE"
+cd opendc/database
+python rebuild-database.py "PATH_TO_DATABASE"
 ```
 
 Create a file `config.json` in `opendc-web-server`, containing the following. Replace `BASE_DIRECTORY` with the base directory in which you cloned `opendc` and `opendc-web-server`. Replace `OAUTH_CLIENT_ID` with your OAuth client ID (see the [OpenDC README](https://github.com/atlarge-research/opendc#preamble)). Replace `PATH_TO_DATABASE` with where you created the database.
