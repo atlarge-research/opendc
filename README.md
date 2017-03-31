@@ -2,10 +2,12 @@
 
 The OpenDC frontend is the user-facing component of the OpenDC stack, allowing users to build and interact with their own (virtual) datacenters. It is built in TypeScript, using CreateJS for canvas interactions and Gulp for build-automation.
 
+This document gives a high-level view of the frontend architecture ([jump](#architecture)), and describes how to set it up for local development ([jump](#setup-for-local-development)).
+
 ## Architecture
 [TODO]
 
-## Building Locally
+## Setup for Local Development
 
 ### Initial setup
 
@@ -42,7 +44,7 @@ gulp --config=config.json
 
 **Note:** You need to replace `config.json` with the name / path of a real config file. This config file can be created by making a copy of the `sample_config.json` template and replacing the entries with your setup data. Make sure not to check this new config file into the VCS, as it is unique to each deployment situation.
 
-### Developing locally
+### Automatically triggered builds
 To make development easier, we've set up a `watch` task. With this task, you can quickly see what effects a certain change has on the program. It runs in the background, automatically triggering a rebuild of relevant files on file-change.
 
 Start it by executing:
