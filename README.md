@@ -5,6 +5,13 @@ The OpenDC frontend is the user-facing component of the OpenDC stack, allowing u
 This document gives a high-level view of the frontend architecture ([jump](#architecture)), and describes how to set it up for local development ([jump](#setup-for-local-development)).
 
 ## Architecture
+
+### Interaction Model
+[TODO]
+
+![OpenDC Frontend Interaction State Diagram](https://raw.githubusercontent.com/atlarge-research/opendc-frontend/master/images/opendc-frontend-interaction-state-diagram.png)
+
+### Components
 [TODO]
 
 ## Setup for Local Development
