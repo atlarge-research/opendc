@@ -6,8 +6,14 @@ This document gives a high-level view of the frontend architecture ([jump](#arch
 
 ## Architecture
 
-### Interaction Model
-[TODO]
+### Application Interaction Model
+Let's first take a look at how the user interacts with the frontend. 
+
+#### Pages
+The user starts at the splashpage (`index.html`) where he/she gets a first impression of OpenDC, including screenshots and features. After signing in with Google Authentication, the user is redirected to the page listing all projects (`projects.html`) shared or owned by that user. Here the user also has the possibility to open a particular project, redirecting to the main application page (`app.html`).
+
+#### Main Application
+The main application allows the user to construct and simulate a datacenter. To understand how the user can do this, have a look at the state diagram below. It visualizes the main interactions a user can make with the application, as well as under which conditions.
 
 ![OpenDC Frontend Interaction State Diagram](https://raw.githubusercontent.com/atlarge-research/opendc-frontend/master/images/opendc-frontend-interaction-state-diagram.png)
 
