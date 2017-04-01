@@ -22,7 +22,7 @@
     "simulations/{simulationId}/experiments/{experimentId}/machine-states",
     "simulations/{simulationId}/experiments/{experimentId}/rack-states",
     "simulations/{simulationId}/experiments/{experimentId}/room-states",
-    "simulations/{simulationId}/experiments/{experimentId}/statistics",
+    "simulations/{simulationId}/experiments/{experimentId}/statistics/task-durations",
     "simulations/{simulationId}/experiments/{experimentId}/task-states",
     "simulations/{simulationId}/paths/",
     "simulations/{simulationId}/paths/{pathId}",
