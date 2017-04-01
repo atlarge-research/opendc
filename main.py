@@ -106,9 +106,18 @@ def sign_in():
 def api_call(version, endpoint_path):
     """Call an API endpoint directly over HTTP"""
 
-    path = path_parser.parse(version, endpoint_path)
-    
-    return jsonify(path)
+    (path, path_parameters) = path_parser.parse(version, endpoint_path)
+
+    message = {
+        'id': 0,
+        'method': request.method,
+        'path': path,
+        'parameters': {
+            'path': path_parameters
+        }
+    }
+
+    return jsonify(message)
 
 @SOCKET_IO_CORE.on('request')
 def receive_message(message):

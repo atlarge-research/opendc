@@ -5,21 +5,35 @@ import re
 def parse(version, endpoint_path):
     """Map an HTTP endpoint path to an API path"""
 
+    # Get possible paths
     with open('opendc/api/{}/paths.json'.format(version)) as paths_file:
         paths = json.load(paths_file)
     
+    # Find API path that matches endpoint_path
     endpoint_path_parts = endpoint_path.strip('/').split('/')
     paths_parts = [x.split('/') for x in paths if len(x.split('/')) == len(endpoint_path_parts)]
+    path = None
 
     for path_parts in paths_parts:
         found = True
-
         for (endpoint_part, part) in zip(endpoint_path_parts, path_parts):
             if not part.startswith('{') and endpoint_part != part:
                 found = False
                 break
-        
         if found:
-            return '{}/{}'.format(version, '/'.join(path_parts))    
+            path = path_parts
 
-    return None
+    if path is None:
+        return None
+
+    # Extract path parameters
+    parameters = {}
+
+    for (name, value) in zip(path, endpoint_path_parts):
+        if name.startswith('{'):
+            try:
+                parameters[name.strip('{}')] = int(value)
+            except:
+                parameters[name.strip('{}')] = value
+
+    return ('{}/{}'.format(version, '/'.join(path)), parameters)
