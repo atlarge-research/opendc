@@ -108,13 +108,21 @@ def api_call(version, endpoint_path):
 
     (path, path_parameters) = path_parser.parse(version, endpoint_path)
 
+    query_parameters = request.args.to_dict()
+    for param in query_parameters:
+        try:
+            query_parameters[param] = int(query_parameters[param])
+        except:
+            pass
+
     message = {
         'id': 0,
         'method': request.method,
-        'path': path,
         'parameters': {
-            'path': path_parameters
-        }
+            'path': path_parameters,
+            'query': query_parameters
+        },
+        'path': path
     }
 
     return jsonify(message)
