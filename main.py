@@ -116,7 +116,10 @@ def api_call(version, endpoint_path):
         except:
             pass
 
-    body_parameters = json.loads(request.get_data())
+    try:
+        body_parameters = json.loads(request.get_data())
+    except:
+        body_parameters = {}
     
     # Create and call request
     (req, response) = _process_message({
