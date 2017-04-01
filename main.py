@@ -102,6 +102,12 @@ def sign_in():
 
     return jsonify(**data)
 
+@FLASK_CORE_APP.route('/api/<path:endpoint_path>')
+def api_call(endpoint_path):
+    """Call an API endpoint directly over HTTP"""
+
+    return endpoint_path
+
 @SOCKET_IO_CORE.on('request')
 def receive_message(message):
     """"Receive a SocketIO request"""
@@ -149,4 +155,3 @@ def receive_message(message):
 
 
 SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)
-
