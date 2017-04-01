@@ -136,46 +136,42 @@ def api_call(version, endpoint_path):
 def receive_message(message):
     """"Receive a SocketIO request"""
     
-    try:
-        request = rest.Request(message)
-        response = request.process()
-        
-        flask_socketio.emit('response', response.to_JSON(), json=True)
+    (request, response) = _process_message(message)
 
-        print 'Socket: {} to `/{}` resulted in {}: {}'.format(
-            request.method,
-            request.path,
-            response.status['code'],
-            response.status['description']
-        )
-
-        return
-
-    except exceptions.AuthorizationTokenError as e:
-        response = rest.Response(401, 'Authorization error')
-        response.id = message['id']
-
-        flask_socketio.emit('response', response.to_JSON(), json=True)
-
-    except exceptions.RequestInitializationError as e:
-        response = rest.Response(400, e.message)
-        response.id = message['id']
-
-        flask_socketio.emit('response', response.to_JSON(), json=True)
-
-    except Exception as e:
-        response = rest.Response(500, 'Internal server error')
-        response.id = message['id']
-
-        flask_socketio.emit('response', response.to_JSON(), json=True)
-        traceback.print_exc()
-
-    print 'Socket: {} to `{}` resulted in {}: {}'.format(
-        message['method'],
-        message['path'],
+    print 'Socket: {} to `/{}` resulted in {}: {}'.format(
+        request.method,
+        request.path,
         response.status['code'],
         response.status['description']
     )
+    sys.stdout.flush()
 
+    flask_socketio.emit('response', response.to_JSON(), json=True)
+
+def _process_message(message):
+    """Process a request message and return the response."""
+
+    try:
+        request  = rest.Request(message)
+        response = request.process()
+
+        return (request, response)
+        
+    except exceptions.AuthorizationTokenError as e:
+        response = rest.Response(401, 'Authorization error')
+        
+    except exceptions.RequestInitializationError as e:
+        response = rest.Response(400, e.message)
+
+        if not 'method' in message:
+            message['method'] = 'UNSPECIFIED'
+        if not 'path' in message:
+            message['path'] = 'UNSPECIFIED'
+        
+    except Exception as e:
+        response = rest.Response(500, 'Internal server error')
+        traceback.print_exc()
+    
+    return ({'method': message['method'], 'path': message['path']}, response)
 
 SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)
