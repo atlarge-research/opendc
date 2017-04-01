@@ -10,7 +10,7 @@ import flask_socketio
 from oauth2client import client, crypt
 
 from opendc.models.user import User
-from opendc.util import exceptions, rest
+from opendc.util import exceptions, rest, path_parser
 
 if len(sys.argv) < 2:
     print "config file path not given as argument"
@@ -102,11 +102,13 @@ def sign_in():
 
     return jsonify(**data)
 
-@FLASK_CORE_APP.route('/api/<path:endpoint_path>')
-def api_call(endpoint_path):
+@FLASK_CORE_APP.route('/api/<string:version>/<path:endpoint_path>')
+def api_call(version, endpoint_path):
     """Call an API endpoint directly over HTTP"""
 
-    return endpoint_path
+    path = path_parser.parse(version, endpoint_path)
+    
+    return jsonify(path)
 
 @SOCKET_IO_CORE.on('request')
 def receive_message(message):
