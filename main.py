@@ -119,7 +119,7 @@ def api_call(version, endpoint_path):
     body_parameters = json.loads(request.get_data())
     
     # Create and call request
-    message = {
+    (req, response) = _process_message({
         'id': 0,
         'method': request.method,
         'parameters': {
@@ -127,10 +127,19 @@ def api_call(version, endpoint_path):
             'path': path_parameters,
             'query': query_parameters
         },
-        'path': path
-    }
+        'path': path,
+        'token': request.headers.get('auth-token')
+    })
 
-    return jsonify(message)
+    print 'HTTP:\t{} to `/{}` resulted in {}: {}'.format(
+        req.method,
+        req.path,
+        response.status['code'],
+        response.status['description']
+    )
+    sys.stdout.flush()
+
+    return jsonify(json.loads(response.to_JSON()))
 
 @SOCKET_IO_CORE.on('request')
 def receive_message(message):
@@ -138,7 +147,7 @@ def receive_message(message):
     
     (request, response) = _process_message(message)
 
-    print 'Socket: {} to `/{}` resulted in {}: {}'.format(
+    print 'Socket:\t{} to `/{}` resulted in {}: {}'.format(
         request.method,
         request.path,
         response.status['code'],
@@ -159,9 +168,11 @@ def _process_message(message):
         
     except exceptions.AuthorizationTokenError as e:
         response = rest.Response(401, 'Authorization error')
-        
+        response.id = message['id']
+
     except exceptions.RequestInitializationError as e:
         response = rest.Response(400, e.message)
+        response.id = message['id']
 
         if not 'method' in message:
             message['method'] = 'UNSPECIFIED'
@@ -170,6 +181,8 @@ def _process_message(message):
         
     except Exception as e:
         response = rest.Response(500, 'Internal server error')
+        if 'id' in message:
+            response.id = message['id']
         traceback.print_exc()
     
     return ({'method': message['method'], 'path': message['path']}, response)
