@@ -1,0 +1,36 @@
+{
+	"variables": [],
+	"info": {
+		"name": "OpenDC",
+		"_postman_id": "bd4d0e57-7918-dc69-3ead-6c19e20ab0b0",
+		"description": "Sample requests for developing the OpenDC API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create New Simulation",
+			"request": {
+				"url": "localhost:8081/api/v1/simulations",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "auth-token",
+						"value": "PUT YOUR AUTH TOKEN HERE",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"simulation\": {\r\n\t\t\"name\": \"Simulation Name\"\r\n\t}\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
