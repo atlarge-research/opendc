@@ -20,7 +20,6 @@ def parse(version, endpoint_path):
                 break
         
         if found:
-            sys.stdout.flush()
             return '{}/{}'.format(version, '/'.join(path_parts))    
 
     return None
