@@ -56,7 +56,7 @@ git clone --recursive https://github.com/atlarge-research/opendc.git
 cd opendc/
 
 # Build the Docker image
-docker build -t="opendc" .
+docker build -t=opendc .
 
 # Start a container with the image
 docker run -d --name opendc -p 8081:8081 -e 'SERVER_URL=http://localhost:8081' -e 'OAUTH_CLIENT_ID=your-google-oauth-client-id' -e 'OAUTH_CLIENT_SECRET=your-google-oauth-secret' opendc
