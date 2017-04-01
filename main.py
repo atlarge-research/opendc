@@ -115,12 +115,15 @@ def api_call(version, endpoint_path):
             query_parameters[param] = int(query_parameters[param])
         except:
             pass
+
+    body_parameters = json.loads(request.get_data())
     
     # Create and call request
     message = {
         'id': 0,
         'method': request.method,
         'parameters': {
+            'body': body_parameters,
             'path': path_parameters,
             'query': query_parameters
         },
