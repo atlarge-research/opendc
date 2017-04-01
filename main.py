@@ -102,10 +102,11 @@ def sign_in():
 
     return jsonify(**data)
 
-@FLASK_CORE_APP.route('/api/<string:version>/<path:endpoint_path>')
+@FLASK_CORE_APP.route('/api/<string:version>/<path:endpoint_path>', methods = ['GET', 'POST', 'PUT', 'DELETE'])
 def api_call(version, endpoint_path):
     """Call an API endpoint directly over HTTP"""
 
+    # Get path and parameters
     (path, path_parameters) = path_parser.parse(version, endpoint_path)
 
     query_parameters = request.args.to_dict()
@@ -114,7 +115,8 @@ def api_call(version, endpoint_path):
             query_parameters[param] = int(query_parameters[param])
         except:
             pass
-
+    
+    # Create and call request
     message = {
         'id': 0,
         'method': request.method,
