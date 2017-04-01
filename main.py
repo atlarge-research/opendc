@@ -55,7 +55,7 @@ def serve_projects():
 
     return send_from_directory(STATIC_ROOT, 'projects.html')
 
-@FLASK_CORE_APP.route('/web-server-test')
+@FLASK_CORE_APP.route('/my-auth-token')
 def serve_web_server_test():
     """Serve the web server test."""
 
