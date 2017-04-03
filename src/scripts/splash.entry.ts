@@ -119,7 +119,7 @@ window["renderButton"] = () => {
                 // Calculate token expiration time (in seconds since epoch)
                 const expirationTime = (new Date()).getTime() / 1000 + googleUser.getAuthResponse().expires_in - 5;
 
-                $.post('https://opendc.ewi.tudelft.nl/tokensignin', {
+                $.post('SERVER_BASE_URL/tokensignin', {
                     idtoken: id_token
                 }, (data: any) => {
                     // Save user information in session storage for later use on other pages
@@ -146,7 +146,7 @@ window["renderButton"] = () => {
             });
         },
         'onfailure': () => {
-            console.log("Oops, something went wrong with your Google signin... Try again?")
+            console.log("Oops, something went wrong with your Google signin... Try again?");
         }
     });
 };

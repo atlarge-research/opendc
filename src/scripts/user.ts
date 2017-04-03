@@ -2,22 +2,9 @@
 import * as $ from "jquery";
 
 
-const LOCAL_MODE = (document.location.hostname === "localhost");
-
 // Redirect the user to the splash page, if not signed in
-if (!LOCAL_MODE && localStorage.getItem("googleToken") === null) {
+if (localStorage.getItem("googleToken") === null) {
     window.location.replace("/");
-}
-
-// Fill session storage with mock data during LOCAL_MODE
-if (LOCAL_MODE) {
-    localStorage.setItem("googleToken", "");
-    localStorage.setItem("googleTokenExpiration", "2000000000");
-    localStorage.setItem("googleName", "John Doe");
-    localStorage.setItem("googleEmail", "john@doe.com");
-    localStorage.setItem("userId", "2");
-    localStorage.setItem("simulationId", "1");
-    localStorage.setItem("simulationAuthLevel", "OWN");
 }
 
 // Set the username in the navbar
@@ -59,7 +46,7 @@ window["gapiSigninButton"] = () => {
         },
         'onfailure': () => {
             window.location.href = "/";
-            console.log("Oops, something went wrong with your Google signin... Try again?")
+            console.log("Oops, something went wrong with your Google signin... Try again?");
         }
     });
 };

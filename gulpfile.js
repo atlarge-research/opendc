@@ -4,6 +4,9 @@
  * Usage:
  *  $ gulp --config=config.json        # for a single build
  *  $ gulp watch --config=config.json  # to run once, watch for changes, and rebuild when something changed
+ *
+ * If the `config` argument is omitted, the config file is assumed to be named `config.json` and present in this
+ * directory.
  */
 
 'use strict';
@@ -16,6 +19,7 @@ const gulpUtil = require('gulp-util');
 const rename = require('gulp-rename');
 const replace = require('gulp-replace');
 const del = require('del');
+const fs = require('fs');
 const runSequence = require('run-sequence');
 const source = require('vinyl-source-stream');
 const es = require('event-stream');
@@ -35,12 +39,17 @@ const bower = require('gulp-bower');
  * @returns {Object} the config file contents.
  */
 function getConfigFile() {
-    const configInput = argv.config;
+    let configInput = argv.config;
 
     if (configInput === undefined) {
-        gulpUtil.log(gulpUtil.colors.red('Config file argument missing\n'), 'Usage:\n' +
-            ' $ gulp --config=config.json');
-        throw new Exception();
+        if (!fs.existsSync("./config.json")) {
+            gulpUtil.log(gulpUtil.colors.red('Config file argument missing\n'), 'Usage:\n' +
+                ' $ gulp --config=config.json');
+            throw new Exception();
+        } else {
+            gulpUtil.log(gulpUtil.colors.magenta('No config file argument, assuming `config.json`.'));
+            configInput = "config.json";
+        }
     }
 
     try {
@@ -91,6 +100,8 @@ const scriptsFilePaths = scriptsFileNames.map(function (fileName) {
 });
 
 gulp.task('scripts', function () {
+    const configFile = getConfigFile();
+
     const tasks = scriptsFilePaths.map(function (entry, index) {
         return browserify({
             entries: [entry],
@@ -102,6 +113,7 @@ gulp.task('scripts', function () {
             .plugin(tsify)
             .bundle()
             .pipe(source(scriptsFileNames[index] + postfix + '.js'))
+            .pipe(replace('SERVER_BASE_URL', configFile.SERVER_BASE_URL))
             .pipe(gulp.dest(scriptsDestDir));
     });
     return es.merge.apply(null, tasks)
@@ -109,11 +121,14 @@ gulp.task('scripts', function () {
 });
 
 function getWatchifyHandler(bundler, fileName) {
+    const configFile = getConfigFile();
+
     return () => {
-        gulpUtil.log("Beginning build for " + fileName);
+        gulpUtil.log('Beginning build for ' + fileName);
         return bundler
             .bundle()
             .pipe(source(fileName + postfix + '.js'))
+            .pipe(replace('SERVER_BASE_URL', configFile.SERVER_BASE_URL))
             .pipe(gulp.dest(scriptsDestDir));
     };
 }
@@ -166,6 +181,7 @@ gulp.task('html', function () {
 
     return gulp.src(htmlFilePaths)
         .pipe(replace('GOOGLE_OAUTH_CLIENT_ID', configFile.GOOGLE_OAUTH_CLIENT_ID))
+        .pipe(replace('SERVER_BASE_URL', configFile.SERVER_BASE_URL))
         .pipe(processHTML())
         .pipe(gulp.dest(htmlDestDir))
         .pipe(notify({message: 'HTML task complete', onLast: true}));

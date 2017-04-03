@@ -15,7 +15,7 @@ export class SocketController {
         this.callbacks = {};
         this._cacheController = new CacheController();
 
-        this._socket = io.connect('https://opendc.ewi.tudelft.nl:443');
+        this._socket = io.connect('SERVER_BASE_URL');
         this._socket.on('connect', onConnect);
 
         this._socket.on('response', (jsonResponse: string) => {
