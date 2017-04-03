@@ -168,7 +168,7 @@ def _process_message(message):
         response = request.process()
 
         return (request, response)
-        
+
     except exceptions.AuthorizationTokenError as e:
         response = rest.Response(401, 'Authorization error')
         response.id = message['id']
@@ -188,6 +188,10 @@ def _process_message(message):
             response.id = message['id']
         traceback.print_exc()
     
-    return ({'method': message['method'], 'path': message['path']}, response)
+    request = rest.Request()
+    request.method = message['method']
+    request.path = message['path']
+
+    return (request, response)
 
 SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)

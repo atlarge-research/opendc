@@ -13,10 +13,13 @@ with open(sys.argv[1]) as file:
 class Request(object):
     """WebSocket message to REST request mapping."""
 
-    def __init__(self, message):
+    def __init__(self, message=None):
         """"Initialize a Request from a socket message."""
 
         # Get the Request parameters from the message
+
+        if message is None:
+            return
 
         try:
             self.message = message
