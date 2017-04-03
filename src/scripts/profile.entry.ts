@@ -1,7 +1,7 @@
 ///<reference path="../../typings/index.d.ts" />
 import * as $ from "jquery";
 import {APIController} from "./controllers/connection/api";
-import {removeUserInfo} from "./user";
+import {removeUserInfo} from "./user-authentication";
 window["jQuery"] = $;
 
 

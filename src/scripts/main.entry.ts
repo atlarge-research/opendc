@@ -7,7 +7,7 @@ window["$"] = $;
 require("jquery-mousewheel");
 window["jQuery"] = $;
 
-require("./user");
+require("./user-authentication");
 
 
 $(document).ready(function () {

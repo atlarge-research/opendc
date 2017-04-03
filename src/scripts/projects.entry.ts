@@ -4,7 +4,7 @@ import {APIController} from "./controllers/connection/api";
 import {Util} from "./util";
 window["jQuery"] = $;
 
-require("./user");
+require("./user-authentication");
 
 
 $(document).ready(() => {

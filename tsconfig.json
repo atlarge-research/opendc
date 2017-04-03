@@ -10,7 +10,7 @@
     "src/scripts/colors.ts",
     "src/scripts/definitions.ts",
     "src/scripts/serverconnection.ts",
-    "src/scripts/user.ts",
+    "src/scripts/user-authentication.ts",
     "src/scripts/util.ts",
     "src/scripts/controllers/mapcontroller.ts",
     "src/scripts/controllers/simulationcontroller.ts",
