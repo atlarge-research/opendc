@@ -1,11 +1,11 @@
 {
-  "name": "open-dc",
+  "name": "opendc",
   "description": "Datacenter simulator",
   "authors": [
     "Georgios Andreadis <g.andreadis@student.tudelft.nl>"
   ],
-  "license": "UNLICENSED",
-  "homepage": "https://opendc.ewi.tudelft.nl",
+  "license": "MIT",
+  "homepage": "http://opendc.org",
   "private": true,
   "dependencies": {
     "EaselJS": "^0.8.2",
