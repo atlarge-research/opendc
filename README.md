@@ -91,13 +91,17 @@ Make the following replacements:
 
 In `opendc-web-server/static/index.html`, add your own `OAUTH_CLIENT_ID` in `content=` on line `2`.
 
-#### Set up Postman
+#### Set up Postman and OpenDC account
 
 To easily make HTTP requests to the web server, we recommend Postman (get it [here](https://www.getpostman.com/)).
 
-Once Postman is installed and set up, `Import` the OpenDC requests collection (`OpenDC.postman_collection.json`). In the `Collections` tab, expand `OpenDC` and click `Create New Simulation`. This should open the request in the `Builder` pane.
+Once Postman is installed and set up, `Import` the OpenDC requests collection (`OpenDC.postman_collection.json`). In the `Collections` tab, expand `OpenDC` and click `Create New User`. This should open the request in the `Builder` pane.
 
-Navigate to `http://localhost:8081/my-auth-token` and copy the authentication token on this page to your clipboard. In the Postman `Builder` pane, navigate to the `Headers (2)` tab, and paste the authentication token as value for the `auth-token` header. (This token expires every hour - refresh the auth token page to get a new token.)
+Navigate to `http://localhost:8081/my-auth-token` and copy the authentication token on this page to your clipboard. In the Postman `Builder` pane, navigate to the `Headers (2)` tab, and paste the authentication token as value for the `auth-token` header. (This token expires every hour - refresh the auth token page to get a new token.) 
+
+(Optional: navigate to the `Body` tab and change the email address to the gmail address you used to get an authentication token.)
+
+Click `Send` in Postman to send your request and see the server's response. If it's a `200`, your account is set up!
 
 ### Local Development
 
@@ -108,8 +112,6 @@ cd opendc-web-server
 python main.py config.json
 ```
 
-Click `Send` in Postman to send your request and see the server's response.
-
-To try a different query, use the Postman `Builder` to edit the method, path, body, query parameters, etc.
+To try a different query, use the Postman `Builder` to edit the method, path, body, query parameters, etc. `Create New Simulation` is provided as an additional example.
 
 When editing the web server code, restart the server (`CTRL` + `c` followed by `python main.py config.json` in the console running the server) to see the result of your changes.
