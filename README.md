@@ -79,7 +79,7 @@ yarn
 gulp
 ```
 
-*Note: If you wish to use a configuration file from a different location, pass a `--config=` parameter, providing the relative path to the file to be used.*
+*Note: If you wish to use a configuration file from a different location, pass a `--config=...` parameter to the `gulp` command, providing the relative path to the file to be used.*
 
 ### Automatically triggered builds
 To make development easier, we've set up a `watch` task. With this task, you can quickly see what effects a certain change has on the program. It runs in the background, automatically triggering a rebuild of relevant files on file-change.
