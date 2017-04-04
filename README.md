@@ -20,7 +20,16 @@ The main application allows the user to construct and simulate a datacenter. To 
 ### Components
 Under the hood, this looks as follows:
 
-[TODO]
+![OpenDC Frontend Component Diagram](https://raw.githubusercontent.com/atlarge-research/opendc-frontend/master/images/opendc-frontend-component-diagram.png)
+
+#### Entry Scripts
+The entry scripts are the first entities triggered on page load of the respective pages. They are responsible for instantiating the corresponding view and controller.
+
+#### Controllers
+In the main web-application, the controllers handle user input and state. They also initiate re-renders of views when a part of their managed state changes. There are different classes of controllers; some concerning themselves with the API connection, others with the different modes of interaction, and others with simulation-specific actions. This all is orchestrated by a central class called the `MapController`.
+
+#### Views
+The views are responsible for drawing content to the canvas. They are split up into different layers, corresponding to the way they are rendered.
 
 ## Setup for Local Development
 
