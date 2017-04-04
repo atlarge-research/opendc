@@ -22,6 +22,8 @@ Under the hood, this looks as follows:
 
 ![OpenDC Frontend Component Diagram](https://raw.githubusercontent.com/atlarge-research/opendc-frontend/master/images/opendc-frontend-component-diagram.png)
 
+*Squared-off colored boxes indicate packages (colors become more saturated as packages are nested); rounded-off boxes indicate individual components; dotted lines indicate control flow; and solid lines indicate data flow.*
+
 #### Entry Scripts
 The entry scripts are the first entities triggered on page load of the respective pages. They are responsible for instantiating the corresponding view and controller.
 
