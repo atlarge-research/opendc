@@ -56,19 +56,19 @@ git clone --recursive https://github.com/atlarge-research/opendc.git
 cd opendc/
 ```
 
-In the directory you just entered, you need to set up a small configuration file. To do this, create a file called `keys.json` in the `opendc` folder. In this file, simply replace `your-google-oauth-client-id` with your `client_id` from the OAuth client ID you created.
+In the directory you just entered, you need to set up a small configuration file. To do this, create a file called `keys.json` in the `opendc` folder. In this file, simply replace `your-google-oauth-client-id` with your `client_id` from the OAuth client ID you created. For a standard setup, you can leave the other settings as-is.
 
 ```json
 {
-  "OAUTH_CLIENT_ID": "your-google-oauth-client-id",
-  "SERVER_BASE_URL": "http://localhost:8081",
-  "ROOT_DIR": "/opendc",
+  "DATABASE_LOCATION": "/data/database/opendc.db",
   "FLASK_SECRET": "This is a super duper secret flask key",
-  "DATABASE_LOCATION": "/data/database/opendc.db"
+  "OAUTH_CLIENT_ID": "your-google-oauth-client-id",
+  "ROOT_DIR": "/opendc",
+  "SERVER_BASE_URL": "http://localhost:8081"
 }
 ```
 
-Once this configuration file is set up, we're ready to get the install up and running:
+Now, start the server:
 
 ```bash
 # Build the Docker image
