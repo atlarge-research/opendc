@@ -29,7 +29,7 @@ RUN mkdir -p /data/database \
 	&& cd /opendc/opendc-frontend \
 	&& rm -rf /opendc/opendc-frontend/build \
 	&& yarn \
-	&& gulp --config=../build/frontend_config.json
+	&& gulp --config=../keys.json
 
 CMD ["sh", "-c", "cd /opendc && ./build/configure.sh /data/database && /usr/bin/supervisord -c /opendc/build/supervisord.conf"]
 
