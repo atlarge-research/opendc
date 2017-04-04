@@ -10,7 +10,7 @@ import flask_socketio
 from oauth2client import client, crypt
 
 from opendc.models.user import User
-from opendc.util import exceptions, rest
+from opendc.util import exceptions, rest, path_parser
 
 if len(sys.argv) < 2:
     print "config file path not given as argument"
@@ -55,7 +55,7 @@ def serve_projects():
 
     return send_from_directory(STATIC_ROOT, 'projects.html')
 
-@FLASK_CORE_APP.route('/web-server-test')
+@FLASK_CORE_APP.route('/my-auth-token')
 def serve_web_server_test():
     """Serve the web server test."""
 
@@ -102,51 +102,98 @@ def sign_in():
 
     return jsonify(**data)
 
+@FLASK_CORE_APP.route('/api/<string:version>/<path:endpoint_path>', methods = ['GET', 'POST', 'PUT', 'DELETE'])
+def api_call(version, endpoint_path):
+    """Call an API endpoint directly over HTTP"""
+
+    # Get path and parameters
+    (path, path_parameters) = path_parser.parse(version, endpoint_path)
+
+    query_parameters = request.args.to_dict()
+    for param in query_parameters:
+        try:
+            query_parameters[param] = int(query_parameters[param])
+        except:
+            pass
+
+    try:
+        body_parameters = json.loads(request.get_data())
+    except:
+        body_parameters = {}
+    
+    # Create and call request
+    (req, response) = _process_message({
+        'id': 0,
+        'method': request.method,
+        'parameters': {
+            'body': body_parameters,
+            'path': path_parameters,
+            'query': query_parameters
+        },
+        'path': path,
+        'token': request.headers.get('auth-token')
+    })
+
+    print 'HTTP:\t{} to `/{}` resulted in {}: {}'.format(
+        req.method,
+        req.path,
+        response.status['code'],
+        response.status['description']
+    )
+    sys.stdout.flush()
+
+    flask_response = jsonify(json.loads(response.to_JSON()))
+    flask_response.status_code = response.status['code']
+    return flask_response
+
 @SOCKET_IO_CORE.on('request')
 def receive_message(message):
     """"Receive a SocketIO request"""
     
+    (request, response) = _process_message(message)
+
+    print 'Socket:\t{} to `/{}` resulted in {}: {}'.format(
+        request.method,
+        request.path,
+        response.status['code'],
+        response.status['description']
+    )
+    sys.stdout.flush()
+
+    flask_socketio.emit('response', response.to_JSON(), json=True)
+
+def _process_message(message):
+    """Process a request message and return the response."""
+
     try:
-        request = rest.Request(message)
+        request  = rest.Request(message)
         response = request.process()
-        
-        flask_socketio.emit('response', response.to_JSON(), json=True)
 
-        print 'Socket: {} to `/{}` resulted in {}: {}'.format(
-            request.method,
-            request.path,
-            response.status['code'],
-            response.status['description']
-        )
-
-        return
+        return (request, response)
 
     except exceptions.AuthorizationTokenError as e:
         response = rest.Response(401, 'Authorization error')
         response.id = message['id']
 
-        flask_socketio.emit('response', response.to_JSON(), json=True)
-
     except exceptions.RequestInitializationError as e:
         response = rest.Response(400, e.message)
         response.id = message['id']
 
-        flask_socketio.emit('response', response.to_JSON(), json=True)
-
+        if not 'method' in message:
+            message['method'] = 'UNSPECIFIED'
+        if not 'path' in message:
+            message['path'] = 'UNSPECIFIED'
+        
     except Exception as e:
         response = rest.Response(500, 'Internal server error')
-        response.id = message['id']
-
-        flask_socketio.emit('response', response.to_JSON(), json=True)
+        if 'id' in message:
+            response.id = message['id']
         traceback.print_exc()
+    
+    request = rest.Request()
+    request.method = message['method']
+    request.path = message['path']
 
-    print 'Socket: {} to `{}` resulted in {}: {}'.format(
-        message['method'],
-        message['path'],
-        response.status['code'],
-        response.status['description']
-    )
-
+    return (request, response)
 
 SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)
-

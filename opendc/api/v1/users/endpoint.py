@@ -43,7 +43,6 @@ def POST(request):
         request.check_required_parameters(
             body = {
                 'user': {
-                    'googleId': 'string',
                     'email': 'string'
                 }
             }
@@ -54,6 +53,7 @@ def POST(request):
 
     # Instantiate a User
 
+    request.params_body['user']['googleId'] = request.google_id
     user = User.from_JSON(request.params_body['user'])
 
     # Make sure a User with this Google ID does not already exist

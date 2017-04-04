@@ -41,6 +41,8 @@ The following steps will guide you through setting up the OpenDC web server loca
 
 ### Local Setup
 
+#### Install requirements
+
 Make sure you have Python 2.7 installed (if not, get it [here](https://www.python.org/)), as well as pip (if not, get it [here](https://pip.pypa.io/en/stable/installing/)). Then run the following to install the requirements.
 
 ```bash
@@ -50,6 +52,8 @@ pip install oauth2client
 pip install eventlet
 ```
 
+#### Get the code
+
 Clone both this repository and the main OpenDC repository, from the same base directory.
 
 ```bash
@@ -57,12 +61,16 @@ git clone https://github.com/atlarge-research/opendc-web-server.git
 git clone https://github.com/atlarge-research/opendc.git
 ```
 
+#### Set up the database
+
 Set up the database, replacing `PATH_TO_DATABASE` with where you'd like to create the SQLite database. (This will replace any file named `opendc.db` at the location `PATH_TO_DATABASE`.)
 
 ```bash
 cd opendc/database
 python rebuild-database.py "PATH_TO_DATABASE"
 ```
+
+#### Configure OpenDC
 
 Create a file `config.json` in `opendc-web-server`, containing:
 
@@ -81,7 +89,19 @@ Make the following replacements:
 * Replace `PATH_TO_DATABASE` with where you created the database.
 * Replace `FLASK_SECRET`, come up with some string.
 
-In `opendc-web-server/static/index.html`, add your own `OAUTH_CLIENT_ID` in `content=""`.
+In `opendc-web-server/static/index.html`, add your own `OAUTH_CLIENT_ID` in `content=` on line `2`.
+
+#### Set up Postman and OpenDC account
+
+To easily make HTTP requests to the web server, we recommend Postman (get it [here](https://www.getpostman.com/)).
+
+Once Postman is installed and set up, `Import` the OpenDC requests collection (`OpenDC.postman_collection.json`). In the `Collections` tab, expand `OpenDC` and click `Create New User`. This should open the request in the `Builder` pane.
+
+Navigate to `http://localhost:8081/my-auth-token` and copy the authentication token on this page to your clipboard. In the Postman `Builder` pane, navigate to the `Headers (2)` tab, and paste the authentication token as value for the `auth-token` header. (This token expires every hour - refresh the auth token page to get a new token.) 
+
+(Optional: navigate to the `Body` tab and change the email address to the gmail address you used to get an authentication token.)
+
+Click `Send` in Postman to send your request and see the server's response. If it's a `200`, your account is set up!
 
 ### Local Development
 
@@ -92,8 +112,6 @@ cd opendc-web-server
 python main.py config.json
 ```
 
-Navigate to `http://localhost:8081/web-server-test` in a web browser (Chrome recommended), and open the console to see the server's response to the query in `static/index.html`.
-
-To try a different query, edit the `path`, `method`, and/or `parameters` in `static/index.html`.
+To try a different query, use the Postman `Builder` to edit the method, path, body, query parameters, etc. `Create New Simulation` is provided as an additional example.
 
 When editing the web server code, restart the server (`CTRL` + `c` followed by `python main.py config.json` in the console running the server) to see the result of your changes.
