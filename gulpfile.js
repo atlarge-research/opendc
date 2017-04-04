@@ -180,7 +180,7 @@ gulp.task('html', function () {
     const configFile = getConfigFile();
 
     return gulp.src(htmlFilePaths)
-        .pipe(replace('GOOGLE_OAUTH_CLIENT_ID', configFile.GOOGLE_OAUTH_CLIENT_ID))
+        .pipe(replace('OAUTH_CLIENT_ID', configFile.OAUTH_CLIENT_ID))
         .pipe(replace('SERVER_BASE_URL', configFile.SERVER_BASE_URL))
         .pipe(processHTML())
         .pipe(gulp.dest(htmlDestDir))

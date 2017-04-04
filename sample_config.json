@@ -1,4 +1,4 @@
 {
-  "GOOGLE_OAUTH_CLIENT_ID": "the-google-oauth-client-id",
+  "OAUTH_CLIENT_ID": "the-google-oauth-client-id",
   "SERVER_BASE_URL": "http://localhost:8081"
 }
