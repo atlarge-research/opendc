@@ -61,14 +61,25 @@ npm install -g gulp
 You may need to prepend these commands with `sudo`, if you are on a Debian-based Linux machine. If you're having trouble giving NPM the necessary permissions on such a machine, have a look at [this NPM documentation page](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
 
 ### Building the project
-Run the following commands from this directory to fetch dependencies and compile the code of the frontend side:
+First, create a configuration file called `config.json` in the root of the `opendc-frontend` directory, with the following template:
+
+```json
+{
+  "OAUTH_CLIENT_ID": "the-google-oauth-client-id",
+  "SERVER_BASE_URL": "http://localhost:8081"
+}
+```
+
+Be sure to replace `the-google-oauth-client-id` with your actual OAuth client ID.
+
+Finally, run the following commands from this directory to fetch dependencies and compile the code of the frontend side:
 
 ```bash
 yarn
-gulp --config=config.json
+gulp
 ```
 
-**Note:** You need to replace `config.json` with the name / path of a real config file. This config file can be created by making a copy of the `sample_config.json` template and replacing the entries with your setup data. Make sure not to check this new config file into the VCS, as it is unique to each deployment situation.
+*Note: If you wish to use a configuration file from a different location, pass a `--config=` parameter, providing the relative path to the file to be used.*
 
 ### Automatically triggered builds
 To make development easier, we've set up a `watch` task. With this task, you can quickly see what effects a certain change has on the program. It runs in the background, automatically triggering a rebuild of relevant files on file-change.
@@ -76,5 +87,5 @@ To make development easier, we've set up a `watch` task. With this task, you can
 Start it by executing:
 
 ```bash
-gulp watch --config=config.json
+gulp watch
 ```
