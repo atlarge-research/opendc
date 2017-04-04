@@ -142,7 +142,9 @@ def api_call(version, endpoint_path):
     )
     sys.stdout.flush()
 
-    return jsonify(json.loads(response.to_JSON()))
+    flask_response = jsonify(json.loads(response.to_JSON()))
+    flask_response.status_code = response.status['code']
+    return flask_response
 
 @SOCKET_IO_CORE.on('request')
 def receive_message(message):
