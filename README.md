@@ -32,7 +32,7 @@ The simulator monitors the database for `QUEUED` experiments, and simulates them
 
 The official way to run OpenDC is using Docker. Other options include building and running locally, and building and running to deploy on a server.
 
-For all of these options, you have to create a Google API Console project and client ID, which the OpenDC frontend and web server will use to authenticate users and requests. Follow [these steps](https://developers.google.com/identity/sign-in/web/devconsole-project) to make such a project. In the 'Authorized JavaScript origins' field, be sure to add `http://localhost:8081` as origin. Download the JSON of the OAuth 2.0 client ID you created from the Credentials tab, and specifically note the `client_id` and the `client_secret`, which you'll need to build OpenDC.
+For all of these options, you have to create a Google API Console project and client ID, which the OpenDC frontend and web server will use to authenticate users and requests. Follow [these steps](https://developers.google.com/identity/sign-in/web/devconsole-project) to make such a project. In the 'Authorized JavaScript origins' field, be sure to add `http://localhost:8081` as origin. Download the JSON of the OAuth 2.0 client ID you created from the Credentials tab, and specifically note the `client_id`, which you'll need to build OpenDC.
 
 ### Installing Docker
 
@@ -46,7 +46,7 @@ Open VirtualBox, navigate to the settings of your default docker VM, and go to t
 
 ### Running OpenDC
 
-To build and run the full OpenDC stack locally on Linux or Mac, run the commands bellow. Replace `your-google-oauth-client-id` with your `client_id` from the OAuth 2.0 client ID you created, and replace `your-google-oauth-secret` with your `client_secret`.
+To build and run the full OpenDC stack locally on Linux or Mac, you first need to clone the project:
 
 ```bash
 # Clone the repo and its submodules
@@ -54,12 +54,28 @@ git clone --recursive https://github.com/atlarge-research/opendc.git
 
 # Enter the directory
 cd opendc/
+```
 
+In the directory you just entered, you need to set up a small configuration file. To do this, create a file called `keys.json` in the `opendc` folder. In this file, simply replace `your-google-oauth-client-id` with your `client_id` from the OAuth client ID you created. For a standard setup, you can leave the other settings as-is.
+
+```json
+{
+  "DATABASE_LOCATION": "/data/database/opendc.db",
+  "FLASK_SECRET": "This is a super duper secret flask key",
+  "OAUTH_CLIENT_ID": "your-google-oauth-client-id",
+  "ROOT_DIR": "/opendc",
+  "SERVER_BASE_URL": "http://localhost:8081"
+}
+```
+
+Now, start the server:
+
+```bash
 # Build the Docker image
 docker build -t=opendc .
 
 # Start a container with the image
-docker run -d --name opendc -p 8081:8081 -e 'SERVER_URL=http://localhost:8081' -e 'OAUTH_CLIENT_ID=your-google-oauth-client-id' -e 'OAUTH_CLIENT_SECRET=your-google-oauth-secret' opendc
+docker run -d --name opendc -p 8081:8081 opendc
 ```
 
 Wait a few seconds and open `http://localhost:8081` in your browser to use OpenDC.
