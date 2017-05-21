@@ -380,7 +380,7 @@ class WindowController {
         $(".project-name-form input").val(authorizations[0].simulation.name);
 
         $(".project-name-form .btn").css("display", "inline-block").click(() => {
-            const nameInput = $(".project-name-form input").val();
+            const nameInput = $(".project-name-form input").text();
             if (nameInput !== "") {
                 authorizations[0].simulation.name = nameInput;
                 this.api.updateSimulation(authorizations[0].simulation);
@@ -501,7 +501,7 @@ class WindowController {
     private createSimulation(callback: (simulationId: number) => any): void {
         this.api.addSimulation({
             id: -1,
-            name: $(".project-name-form input").val(),
+            name: $(".project-name-form input").text(),
             datetimeCreated: Util.getCurrentDateTime(),
             datetimeLastEdited: Util.getCurrentDateTime()
         }).then((data: any) => {
@@ -577,7 +577,7 @@ class WindowController {
      */
     private handleParticipantAdd(callback: (userId: number) => any): void {
         const inputForm = $(".participant-add-form input");
-        this.api.getUserByEmail(inputForm.val()).then((data: any) => {
+        this.api.getUserByEmail(inputForm.text()).then((data: any) => {
             let insert = true;
             for (let i = 0; i < this.simAuthorizations.length; i++) {
                 if (this.simAuthorizations[i].userId === data.id) {

@@ -1,4 +1,4 @@
-import {AppMode, MapController, InteractionLevel} from "../mapcontroller";
+import {AppMode, InteractionLevel, MapController} from "../mapcontroller";
 import {MapView} from "../../views/mapview";
 import * as $ from "jquery";
 
@@ -88,7 +88,7 @@ export class ObjectModeController {
     public setupEventListeners() {
         // Handler for saving a new rack name
         $("#rack-name-save").on("click", () => {
-            this.currentRack.name = $("#rack-name-input").val();
+            this.currentRack.name = $("#rack-name-input").text();
             this.mapController.api.updateRack(this.mapView.simulation.id,
                 this.mapView.currentDatacenter.id, this.mapController.roomModeController.currentRoom.id,
                 this.mapController.objectModeController.currentObjectTile.id, this.currentRack).then(

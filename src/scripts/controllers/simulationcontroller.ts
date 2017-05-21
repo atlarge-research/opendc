@@ -2,7 +2,7 @@
 ///<reference path="mapcontroller.ts" />
 import * as $ from "jquery";
 import {MapView} from "../views/mapview";
-import {MapController, InteractionLevel, AppMode} from "./mapcontroller";
+import {AppMode, InteractionLevel, MapController} from "./mapcontroller";
 import {Util} from "../util";
 import {StateCache} from "./simulation/statecache";
 import {ChartController} from "./simulation/chart";
@@ -312,7 +312,7 @@ export class SimulationController {
 
             const newExperiment: IExperiment = {
                 id: -1,
-                name: nameInput.val(),
+                name: nameInput.text(),
                 pathId: parseInt($("#new-experiment-path-select").val()),
                 schedulerName: $("#new-experiment-scheduler-select").val(),
                 traceId: parseInt($("#new-experiment-trace-select").val()),

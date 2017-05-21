@@ -1,5 +1,5 @@
 import {Util} from "../../util";
-import {InteractionLevel, MapController, AppMode} from "../mapcontroller";
+import {AppMode, InteractionLevel, MapController} from "../mapcontroller";
 import {MapView} from "../../views/mapview";
 import * as $ from "jquery";
 
@@ -124,7 +124,7 @@ export class RoomModeController {
 
         // Handler for saving a new room name
         $("#room-name-save").on("click", () => {
-            this.currentRoom.name = $("#room-name-input").val();
+            this.currentRoom.name = $("#room-name-input").text();
             this.mapController.api.updateRoom(this.mapView.simulation.id,
                 this.mapView.currentDatacenter.id, this.currentRoom).then(() => {
                 this.mapView.roomTextLayer.draw();
