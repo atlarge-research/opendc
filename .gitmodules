@@ -1,9 +1,0 @@
-[submodule "external/sqlite"]
-	path = external/sqlite
-	url = https://github.com/mackyle/sqlite.git
-[submodule "external/googletest"]
-	path = external/googletest
-	url = https://github.com/google/googletest
-[submodule "opendc-simulator-dependencies"]
-	path = opendc-simulator-dependencies
-	url = https://github.com/tudelft-atlarge/opendc-simulator-dependencies.git
