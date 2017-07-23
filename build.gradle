@@ -38,9 +38,14 @@ plugins {
 	id 'org.jetbrains.kotlin.jvm' version '1.1.3'
 }
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+	kotlinOptions {
+		jvmTarget = "1.8"
+	}
+}
+
 group 'nl.tudelft.opendc'
 version '1.0'
-
 
 repositories {
 	jcenter()
