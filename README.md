@@ -1,7 +1,8 @@
-<p align="center">
-  <img src="https://opendc.ewi.tudelft.nl/img/logo.png" width="100" alt="OpenDC Simulator">
-</p>
-<h1 align="center">OpenDC</h1>
+<h1 align="center">
+  <img src="misc/artwork/logo.png" width="100" alt="OpenDC Simulator">
+  <br>
+  OpenDC
+</h1>
 <p align="center">
 Collaborative Datacenter Simulation and Exploration for Everybody
 </p>
