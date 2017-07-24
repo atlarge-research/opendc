@@ -1,0 +1,21 @@
+=transition($property, $time)
+  -webkit-transition: $property $time
+  -moz-transition: $property $time
+  -o-transition: $property $time
+  transition: $property $time
+
+=user-select-def
+  -webkit-user-select: none
+  -moz-user-select: none
+  -ms-user-select: none
+  user-select: none
+
+=border-radius-def($length)
+  -webkit-border-radius: $length
+  -moz-border-radius: $length
+  border-radius: $length
+
+/* General Button Abstractions */
+=clickable
+  cursor: pointer
+  +user-select-def

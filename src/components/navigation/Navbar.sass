@@ -1,0 +1,132 @@
+@import ../../style-globals/mixins.sass
+@import ../../style-globals/variables.sass
+
+.opendc-navbar
+  position: relative
+  display: block
+  width: 100%
+  height: $navbar-height
+
+  color: #eee
+  background: #343434
+
+  z-index: 100
+
+  -webkit-box-shadow: -10px 8px 3px 12px #000
+  -moz-box-shadow: -10px 8px 3px 12px #000
+  box-shadow: -10px -10px 3px 12px #000
+
+.opendc-brand
+  display: inline-block
+  float: left
+  margin-left: $global-padding
+
+  padding: 0 10px
+
+  cursor: pointer
+  color: #eee
+  height: 100%
+
+  +transition(background, $transition-length)
+
+  img
+    display: inline-block
+    float: left
+    margin: $navbar-padding 0
+
+    width: $navbar-height - $navbar-padding * 2
+    height: $navbar-height - $navbar-padding * 2
+    vertical-align: middle
+
+  .opendc-title
+    display: inline-block
+    float: right
+    margin-left: 20px
+
+    font-size: 16pt
+    line-height: $navbar-height
+
+.opendc-brand:hover
+  background: $blue
+
+.opendc-brand:active
+  background: $blue-dark
+
+.navbar-button-group
+  display: inline-block
+  height: 100%
+
+  a
+    display: inline-block
+    line-height: $navbar-height
+    text-align: center
+    color: #eee
+
+    border-left: 1px solid #464646
+
+    +clickable
+    +transition(background, $transition-length)
+
+  a:last-of-type
+    border-right: 1px solid #464646
+
+.navigation
+  margin-left: 30px
+
+  .projects
+    float: left
+    padding: 0 20px
+
+    font-size: 12pt
+
+  .projects:hover
+    background: #606060
+
+  .projects:active
+    background: #161616
+
+.user-controls
+  float: right
+  margin-right: $global-padding
+
+  .support
+    float: left
+    margin-top: -1px
+
+    width: $navbar-height
+
+    font-size: 14pt
+
+  .support:hover
+    background: #41a0cd
+
+  .support:active
+    background: #307798
+
+  .username
+    float: left
+    padding: 0 20px
+
+    font-size: 12pt
+
+  .username:hover
+    background: #4eae44
+
+  .username:active
+    background: #2d6527
+
+  .sign-out
+    float: right
+    margin-top: -1px
+    width: $navbar-height
+
+    font-size: 14pt
+
+  .sign-out:hover
+    background: #e3474d
+
+  .sign-out:active
+    background: #a73438
+
+#google-signin
+  display: none
