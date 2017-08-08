@@ -25,7 +25,7 @@ class TaskState(Model):
 
         task_states = []
 
-        statement = 'SELECT * FROM task_states WHERE experiment_id = ? AND tick = ?'
+        statement = 'SELECT * FROM task_states WHERE experiment_id = %s AND tick = %s'
         results = database.fetchall(statement, (experiment_id, tick))
 
         for row in results:
