@@ -46,10 +46,7 @@ The following steps will guide you through setting up the OpenDC web server loca
 Make sure you have Python 2.7 installed (if not, get it [here](https://www.python.org/)), as well as pip (if not, get it [here](https://pip.pypa.io/en/stable/installing/)). Then run the following to install the requirements.
 
 ```bash
-pip install flask
-pip install flask_socketio
-pip install oauth2client
-pip install eventlet
+python setup.py install
 ```
 
 #### Get the code
