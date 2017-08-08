@@ -21,36 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-buildscript {
-	ext.kotlin_version = '1.1.3-2'
 
-	repositories {
-		mavenCentral()
-	}
+package nl.atlarge.opendc.experiment
 
-	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-	}
-}
-
-plugins {
-	id 'java'
-	id 'org.jetbrains.kotlin.jvm' version '1.1.3'
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-	kotlinOptions {
-		jvmTarget = "1.8"
-	}
-}
-
-group 'nl.atlarge.opendc'
-version '1.0'
-
-repositories {
-	jcenter()
-}
-
-dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-}
+/**
+ * A job that is submitted to a cloud network, which consists of one or multiple [Task]s.
+ *
+ * @param owner The user to which the job belongs.
+ * @param tasks The tasks of which the job consists.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+data class Job(val owner: User, val tasks: Collection<Task>)

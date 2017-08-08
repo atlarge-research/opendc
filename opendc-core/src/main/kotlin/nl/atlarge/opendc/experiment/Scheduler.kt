@@ -21,36 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-buildscript {
-	ext.kotlin_version = '1.1.3-2'
 
-	repositories {
-		mavenCentral()
-	}
+package nl.atlarge.opendc.experiment
 
-	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-	}
-}
+import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.Node
 
-plugins {
-	id 'java'
-	id 'org.jetbrains.kotlin.jvm' version '1.1.3'
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-	kotlinOptions {
-		jvmTarget = "1.8"
-	}
-}
-
-group 'nl.atlarge.opendc'
-version '1.0'
-
-repositories {
-	jcenter()
-}
-
-dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+/**
+ * A task scheduler that is coupled to an [Entity] in the topology of the cloud network.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Scheduler<in E: Entity> {
+	/**
+	 * Schedule the given jobs for the given entity.
+	 *
+	 * @param node The node in the cloud network topology representing the entity.
+	 * @param jobs The jobs that have been submitted to the cloud network.
+	 */
+	fun schedule(node: Node<E>, jobs: Set<Job>)
 }

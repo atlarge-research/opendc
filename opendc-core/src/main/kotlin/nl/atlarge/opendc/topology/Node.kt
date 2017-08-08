@@ -21,36 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-buildscript {
-	ext.kotlin_version = '1.1.3-2'
 
-	repositories {
-		mavenCentral()
-	}
+package nl.atlarge.opendc.topology
 
-	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-	}
-}
+/**
+ * A node in the logical topology of a cloud network, representing some [Entity].
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Node<out E: Entity> {
+	/**
+	 * The [Entity] this node represents.
+	 */
+	val entity: E
 
-plugins {
-	id 'java'
-	id 'org.jetbrains.kotlin.jvm' version '1.1.3'
-}
+	/**
+	 * Return the set of incoming edges of this node.
+	 *
+	 * @return All edges whose destination is this node.
+	 */
+	fun incomingEdges(): Set<Edge<*>>
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-	kotlinOptions {
-		jvmTarget = "1.8"
-	}
-}
-
-group 'nl.atlarge.opendc'
-version '1.0'
-
-repositories {
-	jcenter()
-}
-
-dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+	/**
+	 * Return the set of outgoing edges of this node.
+	 *
+	 * @return  All edges whose source is this node.
+	 */
+	fun outgoingEdges(): Set<Edge<*>>
 }

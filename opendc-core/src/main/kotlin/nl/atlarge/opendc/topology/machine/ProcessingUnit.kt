@@ -21,36 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-buildscript {
-	ext.kotlin_version = '1.1.3-2'
 
-	repositories {
-		mavenCentral()
-	}
+package nl.atlarge.opendc.topology.machine
 
-	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-	}
-}
+import nl.atlarge.opendc.topology.Entity
 
-plugins {
-	id 'java'
-	id 'org.jetbrains.kotlin.jvm' version '1.1.3'
-}
+/**
+ * An interface representing a generic processing unit which is placed into a [Machine].
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface ProcessingUnit: Entity {
+	/**
+	 * The speed of this [ProcessingUnit] per core.
+	 */
+	val speed: Int
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-	kotlinOptions {
-		jvmTarget = "1.8"
-	}
-}
+	/**
+	 * The amount of cores within this [ProcessingUnit].
+	 */
+	val cores: Int
 
-group 'nl.atlarge.opendc'
-version '1.0'
-
-repositories {
-	jcenter()
-}
-
-dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+	/**
+	 * The energy consumption of this [ProcessingUnit] in Kj/s.
+	 */
+	val energyConsumption: Int
 }

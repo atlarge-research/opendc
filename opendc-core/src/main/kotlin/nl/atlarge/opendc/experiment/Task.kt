@@ -21,36 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-buildscript {
-	ext.kotlin_version = '1.1.3-2'
 
-	repositories {
-		mavenCentral()
+package nl.atlarge.opendc.experiment
+
+/**
+ * A task represents some computation that is part of a [Job].
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+data class Task(
+	val id: Int,
+	val dependencies: Set<Task>,
+	val flops: Long
+) {
+	/**
+	 * The remaining amount of flops to compute.
+	 */
+	var remaining: Long = flops
+		private set
+
+	/**
+	 * A flag to indicate whether the task is finished.
+	 */
+	var finished: Boolean = false
+		private set
+
+	/**
+	 * Consume the given amount of flops of this task.
+	 *
+	 * @param flops The total amount of flops to consume.
+	 */
+	fun consume(flops: Long) {
+		if (finished)
+			return
+		if (remaining <= flops) {
+			finished = true
+			remaining = 0
+		} else {
+			remaining -= flops
+		}
 	}
-
-	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-	}
-}
-
-plugins {
-	id 'java'
-	id 'org.jetbrains.kotlin.jvm' version '1.1.3'
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-	kotlinOptions {
-		jvmTarget = "1.8"
-	}
-}
-
-group 'nl.atlarge.opendc'
-version '1.0'
-
-repositories {
-	jcenter()
-}
-
-dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }

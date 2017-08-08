@@ -21,36 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-buildscript {
-	ext.kotlin_version = '1.1.3-2'
 
-	repositories {
-		mavenCentral()
-	}
+package nl.atlarge.opendc.topology
 
-	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-	}
-}
+/**
+ * A graph data structure which represents the logical topology of a cloud network consisting of one or more data
+ * centers.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Graph {
+	/**
+	 * Add the given [Node] to this graph.
+	 *
+	 * @param node The node to add.
+	 */
+	fun addNode(node: Node<*>)
 
-plugins {
-	id 'java'
-	id 'org.jetbrains.kotlin.jvm' version '1.1.3'
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-	kotlinOptions {
-		jvmTarget = "1.8"
-	}
-}
-
-group 'nl.atlarge.opendc'
-version '1.0'
-
-repositories {
-	jcenter()
-}
-
-dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+	/**
+	 * Add the given [Edge] to this graph.
+	 *
+	 * @param edge The edge to add.
+	 */
+	fun addEdge(edge: Edge<*>)
 }
