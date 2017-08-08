@@ -151,8 +151,13 @@ CREATE TABLE IF NOT EXISTS traces (
 
 -- A job
 CREATE TABLE IF NOT EXISTS jobs (
-  id   INTEGER PRIMARY KEY     NOT NULL,
-  name TEXT                    NOT NULL
+  id       INTEGER PRIMARY KEY     NOT NULL,
+  name     TEXT                    NOT NULL,
+  trace_id INTEGER                 NOT NULL,
+
+  FOREIGN KEY (trace_id) REFERENCES traces (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
 );
 
 -- A task that's defined in terms of how many flops (floating point operations) it takes to complete

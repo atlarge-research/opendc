@@ -3927,6 +3927,9 @@
         },
         "name": {
           "type": "string"
+        },
+        "traceId": {
+          "type": "integer"
         }
       }
     },

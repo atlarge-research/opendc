@@ -39,7 +39,7 @@ INSERT INTO sections (path_id, datacenter_id, start_tick) VALUES (2, 3, 0);
 INSERT INTO traces (name) VALUES ('Default');
 
 -- Jobs
-INSERT INTO jobs (name) VALUES ('Default');
+INSERT INTO jobs (name, trace_id) VALUES ('Default', 1);
 
 -- Tasks
 INSERT INTO tasks (id, start_tick, total_flop_count, job_id, parallelizability) VALUES (1, 0, 400000, 1, 'SEQUENTIAL');
@@ -53,7 +53,7 @@ VALUES (80, 200000, 1, 1, 'PARALLEL');
 INSERT INTO traces (name) VALUES ('Image Processing');
 
 -- Jobs
-INSERT INTO jobs (name) VALUES ('Image Processing');
+INSERT INTO jobs (name, trace_id) VALUES ('Image Processing', 2);
 
 -- Tasks
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (0, 100000, 2, 'SEQUENTIAL');
@@ -121,7 +121,7 @@ INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALU
 INSERT INTO traces (name) VALUES ('Path planning');
 
 -- Jobs
-INSERT INTO jobs (name) VALUES ('Path planning');
+INSERT INTO jobs (name, trace_id) VALUES ('Path planning', 3);
 
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (0, 1000000, 2, 'PARALLEL');
 INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
@@ -161,7 +161,7 @@ VALUES (14, 200000, 1, 66, 'SEQUENTIAL');
 INSERT INTO traces (name) VALUES ('Parallel heavy trace');
 
 -- Jobs
-INSERT INTO jobs (name) VALUES ('Parallel heavy trace');
+INSERT INTO jobs (name, trace_id) VALUES ('Parallel heavy trace', 4);
 
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (0, 100000, 3, 'SEQUENTIAL');
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (0, 900000, 3, 'PARALLEL');
@@ -170,7 +170,7 @@ INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALU
 INSERT INTO traces (name) VALUES ('Sequential heavy trace');
 
 -- Jobs
-INSERT INTO jobs (name) VALUES ('Sequential heavy trace');
+INSERT INTO jobs (name, trace_id) VALUES ('Sequential heavy trace', 5);
 
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (0, 100000, 4, 'PARALLEL');
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (0, 900000, 4, 'SEQUENTIAL');
