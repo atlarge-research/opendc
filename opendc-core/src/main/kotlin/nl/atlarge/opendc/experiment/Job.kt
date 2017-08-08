@@ -27,8 +27,10 @@ package nl.atlarge.opendc.experiment
 /**
  * A job that is submitted to a cloud network, which consists of one or multiple [Task]s.
  *
+ * @param id The unique identifier of this job.
+ * @param name The name of this job.
  * @param owner The user to which the job belongs.
  * @param tasks The tasks of which the job consists.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class Job(val owner: User, val tasks: Collection<Task>)
+data class Job(val id: Int, val name: String, val owner: User, val tasks: Collection<Task>)
