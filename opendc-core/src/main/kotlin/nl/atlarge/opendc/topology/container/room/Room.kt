@@ -27,7 +27,7 @@ package nl.atlarge.opendc.topology.container.room
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * A physical room in a data center which contains [Entity]s.
+ * A physical room in a datacenter which contains [Entity]s.
  *
  * @param id The unique identifier of this entity.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)

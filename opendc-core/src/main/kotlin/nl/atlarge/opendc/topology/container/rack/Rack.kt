@@ -28,7 +28,7 @@ import nl.atlarge.opendc.topology.Entity
 
 /**
  * A type of physical steel and electronic framework that is designed to house servers, networking devices, cables and
- * other data center computing equipment.
+ * other datacenter computing equipment.
  *
  * @param id The unique identifier of this entity.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)

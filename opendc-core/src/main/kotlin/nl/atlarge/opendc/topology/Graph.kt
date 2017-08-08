@@ -25,8 +25,8 @@
 package nl.atlarge.opendc.topology
 
 /**
- * A graph data structure which represents the logical topology of a cloud network consisting of one or more data
- * centers.
+ * A graph data structure which represents the logical topology of a cloud network consisting of one or more
+ * datacenters.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */

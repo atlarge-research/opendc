@@ -27,7 +27,7 @@ package nl.atlarge.opendc.topology.machine
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * A Physical Machine (PM) inside a rack of a data center. It has a speed, and can be given a workload on which it will
+ * A Physical Machine (PM) inside a rack of a datacenter. It has a speed, and can be given a workload on which it will
  * work until finished or interrupted.
  *
  * @param id The unique identifier of this entity.
