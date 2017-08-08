@@ -3217,17 +3217,96 @@
         }
       }
     },
-    "/traces/{traceId}/tasks": {
+    "/traces/{traceId}/jobs": {
       "get": {
         "tags": [
           "experiments"
         ],
-        "description": "Get this Trace's Tasks.",
+        "description": "Get this Trace's Jobs.",
         "parameters": [
           {
             "name": "traceId",
             "in": "path",
             "description": "Trace's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Jobs.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Job"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Trace not found."
+          }
+        }
+      }
+    },
+    "/traces/{traceId}/jobs/{jobId}": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Get this Job.",
+        "parameters": [
+          {
+            "name": "traceId",
+            "in": "path",
+            "description": "Trace's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "Job's ID.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved Job.",
+            "schema": {
+              "$ref": "#/definitions/Job"
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Trace or Job not found."
+          }
+        }
+      }
+    },
+    "/traces/{traceId}/jobs/{jobId}/tasks": {
+      "get": {
+        "tags": [
+          "experiments"
+        ],
+        "description": "Get this Job's Tasks.",
+        "parameters": [
+          {
+            "name": "traceId",
+            "in": "path",
+            "description": "Trace's ID.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "Job's ID.",
             "required": true,
             "type": "integer"
           }
@@ -3246,7 +3325,7 @@
             "description": "Unauthorized."
           },
           "404": {
-            "description": "Trace not found."
+            "description": "Trace or Job not found."
           }
         }
       }
@@ -3840,6 +3919,17 @@
         }
       }
     },
+    "Job": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
     "Machine": {
       "type": "object",
       "properties": {
@@ -4158,6 +4248,9 @@
       "type": "object",
       "properties": {
         "id": {
+          "type": "integer"
+        },
+        "jobId": {
           "type": "integer"
         },
         "startTick": {
