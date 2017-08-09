@@ -28,25 +28,19 @@
   line-height: 40px
   clear: both
 
-  +transition(background, $transition-length)
-  +clickable
-
-.project-row:hover
-  background: #fff
-
-.project-row:active
-  background: #cccccc
-
 .project-row:not(:first-of-type)
   margin-top: -1px
 
 // Sizing of table columns
 .project-row, .project-list .list-head
   div:first-of-type
-    width: 50%
+    width: 40%
 
   div:nth-of-type(2)
-    width: 30%
+    width: 20%
+
+  div:nth-of-type(3)
+    width: 20%
 
   div:last-of-type
     width: 20%
@@ -54,45 +48,54 @@
     span
       margin-right: 10px
 
-.project-row.active
-  border-bottom: 0
-  background: #3442b1
-  color: #eee
+.project-row .project-icons div
+  display: inline
+  position: relative
+  top: 5px
+  width: 30px
+  height: 30px
+  margin-right: 5px
+  font-size: 12pt
+  color: white
+  +border-radius(100%)
+  +clickable
+  +transition(background, $transition-length)
 
-.project-view
-  padding: 10px
-  overflow: hidden
-  border: 1px solid #b6b6b6
-  border-top: 0
+  span
+    position: relative
+    top: -4px
+    left: -1px
 
-  background: #3442b1
-  color: #eee
+  &.open
+    $icon-color: #0c60bf
+    background: $icon-color
 
-  .participants
-    display: inline-block
-    float: left
+    &:hover
+      background: lighten($icon-color, 10%)
 
-  .access-buttons
-    display: inline-block
-    float: right
+    &:active
+      background: darken($icon-color, 10%)
 
-    .inline-btn
-      margin-left: 10px
+  &.users
+    font-size: 10pt
+    $icon-color: #17bf55
+    background: $icon-color
 
-    .open
-      background: #e38829
+    span
+      left: -2px
 
-    .open:hover
-      background: #ff992e
+    &:hover
+      background: lighten($icon-color, 10%)
 
-    .open:active
-      background: #ba6f21
+    &:active
+      background: darken($icon-color, 10%)
 
-    .edit
-      background: #2c3897
+  &.delete
+    $icon-color: #e3474d
+    background: $icon-color
 
-    .edit:hover
-      background: #3a4ac8
+    &:hover
+      background: lighten($icon-color, 10%)
 
-    .edit:active
-      background: #242d7a
+    &:active
+      background: darken($icon-color, 10%)

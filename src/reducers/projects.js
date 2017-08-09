@@ -1,6 +1,7 @@
 import {
     ADD_PROJECT,
     CLOSE_NEW_PROJECT_MODAL,
+    DELETE_PROJECT,
     OPEN_NEW_PROJECT_MODAL,
     SET_AUTH_VISIBILITY_FILTER
 } from "../actions/projects";
@@ -16,6 +17,8 @@ export const authorizations = (state = [], action) => {
                     authorizationLevel: "OWN"
                 }
             ];
+        case DELETE_PROJECT:
+            return [];
         default:
             return state;
     }

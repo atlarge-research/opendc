@@ -17,6 +17,8 @@ class Modal extends React.Component {
 
     componentDidMount() {
         this.openOrCloseModal();
+
+        window["$"]("#" + this.id).on("hide.bs.modal", this.props.onCancel.bind(this));
     }
 
     componentDidUpdate() {

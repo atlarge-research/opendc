@@ -3,6 +3,7 @@ export const OPEN_NEW_PROJECT_MODAL = "OPEN_NEW_PROJECT_MODAL";
 export const CLOSE_NEW_PROJECT_MODAL = "CLOSE_PROJECT_POPUP";
 export const ADD_PROJECT = "ADD_PROJECT";
 export const DELETE_PROJECT = "DELETE_PROJECT";
+export const OPEN_PROJECT = "OPEN_PROJECT";
 
 export const setAuthVisibilityFilter = (filter) => {
     return {
@@ -33,6 +34,13 @@ export const addProject = (name) => {
 export const deleteProject = (id) => {
     return {
         type: DELETE_PROJECT,
+        id
+    };
+};
+
+export const openProject = (id) => {
+    return {
+        type: OPEN_PROJECT,
         id
     };
 };

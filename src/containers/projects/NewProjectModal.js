@@ -20,8 +20,8 @@ const mapDispatchToProps = dispatch => {
         callback: (text) => {
             if (text) {
                 dispatch(addProject(text));
-                dispatch(closeNewProjectModal());
             }
+            dispatch(closeNewProjectModal());
         }
     };
 };
