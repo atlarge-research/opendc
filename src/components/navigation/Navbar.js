@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
+import FontAwesome from "react-fontawesome";
+import Mailto from "react-mailto";
 import {Link} from "react-router-dom";
 import "./Navbar.css";
-import Mailto from "react-mailto";
-import FontAwesome from "react-fontawesome";
 
 class Navbar extends Component {
     render() {
@@ -19,7 +19,7 @@ class Navbar extends Component {
                 </div>
                 <div className="user-controls navbar-button-group">
                     <Mailto className="support" title="Support" email="opendc.tudelft@gmail.com"
-                            headers={{subject: "OpenDC%20Support"}}>
+                            headers={{subject: "OpenDC Support"}}>
                         <FontAwesome name="question-circle" size="lg"/>
                     </Mailto>
                     <Link className="username" title="My Profile" to="/profile">Profile</Link>

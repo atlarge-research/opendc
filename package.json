@@ -4,16 +4,24 @@
   "private": true,
   "dependencies": {
     "bootstrap": "4.0.0-alpha.6",
+    "classnames": "^2.2.5",
     "history": "^4.6.3",
+    "isomorphic-fetch": "^2.2.1",
     "node-sass-chokidar": "^0.0.3",
+    "normalizr": "^3.2.3",
     "npm-run-all": "^4.0.2",
+    "prop-types": "^15.5.10",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-fontawesome": "^1.6.1",
     "react-google-login": "^2.9.2",
     "react-mailto": "^0.4.0",
+    "react-redux": "^5.0.5",
     "react-router-dom": "^4.1.1",
-    "react-scripts": "1.0.10"
+    "react-scripts": "1.0.10",
+    "redux": "^3.7.2",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "^2.2.0"
   },
   "scripts": {
     "build-css": "node-sass-chokidar src/ -o src/",

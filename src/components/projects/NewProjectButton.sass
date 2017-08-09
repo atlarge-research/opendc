@@ -1,0 +1,31 @@
+@import ../../style-globals/_mixins.sass
+@import ../../style-globals/_variables.sass
+
+.new-project-btn
+  $button-height: 35px
+
+  display: inline-block
+  position: absolute
+  bottom: $navbar-height + 40px
+  right: 40px
+  padding: 0 10px
+  height: $button-height
+  line-height: $button-height
+  font-size: 14pt
+
+  background: #679436
+  color: #eee
+  border: 1px solid #507830
+
+  +border-radius($standard-border-radius)
+  +clickable
+  +transition(all, $transition-length)
+
+  span
+    margin-right: 10px
+
+.new-project-btn:hover
+  background: #73ac45
+
+.new-project-btn:active
+  background: #5c8835

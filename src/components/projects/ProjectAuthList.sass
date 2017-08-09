@@ -1,0 +1,98 @@
+@import ../../style-globals/_mixins.sass
+@import ../../style-globals/_variables.sass
+
+.project-list
+  display: block
+  font-size: 12pt
+  border: 0
+
+  .list-head, .list-body .project-row
+    display: block
+    position: relative
+
+  .list-head div, .list-body .project-row div
+    padding: 0 10px
+    display: inline-block
+
+  .list-head
+    font-weight: bold
+
+    // Address default margin between inline-blocks
+    div
+      margin-right: -4px
+
+.project-row
+  background: #f8f8f8
+  border: 1px solid #b6b6b6
+  height: 40px
+  line-height: 40px
+  clear: both
+
+  +transition(background, $transition-length)
+  +clickable
+
+.project-row:hover
+  background: #fff
+
+.project-row:active
+  background: #cccccc
+
+.project-row:not(:first-of-type)
+  margin-top: -1px
+
+// Sizing of table columns
+.project-row, .project-list .list-head
+  div:first-of-type
+    width: 50%
+
+  div:nth-of-type(2)
+    width: 30%
+
+  div:last-of-type
+    width: 20%
+
+    span
+      margin-right: 10px
+
+.project-row.active
+  border-bottom: 0
+  background: #3442b1
+  color: #eee
+
+.project-view
+  padding: 10px
+  overflow: hidden
+  border: 1px solid #b6b6b6
+  border-top: 0
+
+  background: #3442b1
+  color: #eee
+
+  .participants
+    display: inline-block
+    float: left
+
+  .access-buttons
+    display: inline-block
+    float: right
+
+    .inline-btn
+      margin-left: 10px
+
+    .open
+      background: #e38829
+
+    .open:hover
+      background: #ff992e
+
+    .open:active
+      background: #ba6f21
+
+    .edit
+      background: #2c3897
+
+    .edit:hover
+      background: #3a4ac8
+
+    .edit:active
+      background: #242d7a

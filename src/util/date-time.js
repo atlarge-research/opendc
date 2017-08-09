@@ -1,4 +1,16 @@
 /**
+ * Parses and formats the given date-time string representation.
+ *
+ * The format assumed is "YYYY-MM-DDTHH:MM:SS".
+ *
+ * @param dateTimeString A string expressing a date and a time, in the above mentioned format.
+ * @returns {string} A human-friendly string version of that date and time.
+ */
+export function parseAndFormatDateTime(dateTimeString) {
+    return formatDateTime(parseDateTime(dateTimeString));
+}
+
+/**
  * Parses date-time string representations and returns a parsed object.
  *
  * The format assumed is "YYYY-MM-DDTHH:MM:SS".
@@ -13,30 +25,28 @@ export function parseDateTime(dateTimeString) {
         day: 0,
         hour: 0,
         minute: 0,
-        second: 0
+        second: 0,
     };
 
     const dateAndTime = dateTimeString.split("T");
     const dateComponents = dateAndTime[0].split("-");
-    output.year = parseInt(dateComponents[0]);
-    output.month = parseInt(dateComponents[1]);
-    output.day = parseInt(dateComponents[2]);
+    output.year = parseInt(dateComponents[0], 10);
+    output.month = parseInt(dateComponents[1], 10);
+    output.day = parseInt(dateComponents[2], 10);
 
     const timeComponents = dateAndTime[1].split(":");
-    output.hour = parseInt(timeComponents[0]);
-    output.minute = parseInt(timeComponents[1]);
-    output.second = parseInt(timeComponents[2]);
+    output.hour = parseInt(timeComponents[0], 10);
+    output.minute = parseInt(timeComponents[1], 10);
+    output.second = parseInt(timeComponents[2], 10);
 
     return output;
 }
 
 /**
- * Serializes the given date and time value to a string.
- *
- * The format assumed is "YYYY-MM-DDTHH:MM:SS".
+ * Serializes the given date and time value to a human-friendly string.
  *
  * @param dateTime An object representation of a date and time.
- * @returns {string} A string representation of that date and time.
+ * @returns {string} A human-friendly string version of that date and time.
  */
 export function formatDateTime(dateTime) {
     let date;

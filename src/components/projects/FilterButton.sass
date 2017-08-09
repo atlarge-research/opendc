@@ -1,0 +1,23 @@
+@import ../../style-globals/_mixins.sass
+@import ../../style-globals/_variables.sass
+
+.project-filter-button
+  display: inline-block
+  width: 33.3%
+  //margin-right: -4px
+  padding: 10px $global-padding
+
+  font-size: 12pt
+  border-right: 1px solid #06326b
+
+  +clickable
+  +transition(background, $transition-length)
+
+.project-filter-button:last-of-type
+  border: 0
+
+.project-filter-button:hover
+  background: #0c60bf
+
+.project-filter-button:active, .project-filter-button.active
+  background: #073d7d
