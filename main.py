@@ -199,4 +199,4 @@ def _process_message(message):
 
     return (request, response)
 
-SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8082)
+SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)
