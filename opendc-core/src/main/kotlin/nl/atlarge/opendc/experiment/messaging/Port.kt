@@ -22,14 +22,13 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
+package nl.atlarge.opendc.experiment.messaging
 
-import nl.atlarge.opendc.topology.Edge
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * This class represents a slot in a [Rack] of [Machine]s.
+ * A port connects multiple [Channel]s to an entity in the topology of a cloud network.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Slot<T: Entity>(val rack: Rack<T>, val contents: T, val index: Int): Edge.Directed(rack, contents)
+interface Port<out E: Entity, out T>: Iterable<Channel<E, T>>, Pullable, Pushable

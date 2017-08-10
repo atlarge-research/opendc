@@ -27,6 +27,8 @@ package nl.atlarge.opendc.experiment
 /**
  * A simulation of multiple simultaneous workloads running on top of a topology.
  *
+ * @param id The unique identifier of the experiment.
+ * @param name The name of the experiment.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Experiment {}
+data class Experiment(val id: Int, val name: String)

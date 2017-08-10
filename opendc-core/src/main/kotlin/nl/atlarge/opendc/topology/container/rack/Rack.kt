@@ -31,6 +31,7 @@ import nl.atlarge.opendc.topology.Entity
  * other datacenter computing equipment.
  *
  * @param id The unique identifier of this entity.
+ * @param <T> The type of nodes that are placed in the rack.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class Rack(override val id: Int): Entity
+data class Rack<T: Entity>(override val id: Int): Entity

@@ -32,16 +32,16 @@ package nl.atlarge.opendc.topology
  */
 interface Graph {
 	/**
-	 * Add the given [Node] to this graph.
+	 * Return the set of incoming edges of this node.
 	 *
-	 * @param node The node to add.
+	 * @return All edges whose destination is this node.
 	 */
-	fun addNode(node: Node<*>)
+	fun Entity.incomingEdges(): Set<Edge<*>>
 
 	/**
-	 * Add the given [Edge] to this graph.
+	 * Return the set of outgoing edges of this node.
 	 *
-	 * @param edge The edge to add.
+	 * @return  All edges whose source is this node.
 	 */
-	fun addEdge(edge: Edge<*>)
+	fun Entity.outgoingEdges(): Set<Edge<*>>
 }

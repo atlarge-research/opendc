@@ -22,14 +22,23 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
+package nl.atlarge.opendc.experiment.messaging
 
-import nl.atlarge.opendc.topology.Edge
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * This class represents a slot in a [Rack] of [Machine]s.
+ * A message that is received from a [Channel], also containing the metadata of the message.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Slot<T: Entity>(val rack: Rack<T>, val contents: T, val index: Int): Edge.Directed(rack, contents)
+interface Receivable<out T> {
+	/**
+	 * The value of this message.
+	 */
+	val value: T
+
+	/**
+	 * The sender of this message.
+	 */
+	val sender: Entity
+}

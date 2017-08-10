@@ -24,50 +24,34 @@
 
 package nl.atlarge.opendc.topology
 
+import java.util.*
+
 /**
- * An edge that represents a connection between exactly two instances of [Node].
- * Instances of [Edge] may be either directed or undirected.
+ * An undirected edge that represents a connection between exactly two instances of [Entity].
  *
+ * @param from The first incident node.
+ * @param to The second incident node.
+ * @param label The label of the edge.
+ * @param <T> The data type of the label value.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Edge<out T> {
+class Edge<out T>(val from: Entity, val to: Entity, val label: Label<T>) {
 	/**
-	 * The label of this edge.
-	 */
-	val label: T
-
-	/**
-	 * An [Edge] that is directed, having a source and destination [Node].
-	 */
-	interface Directed<out T>: Edge<T> {
-		/**
-		 * The source of the edge.
-		 */
-		val from: Node<*>
-
-		/**
-		 * The destination of the edge.
-		 */
-		val to: Node<*>
-	}
-
-	/**
-	 * An [Edge] that is undirected.
-	 */
-	interface Undirected<out T>: Edge<T>
-
-	/**
-	 * Return the [Node] at the opposite end of this [Edge] from the
-	 * specified node.
+	 * Return the [Entity] at the opposite end of this [Edge] from the
+	 * specified entity.
 	 *
-	 * Throws [IllegalArgumentException] if <code>node</code> is
+	 * Throws [IllegalArgumentException] if <code>entity</code> is
 	 * not incident to this edge.
 	 *
-	 * @param node The node to get the opposite of for this edge pair.
-	 * @return The node at the opposite end of this edge from the specified node.
-	 * @throws IllegalArgumentException if <code>node</code> is not incident to this edge.
+	 * @param entity The entity to get the opposite of for this edge pair.
+	 * @return The entity at the opposite end of this edge from the specified entity.
+	 * @throws IllegalArgumentException if <code>entity</code> is not incident to this edge.
 	 */
-	fun opposite(node: Node<*>): Node<*>
+	fun opposite(entity: Entity): Entity = when (entity) {
+		from -> to
+		to -> from
+		else -> throw IllegalArgumentException()
+	}
 
 	/**
 	 * Return a [Pair] representing this edge consisting of both incident nodes.
@@ -75,5 +59,37 @@ interface Edge<out T> {
 	 *
 	 * @return The edge represented as pair of both incident nodes.
 	 */
-	fun endpoints(): Pair<Node<*>, Node<*>>
+	fun endpoints(): Pair<Entity, Entity> = Pair(from, to)
+
+	/**
+	 * Determine whether the given object is equal to this instance.
+	 *
+	 * @param other The other object to compare against.
+	 * @return <code>true</code> both edges are equal, <code>false</code> otherwise.
+	 */
+	override fun equals(other: Any?): Boolean =
+		if (other is Edge<*>) {
+			from == other.from && to == other.to ||
+				from == other.to && to == other.from
+		} else {
+			false
+		}
+
+	/**
+	 * Return the hash code of this edge pair.
+	 *
+	 * @return The hash code of this edge pair.
+	 */
+	override fun hashCode(): Int {
+		return Objects.hash(from, to)
+	}
+
+	/**
+	 * Return a string representation of this [Edge].
+	 *
+	 * @return A string representation of this [Edge].
+	 */
+	override fun toString(): String {
+		return "Edge($from<->$to)"
+	}
 }

@@ -25,13 +25,16 @@
 package nl.atlarge.opendc.topology
 
 /**
- * An entity in a cloud network.
+ * An entity in the logical topology of a cloud network.
+ *
+ * <p>Instances of the [Entity] interface provide direct access to observable state of the entity to other entities in
+ * the topology connected to it.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Entity {
 	/**
-	 * A unique identifier of this node within the topology represented as a [Int].
+	 * A unique identifier of this entity within the topology represented as a [Int].
 	 */
 	val id: Int
 }

@@ -25,8 +25,15 @@
 package nl.atlarge.opendc.experiment
 
 /**
+ * An [ExperimentRunner] is responsible for executing an [Experiment].
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface ExperimentRunner {
+	/**
+	 * Run the given [Experiment] using this runner.
+	 *
+	 * @param experiment The experiment to run.
+	 */
+	fun run(experiment: Experiment)
 }

@@ -22,14 +22,21 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
-
-import nl.atlarge.opendc.topology.Edge
-import nl.atlarge.opendc.topology.Entity
+package nl.atlarge.opendc.topology
 
 /**
- * This class represents a slot in a [Rack] of [Machine]s.
+ * A label for an edge in the topology.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Slot<T: Entity>(val rack: Rack<T>, val contents: T, val index: Int): Edge.Directed(rack, contents)
+interface Label<out T> {
+	/**
+	 * The name of the label.
+	 */
+	val name: String
+
+	/**
+	 * The user-specified data of the label.
+	 */
+	val data: T
+}

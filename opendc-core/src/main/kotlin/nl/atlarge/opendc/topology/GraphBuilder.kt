@@ -22,14 +22,32 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
-
-import nl.atlarge.opendc.topology.Edge
-import nl.atlarge.opendc.topology.Entity
+package nl.atlarge.opendc.topology
 
 /**
- * This class represents a slot in a [Rack] of [Machine]s.
+ * A builder for [Graph] instances.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Slot<T: Entity>(val rack: Rack<T>, val contents: T, val index: Int): Edge.Directed(rack, contents)
+interface GraphBuilder {
+	/**
+	 * Add the given [Entity] to this graph.
+	 *
+	 * @param entity The entity to add.
+	 */
+	fun add(entity: Entity)
+
+	/**
+	 * Add the given [Edge] to this graph.
+	 *
+	 * @param edge The edge to add.
+	 */
+	fun add(edge: Edge<*>)
+
+	/**
+	 * Build a [Graph] instance from the current state of this builder.
+	 *
+	 * @return The graph built from this builder.
+	 */
+	fun build(): Graph
+}

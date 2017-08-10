@@ -25,7 +25,6 @@
 package nl.atlarge.opendc.experiment
 
 import nl.atlarge.opendc.topology.Entity
-import nl.atlarge.opendc.topology.Node
 
 /**
  * A task scheduler that is coupled to an [Entity] in the topology of the cloud network.
@@ -36,8 +35,8 @@ interface Scheduler<in E: Entity> {
 	/**
 	 * Schedule the given jobs for the given entity.
 	 *
-	 * @param node The node in the cloud network topology representing the entity.
+	 * @param entity The entity in the cloud network topology representing the entity.
 	 * @param jobs The jobs that have been submitted to the cloud network.
 	 */
-	fun schedule(node: Node<E>, jobs: Set<Job>)
+	fun schedule(entity: E, jobs: Set<Job>)
 }

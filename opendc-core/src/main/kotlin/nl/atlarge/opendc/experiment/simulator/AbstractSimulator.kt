@@ -22,47 +22,31 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.simulator
+package nl.atlarge.opendc.experiment.simulator
 
+import nl.atlarge.opendc.experiment.messaging.Port
 import nl.atlarge.opendc.topology.Entity
 
 /**
  * A simulator that simulates a single entity in the topology of a cloud network.
  *
- * @param entity The entity to simulate.
  * @param ctx The context in which the simulation is run.
  * @param <E> The type of entity to simulate.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-abstract class Simulator<out E: Entity>(val entity: E, val ctx: SimulatorContext) {
+abstract class AbstractSimulator<E: Entity>(val ctx: Context<E>): Simulator<E> {
 	/**
-	 * This method is invoked at least once before a tick. This allows the [Simulator] to setup its state before a tick
-	 * event.
-	 *
-	 * <p>The pre-tick consists of multiple sub-cycles in which all messages which have been sent
-	 * in the previous sub-cycle can optionally be processed in the sub-cycle by the receiving [Simulator].
+	 * The [Entity] that is simulated.
 	 */
-	fun preTick() {}
+	val self: E = ctx.entity
 
 	/**
-	 * This method is invoked once per tick, which allows the [Simulator] to process events and simulate an entity in a
-	 * cloud network.
-	 */
-	fun tick() {}
-
-	/**
-	 * This method is invoked at least once per tick. This allows the [Simulator] to do work after a tick.
+	 * Create a [Port] of the given type.
 	 *
-	 * <p>Like the pre-tick, the post-tick consists of multiple sub-cycles in which all messages which have been sent
-	 * in the previous sub-cycle can optionally be processed in the sub-cycle by the receiving [Simulator].
+	 * @param name The name of the label to create the port for.
+	 * @return The port that has been created or the cached result.
 	 */
-	fun postTick() {}
-
-	/**
-	 * Send the given message to the given [Entity] for processing.
-	 *
-	 * @param destination The entity to send the message to.
-	 * @param message The message to send to the entity.
-	 */
-	fun send(destination: Entity, message: Any?) {}
+	inline fun <reified E: Entity, T> port(name: String): Port<E, T> {
+		throw NotImplementedError()
+	}
 }

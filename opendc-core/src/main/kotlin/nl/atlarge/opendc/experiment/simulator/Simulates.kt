@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
+package nl.atlarge.opendc.experiment.simulator
 
-import nl.atlarge.opendc.topology.Edge
 import nl.atlarge.opendc.topology.Entity
+import kotlin.reflect.KClass
 
 /**
- * This class represents a slot in a [Rack] of [Machine]s.
+ * Classes annotated by this annotation indicates that the annotated class simulates the given entity.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Slot<T: Entity>(val rack: Rack<T>, val contents: T, val index: Int): Edge.Directed(rack, contents)
+annotation class Simulates<T: Entity>(val entity: KClass<T>)

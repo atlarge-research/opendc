@@ -22,16 +22,46 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.simulator
+package nl.atlarge.opendc.experiment.simulator
+
+import nl.atlarge.opendc.topology.Entity
 
 /**
- * The context in which a [Simulator] runs.
+ * A context for [Simulator] instance.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class SimulatorContext {
+interface Context<E: Entity> {
 	/**
-	 * The current tick of the simulation.
+	 * The current tick of the experiment.
 	 */
-	var tick: Long = 0
+	val tick: Long
+
+	/**
+	 * The [Entity] that is simulated.
+	 */
+	val entity: E
+
+	/**
+	 * Update the state of the entity being simulated.
+	 *
+	 * <p>Instead of directly mutating the entity, we create a new instance of the entity to prevent other objects
+	 * referencing the old entity having their data changed.
+	 *
+	 * @param next The next state of the entity.
+	 */
+	fun update(next: E)
+
+	/**
+	 * Push the given given tick handler on the stack and change the simulator's behaviour to become the new tick
+	 * handler.
+	 *
+	 * @param block The tick handler to push onto the stack.
+	 */
+	fun become(block: Context<E>.() -> Unit)
+
+	/**
+	 * Revert the behaviour of the simulator to the previous handler in the stack.
+	 */
+	fun unbecome()
 }

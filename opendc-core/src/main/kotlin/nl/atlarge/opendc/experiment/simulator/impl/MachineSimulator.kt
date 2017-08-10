@@ -22,30 +22,23 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.experiment.simulator.impl
+
+import nl.atlarge.opendc.experiment.simulator.AbstractSimulator
+import nl.atlarge.opendc.experiment.simulator.Context
+import nl.atlarge.opendc.experiment.simulator.Simulates
+import nl.atlarge.opendc.topology.machine.Cpu
+import nl.atlarge.opendc.topology.machine.Machine
 
 /**
- * A node in the logical topology of a cloud network, representing some [Entity].
+ * A simulator for [Machine] entities.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Node<out E: Entity> {
-	/**
-	 * The [Entity] this node represents.
-	 */
-	val entity: E
+@Simulates<Machine>(Machine::class)
+class MachineSimulator(ctx: Context<Machine>): AbstractSimulator<Machine>(ctx) {
+	val cpus = port<Cpu, Nothing>("cpu")
 
-	/**
-	 * Return the set of incoming edges of this node.
-	 *
-	 * @return All edges whose destination is this node.
-	 */
-	fun incomingEdges(): Set<Edge<*>>
-
-	/**
-	 * Return the set of outgoing edges of this node.
-	 *
-	 * @return  All edges whose source is this node.
-	 */
-	fun outgoingEdges(): Set<Edge<*>>
+	override fun Context<Machine>.tick() {
+	}
 }

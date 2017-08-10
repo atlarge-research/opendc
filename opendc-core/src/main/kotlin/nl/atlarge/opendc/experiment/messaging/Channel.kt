@@ -22,14 +22,34 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
+package nl.atlarge.opendc.experiment.messaging
 
-import nl.atlarge.opendc.topology.Edge
 import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.Label
 
 /**
- * This class represents a slot in a [Rack] of [Machine]s.
+ * A direct bi-directional communication channel between two [Entity] instances as seen from one of the entities.
  *
+ * <p>A [Channel] is viewed as an edge that connects two entities in the topology of a cloud network.
+ *
+ * @param <E> The type of [Entity] this channel points to.
+ * @param <T> The type of the label data of this channel.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Slot<T: Entity>(val rack: Rack<T>, val contents: T, val index: Int): Edge.Directed(rack, contents)
+interface Channel<out E: Entity, out T>: Pushable, Pullable {
+	/**
+	 * The [Entity] instance this channel is points to.
+	 */
+	val entity: E
+
+	/**
+	 * The label of the channel, possibly containing user-defined information.
+	 */
+	val label: Label<T>
+
+	/**
+	 * The channel the message originates from.
+	 */
+	val Receivable<Any?>.channel: Channel<E, T>
+		get() = this@Channel
+}

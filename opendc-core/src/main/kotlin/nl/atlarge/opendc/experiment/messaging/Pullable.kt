@@ -22,14 +22,26 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
-
-import nl.atlarge.opendc.topology.Edge
-import nl.atlarge.opendc.topology.Entity
+package nl.atlarge.opendc.experiment.messaging
 
 /**
- * This class represents a slot in a [Rack] of [Machine]s.
+ * A [Pullable] instance allows objects to pull messages from the instance.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Slot<T: Entity>(val rack: Rack<T>, val contents: T, val index: Int): Edge.Directed(rack, contents)
+interface Pullable {
+	/**
+	 * Pull one message from this [Channel] for processing via the given block.
+	 *
+	 * @param block The block to process the message with.
+	 * @return The result of the processed messaged.
+	 */
+	fun <T> pull(block: Receivable<Any?>.(Any?) -> T): T
+
+	/**
+	 * Pull one message from this [Channel].
+	 *
+	 * @return The message that was received from the channel
+	 */
+	fun pull(): Any? = pull { it }
+}
