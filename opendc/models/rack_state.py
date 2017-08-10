@@ -32,7 +32,7 @@ class RackState(Model):
             FROM racks
                 JOIN machines ON racks.id = machines.rack_id
                 JOIN machine_states ON machines.id = machine_states.machine_id
-            WHERE machine_states.experiment_id = ?
+            WHERE machine_states.experiment_id = %s
             GROUP BY machine_states.tick, racks.id
         '''
         results = database.fetchall(statement, (experiment_id,))
@@ -53,8 +53,8 @@ class RackState(Model):
             FROM racks
                 JOIN machines ON racks.id = machines.rack_id
                 JOIN machine_states ON machines.id = machine_states.machine_id
-            WHERE machine_states.experiment_id = ?
-                AND machine_states.tick = ?
+            WHERE machine_states.experiment_id = %s
+                AND machine_states.tick = %s
             GROUP BY machine_states.tick, racks.id
         '''
         results = database.fetchall(statement, (experiment_id, tick))

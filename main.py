@@ -10,7 +10,7 @@ import flask_socketio
 from oauth2client import client, crypt
 
 from opendc.models.user import User
-from opendc.util import exceptions, rest, path_parser
+from opendc.util import exceptions, rest, path_parser, database
 
 if len(sys.argv) < 2:
     print "config file path not given as argument"
@@ -21,6 +21,9 @@ with open(sys.argv[1]) as file:
     KEYS = json.load(file)
 
 STATIC_ROOT = os.path.join(KEYS['ROOT_DIR'], 'opendc-frontend', 'build')
+
+database.init_connection_pool(user=KEYS['MYSQL_USER'], password=KEYS['MYSQL_PASSWORD'], \
+                    database=KEYS['MYSQL_DATABASE'], host=KEYS['MYSQL_HOST'], port=KEYS['MYSQL_PORT'])
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='')
 FLASK_CORE_APP.config['SECREY_KEY'] = KEYS['FLASK_SECRET']

@@ -12,3 +12,4 @@ _mailinglist
 .cache/
 .idea/
 config.json
+test.json
