@@ -28,7 +28,6 @@ const ProjectAuthList = ({authorizations}) => {
 
 ProjectAuthList.propTypes = {
     authorizations: PropTypes.arrayOf(Shapes.Authorization).isRequired,
-    onProjectClick: PropTypes.func.isRequired,
 };
 
 export default ProjectAuthList;

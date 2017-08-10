@@ -10,29 +10,46 @@ class Modal extends React.Component {
     };
     static idCounter = 0;
 
+    // Local, up-to-date copy of modal visibility for time between close and props update (to prevent duplicate close
+    // triggers)
+    visible = false;
+
     constructor() {
         super();
-        this.id = "modal-" + Modal.idCounter;
+        this.id = "modal-" + Modal.idCounter++;
     }
 
     componentDidMount() {
+        this.visible = this.props.show;
         this.openOrCloseModal();
 
-        window["$"]("#" + this.id).on("hide.bs.modal", this.props.onCancel.bind(this));
+        window["$"]("#" + this.id).on("hide.bs.modal", () => {
+            if (this.visible) {
+                this.props.onCancel();
+                console.log("TEST");
+            }
+        });
     }
 
     componentDidUpdate() {
+        this.visible = this.props.show;
         this.openOrCloseModal();
     }
 
     onSubmit() {
-        this.props.onSubmit();
-        this.closeModal();
+        if (this.visible) {
+            this.props.onSubmit();
+            this.visible = false;
+            this.closeModal();
+        }
     }
 
     onCancel() {
-        this.props.onCancel();
-        this.closeModal();
+        if (this.visible) {
+            this.props.onCancel();
+            this.visible = false;
+            this.closeModal();
+        }
     }
 
     openModal() {
@@ -44,7 +61,7 @@ class Modal extends React.Component {
     }
 
     openOrCloseModal() {
-        if (this.props.show) {
+        if (this.visible) {
             this.openModal();
         } else {
             this.closeModal();

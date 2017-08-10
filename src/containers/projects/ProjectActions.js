@@ -2,8 +2,10 @@ import {connect} from "react-redux";
 import {deleteProject, openProject} from "../../actions/projects";
 import ProjectActionButtons from "../../components/projects/ProjectActionButtons";
 
-const mapStateToProps = state => {
-    return {};
+const mapStateToProps = (state, ownProps) => {
+    return {
+        projectId: ownProps.projectId
+    };
 };
 
 const mapDispatchToProps = dispatch => {

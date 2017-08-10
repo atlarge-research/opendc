@@ -13,7 +13,7 @@ const ProjectAuth = ({projectAuth}) => (
             <span className={classNames("fa", "fa-" + AUTH_ICON_MAP[projectAuth.authorizationLevel])}/>
             {AUTH_DESCRIPTION_MAP[projectAuth.authorizationLevel]}
         </div>
-        <ProjectActions/>
+        <ProjectActions projectId={projectAuth.simulation.id}/>
     </div>
 );
 

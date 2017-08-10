@@ -13,7 +13,7 @@ export const authorizations = (state = [], action) => {
                 ...state,
                 {
                     userId: -1,
-                    simulation: {name: action.name, datetimeLastEdited: "2017-08-06T12:43:00"},
+                    simulation: {name: action.name, datetimeLastEdited: "2017-08-06T12:43:00", id: state.length},
                     authorizationLevel: "OWN"
                 }
             ];
