@@ -1,10 +1,10 @@
 from opendc.models.trace import Trace
-from opendc.models.task import Task
+from opendc.models.job import Job
 from opendc.util import database, exceptions
 from opendc.util.rest import Response
 
 def GET(request):
-    """Get this Trace's Tasks."""
+    """Get this Trace's Jobs."""
 
     # Make sure required parameters are there
 
@@ -25,12 +25,12 @@ def GET(request):
     if not trace.exists():
         return Response(404, '{} not found.'.format(trace))
 
-    # Get and return the Tasks
+    # Get and return the Jobs
 
-    tasks = Task.query('trace_id', request.params_path['traceId'])
+    jobs = Job.query('trace_id', request.params_path['traceId'])
 
     return Response(
         200,
-        'Successfully retrieved Tasks for {}.'.format(trace),
-        [x.to_JSON() for x in tasks]
+        'Successfully retrieved Jobs for {}.'.format(trace),
+        [x.to_JSON() for x in jobs]
     )
