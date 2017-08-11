@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import FontAwesome from "react-fontawesome";
 import Mailto from "react-mailto";
 import {Link} from "react-router-dom";
+import Logout from "../../containers/auth/Logout";
 import "./Navbar.css";
 
 class Navbar extends Component {
@@ -23,11 +24,8 @@ class Navbar extends Component {
                         <FontAwesome name="question-circle" size="lg"/>
                     </Mailto>
                     <Link className="username" title="My Profile" to="/profile">Profile</Link>
-                    <Link className="sign-out" title="Sign out" to="#">
-                        <FontAwesome name="power-off" size="lg"/>
-                    </Link>
+                    <Logout/>
                 </div>
-                <div id="google-signin" className="navbar-right"/>
             </div>
         );
     }

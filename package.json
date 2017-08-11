@@ -14,14 +14,14 @@
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-fontawesome": "^1.6.1",
-    "react-google-login": "^2.9.2",
+    "react-google-login": "^2.9.3",
     "react-mailto": "^0.4.0",
     "react-redux": "^5.0.5",
     "react-router-dom": "^4.1.1",
     "react-scripts": "1.0.10",
     "redux": "^3.7.2",
-    "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.2.0"
+    "redux-localstorage": "^0.4.1",
+    "redux-logger": "^3.0.6"
   },
   "scripts": {
     "build-css": "node-sass-chokidar src/ -o src/",

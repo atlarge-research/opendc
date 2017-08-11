@@ -4,6 +4,7 @@ import {addProject, openNewProjectModal} from "../actions/projects";
 import Navbar from "../components/navigation/Navbar";
 import ProjectFilterPanel from "../components/projects/FilterPanel";
 import NewProjectButton from "../components/projects/NewProjectButton";
+import Login from "../containers/auth/Login";
 import NewProjectModal from "../containers/projects/NewProjectModal";
 import VisibleProjectList from "../containers/projects/VisibleProjectAuthList";
 import "./Projects.css";
@@ -27,6 +28,7 @@ class Projects extends React.Component {
                     <NewProjectButton onClick={() => {this.props.dispatch(openNewProjectModal())}}/>
                 </div>
                 <NewProjectModal/>
+                <Login visible={false}/>
             </div>
         );
     }

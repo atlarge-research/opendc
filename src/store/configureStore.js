@@ -1,15 +1,19 @@
-import {applyMiddleware, createStore} from "redux";
+import {applyMiddleware, compose, createStore} from "redux";
+import persistState from "redux-localstorage";
 import {createLogger} from "redux-logger";
-import thunkMiddleware from "redux-thunk";
+import {authRedirectMiddleware} from "../auth/index";
 import rootReducer from "../reducers/index";
 
 const logger = createLogger();
 
 const configureStore = () => createStore(
     rootReducer,
-    applyMiddleware(
-        thunkMiddleware,
-        logger,
+    compose(
+        persistState("auth"),
+        applyMiddleware(
+            logger,
+            authRedirectMiddleware,
+        )
     )
 );
 
