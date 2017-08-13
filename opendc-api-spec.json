@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "title": "OpenDC API",
     "description": "OpenDC is an open-source datacenter simulator for education, featuring real-time online collaboration, diverse simulation models, and detailed performance feedback statistics."
   },
@@ -637,20 +637,13 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}": {
+    "/datacenters/{datacenterId}": {
       "get": {
         "tags": [
           "datacenterDesign"
         ],
         "description": "Get this Datacenter.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "datacenterId",
             "in": "path",
@@ -681,7 +674,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms": {
+    "/datacenters/{datacenterId}/rooms": {
       "get": {
         "tags": [
           "datacenterDesign",
@@ -689,13 +682,6 @@
         ],
         "description": "Get this Datacenter's Rooms.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "datacenterId",
             "in": "path",
@@ -736,13 +722,6 @@
         "description": "Add a Room.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "datacenterId",
             "in": "path",
             "description": "Datacenter's ID.",
@@ -781,7 +760,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}": {
+    "/rooms/{roomId}": {
       "get": {
         "tags": [
           "datacenterDesign",
@@ -789,20 +768,6 @@
         ],
         "description": "Get this Room.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "roomId",
             "in": "path",
@@ -839,20 +804,6 @@
         ],
         "description": "Update a Room's name or type.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "roomId",
             "in": "path",
@@ -906,20 +857,6 @@
         "description": "Delete this Room.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "roomId",
             "in": "path",
             "description": "Room's ID.",
@@ -949,7 +886,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles": {
+    "/rooms/{roomId}/tiles": {
       "get": {
         "tags": [
           "datacenterDesign",
@@ -958,20 +895,6 @@
         ],
         "description": "Get this Room's Tiles.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "roomId",
             "in": "path",
@@ -1012,20 +935,6 @@
         ],
         "description": "Add a Tile to this Room.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "roomId",
             "in": "path",
@@ -1068,7 +977,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}": {
+    "/tiles/{tileId}": {
       "get": {
         "tags": [
           "datacenterDesign",
@@ -1076,27 +985,6 @@
         ],
         "description": "Get this Tile.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -1134,27 +1022,6 @@
         "description": "Delete this Tile.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "tileId",
             "in": "path",
             "description": "Tile's ID.",
@@ -1184,7 +1051,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/cooling-item": {
+    "/tiles/{tileId}/cooling-item": {
       "get": {
         "tags": [
           "tiles",
@@ -1192,27 +1059,6 @@
         ],
         "description": "Get this Tile's Cooling Item.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -1249,27 +1095,6 @@
         ],
         "description": "Add a Cooling Item to this Tile if it is empty.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -1319,27 +1144,6 @@
         "description": "Update which Cooling Item is on this Tile.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "tileId",
             "in": "path",
             "description": "Tile's ID.",
@@ -1388,27 +1192,6 @@
         "description": "Delete this Tile's Cooling Item.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "tileId",
             "in": "path",
             "description": "Tile's ID.",
@@ -1438,7 +1221,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/psu": {
+    "/tiles/{tileId}/psu": {
       "get": {
         "tags": [
           "tiles",
@@ -1446,27 +1229,6 @@
         ],
         "description": "Get this Tile's PSU.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -1503,27 +1265,6 @@
         ],
         "description": "Add a PSU to this Tile if it is empty.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -1573,27 +1314,6 @@
         "description": "Update which PSU is on this Tile.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "tileId",
             "in": "path",
             "description": "Tile's ID.",
@@ -1642,27 +1362,6 @@
         "description": "Delete this Tile's PSU.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "tileId",
             "in": "path",
             "description": "Tile's ID.",
@@ -1692,7 +1391,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/rack": {
+    "/tiles/{tileId}/rack": {
       "get": {
         "tags": [
           "tiles",
@@ -1700,27 +1399,6 @@
         ],
         "description": "Get this Tile's Rack.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -1757,27 +1435,6 @@
         ],
         "description": "Add a Rack to this Tile if it is empty.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -1834,27 +1491,6 @@
         "description": "Update the Rack on this Tile.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "tileId",
             "in": "path",
             "description": "Tile's ID.",
@@ -1910,27 +1546,6 @@
         "description": "Delete this Tile's Rack.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "tileId",
             "in": "path",
             "description": "Tile's ID.",
@@ -1960,7 +1575,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/rack/machines": {
+    "/tiles/{tileId}/rack/machines": {
       "get": {
         "tags": [
           "objects",
@@ -1968,27 +1583,6 @@
         ],
         "description": "Get this Rack's Machines.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -2028,27 +1622,6 @@
         ],
         "description": "Add a Machine to this rack",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -2091,34 +1664,13 @@
         }
       }
     },
-    "/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/rack/machines/{position}": {
+    "/tiles/{tileId}/rack/machines/{position}": {
       "get": {
         "tags": [
           "machines"
         ],
         "description": "Get the Machine at this location in this Rack.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -2158,27 +1710,6 @@
         ],
         "description": "Update the Machine at this location in this Rack.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -2233,27 +1764,6 @@
         ],
         "description": "Delete the Machine at this location in this Rack.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "datacenterId",
-            "in": "path",
-            "description": "Datacenter's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "roomId",
-            "in": "path",
-            "description": "Room's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "tileId",
             "in": "path",
@@ -2372,20 +1882,13 @@
         }
       }
     },
-    "/simulations/{simulationId}/experiments/{experimentId}": {
+    "/experiments/{experimentId}": {
       "get": {
         "tags": [
           "experiments"
         ],
         "description": "Get this Experiment.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "experimentId",
             "in": "path",
@@ -2421,13 +1924,6 @@
         ],
         "description": "Update this Experiment's Path, Trace, Scheduler, and/ or name.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "experimentId",
             "in": "path",
@@ -2486,13 +1982,6 @@
         "description": "Delete this Experiment.",
         "parameters": [
           {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
             "name": "experimentId",
             "in": "path",
             "description": "Experiment's ID.",
@@ -2519,20 +2008,13 @@
         }
       }
     },
-    "/simulations/{simulationId}/experiments/{experimentId}/last-simulated-tick": {
+    "/experiments/{experimentId}/last-simulated-tick": {
       "get": {
         "tags": [
           "simulations"
         ],
         "description": "Get this Experiment's last simulated tick.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "experimentId",
             "in": "path",
@@ -2567,7 +2049,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/experiments/{experimentId}/machine-states": {
+    "/experiments/{experimentId}/machine-states": {
       "get": {
         "tags": [
           "simulations",
@@ -2576,13 +2058,6 @@
         ],
         "description": "Get this experiment's Machine States.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "experimentId",
             "in": "path",
@@ -2644,7 +2119,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/experiments/{experimentId}/rack-states": {
+    "/experiments/{experimentId}/rack-states": {
       "get": {
         "tags": [
           "simulations",
@@ -2653,13 +2128,6 @@
         ],
         "description": "Get this Experiment's Rack States.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "experimentId",
             "in": "path",
@@ -2714,7 +2182,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/experiments/{experimentId}/room-states": {
+    "/experiments/{experimentId}/room-states": {
       "get": {
         "tags": [
           "simulations",
@@ -2723,13 +2191,6 @@
         ],
         "description": "Get this Experiment's Room States.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "experimentId",
             "in": "path",
@@ -2777,7 +2238,7 @@
         }
       }
     },
-    "/simulations/{simulationId}/experiments/{experimentId}/task-states": {
+    "/experiments/{experimentId}/task-states": {
       "get": {
         "tags": [
           "simulations",
@@ -2786,13 +2247,6 @@
         ],
         "description": "Get this Experiment's Task States.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "experimentId",
             "in": "path",
@@ -2901,20 +2355,13 @@
         }
       }
     },
-    "/simulations/{simulationId}/paths/{pathId}": {
+    "/paths/{pathId}": {
       "get": {
         "tags": [
           "paths"
         ],
         "description": "Get this Path.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "pathId",
             "in": "path",
@@ -2945,20 +2392,13 @@
         }
       }
     },
-    "/simulations/{simulationId}/paths/{pathId}/branches": {
+    "/paths/{pathId}/branches": {
       "get": {
         "tags": [
           "paths"
         ],
         "description": "Get this Path's branches - Paths that start with this Path's Sections.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "pathId",
             "in": "path",
@@ -2997,13 +2437,6 @@
         ],
         "description": "Create a new Path that branches off of this Path at the specified tick.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "pathId",
             "in": "path",
@@ -3047,20 +2480,13 @@
         }
       }
     },
-    "/simulations/{simulationId}/paths/{pathId}/sections": {
+    "/paths/{pathId}/sections": {
       "get": {
         "tags": [
           "paths"
         ],
         "description": "Get this Path's Sections.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "pathId",
             "in": "path",
@@ -3091,27 +2517,13 @@
         }
       }
     },
-    "/simulations/{simulationId}/paths/{pathId}/sections/{sectionId}": {
+    "/sections/{sectionId}": {
       "get": {
         "tags": [
           "simulations"
         ],
         "description": "Get this Section.",
         "parameters": [
-          {
-            "name": "simulationId",
-            "in": "path",
-            "description": "Simulation's ID.",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "name": "pathId",
-            "in": "path",
-            "description": "Path's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "sectionId",
             "in": "path",
@@ -3251,20 +2663,13 @@
         }
       }
     },
-    "/traces/{traceId}/jobs/{jobId}": {
+    "/jobs/{jobId}": {
       "get": {
         "tags": [
           "experiments"
         ],
         "description": "Get this Job.",
         "parameters": [
-          {
-            "name": "traceId",
-            "in": "path",
-            "description": "Trace's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "jobId",
             "in": "path",
@@ -3289,20 +2694,13 @@
         }
       }
     },
-    "/traces/{traceId}/jobs/{jobId}/tasks": {
+    "/jobs/{jobId}/tasks": {
       "get": {
         "tags": [
           "experiments"
         ],
         "description": "Get this Job's Tasks.",
         "parameters": [
-          {
-            "name": "traceId",
-            "in": "path",
-            "description": "Trace's ID.",
-            "required": true,
-            "type": "integer"
-          },
           {
             "name": "jobId",
             "in": "path",
