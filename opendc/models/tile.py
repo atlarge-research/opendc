@@ -16,7 +16,7 @@ class Tile(Model):
         }
     }
 
-    PATH = '/v1/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles'
+    PATH = '/v1/rooms/{roomId}/tiles'
 
     TABLE_NAME = 'tiles'
     COLUMNS = ['id', 'position_x', 'position_y', 'room_id', 'object_id']

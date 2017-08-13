@@ -13,7 +13,7 @@ class Room(Model):
         }
     }
 
-    PATH = '/v1/simulations/{simulationId}/datacenters/{datacenterId}/rooms'
+    PATH = '/v1/datacenters/{datacenterId}/rooms'
 
     TABLE_NAME = 'rooms'
     COLUMNS = ['id', 'name', 'datacenter_id', 'type']

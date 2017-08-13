@@ -14,7 +14,7 @@ class Rack(Model):
         }
     }
 
-    PATH = '/v1/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/rack'
+    PATH = '/v1/tiles/{tileId}/rack'
 
     TABLE_NAME = 'racks'
     COLUMNS = ['id', 'name', 'capacity', 'power_capacity_w']

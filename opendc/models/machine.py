@@ -19,7 +19,7 @@ class Machine(Model):
         }
     }
 
-    PATH = '/v1/simulations/{simulationId}/datacenters/{datacenterId}/rooms/{roomId}/tiles/{tileId}/rack/machines'
+    PATH = '/v1/tiles/{tileId}/rack/machines'
 
     TABLE_NAME = 'machines'
     COLUMNS = ['id', 'rack_id', 'position']

@@ -2,7 +2,7 @@ from opendc.models.trace import Trace
 from opendc.util.rest import Response
 
 def GET(request):
-    """Get all avaialble Traces."""
+    """Get all available Traces."""
 
     # Get the Traces
 
