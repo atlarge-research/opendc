@@ -27,7 +27,7 @@ class TaskDuration(Model):
 
         statement = '''
             SELECT task_id, MAX(tick) - MIN(tick) as duration FROM task_states
-            WHERE experiment_id = ?
+            WHERE experiment_id = %s
             GROUP BY task_id
         '''
 

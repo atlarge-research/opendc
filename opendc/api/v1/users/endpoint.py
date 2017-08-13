@@ -52,7 +52,7 @@ def POST(request):
         return Response(400, e.message)
 
     # Instantiate a User
-
+    
     request.params_body['user']['googleId'] = request.google_id
     user = User.from_JSON(request.params_body['user'])
 

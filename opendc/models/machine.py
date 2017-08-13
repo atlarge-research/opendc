@@ -44,14 +44,14 @@ class Machine(Model):
 
             # First, delete current machine-device links
 
-            statement = 'DELETE FROM machine_{} WHERE machine_id = ?'.format(device_table)
+            statement = 'DELETE FROM machine_{} WHERE machine_id = %s'.format(device_table)
             database.execute(statement, (before_insert.id,))
 
             # Then, add current ones
             
             for device_id in getattr(before_insert, before_insert.device_table_to_attribute[device_table]):
 
-                statement = 'INSERT INTO machine_{} (machine_id, {}) VALUES (?, ?)'.format(
+                statement = 'INSERT INTO machine_{} (machine_id, {}) VALUES (%s, %s)'.format(
                     device_table,
                     before_insert.device_table_to_attribute[device_table][:-1]
                 )
@@ -68,7 +68,7 @@ class Machine(Model):
             return cls(id = -1)
         
         try:
-            statement = 'SELECT id FROM machines WHERE rack_id = ? AND position = ?'
+            statement = 'SELECT id FROM machines WHERE rack_id = %s AND position = %s'
             machine_id = database.fetchone(statement, (rack.id, position))[0]
         except:
             return cls(id = -1)
@@ -106,7 +106,7 @@ class Machine(Model):
 
         for device_table in self.device_table_to_attribute.keys():
             
-            statement = 'SELECT * FROM machine_{} WHERE machine_id = ?'.format(device_table)
+            statement = 'SELECT * FROM machine_{} WHERE machine_id = %s'.format(device_table)
             results = database.fetchall(statement, (self.id,))
         
             device_ids = []

@@ -46,11 +46,10 @@ The following steps will guide you through setting up the OpenDC web server loca
 Make sure you have Python 2.7 installed (if not, get it [here](https://www.python.org/)), as well as pip (if not, get it [here](https://pip.pypa.io/en/stable/installing/)). Then run the following to install the requirements.
 
 ```bash
-pip install flask
-pip install flask_socketio
-pip install oauth2client
-pip install eventlet
+python setup.py install
 ```
+
+The web server also requires MariaDB >= 10.1. Instructions to install MariaDB can be found [here](https://mariadb.com/kb/en/mariadb/getting-installing-and-upgrading-mariadb/). The Docker image can be found [here](https://hub.docker.com/_/mariadb/). 
 
 #### Get the code
 
@@ -63,12 +62,7 @@ git clone https://github.com/atlarge-research/opendc.git
 
 #### Set up the database
 
-Set up the database, replacing `PATH_TO_DATABASE` with where you'd like to create the SQLite database. (This will replace any file named `opendc.db` at the location `PATH_TO_DATABASE`.)
-
-```bash
-cd opendc/database
-python rebuild-database.py "PATH_TO_DATABASE"
-```
+The database can be rebuilt by using the `schema.sql` file from main opendc repository. 
 
 #### Configure OpenDC
 
@@ -76,18 +70,22 @@ Create a file `config.json` in `opendc-web-server`, containing:
 
 ```json
 {
-    "ROOT_DIR": "BASE_DIRECTORY",
-    "OAUTH_CLIENT_ID": "OAUTH_CLIENT_ID",
-    "DATABASE_LOCATION": "PATH_TO_DATABASE\\opendc.db",
-    "FLASK_SECRET": "FLASK_SECRET"
+	"ROOT_DIR": "BASE_DIRECTORY",
+	"OAUTH_CLIENT_ID": "OAUTH_CLIENT_ID",
+	"FLASK_SECRET": "FLASK_SECRET",
+	"MYSQL_DATABASE": "opendc",
+	"MYSQL_USER": "opendc",
+	"MYSQL_PASSWORD": "opendcpassword",
+	"MYSQL_HOST": "127.0.0.1",
+	"MYSQL_PORT": 3306
 }
 ```
 
 Make the following replacements:
 * Replace `BASE_DIRECTORY` with the base directory in which you cloned `opendc` and `opendc-web-server`.
 * Replace `OAUTH_CLIENT_ID` with your OAuth client ID (see the [OpenDC README](https://github.com/atlarge-research/opendc#preamble)).
-* Replace `PATH_TO_DATABASE` with where you created the database.
 * Replace `FLASK_SECRET`, come up with some string.
+* Replace the `MYSQL_*` variables with the correct settings for accessing the MariaDB database that was just created. 
 
 In `opendc-web-server/static/index.html`, add your own `OAUTH_CLIENT_ID` in `content=` on line `2`.
 
