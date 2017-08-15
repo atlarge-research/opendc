@@ -5,42 +5,42 @@ export const ADD_PROJECT = "ADD_PROJECT";
 export const DELETE_PROJECT = "DELETE_PROJECT";
 export const OPEN_PROJECT = "OPEN_PROJECT";
 
-export const setAuthVisibilityFilter = (filter) => {
+export function setAuthVisibilityFilter(filter) {
     return {
         type: SET_AUTH_VISIBILITY_FILTER,
         filter: filter
     };
-};
+}
 
-export const openNewProjectModal = () => {
+export function openNewProjectModal() {
     return {
         type: OPEN_NEW_PROJECT_MODAL
     };
-};
+}
 
-export const closeNewProjectModal = () => {
+export function closeNewProjectModal() {
     return {
         type: CLOSE_NEW_PROJECT_MODAL
     };
-};
+}
 
-export const addProject = (name) => {
+export function addProject(name) {
     return {
         type: ADD_PROJECT,
         name
     };
-};
+}
 
-export const deleteProject = (id) => {
+export function deleteProject(id) {
     return {
         type: DELETE_PROJECT,
         id
     };
-};
+}
 
-export const openProject = (id) => {
+export function openProject(id) {
     return {
         type: OPEN_PROJECT,
         id
     };
-};
+}

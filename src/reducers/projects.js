@@ -5,9 +5,12 @@ import {
     OPEN_NEW_PROJECT_MODAL,
     SET_AUTH_VISIBILITY_FILTER
 } from "../actions/projects";
+import {FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED} from "../actions/users";
 
-export const authorizations = (state = [], action) => {
+export function authorizationsOfCurrentUser(state = [], action) {
     switch (action.type) {
+        case FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED:
+            return action.authorizationsOfCurrentUser;
         case ADD_PROJECT:
             return [
                 ...state,
@@ -22,9 +25,9 @@ export const authorizations = (state = [], action) => {
         default:
             return state;
     }
-};
+}
 
-export const newProjectModalVisible = (state = false, action) => {
+export function newProjectModalVisible(state = false, action) {
     switch (action.type) {
         case OPEN_NEW_PROJECT_MODAL:
             return true;
@@ -33,13 +36,13 @@ export const newProjectModalVisible = (state = false, action) => {
         default:
             return state;
     }
-};
+}
 
-export const authVisibilityFilter = (state = "SHOW_ALL", action) => {
+export function authVisibilityFilter(state = "SHOW_ALL", action) {
     switch (action.type) {
         case SET_AUTH_VISIBILITY_FILTER:
             return action.filter;
         default:
             return state;
     }
-};
+}

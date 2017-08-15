@@ -4,7 +4,7 @@ const Shapes = {};
 
 Shapes.User = PropTypes.shape({
     id: PropTypes.number.isRequired,
-    googleId: PropTypes.number.isRequired,
+    googleId: PropTypes.string.isRequired,
     email: PropTypes.string.isRequired,
     givenName: PropTypes.string.isRequired,
     familyName: PropTypes.string.isRequired,

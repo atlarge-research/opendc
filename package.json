@@ -2,6 +2,7 @@
   "name": "opendc-frontend-experimental",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8081",
   "dependencies": {
     "bootstrap": "4.0.0-alpha.6",
     "classnames": "^2.2.5",
@@ -21,7 +22,10 @@
     "react-scripts": "1.0.10",
     "redux": "^3.7.2",
     "redux-localstorage": "^0.4.1",
-    "redux-logger": "^3.0.6"
+    "redux-logger": "^3.0.6",
+    "redux-saga": "^0.15.6",
+    "redux-thunk": "^2.2.0",
+    "socket.io-client": "^2.0.3"
   },
   "scripts": {
     "build-css": "node-sass-chokidar src/ -o src/",

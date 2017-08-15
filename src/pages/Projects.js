@@ -1,6 +1,7 @@
 import React from 'react';
 import {connect} from "react-redux";
 import {addProject, openNewProjectModal} from "../actions/projects";
+import {fetchAuthorizationsOfCurrentUser} from "../actions/users";
 import Navbar from "../components/navigation/Navbar";
 import ProjectFilterPanel from "../components/projects/FilterPanel";
 import NewProjectButton from "../components/projects/NewProjectButton";
@@ -9,9 +10,9 @@ import NewProjectModal from "../containers/projects/NewProjectModal";
 import VisibleProjectList from "../containers/projects/VisibleProjectAuthList";
 import "./Projects.css";
 
-class Projects extends React.Component {
+class ProjectsContainer extends React.Component {
     componentDidMount() {
-        // TODO perform initial fetch
+        this.props.fetchAuthorizationsOfCurrentUser();
     }
 
     onInputSubmission(text) {
@@ -25,7 +26,7 @@ class Projects extends React.Component {
                 <div className="container project-page-container full-height">
                     <ProjectFilterPanel/>
                     <VisibleProjectList/>
-                    <NewProjectButton onClick={() => {this.props.dispatch(openNewProjectModal())}}/>
+                    <NewProjectButton onClick={() => {this.props.openNewProjectModal()}}/>
                 </div>
                 <NewProjectModal/>
                 <Login visible={false}/>
@@ -34,4 +35,16 @@ class Projects extends React.Component {
     }
 }
 
-export default connect()(Projects);
+const mapDispatchToProps = dispatch => {
+    return {
+        fetchAuthorizationsOfCurrentUser: () => dispatch(fetchAuthorizationsOfCurrentUser()),
+        openNewProjectModal: () => dispatch(openNewProjectModal()),
+    };
+};
+
+const Projects = connect(
+    undefined,
+    mapDispatchToProps
+)(ProjectsContainer);
+
+export default Projects;

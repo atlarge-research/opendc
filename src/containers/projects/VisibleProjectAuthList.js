@@ -15,8 +15,15 @@ const getVisibleProjectAuths = (projectAuths, filter) => {
 };
 
 const mapStateToProps = state => {
+    const denormalizedAuthorizations = state.authorizationsOfCurrentUser.map(authorizationIds => {
+        const authorization = Object.assign({}, state.objects.authorizations[authorizationIds]);
+        authorization.simulation = state.objects.simulations[authorization.simulationId];
+        authorization.user = state.objects.users[authorization.userId];
+        return authorization;
+    });
+
     return {
-        authorizations: getVisibleProjectAuths(state.authorizations, state.authVisibilityFilter)
+        authorizations: getVisibleProjectAuths(denormalizedAuthorizations, state.authVisibilityFilter)
     };
 };
 

@@ -1,15 +1,23 @@
-export const COMPLETE_LOGIN = "COMPLETE_LOGIN";
+export const LOG_IN = "LOG_IN";
+export const LOG_IN_SUCCEEDED = "LOG_IN_SUCCEEDED";
 export const LOG_OUT = "LOG_OUT";
 
-export const completeLogin = (payload) => {
+export function logIn(payload) {
     return {
-        type: COMPLETE_LOGIN,
+        type: LOG_IN,
         payload
     };
-};
+}
 
-export const logOut = () => {
+export function logInSucceeded(payload) {
+    return {
+        type: LOG_IN_SUCCEEDED,
+        payload
+    };
+}
+
+export function logOut() {
     return {
         type: LOG_OUT
     };
-};
+}

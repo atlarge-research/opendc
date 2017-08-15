@@ -1,4 +1,4 @@
-import {COMPLETE_LOGIN, LOG_OUT} from "../actions/auth";
+import {LOG_IN_SUCCEEDED, LOG_OUT} from "../actions/auth";
 
 const getAuthObject = () => {
     const authItem = localStorage.getItem("auth");
@@ -38,7 +38,7 @@ export const clearAuthLocalStorage = () => {
 
 export const authRedirectMiddleware = store => next => action => {
     switch (action.type) {
-        case COMPLETE_LOGIN:
+        case LOG_IN_SUCCEEDED:
             saveAuthLocalStorage(action.payload);
             window.location.href = "/projects";
             break;

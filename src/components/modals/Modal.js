@@ -26,7 +26,6 @@ class Modal extends React.Component {
         window["$"]("#" + this.id).on("hide.bs.modal", () => {
             if (this.visible) {
                 this.props.onCancel();
-                console.log("TEST");
             }
         });
     }

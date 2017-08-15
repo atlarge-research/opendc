@@ -1,12 +1,12 @@
-import {COMPLETE_LOGIN, LOG_OUT} from "../actions/auth";
+import {LOG_IN_SUCCEEDED, LOG_OUT} from "../actions/auth";
 
-export const auth = (state = {}, action) => {
+export function auth(state = {}, action) {
     switch (action.type) {
-        case COMPLETE_LOGIN:
+        case LOG_IN_SUCCEEDED:
             return action.payload;
         case LOG_OUT:
             return {};
         default:
             return state;
     }
-};
+}

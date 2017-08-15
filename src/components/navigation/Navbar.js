@@ -3,6 +3,7 @@ import FontAwesome from "react-fontawesome";
 import Mailto from "react-mailto";
 import {Link} from "react-router-dom";
 import Logout from "../../containers/auth/Logout";
+import ProfileName from "../../containers/auth/ProfileName";
 import "./Navbar.css";
 
 class Navbar extends Component {
@@ -23,7 +24,9 @@ class Navbar extends Component {
                             headers={{subject: "OpenDC Support"}}>
                         <FontAwesome name="question-circle" size="lg"/>
                     </Mailto>
-                    <Link className="username" title="My Profile" to="/profile">Profile</Link>
+                    <Link className="username" title="My Profile" to="/profile">
+                        <ProfileName/>
+                    </Link>
                     <Logout/>
                 </div>
             </div>

@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import GoogleLogin from "react-google-login";
 import {connect} from "react-redux";
-import {completeLogin} from "../../actions/auth";
+import {logIn} from "../../actions/auth";
 
 class LoginContainer extends React.Component {
     static propTypes = {
@@ -12,8 +12,11 @@ class LoginContainer extends React.Component {
 
     onAuthResponse(response) {
         this.props.onLogin({
+            email: response.getBasicProfile().getEmail(),
+            givenName: response.getBasicProfile().getGivenName(),
+            familyName: response.getBasicProfile().getFamilyName(),
             googleId: response.googleId,
-            authToken: response.accessToken,
+            authToken: response.getAuthResponse().id_token,
             expiresAt: response.getAuthResponse().expires_at
         });
     }
@@ -44,7 +47,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        onLogin: (payload) => dispatch(completeLogin(payload)),
+        onLogin: (payload) => dispatch(logIn(payload)),
     };
 };
 
