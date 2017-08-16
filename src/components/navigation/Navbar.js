@@ -17,7 +17,7 @@ class Navbar extends Component {
                     </div>
                 </Link>
                 <div className="navigation navbar-button-group">
-                    <Link className="projects" title="Projects" to="/projects">Projects</Link>
+                    <Link className="simulations" title="Simulations" to="/simulations">Simulations</Link>
                 </div>
                 <div className="user-controls navbar-button-group">
                     <Mailto className="support" title="Support" email="opendc.tudelft@gmail.com"

@@ -1,37 +1,33 @@
 import {
-    ADD_PROJECT,
-    CLOSE_NEW_PROJECT_MODAL,
-    DELETE_PROJECT,
-    OPEN_NEW_PROJECT_MODAL,
+    ADD_SIMULATION_SUCCEEDED,
+    CLOSE_NEW_SIMULATION_MODAL,
+    DELETE_SIMULATION,
+    OPEN_NEW_SIMULATION_MODAL,
     SET_AUTH_VISIBILITY_FILTER
-} from "../actions/projects";
+} from "../actions/simulations";
 import {FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED} from "../actions/users";
 
 export function authorizationsOfCurrentUser(state = [], action) {
     switch (action.type) {
         case FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED:
             return action.authorizationsOfCurrentUser;
-        case ADD_PROJECT:
+        case ADD_SIMULATION_SUCCEEDED:
             return [
                 ...state,
-                {
-                    userId: -1,
-                    simulation: {name: action.name, datetimeLastEdited: "2017-08-06T12:43:00", id: state.length},
-                    authorizationLevel: "OWN"
-                }
+                action.authorization
             ];
-        case DELETE_PROJECT:
+        case DELETE_SIMULATION:
             return [];
         default:
             return state;
     }
 }
 
-export function newProjectModalVisible(state = false, action) {
+export function newSimulationModalVisible(state = false, action) {
     switch (action.type) {
-        case OPEN_NEW_PROJECT_MODAL:
+        case OPEN_NEW_SIMULATION_MODAL:
             return true;
-        case CLOSE_NEW_PROJECT_MODAL:
+        case CLOSE_NEW_SIMULATION_MODAL:
             return false;
         default:
             return state;

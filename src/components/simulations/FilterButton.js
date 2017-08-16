@@ -4,7 +4,7 @@ import React from 'react';
 import "./FilterButton.css";
 
 const FilterButton = ({active, children, onClick}) => (
-    <div className={classNames("project-filter-button", {"active": active})}
+    <div className={classNames("simulation-filter-button", {"active": active})}
          onClick={() => {
              if (!active) {
                  onClick();

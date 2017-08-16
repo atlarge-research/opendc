@@ -1,5 +1,5 @@
 import {combineReducers} from "redux";
-import {ADD_TO_AUTHORIZATION_STORE, ADD_TO_SIMULATION_STORE, ADD_TO_USER_STORE} from "../actions/object-stores";
+import {ADD_TO_AUTHORIZATION_STORE, ADD_TO_SIMULATION_STORE, ADD_TO_USER_STORE} from "../actions/objects";
 
 export const objects = combineReducers({
     simulations,

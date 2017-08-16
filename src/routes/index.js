@@ -3,15 +3,15 @@ import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import {userIsLoggedIn} from "../auth/index";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
-import Projects from "../pages/Projects";
+import Simulations from "../pages/Simulations";
 
 const Routes = () => (
     <BrowserRouter>
         <Switch>
             <Route exact path="/" component={Home}/>
-            <Route exact path="/projects" render={() => (
+            <Route exact path="/simulations" render={() => (
                 userIsLoggedIn() ? (
-                    <Projects/>
+                    <Simulations/>
                 ) : (
                     <Redirect to="/"/>
                 )

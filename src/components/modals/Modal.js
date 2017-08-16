@@ -10,8 +10,10 @@ class Modal extends React.Component {
     };
     static idCounter = 0;
 
-    // Local, up-to-date copy of modal visibility for time between close and props update (to prevent duplicate close
-    // triggers)
+    /**
+     * Local, up-to-date copy of modal visibility for time between close event and a props update (to prevent duplicate
+     * close triggers).
+     */
     visible = false;
 
     constructor() {
@@ -22,6 +24,11 @@ class Modal extends React.Component {
     componentDidMount() {
         this.visible = this.props.show;
         this.openOrCloseModal();
+
+        // Trigger auto-focus
+        window["$"]("#" + this.id).on("shown.bs.modal", function () {
+            window["$"](this).find("input").first().focus();
+        });
 
         window["$"]("#" + this.id).on("hide.bs.modal", () => {
             if (this.visible) {

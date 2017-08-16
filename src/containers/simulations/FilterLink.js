@@ -1,6 +1,6 @@
 import {connect} from "react-redux";
-import {setAuthVisibilityFilter} from "../../actions/projects";
-import FilterButton from "../../components/projects/FilterButton";
+import {setAuthVisibilityFilter} from "../../actions/simulations";
+import FilterButton from "../../components/simulations/FilterButton";
 
 const mapStateToProps = (state, ownProps) => {
     return {

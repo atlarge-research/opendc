@@ -27,10 +27,14 @@ class TextInputModal extends React.Component {
                    show={this.props.show}
                    onSubmit={this.onSubmit.bind(this)}
                    onCancel={this.onCancel.bind(this)}>
-                <form>
+                <form onSubmit={e => {
+                    e.preventDefault();
+                    this.onSubmit();
+                }}>
                     <div className="form-group">
                         <label className="form-control-label">{this.props.label}:</label>
-                        <input type="text" className="form-control" ref="textInput" value={this.props.initialValue}/>
+                        <input type="text" className="form-control" ref="textInput" value={this.props.initialValue}
+                               autoFocus/>
                     </div>
                 </form>
             </Modal>

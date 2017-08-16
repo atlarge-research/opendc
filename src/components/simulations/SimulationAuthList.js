@@ -1,33 +1,33 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import Shapes from "../../shapes/index";
-import NoProjectsAlert from "./NoProjectsAlert";
-import ProjectAuth from "./ProjectAuth";
-import "./ProjectAuthList.css";
+import NoSimulationsAlert from "./NoSimulationsAlert";
+import SimulationAuth from "./SimulationAuth";
+import "./SimulationAuthList.css";
 
-const ProjectAuthList = ({authorizations}) => {
+const SimulationAuthList = ({authorizations}) => {
     if (authorizations.length === 0) {
-        return <NoProjectsAlert/>;
+        return <NoSimulationsAlert/>;
     }
 
     return (
-        <div className="project-list">
+        <div className="simulation-list">
             <div className="list-head">
-                <div>Project name</div>
+                <div>Simulation name</div>
                 <div>Last edited</div>
                 <div>Access rights</div>
             </div>
             <div className="list-body">
                 {authorizations.map(authorization => (
-                    <ProjectAuth projectAuth={authorization} key={authorization.simulation.id}/>
+                    <SimulationAuth simulationAuth={authorization} key={authorization.simulation.id}/>
                 ))}
             </div>
         </div>
     );
 };
 
-ProjectAuthList.propTypes = {
+SimulationAuthList.propTypes = {
     authorizations: PropTypes.arrayOf(Shapes.Authorization).isRequired,
 };
 
-export default ProjectAuthList;
+export default SimulationAuthList;

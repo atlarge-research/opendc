@@ -1,12 +1,12 @@
 import {call, put} from "redux-saga/effects";
 import {logInSucceeded} from "../../actions/auth";
-import {addToAuthorizationStore, addToSimulationStore, addToUserStore} from "../../actions/object-stores";
+import {addToAuthorizationStore} from "../../actions/objects";
 import {fetchAuthorizationsOfCurrentUserSucceeded} from "../../actions/users";
 import {performTokenSignIn} from "../routes/auth";
-import {getSimulation} from "../routes/simulations";
-import {addUser, getAuthorizationsByUser, getUser} from "../routes/users";
+import {addUser, getAuthorizationsByUser} from "../routes/users";
+import {fetchAndStoreSimulation, fetchAndStoreUser} from "./objects";
 
-export function* fetchLoggedInUser(action) {
+export function* onFetchLoggedInUser(action) {
     try {
         const tokenResponse = yield call(performTokenSignIn, action.payload.authToken);
         let userId = tokenResponse.userId;
@@ -22,18 +22,15 @@ export function* fetchLoggedInUser(action) {
     }
 }
 
-export function* fetchAuthorizationsOfCurrentUser(action) {
+export function* onFetchAuthorizationsOfCurrentUser(action) {
     try {
         const authorizations = yield call(getAuthorizationsByUser, action.userId);
 
         for (const authorization of authorizations) {
             yield put(addToAuthorizationStore(authorization));
 
-            const simulation = yield call(getSimulation, authorization.simulationId);
-            yield put(addToSimulationStore(simulation));
-
-            const user = yield call(getUser, authorization.userId);
-            yield put(addToUserStore(user));
+            yield fetchAndStoreSimulation(authorization.simulationId);
+            yield fetchAndStoreUser(authorization.userId);
         }
 
         const authorizationIds = authorizations.map(authorization => (
