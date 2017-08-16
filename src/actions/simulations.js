@@ -4,6 +4,7 @@ export const CLOSE_NEW_SIMULATION_MODAL = "CLOSE_SIMULATION_POPUP";
 export const ADD_SIMULATION = "ADD_SIMULATION";
 export const ADD_SIMULATION_SUCCEEDED = "ADD_SIMULATION_SUCCEEDED";
 export const DELETE_SIMULATION = "DELETE_SIMULATION";
+export const DELETE_SIMULATION_SUCCEEDED = "DELETE_SIMULATION_SUCCEEDED";
 export const OPEN_SIMULATION = "OPEN_SIMULATION";
 
 export function setAuthVisibilityFilter(filter) {
@@ -46,6 +47,13 @@ export function addSimulationSucceeded(authorization) {
 export function deleteSimulation(id) {
     return {
         type: DELETE_SIMULATION,
+        id
+    };
+}
+
+export function deleteSimulationSucceeded(id) {
+    return {
+        type: DELETE_SIMULATION_SUCCEEDED,
         id
     };
 }

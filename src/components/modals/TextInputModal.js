@@ -33,8 +33,7 @@ class TextInputModal extends React.Component {
                 }}>
                     <div className="form-group">
                         <label className="form-control-label">{this.props.label}:</label>
-                        <input type="text" className="form-control" ref="textInput" value={this.props.initialValue}
-                               autoFocus/>
+                        <input type="text" className="form-control" ref="textInput" value={this.props.initialValue}/>
                     </div>
                 </form>
             </Modal>
