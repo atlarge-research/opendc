@@ -1,5 +1,6 @@
 import {connect} from "react-redux";
 import SimulationList from "../../components/simulations/SimulationAuthList";
+import {denormalize} from "../../store/denormalizer";
 
 const getVisibleSimulationAuths = (simulationAuths, filter) => {
     switch (filter) {
@@ -15,12 +16,9 @@ const getVisibleSimulationAuths = (simulationAuths, filter) => {
 };
 
 const mapStateToProps = state => {
-    const denormalizedAuthorizations = state.authorizationsOfCurrentUser.map(authorizationIds => {
-        const authorization = Object.assign({}, state.objects.authorizations[authorizationIds]);
-        authorization.simulation = state.objects.simulations[authorization.simulationId];
-        authorization.user = state.objects.users[authorization.userId];
-        return authorization;
-    });
+    const denormalizedAuthorizations = state.authorizationsOfCurrentUser.map(authorizationIds =>
+        denormalize(state, "authorization", authorizationIds)
+    );
 
     return {
         authorizations: getVisibleSimulationAuths(denormalizedAuthorizations, state.authVisibilityFilter)

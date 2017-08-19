@@ -4,9 +4,9 @@ import {getSimulation} from "../routes/simulations";
 import {getUser} from "../routes/users";
 
 const selectors = {
-    simulation: state => state.objects.simulations,
-    user: state => state.objects.users,
-    authorization: state => state.objects.authorizations,
+    simulation: state => state.objects.simulation,
+    user: state => state.objects.user,
+    authorization: state => state.objects.authorization,
 };
 
 function* fetchAndStoreObject(objectType, id, apiCall, addToStore) {
