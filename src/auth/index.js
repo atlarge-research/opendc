@@ -1,4 +1,5 @@
 import {LOG_IN_SUCCEEDED, LOG_OUT} from "../actions/auth";
+import {DELETE_CURRENT_USER_SUCCEEDED} from "../actions/users";
 
 const getAuthObject = () => {
     const authItem = localStorage.getItem("auth");
@@ -43,6 +44,7 @@ export const authRedirectMiddleware = store => next => action => {
             window.location.href = "/simulations";
             break;
         case LOG_OUT:
+        case DELETE_CURRENT_USER_SUCCEEDED:
             clearAuthLocalStorage();
             window.location.href = "/";
             break;

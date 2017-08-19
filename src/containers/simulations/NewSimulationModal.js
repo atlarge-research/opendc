@@ -11,7 +11,7 @@ const NewSimulationModalComponent = ({visible, callback}) => (
 
 const mapStateToProps = state => {
     return {
-        visible: state.newSimulationModalVisible
+        visible: state.modals.newSimulationModalVisible
     };
 };
 

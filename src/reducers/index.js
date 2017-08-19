@@ -1,13 +1,14 @@
 import {combineReducers} from "redux";
 import {auth} from "./auth";
+import {modals} from "./modals";
 import {objects} from "./objects";
-import {authorizationsOfCurrentUser, authVisibilityFilter, newSimulationModalVisible} from "./simulations";
+import {authorizationsOfCurrentUser, authVisibilityFilter} from "./simulations";
 
 const rootReducer = combineReducers({
     auth,
     objects,
+    modals,
     authorizationsOfCurrentUser,
-    newSimulationModalVisible,
     authVisibilityFilter,
 });
 

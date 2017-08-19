@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import PropTypes from "prop-types";
 import React from "react";
 
@@ -7,6 +8,12 @@ class Modal extends React.Component {
         show: PropTypes.bool.isRequired,
         onSubmit: PropTypes.func.isRequired,
         onCancel: PropTypes.func.isRequired,
+        submitButtonType: PropTypes.string,
+        submitButtonText: PropTypes.string,
+    };
+    static defaultProps = {
+        submitButtonType: "primary",
+        submitButtonText: "Save",
     };
     static idCounter = 0;
 
@@ -83,7 +90,7 @@ class Modal extends React.Component {
                             <h5 className="modal-title">{this.props.title}</h5>
                             <button type="button" className="close" onClick={this.onCancel.bind(this)}
                                     aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
+                                <span>&times;</span>
                             </button>
                         </div>
                         <div className="modal-body">
@@ -93,8 +100,9 @@ class Modal extends React.Component {
                             <button type="button" className="btn btn-secondary" onClick={this.onCancel.bind(this)}>
                                 Close
                             </button>
-                            <button type="button" className="btn btn-primary" onClick={this.onSubmit.bind(this)}>
-                                Save
+                            <button type="button" className={classNames("btn", "btn-" + this.props.submitButtonType)}
+                                    onClick={this.onSubmit.bind(this)}>
+                                {this.props.submitButtonText}
                             </button>
                         </div>
                     </div>

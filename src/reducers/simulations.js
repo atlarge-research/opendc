@@ -1,8 +1,6 @@
 import {
     ADD_SIMULATION_SUCCEEDED,
-    CLOSE_NEW_SIMULATION_MODAL,
     DELETE_SIMULATION_SUCCEEDED,
-    OPEN_NEW_SIMULATION_MODAL,
     SET_AUTH_VISIBILITY_FILTER
 } from "../actions/simulations";
 import {FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED} from "../actions/users";
@@ -18,17 +16,6 @@ export function authorizationsOfCurrentUser(state = [], action) {
             ];
         case DELETE_SIMULATION_SUCCEEDED:
             return state.filter(authorization => authorization[1] !== action.id);
-        default:
-            return state;
-    }
-}
-
-export function newSimulationModalVisible(state = false, action) {
-    switch (action.type) {
-        case OPEN_NEW_SIMULATION_MODAL:
-            return true;
-        case CLOSE_NEW_SIMULATION_MODAL:
-            return false;
         default:
             return state;
     }
