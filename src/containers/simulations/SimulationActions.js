@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import {deleteSimulation, openSimulation} from "../../actions/simulations";
+import {deleteSimulation} from "../../actions/simulations";
 import SimulationActionButtons from "../../components/simulations/SimulationActionButtons";
 
 const mapStateToProps = (state, ownProps) => {
@@ -10,7 +10,6 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        onOpen: (id) => dispatch(openSimulation(id)),
         onViewUsers: (id) => {},
         onDelete: (id) => dispatch(deleteSimulation(id)),
     };

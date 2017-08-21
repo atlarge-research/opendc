@@ -57,8 +57,8 @@
 .simulation-row .simulation-icons
   text-align: right
 
-.simulation-row .simulation-icons div
-  display: inline
+.simulation-row .simulation-icons div, .simulation-row .simulation-icons a
+  display: inline-block
   position: relative
   top: 4px
   width: 30px
@@ -78,6 +78,9 @@
   &.open
     $icon-color: #0c60bf
     background: $icon-color
+
+    span
+      left: 1px
 
     &:hover
       background: lighten($icon-color, 10%)

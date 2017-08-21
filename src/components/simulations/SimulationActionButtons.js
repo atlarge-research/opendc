@@ -1,11 +1,12 @@
 import PropTypes from "prop-types";
 import React from 'react';
+import {Link} from "react-router-dom";
 
-const SimulationActionButtons = ({simulationId, onOpen, onViewUsers, onDelete}) => (
+const SimulationActionButtons = ({simulationId, onViewUsers, onDelete}) => (
     <div className="simulation-icons">
-        <div className="open" title="Open this simulation" onClick={() => onOpen(simulationId)}>
+        <Link to={"/simulations/" + simulationId} className="open" title="Open this simulation">
             <span className="fa fa-play"/>
-        </div>
+        </Link>
         <div className="users" title="View and edit collaborators on this simulation"
              onClick={() => onViewUsers(simulationId)}>
             <span className="fa fa-users"/>
@@ -18,7 +19,6 @@ const SimulationActionButtons = ({simulationId, onOpen, onViewUsers, onDelete}) 
 
 SimulationActionButtons.propTypes = {
     simulationId: PropTypes.number.isRequired,
-    onOpen: PropTypes.func,
     onViewUsers: PropTypes.func,
     onDelete: PropTypes.func,
 };

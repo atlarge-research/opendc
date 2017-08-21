@@ -1,6 +1,7 @@
 import {
     ADD_SIMULATION_SUCCEEDED,
     DELETE_SIMULATION_SUCCEEDED,
+    OPEN_SIMULATION_SUCCEEDED,
     SET_AUTH_VISIBILITY_FILTER
 } from "../actions/simulations";
 import {FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED} from "../actions/users";
@@ -25,6 +26,15 @@ export function authVisibilityFilter(state = "SHOW_ALL", action) {
     switch (action.type) {
         case SET_AUTH_VISIBILITY_FILTER:
             return action.filter;
+        default:
+            return state;
+    }
+}
+
+export function currentSimulationId(state = -1, action) {
+    switch (action.type) {
+        case OPEN_SIMULATION_SUCCEEDED:
+            return action.id;
         default:
             return state;
     }

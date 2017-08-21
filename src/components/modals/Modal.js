@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import React from "react";
+import jQuery from "../../util/jquery";
 
 class Modal extends React.Component {
     static propTypes = {
@@ -33,15 +34,15 @@ class Modal extends React.Component {
         this.openOrCloseModal();
 
         // Trigger auto-focus
-        window["$"]("#" + this.id).on("shown.bs.modal", function () {
-            window["$"](this).find("input").first().focus();
-        });
-
-        window["$"]("#" + this.id).on("hide.bs.modal", () => {
-            if (this.visible) {
-                this.props.onCancel();
-            }
-        });
+        jQuery("#" + this.id)
+            .on("shown.bs.modal", function () {
+                jQuery(this).find("input").first().focus();
+            })
+            .on("hide.bs.modal", () => {
+                if (this.visible) {
+                    this.props.onCancel();
+                }
+            });
     }
 
     componentDidUpdate() {
@@ -66,11 +67,11 @@ class Modal extends React.Component {
     }
 
     openModal() {
-        window["$"]("#" + this.id).modal("show");
+        jQuery("#" + this.id).modal("show");
     }
 
     closeModal() {
-        window["$"]("#" + this.id).modal("hide");
+        jQuery("#" + this.id).modal("hide");
     }
 
     openOrCloseModal() {
