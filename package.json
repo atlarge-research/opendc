@@ -17,7 +17,6 @@
     "react-dom": "^15.6.1",
     "react-fontawesome": "^1.6.1",
     "react-google-login": "^2.9.3",
-    "react-if": "^2.2.1",
     "react-konva": "^1.1.4",
     "react-mailto": "^0.4.0",
     "react-redux": "^5.0.5",
