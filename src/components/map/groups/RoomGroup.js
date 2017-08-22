@@ -1,16 +1,17 @@
 import React from "react";
-import {Group, Rect} from "react-konva";
+import {Group} from "react-konva";
+import TileGroup from "./TileGroup";
 
-const RoomGroup = () => (
+const RoomGroup = ({room}) => (
     <Group>
-        <Rect
-            x={10}
-            y={10}
-            width={50}
-            height={50}
-            fill="green"
-        />
+        {room.tiles.map(tile => (
+            <TileGroup tile={tile}/>
+        ))}
     </Group>
 );
+
+RoomGroup.propTypes = {
+    room: Shapes.Room,
+};
 
 export default RoomGroup;

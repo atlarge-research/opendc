@@ -2,8 +2,8 @@ import React from "react";
 import {Group, Layer, Stage} from "react-konva";
 import jQuery from "../../util/jquery";
 import Backdrop from "./elements/Backdrop";
+import DatacenterGroup from "./groups/DatacenterGroup";
 import GridGroup from "./groups/GridGroup";
-import RoomGroup from "./groups/RoomGroup";
 import {MAP_SIZE_IN_PIXELS} from "./MapConstants";
 
 class MapStage extends React.Component {
@@ -43,7 +43,7 @@ class MapStage extends React.Component {
                 <Layer>
                     <Group draggable={true} dragBoundFunc={this.dragBoundHandler.bind(this)}>
                         <Backdrop/>
-                        <RoomGroup/>
+                        <DatacenterGroup/>
                         <GridGroup/>
                     </Group>
                 </Layer>

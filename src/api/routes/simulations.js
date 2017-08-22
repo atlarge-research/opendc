@@ -1,4 +1,9 @@
 import {sendRequest} from "../index";
+import {deleteById, getById} from "./util";
+
+export function getSimulation(simulationId) {
+    return getById("/simulations/{simulationId}", {simulationId});
+}
 
 export function addSimulation(simulation) {
     return sendRequest({
@@ -9,20 +14,6 @@ export function addSimulation(simulation) {
                 simulation
             },
             path: {},
-            query: {}
-        }
-    });
-}
-
-export function getSimulation(simulationId) {
-    return sendRequest({
-        path: "/simulations/{simulationId}",
-        method: "GET",
-        parameters: {
-            body: {},
-            path: {
-                simulationId
-            },
             query: {}
         }
     });
@@ -45,29 +36,13 @@ export function updateSimulation(simulation) {
 }
 
 export function deleteSimulation(simulationId) {
-    return sendRequest({
-        path: "/simulations/{simulationId}",
-        method: "DELETE",
-        parameters: {
-            body: {},
-            path: {
-                simulationId
-            },
-            query: {}
-        }
-    });
+    return deleteById("/simulations/{simulationId}", {simulationId});
 }
 
 export function getAuthorizationsBySimulation(simulationId) {
-    return sendRequest({
-        path: "/simulations/{simulationId}/authorizations",
-        method: "GET",
-        parameters: {
-            body: {},
-            path: {
-                simulationId
-            },
-            query: {}
-        }
-    })
+    return getById("/simulations/{simulationId}/authorizations", {simulationId});
+}
+
+export function getPathsOfSimulation(simulationId) {
+    return getById("/simulations/{simulationId}/paths", {simulationId});
 }

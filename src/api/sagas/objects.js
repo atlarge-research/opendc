@@ -1,5 +1,5 @@
 import {call, put, select} from "redux-saga/effects";
-import {addToSimulationStore, addToUserStore} from "../../actions/objects";
+import {addToStore} from "../../actions/objects";
 import {getSimulation} from "../routes/simulations";
 import {getUser} from "../routes/users";
 
@@ -9,16 +9,16 @@ const selectors = {
     authorization: state => state.objects.authorization,
 };
 
-function* fetchAndStoreObject(objectType, id, apiCall, addToStore) {
+function* fetchAndStoreObject(objectType, id, apiCall) {
     const objectStore = yield select(selectors[objectType]);
     if (!objectStore[id]) {
         const object = yield apiCall;
-        yield put(addToStore(object));
+        yield put(addToStore(objectType, object));
     }
 }
 
 export const fetchAndStoreSimulation = (id) =>
-    fetchAndStoreObject("simulation", id, call(getSimulation, id), addToSimulationStore);
+    fetchAndStoreObject("simulation", id, call(getSimulation, id));
 
 export const fetchAndStoreUser = (id) =>
-    fetchAndStoreObject("user", id, call(getUser, id), addToUserStore);
+    fetchAndStoreObject("user", id, call(getUser, id),);

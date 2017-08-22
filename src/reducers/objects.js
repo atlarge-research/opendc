@@ -1,44 +1,40 @@
 import {combineReducers} from "redux";
-import {ADD_TO_AUTHORIZATION_STORE, ADD_TO_SIMULATION_STORE, ADD_TO_USER_STORE} from "../actions/objects";
+import {ADD_TO_STORE} from "../actions/objects";
 
 export const objects = combineReducers({
-    simulation,
-    authorization,
-    user,
+    simulation: object("simulation"),
+    user: object("user"),
+    authorization: objectWithId("authorization", object => [object.userId, object.simulationId]),
+    failureModel: object("failureModel"),
+    cpu: object("cpu"),
+    gpu: object("gpu"),
+    memory: object("memory"),
+    storage: object("storage"),
+    machine: object("machine"),
+    rack: object("rack"),
+    coolingItem: object("coolingItem"),
+    psu: object("psu"),
+    tile: object("tile"),
+    room: object("room"),
+    datacenter: object("datacenter"),
+    section: object("section"),
+    path: object("path"),
 });
 
-function simulation(state = {}, action) {
-    switch (action.type) {
-        case ADD_TO_SIMULATION_STORE:
-            return Object.assign(
-                state,
-                {[action.simulation.id]: action.simulation}
-            );
-        default:
-            return state;
-    }
+function object(type) {
+    return objectWithId(type, object => object.id);
 }
 
-function authorization(state = {}, action) {
-    switch (action.type) {
-        case ADD_TO_AUTHORIZATION_STORE:
-            return Object.assign(
-                state,
-                {[[action.authorization.userId, action.authorization.simulationId]]: action.authorization}
-            );
-        default:
+function objectWithId(type, getId) {
+    return (state = {}, action) => {
+        if (action.type === ADD_TO_STORE) {
+            if (action.objectType === type) {
+                return Object.assign(
+                    state,
+                    {[getId(action.object)]: action.object}
+                );
+            }
             return state;
-    }
-}
-
-function user(state = {}, action) {
-    switch (action.type) {
-        case ADD_TO_USER_STORE:
-            return Object.assign(
-                state,
-                {[action.user.id]: action.user}
-            );
-        default:
-            return state;
-    }
+        }
+    };
 }

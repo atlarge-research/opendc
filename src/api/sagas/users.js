@@ -3,7 +3,7 @@ import {logInSucceeded} from "../../actions/auth";
 import {addToAuthorizationStore} from "../../actions/objects";
 import {fetchAuthorizationsOfCurrentUserSucceeded} from "../../actions/users";
 import {saveAuthLocalStorage} from "../../auth/index";
-import {performTokenSignIn} from "../routes/auth";
+import {performTokenSignIn} from "../routes/token-signin";
 import {addUser, getAuthorizationsByUser} from "../routes/users";
 import {fetchAndStoreSimulation, fetchAndStoreUser} from "./objects";
 
