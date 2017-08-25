@@ -136,4 +136,11 @@ Shapes.Path = PropTypes.shape({
     sections: PropTypes.arrayOf(Shapes.Section),
 });
 
+Shapes.WallSegment = PropTypes.shape({
+    startPosX: PropTypes.number.isRequired,
+    startPosY: PropTypes.number.isRequired,
+    isHorizontal: PropTypes.bool.isRequired,
+    length: PropTypes.number.isRequired,
+});
+
 export default Shapes;
