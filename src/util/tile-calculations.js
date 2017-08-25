@@ -2,6 +2,8 @@ export function deriveWallLocations(room) {
     const verticalWalls = {};
     const horizontalWalls = {};
 
+    // Determine wall segments
+
     room.tiles.forEach(tile => {
         const x = tile.positionX, y = tile.positionY;
         for (let dX = -1; dX <= 1; dX++) {
@@ -11,46 +13,49 @@ export function deriveWallLocations(room) {
                 }
 
                 let doInsert = true;
-                room.tiles.forEach((otherTile) => {
+                room.tiles.forEach(otherTile => {
                     if (otherTile.positionX === x + dX && otherTile.positionY === y + dY) {
                         doInsert = false;
                     }
                 });
+                if (!doInsert) {
+                    continue;
+                }
 
-                if (doInsert) {
-                    if (dX === -1) {
-                        if (verticalWalls[x] === undefined) {
-                            verticalWalls[x] = [];
-                        }
-                        if (verticalWalls[x].indexOf(y) === -1) {
-                            verticalWalls[x].push(y);
-                        }
-                    } else if (dX === 1) {
-                        if (verticalWalls[x + 1] === undefined) {
-                            verticalWalls[x + 1] = [];
-                        }
-                        if (verticalWalls[x + 1].indexOf(y) === -1) {
-                            verticalWalls[x + 1].push(y);
-                        }
-                    } else if (dY === -1) {
-                        if (horizontalWalls[y] === undefined) {
-                            horizontalWalls[y] = [];
-                        }
-                        if (horizontalWalls[y].indexOf(x) === -1) {
-                            horizontalWalls[y].push(x);
-                        }
-                    } else if (dY === 1) {
-                        if (horizontalWalls[y + 1] === undefined) {
-                            horizontalWalls[y + 1] = [];
-                        }
-                        if (horizontalWalls[y + 1].indexOf(x) === -1) {
-                            horizontalWalls[y + 1].push(x);
-                        }
+                if (dX === -1) {
+                    if (verticalWalls[x] === undefined) {
+                        verticalWalls[x] = [];
+                    }
+                    if (verticalWalls[x].indexOf(y) === -1) {
+                        verticalWalls[x].push(y);
+                    }
+                } else if (dX === 1) {
+                    if (verticalWalls[x + 1] === undefined) {
+                        verticalWalls[x + 1] = [];
+                    }
+                    if (verticalWalls[x + 1].indexOf(y) === -1) {
+                        verticalWalls[x + 1].push(y);
+                    }
+                } else if (dY === -1) {
+                    if (horizontalWalls[y] === undefined) {
+                        horizontalWalls[y] = [];
+                    }
+                    if (horizontalWalls[y].indexOf(x) === -1) {
+                        horizontalWalls[y].push(x);
+                    }
+                } else if (dY === 1) {
+                    if (horizontalWalls[y + 1] === undefined) {
+                        horizontalWalls[y + 1] = [];
+                    }
+                    if (horizontalWalls[y + 1].indexOf(x) === -1) {
+                        horizontalWalls[y + 1].push(x);
                     }
                 }
             }
         }
     });
+
+    // Merge walls into longer segments
 
     const result = [];
     const walls = [verticalWalls, horizontalWalls];
@@ -65,10 +70,10 @@ export function deriveWallLocations(room) {
 
             let startPos = wallList[a][0];
             const isHorizontal = i === 1;
-            const startPosX = isHorizontal ? startPos : a;
-            const startPosY = isHorizontal ? a : startPos;
 
             if (wallList[a].length === 1) {
+                const startPosX = isHorizontal ? startPos : a;
+                const startPosY = isHorizontal ? a : startPos;
                 result.push({
                     startPosX,
                     startPosY,
@@ -80,6 +85,8 @@ export function deriveWallLocations(room) {
                 for (let b = 0; b < wallList[a].length - 1; b++) {
                     if (b + 1 === wallList[a].length - 1) {
                         if (wallList[a][b + 1] - wallList[a][b] > 1) {
+                            const startPosX = isHorizontal ? startPos : a;
+                            const startPosY = isHorizontal ? a : startPos;
                             result.push({
                                 startPosX,
                                 startPosY,
@@ -89,6 +96,8 @@ export function deriveWallLocations(room) {
                             consecutiveCount = 0;
                             startPos = wallList[a][b + 1];
                         }
+                        const startPosX = isHorizontal ? startPos : a;
+                        const startPosY = isHorizontal ? a : startPos;
                         result.push({
                             startPosX,
                             startPosY,
@@ -97,6 +106,8 @@ export function deriveWallLocations(room) {
                         });
                         break;
                     } else if (wallList[a][b + 1] - wallList[a][b] > 1) {
+                        const startPosX = isHorizontal ? startPos : a;
+                        const startPosY = isHorizontal ? a : startPos;
                         result.push({
                             startPosX,
                             startPosY,

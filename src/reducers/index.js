@@ -1,5 +1,6 @@
 import {combineReducers} from "redux";
 import {auth} from "./auth";
+import {interactionLevel} from "./interaction-level";
 import {modals} from "./modals";
 import {objects} from "./objects";
 import {authorizationsOfCurrentUser, authVisibilityFilter, currentSimulationId} from "./simulations";
@@ -13,6 +14,7 @@ const rootReducer = combineReducers({
     authVisibilityFilter,
     currentSimulationId,
     currentDatacenterId,
+    interactionLevel,
 });
 
 export default rootReducer;

@@ -8,10 +8,10 @@ const mapStateToProps = state => {
     }
 
     const datacenter = denormalize(state, "datacenter", state.currentDatacenterId);
-    console.log(datacenter);
 
     return {
-        datacenter
+        datacenter,
+        interactionLevel: state.interactionLevel
     };
 };
 

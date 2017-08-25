@@ -143,4 +143,10 @@ Shapes.WallSegment = PropTypes.shape({
     length: PropTypes.number.isRequired,
 });
 
+Shapes.InteractionLevel = PropTypes.shape({
+    mode: PropTypes.string.isRequired,
+    roomId: PropTypes.number,
+    rackId: PropTypes.bool
+});
+
 export default Shapes;

@@ -10,7 +10,7 @@ export const OPEN_SIMULATION_SUCCEEDED = "OPEN_SIMULATION_SUCCEEDED";
 export function setAuthVisibilityFilter(filter) {
     return {
         type: SET_AUTH_VISIBILITY_FILTER,
-        filter: filter
+        filter
     };
 }
 

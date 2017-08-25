@@ -51,7 +51,7 @@ function* fetchTile(tile) {
     if (!tile.objectType) {
         return;
     }
-    console.log(tile);
+
     switch (tile.objectType) {
         case "RACK":
             const rack = yield fetchAndStoreRackOnTile(tile.objectId, tile.id);

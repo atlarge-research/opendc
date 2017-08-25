@@ -5,8 +5,10 @@ import {deriveWallLocations} from "../../../util/tile-calculations";
 import WallSegment from "../elements/WallSegment";
 import TileGroup from "./TileGroup";
 
-const RoomGroup = ({room}) => (
-    <Group>
+const RoomGroup = ({room, onClick}) => (
+    <Group
+        onClick={onClick}
+    >
         {room.tiles.map(tile => (
             <TileGroup key={tile.id} tile={tile}/>
         ))}
