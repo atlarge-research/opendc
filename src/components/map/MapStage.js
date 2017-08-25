@@ -1,8 +1,8 @@
 import React from "react";
 import {Group, Layer, Stage} from "react-konva";
+import DatacenterContainer from "../../containers/map/DatacenterContainer";
 import jQuery from "../../util/jquery";
 import Backdrop from "./elements/Backdrop";
-import DatacenterGroup from "./groups/DatacenterGroup";
 import GridGroup from "./groups/GridGroup";
 import {MAP_SIZE_IN_PIXELS} from "./MapConstants";
 
@@ -28,7 +28,7 @@ class MapStage extends React.Component {
         this.setState({width: jQuery(window).width(), height: jQuery(window).height()});
     }
 
-    dragBoundHandler(pos) {
+    dragBoundFunc(pos) {
         return {
             x: pos.x > 0 ? 0 :
                 (pos.x < -MAP_SIZE_IN_PIXELS + this.state.width ? -MAP_SIZE_IN_PIXELS + this.state.width : pos.x),
@@ -41,9 +41,9 @@ class MapStage extends React.Component {
         return (
             <Stage width={this.state.width} height={this.state.height}>
                 <Layer>
-                    <Group draggable={true} dragBoundFunc={this.dragBoundHandler.bind(this)}>
+                    <Group draggable={true} dragBoundFunc={this.dragBoundFunc.bind(this)}>
                         <Backdrop/>
-                        <DatacenterGroup/>
+                        <DatacenterContainer/>
                         <GridGroup/>
                     </Group>
                 </Layer>

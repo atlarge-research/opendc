@@ -2,6 +2,7 @@ import React from "react";
 import {Rect} from "react-konva";
 import {ROOM_DEFAULT_COLOR} from "../../../colors/index";
 import Shapes from "../../../shapes/index";
+import {TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
 const RoomTile = ({tile}) => (
     <Rect

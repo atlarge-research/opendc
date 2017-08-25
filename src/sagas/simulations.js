@@ -1,7 +1,7 @@
 import {call, put} from "redux-saga/effects";
-import {addToStore} from "../../actions/objects";
-import {addSimulationSucceeded, deleteSimulationSucceeded} from "../../actions/simulations";
-import {addSimulation, deleteSimulation} from "../routes/simulations";
+import {addToStore} from "../actions/objects";
+import {addSimulationSucceeded, deleteSimulationSucceeded} from "../actions/simulations";
+import {addSimulation, deleteSimulation} from "../api/routes/simulations";
 
 export function* onSimulationAdd(action) {
     try {

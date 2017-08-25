@@ -1,5 +1,5 @@
 import {combineReducers} from "redux";
-import {ADD_TO_STORE} from "../actions/objects";
+import {ADD_PROP_TO_STORE_OBJECT, ADD_TO_STORE} from "../actions/objects";
 
 export const objects = combineReducers({
     simulation: object("simulation"),
@@ -27,14 +27,22 @@ function object(type) {
 
 function objectWithId(type, getId) {
     return (state = {}, action) => {
-        if (action.type === ADD_TO_STORE) {
-            if (action.objectType === type) {
-                return Object.assign(
-                    state,
-                    {[getId(action.object)]: action.object}
-                );
-            }
+        if (action.objectType !== type) {
             return state;
         }
+
+        if (action.type === ADD_TO_STORE) {
+            return Object.assign(
+                state,
+                {[getId(action.object)]: action.object}
+            );
+        } else if (action.type === ADD_PROP_TO_STORE_OBJECT) {
+            return Object.assign(
+                state,
+                {[action.objectId]: Object.assign(state[action.objectId], action.propObject)}
+            );
+        }
+
+        return state;
     };
 }

@@ -15,10 +15,6 @@ class SimulationsContainer extends React.Component {
         this.props.fetchAuthorizationsOfCurrentUser();
     }
 
-    onInputSubmission(text) {
-        this.props.addSimulation(text);
-    }
-
     render() {
         return (
             <div className="full-height">

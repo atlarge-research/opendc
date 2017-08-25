@@ -1,10 +1,10 @@
 import {call, put} from "redux-saga/effects";
-import {logInSucceeded} from "../../actions/auth";
-import {addToAuthorizationStore} from "../../actions/objects";
-import {fetchAuthorizationsOfCurrentUserSucceeded} from "../../actions/users";
-import {saveAuthLocalStorage} from "../../auth/index";
-import {performTokenSignIn} from "../routes/token-signin";
-import {addUser, getAuthorizationsByUser} from "../routes/users";
+import {logInSucceeded} from "../actions/auth";
+import {addToStore} from "../actions/objects";
+import {fetchAuthorizationsOfCurrentUserSucceeded} from "../actions/users";
+import {performTokenSignIn} from "../api/routes/token-signin";
+import {addUser, getAuthorizationsByUser} from "../api/routes/users";
+import {saveAuthLocalStorage} from "../auth/index";
 import {fetchAndStoreSimulation, fetchAndStoreUser} from "./objects";
 
 export function* onFetchLoggedInUser(action) {
@@ -29,7 +29,7 @@ export function* onFetchAuthorizationsOfCurrentUser(action) {
         const authorizations = yield call(getAuthorizationsByUser, action.userId);
 
         for (const authorization of authorizations) {
-            yield put(addToAuthorizationStore(authorization));
+            yield put(addToStore("authorization", authorization));
 
             yield fetchAndStoreSimulation(authorization.simulationId);
             yield fetchAndStoreUser(authorization.userId);

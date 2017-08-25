@@ -15,11 +15,12 @@ const VERTICAL_POINT_PAIRS = MAP_COORDINATE_ENTRIES.map(index => [
 
 const GridGroup = () => (
     <Group>
-        {HORIZONTAL_POINT_PAIRS.concat(VERTICAL_POINT_PAIRS).map(points => (
+        {HORIZONTAL_POINT_PAIRS.concat(VERTICAL_POINT_PAIRS).map((points, index) => (
             <Line
                 points={points}
                 stroke={GRID_COLOR}
                 strokeWidth={GRID_LINE_WIDTH_IN_PIXELS}
+                key={index}
             />
         ))}
     </Group>

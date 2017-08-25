@@ -101,7 +101,7 @@ Shapes.Tile = PropTypes.shape({
     positionX: PropTypes.number.isRequired,
     positionY: PropTypes.number.isRequired,
     objectId: PropTypes.number,
-    objectType: PropTypes.number,
+    objectType: PropTypes.string,
     rack: Shapes.Rack,
     coolingItem: Shapes.CoolingItem,
     psu: Shapes.PSU,
@@ -123,6 +123,7 @@ Shapes.Datacenter = PropTypes.shape({
 Shapes.Section = PropTypes.shape({
     id: PropTypes.number.isRequired,
     pathId: PropTypes.number.isRequired,
+    startTick: PropTypes.number.isRequired,
     datacenterId: PropTypes.number.isRequired,
     datacenter: Shapes.Datacenter,
 });

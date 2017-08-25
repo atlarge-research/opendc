@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React from 'react';
 import {connect} from "react-redux";
 import {openSimulationSucceeded} from "../actions/simulations";
-import {fetchAuthorizationsOfCurrentUser} from "../actions/users";
+import {fetchLatestDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
 import Navbar from "../components/navigation/Navbar";
 import Login from "../containers/auth/Login";
@@ -14,7 +14,7 @@ class AppContainer extends React.Component {
 
     componentDidMount() {
         this.props.storeSimulationId(this.props.simulationId);
-        this.props.fetchAuthorizationsOfCurrentUser();
+        this.props.fetchLatestDatacenter();
     }
 
     render() {
@@ -33,7 +33,7 @@ class AppContainer extends React.Component {
 const mapDispatchToProps = dispatch => {
     return {
         storeSimulationId: id => dispatch(openSimulationSucceeded(id)),
-        fetchAuthorizationsOfCurrentUser: () => dispatch(fetchAuthorizationsOfCurrentUser()),
+        fetchLatestDatacenter: () => dispatch(fetchLatestDatacenter()),
     };
 };
 

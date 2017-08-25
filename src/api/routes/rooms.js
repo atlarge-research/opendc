@@ -1,4 +1,5 @@
 import {sendRequest} from "../index";
+import {deleteById, getById} from "./util";
 
 export function getRoom(roomId) {
     return getById("/rooms/{roomId}", {roomId});

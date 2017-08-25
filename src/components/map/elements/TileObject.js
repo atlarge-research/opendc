@@ -3,7 +3,7 @@ import React from "react";
 import {Rect} from "react-konva";
 import {OBJECT_BORDER_COLOR, ROOM_DEFAULT_COLOR} from "../../../colors/index";
 import Shapes from "../../../shapes/index";
-import {OBJECT_BORDER_WIDTH_IN_PIXELS, OBJECT_MARGIN_IN_PIXELS} from "../MapConstants";
+import {OBJECT_BORDER_WIDTH_IN_PIXELS, OBJECT_MARGIN_IN_PIXELS, TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
 const TileObject = ({tile, color}) => (
     <Rect

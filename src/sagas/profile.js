@@ -1,6 +1,6 @@
 import {call, put} from "redux-saga/effects";
-import {deleteCurrentUserSucceeded} from "../../actions/users";
-import {deleteUser} from "../routes/users";
+import {deleteCurrentUserSucceeded} from "../actions/users";
+import {deleteUser} from "../api/routes/users";
 
 export function* onDeleteCurrentUser(action) {
     try {
