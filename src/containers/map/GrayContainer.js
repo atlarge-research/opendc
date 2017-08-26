@@ -1,10 +1,10 @@
 import {connect} from "react-redux";
-import {goFromRoomToBuilding} from "../../actions/interaction-level";
+import {goDownOneInteractionLevel} from "../../actions/interaction-level";
 import GrayLayer from "../../components/map/elements/GrayLayer";
 
 const mapDispatchToProps = dispatch => {
     return {
-        onClick: () => dispatch(goFromRoomToBuilding())
+        onClick: () => dispatch(goDownOneInteractionLevel())
     };
 };
 

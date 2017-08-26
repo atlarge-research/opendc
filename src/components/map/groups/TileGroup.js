@@ -4,7 +4,7 @@ import Shapes from "../../../shapes/index";
 import RoomTile from "../elements/RoomTile";
 import RackGroup from "./RackGroup";
 
-const TileGroup = ({tile}) => {
+const TileGroup = ({tile, onClick}) => {
     let tileObject;
     switch (tile.objectType) {
         case "RACK":
@@ -15,7 +15,9 @@ const TileGroup = ({tile}) => {
     }
 
     return (
-        <Group>
+        <Group
+            onClick={onClick}
+        >
             <RoomTile tile={tile}/>
             {tileObject}
         </Group>
