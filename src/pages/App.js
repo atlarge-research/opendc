@@ -4,7 +4,7 @@ import {connect} from "react-redux";
 import {openSimulationSucceeded} from "../actions/simulations";
 import {fetchLatestDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
-import Navbar from "../components/navigation/Navbar";
+import AppNavbar from "../components/navigation/AppNavbar";
 
 class AppContainer extends React.Component {
     static propTypes = {
@@ -19,7 +19,7 @@ class AppContainer extends React.Component {
     render() {
         return (
             <div className="page-container full-height">
-                <Navbar/>
+                <AppNavbar/>
                 <div className="full-height">
                     <MapStage/>
                 </div>

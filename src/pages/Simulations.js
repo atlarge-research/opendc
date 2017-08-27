@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from "react-redux";
 import {addSimulation, openNewSimulationModal} from "../actions/simulations";
 import {fetchAuthorizationsOfCurrentUser} from "../actions/users";
-import Navbar from "../components/navigation/Navbar";
+import AppNavbar from "../components/navigation/AppNavbar";
 import SimulationFilterPanel from "../components/simulations/FilterPanel";
 import NewSimulationButton from "../components/simulations/NewSimulationButton";
 import NewSimulationModal from "../containers/simulations/NewSimulationModal";
@@ -16,7 +16,7 @@ class SimulationsContainer extends React.Component {
     render() {
         return (
             <div className="full-height">
-                <Navbar/>
+                <AppNavbar/>
                 <div className="container text-page-container full-height">
                     <SimulationFilterPanel/>
                     <VisibleSimulationList/>

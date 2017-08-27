@@ -1,6 +1,5 @@
 import classNames from "classnames";
 import React from 'react';
-import Mailto from "react-mailto";
 import {Link, withRouter} from "react-router-dom";
 import {userIsLoggedIn} from "../../auth/index";
 import Login from "../../containers/auth/Login";
@@ -8,7 +7,7 @@ import Logout from "../../containers/auth/Logout";
 import ProfileName from "../../containers/auth/ProfileName";
 import "./Navbar.css";
 
-const NavItem = withRouter(props => <NavItemWithoutRoute {...props}/>);
+export const NavItem = withRouter(props => <NavItemWithoutRoute {...props}/>);
 
 const NavItemWithoutRoute = ({route, location, children}) => (
     <li className={classNames("nav-item", location.pathname === route ? "active" : undefined)}>
@@ -16,8 +15,8 @@ const NavItemWithoutRoute = ({route, location, children}) => (
     </li>
 );
 
-const Navbar = () => (
-    <nav className="navbar fixed-top navbar-toggleable-md navbar-light bg-faded">
+const Navbar = ({children}) => (
+    <nav className="navbar fixed-top navbar-expand-lg navbar-light bg-faded" id="navbar">
         <div className="container">
             <button className="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
                     data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -30,16 +29,7 @@ const Navbar = () => (
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul className="navbar-nav mr-auto">
-                    <NavItem route="/simulations">
-                        <Link className="nav-link simulations" title="Simulations"
-                              to="/simulations">Simulations</Link>
-                    </NavItem>
-                    <NavItem route="email">
-                        <Mailto className="nav-link support" title="Support" email="opendc.tudelft@gmail.com"
-                                headers={{subject: "OpenDC Support"}}>
-                            Support
-                        </Mailto>
-                    </NavItem>
+                    {children}
                 </ul>
                 <ul className="navbar-nav">
                     {userIsLoggedIn() ?

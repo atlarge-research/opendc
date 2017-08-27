@@ -3,12 +3,11 @@ import PropTypes from "prop-types";
 import React from "react";
 import "./ContentSection.css";
 
-const ContentSection = ({name, children}) => (
+const ContentSection = ({name, title, children}) => (
     <div id={name} className={classNames(name + "-section", "content-section")}>
         <div className="container">
-            <div className="row">
-                {children}
-            </div>
+            <h1>{title}</h1>
+            {children}
         </div>
     </div>
 );

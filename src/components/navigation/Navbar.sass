@@ -26,45 +26,11 @@
     display: inline-block
     width: 30px
 
-.navbar-button-group
-  display: inline-block
-  height: 100%
+.login
+  height: 40px
+  background: $blue
+  border: none
+  +clickable
 
-  a
-    display: inline-block
-    line-height: $navbar-height
-    text-align: center
-    color: $gray-very-dark
-
-    +clickable
-    +transition(background, $transition-length)
-
-  a:hover
-    color: $gray-dark
-
-.navigation
-  margin-left: 10px
-
-  .simulations
-    float: left
-    padding: 0 20px
-
-    font-size: 12pt
-
-.user-controls
-  float: right
-  margin-right: $global-padding
-
-  .support
-    float: left
-    margin-top: -1px
-
-    width: $navbar-height
-
-    font-size: 14pt
-
-  .username
-    float: left
-    padding: 0 20px
-
-    font-size: 12pt
+  &:hover
+    background: $blue-dark
