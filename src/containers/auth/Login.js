@@ -30,7 +30,10 @@ class LoginContainer extends React.Component {
             <GoogleLogin
                 clientId="311799954046-jv2inpg9nu7m0avcg6gulvkuvfgbtgb4.apps.googleusercontent.com"
                 onSuccess={this.onAuthResponse.bind(this)}
-                onFailure={this.onAuthResponse.bind(this)}>
+                onFailure={this.onAuthResponse.bind(this)}
+                style={{height: "40px"}}
+                className="btn btn-secondary"
+            >
                 <span className='fa fa-google'/>
                 {' '}
                 <span>Login with Google</span>

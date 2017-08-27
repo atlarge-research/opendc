@@ -7,7 +7,7 @@ const SimulationActionButtons = ({simulationId, onViewUsers, onDelete}) => (
         <Link to={"/simulations/" + simulationId} className="open" title="Open this simulation">
             <span className="fa fa-play"/>
         </Link>
-        <div className="users" title="View and edit collaborators on this simulation"
+        <div className="users" title="View and edit collaborators"
              onClick={() => onViewUsers(simulationId)}>
             <span className="fa fa-users"/>
         </div>

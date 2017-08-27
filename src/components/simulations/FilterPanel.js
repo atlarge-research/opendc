@@ -7,7 +7,7 @@ const FilterPanel = () => (
         <div className="simulation-filters">
             <FilterLink filter="SHOW_ALL">All Simulations</FilterLink>
             <FilterLink filter="SHOW_OWN">My Simulations</FilterLink>
-            <FilterLink filter="SHOW_SHARED">Simulations shared with me</FilterLink>
+            <FilterLink filter="SHOW_SHARED">Shared with me</FilterLink>
         </div>
     </div>
 );

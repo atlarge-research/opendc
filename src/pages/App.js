@@ -5,7 +5,6 @@ import {openSimulationSucceeded} from "../actions/simulations";
 import {fetchLatestDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
 import Navbar from "../components/navigation/Navbar";
-import Login from "../containers/auth/Login";
 
 class AppContainer extends React.Component {
     static propTypes = {
@@ -19,12 +18,11 @@ class AppContainer extends React.Component {
 
     render() {
         return (
-            <div className="full-height">
+            <div className="page-container full-height">
                 <Navbar/>
                 <div className="full-height">
                     <MapStage/>
                 </div>
-                <Login visible={false}/>
             </div>
         );
     }

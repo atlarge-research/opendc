@@ -1,8 +1,11 @@
 import React from 'react';
-import Login from "../containers/auth/Login";
+import Navbar from "../components/navigation/Navbar";
+import "./Home.css";
 
-const Index = () => (
-    <Login visible={true}/>
+const Home = () => (
+    <div className="body-wrapper">
+        <Navbar/>
+    </div>
 );
 
-export default Index;
+export default Home;

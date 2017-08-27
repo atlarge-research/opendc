@@ -54,8 +54,9 @@
 .simulation-list .list-head > div:not(:first-of-type)
   padding-left: 5px !important
 
-.simulation-row .simulation-icons
+.simulation-icons
   text-align: right
+  padding-right: 0 !important
 
 .simulation-row .simulation-icons div, .simulation-row .simulation-icons a
   display: inline-block
@@ -75,9 +76,10 @@
     top: -4px
     left: -1px
 
+  background-color: $blue-dark
+
   &.open
-    $icon-color: #0c60bf
-    background: $icon-color
+    $icon-color: #0a00bf
 
     span
       left: 1px
@@ -91,23 +93,21 @@
   &.users
     font-size: 10pt
     $icon-color: #17bf55
-    background: $icon-color
 
     span
       left: -2px
 
     &:hover
-      background: lighten($icon-color, 10%)
+      background: $icon-color
 
     &:active
       background: darken($icon-color, 10%)
 
   &.delete
     $icon-color: #e3474d
-    background: $icon-color
 
     &:hover
-      background: lighten($icon-color, 10%)
+      background: $icon-color
 
     &:active
       background: darken($icon-color, 10%)

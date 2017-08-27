@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
 import React from "react";
+import FontAwesome from "react-fontawesome";
 import {Link} from "react-router-dom";
-import "./LogoutButton.css";
 
 const LogoutButton = ({onLogout}) => (
-    <Link className="logout" title="Sign out" to="#" onClick={onLogout}>
-        <span className="fa fa-lg fa-power-off"/>
+    <Link className="logout nav-link" title="Sign out" to="#" onClick={onLogout}>
+        <FontAwesome name="power-off" size="lg"/>
     </Link>
 );
 
