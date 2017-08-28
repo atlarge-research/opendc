@@ -9,14 +9,14 @@ const ContactSection = () => (
         <div className="row justify-content-center">
             <div className="col-4">
                 <a href="https://github.com/atlarge-research/opendc">
-                    <FontAwesome name="github" size="3x"/>
+                    <FontAwesome name="github" size="3x" className="mb-2"/>
                     <div className="w-100"/>
                     atlarge-research/opendc
                 </a>
             </div>
             <div className="col-4">
                 <Mailto title="Contact us" email="opendc@atlarge-research.com">
-                    <FontAwesome name="envelope" size="3x"/>
+                    <FontAwesome name="envelope" size="3x" className="mb-2"/>
                     <div className="w-100"/>
                     opendc@atlarge-research.com
                 </Mailto>

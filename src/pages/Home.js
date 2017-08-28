@@ -1,5 +1,6 @@
 import React from 'react';
 import ContactSection from "../components/home/ContactSection";
+import IntroSection from "../components/home/IntroSection";
 import JumbotronHeader from "../components/home/JumbotronHeader";
 import ModelingSection from "../components/home/ModelingSection";
 import SimulationSection from "../components/home/SimulationSection";
@@ -12,15 +13,28 @@ import "./Home.css";
 
 class Home extends React.Component {
     componentDidMount() {
-        jQuery("body-wrapper").scrollspy({target: "#navbar"});
+        const scrollOffset = 60;
+        jQuery("#navbar").find("li a").click(function (e) {
+            if (jQuery(e.target).parent(".auth-links")) {
+                return;
+            }
+            e.preventDefault();
+            jQuery(jQuery(this).attr('href'))[0].scrollIntoView();
+            window.scrollBy(0, -scrollOffset);
+        });
+        jQuery("body").scrollspy({
+            target: "#navbar",
+            offset: scrollOffset
+        });
     }
 
     render() {
         return (
             <div>
                 <HomeNavbar/>
-                <div className="body-wrapper page-container" data-spy="scroll" data-target="#navbar">
+                <div className="body-wrapper page-container">
                     <JumbotronHeader/>
+                    <IntroSection/>
                     <StakeholderSection/>
                     <ModelingSection/>
                     <SimulationSection/>

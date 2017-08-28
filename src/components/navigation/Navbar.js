@@ -8,12 +8,40 @@ import ProfileName from "../../containers/auth/ProfileName";
 import "./Navbar.css";
 
 export const NavItem = withRouter(props => <NavItemWithoutRoute {...props}/>);
+export const LoggedInSection = withRouter(props => <LoggedInSectionWithoutRoute {...props}/>);
 
 const NavItemWithoutRoute = ({route, location, children}) => (
     <li className={classNames("nav-item", location.pathname === route ? "active" : undefined)}>
         {children}
     </li>
 );
+
+const LoggedInSectionWithoutRoute = ({location}) => (
+        <ul className="navbar-nav auth-links">
+            {userIsLoggedIn() ?
+                [
+                    location.pathname === "/" ?
+                        <NavItem route="/simulations" key="simulations">
+                            <Link className="nav-link" title="My Simulations" to="/simulations">
+                                My Simulations
+                            </Link>
+                        </NavItem> :
+                        <NavItem route="/profile" key="profile">
+                            <Link className="nav-link" title="My Profile" to="/profile">
+                                <ProfileName/>
+                            </Link>
+                        </NavItem>,
+                    <NavItem route="logout" key="logout">
+                        <Logout/>
+                    </NavItem>
+                ] :
+                <NavItem route="login">
+                    <Login visible={true}/>
+                </NavItem>
+            }
+        </ul>
+    )
+;
 
 const Navbar = ({children}) => (
     <nav className="navbar fixed-top navbar-expand-lg navbar-light bg-faded" id="navbar">
@@ -31,23 +59,7 @@ const Navbar = ({children}) => (
                 <ul className="navbar-nav mr-auto">
                     {children}
                 </ul>
-                <ul className="navbar-nav">
-                    {userIsLoggedIn() ?
-                        [
-                            <NavItem route="/profile">
-                                <Link className="username nav-link" title="My Profile" to="/profile">
-                                    <ProfileName/>
-                                </Link>
-                            </NavItem>,
-                            <NavItem route="logout">
-                                <Logout/>
-                            </NavItem>
-                        ] :
-                        <NavItem route="login">
-                            <Login visible={true}/>
-                        </NavItem>
-                    }
-                </ul>
+                <LoggedInSection/>
             </div>
         </div>
     </nav>
