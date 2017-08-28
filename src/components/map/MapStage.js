@@ -2,6 +2,7 @@ import React from "react";
 import {Group, Layer, Stage} from "react-konva";
 import DatacenterContainer from "../../containers/map/DatacenterContainer";
 import jQuery from "../../util/jquery";
+import {NAVBAR_HEIGHT} from "../navigation/Navbar";
 import Backdrop from "./elements/Backdrop";
 import GridGroup from "./groups/GridGroup";
 import {MAP_SIZE_IN_PIXELS} from "./MapConstants";
@@ -25,7 +26,7 @@ class MapStage extends React.Component {
     }
 
     updateDimensions() {
-        this.setState({width: jQuery(window).width(), height: jQuery(window).height()});
+        this.setState({width: jQuery(window).width(), height: jQuery(window).height() - NAVBAR_HEIGHT});
     }
 
     dragBoundFunc(pos) {

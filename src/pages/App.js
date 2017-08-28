@@ -5,6 +5,7 @@ import {openSimulationSucceeded} from "../actions/simulations";
 import {fetchLatestDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
 import AppNavbar from "../components/navigation/AppNavbar";
+import TopologySidebar from "../containers/sidebars/TopologySidebar";
 
 class AppContainer extends React.Component {
     static propTypes = {
@@ -22,6 +23,7 @@ class AppContainer extends React.Component {
                 <AppNavbar/>
                 <div className="full-height">
                     <MapStage/>
+                    <TopologySidebar/>
                 </div>
             </div>
         );

@@ -7,6 +7,8 @@ import Logout from "../../containers/auth/Logout";
 import ProfileName from "../../containers/auth/ProfileName";
 import "./Navbar.css";
 
+export const NAVBAR_HEIGHT = 62;
+
 export const NavItem = withRouter(props => <NavItemWithoutRoute {...props}/>);
 export const LoggedInSection = withRouter(props => <LoggedInSectionWithoutRoute {...props}/>);
 
