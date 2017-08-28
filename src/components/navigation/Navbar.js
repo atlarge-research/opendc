@@ -51,8 +51,8 @@ const Navbar = ({children}) => (
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon"/>
             </button>
-            <Link className="navbar-brand opendc-brand" to="/">
-                <img src="/img/logo.png" alt="OpenDC Logo"/>
+            <Link className="navbar-brand opendc-brand" to="/" title="OpenDC">
+                <img src="/img/logo.png" alt="OpenDC"/>
             </Link>
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
