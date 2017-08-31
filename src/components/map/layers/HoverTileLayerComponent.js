@@ -3,25 +3,45 @@ import {Layer} from "react-konva";
 import HoverTile from "../elements/HoverTile";
 import {TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
-const HoverTileLayerComponent = ({mainGroupX, mainGroupY, mouseX, mouseY, currentRoomInConstruction, isValid, onClick}) => {
-    if (currentRoomInConstruction === -1) {
-        return <Layer/>
+class HoverTileLayerComponent extends React.Component {
+    state = {
+        positionX: -1,
+        positionY: -1,
+        validity: false,
+    };
+
+    componentDidUpdate() {
+        if (this.props.currentRoomInConstruction === -1) {
+            return;
+        }
+
+        const positionX = Math.floor((this.props.mouseX - this.props.mainGroupX) / TILE_SIZE_IN_PIXELS);
+        const positionY = Math.floor((this.props.mouseY - this.props.mainGroupY) / TILE_SIZE_IN_PIXELS);
+
+        if (positionX !== this.state.positionX || positionY !== this.state.positionY) {
+            this.setState({positionX, positionY, validity: this.props.isValid(positionX, positionY)});
+        }
     }
 
-    const positionX = Math.floor((mouseX - mainGroupX) / TILE_SIZE_IN_PIXELS);
-    const positionY = Math.floor((mouseY - mainGroupY) / TILE_SIZE_IN_PIXELS);
-    const pixelX = positionX * TILE_SIZE_IN_PIXELS + mainGroupX;
-    const pixelY = positionY * TILE_SIZE_IN_PIXELS + mainGroupY;
-    const validity = isValid(positionX, positionY);
+    render() {
+        if (this.props.currentRoomInConstruction === -1) {
+            return <Layer/>;
+        }
 
-    return (
-        <Layer>
-            <HoverTile
-                pixelX={pixelX} pixelY={pixelY}
-                isValid={validity} onClick={() => onClick(positionX, positionY)}
-            />
-        </Layer>
-    );
-};
+        const positionX = Math.floor((this.props.mouseX - this.props.mainGroupX) / TILE_SIZE_IN_PIXELS);
+        const positionY = Math.floor((this.props.mouseY - this.props.mainGroupY) / TILE_SIZE_IN_PIXELS);
+        const pixelX = positionX * TILE_SIZE_IN_PIXELS + this.props.mainGroupX;
+        const pixelY = positionY * TILE_SIZE_IN_PIXELS + this.props.mainGroupY;
+
+        return (
+            <Layer>
+                <HoverTile
+                    pixelX={pixelX} pixelY={pixelY}
+                    isValid={this.state.validity} onClick={() => this.props.onClick(positionX, positionY)}
+                />
+            </Layer>
+        );
+    }
+}
 
 export default HoverTileLayerComponent;

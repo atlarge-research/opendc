@@ -125,3 +125,82 @@ export function deriveWallLocations(tiles) {
 
     return result;
 }
+
+export function deriveValidNextTilePositions(rooms, selectedTiles) {
+    const result = [], newPosition = {x: 0, y: 0};
+    let isSurroundingTile;
+
+    selectedTiles.forEach((tile) => {
+        const x = tile.positionX;
+        const y = tile.positionY;
+        result.push({x, y});
+
+        for (let dX = -1; dX <= 1; dX++) {
+            for (let dY = -1; dY <= 1; dY++) {
+                if (Math.abs(dX) === Math.abs(dY)) {
+                    continue;
+                }
+
+                newPosition.x = x + dX;
+                newPosition.y = y + dY;
+
+                isSurroundingTile = true;
+                for (let index in selectedTiles) {
+                    if (selectedTiles[index].positionX === newPosition.x
+                        && selectedTiles[index].positionY === newPosition.y) {
+                        isSurroundingTile = false;
+                        break;
+                    }
+                }
+
+                if (isSurroundingTile && findPositionInRooms(rooms, newPosition.x, newPosition.y) === -1) {
+                    result.push({x: newPosition.x, y: newPosition.y});
+                }
+            }
+        }
+    });
+
+    return result;
+}
+
+export function findPositionInPositions(positions, positionX, positionY) {
+    let index = -1;
+
+    for (let i = 0; i < positions.length; i++) {
+        const position = positions[i];
+        if (positionX === position.x && positionY === position.y) {
+            index = i;
+            break;
+        }
+    }
+
+    return index;
+}
+
+export function findPositionInRooms(rooms, positionX, positionY) {
+    let index = -1;
+
+    for (let i = 0; i < rooms.length; i++) {
+        const room = rooms[i];
+        if (findPositionInTiles(room.tiles, positionX, positionY) !== -1) {
+            index = i;
+            break;
+        }
+    }
+
+    return index;
+}
+
+function findPositionInTiles(tiles, positionX, positionY) {
+    let index = -1;
+
+    for (let i = 0; i < tiles.length; i++) {
+        const tile = tiles[i];
+        if (positionX === tile.positionX && positionY === tile.positionY) {
+            index = i;
+            break;
+        }
+    }
+
+    return index;
+}
