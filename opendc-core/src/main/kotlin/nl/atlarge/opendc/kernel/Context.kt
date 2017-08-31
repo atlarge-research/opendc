@@ -22,23 +22,41 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment.messaging
+package nl.atlarge.opendc.kernel
 
+import nl.atlarge.opendc.kernel.messaging.Readable
+import nl.atlarge.opendc.topology.Component
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * A message that is received from a [Channel], also containing the metadata of the message.
+ * The [Context] interface provides a context for a simulation kernel, which defines the environment in which the
+ * simulation is run.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Receivable<out T> {
+interface Context<out T: Component<*>>: Readable {
 	/**
-	 * The value of this message.
+	 * The [Component] that is simulated.
 	 */
-	val value: T
+	val component: T
 
 	/**
-	 * The sender of this message.
+	 * The observable state of an [Entity] within the simulation is provided by context.
 	 */
-	val sender: Entity
+	val <S> Entity<S>.state: S
+
+	/**
+	 * Suspend the simulation kernel until the next tick occurs in the simulation.
+	 */
+	suspend fun tick(): Boolean {
+		sleep(1)
+		return true
+	}
+
+	/**
+	 * Suspend the simulation kernel for <code>n</code> ticks before resuming the execution.
+	 *
+	 * @param n The amount of ticks to suspend the simulation kernel.
+	 */
+	suspend fun sleep(n: Int)
 }

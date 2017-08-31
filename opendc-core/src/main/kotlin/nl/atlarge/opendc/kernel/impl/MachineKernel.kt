@@ -22,21 +22,37 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
+package nl.atlarge.opendc.kernel.impl
 
-import nl.atlarge.opendc.topology.Node
+import nl.atlarge.opendc.experiment.Task
+import nl.atlarge.opendc.kernel.AbstractEntityKernel
+import nl.atlarge.opendc.kernel.EntityContext
+import nl.atlarge.opendc.topology.machine.Cpu
+import nl.atlarge.opendc.topology.machine.Machine
 
-/**
- * A task scheduler that is coupled to an [Node] in the topology of the cloud network.
- *
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
- */
-interface Scheduler<in E: Node<*>> {
-	/**
-	 * Schedule the given jobs for the given entity.
-	 *
-	 * @param entity The entity in the cloud network topology representing the entity.
-	 * @param jobs The jobs that have been submitted to the cloud network.
-	 */
-	fun schedule(entity: E, jobs: Set<Job>)
+class MachineKernel(ctx: EntityContext<Machine>): AbstractEntityKernel<Machine>(ctx) {
+
+	suspend override fun EntityContext<Machine>.run() {
+		println("${this}: Initialising!")
+
+		val cpus = component.outgoingEdges().filter { it.tag == "cpu" }.map { it.to.entity as Cpu }
+		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores })
+		val task: Task
+
+		loop@while (true) {
+			val msg = receive()
+			when (msg) {
+				is Task -> {
+					task = msg
+					break@loop
+				}
+				else -> println("warning: unhandled message $msg")
+			}
+		}
+
+		while (tick()) {
+			task.consume(speed.toLong())
+		}
+	}
+
 }

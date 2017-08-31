@@ -22,14 +22,44 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.room
+package nl.atlarge.opendc.kernel
 
+import nl.atlarge.opendc.kernel.messaging.ReadablePort
+import nl.atlarge.opendc.kernel.messaging.WritableChannel
+import nl.atlarge.opendc.topology.Edge
 import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.Node
 
 /**
- * A physical room in a datacenter which contains [Entity]s.
+ * A simulation kernel that simulates a single entity in the topology of a cloud network.
  *
- * @param id The unique identifier of this entity.
+ * @param ctx The context in which the simulation is run.
+ * @param E The shape of the component to simulate.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-abstract class Room(override val id: Int): Entity
+abstract class AbstractEntityKernel<E: Entity<*>>(private val ctx: EntityContext<E>): Kernel<EntityContext<E>> {
+	/**
+	 * The [Node] that is simulated.
+	 */
+	val self: Node<E> = ctx.component
+
+	/**
+	 * Create a [WritableChannel] over the edge with the given tag.
+	 *
+	 * @param tag The tag of the edge to create a channel over.
+	 * @return The channel that has been created or the cached result.
+	 */
+	inline fun <reified T: Edge<*>> output(tag: String): WritableChannel<T> {
+		TODO()
+	}
+
+	/**
+	 * Create a [ReadablePort] over the edges with the given tag.
+	 *
+	 * @param tag The tag of the edges to create a port over.
+	 * @return The port that has been created or the cached result.
+	 */
+	inline fun <reified T: Edge<*>> input(tag: String): ReadablePort<T> {
+		TODO()
+	}
+}

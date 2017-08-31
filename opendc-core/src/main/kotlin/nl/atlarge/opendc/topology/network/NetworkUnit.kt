@@ -31,4 +31,4 @@ import nl.atlarge.opendc.topology.Entity
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface NetworkUnit: Entity
+interface NetworkUnit: Entity<Unit>

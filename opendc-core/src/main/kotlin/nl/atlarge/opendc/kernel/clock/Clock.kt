@@ -22,21 +22,32 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
-
-import nl.atlarge.opendc.topology.Node
+package nl.atlarge.opendc.kernel.clock
 
 /**
- * A task scheduler that is coupled to an [Node] in the topology of the cloud network.
+ * A tick represents a moment of time in which some work is done by an entity.
+ */
+typealias Tick = Long
+
+/**
+ * The clock of a simulation manages the ticks that have elapsed and schedules the tick events.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Scheduler<in E: Node<*>> {
+interface Clock {
 	/**
-	 * Schedule the given jobs for the given entity.
-	 *
-	 * @param entity The entity in the cloud network topology representing the entity.
-	 * @param jobs The jobs that have been submitted to the cloud network.
+	 * The tick the clock is currently at.
 	 */
-	fun schedule(entity: E, jobs: Set<Job>)
+	val tick: Tick
+
+	/**
+	 *
+	 * @throws IllegalArgumentException
+	 */
+	fun scheduleAt(tick: Tick, block: () -> Unit)
+
+	/**
+	 * @throws IllegalArgumentException
+	 */
+	fun scheduleAfter(n: Int, block: () -> Unit) = scheduleAt(tick + n, block)
 }

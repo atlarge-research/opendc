@@ -22,14 +22,19 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment.simulator
-
-import nl.atlarge.opendc.topology.Entity
-import kotlin.reflect.KClass
+package nl.atlarge.opendc.topology
 
 /**
- * Classes annotated by this annotation indicates that the annotated class simulates the given entity.
+ * A component within a [Topology], which is either an [Node] or an [Edge] representing the relationship between
+ * entities within a logical topology of a cloud network.
+ *
+ * <p>A [Component]'s label provides access to user-specified data.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-annotation class Simulates<T: Entity>(val entity: KClass<T>)
+interface Component<out T> {
+	/**
+	 * The label of this [Component].
+	 */
+	val label: T
+}

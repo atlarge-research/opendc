@@ -24,7 +24,7 @@
 
 package nl.atlarge.opendc.experiment
 
-import nl.atlarge.opendc.topology.Graph
+import nl.atlarge.opendc.topology.Topology
 
 /**
  * A user of a cloud network that provides [Job]s for the simulation.
@@ -37,4 +37,4 @@ import nl.atlarge.opendc.topology.Graph
  * @param view The view of the user on the topology.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class User(val id: Int, val name: String, val view: Graph)
+data class User(val id: Int, val name: String, val view: Topology)

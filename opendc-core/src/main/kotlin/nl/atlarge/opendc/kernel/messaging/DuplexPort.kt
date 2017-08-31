@@ -22,26 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment.messaging
+package nl.atlarge.opendc.kernel.messaging
 
 /**
- * A [Pullable] instance allows objects to pull messages from the instance.
+ * A [DuplexPort] instance allows bi-directional communication with multiple channels.
  *
+ * @param T The shape of the label of the edges of the channels of this port.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Pullable {
-	/**
-	 * Pull one message from this [Channel] for processing via the given block.
-	 *
-	 * @param block The block to process the message with.
-	 * @return The result of the processed messaged.
-	 */
-	fun <T> pull(block: Receivable<Any?>.(Any?) -> T): T
-
-	/**
-	 * Pull one message from this [Channel].
-	 *
-	 * @return The message that was received from the channel
-	 */
-	fun pull(): Any? = pull { it }
-}
+interface DuplexPort<out T>: Port<DuplexChannel<T>>, Readable, Writable

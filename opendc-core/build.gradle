@@ -21,8 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+/* Build configuration */
 buildscript {
-	ext.kotlin_version = '1.1.3-2'
+	ext.kotlin_version = '1.1.4-3'
+	ext.kotlin_version = '1.1.4'
 
 	repositories {
 		mavenCentral()
@@ -30,13 +33,17 @@ buildscript {
 
 	dependencies {
 		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+		classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC3'
 	}
 }
 
 plugins {
 	id 'java'
-	id 'org.jetbrains.kotlin.jvm' version '1.1.3'
+	id 'org.jetbrains.kotlin.jvm' version '1.1.4'
 }
+
+apply plugin: 'org.junit.platform.gradle.plugin'
+apply plugin: 'kotlin'
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 	kotlinOptions {
@@ -44,6 +51,13 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 	}
 }
 
+kotlin {
+	experimental {
+		coroutines 'enable'
+	}
+}
+
+/* Project configuration */
 group 'nl.atlarge.opendc'
 version '1.0'
 
@@ -53,4 +67,19 @@ repositories {
 
 dependencies {
 	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+	compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.18'
+
+	testCompile "org.junit.jupiter:junit-jupiter-api:5.0.0-RC3"
+	testRuntime "org.junit.jupiter:junit-jupiter-engine:5.0.0-RC3"
+	compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+}
+compileKotlin {
+	kotlinOptions {
+		jvmTarget = "1.8"
+	}
+}
+compileTestKotlin {
+	kotlinOptions {
+		jvmTarget = "1.8"
+	}
 }

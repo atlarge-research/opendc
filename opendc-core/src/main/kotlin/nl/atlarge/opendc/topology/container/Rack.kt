@@ -22,31 +22,14 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment.simulator
+package nl.atlarge.opendc.topology.container
 
-import nl.atlarge.opendc.experiment.messaging.Port
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * A simulator that simulates a single entity in the topology of a cloud network.
+ * A type of physical steel and electronic framework that is designed to house servers, networking devices, cables and
+ * other datacenter computing equipment.
  *
- * @param ctx The context in which the simulation is run.
- * @param <E> The type of entity to simulate.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-abstract class AbstractSimulator<E: Entity>(val ctx: Context<E>): Simulator<E> {
-	/**
-	 * The [Entity] that is simulated.
-	 */
-	val self: E = ctx.entity
-
-	/**
-	 * Create a [Port] of the given type.
-	 *
-	 * @param name The name of the label to create the port for.
-	 * @return The port that has been created or the cached result.
-	 */
-	inline fun <reified E: Entity, T> port(name: String): Port<E, T> {
-		throw NotImplementedError()
-	}
-}
+class Rack: Entity<Unit>

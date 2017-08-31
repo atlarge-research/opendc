@@ -22,21 +22,28 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
+package nl.atlarge.opendc.kernel.messaging
 
+import nl.atlarge.opendc.topology.Edge
 import nl.atlarge.opendc.topology.Node
 
 /**
- * A task scheduler that is coupled to an [Node] in the topology of the cloud network.
+ * A unidirectional communication channel between two [Node] instances as seen from one of the entities.
  *
+ * <p>A [Channel] is viewed as a directed edge that connects two entities in the topology of a cloud network.
+ *
+ * @param T The shape of the label of the edge of this channel.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Scheduler<in E: Node<*>> {
+interface Channel<out T> {
 	/**
-	 * Schedule the given jobs for the given entity.
-	 *
-	 * @param entity The entity in the cloud network topology representing the entity.
-	 * @param jobs The jobs that have been submitted to the cloud network.
+	 * The directed edge between two nodes which represents this unidirectional communication channel.
 	 */
-	fun schedule(entity: E, jobs: Set<Job>)
+	val edge: Edge<T>
+
+	/**
+	 * The channel the message originates from.
+	 */
+	val Envelope<*>.channel: Channel<T>
+		get() = this@Channel
 }

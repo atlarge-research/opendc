@@ -22,21 +22,14 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
-
-import nl.atlarge.opendc.topology.Node
+package nl.atlarge.opendc.topology
 
 /**
- * A task scheduler that is coupled to an [Node] in the topology of the cloud network.
+ * A graph data structure which represents the logical topology of a cloud network consisting of one or more
+ * datacenters.
+ *
+ * <p>A topology is [Iterable] and allows implementation-dependent iteration of the nodes in the topology.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Scheduler<in E: Node<*>> {
-	/**
-	 * Schedule the given jobs for the given entity.
-	 *
-	 * @param entity The entity in the cloud network topology representing the entity.
-	 * @param jobs The jobs that have been submitted to the cloud network.
-	 */
-	fun schedule(entity: E, jobs: Set<Job>)
-}
+interface Topology: Iterable<Node<*>>

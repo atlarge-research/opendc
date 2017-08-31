@@ -22,21 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
-
-import nl.atlarge.opendc.topology.Node
+package nl.atlarge.opendc.kernel.messaging
 
 /**
- * A task scheduler that is coupled to an [Node] in the topology of the cloud network.
+ * A [ReadableChannel] instance allows objects to receive messages from the channel.
  *
+ * @param T The shape of the label of the edge of this channel.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Scheduler<in E: Node<*>> {
-	/**
-	 * Schedule the given jobs for the given entity.
-	 *
-	 * @param entity The entity in the cloud network topology representing the entity.
-	 * @param jobs The jobs that have been submitted to the cloud network.
-	 */
-	fun schedule(entity: E, jobs: Set<Job>)
-}
+interface ReadableChannel<out T>: Channel<T>, Readable

@@ -25,16 +25,15 @@
 package nl.atlarge.opendc.topology
 
 /**
- * An entity in the logical topology of a cloud network.
+ * An entity within a cloud network.
  *
- * <p>Instances of the [Entity] interface provide direct access to observable state of the entity to other entities in
- * the topology connected to it.
+ * <p>A [Entity] contains the immutable properties of this component given by the topology configuration at the start
+ * of a simulation and remain unchanged during simulation.
  *
+ * <p>In addition, other entities in a simulation have direct, immutable access to the observable state of this entity.
+ *
+ * @param S The shape of the observable state of this entity, which is directly accessible by other components within
+ * a simulation.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Entity {
-	/**
-	 * A unique identifier of this entity within the topology represented as a [Int].
-	 */
-	val id: Int
-}
+interface Entity<out S>

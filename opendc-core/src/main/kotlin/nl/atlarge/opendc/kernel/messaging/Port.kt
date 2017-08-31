@@ -22,46 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment.simulator
-
-import nl.atlarge.opendc.topology.Entity
+package nl.atlarge.opendc.kernel.messaging
 
 /**
- * A context for [Simulator] instance.
+ * A port connects multiple [Channel]s to an entity in the topology of a cloud network.
  *
+ * @param C The shape of the channels that are connected to this port.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Context<E: Entity> {
-	/**
-	 * The current tick of the experiment.
-	 */
-	val tick: Long
-
-	/**
-	 * The [Entity] that is simulated.
-	 */
-	val entity: E
-
-	/**
-	 * Update the state of the entity being simulated.
-	 *
-	 * <p>Instead of directly mutating the entity, we create a new instance of the entity to prevent other objects
-	 * referencing the old entity having their data changed.
-	 *
-	 * @param next The next state of the entity.
-	 */
-	fun update(next: E)
-
-	/**
-	 * Push the given given tick handler on the stack and change the simulator's behaviour to become the new tick
-	 * handler.
-	 *
-	 * @param block The tick handler to push onto the stack.
-	 */
-	fun become(block: Context<E>.() -> Unit)
-
-	/**
-	 * Revert the behaviour of the simulator to the previous handler in the stack.
-	 */
-	fun unbecome()
-}
+interface Port<out C: Channel<*>>: Iterable<C>

@@ -22,26 +22,13 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.topology.container
+
+import nl.atlarge.opendc.topology.Entity
 
 /**
- * A graph data structure which represents the logical topology of a cloud network consisting of one or more
- * datacenters.
+ * A physical room in a datacenter with relationships to the entities within the room.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Graph {
-	/**
-	 * Return the set of incoming edges of this node.
-	 *
-	 * @return All edges whose destination is this node.
-	 */
-	fun Entity.incomingEdges(): Set<Edge<*>>
-
-	/**
-	 * Return the set of outgoing edges of this node.
-	 *
-	 * @return  All edges whose source is this node.
-	 */
-	fun Entity.outgoingEdges(): Set<Edge<*>>
-}
+interface Room: Entity<Unit>

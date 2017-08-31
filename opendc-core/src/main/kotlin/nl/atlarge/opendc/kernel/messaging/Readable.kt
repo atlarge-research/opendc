@@ -22,23 +22,26 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment.simulator.impl
-
-import nl.atlarge.opendc.experiment.simulator.AbstractSimulator
-import nl.atlarge.opendc.experiment.simulator.Context
-import nl.atlarge.opendc.experiment.simulator.Simulates
-import nl.atlarge.opendc.topology.machine.Cpu
-import nl.atlarge.opendc.topology.machine.Machine
+package nl.atlarge.opendc.kernel.messaging
 
 /**
- * A simulator for [Machine] entities.
+ * A [Readable] instance allows objects to pull messages from the instance.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-@Simulates<Machine>(Machine::class)
-class MachineSimulator(ctx: Context<Machine>): AbstractSimulator<Machine>(ctx) {
-	val cpus = port<Cpu, Nothing>("cpu")
+interface Readable {
+	/**
+	 * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
+	 *
+	 * @param block The block to process the message with.
+	 * @return The processed message.
+	 */
+	suspend fun <T> receive(block: Envelope<*>.(Any?) -> T): T
 
-	override fun Context<Machine>.tick() {
-	}
+	/**
+	 * Retrieve a single message from this [Channel].
+	 *
+	 * @return The message that was received from the channel
+	 */
+	suspend fun receive(): Any? = receive { it }
 }

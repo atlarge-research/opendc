@@ -24,72 +24,31 @@
 
 package nl.atlarge.opendc.topology
 
-import java.util.*
-
 /**
- * An undirected edge that represents a connection between exactly two instances of [Entity].
+ * An edge that represents a directed relationship between exactly two [Node]s in a logical topology of a cloud network.
  *
- * @param from The first incident node.
- * @param to The second incident node.
- * @param label The label of the edge.
- * @param <T> The data type of the label value.
+ * @param T The relationship type the edge represents within a logical topology.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Edge<out T>(val from: Entity, val to: Entity, val label: Label<T>) {
+interface Edge<out T>: Component<T> {
 	/**
-	 * Return the [Entity] at the opposite end of this [Edge] from the
-	 * specified entity.
-	 *
-	 * Throws [IllegalArgumentException] if <code>entity</code> is
-	 * not incident to this edge.
-	 *
-	 * @param entity The entity to get the opposite of for this edge pair.
-	 * @return The entity at the opposite end of this edge from the specified entity.
-	 * @throws IllegalArgumentException if <code>entity</code> is not incident to this edge.
+	 * A tag to uniquely identify the relationship this edge represents.
 	 */
-	fun opposite(entity: Entity): Entity = when (entity) {
-		from -> to
-		to -> from
-		else -> throw IllegalArgumentException()
-	}
+	val tag: String?
 
 	/**
-	 * Return a [Pair] representing this edge consisting of both incident nodes.
-	 * Note that the pair is in no particular order.
+	 * The source of the edge.
 	 *
-	 * @return The edge represented as pair of both incident nodes.
+	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
+	 * <code>O(n)</code>, with respect to the size of the topology.
 	 */
-	fun endpoints(): Pair<Entity, Entity> = Pair(from, to)
+	val from: Node<*>
 
 	/**
-	 * Determine whether the given object is equal to this instance.
+	 * The destination of the edge.
 	 *
-	 * @param other The other object to compare against.
-	 * @return <code>true</code> both edges are equal, <code>false</code> otherwise.
+	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
+	 * <code>O(n)</code>, with respect to the size of the topology.
 	 */
-	override fun equals(other: Any?): Boolean =
-		if (other is Edge<*>) {
-			from == other.from && to == other.to ||
-				from == other.to && to == other.from
-		} else {
-			false
-		}
-
-	/**
-	 * Return the hash code of this edge pair.
-	 *
-	 * @return The hash code of this edge pair.
-	 */
-	override fun hashCode(): Int {
-		return Objects.hash(from, to)
-	}
-
-	/**
-	 * Return a string representation of this [Edge].
-	 *
-	 * @return A string representation of this [Edge].
-	 */
-	override fun toString(): String {
-		return "Edge($from<->$to)"
-	}
+	val to: Node<*>
 }

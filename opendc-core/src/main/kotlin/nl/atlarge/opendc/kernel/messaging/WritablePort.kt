@@ -22,14 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
-
-import nl.atlarge.opendc.topology.Edge
-import nl.atlarge.opendc.topology.Entity
+package nl.atlarge.opendc.kernel.messaging
 
 /**
- * This class represents a slot in a [Rack] of [Machine]s.
+ * A [WritablePort] instance allows objects to write messages to multiple channels.
  *
+ * @param T The shape of the label of the edges of the channels of this port.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Slot<T: Entity>(val rack: Rack<T>, val contents: T, val index: Int): Edge.Directed(rack, contents)
+interface WritablePort<out T>: Port<WritableChannel<T>>, Writable

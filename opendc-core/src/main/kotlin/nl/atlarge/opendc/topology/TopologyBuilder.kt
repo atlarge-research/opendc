@@ -25,18 +25,15 @@
 package nl.atlarge.opendc.topology
 
 /**
- * A label for an edge in the topology.
+ * A builder for [Topology] instances.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Label<out T> {
+interface TopologyBuilder {
 	/**
-	 * The name of the label.
+	 * Build a [Topology] instance from the current state of this builder.
+	 *
+	 * @return The graph built from this builder.
 	 */
-	val name: String
-
-	/**
-	 * The user-specified data of the label.
-	 */
-	val data: T
+	fun build(): MutableTopology
 }

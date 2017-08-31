@@ -27,10 +27,9 @@ package nl.atlarge.opendc.topology.power
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * A [Entity] which provides power for other entities a cloud network to run.
+ * An [Entity] which provides power for other entities a cloud network to run.
  *
- * @param id The unique identifier of the [Entity].
- * @param output The output of the power unit in Watts.
+ * @param output The power output of the power unit in Watt.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class PowerUnit(override val id: Int, val output: Double): Entity
+class PowerUnit(val output: Double): Entity<Unit>

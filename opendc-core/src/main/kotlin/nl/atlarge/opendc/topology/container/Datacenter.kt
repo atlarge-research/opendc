@@ -29,7 +29,6 @@ import nl.atlarge.opendc.topology.Entity
 /**
  * A representation of a facility used to house computer systems and associated components.
  *
- * @param id The unique identifier of this entity.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Datacenter(override val id: Int): Entity
+class Datacenter: Entity<Unit>

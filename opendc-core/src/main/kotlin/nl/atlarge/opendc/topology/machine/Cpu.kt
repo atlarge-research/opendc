@@ -30,7 +30,6 @@ package nl.atlarge.opendc.topology.machine
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 data class Cpu(
-	override val id: Int,
 	override val speed: Int,
 	override val cores: Int,
 	override val energyConsumption: Int

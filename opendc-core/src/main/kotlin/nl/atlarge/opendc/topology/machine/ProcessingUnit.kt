@@ -31,7 +31,7 @@ import nl.atlarge.opendc.topology.Entity
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface ProcessingUnit: Entity {
+interface ProcessingUnit: Entity<Unit> {
 	/**
 	 * The speed of this [ProcessingUnit] per core.
 	 */

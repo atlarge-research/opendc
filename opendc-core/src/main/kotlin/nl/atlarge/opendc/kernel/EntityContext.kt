@@ -22,21 +22,24 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
+package nl.atlarge.opendc.kernel
 
+import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.Node
 
 /**
- * A task scheduler that is coupled to an [Node] in the topology of the cloud network.
+ * The context provided to a simulation kernel for stateful entities in the topology.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Scheduler<in E: Node<*>> {
+interface EntityContext<out T: Entity<*>>: Context<Node<T>> {
 	/**
-	 * Schedule the given jobs for the given entity.
+	 * Update the state of the entity being simulated.
 	 *
-	 * @param entity The entity in the cloud network topology representing the entity.
-	 * @param jobs The jobs that have been submitted to the cloud network.
+	 * <p>Instead of directly mutating the entity, we create a new instance of the entity to prevent other objects
+	 * referencing the old entity having their data changed.
+	 *
+	 * @param next The next state of the entity.
 	 */
-	fun schedule(entity: E, jobs: Set<Job>)
+	suspend fun <C: EntityContext<E>, E: Entity<S>, S> C.update(next: S)
 }

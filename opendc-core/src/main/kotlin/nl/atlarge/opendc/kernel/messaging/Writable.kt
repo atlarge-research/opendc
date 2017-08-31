@@ -22,16 +22,21 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.container.rack
+package nl.atlarge.opendc.kernel.messaging
 
-import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.Node
 
 /**
- * A type of physical steel and electronic framework that is designed to house servers, networking devices, cables and
- * other datacenter computing equipment.
+ * A [Writable] instance allows objects to send messages to it.
  *
- * @param id The unique identifier of this entity.
- * @param <T> The type of nodes that are placed in the rack.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class Rack<T: Entity>(override val id: Int): Entity
+interface Writable {
+	/**
+	 * Send the given message downstream.
+	 *
+	 * @param msg The message to send.
+	 * @param sender The sender of the message.
+	 */
+	suspend fun send(msg: Any?, sender: Node<*>)
+}

@@ -25,29 +25,36 @@
 package nl.atlarge.opendc.topology
 
 /**
- * A builder for [Graph] instances.
+ * A labeled node of graph representing an entity in a specific logical topology of a cloud network.
  *
+ * <p>A [Node] is instantiated and managed by a [Topology] instance containing user-specified data in its label.
+ *
+ * @param T The entity type the node represents in a logical topology.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface GraphBuilder {
+interface Node<out T: Entity<*>>: Component<T> {
 	/**
-	 * Add the given [Entity] to this graph.
-	 *
-	 * @param entity The entity to add.
+	 * A unique identifier of this node within the topology.
 	 */
-	fun add(entity: Entity)
+	val id: Int
 
 	/**
-	 * Add the given [Edge] to this graph.
+	 * Return the set of incoming edges of this node.
 	 *
-	 * @param edge The edge to add.
+	 * @return All edges whose destination is this node.
 	 */
-	fun add(edge: Edge<*>)
+	fun ingoingEdges(): Set<Edge<*>>
 
 	/**
-	 * Build a [Graph] instance from the current state of this builder.
+	 * Return the set of outgoing edges of this node.
 	 *
-	 * @return The graph built from this builder.
+	 * @return  All edges whose source is this node.
 	 */
-	fun build(): Graph
+	fun outgoingEdges(): Set<Edge<*>>
+
+	/**
+	 * The [Entity] this node represents within a logical topology of a cloud network.
+	 */
+	val entity: T
+		get() = label
 }

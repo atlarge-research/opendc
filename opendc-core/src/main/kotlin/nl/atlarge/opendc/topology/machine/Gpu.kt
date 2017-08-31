@@ -29,9 +29,9 @@ package nl.atlarge.opendc.topology.machine
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class Gpu(
-	override val id: Int,
+class Gpu(
 	override val speed: Int,
 	override val cores: Int,
 	override val energyConsumption: Int
 ): ProcessingUnit
+
