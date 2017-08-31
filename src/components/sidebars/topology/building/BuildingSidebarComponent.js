@@ -3,18 +3,19 @@ import CancelNewRoomConstructionButton from "../../../../containers/sidebars/top
 import FinishNewRoomConstructionButton from "../../../../containers/sidebars/topology/building/FinishNewRoomConstructionButton";
 import StartNewRoomConstructionButton from "../../../../containers/sidebars/topology/building/StartNewRoomConstructionButton";
 
-const BuildingSidebarContentComponent = ({currentRoomInConstruction}) => {
-    if (currentRoomInConstruction !== -1) {
-        return (
-            <div>
-                <FinishNewRoomConstructionButton/>
-                <CancelNewRoomConstructionButton/>
-            </div>
-        );
-    }
+const BuildingSidebarComponent = ({currentRoomInConstruction}) => {
     return (
-        <StartNewRoomConstructionButton/>
+        <div>
+            <h2>Building</h2>
+            {currentRoomInConstruction === -1 ?
+                <StartNewRoomConstructionButton/> :
+                <div>
+                    <FinishNewRoomConstructionButton/>
+                    <CancelNewRoomConstructionButton/>
+                </div>
+            }
+        </div>
     );
 };
 
-export default BuildingSidebarContentComponent;
+export default BuildingSidebarComponent;

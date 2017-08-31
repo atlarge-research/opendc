@@ -1,24 +1,24 @@
 import React from "react";
-import BuildingSidebarContent from "../../../containers/sidebars/topology/building/BuildingSidebarContent";
+import BuildingSidebarContainer from "../../../containers/sidebars/topology/building/BuildingSidebarContainer";
+import RoomSidebarContainer from "../../../containers/sidebars/topology/room/RoomSidebarContainer";
 import Sidebar from "../Sidebar";
 
 const TopologySidebarComponent = ({interactionLevel}) => {
-    let sidebarHeading;
     let sidebarContent;
 
     switch (interactionLevel.mode) {
         case "BUILDING":
-            sidebarHeading = "Building";
-            sidebarContent = <BuildingSidebarContent/>;
+            sidebarContent = <BuildingSidebarContainer/>;
+            break;
+        case "ROOM":
+            sidebarContent = <RoomSidebarContainer/>;
             break;
         default:
-            sidebarHeading = "Error";
             sidebarContent = "Missing Content";
     }
 
     return (
         <Sidebar isRight={true}>
-            <h3>{sidebarHeading}</h3>
             {sidebarContent}
         </Sidebar>
     );
