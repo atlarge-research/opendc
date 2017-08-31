@@ -39,11 +39,12 @@ export const OBJECT_SELECTORS = {
 
 function* fetchAndStoreObject(objectType, id, apiCall) {
     const objectStore = yield select(OBJECT_SELECTORS[objectType]);
-    if (!objectStore[id]) {
-        const object = yield apiCall;
+    let object = objectStore[id];
+    if (!object) {
+        object = yield apiCall;
         yield put(addToStore(objectType, object));
     }
-    return objectStore[id];
+    return object;
 }
 
 function* fetchAndStoreObjects(objectType, apiCall) {

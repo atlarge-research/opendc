@@ -2,17 +2,18 @@ import {connect} from "react-redux";
 import {goFromRoomToObject} from "../../actions/interaction-level";
 import TileGroup from "../../components/map/groups/TileGroup";
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, ownProps) => {
     return {
-        interactionLevel: state.interactionLevel
+        interactionLevel: state.interactionLevel,
+        tile: state.objects.tile[ownProps.tileId],
     };
 };
 
-const mapDispatchToProps = (dispatch, ownProps) => {
+const mapDispatchToProps = dispatch => {
     return {
-        onClick: () => {
-            if (ownProps.tile.objectType) {
-                dispatch(goFromRoomToObject(ownProps.tile.id))
+        onClick: tile => {
+            if (tile.objectType) {
+                dispatch(goFromRoomToObject(tile.id))
             }
         }
     };

@@ -1,10 +1,11 @@
+import PropTypes from "prop-types";
 import React from "react";
 import {Group} from "react-konva";
 import Shapes from "../../../shapes/index";
 import RoomTile from "../elements/RoomTile";
 import RackGroup from "./RackGroup";
 
-const TileGroup = ({tile, onClick}) => {
+const TileGroup = ({tile, newTile, onClick}) => {
     let tileObject;
     switch (tile.objectType) {
         case "RACK":
@@ -16,9 +17,9 @@ const TileGroup = ({tile, onClick}) => {
 
     return (
         <Group
-            onClick={onClick}
+            onClick={() => onClick(tile)}
         >
-            <RoomTile tile={tile}/>
+            <RoomTile tile={tile} newTile={newTile}/>
             {tileObject}
         </Group>
     );
@@ -26,6 +27,7 @@ const TileGroup = ({tile, onClick}) => {
 
 TileGroup.propTypes = {
     tile: Shapes.Tile,
+    newTile: PropTypes.bool,
 };
 
 export default TileGroup;

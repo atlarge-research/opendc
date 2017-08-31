@@ -1,6 +1,15 @@
-import {put} from "redux-saga/effects";
-import {addPropToStoreObject} from "../actions/objects";
-import {fetchLatestDatacenterSucceeded} from "../actions/topology";
+import {call, put, select} from "redux-saga/effects";
+import {addPropToStoreObject, addToStore} from "../actions/objects";
+import {
+    addTileSucceeded,
+    cancelNewRoomConstructionSucceeded,
+    deleteTileSucceeded,
+    fetchLatestDatacenterSucceeded,
+    startNewRoomConstructionSucceeded
+} from "../actions/topology";
+import {addRoomToDatacenter} from "../api/routes/datacenters";
+import {addTileToRoom, deleteRoom} from "../api/routes/rooms";
+import {deleteTile} from "../api/routes/tiles";
 import {
     fetchAndStoreCoolingItem,
     fetchAndStoreDatacenter,
@@ -27,11 +36,12 @@ export function* onFetchLatestDatacenter(action) {
 
 export function* fetchDatacenter(datacenterId) {
     try {
-        const datacenter = yield fetchAndStoreDatacenter(datacenterId);
-        datacenter.roomIds = (yield fetchAndStoreRoomsOfDatacenter(datacenterId)).map(room => room.id);
+        yield fetchAndStoreDatacenter(datacenterId);
+        const rooms = yield fetchAndStoreRoomsOfDatacenter(datacenterId);
+        yield put(addPropToStoreObject("datacenter", datacenterId, {roomIds: rooms.map(room => room.id)}));
 
-        for (let index in datacenter.roomIds) {
-            yield fetchRoom(datacenter.roomIds[index]);
+        for (let index in rooms) {
+            yield fetchRoom(rooms[index].id);
         }
     } catch (error) {
         console.log(error);
@@ -67,5 +77,55 @@ function* fetchTile(tile) {
             break;
         default:
             console.warn("Unknown object type encountered while fetching tile objects");
+    }
+}
+
+export function* onStartNewRoomConstruction() {
+    try {
+        const datacenterId = yield select(state => state.currentDatacenterId);
+        const room = yield call(addRoomToDatacenter, {
+            id: -1,
+            datacenterId,
+            roomType: "SERVER"
+        });
+        const roomWithEmptyTileList = Object.assign(room, {tileIds: []});
+        yield put(addToStore("room", roomWithEmptyTileList));
+        yield put(startNewRoomConstructionSucceeded(room.id));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onCancelNewRoomConstruction() {
+    try {
+        const roomId = yield select(state => state.currentRoomInConstruction);
+        yield call(deleteRoom, roomId);
+        yield put(cancelNewRoomConstructionSucceeded());
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onAddTile(action) {
+    try {
+        const roomId = yield select(state => state.currentRoomInConstruction);
+        const tile = yield call(addTileToRoom, {
+            roomId,
+            positionX: action.positionX,
+            positionY: action.positionY
+        });
+        yield put(addToStore("tile", tile));
+        yield put(addTileSucceeded(tile.id));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onDeleteTile(action) {
+    try {
+        yield call(deleteTile, action.tileId);
+        yield put(deleteTileSucceeded(action.tileId));
+    } catch (error) {
+        console.log(error);
     }
 }

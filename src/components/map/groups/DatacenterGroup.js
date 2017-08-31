@@ -12,8 +12,8 @@ const DatacenterGroup = ({datacenter, interactionLevel}) => {
     if (interactionLevel.mode === "BUILDING") {
         return (
             <Group>
-                {datacenter.rooms.map(room => (
-                    <RoomContainer key={room.id} room={room}/>
+                {datacenter.roomIds.map(roomId => (
+                    <RoomContainer key={roomId} roomId={roomId}/>
                 ))}
             </Group>
         );
@@ -21,14 +21,14 @@ const DatacenterGroup = ({datacenter, interactionLevel}) => {
 
     return (
         <Group>
-            {datacenter.rooms
-                .filter(room => room.id !== interactionLevel.roomId)
-                .map(room => <RoomContainer key={room.id} room={room}/>)
+            {datacenter.roomIds
+                .filter(roomId => roomId !== interactionLevel.roomId)
+                .map(roomId => <RoomContainer key={roomId} roomId={roomId}/>)
             }
             {interactionLevel.mode === "ROOM" ? <GrayContainer/> : null}
-            {datacenter.rooms
-                .filter(room => room.id === interactionLevel.roomId)
-                .map(room => <RoomContainer key={room.id} room={room}/>)
+            {datacenter.roomIds
+                .filter(roomId => roomId === interactionLevel.roomId)
+                .map(roomId => <RoomContainer key={roomId} roomId={roomId}/>)
             }
         </Group>
     );

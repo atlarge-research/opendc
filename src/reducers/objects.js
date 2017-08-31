@@ -1,5 +1,10 @@
 import {combineReducers} from "redux";
-import {ADD_PROP_TO_STORE_OBJECT, ADD_TO_STORE} from "../actions/objects";
+import {
+    ADD_ID_TO_STORE_OBJECT_LIST_PROP,
+    ADD_PROP_TO_STORE_OBJECT,
+    ADD_TO_STORE,
+    REMOVE_ID_FROM_STORE_OBJECT_LIST_PROP
+} from "../actions/objects";
 
 export const objects = combineReducers({
     simulation: object("simulation"),
@@ -33,13 +38,39 @@ function objectWithId(type, getId) {
 
         if (action.type === ADD_TO_STORE) {
             return Object.assign(
+                {},
                 state,
                 {[getId(action.object)]: action.object}
             );
         } else if (action.type === ADD_PROP_TO_STORE_OBJECT) {
             return Object.assign(
+                {},
                 state,
                 {[action.objectId]: Object.assign(state[action.objectId], action.propObject)}
+            );
+        } else if (action.type === ADD_ID_TO_STORE_OBJECT_LIST_PROP) {
+            return Object.assign(
+                {},
+                state,
+                {
+                    [action.objectId]: Object.assign(
+                        {},
+                        state[action.objectId],
+                        {[action.propName]: [...state[action.objectId][action.propName], action.id]}
+                    )
+                }
+            );
+        } else if (action.type === REMOVE_ID_FROM_STORE_OBJECT_LIST_PROP) {
+            return Object.assign(
+                {},
+                state,
+                {
+                    [action.objectId]: Object.assign(
+                        {},
+                        state[action.objectId],
+                        {[action.propName]: state[action.objectId][action.propName].filter(id => id !== action.id)}
+                    )
+                }
             );
         }
 

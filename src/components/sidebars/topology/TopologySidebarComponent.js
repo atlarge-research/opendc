@@ -1,6 +1,6 @@
 import React from "react";
-import BuildingSidebarContent from "./BuildingSidebarContent";
-import Sidebar from "./Sidebar";
+import BuildingSidebarContent from "../../../containers/sidebars/topology/building/BuildingSidebarContent";
+import Sidebar from "../Sidebar";
 
 const TopologySidebarComponent = ({interactionLevel}) => {
     let sidebarHeading;

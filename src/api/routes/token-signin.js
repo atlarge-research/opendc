@@ -1,5 +1,5 @@
 export function performTokenSignIn(token) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         window["jQuery"].post(
             "/tokensignin",
             {idtoken: token},

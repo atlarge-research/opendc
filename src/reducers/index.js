@@ -4,7 +4,7 @@ import {interactionLevel} from "./interaction-level";
 import {modals} from "./modals";
 import {objects} from "./objects";
 import {authorizationsOfCurrentUser, authVisibilityFilter, currentSimulationId} from "./simulations";
-import {currentDatacenterId} from "./topology";
+import {currentDatacenterId, currentRoomInConstruction} from "./topology";
 
 const rootReducer = combineReducers({
     auth,
@@ -15,6 +15,7 @@ const rootReducer = combineReducers({
     currentSimulationId,
     currentDatacenterId,
     interactionLevel,
+    currentRoomInConstruction,
 });
 
 export default rootReducer;

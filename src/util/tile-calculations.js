@@ -1,10 +1,10 @@
-export function deriveWallLocations(room) {
+export function deriveWallLocations(tiles) {
     const verticalWalls = {};
     const horizontalWalls = {};
 
     // Determine wall segments
 
-    room.tiles.forEach(tile => {
+    tiles.forEach(tile => {
         const x = tile.positionX, y = tile.positionY;
         for (let dX = -1; dX <= 1; dX++) {
             for (let dY = -1; dY <= 1; dY++) {
@@ -13,7 +13,7 @@ export function deriveWallLocations(room) {
                 }
 
                 let doInsert = true;
-                room.tiles.forEach(otherTile => {
+                tiles.forEach(otherTile => {
                     if (otherTile.positionX === x + dX && otherTile.positionY === y + dY) {
                         doInsert = false;
                     }

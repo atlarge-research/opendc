@@ -2,35 +2,40 @@ import React from "react";
 import {Group} from "react-konva";
 import GrayContainer from "../../../containers/map/GrayContainer";
 import TileContainer from "../../../containers/map/TileContainer";
+import WallContainer from "../../../containers/map/WallContainer";
 import Shapes from "../../../shapes/index";
-import {deriveWallLocations} from "../../../util/tile-calculations";
-import WallSegment from "../elements/WallSegment";
 
-const RoomGroup = ({room, interactionLevel, onClick}) => {
+const RoomGroup = ({room, interactionLevel, currentRoomInConstruction, onClick}) => {
+    if (currentRoomInConstruction === room.id) {
+        return (
+            <Group onClick={onClick}>
+                {room.tileIds.map(tileId => (
+                    <TileContainer key={tileId} tileId={tileId} newTile={true}/>
+                ))}
+            </Group>
+        );
+    }
+
     return (
-        <Group
-            onClick={onClick}
-        >
+        <Group onClick={onClick}>
             {(() => {
                 if (interactionLevel.mode === "OBJECT" && interactionLevel.roomId === room.id) {
                     return [
-                        room.tiles
-                            .filter(tile => tile.id !== interactionLevel.tileId)
-                            .map(tile => <TileContainer key={tile.id} tile={tile}/>),
+                        room.tileIds
+                            .filter(tileId => tileId !== interactionLevel.tileId)
+                            .map(tileId => <TileContainer key={tileId} tileId={tileId}/>),
                         <GrayContainer key={-1}/>,
-                        room.tiles
-                            .filter(tile => tile.id === interactionLevel.tileId)
-                            .map(tile => <TileContainer key={tile.id} tile={tile}/>)
+                        room.tileIds
+                            .filter(tileId => tileId === interactionLevel.tileId)
+                            .map(tileId => <TileContainer key={tileId} tileId={tileId}/>)
                     ];
                 } else {
-                    return room.tiles.map(tile => (
-                        <TileContainer key={tile.id} tile={tile}/>
+                    return room.tileIds.map(tileId => (
+                        <TileContainer key={tileId} tileId={tileId}/>
                     ));
                 }
             })()}
-            {deriveWallLocations(room).map((wallSegment, index) => (
-                <WallSegment key={index} wallSegment={wallSegment}/>
-            ))}
+            <WallContainer roomId={room.id}/>
         </Group>
     );
 };

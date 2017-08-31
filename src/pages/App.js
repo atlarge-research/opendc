@@ -5,7 +5,7 @@ import {openSimulationSucceeded} from "../actions/simulations";
 import {fetchLatestDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
 import AppNavbar from "../components/navigation/AppNavbar";
-import TopologySidebar from "../containers/sidebars/TopologySidebar";
+import TopologySidebar from "../containers/sidebars/topology/TopologySidebar";
 
 class AppContainer extends React.Component {
     static propTypes = {

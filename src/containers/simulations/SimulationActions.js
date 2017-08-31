@@ -10,7 +10,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        onViewUsers: (id) => {},
+        onViewUsers: (id) => {}, // TODO implement user viewing
         onDelete: (id) => dispatch(deleteSimulation(id)),
     };
 };
