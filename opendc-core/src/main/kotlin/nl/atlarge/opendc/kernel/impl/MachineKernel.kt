@@ -34,6 +34,9 @@ class MachineKernel(ctx: EntityContext<Machine>): AbstractEntityKernel<Machine>(
 
 	suspend override fun EntityContext<Machine>.run() {
 		println("${this}: Initialising!")
+		println("${this}: ${component.entity.state}")
+		update(Machine.State(Machine.Status.IDLE))
+		println("${this}: ${component.entity.state}")
 
 		val cpus = component.outgoingEdges().filter { it.tag == "cpu" }.map { it.to.entity as Cpu }
 		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores })

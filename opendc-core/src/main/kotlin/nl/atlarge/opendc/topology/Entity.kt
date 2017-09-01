@@ -36,4 +36,9 @@ package nl.atlarge.opendc.topology
  * a simulation.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Entity<out S>
+interface Entity<out S> {
+	/**
+	 * The initial state of the entity.
+	 */
+	val initialState: S
+}

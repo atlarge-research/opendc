@@ -32,4 +32,21 @@ import nl.atlarge.opendc.topology.Entity
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Machine: Entity<Unit>
+class Machine: Entity<Machine.State> {
+	/**
+	 * The status of a machine.
+	 */
+	enum class Status {
+		HALT, IDLE, RUNNING
+	}
+
+	/**
+	 * The shape of the state of a [Machine] entity.
+	 */
+	data class State(val status: Status)
+
+	/**
+	 * The initial state of a [Machine] entity.
+	 */
+	override val initialState = State(Status.HALT)
+}

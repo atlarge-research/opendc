@@ -31,4 +31,6 @@ import nl.atlarge.opendc.topology.Entity
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Datacenter: Entity<Unit>
+class Datacenter: Entity<Unit> {
+	override val initialState = Unit
+}

@@ -148,13 +148,12 @@ class Simulator(val topology: Topology, private val mapping: Map<Component<*>, C
          */
 		suspend override fun <T> receive(block: Envelope<*>.(Any?) -> T): T = suspendCoroutine {}
 
-
 		/**
-         * The observable state of an [Entity] within the simulation is provided by context.
-         */
+		 * The observable state of an [Entity] within the simulation is provided by context.
+		 */
 		@Suppress("UNCHECKED_CAST")
 		override val <S> Entity<S>.state: S
-			get() = states[this] as S
+			get() = states.computeIfAbsent(this, { initialState }) as S
 
 		/**
          * Update the state of the entity being simulated.
@@ -201,7 +200,7 @@ class Simulator(val topology: Topology, private val mapping: Map<Component<*>, C
 		 */
 		@Suppress("UNCHECKED_CAST")
 		override val <S> Entity<S>.state: S
-			get() = states[this] as S
+			get() = states.computeIfAbsent(this, { initialState }) as S
 
 		/**
 		 * Suspend the simulation kernel for <code>n</code> ticks before resuming the execution.

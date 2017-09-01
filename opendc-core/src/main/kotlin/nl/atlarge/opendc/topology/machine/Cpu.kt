@@ -33,4 +33,6 @@ data class Cpu(
 	override val speed: Int,
 	override val cores: Int,
 	override val energyConsumption: Int
-): ProcessingUnit
+): ProcessingUnit {
+	override val initialState = Unit
+}
