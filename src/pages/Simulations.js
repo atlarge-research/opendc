@@ -1,11 +1,12 @@
 import React from 'react';
 import {connect} from "react-redux";
-import {addSimulation, openNewSimulationModal} from "../actions/simulations";
+import {openNewSimulationModal} from "../actions/modals/simulations";
+import {addSimulation} from "../actions/simulations";
 import {fetchAuthorizationsOfCurrentUser} from "../actions/users";
 import AppNavbar from "../components/navigation/AppNavbar";
 import SimulationFilterPanel from "../components/simulations/FilterPanel";
 import NewSimulationButton from "../components/simulations/NewSimulationButton";
-import NewSimulationModal from "../containers/simulations/NewSimulationModal";
+import NewSimulationModal from "../containers/modals/NewSimulationModal";
 import VisibleSimulationList from "../containers/simulations/VisibleSimulationAuthList";
 
 class SimulationsContainer extends React.Component {

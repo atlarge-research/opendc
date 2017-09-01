@@ -4,11 +4,12 @@ import {
     addTileSucceeded,
     cancelNewRoomConstructionSucceeded,
     deleteTileSucceeded,
+    editRoomNameSucceeded,
     fetchLatestDatacenterSucceeded,
     startNewRoomConstructionSucceeded
 } from "../actions/topology";
 import {addRoomToDatacenter} from "../api/routes/datacenters";
-import {addTileToRoom, deleteRoom} from "../api/routes/rooms";
+import {addTileToRoom, deleteRoom, updateRoom} from "../api/routes/rooms";
 import {deleteTile} from "../api/routes/tiles";
 import {
     fetchAndStoreCoolingItem,
@@ -125,6 +126,18 @@ export function* onDeleteTile(action) {
     try {
         yield call(deleteTile, action.tileId);
         yield put(deleteTileSucceeded(action.tileId));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onEditRoomName(action) {
+    try {
+        const roomId = yield select(state => state.interactionLevel.roomId);
+        const room = Object.assign({}, yield select(state => state.objects.room[roomId]));
+        room.name = action.name;
+        yield call(updateRoom, room);
+        yield put(editRoomNameSucceeded(action.name));
     } catch (error) {
         console.log(error);
     }

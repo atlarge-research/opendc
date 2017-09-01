@@ -5,6 +5,7 @@ import {
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
     DELETE_TILE,
+    EDIT_ROOM_NAME,
     FETCH_LATEST_DATACENTER,
     START_NEW_ROOM_CONSTRUCTION
 } from "../actions/topology";
@@ -15,6 +16,7 @@ import {
     onAddTile,
     onCancelNewRoomConstruction,
     onDeleteTile,
+    onEditRoomName,
     onFetchLatestDatacenter,
     onStartNewRoomConstruction
 } from "./topology";
@@ -31,4 +33,5 @@ export default function* rootSaga() {
     yield takeEvery(CANCEL_NEW_ROOM_CONSTRUCTION, onCancelNewRoomConstruction);
     yield takeEvery(ADD_TILE, onAddTile);
     yield takeEvery(DELETE_TILE, onDeleteTile);
+    yield takeEvery(EDIT_ROOM_NAME, onEditRoomName);
 }

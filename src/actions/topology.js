@@ -1,4 +1,4 @@
-import {addIdToStoreObjectListProp, removeIdFromStoreObjectListProp} from "./objects";
+import {addIdToStoreObjectListProp, addPropToStoreObject, removeIdFromStoreObjectListProp} from "./objects";
 
 export const FETCH_TOPOLOGY_OF_DATACENTER = "FETCH_TOPOLOGY_OF_DATACENTER";
 export const FETCH_TOPOLOGY_OF_DATACENTER_SUCCEEDED = "FETCH_TOPOLOGY_OF_DATACENTER_SUCCEEDED";
@@ -10,9 +10,8 @@ export const FINISH_NEW_ROOM_CONSTRUCTION = "FINISH_NEW_ROOM_CONSTRUCTION";
 export const CANCEL_NEW_ROOM_CONSTRUCTION = "CANCEL_NEW_ROOM_CONSTRUCTION";
 export const CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED = "CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED";
 export const ADD_TILE = "ADD_TILE";
-export const ADD_TILE_SUCCEEDED = "ADD_TILE_SUCCEEDED";
 export const DELETE_TILE = "DELETE_TILE";
-export const DELETE_TILE_SUCCEEDED = "DELETE_TILE_SUCCEEDED";
+export const EDIT_ROOM_NAME = "EDIT_ROOM_NAME";
 
 export function fetchLatestDatacenter() {
     return (dispatch, getState) => {
@@ -107,10 +106,6 @@ export function addTileSucceeded(tileId) {
     return (dispatch, getState) => {
         const {currentRoomInConstruction} = getState();
         dispatch(addIdToStoreObjectListProp("room", currentRoomInConstruction, "tileIds", tileId));
-        dispatch({
-            type: ADD_TILE_SUCCEEDED,
-            tileId
-        });
     };
 }
 
@@ -125,9 +120,19 @@ export function deleteTileSucceeded(tileId) {
     return (dispatch, getState) => {
         const {currentRoomInConstruction} = getState();
         dispatch(removeIdFromStoreObjectListProp("room", currentRoomInConstruction, "tileIds", tileId));
-        dispatch({
-            type: DELETE_TILE_SUCCEEDED,
-            tileId
-        });
+    };
+}
+
+export function editRoomName(name) {
+    return {
+        type: EDIT_ROOM_NAME,
+        name
+    };
+}
+
+export function editRoomNameSucceeded(name) {
+    return (dispatch, getState) => {
+        const {interactionLevel} = getState();
+        dispatch(addPropToStoreObject("room", interactionLevel.roomId, {name}));
     };
 }

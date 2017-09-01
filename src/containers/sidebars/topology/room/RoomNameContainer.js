@@ -1,4 +1,5 @@
 import {connect} from "react-redux";
+import {openEditRoomNameModal} from "../../../../actions/modals/topology";
 import RoomNameComponent from "../../../../components/sidebars/topology/room/RoomNameComponent";
 
 const mapStateToProps = state => {
@@ -9,7 +10,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        onEdit: () => dispatch(null), // FIXME
+        onEdit: () => dispatch(openEditRoomNameModal()),
     };
 };
 

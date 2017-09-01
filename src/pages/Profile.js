@@ -1,8 +1,8 @@
 import React from 'react';
 import {connect} from "react-redux";
-import {openDeleteProfileModal} from "../actions/profile";
+import {openDeleteProfileModal} from "../actions/modals/profile";
 import AppNavbar from "../components/navigation/AppNavbar";
-import DeleteProfileModal from "../containers/profile/DeleteProfileModal";
+import DeleteProfileModal from "../containers/modals/DeleteProfileModal";
 
 const ProfileContainer = ({onDelete}) => (
     <div className="full-height">

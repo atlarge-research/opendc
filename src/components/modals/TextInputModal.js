@@ -11,14 +11,20 @@ class TextInputModal extends React.Component {
         initialValue: PropTypes.string,
     };
 
+    componentDidUpdate() {
+        if (this.props.initialValue) {
+            this.textInput.value = this.props.initialValue;
+        }
+    }
+
     onSubmit() {
-        this.props.callback(this.refs.textInput.value);
-        this.refs.textInput.value = "";
+        this.props.callback(this.textInput.value);
+        this.textInput.value = "";
     }
 
     onCancel() {
         this.props.callback(undefined);
-        this.refs.textInput.value = "";
+        this.textInput.value = "";
     }
 
     render() {
@@ -33,7 +39,8 @@ class TextInputModal extends React.Component {
                 }}>
                     <div className="form-group">
                         <label className="form-control-label">{this.props.label}:</label>
-                        <input type="text" className="form-control" ref="textInput" value={this.props.initialValue}/>
+                        <input type="text" className="form-control"
+                               ref={textInput => this.textInput = textInput}/>
                     </div>
                 </form>
             </Modal>

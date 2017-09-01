@@ -46,7 +46,13 @@ function objectWithId(type, getId) {
             return Object.assign(
                 {},
                 state,
-                {[action.objectId]: Object.assign(state[action.objectId], action.propObject)}
+                {
+                    [action.objectId]: Object.assign(
+                        {},
+                        state[action.objectId],
+                        action.propObject
+                    )
+                }
             );
         } else if (action.type === ADD_ID_TO_STORE_OBJECT_LIST_PROP) {
             return Object.assign(

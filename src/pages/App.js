@@ -5,6 +5,7 @@ import {openSimulationSucceeded} from "../actions/simulations";
 import {fetchLatestDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
 import AppNavbar from "../components/navigation/AppNavbar";
+import EditRoomNameModal from "../containers/modals/EditRoomNameModal";
 import TopologySidebar from "../containers/sidebars/topology/TopologySidebar";
 
 class AppContainer extends React.Component {
@@ -25,6 +26,7 @@ class AppContainer extends React.Component {
                     <MapStage/>
                     <TopologySidebar/>
                 </div>
+                <EditRoomNameModal/>
             </div>
         );
     }

@@ -1,6 +1,7 @@
 import React from "react";
 import {connect} from "react-redux";
-import {addSimulation, closeNewSimulationModal} from "../../actions/simulations";
+import {closeNewSimulationModal} from "../../actions/modals/simulations";
+import {addSimulation} from "../../actions/simulations";
 import TextInputModal from "../../components/modals/TextInputModal";
 
 const NewSimulationModalComponent = ({visible, callback}) => (
