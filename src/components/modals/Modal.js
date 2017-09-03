@@ -42,6 +42,9 @@ class Modal extends React.Component {
                 if (this.visible) {
                     this.props.onCancel();
                 }
+            })
+            .on("keydown", e => {
+                e.stopPropagation();
             });
     }
 

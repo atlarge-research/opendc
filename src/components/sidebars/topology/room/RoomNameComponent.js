@@ -1,13 +1,8 @@
 import React from "react";
-import FontAwesome from "react-fontawesome";
+import NameComponent from "../NameComponent";
 
 const RoomNameComponent = ({roomName, onEdit}) => (
-    <h2>
-        {roomName}
-        <button className="btn btn-outline-secondary float-right" onClick={onEdit}>
-            <FontAwesome name="pencil"/>
-        </button>
-    </h2>
+    <NameComponent name={roomName} onEdit={onEdit}/>
 );
 
 export default RoomNameComponent;

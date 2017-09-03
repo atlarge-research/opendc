@@ -1,21 +1,34 @@
 import PropTypes from "prop-types";
 import React from 'react';
 import {connect} from "react-redux";
+import {ShortcutManager} from "react-shortcuts";
 import {openSimulationSucceeded} from "../actions/simulations";
 import {fetchLatestDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
 import AppNavbar from "../components/navigation/AppNavbar";
 import EditRoomNameModal from "../containers/modals/EditRoomNameModal";
 import TopologySidebar from "../containers/sidebars/topology/TopologySidebar";
+import KeymapConfiguration from "../shortcuts/keymap";
+
+const shortcutManager = new ShortcutManager(KeymapConfiguration);
 
 class AppContainer extends React.Component {
     static propTypes = {
         simulationId: PropTypes.number.isRequired,
     };
+    static childContextTypes = {
+        shortcuts: PropTypes.object.isRequired
+    };
 
     componentDidMount() {
         this.props.storeSimulationId(this.props.simulationId);
         this.props.fetchLatestDatacenter();
+    }
+
+    getChildContext() {
+        return {
+            shortcuts: shortcutManager
+        }
     }
 
     render() {
