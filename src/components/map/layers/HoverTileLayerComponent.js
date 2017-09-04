@@ -1,9 +1,19 @@
+import PropTypes from "prop-types";
 import React from 'react';
 import {Layer} from "react-konva";
 import HoverTile from "../elements/HoverTile";
 import {TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
 class HoverTileLayerComponent extends React.Component {
+    static propTypes = {
+        mouseX: PropTypes.number.isRequired,
+        mouseY: PropTypes.number.isRequired,
+        mainGroupX: PropTypes.number.isRequired,
+        mainGroupY: PropTypes.number.isRequired,
+        onClick: PropTypes.func.isRequired,
+        containsRack: PropTypes.bool,
+    };
+
     state = {
         positionX: -1,
         positionY: -1,
@@ -34,7 +44,7 @@ class HoverTileLayerComponent extends React.Component {
         const pixelY = positionY * TILE_SIZE_IN_PIXELS + this.props.mainGroupY;
 
         return (
-            <Layer>
+            <Layer opacity={0.4}>
                 <HoverTile
                     pixelX={pixelX} pixelY={pixelY}
                     isValid={this.state.validity} onClick={() => this.props.onClick(positionX, positionY)}

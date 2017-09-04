@@ -6,7 +6,7 @@ import TileObject from "../elements/TileObject";
 
 const RackGroup = ({tile}) => (
     <Group>
-        <TileObject tile={tile} color={RACK_BACKGROUND_COLOR}/>
+        <TileObject positionX={tile.positionX} positionY={tile.positionY} color={RACK_BACKGROUND_COLOR}/>
     </Group>
 );
 

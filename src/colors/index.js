@@ -4,10 +4,12 @@ export const WALL_COLOR = "rgba(0, 0, 0, 1)";
 
 export const ROOM_DEFAULT_COLOR = "rgba(150, 150, 150, 1)";
 export const ROOM_IN_CONSTRUCTION_COLOR = "rgba(51, 153, 255, 1)";
-export const ROOM_HOVER_VALID_COLOR = "rgba(51, 153, 255, 0.5)";
-export const ROOM_HOVER_INVALID_COLOR = "rgba(255, 102, 0, 0.5)";
+export const ROOM_HOVER_VALID_COLOR = "rgba(51, 153, 255, 1)";
+export const ROOM_HOVER_INVALID_COLOR = "rgba(255, 102, 0, 1)";
 export const ROOM_NAME_COLOR = "rgba(245, 245, 245, 1)";
 export const ROOM_TYPE_COLOR = "rgba(245, 245, 245, 1)";
+
+export const TILE_PLUS_COLOR = "rgba(0, 0, 0, 1)";
 
 export const OBJECT_BORDER_COLOR = "rgba(0, 0, 0, 1)";
 
