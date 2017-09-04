@@ -42,5 +42,5 @@ interface Kernel<in C: Context<*>> {
 	 * <p>If this method exists early, before the simulation has finished, the entity is assumed to be shutdown and its
 	 * simulation will not run any further.
 	 */
-	suspend fun C.run()
+	suspend fun C.simulate()
 }

@@ -24,6 +24,7 @@
 
 package nl.atlarge.opendc.kernel
 
+import mu.KotlinLogging
 import nl.atlarge.opendc.kernel.clock.Clock
 import nl.atlarge.opendc.kernel.clock.Tick
 import nl.atlarge.opendc.kernel.messaging.Envelope
@@ -35,14 +36,18 @@ import kotlin.coroutines.experimental.*
  * A [Simulator] runs the simulation over the specified topology.
  *
  * @param topology The topology to run the simulation over.
- * @param mapping The mapping of components in the topology to the simulation kernels the components should use.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Simulator(val topology: Topology, private val mapping: Map<Component<*>, Class<out Kernel<*>>>): Iterator<Unit> {
+class Simulator(val topology: Topology): Iterator<Unit> {
+	/**
+	 * The logger instance to use for the simulator.
+	 */
+	private val logger = KotlinLogging.logger {}
+
 	/**
 	 * The registry of the simulation kernels used in the experiment.
 	 */
-	private val registry: MutableMap<Component<*>, Pair<Kernel<Context<*>>, Context<*>>?> = HashMap()
+	private val registry: MutableMap<Component<*>, Context<*>?> = HashMap()
 
 	/**
 	 * A mapping of the entities in the topology to their current state.
@@ -63,14 +68,15 @@ class Simulator(val topology: Topology, private val mapping: Map<Component<*>, C
 			node.outgoingEdges().forEach { resolve(it) }
 		}
 
-		registry.values.forEach {
-			it?.also { (kernel, ctx) ->
-				// Start all kernel co-routines
-				kernel.run {
-					val block: suspend () -> Unit = { ctx.run() }
-					block.startCoroutine(SimulationCoroutine())
-				}
-			}
+		registry.values.forEach { context ->
+			if (context == null)
+				return@forEach
+			@Suppress("UNCHECKED_CAST")
+			val kernel = context.component.label as Kernel<Context<*>>
+
+			// Start all kernel co-routines
+			val block: suspend () -> Unit = { kernel.run { context.simulate() } }
+			block.startCoroutine(KernelCoroutine())
 		}
 	}
 
@@ -80,23 +86,17 @@ class Simulator(val topology: Topology, private val mapping: Map<Component<*>, C
 	 * @param component The component to resolve.
 	 * @return The [Kernel] that simulates that [Component].
 	 */
-	fun <T: Component<*>> resolve(component: T): Pair<Kernel<Context<T>>, Context<T>>? {
+	fun <T: Component<*>> resolve(component: T): Context<T>? {
 		@Suppress("UNCHECKED_CAST")
 		return registry.computeIfAbsent(component, {
-			val constructor = mapping[it]?.constructors?.get(0)
-			val ctx = if (component is Node<*>) {
-				DefaultEntityContext(component as Node<*>)
-			} else {
-				DefaultChannelContext(component as Edge<*>)
-			}
-
-			if (constructor == null) {
-				println("warning: invalid constructor for kernel ${mapping[it]}")
+			if (component.label !is Kernel<*>)
 				null
-			} else {
-				Pair(constructor.newInstance(ctx) as Kernel<Context<*>>, ctx)
+			else when (component) {
+				is Node<*> -> DefaultEntityContext(component as Node<*>)
+				is Edge<*> -> DefaultChannelContext(component as Edge<*>)
+				else -> null
 			}
-		}) as? Pair<Kernel<Context<T>>, Context<T>>?
+		}) as Context<T>?
 	}
 
 	/**
@@ -119,14 +119,17 @@ class Simulator(val topology: Topology, private val mapping: Map<Component<*>, C
 				break
 			else if (tick < clock.tick)
 				// Tick has already occurred
-				println("error: tick was not handled correctly")
+				logger.warn {"tick was not handled correctly"}
 
 			clock.queue.poll()
 			block()
 		}
 	}
 
-	class SimulationCoroutine: Continuation<Unit> {
+	/**
+	 * The co-routine which runs a simulation kernel.
+	 */
+	private class KernelCoroutine: Continuation<Unit> {
 		override val context: CoroutineContext = EmptyCoroutineContext
 		override fun resume(value: Unit) {}
 
@@ -140,6 +143,11 @@ class Simulator(val topology: Topology, private val mapping: Map<Component<*>, C
 	 * The [Context] for an entity within the simulation.
 	 */
 	private inner class DefaultEntityContext<out T: Entity<*>>(override val component: Node<T>): EntityContext<T> {
+		/**
+         * The [Topology] over which the simulation is run.
+         */
+		override val topology: Topology = this@Simulator.topology
+
 		/**
          * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
          *
@@ -180,6 +188,11 @@ class Simulator(val topology: Topology, private val mapping: Map<Component<*>, C
 	 */
 	private inner class DefaultChannelContext<out T>(override val component: Edge<T>): ChannelContext<T> {
 		/**
+		 * The [Topology] over which the simulation is run.
+		 */
+		override val topology: Topology = this@Simulator.topology
+
+		/**
          * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
          *
          * @param block The block to process the message with.
@@ -210,6 +223,9 @@ class Simulator(val topology: Topology, private val mapping: Map<Component<*>, C
 		suspend override fun sleep(n: Int): Unit = suspendCoroutine { cont -> clock.scheduleAfter(n, { cont.resume(Unit) }) }
 	}
 
+	/**
+	 * The [Clock] for this [Simulator] that keeps track of the simulation time in ticks.
+	 */
 	private inner class DefaultClock: Clock {
 		override var tick: Tick = 0
 		internal val queue: PriorityQueue<Pair<Tick, () -> Unit>> = PriorityQueue(Comparator.comparingLong { it.first })

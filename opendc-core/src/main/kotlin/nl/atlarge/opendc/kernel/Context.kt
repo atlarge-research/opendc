@@ -27,6 +27,7 @@ package nl.atlarge.opendc.kernel
 import nl.atlarge.opendc.kernel.messaging.Readable
 import nl.atlarge.opendc.topology.Component
 import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.Topology
 
 /**
  * The [Context] interface provides a context for a simulation kernel, which defines the environment in which the
@@ -35,6 +36,11 @@ import nl.atlarge.opendc.topology.Entity
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Context<out T: Component<*>>: Readable {
+	/**
+	 * The [Topology] over which the simulation is run.
+	 */
+	val topology: Topology
+
 	/**
 	 * The [Component] that is simulated.
 	 */

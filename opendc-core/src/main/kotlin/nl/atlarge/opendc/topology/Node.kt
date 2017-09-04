@@ -39,7 +39,7 @@ interface Node<out T: Entity<*>>: Component<T> {
 	val id: Int
 
 	/**
-	 * Return the set of incoming edges of this node.
+	 * Return the set of ingoing edges of this node.
 	 *
 	 * @return All edges whose destination is this node.
 	 */
@@ -58,3 +58,24 @@ interface Node<out T: Entity<*>>: Component<T> {
 	val entity: T
 		get() = label
 }
+
+/**
+ * Return the set of ingoing edges of this node with the given tag.
+ *
+ * @param tag The tag of the edges to get.
+ * @param T The shape of the label of these edges.
+ * @return All edges whose destination is this node and have the given tag.
+ */
+inline fun <reified T> Node<*>.ingoing(tag: String) =
+	ingoingEdges().filter { it.tag == tag }.map { it as T }.toSet()
+
+
+/**
+ * Return the set of outgoing edges of this node with the given tag.
+ *
+ * @param tag The tag of the edges to get.
+ * @param T The shape of the label of these edges.
+ * @return All edges whose source is this node and have the given tag.
+ */
+inline fun <reified T> Node<*>.outgoing(tag: String) =
+	outgoingEdges().filter { it.tag == tag }.map { it as T }.toSet()

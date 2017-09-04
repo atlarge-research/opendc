@@ -24,7 +24,12 @@
 
 package nl.atlarge.opendc.topology.machine
 
+import nl.atlarge.opendc.experiment.Task
+import nl.atlarge.opendc.kernel.EntityContext
+import nl.atlarge.opendc.kernel.Kernel
 import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.outgoing
+import java.util.*
 
 /**
  * A Physical Machine (PM) inside a rack of a datacenter. It has a speed, and can be given a workload on which it will
@@ -32,7 +37,7 @@ import nl.atlarge.opendc.topology.Entity
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Machine: Entity<Machine.State> {
+class Machine: Entity<Machine.State>, Kernel<EntityContext<Machine>> {
 	/**
 	 * The status of a machine.
 	 */
@@ -49,4 +54,35 @@ class Machine: Entity<Machine.State> {
 	 * The initial state of a [Machine] entity.
 	 */
 	override val initialState = State(Status.HALT)
+
+	/**
+	 * Run the simulation kernel for this entity.
+	 */
+	override suspend fun EntityContext<Machine>.simulate() {
+		update(state.copy(status = Machine.Status.IDLE))
+
+		val cpus = component.outgoing<Cpu>("cpu")
+		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores })
+		val task: Task
+
+		val delay = Random().nextInt(1000)
+		sleep(delay)
+
+		loop@while (true) {
+			val msg = receive()
+			when (msg) {
+				is Task -> {
+					task = msg
+					break@loop
+				}
+				else -> println("warning: unhandled message $msg")
+			}
+		}
+
+		update(state.copy(status = Machine.Status.RUNNING))
+		while (tick()) {
+			task.consume(speed.toLong())
+		}
+		update(state.copy(status = Machine.Status.HALT))
+	}
 }
