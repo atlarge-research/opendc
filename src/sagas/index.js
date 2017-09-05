@@ -2,6 +2,7 @@ import {takeEvery} from "redux-saga/effects";
 import {LOG_IN} from "../actions/auth";
 import {ADD_SIMULATION, DELETE_SIMULATION} from "../actions/simulations";
 import {
+    ADD_RACK_TO_TILE,
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
     DELETE_TILE,
@@ -13,6 +14,7 @@ import {DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER} from "../acti
 import {onDeleteCurrentUser} from "./profile";
 import {onSimulationAdd, onSimulationDelete} from "./simulations";
 import {
+    onAddRackToTile,
     onAddTile,
     onCancelNewRoomConstruction,
     onDeleteTile,
@@ -34,4 +36,5 @@ export default function* rootSaga() {
     yield takeEvery(ADD_TILE, onAddTile);
     yield takeEvery(DELETE_TILE, onDeleteTile);
     yield takeEvery(EDIT_ROOM_NAME, onEditRoomName);
+    yield takeEvery(ADD_RACK_TO_TILE, onAddRackToTile);
 }

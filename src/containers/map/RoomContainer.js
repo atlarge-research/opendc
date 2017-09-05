@@ -5,7 +5,7 @@ import RoomGroup from "../../components/map/groups/RoomGroup";
 const mapStateToProps = (state, ownProps) => {
     return {
         interactionLevel: state.interactionLevel,
-        currentRoomInConstruction: state.currentRoomInConstruction,
+        currentRoomInConstruction: state.construction.currentRoomInConstruction,
         room: state.objects.room[ownProps.roomId],
     };
 };

@@ -1,6 +1,6 @@
 import {connect} from "react-redux";
 import {toggleTileAtLocation} from "../../../actions/topology";
-import HoverTileLayerComponent from "../../../components/map/layers/HoverTileLayerComponent";
+import RoomHoverLayerComponent from "../../../components/map/layers/RoomHoverLayerComponent";
 import {
     deriveValidNextTilePositions,
     findPositionInPositions,
@@ -9,12 +9,17 @@ import {
 
 const mapStateToProps = state => {
     return {
-        currentRoomInConstruction: state.currentRoomInConstruction,
+        isEnabled: () => state.construction.currentRoomInConstruction !== -1,
         isValid: (x, y) => {
-            const newRoom = Object.assign({}, state.objects.room[state.currentRoomInConstruction]);
+            if (state.interactionLevel.mode !== "BUILDING") {
+                return false;
+            }
+
+            const newRoom = Object.assign({}, state.objects.room[state.construction.currentRoomInConstruction]);
             const oldRooms = Object.keys(state.objects.room)
                 .map(id => Object.assign({}, state.objects.room[id]))
-                .filter(room => room.id !== state.currentRoomInConstruction);
+                .filter(room => room.datacenterId === state.currentDatacenterId
+                    && room.id !== state.construction.currentRoomInConstruction);
 
             [...oldRooms, newRoom].forEach(room => {
                 room.tiles = room.tileIds.map(tileId => state.objects.tile[tileId]);
@@ -35,9 +40,9 @@ const mapDispatchToProps = dispatch => {
     };
 };
 
-const HoverTileLayer = connect(
+const RoomHoverLayer = connect(
     mapStateToProps,
     mapDispatchToProps
-)(HoverTileLayerComponent);
+)(RoomHoverLayerComponent);
 
-export default HoverTileLayer;
+export default RoomHoverLayer;

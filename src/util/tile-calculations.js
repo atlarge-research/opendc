@@ -164,31 +164,25 @@ export function deriveValidNextTilePositions(rooms, selectedTiles) {
 }
 
 export function findPositionInPositions(positions, positionX, positionY) {
-    let index = -1;
-
     for (let i = 0; i < positions.length; i++) {
         const position = positions[i];
         if (positionX === position.x && positionY === position.y) {
-            index = i;
-            break;
+            return i;
         }
     }
 
-    return index;
+    return -1;
 }
 
 export function findPositionInRooms(rooms, positionX, positionY) {
-    let index = -1;
-
     for (let i = 0; i < rooms.length; i++) {
         const room = rooms[i];
         if (findPositionInTiles(room.tiles, positionX, positionY) !== -1) {
-            index = i;
-            break;
+            return i;
         }
     }
 
-    return index;
+    return -1;
 }
 
 function findPositionInTiles(tiles, positionX, positionY) {
@@ -203,4 +197,14 @@ function findPositionInTiles(tiles, positionX, positionY) {
     }
 
     return index;
+}
+
+export function findTileWithPosition(tiles, positionX, positionY) {
+    for (let i = 0; i < tiles.length; i++) {
+        if (tiles[i].positionX === positionX && tiles[i].positionY === positionY) {
+            return tiles[i];
+        }
+    }
+
+    return null;
 }

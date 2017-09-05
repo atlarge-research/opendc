@@ -4,14 +4,14 @@ import {Layer} from "react-konva";
 import HoverTile from "../elements/HoverTile";
 import {TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
-class HoverTileLayerComponent extends React.Component {
+class HoverLayerComponent extends React.Component {
     static propTypes = {
         mouseX: PropTypes.number.isRequired,
         mouseY: PropTypes.number.isRequired,
         mainGroupX: PropTypes.number.isRequired,
         mainGroupY: PropTypes.number.isRequired,
+        isEnabled: PropTypes.func.isRequired,
         onClick: PropTypes.func.isRequired,
-        containsRack: PropTypes.bool,
     };
 
     state = {
@@ -21,7 +21,7 @@ class HoverTileLayerComponent extends React.Component {
     };
 
     componentDidUpdate() {
-        if (this.props.currentRoomInConstruction === -1) {
+        if (!this.props.isEnabled()) {
             return;
         }
 
@@ -34,7 +34,7 @@ class HoverTileLayerComponent extends React.Component {
     }
 
     render() {
-        if (this.props.currentRoomInConstruction === -1) {
+        if (!this.props.isEnabled()) {
             return <Layer/>;
         }
 
@@ -44,14 +44,16 @@ class HoverTileLayerComponent extends React.Component {
         const pixelY = positionY * TILE_SIZE_IN_PIXELS + this.props.mainGroupY;
 
         return (
-            <Layer opacity={0.4}>
+            <Layer opacity={0.6}>
                 <HoverTile
                     pixelX={pixelX} pixelY={pixelY}
-                    isValid={this.state.validity} onClick={() => this.props.onClick(positionX, positionY)}
+                    isValid={this.state.validity}
+                    onClick={() => this.state.validity ? this.props.onClick(positionX, positionY) : undefined}
                 />
+                {this.props.children ? React.cloneElement(this.props.children, {pixelX, pixelY}) : undefined}
             </Layer>
         );
     }
 }
 
-export default HoverTileLayerComponent;
+export default HoverLayerComponent;

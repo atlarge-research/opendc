@@ -2,7 +2,8 @@ import React from "react";
 import {Group, Layer, Stage} from "react-konva";
 import {Shortcuts} from "react-shortcuts";
 import DatacenterContainer from "../../containers/map/DatacenterContainer";
-import HoverTileLayer from "../../containers/map/layers/HoverTileLayer";
+import ObjectHoverLayer from "../../containers/map/layers/ObjectHoverLayer";
+import RoomHoverLayer from "../../containers/map/layers/RoomHoverLayer";
 import jQuery from "../../util/jquery";
 import {NAVBAR_HEIGHT} from "../navigation/Navbar";
 import Backdrop from "./elements/Backdrop";
@@ -90,7 +91,13 @@ class MapStage extends React.Component {
                             <GridGroup/>
                         </Group>
                     </Layer>
-                    <HoverTileLayer
+                    <RoomHoverLayer
+                        mainGroupX={this.state.x}
+                        mainGroupY={this.state.y}
+                        mouseX={this.state.mouseX}
+                        mouseY={this.state.mouseY}
+                    />
+                    <ObjectHoverLayer
                         mainGroupX={this.state.x}
                         mainGroupY={this.state.y}
                         mouseX={this.state.mouseX}

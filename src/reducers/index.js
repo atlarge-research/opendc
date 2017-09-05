@@ -1,10 +1,11 @@
 import {combineReducers} from "redux";
 import {auth} from "./auth";
+import {construction} from "./construction";
 import {interactionLevel} from "./interaction-level";
 import {modals} from "./modals";
 import {objects} from "./objects";
 import {authorizationsOfCurrentUser, authVisibilityFilter, currentSimulationId} from "./simulations";
-import {currentDatacenterId, currentRoomInConstruction} from "./topology";
+import {currentDatacenterId} from "./topology";
 
 const rootReducer = combineReducers({
     auth,
@@ -15,7 +16,7 @@ const rootReducer = combineReducers({
     currentSimulationId,
     currentDatacenterId,
     interactionLevel,
-    currentRoomInConstruction,
+    construction,
 });
 
 export default rootReducer;

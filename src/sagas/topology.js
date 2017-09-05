@@ -1,6 +1,7 @@
 import {call, put, select} from "redux-saga/effects";
 import {addPropToStoreObject, addToStore} from "../actions/objects";
 import {
+    addRackToTileSucceeded,
     addTileSucceeded,
     cancelNewRoomConstructionSucceeded,
     deleteTileSucceeded,
@@ -10,7 +11,7 @@ import {
 } from "../actions/topology";
 import {addRoomToDatacenter} from "../api/routes/datacenters";
 import {addTileToRoom, deleteRoom, updateRoom} from "../api/routes/rooms";
-import {deleteTile} from "../api/routes/tiles";
+import {addRackToTile, deleteTile} from "../api/routes/tiles";
 import {
     fetchAndStoreCoolingItem,
     fetchAndStoreDatacenter,
@@ -89,7 +90,7 @@ export function* onStartNewRoomConstruction() {
             datacenterId,
             roomType: "SERVER"
         });
-        const roomWithEmptyTileList = Object.assign(room, {tileIds: []});
+        const roomWithEmptyTileList = Object.assign({}, room, {tileIds: []});
         yield put(addToStore("room", roomWithEmptyTileList));
         yield put(startNewRoomConstructionSucceeded(room.id));
     } catch (error) {
@@ -99,7 +100,7 @@ export function* onStartNewRoomConstruction() {
 
 export function* onCancelNewRoomConstruction() {
     try {
-        const roomId = yield select(state => state.currentRoomInConstruction);
+        const roomId = yield select(state => state.construction.currentRoomInConstruction);
         yield call(deleteRoom, roomId);
         yield put(cancelNewRoomConstructionSucceeded());
     } catch (error) {
@@ -109,7 +110,7 @@ export function* onCancelNewRoomConstruction() {
 
 export function* onAddTile(action) {
     try {
-        const roomId = yield select(state => state.currentRoomInConstruction);
+        const roomId = yield select(state => state.construction.currentRoomInConstruction);
         const tile = yield call(addTileToRoom, {
             roomId,
             positionX: action.positionX,
@@ -138,6 +139,22 @@ export function* onEditRoomName(action) {
         room.name = action.name;
         yield call(updateRoom, room);
         yield put(editRoomNameSucceeded(action.name));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onAddRackToTile(action) {
+    try {
+        const rack = yield call(addRackToTile, action.tileId, {
+            id: -1,
+            name: "Rack",
+            capacity: 5,
+            powerCapacityW: 100,
+            machines: 20
+        });
+        yield put(addToStore("rack", rack));
+        yield put(addRackToTileSucceeded(action.tileId, rack.id));
     } catch (error) {
         console.log(error);
     }

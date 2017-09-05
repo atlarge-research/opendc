@@ -1,3 +1,4 @@
+import {findTileWithPosition} from "../util/tile-calculations";
 import {addIdToStoreObjectListProp, addPropToStoreObject, removeIdFromStoreObjectListProp} from "./objects";
 
 export const FETCH_TOPOLOGY_OF_DATACENTER = "FETCH_TOPOLOGY_OF_DATACENTER";
@@ -12,6 +13,10 @@ export const CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED = "CANCEL_NEW_ROOM_CONSTRUCT
 export const ADD_TILE = "ADD_TILE";
 export const DELETE_TILE = "DELETE_TILE";
 export const EDIT_ROOM_NAME = "EDIT_ROOM_NAME";
+export const START_OBJECT_CONSTRUCTION = "START_OBJECT_CONSTRUCTION";
+export const STOP_OBJECT_CONSTRUCTION = "STOP_OBJECT_CONSTRUCTION";
+export const ADD_RACK_TO_TILE = "ADD_RACK_TO_TILE";
+export const ADD_RACK_TO_TILE_SUCCEEDED = "ADD_RACK_TO_TILE_SUCCEEDED";
 
 export function fetchLatestDatacenter() {
     return (dispatch, getState) => {
@@ -49,8 +54,8 @@ export function startNewRoomConstructionSucceeded(roomId) {
 
 export function finishNewRoomConstruction() {
     return (dispatch, getState) => {
-        const {objects, currentRoomInConstruction} = getState();
-        if (objects.room[currentRoomInConstruction].tileIds.length === 0) {
+        const {objects, construction} = getState();
+        if (objects.room[construction.currentRoomInConstruction].tileIds.length === 0) {
             dispatch(cancelNewRoomConstruction());
             return;
         }
@@ -69,9 +74,9 @@ export function cancelNewRoomConstruction() {
 
 export function cancelNewRoomConstructionSucceeded() {
     return (dispatch, getState) => {
-        const {currentDatacenterId, currentRoomInConstruction} = getState();
+        const {currentDatacenterId, construction} = getState();
         dispatch(removeIdFromStoreObjectListProp("datacenter", currentDatacenterId, "roomIds",
-            currentRoomInConstruction));
+            construction.currentRoomInConstruction));
         dispatch({
             type: CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED
         });
@@ -80,9 +85,9 @@ export function cancelNewRoomConstructionSucceeded() {
 
 export function toggleTileAtLocation(positionX, positionY) {
     return (dispatch, getState) => {
-        const {objects, currentRoomInConstruction} = getState();
+        const {objects, construction} = getState();
 
-        const tileIds = objects.room[currentRoomInConstruction].tileIds;
+        const tileIds = objects.room[construction.currentRoomInConstruction].tileIds;
         for (let index in tileIds) {
             if (objects.tile[tileIds[index]].positionX === positionX
                 && objects.tile[tileIds[index]].positionY === positionY) {
@@ -104,8 +109,8 @@ export function addTile(positionX, positionY) {
 
 export function addTileSucceeded(tileId) {
     return (dispatch, getState) => {
-        const {currentRoomInConstruction} = getState();
-        dispatch(addIdToStoreObjectListProp("room", currentRoomInConstruction, "tileIds", tileId));
+        const {construction} = getState();
+        dispatch(addIdToStoreObjectListProp("room", construction.currentRoomInConstruction, "tileIds", tileId));
     };
 }
 
@@ -118,8 +123,8 @@ export function deleteTile(tileId) {
 
 export function deleteTileSucceeded(tileId) {
     return (dispatch, getState) => {
-        const {currentRoomInConstruction} = getState();
-        dispatch(removeIdFromStoreObjectListProp("room", currentRoomInConstruction, "tileIds", tileId));
+        const {construction} = getState();
+        dispatch(removeIdFromStoreObjectListProp("room", construction.currentRoomInConstruction, "tileIds", tileId));
     };
 }
 
@@ -134,5 +139,40 @@ export function editRoomNameSucceeded(name) {
     return (dispatch, getState) => {
         const {interactionLevel} = getState();
         dispatch(addPropToStoreObject("room", interactionLevel.roomId, {name}));
+    };
+}
+
+export function startObjectConstruction() {
+    return {
+        type: START_OBJECT_CONSTRUCTION
+    };
+}
+
+export function stopObjectConstruction() {
+    return {
+        type: STOP_OBJECT_CONSTRUCTION
+    };
+}
+
+export function addRackToTile(positionX, positionY) {
+    return (dispatch, getState) => {
+        const {objects, interactionLevel} = getState();
+        const currentRoom = objects.room[interactionLevel.roomId];
+        const tiles = currentRoom.tileIds.map(tileId => objects.tile[tileId]);
+        const tile = findTileWithPosition(tiles, positionX, positionY);
+
+        if (tile !== null) {
+            dispatch({
+                type: ADD_RACK_TO_TILE,
+                tileId: tile.id
+            });
+        }
+    };
+}
+
+export function addRackToTileSucceeded(tileId, rackId) {
+    return dispatch => {
+        dispatch(addPropToStoreObject("tile", tileId, {objectType: "RACK"}));
+        dispatch(addPropToStoreObject("tile", tileId, {objectId: rackId}));
     };
 }
