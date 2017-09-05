@@ -60,22 +60,22 @@ interface Node<out T: Entity<*>>: Component<T> {
 }
 
 /**
- * Return the set of ingoing edges of this node with the given tag.
+ * Return the set of entities that are connected inwards to this node with the given tag.
  *
  * @param tag The tag of the edges to get.
  * @param T The shape of the label of these edges.
- * @return All edges whose destination is this node and have the given tag.
+ * @return The entities of all edges whose destination is this node and have the given tag.
  */
 inline fun <reified T> Node<*>.ingoing(tag: String) =
-	ingoingEdges().filter { it.tag == tag }.map { it.label as T }.toSet()
+	ingoingEdges().filter { it.tag == tag }.map { it.to.entity as T }.toSet()
 
 
 /**
- * Return the set of outgoing edges of this node with the given tag.
+ * Return the set of entities that are connected outwards to this node with the given tag.
  *
  * @param tag The tag of the edges to get.
  * @param T The shape of the label of these edges.
- * @return All edges whose source is this node and have the given tag.
+ * @return The entities of all edges whose source is this node and have the given tag.
  */
 inline fun <reified T> Node<*>.outgoing(tag: String) =
-	outgoingEdges().filter { it.tag == tag }.map { it.label as T }.toSet()
+	outgoingEdges().filter { it.tag == tag }.map { it.to.entity as T }.toSet()

@@ -180,7 +180,7 @@ class Simulator(val topology: Topology): Iterator<Unit> {
          *
          * @param n The amount of ticks to suspend the simulation kernel.
          */
-		suspend override fun sleep(n: Int): Unit = suspendCoroutine { cont -> clock.scheduleAfter(n, { cont.resume(Unit) }) }
+		suspend override fun wait(n: Int): Unit = suspendCoroutine { cont -> clock.scheduleAfter(n, { cont.resume(Unit) }) }
 	}
 
 	/**
@@ -220,7 +220,7 @@ class Simulator(val topology: Topology): Iterator<Unit> {
 		 *
 		 * @param n The amount of ticks to suspend the simulation kernel.
 		 */
-		suspend override fun sleep(n: Int): Unit = suspendCoroutine { cont -> clock.scheduleAfter(n, { cont.resume(Unit) }) }
+		suspend override fun wait(n: Int): Unit = suspendCoroutine { cont -> clock.scheduleAfter(n, { cont.resume(Unit) }) }
 	}
 
 	/**

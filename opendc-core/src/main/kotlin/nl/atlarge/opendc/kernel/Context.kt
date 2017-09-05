@@ -55,7 +55,7 @@ interface Context<out T: Component<*>>: Readable {
 	 * Suspend the simulation kernel until the next tick occurs in the simulation.
 	 */
 	suspend fun tick(): Boolean {
-		sleep(1)
+		wait(1)
 		return true
 	}
 
@@ -64,5 +64,5 @@ interface Context<out T: Component<*>>: Readable {
 	 *
 	 * @param n The amount of ticks to suspend the simulation kernel.
 	 */
-	suspend fun sleep(n: Int)
+	suspend fun wait(n: Int)
 }

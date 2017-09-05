@@ -66,7 +66,7 @@ class Machine: Entity<Machine.State>, Kernel<EntityContext<Machine>> {
 		val task: Task
 
 		val delay = Random().nextInt(1000)
-		sleep(delay)
+		wait(delay)
 
 		loop@while (true) {
 			val msg = receive()
