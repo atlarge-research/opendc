@@ -17,10 +17,10 @@ const GridGroup = () => (
     <Group>
         {HORIZONTAL_POINT_PAIRS.concat(VERTICAL_POINT_PAIRS).map((points, index) => (
             <Line
+                key={index}
                 points={points}
                 stroke={GRID_COLOR}
                 strokeWidth={GRID_LINE_WIDTH_IN_PIXELS}
-                key={index}
             />
         ))}
     </Group>

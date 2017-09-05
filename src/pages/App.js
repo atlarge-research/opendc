@@ -3,7 +3,7 @@ import React from 'react';
 import {connect} from "react-redux";
 import {ShortcutManager} from "react-shortcuts";
 import {openSimulationSucceeded} from "../actions/simulations";
-import {fetchLatestDatacenter} from "../actions/topology";
+import {fetchLatestDatacenter, resetCurrentDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
 import AppNavbar from "../components/navigation/AppNavbar";
 import EditRoomNameModal from "../containers/modals/EditRoomNameModal";
@@ -22,6 +22,7 @@ class AppContainer extends React.Component {
 
     componentDidMount() {
         this.props.storeSimulationId(this.props.simulationId);
+        this.props.resetCurrentDatacenter();
         this.props.fetchLatestDatacenter();
     }
 
@@ -48,6 +49,7 @@ class AppContainer extends React.Component {
 const mapDispatchToProps = dispatch => {
     return {
         storeSimulationId: id => dispatch(openSimulationSucceeded(id)),
+        resetCurrentDatacenter: () => dispatch(resetCurrentDatacenter()),
         fetchLatestDatacenter: () => dispatch(fetchLatestDatacenter()),
     };
 };
