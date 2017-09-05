@@ -67,7 +67,7 @@ interface Node<out T: Entity<*>>: Component<T> {
  * @return All edges whose destination is this node and have the given tag.
  */
 inline fun <reified T> Node<*>.ingoing(tag: String) =
-	ingoingEdges().filter { it.tag == tag }.map { it as T }.toSet()
+	ingoingEdges().filter { it.tag == tag }.map { it.label as T }.toSet()
 
 
 /**
@@ -78,4 +78,4 @@ inline fun <reified T> Node<*>.ingoing(tag: String) =
  * @return All edges whose source is this node and have the given tag.
  */
 inline fun <reified T> Node<*>.outgoing(tag: String) =
-	outgoingEdges().filter { it.tag == tag }.map { it as T }.toSet()
+	outgoingEdges().filter { it.tag == tag }.map { it.label as T }.toSet()
