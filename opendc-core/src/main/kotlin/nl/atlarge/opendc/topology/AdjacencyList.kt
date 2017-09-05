@@ -48,13 +48,33 @@ internal class AdjacencyListTopology: MutableTopology {
 	private val nodes: MutableList<Node<*>> = ArrayList()
 
 	/**
+	 * Returns the size of the collection.
+	 */
+	override val size: Int = nodes.size
+
+	/**
+	 * Checks if the specified element is contained in this collection.
+	 */
+	override fun contains(element: Node<*>): Boolean = nodes.contains(element)
+
+	/**
+	 * Checks if all elements in the specified collection are contained in this collection.
+	 */
+	override fun containsAll(elements: Collection<Node<*>>): Boolean = nodes.containsAll(elements)
+
+	/**
+	 * Returns `true` if the collection is empty (contains no elements), `false` otherwise.
+	 */
+	override fun isEmpty(): Boolean = nodes.isEmpty()
+
+	/**
 	 * Create a [Node] in this [Topology] for the given [Entity].
 	 *
 	 * @param entity The entity to create a node for.
 	 * @return The node created for the given entity.
 	 */
 	override fun <T : Entity<*>> node(entity: T): Node<T> {
-		val node = AdjacencyListNode(nextId.incrementAndGet(), entity)
+		val node = AdjacencyListNode(nextId.getAndIncrement(), entity)
 		nodes.add(node)
 		return node
 	}
@@ -82,7 +102,7 @@ internal class AdjacencyListTopology: MutableTopology {
 	/**
 	 * Returns an iterator over the elements of this object.
 	 */
-	override fun iterator(): Iterator<Node<*>> = nodes.iterator()
+	override fun iterator(): MutableIterator<Node<*>> = nodes.iterator()
 
 	internal inner class AdjacencyListNode<out T: Entity<*>>(override val id: Int, override val label: T): Node<T> {
 		internal var ingoingEdges: MutableSet<Edge<*>> = HashSet()

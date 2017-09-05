@@ -32,4 +32,4 @@ package nl.atlarge.opendc.topology
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Topology: Iterable<Node<*>>
+interface Topology: Set<Node<*>>
