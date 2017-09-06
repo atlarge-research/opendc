@@ -4,9 +4,9 @@ import {closeDeleteProfileModal} from "../../actions/modals/profile";
 import {deleteCurrentUser} from "../../actions/users";
 import ConfirmationModal from "../../components/modals/ConfirmationModal";
 
-const NewSimulationModalComponent = ({visible, callback}) => (
+const DeleteProfileModalComponent = ({visible, callback}) => (
     <ConfirmationModal title="Delete my account"
-                       message="Are you sure you want do delete your OpenDC account?"
+                       message="Are you sure you want to delete your OpenDC account?"
                        show={visible}
                        callback={callback}/>
 );
@@ -28,9 +28,9 @@ const mapDispatchToProps = dispatch => {
     };
 };
 
-const NewSimulationModal = connect(
+const DeleteProfileModal = connect(
     mapStateToProps,
     mapDispatchToProps
-)(NewSimulationModalComponent);
+)(DeleteProfileModalComponent);
 
-export default NewSimulationModal;
+export default DeleteProfileModal;

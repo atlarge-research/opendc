@@ -4,6 +4,7 @@ import {
     addRackToTileSucceeded,
     addTileSucceeded,
     cancelNewRoomConstructionSucceeded,
+    deleteRoomSucceeded,
     deleteTileSucceeded,
     editRoomNameSucceeded,
     fetchLatestDatacenterSucceeded,
@@ -139,6 +140,16 @@ export function* onEditRoomName(action) {
         room.name = action.name;
         yield call(updateRoom, room);
         yield put(editRoomNameSucceeded(action.name));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onDeleteRoom() {
+    try {
+        const roomId = yield select(state => state.interactionLevel.roomId);
+        yield call(deleteRoom, roomId);
+        yield put(deleteRoomSucceeded());
     } catch (error) {
         console.log(error);
     }

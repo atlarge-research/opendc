@@ -5,6 +5,7 @@ import {
     ADD_RACK_TO_TILE,
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
+    DELETE_ROOM,
     DELETE_TILE,
     EDIT_ROOM_NAME,
     FETCH_LATEST_DATACENTER,
@@ -17,6 +18,7 @@ import {
     onAddRackToTile,
     onAddTile,
     onCancelNewRoomConstruction,
+    onDeleteRoom,
     onDeleteTile,
     onEditRoomName,
     onFetchLatestDatacenter,
@@ -36,5 +38,6 @@ export default function* rootSaga() {
     yield takeEvery(ADD_TILE, onAddTile);
     yield takeEvery(DELETE_TILE, onDeleteTile);
     yield takeEvery(EDIT_ROOM_NAME, onEditRoomName);
+    yield takeEvery(DELETE_ROOM, onDeleteRoom);
     yield takeEvery(ADD_RACK_TO_TILE, onAddRackToTile);
 }

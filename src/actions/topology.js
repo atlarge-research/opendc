@@ -1,4 +1,5 @@
 import {findTileWithPosition} from "../util/tile-calculations";
+import {goDownOneInteractionLevel} from "./interaction-level";
 import {addIdToStoreObjectListProp, addPropToStoreObject, removeIdFromStoreObjectListProp} from "./objects";
 
 export const FETCH_TOPOLOGY_OF_DATACENTER = "FETCH_TOPOLOGY_OF_DATACENTER";
@@ -14,6 +15,7 @@ export const CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED = "CANCEL_NEW_ROOM_CONSTRUCT
 export const ADD_TILE = "ADD_TILE";
 export const DELETE_TILE = "DELETE_TILE";
 export const EDIT_ROOM_NAME = "EDIT_ROOM_NAME";
+export const DELETE_ROOM = "DELETE_ROOM";
 export const START_OBJECT_CONSTRUCTION = "START_OBJECT_CONSTRUCTION";
 export const STOP_OBJECT_CONSTRUCTION = "STOP_OBJECT_CONSTRUCTION";
 export const ADD_RACK_TO_TILE = "ADD_RACK_TO_TILE";
@@ -181,5 +183,20 @@ export function addRackToTileSucceeded(tileId, rackId) {
     return dispatch => {
         dispatch(addPropToStoreObject("tile", tileId, {objectType: "RACK"}));
         dispatch(addPropToStoreObject("tile", tileId, {objectId: rackId}));
+    };
+}
+
+export function deleteRoom() {
+    return {
+        type: DELETE_ROOM
+    };
+}
+
+export function deleteRoomSucceeded() {
+    return (dispatch, getState) => {
+        const {currentDatacenterId, interactionLevel} = getState();
+        const currentRoomId = interactionLevel.roomId;
+        dispatch(goDownOneInteractionLevel());
+        dispatch(removeIdFromStoreObjectListProp("datacenter", currentDatacenterId, "roomIds", currentRoomId));
     };
 }
