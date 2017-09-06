@@ -45,7 +45,7 @@ import kotlin.coroutines.experimental.*
  * @param topology The topology to run the simulation over.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class OmegaSimulator(override val topology: Topology): Simulator, Iterator<Unit> {
+class OmegaSimulator(override val topology: Topology) : Simulator, Iterator<Unit> {
 	/**
 	 * The logger instance to use for the simulator.
 	 */
@@ -93,7 +93,7 @@ class OmegaSimulator(override val topology: Topology): Simulator, Iterator<Unit>
 	 * @param component The component to resolve.
 	 * @return The [Kernel] that simulates that [Component].
 	 */
-	fun <T: Component<*>> resolve(component: T): Context<T>? {
+	fun <T : Component<*>> resolve(component: T): Context<T>? {
 		@Suppress("UNCHECKED_CAST")
 		return registry.computeIfAbsent(component, {
 			if (component.label !is Kernel<*>)
@@ -138,7 +138,7 @@ class OmegaSimulator(override val topology: Topology): Simulator, Iterator<Unit>
 	/**
 	 * The co-routine which runs a simulation kernel.
 	 */
-	private class KernelCoroutine: Continuation<Unit> {
+	private class KernelCoroutine : Continuation<Unit> {
 		override val context: CoroutineContext = EmptyCoroutineContext
 		override fun resume(value: Unit) {}
 
@@ -146,90 +146,6 @@ class OmegaSimulator(override val topology: Topology): Simulator, Iterator<Unit>
 			val currentThread = Thread.currentThread()
 			currentThread.uncaughtExceptionHandler.uncaughtException(currentThread, exception)
 		}
-	}
-
-	/**
-	 * The [Context] for an entity within the simulation.
-	 */
-	private inner class OmegaEntityContext<out T: Entity<*>>(override val component: Node<T>): EntityContext<T> {
-		/**
-         * The [Topology] over which the simulation is run.
-         */
-		override val topology: Topology = this@OmegaSimulator.topology
-
-		/**
-         * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
-         *
-         * @param block The block to process the message with.
-         * @return The processed message.
-         */
-		suspend override fun <T> receive(block: Envelope<*>.(Any?) -> T): T = suspendCoroutine {}
-
-		/**
-		 * The observable state of an [Entity] within the simulation is provided by context.
-		 */
-		@Suppress("UNCHECKED_CAST")
-		override val <S> Entity<S>.state: S
-			get() = states.computeIfAbsent(this, { initialState }) as S
-
-		/**
-         * Update the state of the entity being simulated.
-         *
-         * <p>Instead of directly mutating the entity, we create a new instance of the entity to prevent other objects
-         * referencing the old entity having their data changed.
-         *
-         * @param next The next state of the entity.
-         */
-		suspend override fun <C: EntityContext<E>, E: Entity<S>, S> C.update(next: S) {
-			states.put(component.entity as Entity<*>, next)
-		}
-
-		/**
-         * Suspend the simulation kernel for <code>n</code> ticks before resuming the execution.
-         *
-         * @param n The amount of ticks to suspend the simulation kernel.
-         */
-		suspend override fun wait(n: Int): Unit = suspendCoroutine { cont -> clock.scheduleAfter(n, { cont.resume(Unit) }) }
-	}
-
-	/**
-	 * The [Context] for an edge within the simulation.
-	 */
-	private inner class OmegaChannelContext<out T>(override val component: Edge<T>): ChannelContext<T> {
-		/**
-		 * The [Topology] over which the simulation is run.
-		 */
-		override val topology: Topology = this@OmegaSimulator.topology
-
-		/**
-         * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
-         *
-         * @param block The block to process the message with.
-         * @return The processed message.
-         */
-		suspend override fun <T> receive(block: Envelope<*>.(Any?) -> T): T = suspendCoroutine {}
-
-		/**
-         * Send the given message downstream.
-         *
-         * @param msg The message to send.
-         * @param sender The sender of the message.
-         */
-		suspend override fun send(msg: Any?, sender: Node<*>): Unit = suspendCoroutine {}
-
-		/**
-		 * The observable state of an [Entity] within the simulation is provided by context.
-		 */
-		@Suppress("UNCHECKED_CAST")
-		override val <S> Entity<S>.state: S
-			get() = states.computeIfAbsent(this, { initialState }) as S
-
-		/**
-		 * Suspend the simulation kernel for <code>n</code> ticks before resuming the execution.
-		 *
-		 * @param n The amount of ticks to suspend the simulation kernel.
-		 */
-		suspend override fun wait(n: Int): Unit = suspendCoroutine { cont -> clock.scheduleAfter(n, { cont.resume(Unit) }) }
 	}
 
 	/**
@@ -241,6 +157,77 @@ class OmegaSimulator(override val topology: Topology): Simulator, Iterator<Unit>
 
 		override fun scheduleAt(tick: Tick, block: () -> Unit) {
 			queue.add(Pair(tick, block))
+		}
+	}
+
+	/**
+	 * This internal class provides the default implementation for the [Context] interface for this simulator.
+	 */
+	private abstract inner class OmegaAbstractContext<out T : Component<*>> : Context<T> {
+		/**
+		 * The [Topology] over which the simulation is run.
+		 */
+		override val topology: Topology = this@OmegaSimulator.topology
+
+		/**
+		 * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
+		 *
+		 * @param block The block to process the message with.
+		 * @return The processed message.
+		 */
+		suspend override fun <T> receive(block: Envelope<*>.(Any?) -> T): T {
+			TODO("not implemented")
+		}
+
+		/**
+		 * The observable state of an [Entity] within the simulation is provided by the context of the simulation.
+		 */
+		@Suppress("UNCHECKED_CAST")
+		override val <S> Entity<S>.state: S
+			get() = states.computeIfAbsent(this, { initialState }) as S
+
+		/**
+		 * Suspend the simulation kernel for <code>n</code> ticks before resuming the execution.
+		 *
+		 * @param n The amount of ticks to suspend the simulation kernel, with <code>n > 0</code>
+		 */
+		suspend override fun wait(n: Int) {
+			require(n > 0) { "The amount of ticks to suspend must be a non-zero positive number" }
+			return suspendCoroutine { cont ->
+				clock.scheduleAfter(n, { cont.resume(Unit) })
+			}
+		}
+	}
+
+	/**
+	 * An internal class to provide [Context] for an entity within the simulation.
+	 */
+	private inner class OmegaEntityContext<out T : Entity<*>>(override val component: Node<T>) : OmegaAbstractContext<Node<T>>(), EntityContext<T> {
+		/**
+		 * Update the state of the entity being simulated.
+		 *
+		 * <p>Instead of directly mutating the entity, we create a new instance of the entity to prevent other objects
+		 * referencing the old entity having their data changed.
+		 *
+		 * @param next The next state of the entity.
+		 */
+		suspend override fun <C : EntityContext<E>, E : Entity<S>, S> C.update(next: S) {
+			states.put(component.entity as Entity<*>, next)
+		}
+	}
+
+	/**
+	 * An internal class to provide the [Context] for an edge kernel within the simulation.
+	 */
+	private inner class OmegaChannelContext<out T>(override val component: Edge<T>) : OmegaAbstractContext<Edge<T>>(), ChannelContext<T> {
+		/**
+		 * Send the given message downstream.
+		 *
+		 * @param msg The message to send.
+		 * @param sender The sender of the message.
+		 */
+		suspend override fun send(msg: Any?, sender: Node<*>) {
+			TODO("not implemented")
 		}
 	}
 }

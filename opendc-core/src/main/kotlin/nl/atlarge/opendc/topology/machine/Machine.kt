@@ -65,7 +65,7 @@ class Machine: Entity<Machine.State>, Kernel<EntityContext<Machine>> {
 		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores })
 		val task: Task
 
-		val delay = Random().nextInt(1000)
+		val delay = Random().nextInt(1000) + 1
 		wait(delay)
 
 		loop@while (true) {
