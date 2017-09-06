@@ -24,7 +24,7 @@
 
 package nl.atlarge.opendc
 
-import nl.atlarge.opendc.kernel.Simulator
+import nl.atlarge.opendc.kernel.DefaultSimulator
 import nl.atlarge.opendc.topology.AdjacencyListTopologyBuilder
 import nl.atlarge.opendc.topology.container.Rack
 import nl.atlarge.opendc.topology.machine.Cpu
@@ -51,7 +51,7 @@ internal class SmokeTest {
 			}
 		}
 
-		val simulator = Simulator(topology)
+		val simulator = DefaultSimulator(topology)
 		while (simulator.hasNext()) {
 			simulator.next()
 		}
