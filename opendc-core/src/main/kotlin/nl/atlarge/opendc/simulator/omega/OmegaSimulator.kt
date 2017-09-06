@@ -121,13 +121,15 @@ class OmegaSimulator(override val topology: Topology): Simulator, Iterator<Unit>
 		while (true) {
 			val (tick, block) = clock.queue.peek() ?: return
 
-			if (tick > clock.tick)
+			if (tick > clock.tick) {
 				// Tick has yet to occur
+				// Jump in time to next event
+				clock.tick = tick - 1
 				break
-			else if (tick < clock.tick)
+			} else if (tick < clock.tick) {
 				// Tick has already occurred
-				logger.warn {"tick was not handled correctly"}
-
+				logger.warn { "tick was not handled correctly" }
+			}
 			clock.queue.poll()
 			block()
 		}
