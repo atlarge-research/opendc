@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.simulator.messaging
 
 /**
- * A [ReadableChannel] instance allows objects to receive messages from the channel.
+ * A [ReadablePort] instance allows objects to receive messages from the channel.
  *
- * @param T The shape of the label of the edge of this channel.
+ * @param T The shape of the label of the edges of the channels of this port.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface ReadableChannel<out T>: Channel<T>, Readable
+interface ReadablePort<out T>: Port<ReadableChannel<T>>, Readable

@@ -22,47 +22,26 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel
-
-import nl.atlarge.opendc.kernel.messaging.Readable
-import nl.atlarge.opendc.topology.Component
-import nl.atlarge.opendc.topology.Entity
-import nl.atlarge.opendc.topology.Topology
+package nl.atlarge.opendc.simulator.messaging
 
 /**
- * The [Context] interface provides a context for a simulation kernel, which defines the environment in which the
- * simulation is run.
+ * A [Readable] instance allows objects to pull messages from the instance.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Context<out T: Component<*>>: Readable {
+interface Readable {
 	/**
-	 * The [Topology] over which the simulation is run.
-	 */
-	val topology: Topology
-
-	/**
-	 * The [Component] that is simulated.
-	 */
-	val component: T
-
-	/**
-	 * The observable state of an [Entity] within the simulation is provided by context.
-	 */
-	val <S> Entity<S>.state: S
-
-	/**
-	 * Suspend the simulation kernel until the next tick occurs in the simulation.
-	 */
-	suspend fun tick(): Boolean {
-		wait(1)
-		return true
-	}
-
-	/**
-	 * Suspend the simulation kernel for <code>n</code> ticks before resuming the execution.
+	 * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
 	 *
-	 * @param n The amount of ticks to suspend the simulation kernel.
+	 * @param block The block to process the message with.
+	 * @return The processed message.
 	 */
-	suspend fun wait(n: Int)
+	suspend fun <T> receive(block: Envelope<*>.(Any?) -> T): T
+
+	/**
+	 * Retrieve a single message from this [Channel].
+	 *
+	 * @return The message that was received from the channel
+	 */
+	suspend fun receive(): Any? = receive { it }
 }

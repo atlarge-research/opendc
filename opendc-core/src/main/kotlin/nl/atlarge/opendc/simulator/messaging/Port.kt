@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.simulator.messaging
 
 /**
- * A [ReadablePort] instance allows objects to receive messages from the channel.
+ * A port connects multiple [Channel]s to an entity in the topology of a cloud network.
  *
- * @param T The shape of the label of the edges of the channels of this port.
+ * @param C The shape of the channels that are connected to this port.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface ReadablePort<out T>: Port<ReadableChannel<T>>, Readable
+interface Port<out C: Channel<*>>: Iterable<C>

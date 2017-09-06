@@ -22,23 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel
-
-import nl.atlarge.opendc.topology.Topology
+package nl.atlarge.opendc.simulator.messaging
 
 /**
- * A [Simulator] implementation runs a simulation over the specified topology.
+ * A [WritableChannel] instance allows objects to write messages to the channel.
  *
+ * @param T The shape of the label of the edge of this channel.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Simulator {
-	/**
-	 * The [Topology] over which the simulation runs.
-	 */
-	val topology: Topology
-
-	/**
-	 * Run the next cycle in the simulation.
-	 */
-	fun next()
-}
+interface WritableChannel<out T>: Channel<T>, Writable

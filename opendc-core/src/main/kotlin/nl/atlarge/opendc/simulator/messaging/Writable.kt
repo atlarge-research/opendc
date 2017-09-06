@@ -22,32 +22,21 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.clock
+package nl.atlarge.opendc.simulator.messaging
+
+import nl.atlarge.opendc.topology.Node
 
 /**
- * A tick represents a moment of time in which some work is done by an entity.
- */
-typealias Tick = Long
-
-/**
- * The clock of a simulation manages the ticks that have elapsed and schedules the tick events.
+ * A [Writable] instance allows objects to send messages to it.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Clock {
+interface Writable {
 	/**
-	 * The tick the clock is currently at.
-	 */
-	val tick: Tick
-
-	/**
+	 * Send the given message downstream.
 	 *
-	 * @throws IllegalArgumentException
+	 * @param msg The message to send.
+	 * @param sender The sender of the message.
 	 */
-	fun scheduleAt(tick: Tick, block: () -> Unit)
-
-	/**
-	 * @throws IllegalArgumentException
-	 */
-	fun scheduleAfter(n: Int, block: () -> Unit) = scheduleAt(tick + n, block)
+	suspend fun send(msg: Any?, sender: Node<*>)
 }

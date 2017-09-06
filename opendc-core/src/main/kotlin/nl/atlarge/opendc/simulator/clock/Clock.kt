@@ -22,12 +22,32 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.simulator.clock
 
 /**
- * A [WritablePort] instance allows objects to write messages to multiple channels.
+ * A tick represents a moment of time in which some work is done by an entity.
+ */
+typealias Tick = Long
+
+/**
+ * The clock of a simulation manages the ticks that have elapsed and schedules the tick events.
  *
- * @param T The shape of the label of the edges of the channels of this port.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface WritablePort<out T>: Port<WritableChannel<T>>, Writable
+interface Clock {
+	/**
+	 * The tick the clock is currently at.
+	 */
+	val tick: Tick
+
+	/**
+	 *
+	 * @throws IllegalArgumentException
+	 */
+	fun scheduleAt(tick: Tick, block: () -> Unit)
+
+	/**
+	 * @throws IllegalArgumentException
+	 */
+	fun scheduleAfter(n: Int, block: () -> Unit) = scheduleAt(tick + n, block)
+}

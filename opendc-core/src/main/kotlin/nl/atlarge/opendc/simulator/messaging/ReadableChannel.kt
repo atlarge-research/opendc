@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.simulator.messaging
 
 /**
- * A [DuplexChannel] instance allows bi-directional communication over the channel.
+ * A [ReadableChannel] instance allows objects to receive messages from the channel.
  *
  * @param T The shape of the label of the edge of this channel.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface DuplexChannel<out T>: Channel<T>, Readable, Writable
+interface ReadableChannel<out T>: Channel<T>, Readable

@@ -22,23 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
-
-import nl.atlarge.opendc.topology.Node
+package nl.atlarge.opendc.simulator.messaging
 
 /**
- * The envelope of a message that is received from a [Channel], also containing the metadata of the message.
+ * A [DuplexPort] instance allows bi-directional communication with multiple channels.
  *
+ * @param T The shape of the label of the edges of the channels of this port.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class Envelope<out T>(
-	/**
-	 * The message in this envelope.
-	 */
-	val message: T,
-
-	/**
-	 * The sender of the message.
-	 */
-	val sender: Node<*>
-)
+interface DuplexPort<out T>: Port<DuplexChannel<T>>, Readable, Writable

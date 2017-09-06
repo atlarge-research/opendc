@@ -22,21 +22,47 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.simulator
 
-import nl.atlarge.opendc.topology.Node
+import nl.atlarge.opendc.simulator.messaging.Readable
+import nl.atlarge.opendc.topology.Component
+import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.Topology
 
 /**
- * A [Writable] instance allows objects to send messages to it.
+ * The [Context] interface provides a context for a simulation kernel, which defines the environment in which the
+ * simulation is run.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Writable {
+interface Context<out T: Component<*>>: Readable {
 	/**
-	 * Send the given message downstream.
-	 *
-	 * @param msg The message to send.
-	 * @param sender The sender of the message.
+	 * The [Topology] over which the simulation is run.
 	 */
-	suspend fun send(msg: Any?, sender: Node<*>)
+	val topology: Topology
+
+	/**
+	 * The [Component] that is simulated.
+	 */
+	val component: T
+
+	/**
+	 * The observable state of an [Entity] within the simulation is provided by context.
+	 */
+	val <S> Entity<S>.state: S
+
+	/**
+	 * Suspend the simulation kernel until the next tick occurs in the simulation.
+	 */
+	suspend fun tick(): Boolean {
+		wait(1)
+		return true
+	}
+
+	/**
+	 * Suspend the simulation kernel for <code>n</code> ticks before resuming the execution.
+	 *
+	 * @param n The amount of ticks to suspend the simulation kernel.
+	 */
+	suspend fun wait(n: Int)
 }

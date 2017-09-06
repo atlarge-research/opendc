@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel
+package nl.atlarge.opendc.simulator
 
 import mu.KotlinLogging
-import nl.atlarge.opendc.kernel.clock.Clock
-import nl.atlarge.opendc.kernel.clock.Tick
-import nl.atlarge.opendc.kernel.messaging.Envelope
+import nl.atlarge.opendc.simulator.clock.Clock
+import nl.atlarge.opendc.simulator.clock.Tick
+import nl.atlarge.opendc.simulator.messaging.Envelope
 import nl.atlarge.opendc.topology.*
 import java.util.*
 import kotlin.coroutines.experimental.*

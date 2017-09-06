@@ -22,14 +22,12 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel
-
-import nl.atlarge.opendc.kernel.messaging.Writable
-import nl.atlarge.opendc.topology.Edge
+package nl.atlarge.opendc.simulator.messaging
 
 /**
- * The context provided to a simulation kernel for communication channels between entities.
+ * A [DuplexChannel] instance allows bi-directional communication over the channel.
  *
+ * @param T The shape of the label of the edge of this channel.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface ChannelContext<out T>: Context<Edge<T>>, Writable
+interface DuplexChannel<out T>: Channel<T>, Readable, Writable

@@ -22,25 +22,23 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel
+package nl.atlarge.opendc.simulator.messaging
 
-import nl.atlarge.opendc.topology.Component
+import nl.atlarge.opendc.topology.Node
 
 /**
- * A simulation kernel that simulates a single [Component] instance in a cloud network.
+ * The envelope of a message that is received from a [Channel], also containing the metadata of the message.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Kernel<in C: Context<*>> {
+data class Envelope<out T>(
 	/**
-	 * This method is invoked to start the simulation of the [Component] associated with this [Kernel].
-	 *
-	 * <p>This method is assumed to be running during the experiment, but should hand back control to the simulator at
-	 * some point by calling [Context.tick] to wait for the next tick to occur, which allows to allows other entity
-	 * simulators to do work in the current tick of the simulation.
-	 *
-	 * <p>If this method exists early, before the simulation has finished, the entity is assumed to be shutdown and its
-	 * simulation will not run any further.
+	 * The message in this envelope.
 	 */
-	suspend fun C.simulate()
-}
+	val message: T,
+
+	/**
+	 * The sender of the message.
+	 */
+	val sender: Node<*>
+)

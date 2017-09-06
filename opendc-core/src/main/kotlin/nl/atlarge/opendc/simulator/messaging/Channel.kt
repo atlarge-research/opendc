@@ -22,12 +22,28 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.simulator.messaging
+
+import nl.atlarge.opendc.topology.Edge
+import nl.atlarge.opendc.topology.Node
 
 /**
- * A [DuplexPort] instance allows bi-directional communication with multiple channels.
+ * A unidirectional communication channel between two [Node] instances as seen from one of the entities.
  *
- * @param T The shape of the label of the edges of the channels of this port.
+ * <p>A [Channel] is viewed as a directed edge that connects two entities in the topology of a cloud network.
+ *
+ * @param T The shape of the label of the edge of this channel.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface DuplexPort<out T>: Port<DuplexChannel<T>>, Readable, Writable
+interface Channel<out T> {
+	/**
+	 * The directed edge between two nodes which represents this unidirectional communication channel.
+	 */
+	val edge: Edge<T>
+
+	/**
+	 * The channel the message originates from.
+	 */
+	val Envelope<*>.channel: Channel<T>
+		get() = this@Channel
+}

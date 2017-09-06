@@ -24,7 +24,7 @@
 
 package nl.atlarge.opendc
 
-import nl.atlarge.opendc.kernel.DefaultSimulator
+import nl.atlarge.opendc.simulator.DefaultSimulator
 import nl.atlarge.opendc.topology.AdjacencyListTopologyBuilder
 import nl.atlarge.opendc.topology.container.Rack
 import nl.atlarge.opendc.topology.machine.Cpu

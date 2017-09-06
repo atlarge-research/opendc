@@ -25,8 +25,8 @@
 package nl.atlarge.opendc.topology.machine
 
 import nl.atlarge.opendc.experiment.Task
-import nl.atlarge.opendc.kernel.EntityContext
-import nl.atlarge.opendc.kernel.Kernel
+import nl.atlarge.opendc.simulator.EntityContext
+import nl.atlarge.opendc.simulator.Kernel
 import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.outgoing
 import java.util.*

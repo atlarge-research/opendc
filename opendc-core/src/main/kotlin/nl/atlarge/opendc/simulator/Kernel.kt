@@ -22,12 +22,25 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.simulator
+
+import nl.atlarge.opendc.topology.Component
 
 /**
- * A port connects multiple [Channel]s to an entity in the topology of a cloud network.
+ * A simulation kernel that simulates a single [Component] instance in a cloud network.
  *
- * @param C The shape of the channels that are connected to this port.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Port<out C: Channel<*>>: Iterable<C>
+interface Kernel<in C: Context<*>> {
+	/**
+	 * This method is invoked to start the simulation of the [Component] associated with this [Kernel].
+	 *
+	 * <p>This method is assumed to be running during the experiment, but should hand back control to the simulator at
+	 * some point by calling [Context.tick] to wait for the next tick to occur, which allows to allows other entity
+	 * simulators to do work in the current tick of the simulation.
+	 *
+	 * <p>If this method exists early, before the simulation has finished, the entity is assumed to be shutdown and its
+	 * simulation will not run any further.
+	 */
+	suspend fun C.simulate()
+}

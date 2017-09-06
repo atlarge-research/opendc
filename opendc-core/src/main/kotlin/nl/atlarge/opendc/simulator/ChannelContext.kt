@@ -22,24 +22,14 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel
+package nl.atlarge.opendc.simulator
 
-import nl.atlarge.opendc.topology.Entity
-import nl.atlarge.opendc.topology.Node
+import nl.atlarge.opendc.simulator.messaging.Writable
+import nl.atlarge.opendc.topology.Edge
 
 /**
- * The context provided to a simulation kernel for stateful entities in the topology.
+ * The context provided to a simulation kernel for communication channels between entities.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface EntityContext<out T: Entity<*>>: Context<Node<T>> {
-	/**
-	 * Update the state of the entity being simulated.
-	 *
-	 * <p>Instead of directly mutating the entity, we create a new instance of the entity to prevent other objects
-	 * referencing the old entity having their data changed.
-	 *
-	 * @param next The next state of the entity.
-	 */
-	suspend fun <C: EntityContext<E>, E: Entity<S>, S> C.update(next: S)
-}
+interface ChannelContext<out T>: Context<Edge<T>>, Writable

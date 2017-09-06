@@ -22,26 +22,23 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.simulator
+
+import nl.atlarge.opendc.topology.Topology
 
 /**
- * A [Readable] instance allows objects to pull messages from the instance.
+ * A [Simulator] implementation runs a simulation over the specified topology.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Readable {
+interface Simulator {
 	/**
-	 * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
-	 *
-	 * @param block The block to process the message with.
-	 * @return The processed message.
+	 * The [Topology] over which the simulation runs.
 	 */
-	suspend fun <T> receive(block: Envelope<*>.(Any?) -> T): T
+	val topology: Topology
 
 	/**
-	 * Retrieve a single message from this [Channel].
-	 *
-	 * @return The message that was received from the channel
+	 * Run the next cycle in the simulation.
 	 */
-	suspend fun receive(): Any? = receive { it }
+	fun next()
 }
