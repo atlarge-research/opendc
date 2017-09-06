@@ -27,7 +27,7 @@ package nl.atlarge.opendc.simulator
 import nl.atlarge.opendc.topology.Topology
 
 /**
- * A [Simulator] implementation runs a simulation over the specified topology.
+ * A [Simulator] runs a simulation over the specified topology.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */

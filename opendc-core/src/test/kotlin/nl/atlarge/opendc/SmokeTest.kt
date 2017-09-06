@@ -24,7 +24,7 @@
 
 package nl.atlarge.opendc
 
-import nl.atlarge.opendc.simulator.DefaultSimulator
+import nl.atlarge.opendc.simulator.omega.OmegaSimulator
 import nl.atlarge.opendc.topology.AdjacencyListTopologyBuilder
 import nl.atlarge.opendc.topology.container.Rack
 import nl.atlarge.opendc.topology.machine.Cpu
@@ -37,7 +37,7 @@ internal class SmokeTest {
 		val builder = AdjacencyListTopologyBuilder()
 		val topology = builder.build().apply {
 			val rack = node(Rack())
-			val n = 10
+			val n = 1000000
 			// Create n machines in the rack
 			repeat(n) {
 				val machine = node(Machine())
@@ -51,7 +51,7 @@ internal class SmokeTest {
 			}
 		}
 
-		val simulator = DefaultSimulator(topology)
+		val simulator = OmegaSimulator(topology)
 		while (simulator.hasNext()) {
 			simulator.next()
 		}

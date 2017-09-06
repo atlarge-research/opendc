@@ -22,9 +22,10 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.simulator
+package nl.atlarge.opendc.simulator.omega
 
 import mu.KotlinLogging
+import nl.atlarge.opendc.simulator.*
 import nl.atlarge.opendc.simulator.clock.Clock
 import nl.atlarge.opendc.simulator.clock.Tick
 import nl.atlarge.opendc.simulator.messaging.Envelope
@@ -33,12 +34,18 @@ import java.util.*
 import kotlin.coroutines.experimental.*
 
 /**
- * A [DefaultSimulator] runs the simulation over the specified topology.
+ * The Omega simulator is the default [Simulator] implementation for the OpenDC core.
+ *
+ * <p>This simulator implementation is a single-threaded implementation running simulation kernels synchronously and
+ * provides a single priority queue for all events (messages, ticks, etc) that occur in the components.
+ *
+ * <p>By default, [Kernel]s are resolved as part of the [Topology], meaning each [Component] in the topology also
+ * implements its simulation logic by deriving from the [Kernel] interface.
  *
  * @param topology The topology to run the simulation over.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class DefaultSimulator(override val topology: Topology): Simulator, Iterator<Unit> {
+class OmegaSimulator(override val topology: Topology): Simulator, Iterator<Unit> {
 	/**
 	 * The logger instance to use for the simulator.
 	 */
@@ -57,7 +64,7 @@ class DefaultSimulator(override val topology: Topology): Simulator, Iterator<Uni
 	/**
 	 * The clock of the simulator.
 	 */
-	private val clock: DefaultClock = DefaultClock()
+	private val clock: OmegaClock = OmegaClock()
 
 	/**
 	 * Initialize the simulator.
@@ -92,8 +99,8 @@ class DefaultSimulator(override val topology: Topology): Simulator, Iterator<Uni
 			if (component.label !is Kernel<*>)
 				null
 			else when (component) {
-				is Node<*> -> DefaultEntityContext(component as Node<*>)
-				is Edge<*> -> DefaultChannelContext(component as Edge<*>)
+				is Node<*> -> OmegaEntityContext(component as Node<*>)
+				is Edge<*> -> OmegaChannelContext(component as Edge<*>)
 				else -> null
 			}
 		}) as Context<T>?
@@ -142,11 +149,11 @@ class DefaultSimulator(override val topology: Topology): Simulator, Iterator<Uni
 	/**
 	 * The [Context] for an entity within the simulation.
 	 */
-	private inner class DefaultEntityContext<out T: Entity<*>>(override val component: Node<T>): EntityContext<T> {
+	private inner class OmegaEntityContext<out T: Entity<*>>(override val component: Node<T>): EntityContext<T> {
 		/**
          * The [Topology] over which the simulation is run.
          */
-		override val topology: Topology = this@DefaultSimulator.topology
+		override val topology: Topology = this@OmegaSimulator.topology
 
 		/**
          * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
@@ -186,11 +193,11 @@ class DefaultSimulator(override val topology: Topology): Simulator, Iterator<Uni
 	/**
 	 * The [Context] for an edge within the simulation.
 	 */
-	private inner class DefaultChannelContext<out T>(override val component: Edge<T>): ChannelContext<T> {
+	private inner class OmegaChannelContext<out T>(override val component: Edge<T>): ChannelContext<T> {
 		/**
 		 * The [Topology] over which the simulation is run.
 		 */
-		override val topology: Topology = this@DefaultSimulator.topology
+		override val topology: Topology = this@OmegaSimulator.topology
 
 		/**
          * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
@@ -224,9 +231,9 @@ class DefaultSimulator(override val topology: Topology): Simulator, Iterator<Uni
 	}
 
 	/**
-	 * The [Clock] for this [DefaultSimulator] that keeps track of the simulation time in ticks.
+	 * The [Clock] for this [OmegaSimulator] that keeps track of the simulation time in ticks.
 	 */
-	private inner class DefaultClock: Clock {
+	private inner class OmegaClock : Clock {
 		override var tick: Tick = 0
 		internal val queue: PriorityQueue<Pair<Tick, () -> Unit>> = PriorityQueue(Comparator.comparingLong { it.first })
 
