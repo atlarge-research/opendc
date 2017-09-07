@@ -2,6 +2,7 @@ import React from "react";
 import BuildingSidebarContainer from "../../../containers/sidebars/topology/building/BuildingSidebarContainer";
 import RoomSidebarContainer from "../../../containers/sidebars/topology/room/RoomSidebarContainer";
 import Sidebar from "../Sidebar";
+import MachineSidebarComponent from "./machine/MachineSidebarComponent";
 import RackSidebarComponent from "./rack/RackSidebarComponent";
 
 const TopologySidebarComponent = ({interactionLevel}) => {
@@ -16,6 +17,9 @@ const TopologySidebarComponent = ({interactionLevel}) => {
             break;
         case "RACK":
             sidebarContent = <RackSidebarComponent/>;
+            break;
+        case "MACHINE":
+            sidebarContent = <MachineSidebarComponent/>;
             break;
         default:
             sidebarContent = "Missing Content";

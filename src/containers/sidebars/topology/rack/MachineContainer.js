@@ -1,4 +1,5 @@
 import {connect} from "react-redux";
+import {goFromRackToMachine} from "../../../../actions/interaction-level";
 import MachineComponent from "../../../../components/sidebars/topology/rack/MachineComponent";
 
 const mapStateToProps = (state, ownProps) => {
@@ -7,9 +8,9 @@ const mapStateToProps = (state, ownProps) => {
     };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch, ownProps) => {
     return {
-        onClick: () => undefined, // TODO implement transition to MACHINE mode
+        onClick: () => dispatch(goFromRackToMachine(ownProps.position)),
     };
 };
 

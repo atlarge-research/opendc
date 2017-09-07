@@ -6,6 +6,7 @@ import {openSimulationSucceeded} from "../actions/simulations";
 import {fetchLatestDatacenter, resetCurrentDatacenter} from "../actions/topology";
 import MapStage from "../components/map/MapStage";
 import AppNavbar from "../components/navigation/AppNavbar";
+import DeleteMachineModal from "../containers/modals/DeleteMachineModal";
 import DeleteRackModal from "../containers/modals/DeleteRackModal";
 import DeleteRoomModal from "../containers/modals/DeleteRoomModal";
 import EditRackNameModal from "../containers/modals/EditRackNameModal";
@@ -47,6 +48,7 @@ class AppContainer extends React.Component {
                 <DeleteRoomModal/>
                 <EditRackNameModal/>
                 <DeleteRackModal/>
+                <DeleteMachineModal/>
             </div>
         );
     }

@@ -19,7 +19,8 @@ const RoomGroup = ({room, interactionLevel, currentRoomInConstruction, onClick})
     return (
         <Group onClick={onClick}>
             {(() => {
-                if (interactionLevel.mode === "RACK" && interactionLevel.roomId === room.id) {
+                if ((interactionLevel.mode === "RACK" || interactionLevel.mode === "MACHINE")
+                    && interactionLevel.roomId === room.id) {
                     return [
                         room.tileIds
                             .filter(tileId => tileId !== interactionLevel.tileId)

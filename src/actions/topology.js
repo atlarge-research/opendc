@@ -22,6 +22,7 @@ export const START_RACK_CONSTRUCTION = "START_RACK_CONSTRUCTION";
 export const STOP_RACK_CONSTRUCTION = "STOP_RACK_CONSTRUCTION";
 export const ADD_RACK_TO_TILE = "ADD_RACK_TO_TILE";
 export const ADD_MACHINE = "ADD_MACHINE";
+export const DELETE_MACHINE = "DELETE_MACHINE";
 
 export function fetchLatestDatacenter() {
     return (dispatch, getState) => {
@@ -246,6 +247,23 @@ export function addMachineSucceeded(machine) {
         const rack = objects.rack[objects.tile[interactionLevel.tileId].objectId];
         const machineIds = [...rack.machineIds];
         machineIds[machine.position - 1] = machine.id;
+        dispatch(addPropToStoreObject("rack", rack.id, {machineIds}));
+    };
+}
+
+export function deleteMachine() {
+    return {
+        type: DELETE_MACHINE
+    };
+}
+
+export function deleteMachineSucceeded() {
+    return (dispatch, getState) => {
+        const {interactionLevel, objects} = getState();
+        const rack = objects.rack[objects.tile[interactionLevel.tileId].objectId];
+        const machineIds = [...rack.machineIds];
+        machineIds[interactionLevel.position - 1] = null;
+        dispatch(goDownOneInteractionLevel());
         dispatch(addPropToStoreObject("rack", rack.id, {machineIds}));
     };
 }

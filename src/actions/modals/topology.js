@@ -6,6 +6,8 @@ export const OPEN_EDIT_RACK_NAME_MODAL = "OPEN_EDIT_RACK_NAME_MODAL";
 export const CLOSE_EDIT_RACK_NAME_MODAL = "CLOSE_EDIT_RACK_NAME_MODAL";
 export const OPEN_DELETE_RACK_MODAL = "OPEN_DELETE_RACK_MODAL";
 export const CLOSE_DELETE_RACK_MODAL = "CLOSE_DELETE_RACK_MODAL";
+export const OPEN_DELETE_MACHINE_MODAL = "OPEN_DELETE_MACHINE_MODAL";
+export const CLOSE_DELETE_MACHINE_MODAL = "CLOSE_DELETE_MACHINE_MODAL";
 
 export function openEditRoomNameModal() {
     return {
@@ -52,5 +54,17 @@ export function openDeleteRackModal() {
 export function closeDeleteRackModal() {
     return {
         type: CLOSE_DELETE_RACK_MODAL
+    };
+}
+
+export function openDeleteMachineModal() {
+    return {
+        type: OPEN_DELETE_MACHINE_MODAL
+    };
+}
+
+export function closeDeleteMachineModal() {
+    return {
+        type: CLOSE_DELETE_MACHINE_MODAL
     };
 }

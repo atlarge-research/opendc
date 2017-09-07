@@ -5,6 +5,7 @@ import {
     addRackToTileSucceeded,
     addTileSucceeded,
     cancelNewRoomConstructionSucceeded,
+    deleteMachineSucceeded,
     deleteRackSucceeded,
     deleteRoomSucceeded,
     deleteTileSucceeded,
@@ -18,6 +19,7 @@ import {addTileToRoom, deleteRoom, updateRoom} from "../api/routes/rooms";
 import {
     addMachineToRackOnTile,
     addRackToTile,
+    deleteMachineInRackOnTile,
     deleteRackFromTile,
     deleteTile,
     updateRackOnTile
@@ -249,6 +251,17 @@ export function* onAddMachine(action) {
         });
         yield put(addToStore("machine", machine));
         yield put(addMachineSucceeded(machine));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onDeleteMachine() {
+    try {
+        const tileId = yield select(state => state.interactionLevel.tileId);
+        const position = yield select(state => state.interactionLevel.position);
+        yield call(deleteMachineInRackOnTile, tileId, position);
+        yield put(deleteMachineSucceeded());
     } catch (error) {
         console.log(error);
     }

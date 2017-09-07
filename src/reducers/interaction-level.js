@@ -1,6 +1,7 @@
 import {
     GO_DOWN_ONE_INTERACTION_LEVEL,
     GO_FROM_BUILDING_TO_ROOM,
+    GO_FROM_RACK_TO_MACHINE,
     GO_FROM_ROOM_TO_RACK
 } from "../actions/interaction-level";
 
@@ -17,6 +18,13 @@ export function interactionLevel(state = {mode: "BUILDING"}, action) {
                 roomId: state.roomId,
                 tileId: action.tileId
             };
+        case GO_FROM_RACK_TO_MACHINE:
+            return {
+                mode: "MACHINE",
+                roomId: state.roomId,
+                tileId: state.tileId,
+                position: action.position,
+            };
         case GO_DOWN_ONE_INTERACTION_LEVEL:
             if (state.mode === "ROOM") {
                 return {
@@ -26,6 +34,12 @@ export function interactionLevel(state = {mode: "BUILDING"}, action) {
                 return {
                     mode: "ROOM",
                     roomId: state.roomId
+                };
+            } else if (state.mode === "MACHINE") {
+                return {
+                    mode: "RACK",
+                    roomId: state.roomId,
+                    tileId: state.tileId
                 };
             } else {
                 return state;
