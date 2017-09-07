@@ -1,17 +1,17 @@
 import {connect} from "react-redux";
-import {startObjectConstruction, stopObjectConstruction} from "../../../../actions/topology";
+import {startRackConstruction, stopRackConstruction} from "../../../../actions/topology";
 import RackConstructionComponent from "../../../../components/sidebars/topology/room/RackConstructionComponent";
 
 const mapStateToProps = state => {
     return {
-        inObjectConstructionMode: state.construction.inObjectConstructionMode,
+        inRackConstructionMode: state.construction.inRackConstructionMode,
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return {
-        onStart: () => dispatch(startObjectConstruction()),
-        onStop: () => dispatch(stopObjectConstruction()),
+        onStart: () => dispatch(startRackConstruction()),
+        onStop: () => dispatch(stopRackConstruction()),
     };
 };
 

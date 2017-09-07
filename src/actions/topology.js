@@ -16,10 +16,12 @@ export const ADD_TILE = "ADD_TILE";
 export const DELETE_TILE = "DELETE_TILE";
 export const EDIT_ROOM_NAME = "EDIT_ROOM_NAME";
 export const DELETE_ROOM = "DELETE_ROOM";
-export const START_OBJECT_CONSTRUCTION = "START_OBJECT_CONSTRUCTION";
-export const STOP_OBJECT_CONSTRUCTION = "STOP_OBJECT_CONSTRUCTION";
+export const EDIT_RACK_NAME = "EDIT_RACK_NAME";
+export const DELETE_RACK = "DELETE_RACK";
+export const START_RACK_CONSTRUCTION = "START_RACK_CONSTRUCTION";
+export const STOP_RACK_CONSTRUCTION = "STOP_RACK_CONSTRUCTION";
 export const ADD_RACK_TO_TILE = "ADD_RACK_TO_TILE";
-export const ADD_RACK_TO_TILE_SUCCEEDED = "ADD_RACK_TO_TILE_SUCCEEDED";
+export const ADD_MACHINE = "ADD_MACHINE";
 
 export function fetchLatestDatacenter() {
     return (dispatch, getState) => {
@@ -151,15 +153,15 @@ export function editRoomNameSucceeded(name) {
     };
 }
 
-export function startObjectConstruction() {
+export function startRackConstruction() {
     return {
-        type: START_OBJECT_CONSTRUCTION
+        type: START_RACK_CONSTRUCTION
     };
 }
 
-export function stopObjectConstruction() {
+export function stopRackConstruction() {
     return {
-        type: STOP_OBJECT_CONSTRUCTION
+        type: STOP_RACK_CONSTRUCTION
     };
 }
 
@@ -198,5 +200,52 @@ export function deleteRoomSucceeded() {
         const currentRoomId = interactionLevel.roomId;
         dispatch(goDownOneInteractionLevel());
         dispatch(removeIdFromStoreObjectListProp("datacenter", currentDatacenterId, "roomIds", currentRoomId));
+    };
+}
+
+export function editRackName(name) {
+    return {
+        type: EDIT_RACK_NAME,
+        name
+    };
+}
+
+export function editRackNameSucceeded(name) {
+    return (dispatch, getState) => {
+        const {objects, interactionLevel} = getState();
+        dispatch(addPropToStoreObject("rack", objects.tile[interactionLevel.tileId].objectId, {name}));
+    };
+}
+
+export function deleteRack() {
+    return {
+        type: DELETE_RACK
+    };
+}
+
+export function deleteRackSucceeded() {
+    return (dispatch, getState) => {
+        const {interactionLevel} = getState();
+        const currentTileId = interactionLevel.tileId;
+        dispatch(goDownOneInteractionLevel());
+        dispatch(addPropToStoreObject("tile", currentTileId, {objectType: undefined}));
+        dispatch(addPropToStoreObject("tile", currentTileId, {objectId: undefined}));
+    };
+}
+
+export function addMachine(position) {
+    return {
+        type: ADD_MACHINE,
+        position
+    };
+}
+
+export function addMachineSucceeded(machine) {
+    return (dispatch, getState) => {
+        const {objects, interactionLevel} = getState();
+        const rack = objects.rack[objects.tile[interactionLevel.tileId].objectId];
+        const machineIds = [...rack.machineIds];
+        machineIds[machine.position] = machine.id;
+        dispatch(addPropToStoreObject("rack", rack.id, {machineIds}));
     };
 }

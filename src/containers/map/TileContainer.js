@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import {goFromRoomToObject} from "../../actions/interaction-level";
+import {goFromRoomToRack} from "../../actions/interaction-level";
 import TileGroup from "../../components/map/groups/TileGroup";
 
 const mapStateToProps = (state, ownProps) => {
@@ -13,7 +13,7 @@ const mapDispatchToProps = dispatch => {
     return {
         onClick: tile => {
             if (tile.objectType) {
-                dispatch(goFromRoomToObject(tile.id))
+                dispatch(goFromRoomToRack(tile.id))
             }
         }
     };

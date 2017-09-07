@@ -3,8 +3,8 @@ import {
     CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
     FINISH_NEW_ROOM_CONSTRUCTION,
     START_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
-    START_OBJECT_CONSTRUCTION,
-    STOP_OBJECT_CONSTRUCTION
+    START_RACK_CONSTRUCTION,
+    STOP_RACK_CONSTRUCTION
 } from "../actions/topology";
 
 export function currentRoomInConstruction(state = -1, action) {
@@ -19,11 +19,11 @@ export function currentRoomInConstruction(state = -1, action) {
     }
 }
 
-export function inObjectConstructionMode(state = false, action) {
+export function inRackConstructionMode(state = false, action) {
     switch (action.type) {
-        case START_OBJECT_CONSTRUCTION:
+        case START_RACK_CONSTRUCTION:
             return true;
-        case STOP_OBJECT_CONSTRUCTION:
+        case STOP_RACK_CONSTRUCTION:
             return false;
         default:
             return state;
@@ -32,5 +32,5 @@ export function inObjectConstructionMode(state = false, action) {
 
 export const construction = combineReducers({
     currentRoomInConstruction,
-    inObjectConstructionMode,
+    inRackConstructionMode,
 });

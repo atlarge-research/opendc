@@ -11,12 +11,12 @@ export function parseAndFormatDateTime(dateTimeString) {
 }
 
 /**
- * Parses date-time string representations and returns a parsed object.
+ * Parses date-time string representations and returns a parsed rack.
  *
  * The format assumed is "YYYY-MM-DDTHH:MM:SS".
  *
  * @param dateTimeString A string expressing a date and a time, in the above mentioned format.
- * @returns {object} An object with the parsed date and time information as content.
+ * @returns {object} An rack with the parsed date and time information as content.
  */
 export function parseDateTime(dateTimeString) {
     const output = {
@@ -45,7 +45,7 @@ export function parseDateTime(dateTimeString) {
 /**
  * Serializes the given date and time value to a human-friendly string.
  *
- * @param dateTime An object representation of a date and time.
+ * @param dateTime An rack representation of a date and time.
  * @returns {string} A human-friendly string version of that date and time.
  */
 export function formatDateTime(dateTime) {

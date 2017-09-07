@@ -1,5 +1,5 @@
 export const GO_FROM_BUILDING_TO_ROOM = "GO_FROM_BUILDING_TO_ROOM";
-export const GO_FROM_ROOM_TO_OBJECT = "GO_FROM_ROOM_TO_OBJECT";
+export const GO_FROM_ROOM_TO_RACK = "GO_FROM_ROOM_TO_RACK";
 export const GO_DOWN_ONE_INTERACTION_LEVEL = "GO_DOWN_ONE_INTERACTION_LEVEL";
 
 export function goFromBuildingToRoom(roomId) {
@@ -16,14 +16,14 @@ export function goFromBuildingToRoom(roomId) {
     };
 }
 
-export function goFromRoomToObject(tileId) {
+export function goFromRoomToRack(tileId) {
     return (dispatch, getState) => {
         const {interactionLevel} = getState();
         if (interactionLevel.mode !== "ROOM") {
             return;
         }
         dispatch({
-            type: GO_FROM_ROOM_TO_OBJECT,
+            type: GO_FROM_ROOM_TO_RACK,
             tileId
         });
     };
