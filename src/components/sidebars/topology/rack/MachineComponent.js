@@ -37,7 +37,8 @@ const MachineComponent = ({position, machine, onClick}) => (
                 <UnitIcon id="storage" type="storage"/> :
                 undefined
             }
-            {machine.cpuIds.length + machine.gpuIds.length + machine.memoryIds.length + machine.storageIds.length === 0 ?
+            {machine.cpuIds.length + machine.gpuIds.length + machine.memoryIds.length
+            + machine.storageIds.length === 0 ?
                 <span className="badge badge-default badge-warning">
                     Machine with no units
                 </span> :
