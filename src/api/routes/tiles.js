@@ -32,7 +32,7 @@ export function getMachinesOfRackByTile(tileId) {
 export function addMachineToRackOnTile(tileId, machine) {
     return sendRequest({
         path: "/tiles/{tileId}/rack/machines",
-        method: "GET",
+        method: "POST",
         parameters: {
             body: {
                 machine

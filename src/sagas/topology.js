@@ -101,7 +101,7 @@ function* fetchTile(tile) {
 function* fetchMachinesOfRack(tileId, rack) {
     const machines = yield fetchAndStoreMachinesOfTile(tileId);
     const machineIds = new Array(rack.capacity).fill(null);
-    machines.forEach(machine => machineIds[machine.position] = machine.id);
+    machines.forEach(machine => machineIds[machine.position - 1] = machine.id);
 
     yield put(addPropToStoreObject("rack", rack.id, {machineIds}));
 
@@ -221,10 +221,11 @@ export function* onAddRackToTile(action) {
         const rack = yield call(addRackToTile, action.tileId, {
             id: -1,
             name: "Rack",
-            capacity: 5,
+            capacity: 42,
             powerCapacityW: 100,
             machines: 20
         });
+        rack.machineIds = new Array(rack.capacity).fill(null);
         yield put(addToStore("rack", rack));
         yield put(addRackToTileSucceeded(action.tileId, rack.id));
     } catch (error) {

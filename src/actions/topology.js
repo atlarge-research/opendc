@@ -245,7 +245,7 @@ export function addMachineSucceeded(machine) {
         const {objects, interactionLevel} = getState();
         const rack = objects.rack[objects.tile[interactionLevel.tileId].objectId];
         const machineIds = [...rack.machineIds];
-        machineIds[machine.position] = machine.id;
+        machineIds[machine.position - 1] = machine.id;
         dispatch(addPropToStoreObject("rack", rack.id, {machineIds}));
     };
 }

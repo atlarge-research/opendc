@@ -3,7 +3,7 @@ import {DELETE_CURRENT_USER_SUCCEEDED} from "../actions/users";
 
 const getAuthObject = () => {
     const authItem = localStorage.getItem("auth");
-    if (!authItem) {
+    if (!authItem || authItem === "{}") {
         return undefined;
     }
     return JSON.parse(authItem);
@@ -34,7 +34,7 @@ export const saveAuthLocalStorage = (payload) => {
 };
 
 export const clearAuthLocalStorage = () => {
-    localStorage.setItem("auth", "{}");
+    localStorage.setItem("auth", "");
 };
 
 export const authRedirectMiddleware = store => next => action => {

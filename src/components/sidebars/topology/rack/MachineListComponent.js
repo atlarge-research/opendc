@@ -1,15 +1,16 @@
 import React from "react";
 import EmptySlotContainer from "../../../../containers/sidebars/topology/rack/EmptySlotContainer";
 import MachineContainer from "../../../../containers/sidebars/topology/rack/MachineContainer";
+import "./MachineListComponent.css";
 
 const MachineListComponent = ({machineIds}) => {
     return (
-        <ul className="list-group">
+        <ul className="list-group machine-list">
             {machineIds.map((machineId, index) => {
                 if (machineId === null) {
-                    return <EmptySlotContainer key={index} position={index}/>;
+                    return <EmptySlotContainer key={index} position={index + 1}/>;
                 } else {
-                    return <MachineContainer key={index} position={index} machineId={machineId}/>;
+                    return <MachineContainer key={index} position={index + 1} machineId={machineId}/>;
                 }
             })}
         </ul>
