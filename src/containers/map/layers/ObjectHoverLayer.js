@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import {addRackToTile} from "../../../actions/topology";
+import {addRackToTile} from "../../../actions/topology/room";
 import ObjectHoverLayerComponent from "../../../components/map/layers/ObjectHoverLayerComponent";
 import {findTileWithPosition} from "../../../util/tile-calculations";
 

@@ -4,7 +4,7 @@ import FilterButton from "../../components/simulations/FilterButton";
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        active: state.authVisibilityFilter === ownProps.filter
+        active: state.simulationList.authVisibilityFilter === ownProps.filter
     };
 };
 

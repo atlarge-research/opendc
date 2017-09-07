@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import {finishNewRoomConstruction} from "../../../../actions/topology";
+import {finishNewRoomConstruction} from "../../../../actions/topology/building";
 import FinishNewRoomConstructionComponent from "../../../../components/sidebars/topology/building/FinishNewRoomConstructionComponent";
 
 const mapDispatchToProps = dispatch => {

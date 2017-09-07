@@ -2,19 +2,15 @@ import {takeEvery} from "redux-saga/effects";
 import {LOG_IN} from "../actions/auth";
 import {ADD_SIMULATION, DELETE_SIMULATION} from "../actions/simulations";
 import {
-    ADD_MACHINE,
-    ADD_RACK_TO_TILE,
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
-    DELETE_MACHINE,
-    DELETE_RACK,
-    DELETE_ROOM,
     DELETE_TILE,
-    EDIT_RACK_NAME,
-    EDIT_ROOM_NAME,
     FETCH_LATEST_DATACENTER,
     START_NEW_ROOM_CONSTRUCTION
-} from "../actions/topology";
+} from "../actions/topology/building";
+import {DELETE_MACHINE} from "../actions/topology/machine";
+import {ADD_MACHINE, DELETE_RACK, EDIT_RACK_NAME} from "../actions/topology/rack";
+import {ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME} from "../actions/topology/room";
 import {DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER} from "../actions/users";
 import {onDeleteCurrentUser} from "./profile";
 import {onSimulationAdd, onSimulationDelete} from "./simulations";

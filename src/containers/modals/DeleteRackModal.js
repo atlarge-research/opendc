@@ -1,7 +1,7 @@
 import React from "react";
 import {connect} from "react-redux";
 import {closeDeleteRackModal} from "../../actions/modals/topology";
-import {deleteRack} from "../../actions/topology";
+import {deleteRack} from "../../actions/topology/rack";
 import ConfirmationModal from "../../components/modals/ConfirmationModal";
 
 const DeleteRackModalComponent = ({visible, callback}) => (

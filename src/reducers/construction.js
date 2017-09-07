@@ -2,10 +2,9 @@ import {combineReducers} from "redux";
 import {
     CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
     FINISH_NEW_ROOM_CONSTRUCTION,
-    START_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
-    START_RACK_CONSTRUCTION,
-    STOP_RACK_CONSTRUCTION
-} from "../actions/topology";
+    START_NEW_ROOM_CONSTRUCTION_SUCCEEDED
+} from "../actions/topology/building";
+import {START_RACK_CONSTRUCTION, STOP_RACK_CONSTRUCTION} from "../actions/topology/room";
 
 export function currentRoomInConstruction(state = -1, action) {
     switch (action.type) {

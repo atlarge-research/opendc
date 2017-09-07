@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import {startRackConstruction, stopRackConstruction} from "../../../../actions/topology";
+import {startRackConstruction, stopRackConstruction} from "../../../../actions/topology/room";
 import RackConstructionComponent from "../../../../components/sidebars/topology/room/RackConstructionComponent";
 
 const mapStateToProps = state => {

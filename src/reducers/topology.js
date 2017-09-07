@@ -1,4 +1,4 @@
-import {FETCH_LATEST_DATACENTER_SUCCEEDED, RESET_CURRENT_DATACENTER} from "../actions/topology";
+import {FETCH_LATEST_DATACENTER_SUCCEEDED, RESET_CURRENT_DATACENTER} from "../actions/topology/building";
 
 export function currentDatacenterId(state = -1, action) {
     switch (action.type) {

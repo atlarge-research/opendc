@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import {toggleTileAtLocation} from "../../../actions/topology";
+import {toggleTileAtLocation} from "../../../actions/topology/building";
 import RoomHoverLayerComponent from "../../../components/map/layers/RoomHoverLayerComponent";
 import {
     deriveValidNextTilePositions,

@@ -1,7 +1,7 @@
 import React from "react";
 import {connect} from "react-redux";
 import {closeEditRackNameModal} from "../../actions/modals/topology";
-import {editRackName} from "../../actions/topology";
+import {editRackName} from "../../actions/topology/rack";
 import TextInputModal from "../../components/modals/TextInputModal";
 
 const EditRackNameModalComponent = ({visible, previousName, callback}) => (

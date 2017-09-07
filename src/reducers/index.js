@@ -4,15 +4,15 @@ import {construction} from "./construction";
 import {interactionLevel} from "./interaction-level";
 import {modals} from "./modals";
 import {objects} from "./objects";
-import {authorizationsOfCurrentUser, authVisibilityFilter, currentSimulationId} from "./simulations";
+import {simulationList} from "./simulation-list";
+import {currentSimulationId} from "./simulations";
 import {currentDatacenterId} from "./topology";
 
 const rootReducer = combineReducers({
     auth,
     objects,
     modals,
-    authorizationsOfCurrentUser,
-    authVisibilityFilter,
+    simulationList,
     currentSimulationId,
     currentDatacenterId,
     interactionLevel,

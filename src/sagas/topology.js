@@ -1,19 +1,15 @@
 import {call, put, select} from "redux-saga/effects";
 import {addPropToStoreObject, addToStore} from "../actions/objects";
 import {
-    addMachineSucceeded,
-    addRackToTileSucceeded,
     addTileSucceeded,
     cancelNewRoomConstructionSucceeded,
-    deleteMachineSucceeded,
-    deleteRackSucceeded,
-    deleteRoomSucceeded,
     deleteTileSucceeded,
-    editRackNameSucceeded,
-    editRoomNameSucceeded,
     fetchLatestDatacenterSucceeded,
     startNewRoomConstructionSucceeded
-} from "../actions/topology";
+} from "../actions/topology/building";
+import {deleteMachineSucceeded} from "../actions/topology/machine";
+import {addMachineSucceeded, deleteRackSucceeded, editRackNameSucceeded} from "../actions/topology/rack";
+import {addRackToTileSucceeded, deleteRoomSucceeded, editRoomNameSucceeded} from "../actions/topology/room";
 import {addRoomToDatacenter} from "../api/routes/datacenters";
 import {addTileToRoom, deleteRoom, updateRoom} from "../api/routes/rooms";
 import {

@@ -16,12 +16,12 @@ const getVisibleSimulationAuths = (simulationAuths, filter) => {
 };
 
 const mapStateToProps = state => {
-    const denormalizedAuthorizations = state.authorizationsOfCurrentUser.map(authorizationIds =>
+    const denormalizedAuthorizations = state.simulationList.authorizationsOfCurrentUser.map(authorizationIds =>
         denormalize(state, "authorization", authorizationIds)
     );
 
     return {
-        authorizations: getVisibleSimulationAuths(denormalizedAuthorizations, state.authVisibilityFilter)
+        authorizations: getVisibleSimulationAuths(denormalizedAuthorizations, state.simulationList.authVisibilityFilter)
     };
 };
 

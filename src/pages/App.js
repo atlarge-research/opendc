@@ -3,7 +3,7 @@ import React from 'react';
 import {connect} from "react-redux";
 import {ShortcutManager} from "react-shortcuts";
 import {openSimulationSucceeded} from "../actions/simulations";
-import {fetchLatestDatacenter, resetCurrentDatacenter} from "../actions/topology";
+import {fetchLatestDatacenter, resetCurrentDatacenter} from "../actions/topology/building";
 import MapStage from "../components/map/MapStage";
 import AppNavbar from "../components/navigation/AppNavbar";
 import DeleteMachineModal from "../containers/modals/DeleteMachineModal";

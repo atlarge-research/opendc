@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import {addMachine} from "../../../../actions/topology";
+import {addMachine} from "../../../../actions/topology/rack";
 import EmptySlotComponent from "../../../../components/sidebars/topology/rack/EmptySlotComponent";
 
 const mapDispatchToProps = (dispatch, ownProps) => {

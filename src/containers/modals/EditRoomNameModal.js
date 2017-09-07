@@ -1,7 +1,7 @@
 import React from "react";
 import {connect} from "react-redux";
 import {closeEditRoomNameModal} from "../../actions/modals/topology";
-import {editRoomName} from "../../actions/topology";
+import {editRoomName} from "../../actions/topology/room";
 import TextInputModal from "../../components/modals/TextInputModal";
 
 const EditRoomNameModalComponent = ({visible, previousName, callback}) => (
