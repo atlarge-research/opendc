@@ -6,6 +6,10 @@ import {getTilesOfRoom} from "../api/routes/rooms";
 import {getSection} from "../api/routes/sections";
 import {getPathsOfSimulation, getSimulation} from "../api/routes/simulations";
 import {
+    getAllCPUs,
+    getAllGPUs,
+    getAllMemories,
+    getAllStorages,
     getCoolingItem,
     getCPU,
     getFailureModel,
@@ -64,14 +68,26 @@ export const fetchAndStoreUser = (id) =>
 export const fetchAndStoreFailureModel = (id) =>
     fetchAndStoreObject("failureModel", id, call(getFailureModel, id));
 
+export const fetchAndStoreAllCPUs = () =>
+    fetchAndStoreObjects("cpu", call(getAllCPUs));
+
 export const fetchAndStoreCPU = (id) =>
     fetchAndStoreObject("cpu", id, call(getCPU, id));
+
+export const fetchAndStoreAllGPUs = () =>
+    fetchAndStoreObjects("gpu", call(getAllGPUs));
 
 export const fetchAndStoreGPU = (id) =>
     fetchAndStoreObject("gpu", id, call(getGPU, id));
 
+export const fetchAndStoreAllMemories = () =>
+    fetchAndStoreObjects("memory", call(getAllMemories));
+
 export const fetchAndStoreMemory = (id) =>
     fetchAndStoreObject("memory", id, call(getMemory, id));
+
+export const fetchAndStoreAllStorages = () =>
+    fetchAndStoreObjects("storage", call(getAllStorages));
 
 export const fetchAndStoreStorage = (id) =>
     fetchAndStoreObject("storage", id, call(getStorage, id));

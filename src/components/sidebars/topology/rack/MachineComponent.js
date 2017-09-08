@@ -6,7 +6,7 @@ const UnitIcon = ({id, type}) => (
         <img
             src={"/img/topology/" + id + "-icon.png"}
             alt={"Machine contains " + type + " units"}
-            className="img-fluid"
+            className="img-fluid ml-1"
             style={{maxHeight: "35px"}}
         />
     </div>
@@ -20,7 +20,7 @@ const MachineComponent = ({position, machine, onClick}) => (
         <span className="badge badge-default badge-info mr-1">
             {position}
         </span>
-        <div>
+        <div className="d-inline-flex">
             {machine.cpuIds.length > 0 ?
                 <UnitIcon id="cpu" type="CPU"/> :
                 undefined

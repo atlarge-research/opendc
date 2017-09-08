@@ -22,6 +22,10 @@ import {
     updateRackOnTile
 } from "../api/routes/tiles";
 import {
+    fetchAndStoreAllCPUs,
+    fetchAndStoreAllGPUs,
+    fetchAndStoreAllMemories,
+    fetchAndStoreAllStorages,
     fetchAndStoreCoolingItem,
     fetchAndStoreCPU,
     fetchAndStoreDatacenter,
@@ -43,6 +47,7 @@ export function* onFetchLatestDatacenter(action) {
         const latestPath = paths[paths.length - 1];
         const sections = yield fetchAndStoreSectionsOfPath(latestPath.id);
         const latestSection = sections[sections.length - 1];
+        yield fetchAllUnitSpecifications();
         yield fetchDatacenter(latestSection.datacenterId);
         yield put(fetchLatestDatacenterSucceeded(latestSection.datacenterId));
     } catch (error) {
@@ -59,6 +64,17 @@ export function* fetchDatacenter(datacenterId) {
         for (let index in rooms) {
             yield fetchRoom(rooms[index].id);
         }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+function* fetchAllUnitSpecifications() {
+    try {
+        yield fetchAndStoreAllCPUs();
+        yield fetchAndStoreAllGPUs();
+        yield fetchAndStoreAllMemories();
+        yield fetchAndStoreAllStorages();
     } catch (error) {
         console.log(error);
     }
