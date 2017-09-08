@@ -22,6 +22,11 @@ import {
     updateRackOnTile
 } from "../api/routes/tiles";
 import {
+    DEFAULT_RACK_POWER_CAPACITY,
+    DEFAULT_RACK_SLOT_CAPACITY,
+    MAX_NUM_UNITS_PER_MACHINE
+} from "../components/map/MapConstants";
+import {
     fetchAndStoreAllCPUs,
     fetchAndStoreAllGPUs,
     fetchAndStoreAllMemories,
@@ -236,8 +241,8 @@ export function* onAddRackToTile(action) {
         const rack = yield call(addRackToTile, action.tileId, {
             id: -1,
             name: "Rack",
-            capacity: 42,
-            powerCapacityW: 100
+            capacity: DEFAULT_RACK_SLOT_CAPACITY,
+            powerCapacityW: DEFAULT_RACK_POWER_CAPACITY
         });
         rack.machineIds = new Array(rack.capacity).fill(null);
         yield put(addToStore("rack", rack));
@@ -286,6 +291,11 @@ export function* onAddUnit(action) {
         const position = yield select(state => state.interactionLevel.position);
         const machine = yield select(state => state.objects.machine[state.objects.rack[
             state.objects.tile[tileId].objectId].machineIds[position - 1]]);
+
+        if (machine[action.unitType + "Ids"].length >= MAX_NUM_UNITS_PER_MACHINE) {
+            return;
+        }
+
         const updatedMachine = Object.assign({}, machine,
             {[action.unitType + "Ids"]: [...machine[action.unitType + "Ids"], action.id]});
 
