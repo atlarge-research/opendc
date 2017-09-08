@@ -8,7 +8,7 @@ import {
     FETCH_LATEST_DATACENTER,
     START_NEW_ROOM_CONSTRUCTION
 } from "../actions/topology/building";
-import {DELETE_MACHINE} from "../actions/topology/machine";
+import {ADD_UNIT, DELETE_MACHINE, DELETE_UNIT} from "../actions/topology/machine";
 import {ADD_MACHINE, DELETE_RACK, EDIT_RACK_NAME} from "../actions/topology/rack";
 import {ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME} from "../actions/topology/room";
 import {DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER} from "../actions/users";
@@ -18,11 +18,13 @@ import {
     onAddMachine,
     onAddRackToTile,
     onAddTile,
+    onAddUnit,
     onCancelNewRoomConstruction,
     onDeleteMachine,
     onDeleteRack,
     onDeleteRoom,
     onDeleteTile,
+    onDeleteUnit,
     onEditRackName,
     onEditRoomName,
     onFetchLatestDatacenter,
@@ -48,4 +50,6 @@ export default function* rootSaga() {
     yield takeEvery(ADD_RACK_TO_TILE, onAddRackToTile);
     yield takeEvery(ADD_MACHINE, onAddMachine);
     yield takeEvery(DELETE_MACHINE, onDeleteMachine);
+    yield takeEvery(ADD_UNIT, onAddUnit);
+    yield takeEvery(DELETE_UNIT, onDeleteUnit);
 }

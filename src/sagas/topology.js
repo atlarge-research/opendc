@@ -7,7 +7,7 @@ import {
     fetchLatestDatacenterSucceeded,
     startNewRoomConstructionSucceeded
 } from "../actions/topology/building";
-import {deleteMachineSucceeded} from "../actions/topology/machine";
+import {addUnitSucceeded, deleteMachineSucceeded, deleteUnitSucceeded} from "../actions/topology/machine";
 import {addMachineSucceeded, deleteRackSucceeded, editRackNameSucceeded} from "../actions/topology/rack";
 import {addRackToTileSucceeded, deleteRoomSucceeded, editRoomNameSucceeded} from "../actions/topology/room";
 import {addRoomToDatacenter} from "../api/routes/datacenters";
@@ -18,6 +18,7 @@ import {
     deleteMachineInRackOnTile,
     deleteRackFromTile,
     deleteTile,
+    updateMachineInRackOnTile,
     updateRackOnTile
 } from "../api/routes/tiles";
 import {
@@ -258,6 +259,39 @@ export function* onDeleteMachine() {
         const position = yield select(state => state.interactionLevel.position);
         yield call(deleteMachineInRackOnTile, tileId, position);
         yield put(deleteMachineSucceeded());
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onAddUnit(action) {
+    try {
+        const tileId = yield select(state => state.interactionLevel.tileId);
+        const position = yield select(state => state.interactionLevel.position);
+        const machine = yield select(state => state.objects.machine[state.objects.rack[
+            state.objects.tile[tileId].objectId].machineIds[position - 1]]);
+        const updatedMachine = Object.assign({}, machine,
+            {[action.unitType + "Ids"]: [...machine[action.unitType + "Ids"], action.id]});
+
+        yield call(updateMachineInRackOnTile, tileId, position, updatedMachine);
+        yield put(addUnitSucceeded(action.unitType, action.id));
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export function* onDeleteUnit(action) {
+    try {
+        const tileId = yield select(state => state.interactionLevel.tileId);
+        const position = yield select(state => state.interactionLevel.position);
+        const machine = yield select(state => state.objects.machine[state.objects.rack[
+            state.objects.tile[tileId].objectId].machineIds[position - 1]]);
+        const unitIds = machine[action.unitType + "Ids"].slice();
+        unitIds.splice(action.index, 1);
+        const updatedMachine = Object.assign({}, machine, {[action.unitType + "Ids"]: unitIds});
+
+        yield call(updateMachineInRackOnTile, tileId, position, updatedMachine);
+        yield put(deleteUnitSucceeded(action.unitType, action.index));
     } catch (error) {
         console.log(error);
     }
