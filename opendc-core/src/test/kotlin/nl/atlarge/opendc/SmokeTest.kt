@@ -35,7 +35,7 @@ internal class SmokeTest {
     @Test
     fun smoke() {
 		val builder = AdjacencyListTopologyBuilder()
-		val topology = builder.build().apply {
+		val topology = builder.construct {
 			val rack = node(Rack())
 			val n = 100
 			// Create n machines in the rack

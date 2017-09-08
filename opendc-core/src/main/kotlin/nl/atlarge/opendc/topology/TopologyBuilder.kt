@@ -31,6 +31,14 @@ package nl.atlarge.opendc.topology
  */
 interface TopologyBuilder {
 	/**
+	 * Construct a [Topology] from the given block and return it.
+	 *
+	 * @param block The block to construct the topology.
+	 * @return The topology that has been built.
+	 */
+	fun construct(block: MutableTopology.() -> Unit): Topology = build().apply(block)
+
+	/**
 	 * Build a [Topology] instance from the current state of this builder.
 	 *
 	 * @return The graph built from this builder.
