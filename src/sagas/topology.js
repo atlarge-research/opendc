@@ -9,7 +9,7 @@ import {
 } from "../actions/topology/building";
 import {addUnitSucceeded, deleteMachineSucceeded, deleteUnitSucceeded} from "../actions/topology/machine";
 import {addMachineSucceeded, deleteRackSucceeded, editRackNameSucceeded} from "../actions/topology/rack";
-import {addRackToTileSucceeded, deleteRoomSucceeded, editRoomNameSucceeded} from "../actions/topology/room";
+import {deleteRoomSucceeded, editRoomNameSucceeded} from "../actions/topology/room";
 import {addRoomToDatacenter} from "../api/routes/datacenters";
 import {addTileToRoom, deleteRoom, updateRoom} from "../api/routes/rooms";
 import {
@@ -242,7 +242,8 @@ export function* onAddRackToTile(action) {
         });
         rack.machineIds = new Array(rack.capacity).fill(null);
         yield put(addToStore("rack", rack));
-        yield put(addRackToTileSucceeded(action.tileId, rack.id));
+        yield put(addPropToStoreObject("tile", action.tileId, {objectId: rack.id}));
+        yield put(addPropToStoreObject("tile", action.tileId, {objectType: "RACK"}));
     } catch (error) {
         console.log(error);
     }

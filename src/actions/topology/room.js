@@ -50,13 +50,6 @@ export function addRackToTile(positionX, positionY) {
     };
 }
 
-export function addRackToTileSucceeded(tileId, rackId) {
-    return dispatch => {
-        dispatch(addPropToStoreObject("tile", tileId, {objectType: "RACK"}));
-        dispatch(addPropToStoreObject("tile", tileId, {objectId: rackId}));
-    };
-}
-
 export function deleteRoom() {
     return {
         type: DELETE_ROOM
