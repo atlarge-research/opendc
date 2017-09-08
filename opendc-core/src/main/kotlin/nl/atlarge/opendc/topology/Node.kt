@@ -39,18 +39,14 @@ interface Node<out T: Entity<*>>: Component<T> {
 	val id: Int
 
 	/**
-	 * Return the set of ingoing edges of this node.
-	 *
-	 * @return All edges whose destination is this node.
+	 * The set of ingoing edges of this node.
 	 */
-	fun ingoingEdges(): Set<Edge<*>>
+	val ingoingEdges: Set<Edge<*>>
 
 	/**
-	 * Return the set of outgoing edges of this node.
-	 *
-	 * @return  All edges whose source is this node.
+	 * The set of outgoing edges of this node.
 	 */
-	fun outgoingEdges(): Set<Edge<*>>
+	val outgoingEdges: Set<Edge<*>>
 
 	/**
 	 * The [Entity] this node represents within a logical topology of a cloud network.
@@ -67,7 +63,7 @@ interface Node<out T: Entity<*>>: Component<T> {
  * @return The entities of all edges whose destination is this node and have the given tag.
  */
 inline fun <reified T> Node<*>.ingoing(tag: String) =
-	ingoingEdges().filter { it.tag == tag }.map { it.to.entity as T }.toSet()
+	ingoingEdges.filter { it.tag == tag }.map { it.to.entity as T }.toSet()
 
 
 /**
@@ -78,4 +74,4 @@ inline fun <reified T> Node<*>.ingoing(tag: String) =
  * @return The entities of all edges whose source is this node and have the given tag.
  */
 inline fun <reified T> Node<*>.outgoing(tag: String) =
-	outgoingEdges().filter { it.tag == tag }.map { it.to.entity as T }.toSet()
+	outgoingEdges.filter { it.tag == tag }.map { it.to.entity as T }.toSet()

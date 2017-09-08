@@ -105,13 +105,9 @@ internal class AdjacencyListTopology: MutableTopology {
 	override fun iterator(): MutableIterator<Node<*>> = nodes.iterator()
 
 	internal inner class AdjacencyListNode<out T: Entity<*>>(override val id: Int, override val label: T): Node<T> {
-		internal var ingoingEdges: MutableSet<Edge<*>> = HashSet()
-		internal var outgoingEdges: MutableSet<Edge<*>> = HashSet()
-
-		override fun ingoingEdges(): Set<Edge<*>> = ingoingEdges
-		override fun outgoingEdges(): Set<Edge<*>> = outgoingEdges
+		override var ingoingEdges: MutableSet<Edge<*>> = HashSet()
+		override var outgoingEdges: MutableSet<Edge<*>> = HashSet()
 		override fun toString(): String = label.toString()
-
 		internal fun validate(instance: AdjacencyListTopology) = this@AdjacencyListTopology == instance
 	}
 

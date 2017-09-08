@@ -72,7 +72,7 @@ class OmegaSimulator(override val topology: Topology) : Simulator, Iterator<Unit
 	init {
 		topology.forEach { node ->
 			resolve(node)
-			node.outgoingEdges().forEach { resolve(it) }
+			node.outgoingEdges.forEach { resolve(it) }
 		}
 
 		registry.values.forEach { context ->
