@@ -237,8 +237,7 @@ export function* onAddRackToTile(action) {
             id: -1,
             name: "Rack",
             capacity: 42,
-            powerCapacityW: 100,
-            machines: 20
+            powerCapacityW: 100
         });
         rack.machineIds = new Array(rack.capacity).fill(null);
         yield put(addToStore("rack", rack));

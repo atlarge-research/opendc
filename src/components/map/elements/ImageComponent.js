@@ -3,6 +3,7 @@ import React from "react";
 import {Image} from "react-konva";
 
 class ImageComponent extends React.Component {
+    static imageCaches = {};
     static propTypes = {
         src: PropTypes.string.isRequired,
         x: PropTypes.number.isRequired,
@@ -17,9 +18,17 @@ class ImageComponent extends React.Component {
     };
 
     componentDidMount() {
+        if (ImageComponent.imageCaches[this.props.src]) {
+            this.setState({image: ImageComponent.imageCaches[this.props.src]});
+            return;
+        }
+
         const image = new window.Image();
         image.src = this.props.src;
-        image.onload = () => this.setState({image});
+        image.onload = () => {
+            this.setState({image});
+            ImageComponent.imageCaches[this.props.src] = image;
+        }
     }
 
     render() {
