@@ -4,6 +4,7 @@ import {connect} from "react-redux";
 import {ShortcutManager} from "react-shortcuts";
 import {openSimulationSucceeded} from "../actions/simulations";
 import {fetchLatestDatacenter, resetCurrentDatacenter} from "../actions/topology/building";
+import LoadingScreen from "../components/map/LoadingScreen";
 import MapStage from "../components/map/MapStage";
 import AppNavbar from "../components/navigation/AppNavbar";
 import DeleteMachineModal from "../containers/modals/DeleteMachineModal";
@@ -40,10 +41,15 @@ class AppContainer extends React.Component {
         return (
             <div className="page-container full-height">
                 <AppNavbar/>
-                <div className="full-height">
-                    <MapStage/>
-                    <TopologySidebar/>
-                </div>
+                {this.props.datacenterIsLoading ?
+                    <div className="full-height d-flex align-items-center justify-content-center">
+                        <LoadingScreen/>
+                    </div> :
+                    <div className="full-height">
+                        <MapStage/>
+                        <TopologySidebar/>
+                    </div>
+                }
                 <EditRoomNameModal/>
                 <DeleteRoomModal/>
                 <EditRackNameModal/>
@@ -54,6 +60,12 @@ class AppContainer extends React.Component {
     }
 }
 
+const mapStateToProps = state => {
+    return {
+        datacenterIsLoading: state.currentDatacenterId === -1,
+    };
+};
+
 const mapDispatchToProps = dispatch => {
     return {
         storeSimulationId: id => dispatch(openSimulationSucceeded(id)),
@@ -63,7 +75,7 @@ const mapDispatchToProps = dispatch => {
 };
 
 const App = connect(
-    undefined,
+    mapStateToProps,
     mapDispatchToProps
 )(AppContainer);
 

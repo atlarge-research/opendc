@@ -60,7 +60,7 @@ export function* onFetchLatestDatacenter(action) {
     }
 }
 
-export function* fetchDatacenter(datacenterId) {
+function* fetchDatacenter(datacenterId) {
     try {
         yield fetchAndStoreDatacenter(datacenterId);
         const rooms = yield fetchAndStoreRoomsOfDatacenter(datacenterId);
