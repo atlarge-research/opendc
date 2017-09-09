@@ -1,15 +1,16 @@
 import {call, put, select} from "redux-saga/effects";
-import {addPropToStoreObject, addToStore} from "../actions/objects";
+import {goDownOneInteractionLevel} from "../actions/interaction-level";
 import {
-    addTileSucceeded,
+    addIdToStoreObjectListProp,
+    addPropToStoreObject,
+    addToStore,
+    removeIdFromStoreObjectListProp
+} from "../actions/objects";
+import {
     cancelNewRoomConstructionSucceeded,
-    deleteTileSucceeded,
     fetchLatestDatacenterSucceeded,
     startNewRoomConstructionSucceeded
 } from "../actions/topology/building";
-import {addUnitSucceeded, deleteMachineSucceeded, deleteUnitSucceeded} from "../actions/topology/machine";
-import {addMachineSucceeded, deleteRackSucceeded, editRackNameSucceeded} from "../actions/topology/rack";
-import {deleteRoomSucceeded, editRoomNameSucceeded} from "../actions/topology/room";
 import {addRoomToDatacenter} from "../api/routes/datacenters";
 import {addTileToRoom, deleteRoom, updateRoom} from "../api/routes/rooms";
 import {
@@ -151,6 +152,7 @@ export function* onStartNewRoomConstruction() {
         });
         const roomWithEmptyTileList = Object.assign({}, room, {tileIds: []});
         yield put(addToStore("room", roomWithEmptyTileList));
+        yield put(addIdToStoreObjectListProp("datacenter", datacenterId, "roomIds", room.id));
         yield put(startNewRoomConstructionSucceeded(room.id));
     } catch (error) {
         console.log(error);
@@ -159,8 +161,10 @@ export function* onStartNewRoomConstruction() {
 
 export function* onCancelNewRoomConstruction() {
     try {
+        const datacenterId = yield select(state => state.currentDatacenterId);
         const roomId = yield select(state => state.construction.currentRoomInConstruction);
         yield call(deleteRoom, roomId);
+        yield put(removeIdFromStoreObjectListProp("datacenter", datacenterId, "roomIds", roomId));
         yield put(cancelNewRoomConstructionSucceeded());
     } catch (error) {
         console.log(error);
@@ -176,7 +180,7 @@ export function* onAddTile(action) {
             positionY: action.positionY
         });
         yield put(addToStore("tile", tile));
-        yield put(addTileSucceeded(tile.id));
+        yield put(addIdToStoreObjectListProp("room", roomId, "tileIds", tile.id));
     } catch (error) {
         console.log(error);
     }
@@ -184,8 +188,9 @@ export function* onAddTile(action) {
 
 export function* onDeleteTile(action) {
     try {
+        const roomId = yield select(state => state.construction.currentRoomInConstruction);
         yield call(deleteTile, action.tileId);
-        yield put(deleteTileSucceeded(action.tileId));
+        yield put(removeIdFromStoreObjectListProp("room", roomId, "tileIds", action.tileId));
     } catch (error) {
         console.log(error);
     }
@@ -197,7 +202,7 @@ export function* onEditRoomName(action) {
         const room = Object.assign({}, yield select(state => state.objects.room[roomId]));
         room.name = action.name;
         yield call(updateRoom, room);
-        yield put(editRoomNameSucceeded(action.name));
+        yield put(addPropToStoreObject("room", roomId, {name: action.name}));
     } catch (error) {
         console.log(error);
     }
@@ -205,9 +210,11 @@ export function* onEditRoomName(action) {
 
 export function* onDeleteRoom() {
     try {
+        const datacenterId = yield select(state => state.currentDatacenterId);
         const roomId = yield select(state => state.interactionLevel.roomId);
         yield call(deleteRoom, roomId);
-        yield put(deleteRoomSucceeded());
+        yield put(goDownOneInteractionLevel());
+        yield put(removeIdFromStoreObjectListProp("datacenter", datacenterId, "roomIds", roomId));
     } catch (error) {
         console.log(error);
     }
@@ -220,7 +227,7 @@ export function* onEditRackName(action) {
         const rack = Object.assign({}, yield select(state => state.objects.rack[rackId]));
         rack.name = action.name;
         yield call(updateRackOnTile, tileId, rack);
-        yield put(editRackNameSucceeded(action.name));
+        yield put(addPropToStoreObject("rack", rackId, {name: action.name}));
     } catch (error) {
         console.log(error);
     }
@@ -230,7 +237,9 @@ export function* onDeleteRack() {
     try {
         const tileId = yield select(state => state.interactionLevel.tileId);
         yield call(deleteRackFromTile, tileId);
-        yield put(deleteRackSucceeded());
+        yield put(goDownOneInteractionLevel());
+        yield put(addPropToStoreObject("tile", tileId, {objectType: undefined}));
+        yield put(addPropToStoreObject("tile", tileId, {objectId: undefined}));
     } catch (error) {
         console.log(error);
     }
@@ -257,6 +266,8 @@ export function* onAddMachine(action) {
     try {
         const tileId = yield select(state => state.interactionLevel.tileId);
         const rackId = yield select(state => state.objects.tile[state.interactionLevel.tileId].objectId);
+        const rack = yield select(state => state.objects.rack[rackId]);
+
         const machine = yield call(addMachineToRackOnTile, tileId, {
             id: -1,
             rackId,
@@ -268,7 +279,10 @@ export function* onAddMachine(action) {
             storageIds: [],
         });
         yield put(addToStore("machine", machine));
-        yield put(addMachineSucceeded(machine));
+
+        const machineIds = [...rack.machineIds];
+        machineIds[machine.position - 1] = machine.id;
+        yield put(addPropToStoreObject("rack", rackId, {machineIds}));
     } catch (error) {
         console.log(error);
     }
@@ -278,8 +292,12 @@ export function* onDeleteMachine() {
     try {
         const tileId = yield select(state => state.interactionLevel.tileId);
         const position = yield select(state => state.interactionLevel.position);
+        const rack = yield select(state => state.objects.rack[state.objects.tile[tileId].objectId]);
         yield call(deleteMachineInRackOnTile, tileId, position);
-        yield put(deleteMachineSucceeded());
+        const machineIds = [...rack.machineIds];
+        machineIds[position - 1] = null;
+        yield put(goDownOneInteractionLevel());
+        yield put(addPropToStoreObject("rack", rack.id, {machineIds}));
     } catch (error) {
         console.log(error);
     }
@@ -296,11 +314,13 @@ export function* onAddUnit(action) {
             return;
         }
 
+        const units = [...machine[action.unitType + "Ids"], action.id];
         const updatedMachine = Object.assign({}, machine,
-            {[action.unitType + "Ids"]: [...machine[action.unitType + "Ids"], action.id]});
+            {[action.unitType + "Ids"]: units});
 
         yield call(updateMachineInRackOnTile, tileId, position, updatedMachine);
-        yield put(addUnitSucceeded(action.unitType, action.id));
+
+        yield put(addPropToStoreObject("machine", machine.id, {[action.unitType + "Ids"]: units}));
     } catch (error) {
         console.log(error);
     }
@@ -317,7 +337,7 @@ export function* onDeleteUnit(action) {
         const updatedMachine = Object.assign({}, machine, {[action.unitType + "Ids"]: unitIds});
 
         yield call(updateMachineInRackOnTile, tileId, position, updatedMachine);
-        yield put(deleteUnitSucceeded(action.unitType, action.index));
+        yield put(addPropToStoreObject("machine", machine.id, {[action.unitType + "Ids"]: unitIds}));
     } catch (error) {
         console.log(error);
     }

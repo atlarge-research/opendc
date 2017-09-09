@@ -1,5 +1,3 @@
-import {addIdToStoreObjectListProp, removeIdFromStoreObjectListProp} from "../objects";
-
 export const FETCH_TOPOLOGY_OF_DATACENTER = "FETCH_TOPOLOGY_OF_DATACENTER";
 export const FETCH_TOPOLOGY_OF_DATACENTER_SUCCEEDED = "FETCH_TOPOLOGY_OF_DATACENTER_SUCCEEDED";
 export const FETCH_LATEST_DATACENTER = "FETCH_LATEST_DATACENTER";
@@ -43,13 +41,9 @@ export function startNewRoomConstruction() {
 }
 
 export function startNewRoomConstructionSucceeded(roomId) {
-    return (dispatch, getState) => {
-        const {currentDatacenterId} = getState();
-        dispatch(addIdToStoreObjectListProp("datacenter", currentDatacenterId, "roomIds", roomId));
-        dispatch({
-            type: START_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
-            roomId
-        });
+    return {
+        type: START_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
+        roomId
     };
 }
 
@@ -74,13 +68,8 @@ export function cancelNewRoomConstruction() {
 }
 
 export function cancelNewRoomConstructionSucceeded() {
-    return (dispatch, getState) => {
-        const {currentDatacenterId, construction} = getState();
-        dispatch(removeIdFromStoreObjectListProp("datacenter", currentDatacenterId, "roomIds",
-            construction.currentRoomInConstruction));
-        dispatch({
-            type: CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED
-        });
+    return {
+        type: CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED
     };
 }
 
@@ -108,23 +97,9 @@ export function addTile(positionX, positionY) {
     };
 }
 
-export function addTileSucceeded(tileId) {
-    return (dispatch, getState) => {
-        const {construction} = getState();
-        dispatch(addIdToStoreObjectListProp("room", construction.currentRoomInConstruction, "tileIds", tileId));
-    };
-}
-
 export function deleteTile(tileId) {
     return {
         type: DELETE_TILE,
         tileId
     }
-}
-
-export function deleteTileSucceeded(tileId) {
-    return (dispatch, getState) => {
-        const {construction} = getState();
-        dispatch(removeIdFromStoreObjectListProp("room", construction.currentRoomInConstruction, "tileIds", tileId));
-    };
 }

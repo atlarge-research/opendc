@@ -1,6 +1,4 @@
 import {findTileWithPosition} from "../../util/tile-calculations";
-import {goDownOneInteractionLevel} from "../interaction-level";
-import {addPropToStoreObject, removeIdFromStoreObjectListProp} from "../objects";
 
 export const EDIT_ROOM_NAME = "EDIT_ROOM_NAME";
 export const DELETE_ROOM = "DELETE_ROOM";
@@ -12,13 +10,6 @@ export function editRoomName(name) {
     return {
         type: EDIT_ROOM_NAME,
         name
-    };
-}
-
-export function editRoomNameSucceeded(name) {
-    return (dispatch, getState) => {
-        const {interactionLevel} = getState();
-        dispatch(addPropToStoreObject("room", interactionLevel.roomId, {name}));
     };
 }
 
@@ -53,14 +44,5 @@ export function addRackToTile(positionX, positionY) {
 export function deleteRoom() {
     return {
         type: DELETE_ROOM
-    };
-}
-
-export function deleteRoomSucceeded() {
-    return (dispatch, getState) => {
-        const {currentDatacenterId, interactionLevel} = getState();
-        const currentRoomId = interactionLevel.roomId;
-        dispatch(goDownOneInteractionLevel());
-        dispatch(removeIdFromStoreObjectListProp("datacenter", currentDatacenterId, "roomIds", currentRoomId));
     };
 }
