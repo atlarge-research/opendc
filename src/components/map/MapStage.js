@@ -8,7 +8,13 @@ import jQuery from "../../util/jquery";
 import {NAVBAR_HEIGHT} from "../navigation/Navbar";
 import Backdrop from "./elements/Backdrop";
 import GridGroup from "./groups/GridGroup";
-import {MAP_MOVE_PIXELS_PER_EVENT, MAP_SIZE_IN_PIXELS} from "./MapConstants";
+import {
+    MAP_MAX_SCALE,
+    MAP_MIN_SCALE,
+    MAP_MOVE_PIXELS_PER_EVENT,
+    MAP_SCALE_PER_EVENT,
+    MAP_SIZE_IN_PIXELS
+} from "./MapConstants";
 
 class MapStage extends React.Component {
     state = {
@@ -16,6 +22,7 @@ class MapStage extends React.Component {
         height: 400,
         x: 0,
         y: 0,
+        scale: 1,
         mouseX: 0,
         mouseY: 0
     };
@@ -26,14 +33,32 @@ class MapStage extends React.Component {
 
     componentDidMount() {
         window.addEventListener("resize", this.updateDimensions.bind(this));
+        window.addEventListener("wheel", this.updateScale.bind(this));
     }
 
     componentWillUnmount() {
         window.removeEventListener("resize", this.updateDimensions.bind(this));
+        window.removeEventListener("wheel", this.updateScale.bind(this));
     }
 
     updateDimensions() {
         this.setState({width: jQuery(window).width(), height: jQuery(window).height() - NAVBAR_HEIGHT});
+    }
+
+    updateScale(e) {
+        e.preventDefault();
+        const mousePointsTo = {
+            x: this.state.mouseX / this.state.scale - this.state.x / this.state.scale,
+            y: this.state.mouseY / this.state.scale - this.state.y / this.state.scale,
+        };
+        const newScale = e.deltaY < 0 ? this.state.scale * MAP_SCALE_PER_EVENT : this.state.scale / MAP_SCALE_PER_EVENT;
+        const boundedScale = Math.min(Math.max(MAP_MIN_SCALE, newScale), MAP_MAX_SCALE);
+
+        const newX = -(mousePointsTo.x - this.state.mouseX / boundedScale) * boundedScale;
+        const newY = -(mousePointsTo.y - this.state.mouseY / boundedScale) * boundedScale;
+
+        this.setPositionWithBoundsCheck(newX, newY);
+        this.setState({scale: boundedScale});
     }
 
     updateMousePosition() {
@@ -61,18 +86,19 @@ class MapStage extends React.Component {
     }
 
     moveWithDelta(deltaX, deltaY) {
+        this.setPositionWithBoundsCheck(this.state.x + deltaX, this.state.y + deltaY);
+    }
+
+    setPositionWithBoundsCheck(newX, newY) {
+        const scaledMapSize = MAP_SIZE_IN_PIXELS * this.state.scale;
         const updatedPosition = {
-            x: this.state.x + deltaX > 0 ? 0 :
-                (this.state.x + deltaX < -MAP_SIZE_IN_PIXELS + this.state.width
-                    ? -MAP_SIZE_IN_PIXELS + this.state.width : this.state.x + deltaX),
-            y: this.state.y + deltaY > 0 ? 0 :
-                (this.state.y + deltaY < -MAP_SIZE_IN_PIXELS + this.state.height
-                    ? -MAP_SIZE_IN_PIXELS + this.state.height : this.state.y + deltaY)
+            x: newX > 0 ? 0 :
+                (newX < -scaledMapSize + this.state.width ? -scaledMapSize + this.state.width : newX),
+            y: newY > 0 ? 0 :
+                (newY < -scaledMapSize + this.state.height ? -scaledMapSize + this.state.height : newY)
         };
 
         this.setState(updatedPosition);
-
-        return updatedPosition;
     }
 
     render() {
@@ -85,7 +111,7 @@ class MapStage extends React.Component {
                     onMouseMove={this.updateMousePosition.bind(this)}
                 >
                     <Layer>
-                        <Group x={this.state.x} y={this.state.y}>
+                        <Group x={this.state.x} y={this.state.y} scaleX={this.state.scale} scaleY={this.state.scale}>
                             <Backdrop/>
                             <DatacenterContainer/>
                             <GridGroup/>
@@ -96,12 +122,14 @@ class MapStage extends React.Component {
                         mainGroupY={this.state.y}
                         mouseX={this.state.mouseX}
                         mouseY={this.state.mouseY}
+                        scale={this.state.scale}
                     />
                     <ObjectHoverLayer
                         mainGroupX={this.state.x}
                         mainGroupY={this.state.y}
                         mouseX={this.state.mouseX}
                         mouseY={this.state.mouseY}
+                        scale={this.state.scale}
                     />
                 </Stage>
             </Shortcuts>

@@ -4,7 +4,7 @@ import HoverLayerComponent from "./HoverLayerComponent";
 
 const ObjectHoverLayerComponent = (props) => (
     <HoverLayerComponent {...props}>
-        <TilePlusIcon/>
+        <TilePlusIcon {...props}/>
     </HoverLayerComponent>
 );
 

@@ -208,3 +208,44 @@ export function findTileWithPosition(tiles, positionX, positionY) {
 
     return null;
 }
+
+export function calculateRoomListBounds(rooms) {
+    const min = {x: Number.MAX_VALUE, y: Number.MAX_VALUE};
+    const max = {x: -1, y: -1};
+
+    rooms.forEach((room) => {
+        room.tiles.forEach((tile) => {
+            if (tile.positionX < min.x) {
+                min.x = tile.positionX;
+            }
+            if (tile.positionY < min.y) {
+                min.y = tile.positionY;
+            }
+
+            if (tile.positionX > max.x) {
+                max.x = tile.positionX;
+            }
+            if (tile.positionY > max.y) {
+                max.y = tile.positionY;
+            }
+        });
+    });
+
+    max.x++;
+    max.y++;
+
+    const center = {
+        x: min.x + (max.x - min.x) / 2.0,
+        y: min.y + (max.y - min.y) / 2.0
+    };
+
+    return {
+        min,
+        center,
+        max
+    };
+}
+
+export function calculateRoomBounds(room) {
+    return calculateRoomListBounds([room]);
+}

@@ -4,19 +4,19 @@ import {Group, Line} from "react-konva";
 import {TILE_PLUS_COLOR} from "../../../colors/index";
 import {TILE_PLUS_MARGIN_IN_PIXELS, TILE_PLUS_WIDTH_IN_PIXELS, TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
-const TilePlusIcon = ({pixelX, pixelY}) => {
+const TilePlusIcon = ({pixelX, pixelY, scale}) => {
     const linePoints = [
         [
-            pixelX + 0.5 * TILE_SIZE_IN_PIXELS,
-            pixelY + TILE_PLUS_MARGIN_IN_PIXELS,
-            pixelX + 0.5 * TILE_SIZE_IN_PIXELS,
-            pixelY + TILE_SIZE_IN_PIXELS - TILE_PLUS_MARGIN_IN_PIXELS,
+            pixelX + 0.5 * TILE_SIZE_IN_PIXELS * scale,
+            pixelY + TILE_PLUS_MARGIN_IN_PIXELS * scale,
+            pixelX + 0.5 * TILE_SIZE_IN_PIXELS * scale,
+            pixelY + TILE_SIZE_IN_PIXELS * scale - TILE_PLUS_MARGIN_IN_PIXELS * scale,
         ],
         [
-            pixelX + TILE_PLUS_MARGIN_IN_PIXELS,
-            pixelY + 0.5 * TILE_SIZE_IN_PIXELS,
-            pixelX + TILE_SIZE_IN_PIXELS - TILE_PLUS_MARGIN_IN_PIXELS,
-            pixelY + 0.5 * TILE_SIZE_IN_PIXELS,
+            pixelX + TILE_PLUS_MARGIN_IN_PIXELS * scale,
+            pixelY + 0.5 * TILE_SIZE_IN_PIXELS * scale,
+            pixelX + TILE_SIZE_IN_PIXELS * scale - TILE_PLUS_MARGIN_IN_PIXELS * scale,
+            pixelY + 0.5 * TILE_SIZE_IN_PIXELS * scale,
         ],
     ];
     return (
@@ -27,7 +27,7 @@ const TilePlusIcon = ({pixelX, pixelY}) => {
                     points={points}
                     lineCap="round"
                     stroke={TILE_PLUS_COLOR}
-                    strokeWidth={TILE_PLUS_WIDTH_IN_PIXELS}
+                    strokeWidth={TILE_PLUS_WIDTH_IN_PIXELS * scale}
                     listening={false}
                 />
             ))}
