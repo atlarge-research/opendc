@@ -6,6 +6,7 @@ import thunk from "redux-thunk";
 import {authRedirectMiddleware} from "../auth/index";
 import rootReducer from "../reducers/index";
 import rootSaga from "../sagas/index";
+import {viewportAdjustmentMiddleware} from "./middlewares/viewport-adjustment";
 
 const sagaMiddleware = createSagaMiddleware();
 const logger = createLogger();
@@ -20,6 +21,7 @@ export default function configureStore() {
                 thunk,
                 sagaMiddleware,
                 authRedirectMiddleware,
+                viewportAdjustmentMiddleware,
             )
         )
     );

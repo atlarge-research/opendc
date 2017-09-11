@@ -5,7 +5,7 @@ import {setupSocketConnection} from "./api/socket";
 import "./index.css";
 import registerServiceWorker from "./registerServiceWorker";
 import Routes from "./routes";
-import configureStore from "./store/configureStore";
+import configureStore from "./store/configure-store";
 
 setupSocketConnection(() => {
     const store = configureStore();

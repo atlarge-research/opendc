@@ -239,13 +239,5 @@ export function calculateRoomListBounds(rooms) {
         y: min.y + (max.y - min.y) / 2.0
     };
 
-    return {
-        min,
-        center,
-        max
-    };
-}
-
-export function calculateRoomBounds(room) {
-    return calculateRoomListBounds([room]);
+    return {min, center, max};
 }
