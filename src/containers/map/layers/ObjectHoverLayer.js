@@ -5,6 +5,8 @@ import {findTileWithPosition} from "../../../util/tile-calculations";
 
 const mapStateToProps = state => {
     return {
+        mapPosition: state.map.position,
+        mapScale: state.map.scale,
         isEnabled: () => state.construction.inRackConstructionMode,
         isValid: (x, y) => {
             if (state.interactionLevel.mode !== "ROOM") {

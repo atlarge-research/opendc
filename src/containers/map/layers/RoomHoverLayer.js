@@ -9,6 +9,8 @@ import {
 
 const mapStateToProps = state => {
     return {
+        mapPosition: state.map.position,
+        mapScale: state.map.scale,
         isEnabled: () => state.construction.currentRoomInConstruction !== -1,
         isValid: (x, y) => {
             if (state.interactionLevel.mode !== "BUILDING") {

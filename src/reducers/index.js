@@ -2,6 +2,7 @@ import {combineReducers} from "redux";
 import {auth} from "./auth";
 import {construction} from "./construction";
 import {interactionLevel} from "./interaction-level";
+import {map} from "./map";
 import {modals} from "./modals";
 import {objects} from "./objects";
 import {simulationList} from "./simulation-list";
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
     currentDatacenterId,
     interactionLevel,
     construction,
+    map,
 });
 
 export default rootReducer;
