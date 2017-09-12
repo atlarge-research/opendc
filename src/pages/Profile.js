@@ -6,7 +6,7 @@ import DeleteProfileModal from "../containers/modals/DeleteProfileModal";
 
 const ProfileContainer = ({onDelete}) => (
     <div className="full-height">
-        <AppNavbar/>
+        <AppNavbar inSimulation={false}/>
         <div className="container text-page-container full-height">
             <button className="btn btn-danger" onClick={onDelete}>Delete my account on OpenDC</button>
             <p>

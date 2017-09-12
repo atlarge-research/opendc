@@ -1,7 +1,6 @@
 import React from 'react';
 import {connect} from "react-redux";
 import {openNewSimulationModal} from "../actions/modals/simulations";
-import {addSimulation} from "../actions/simulations";
 import {fetchAuthorizationsOfCurrentUser} from "../actions/users";
 import AppNavbar from "../components/navigation/AppNavbar";
 import SimulationFilterPanel from "../components/simulations/FilterPanel";
@@ -17,7 +16,7 @@ class SimulationsContainer extends React.Component {
     render() {
         return (
             <div className="full-height">
-                <AppNavbar/>
+                <AppNavbar inSimulation={false}/>
                 <div className="container text-page-container full-height">
                     <SimulationFilterPanel/>
                     <VisibleSimulationList/>
@@ -33,7 +32,6 @@ const mapDispatchToProps = dispatch => {
     return {
         fetchAuthorizationsOfCurrentUser: () => dispatch(fetchAuthorizationsOfCurrentUser()),
         openNewSimulationModal: () => dispatch(openNewSimulationModal()),
-        addSimulation: (text) => dispatch(addSimulation(text)),
     };
 };
 

@@ -20,18 +20,25 @@ class MapStageComponent extends React.Component {
         mouseY: 0
     };
 
+    constructor() {
+        super();
+
+        this.updateDimensions = this.updateDimensions.bind(this);
+        this.updateScale = this.updateScale.bind(this);
+    }
+
     componentWillMount() {
         this.updateDimensions();
     }
 
     componentDidMount() {
-        window.addEventListener("resize", this.updateDimensions.bind(this));
-        window.addEventListener("wheel", this.updateScale.bind(this));
+        window.addEventListener("resize", this.updateDimensions);
+        window.addEventListener("wheel", this.updateScale);
     }
 
     componentWillUnmount() {
-        window.removeEventListener("resize", this.updateDimensions.bind(this));
-        window.removeEventListener("wheel", this.updateScale.bind(this));
+        window.removeEventListener("resize", this.updateDimensions);
+        window.removeEventListener("wheel", this.updateScale);
     }
 
     updateDimensions() {

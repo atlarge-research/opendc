@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React from 'react';
+import React from "react";
 import {connect} from "react-redux";
 import {ShortcutManager} from "react-shortcuts";
 import {openSimulationSucceeded} from "../actions/simulations";
@@ -40,7 +40,7 @@ class AppContainer extends React.Component {
     render() {
         return (
             <div className="page-container full-height">
-                <AppNavbar/>
+                <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
                 {this.props.datacenterIsLoading ?
                     <div className="full-height d-flex align-items-center justify-content-center">
                         <LoadingScreen/>
