@@ -1,14 +1,16 @@
 import PropTypes from "prop-types";
 import React from "react";
 import {connect} from "react-redux";
+import {openSimulationSucceeded} from "../actions/simulations";
 import AppNavbar from "../components/navigation/AppNavbar";
 
-class ExperimentsContainer extends React.Component {
+class ExperimentsComponent extends React.Component {
     static propTypes = {
         simulationId: PropTypes.number.isRequired,
     };
 
     componentDidMount() {
+        this.props.storeSimulationId(this.props.simulationId);
         // TODO fetch experiments
     }
 
@@ -25,12 +27,14 @@ class ExperimentsContainer extends React.Component {
 }
 
 const mapDispatchToProps = dispatch => {
-    return {};
+    return {
+        storeSimulationId: id => dispatch(openSimulationSucceeded(id)),
+    };
 };
 
 const Experiments = connect(
     undefined,
     mapDispatchToProps
-)(ExperimentsContainer);
+)(ExperimentsComponent);
 
 export default Experiments;

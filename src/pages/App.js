@@ -17,7 +17,7 @@ import KeymapConfiguration from "../shortcuts/keymap";
 
 const shortcutManager = new ShortcutManager(KeymapConfiguration);
 
-class AppContainer extends React.Component {
+class AppComponent extends React.Component {
     static propTypes = {
         simulationId: PropTypes.number.isRequired,
     };
@@ -77,6 +77,6 @@ const mapDispatchToProps = dispatch => {
 const App = connect(
     mapStateToProps,
     mapDispatchToProps
-)(AppContainer);
+)(AppComponent);
 
 export default App;
