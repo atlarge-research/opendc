@@ -1,5 +1,5 @@
 export const OPEN_NEW_SIMULATION_MODAL = "OPEN_NEW_SIMULATION_MODAL";
-export const CLOSE_NEW_SIMULATION_MODAL = "CLOSE_SIMULATION_POPUP";
+export const CLOSE_NEW_SIMULATION_MODAL = "CLOSE_SIMULATION_MODAL";
 
 export function openNewSimulationModal() {
     return {

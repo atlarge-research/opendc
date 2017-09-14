@@ -1,8 +1,11 @@
 import PropTypes from "prop-types";
 import React from "react";
 import {connect} from "react-redux";
+import {fetchExperimentsOfSimulation} from "../actions/experiments";
 import {openSimulationSucceeded} from "../actions/simulations";
 import AppNavbar from "../components/navigation/AppNavbar";
+import ExperimentListContainer from "../containers/experiments/ExperimentListContainer";
+import NewExperimentModal from "../containers/modals/NewExperimentModal";
 
 class ExperimentsComponent extends React.Component {
     static propTypes = {
@@ -11,7 +14,7 @@ class ExperimentsComponent extends React.Component {
 
     componentDidMount() {
         this.props.storeSimulationId(this.props.simulationId);
-        // TODO fetch experiments
+        this.props.fetchExperimentsOfSimulation(this.props.simulationId);
     }
 
     render() {
@@ -19,8 +22,9 @@ class ExperimentsComponent extends React.Component {
             <div className="full-height">
                 <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
                 <div className="container text-page-container full-height">
-                    Test
+                    <ExperimentListContainer/>
                 </div>
+                <NewExperimentModal/>
             </div>
         );
     }
@@ -29,6 +33,7 @@ class ExperimentsComponent extends React.Component {
 const mapDispatchToProps = dispatch => {
     return {
         storeSimulationId: id => dispatch(openSimulationSucceeded(id)),
+        fetchExperimentsOfSimulation: id => dispatch(fetchExperimentsOfSimulation(id)),
     };
 };
 

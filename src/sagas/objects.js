@@ -1,8 +1,10 @@
 import {call, put, select} from "redux-saga/effects";
 import {addToStore} from "../actions/objects";
 import {getDatacenter, getRoomsOfDatacenter} from "../api/routes/datacenters";
+import {getAllJobs} from "../api/routes/jobs";
 import {getPath, getSectionsOfPath} from "../api/routes/paths";
 import {getTilesOfRoom} from "../api/routes/rooms";
+import {getAllSchedulers} from "../api/routes/schedulers";
 import {getSection} from "../api/routes/sections";
 import {getPathsOfSimulation, getSimulation} from "../api/routes/simulations";
 import {
@@ -18,7 +20,9 @@ import {
     getPSU,
     getStorage
 } from "../api/routes/specifications";
+import {getAllTasks} from "../api/routes/tasks";
 import {getMachinesOfRackByTile, getRackByTile} from "../api/routes/tiles";
+import {getAllTraces} from "../api/routes/traces";
 import {getUser} from "../api/routes/users";
 
 export const OBJECT_SELECTORS = {
@@ -124,3 +128,15 @@ export const fetchAndStorePath = (id) =>
 
 export const fetchAndStorePathsOfSimulation = (simulationId) =>
     fetchAndStoreObjects("path", call(getPathsOfSimulation, simulationId));
+
+export const fetchAndStoreAllTraces = () =>
+    fetchAndStoreObjects("trace", call(getAllTraces));
+
+export const fetchAndStoreAllJobs = () =>
+    fetchAndStoreObjects("job", call(getAllJobs));
+
+export const fetchAndStoreAllTasks = () =>
+    fetchAndStoreObjects("task", call(getAllTasks));
+
+export const fetchAndStoreAllSchedulers = () =>
+    fetchAndStoreObjects("scheduler", call(getAllSchedulers));

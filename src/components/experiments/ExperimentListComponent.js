@@ -1,6 +1,8 @@
+import PropTypes from "prop-types";
 import React from "react";
+import ExperimentRowContainer from "../../containers/experiments/ExperimentRowContainer";
 
-const ExperimentListContainer = ({experiments}) => (
+const ExperimentListComponent = ({experimentIds}) => (
     <table className="table">
         <thead>
         <tr>
@@ -11,16 +13,15 @@ const ExperimentListContainer = ({experiments}) => (
         </tr>
         </thead>
         <tbody>
-        {experiments.map(experiment => (
-            <tr>
-                <td>{experiment.name}</td>
-                <td>{experiment.path.name}</td>
-                <td>{experiment.trace.name}</td>
-                <td>{experiment.scheduler.name}</td>
-            </tr>
+        {experimentIds.map(experimentId => (
+            <ExperimentRowContainer experimentId={experimentId}/>
         ))}
         </tbody>
     </table>
 );
 
-export default ExperimentListContainer;
+ExperimentListComponent.propTypes = {
+    experimentIds: PropTypes.arrayOf(PropTypes.number).isRequired,
+};
+
+export default ExperimentListComponent;

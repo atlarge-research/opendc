@@ -136,6 +136,42 @@ Shapes.Path = PropTypes.shape({
     sections: PropTypes.arrayOf(Shapes.Section),
 });
 
+Shapes.Scheduler = PropTypes.shape({
+    name: PropTypes.string.isRequired,
+});
+
+Shapes.Task = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    jobId: PropTypes.number.isRequired,
+    startTick: PropTypes.number.isRequired,
+    totalFlopCount: PropTypes.number.isRequired,
+});
+
+Shapes.Job = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    traceId: PropTypes.number.isRequired,
+    taskIds: PropTypes.arrayOf(PropTypes.number),
+});
+
+Shapes.Trace = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    jobIds: PropTypes.arrayOf(PropTypes.number),
+});
+
+Shapes.Experiment = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    simulationId: PropTypes.number.isRequired,
+    traceId: PropTypes.number.isRequired,
+    trace: Shapes.Trace,
+    pathId: PropTypes.number.isRequired,
+    path: Shapes.Path,
+    schedulerName: PropTypes.string.isRequired,
+    scheduler: Shapes.Scheduler,
+    name: PropTypes.string.isRequired,
+});
+
 Shapes.WallSegment = PropTypes.shape({
     startPosX: PropTypes.number.isRequired,
     startPosY: PropTypes.number.isRequired,
