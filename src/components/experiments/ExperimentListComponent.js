@@ -10,13 +10,14 @@ const ExperimentListComponent = ({experimentIds}) => {
                     <span className="info-icon fa fa-question-circle mr-2"/>
                     <strong>No experiments here yet...</strong> Add some with the button below!
                 </div> :
-                <table className="table">
+                <table className="table table-striped">
                     <thead>
                     <tr>
                         <th>Name</th>
                         <th>Path</th>
                         <th>Trace</th>
                         <th>Scheduler</th>
+                        <th/>
                     </tr>
                     </thead>
                     <tbody>

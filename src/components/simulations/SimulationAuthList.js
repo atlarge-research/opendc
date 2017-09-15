@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import Shapes from "../../shapes/index";
-import "./SimulationAuthList.css";
 import SimulationAuthRow from "./SimulationAuthRow";
 
 const SimulationAuthList = ({authorizations}) => {
@@ -12,7 +11,7 @@ const SimulationAuthList = ({authorizations}) => {
                     <span className="info-icon fa fa-question-circle mr-2"/>
                     <strong>No simulations here yet...</strong> Add some with the 'New Simulation' button!
                 </div> :
-                <table className="table">
+                <table className="table table-striped">
                     <thead>
                     <tr>
                         <th>Simulation name</th>

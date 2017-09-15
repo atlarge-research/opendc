@@ -1,4 +1,5 @@
 import {connect} from "react-redux";
+import {deleteExperiment} from "../../actions/experiments";
 import ExperimentRowComponent from "../../components/experiments/ExperimentRowComponent";
 
 const mapStateToProps = (state, ownProps) => {
@@ -9,11 +10,19 @@ const mapStateToProps = (state, ownProps) => {
 
     return {
         experiment,
+        simulationId: state.currentSimulationId,
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onDelete: id => dispatch(deleteExperiment(id))
     };
 };
 
 const ExperimentRowContainer = connect(
-    mapStateToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(ExperimentRowComponent);
 
 export default ExperimentRowContainer;

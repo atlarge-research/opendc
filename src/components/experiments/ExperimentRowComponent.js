@@ -1,17 +1,36 @@
+import PropTypes from "prop-types";
 import React from "react";
+import {Link} from "react-router-dom";
 import Shapes from "../../shapes/index";
 
-const ExperimentRowComponent = ({experiment}) => (
+const ExperimentRowComponent = ({experiment, simulationId, onDelete}) => (
     <tr>
         <td>{experiment.name}</td>
         <td>{experiment.path.name ? experiment.path.name : "Path " + experiment.path.id}</td>
         <td>{experiment.trace.name}</td>
         <td>{experiment.scheduler.name}</td>
+        <td className="text-right">
+            <Link
+                to={"/simulations/" + simulationId + "/experiments/" + experiment.id}
+                className="btn btn-outline-primary mr-1"
+                title="Open this experiment"
+            >
+                <span className="fa fa-play"/>
+            </Link>
+            <div
+                className="btn btn-outline-danger"
+                title="Delete this experiment"
+                onClick={() => onDelete(experiment.id)}
+            >
+                <span className="fa fa-trash"/>
+            </div>
+        </td>
     </tr>
 );
 
 ExperimentRowComponent.propTypes = {
-    experiment: Shapes.Experiment
+    experiment: Shapes.Experiment.isRequired,
+    simulationId: PropTypes.number.isRequired,
 };
 
 export default ExperimentRowComponent;

@@ -44,7 +44,7 @@ export function* onAddExperiment(action) {
         );
         yield put(addToStore("experiment", experiment));
 
-        const experimentIds = (yield select(state => state.objects.simulation[currentSimulationId])).experimentIds;
+        const experimentIds = yield select(state => state.objects.simulation[currentSimulationId].experimentIds);
         yield put(addPropToStoreObject("simulation", currentSimulationId,
             {experimentIds: experimentIds.concat([experiment.id])}));
     } catch (error) {
@@ -57,7 +57,7 @@ export function* onDeleteExperiment(action) {
         yield call(deleteExperiment, action.id);
 
         const currentSimulationId = yield select(state => state.currentSimulationId);
-        const experimentIds = yield select(state => state.objects.simulation[currentSimulationId]);
+        const experimentIds = yield select(state => state.objects.simulation[currentSimulationId].experimentIds);
 
         yield put(addPropToStoreObject("simulation", currentSimulationId,
             {experimentIds: experimentIds.filter(id => id !== action.id)}));
