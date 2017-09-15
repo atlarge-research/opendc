@@ -1,70 +1,15 @@
 @import ../../style-globals/_mixins.sass
 @import ../../style-globals/_variables.sass
 
-.simulation-list
-  display: block
-  font-size: 12pt
-  border: 0
-
-  .list-head, .list-body .simulation-row
-    display: block
-    position: relative
-
-  .list-head div, .list-body .simulation-row div
-    padding: 0 10px
-    display: inline-block
-
-  .list-head
-    font-weight: bold
-
-    // Address default margin between inline-blocks
-    div
-      margin-right: -4px
-
-.simulation-row
-  background: #f8f8f8
-  border: 1px solid #b6b6b6
-  height: 40px
-  line-height: 40px
-  clear: both
-
-.simulation-row:not(:first-of-type)
-  margin-top: -1px
-
-// Sizing of table columns
-.simulation-row, .simulation-list .list-head
-  div:first-of-type
-    width: 40%
-
-  div:nth-of-type(2)
-    width: 20%
-
-  div:nth-of-type(3)
-    width: 20%
-
-  div:last-of-type
-    width: 20%
-
-    span
-      margin-right: 10px
-
-.simulation-row > div:not(:first-of-type)
-  padding-left: 0 !important
-
-.simulation-list .list-head > div:not(:first-of-type)
-  padding-left: 5px !important
-
 .simulation-icons
   text-align: right
-  padding-right: 0 !important
 
-.simulation-row .simulation-icons div, .simulation-row .simulation-icons a
+.simulation-icons div, .simulation-icons a
   display: inline-block
-  position: relative
-  top: 4px
-  width: 30px
-  height: 30px
+  width: 35px
+  height: 35px
   margin-right: 5px
+  padding: 5px
   font-size: 12pt
   color: white
   +border-radius(100%)
@@ -73,16 +18,12 @@
 
   span
     position: relative
-    top: -4px
-    left: -1px
+    left: -6px
 
   background-color: $blue-dark
 
   &.open
     $icon-color: #0a00bf
-
-    span
-      left: 1px
 
     &:hover
       background: lighten($icon-color, 10%)
@@ -91,11 +32,10 @@
       background: darken($icon-color, 10%)
 
   &.users
-    font-size: 10pt
     $icon-color: #17bf55
 
     span
-      left: -2px
+      left: -3px
 
     &:hover
       background: $icon-color

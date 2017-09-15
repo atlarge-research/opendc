@@ -5,20 +5,20 @@ import Shapes from "../../shapes/index";
 import {AUTH_DESCRIPTION_MAP, AUTH_ICON_MAP} from "../../util/authorizations";
 import {parseAndFormatDateTime} from "../../util/date-time";
 
-const SimulationAuth = ({simulationAuth}) => (
-    <div className="simulation-row">
-        <div>{simulationAuth.simulation.name}</div>
-        <div>{parseAndFormatDateTime(simulationAuth.simulation.datetimeLastEdited)}</div>
-        <div>
-            <span className={classNames("fa", "fa-" + AUTH_ICON_MAP[simulationAuth.authorizationLevel])}/>
+const SimulationAuthRow = ({simulationAuth}) => (
+    <tr>
+        <td>{simulationAuth.simulation.name}</td>
+        <td>{parseAndFormatDateTime(simulationAuth.simulation.datetimeLastEdited)}</td>
+        <td>
+            <span className={classNames("fa", "fa-" + AUTH_ICON_MAP[simulationAuth.authorizationLevel], "mr-2")}/>
             {AUTH_DESCRIPTION_MAP[simulationAuth.authorizationLevel]}
-        </div>
+        </td>
         <SimulationActions simulationId={simulationAuth.simulation.id}/>
-    </div>
+    </tr>
 );
 
-SimulationAuth.propTypes = {
+SimulationAuthRow.propTypes = {
     simulationAuth: Shapes.Authorization.isRequired,
 };
 
-export default SimulationAuth;
+export default SimulationAuthRow;

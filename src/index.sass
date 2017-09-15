@@ -18,6 +18,16 @@ html, body, #root
 
 .text-page-container
   padding-top: 80px
+  display: flex
+  flex-flow: column
+
+.vertically-expanding-container
+  flex: 1 1 auto
+  overflow-y: auto
+
+.bottom-btn-container
+  flex: 0 1 auto
+  padding: 20px 0
 
 .btn, .list-group-item-action
   +clickable

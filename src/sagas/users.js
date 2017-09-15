@@ -20,7 +20,7 @@ export function* onFetchLoggedInUser(action) {
 
         yield put(logInSucceeded(Object.assign({userId}, action.payload)));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -41,6 +41,6 @@ export function* onFetchAuthorizationsOfCurrentUser(action) {
 
         yield put(fetchAuthorizationsOfCurrentUserSucceeded(authorizationIds));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }

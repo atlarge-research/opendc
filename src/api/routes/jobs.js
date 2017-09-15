@@ -1,8 +1,4 @@
-import {getAll, getById} from "./util";
-
-export function getAllJobs() {
-    return getAll("/jobs");
-}
+import {getById} from "./util";
 
 export function getTasksOfJob(jobId) {
     return getById("/jobs/{jobId}/tasks", {jobId});

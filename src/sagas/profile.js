@@ -7,6 +7,6 @@ export function* onDeleteCurrentUser(action) {
         yield call(deleteUser, action.userId);
         yield put(deleteCurrentUserSucceeded());
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }

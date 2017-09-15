@@ -5,6 +5,7 @@ import {fetchExperimentsOfSimulation} from "../actions/experiments";
 import {openSimulationSucceeded} from "../actions/simulations";
 import AppNavbar from "../components/navigation/AppNavbar";
 import ExperimentListContainer from "../containers/experiments/ExperimentListContainer";
+import NewExperimentButtonContainer from "../containers/experiments/NewExperimentButtonContainer";
 import NewExperimentModal from "../containers/modals/NewExperimentModal";
 
 class ExperimentsComponent extends React.Component {
@@ -23,6 +24,7 @@ class ExperimentsComponent extends React.Component {
                 <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
                 <div className="container text-page-container full-height">
                     <ExperimentListContainer/>
+                    <NewExperimentButtonContainer/>
                 </div>
                 <NewExperimentModal/>
             </div>

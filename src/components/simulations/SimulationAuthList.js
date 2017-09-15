@@ -1,27 +1,33 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import Shapes from "../../shapes/index";
-import NoSimulationsAlert from "./NoSimulationsAlert";
-import SimulationAuth from "./SimulationAuth";
 import "./SimulationAuthList.css";
+import SimulationAuthRow from "./SimulationAuthRow";
 
 const SimulationAuthList = ({authorizations}) => {
-    if (authorizations.length === 0) {
-        return <NoSimulationsAlert/>;
-    }
-
     return (
-        <div className="simulation-list">
-            <div className="list-head">
-                <div>Simulation name</div>
-                <div>Last edited</div>
-                <div>Access rights</div>
-            </div>
-            <div className="list-body">
-                {authorizations.map(authorization => (
-                    <SimulationAuth simulationAuth={authorization} key={authorization.simulation.id}/>
-                ))}
-            </div>
+        <div className="vertically-expanding-container">
+            {authorizations.length === 0 ?
+                <div className="alert alert-info">
+                    <span className="info-icon fa fa-question-circle mr-2"/>
+                    <strong>No simulations here yet...</strong> Add some with the 'New Simulation' button!
+                </div> :
+                <table className="table">
+                    <thead>
+                    <tr>
+                        <th>Simulation name</th>
+                        <th>Last edited</th>
+                        <th>Access rights</th>
+                        <th/>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {authorizations.map(authorization => (
+                        <SimulationAuthRow simulationAuth={authorization} key={authorization.simulation.id}/>
+                    ))}
+                    </tbody>
+                </table>
+            }
         </div>
     );
 };

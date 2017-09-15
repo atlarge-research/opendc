@@ -38,7 +38,7 @@ class TextInputModal extends React.Component {
                     this.onSubmit();
                 }}>
                     <div className="form-group">
-                        <label className="form-control-label">{this.props.label}:</label>
+                        <label className="form-control-label">{this.props.label}</label>
                         <input type="text" className="form-control"
                                ref={textInput => this.textInput = textInput}/>
                     </div>

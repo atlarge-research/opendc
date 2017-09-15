@@ -1,7 +1,16 @@
 import {call, put} from "redux-saga/effects";
 import {addToStore} from "../actions/objects";
 import {addSimulationSucceeded, deleteSimulationSucceeded} from "../actions/simulations";
-import {addSimulation, deleteSimulation} from "../api/routes/simulations";
+import {addSimulation, deleteSimulation, getSimulation} from "../api/routes/simulations";
+
+export function* onOpenSimulationSucceeded(action) {
+    try {
+        const simulation = yield call(getSimulation, action.id);
+        yield put(addToStore("simulation", simulation));
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 export function* onSimulationAdd(action) {
     try {
@@ -16,7 +25,7 @@ export function* onSimulationAdd(action) {
         yield put(addToStore("authorization", authorization));
         yield put(addSimulationSucceeded([authorization.userId, authorization.simulationId]));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -25,6 +34,6 @@ export function* onSimulationDelete(action) {
         yield call(deleteSimulation, action.id);
         yield put(deleteSimulationSucceeded(action.id));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }

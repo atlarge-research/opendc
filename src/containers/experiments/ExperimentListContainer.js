@@ -2,7 +2,7 @@ import {connect} from "react-redux";
 import ExperimentListComponent from "../../components/experiments/ExperimentListComponent";
 
 const mapStateToProps = state => {
-    if (!state.currentSimulationId) {
+    if (state.currentSimulationId === -1 || !("experimentIds" in state.objects.simulation[state.currentSimulationId])) {
         return {
             experimentIds: [],
         };
@@ -14,10 +14,6 @@ const mapStateToProps = state => {
             experimentIds,
         };
     }
-
-    return {
-        experimentIds: [],
-    };
 };
 
 const ExperimentListContainer = connect(

@@ -24,6 +24,11 @@ export const objects = combineReducers({
     datacenter: object("datacenter"),
     section: object("section"),
     path: object("path"),
+    task: object("task"),
+    job: object("job"),
+    trace: object("trace"),
+    scheduler: object("scheduler"),
+    experiment: object("experiment"),
 });
 
 function object(type) {

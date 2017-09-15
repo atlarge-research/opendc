@@ -131,7 +131,7 @@ Shapes.Section = PropTypes.shape({
 Shapes.Path = PropTypes.shape({
     id: PropTypes.number.isRequired,
     simulationId: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
+    name: PropTypes.string,
     datetimeCreated: PropTypes.string.isRequired,
     sections: PropTypes.arrayOf(Shapes.Section),
 });

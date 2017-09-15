@@ -1,7 +1,6 @@
 import {call, put, select} from "redux-saga/effects";
 import {addToStore} from "../actions/objects";
 import {getDatacenter, getRoomsOfDatacenter} from "../api/routes/datacenters";
-import {getAllJobs} from "../api/routes/jobs";
 import {getPath, getSectionsOfPath} from "../api/routes/paths";
 import {getTilesOfRoom} from "../api/routes/rooms";
 import {getAllSchedulers} from "../api/routes/schedulers";
@@ -20,7 +19,6 @@ import {
     getPSU,
     getStorage
 } from "../api/routes/specifications";
-import {getAllTasks} from "../api/routes/tasks";
 import {getMachinesOfRackByTile, getRackByTile} from "../api/routes/tiles";
 import {getAllTraces} from "../api/routes/traces";
 import {getUser} from "../api/routes/users";
@@ -132,11 +130,11 @@ export const fetchAndStorePathsOfSimulation = (simulationId) =>
 export const fetchAndStoreAllTraces = () =>
     fetchAndStoreObjects("trace", call(getAllTraces));
 
-export const fetchAndStoreAllJobs = () =>
-    fetchAndStoreObjects("job", call(getAllJobs));
-
-export const fetchAndStoreAllTasks = () =>
-    fetchAndStoreObjects("task", call(getAllTasks));
-
-export const fetchAndStoreAllSchedulers = () =>
-    fetchAndStoreObjects("scheduler", call(getAllSchedulers));
+export const fetchAndStoreAllSchedulers = function* () {
+    const objects = yield call(getAllSchedulers);
+    for (let index in objects) {
+        objects[index].id = objects[index].name;
+        yield put(addToStore("scheduler", objects[index]));
+    }
+    return objects;
+};

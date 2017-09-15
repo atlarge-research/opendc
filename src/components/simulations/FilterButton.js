@@ -1,17 +1,16 @@
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
-import "./FilterButton.css";
 
 const FilterButton = ({active, children, onClick}) => (
-    <div className={classNames("simulation-filter-button", {"active": active})}
-         onClick={() => {
+    <button className={classNames("btn btn-secondary", {"active": active})}
+            onClick={() => {
              if (!active) {
                  onClick();
              }
          }}>
         {children}
-    </div>
+    </button>
 );
 
 FilterButton.propTypes = {

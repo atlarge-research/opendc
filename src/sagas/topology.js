@@ -57,7 +57,7 @@ export function* onFetchLatestDatacenter(action) {
         yield fetchDatacenter(latestSection.datacenterId);
         yield put(fetchLatestDatacenterSucceeded(latestSection.datacenterId));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -71,7 +71,7 @@ function* fetchDatacenter(datacenterId) {
             yield fetchRoom(rooms[index].id);
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -82,7 +82,7 @@ function* fetchAllUnitSpecifications() {
         yield fetchAndStoreAllMemories();
         yield fetchAndStoreAllStorages();
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -155,7 +155,7 @@ export function* onStartNewRoomConstruction() {
         yield put(addIdToStoreObjectListProp("datacenter", datacenterId, "roomIds", room.id));
         yield put(startNewRoomConstructionSucceeded(room.id));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -167,7 +167,7 @@ export function* onCancelNewRoomConstruction() {
         yield put(removeIdFromStoreObjectListProp("datacenter", datacenterId, "roomIds", roomId));
         yield put(cancelNewRoomConstructionSucceeded());
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -182,7 +182,7 @@ export function* onAddTile(action) {
         yield put(addToStore("tile", tile));
         yield put(addIdToStoreObjectListProp("room", roomId, "tileIds", tile.id));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -192,7 +192,7 @@ export function* onDeleteTile(action) {
         yield call(deleteTile, action.tileId);
         yield put(removeIdFromStoreObjectListProp("room", roomId, "tileIds", action.tileId));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -204,7 +204,7 @@ export function* onEditRoomName(action) {
         yield call(updateRoom, room);
         yield put(addPropToStoreObject("room", roomId, {name: action.name}));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -216,7 +216,7 @@ export function* onDeleteRoom() {
         yield put(goDownOneInteractionLevel());
         yield put(removeIdFromStoreObjectListProp("datacenter", datacenterId, "roomIds", roomId));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -229,7 +229,7 @@ export function* onEditRackName(action) {
         yield call(updateRackOnTile, tileId, rack);
         yield put(addPropToStoreObject("rack", rackId, {name: action.name}));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -241,7 +241,7 @@ export function* onDeleteRack() {
         yield put(addPropToStoreObject("tile", tileId, {objectType: undefined}));
         yield put(addPropToStoreObject("tile", tileId, {objectId: undefined}));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -258,7 +258,7 @@ export function* onAddRackToTile(action) {
         yield put(addPropToStoreObject("tile", action.tileId, {objectId: rack.id}));
         yield put(addPropToStoreObject("tile", action.tileId, {objectType: "RACK"}));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -284,7 +284,7 @@ export function* onAddMachine(action) {
         machineIds[machine.position - 1] = machine.id;
         yield put(addPropToStoreObject("rack", rackId, {machineIds}));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -299,7 +299,7 @@ export function* onDeleteMachine() {
         yield put(goDownOneInteractionLevel());
         yield put(addPropToStoreObject("rack", rack.id, {machineIds}));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -322,7 +322,7 @@ export function* onAddUnit(action) {
 
         yield put(addPropToStoreObject("machine", machine.id, {[action.unitType + "Ids"]: units}));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
@@ -339,6 +339,6 @@ export function* onDeleteUnit(action) {
         yield call(updateMachineInRackOnTile, tileId, position, updatedMachine);
         yield put(addPropToStoreObject("machine", machine.id, {[action.unitType + "Ids"]: unitIds}));
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }

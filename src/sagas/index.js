@@ -1,7 +1,7 @@
 import {takeEvery} from "redux-saga/effects";
 import {LOG_IN} from "../actions/auth";
 import {ADD_EXPERIMENT, DELETE_EXPERIMENT, FETCH_EXPERIMENTS_OF_SIMULATION} from "../actions/experiments";
-import {ADD_SIMULATION, DELETE_SIMULATION} from "../actions/simulations";
+import {ADD_SIMULATION, DELETE_SIMULATION, OPEN_SIMULATION_SUCCEEDED} from "../actions/simulations";
 import {
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
@@ -15,7 +15,7 @@ import {ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME} from "../actions/topology
 import {DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER} from "../actions/users";
 import {onAddExperiment, onDeleteExperiment, onFetchExperimentsOfSimulation} from "./experiments";
 import {onDeleteCurrentUser} from "./profile";
-import {onSimulationAdd, onSimulationDelete} from "./simulations";
+import {onOpenSimulationSucceeded, onSimulationAdd, onSimulationDelete} from "./simulations";
 import {
     onAddMachine,
     onAddRackToTile,
@@ -42,6 +42,8 @@ export default function* rootSaga() {
     yield takeEvery(DELETE_SIMULATION, onSimulationDelete);
 
     yield takeEvery(DELETE_CURRENT_USER, onDeleteCurrentUser);
+
+    yield takeEvery(OPEN_SIMULATION_SUCCEEDED, onOpenSimulationSucceeded);
 
     yield takeEvery(FETCH_LATEST_DATACENTER, onFetchLatestDatacenter);
     yield takeEvery(START_NEW_ROOM_CONSTRUCTION, onStartNewRoomConstruction);

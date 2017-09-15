@@ -20,8 +20,12 @@ class NewExperimentModalComponent extends React.Component {
     }
 
     onSubmit() {
-        this.props.callback(this.textInput.value, this.pathSelect.value, this.traceSelect.value,
-            this.schedulerSelect.value);
+        this.props.callback(
+            this.textInput.value,
+            parseInt(this.pathSelect.value, 10),
+            parseInt(this.traceSelect.value, 10),
+            this.schedulerSelect.value
+        );
         this.reset();
     }
 
@@ -41,23 +45,23 @@ class NewExperimentModalComponent extends React.Component {
                     this.onSubmit();
                 }}>
                     <div className="form-group">
-                        <label className="form-control-label">Name:</label>
+                        <label className="form-control-label">Name</label>
                         <input type="text" className="form-control"
                                ref={textInput => this.textInput = textInput}/>
                     </div>
                     <div className="form-group">
-                        <label className="form-control-label">Path:</label>
+                        <label className="form-control-label">Path</label>
                         <select className="form-control"
                                 ref={pathSelect => this.pathSelect = pathSelect}>
                             {this.props.paths.map(path => (
                                 <option value={path.id} key={path.id}>
-                                    {path.name}
+                                    {path.name ? path.name : "Path " + path.id}
                                 </option>
                             ))}
                         </select>
                     </div>
                     <div className="form-group">
-                        <label className="form-control-label">Trace:</label>
+                        <label className="form-control-label">Trace</label>
                         <select className="form-control"
                                 ref={traceSelect => this.traceSelect = traceSelect}>
                             {this.props.traces.map(trace => (
@@ -68,7 +72,7 @@ class NewExperimentModalComponent extends React.Component {
                         </select>
                     </div>
                     <div className="form-group">
-                        <label className="form-control-label">Scheduler:</label>
+                        <label className="form-control-label">Scheduler</label>
                         <select className="form-control"
                                 ref={schedulerSelect => this.schedulerSelect = schedulerSelect}>
                             {this.props.schedulers.map(scheduler => (

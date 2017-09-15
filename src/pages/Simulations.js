@@ -4,8 +4,8 @@ import {openNewSimulationModal} from "../actions/modals/simulations";
 import {fetchAuthorizationsOfCurrentUser} from "../actions/users";
 import AppNavbar from "../components/navigation/AppNavbar";
 import SimulationFilterPanel from "../components/simulations/FilterPanel";
-import NewSimulationButton from "../components/simulations/NewSimulationButton";
 import NewSimulationModal from "../containers/modals/NewSimulationModal";
+import NewSimulationButtonContainer from "../containers/simulations/NewSimulationButtonContainer";
 import VisibleSimulationList from "../containers/simulations/VisibleSimulationAuthList";
 
 class SimulationsContainer extends React.Component {
@@ -20,7 +20,7 @@ class SimulationsContainer extends React.Component {
                 <div className="container text-page-container full-height">
                     <SimulationFilterPanel/>
                     <VisibleSimulationList/>
-                    <NewSimulationButton onClick={() => {this.props.openNewSimulationModal()}}/>
+                    <NewSimulationButtonContainer/>
                 </div>
                 <NewSimulationModal/>
             </div>
