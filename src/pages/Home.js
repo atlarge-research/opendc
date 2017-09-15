@@ -15,7 +15,7 @@ class Home extends React.Component {
     componentDidMount() {
         const scrollOffset = 60;
         jQuery("#navbar").find("li a").click(function (e) {
-            if (jQuery(e.target).parent(".auth-links")) {
+            if (jQuery(e.target).parents(".auth-links").length > 0) {
                 return;
             }
             e.preventDefault();
