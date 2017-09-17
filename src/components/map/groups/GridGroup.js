@@ -21,6 +21,7 @@ const GridGroup = () => (
                 points={points}
                 stroke={GRID_COLOR}
                 strokeWidth={GRID_LINE_WIDTH_IN_PIXELS}
+                listening={false}
             />
         ))}
     </Group>
