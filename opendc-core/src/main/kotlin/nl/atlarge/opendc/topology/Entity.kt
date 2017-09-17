@@ -25,10 +25,10 @@
 package nl.atlarge.opendc.topology
 
 /**
- * An entity within a cloud network.
+ * An entity within a cloud network, represented as a node within a topology.
  *
- * <p>A [Entity] contains the immutable properties of this component given by the topology configuration at the start
- * of a simulation and remain unchanged during simulation.
+ * <p>A [Entity] contains immutable properties given by the topology configuration at the start of a simulation and
+ * remain unchanged during simulation.
  *
  * <p>In addition, other entities in a simulation have direct, immutable access to the observable state of this entity.
  *
@@ -36,7 +36,7 @@ package nl.atlarge.opendc.topology
  * a simulation.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Entity<out S> {
+interface Entity<out S> : Component {
 	/**
 	 * The initial state of the entity.
 	 */

@@ -22,38 +22,40 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc
 
-/**
- * An edge that represents a directed relationship between exactly two nodes in a logical topology of a cloud network.
- *
- * @param T The relationship type the edge represents within a logical topology.
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
- */
-interface Edge<out T> : Component {
-	/**
-	 * The label of this edge.
-	 */
-	val label: T
+import nl.atlarge.opendc.kernel.omega.OmegaKernel
+import nl.atlarge.opendc.topology.AdjacencyList
+import nl.atlarge.opendc.topology.container.Rack
+import nl.atlarge.opendc.topology.machine.Cpu
+import nl.atlarge.opendc.topology.machine.Machine
+import org.junit.jupiter.api.Test
 
-	/**
-	 * A tag to uniquely identify the relationship this edge represents.
-	 */
-	val tag: String?
+internal class SmokeTest {
+	@Test
+	fun smoke() {
+		val builder = AdjacencyList.builder()
+		val topology = builder.construct {
+			val rack = Rack()
+			add(rack)
+			val n = 1000
+			// Create n machines in the rack
+			repeat(n) {
+				val machine = Machine()
+				add(machine)
+				connect(rack, machine, tag = "machine")
 
-	/**
-	 * The source of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val from: Entity<*>
+				val cpu1 = Cpu(10, 2, 2)
+				val cpu2 = Cpu(5, 3, 2)
+				add(cpu1)
+				add(cpu2)
 
-	/**
-	 * The destination of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val to: Entity<*>
+				connect(machine, cpu1, tag = "cpu")
+				connect(machine, cpu2, tag = "cpu")
+			}
+		}
+
+		val simulator = OmegaKernel(topology)
+		simulator.run()
+	}
 }

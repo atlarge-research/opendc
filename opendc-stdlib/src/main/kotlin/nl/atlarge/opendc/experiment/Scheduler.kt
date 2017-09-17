@@ -22,38 +22,21 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.experiment
+
+import nl.atlarge.opendc.topology.Entity
 
 /**
- * An edge that represents a directed relationship between exactly two nodes in a logical topology of a cloud network.
+ * A task scheduler that is coupled to an [Entity] in the topology of the cloud network.
  *
- * @param T The relationship type the edge represents within a logical topology.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Edge<out T> : Component {
+interface Scheduler<in E : Entity<*>> {
 	/**
-	 * The label of this edge.
-	 */
-	val label: T
-
-	/**
-	 * A tag to uniquely identify the relationship this edge represents.
-	 */
-	val tag: String?
-
-	/**
-	 * The source of the edge.
+	 * Schedule the given jobs for the given entity.
 	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
+	 * @param entity The entity in the cloud network topology representing the entity.
+	 * @param jobs The jobs that have been submitted to the cloud network.
 	 */
-	val from: Entity<*>
-
-	/**
-	 * The destination of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val to: Entity<*>
+	fun schedule(entity: E, jobs: Set<Job>)
 }

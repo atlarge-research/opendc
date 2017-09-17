@@ -22,38 +22,30 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.kernel
+
+import nl.atlarge.opendc.topology.Entity
 
 /**
- * An edge that represents a directed relationship between exactly two nodes in a logical topology of a cloud network.
+ * A [Process] defines the behaviour of an [Entity] within simulation.
  *
- * @param T The relationship type the edge represents within a logical topology.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Edge<out T> : Component {
+interface Process<in E : Entity<*>> {
 	/**
-	 * The label of this edge.
-	 */
-	val label: T
-
-	/**
-	 * A tag to uniquely identify the relationship this edge represents.
-	 */
-	val tag: String?
-
-	/**
-	 * The source of the edge.
+	 * This method is invoked to start the simulation an [Entity] associated with this [Process].
 	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val from: Entity<*>
-
-	/**
-	 * The destination of the edge.
+	 * This method is assumed to be running during a simulation, but should hand back control to the simulator at
+	 * some point by suspending the process. This allows other processes to do work in the current tick of the
+	 * simulation.
+	 * Suspending the process can be achieved by calling suspending method in the context:
+	 * 	- [Context.tick]	- Wait for the next tick to occur
+	 * 	- [Context.wait]	- Wait for `n` amount of ticks before resuming execution.
+	 * 	- [Context.receive]	- Wait for a message to be received in the mailbox of the [Entity] before resuming
+	 * 	execution.
 	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
+	 * If this method exits early, before the simulation has finished, the entity is assumed to be shutdown and its
+	 * simulation will not run any further.
 	 */
-	val to: Entity<*>
+	suspend fun Context<E>.run()
 }

@@ -22,38 +22,17 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.kernel.omega
+
+import nl.atlarge.opendc.kernel.Context
 
 /**
- * An edge that represents a directed relationship between exactly two nodes in a logical topology of a cloud network.
+ * An internal message used by the Omega simulation kernel to indicate to a suspended [Process], that it should wake up
+ * and resume execution.
  *
- * @param T The relationship type the edge represents within a logical topology.
+ * This message is not guaranteed to work on other simulation kernels and [Context.interrupt] should be preferred to
+ * wake up a process from another entity.
+ *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Edge<out T> : Component {
-	/**
-	 * The label of this edge.
-	 */
-	val label: T
-
-	/**
-	 * A tag to uniquely identify the relationship this edge represents.
-	 */
-	val tag: String?
-
-	/**
-	 * The source of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val from: Entity<*>
-
-	/**
-	 * The destination of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val to: Entity<*>
-}
+object Resume

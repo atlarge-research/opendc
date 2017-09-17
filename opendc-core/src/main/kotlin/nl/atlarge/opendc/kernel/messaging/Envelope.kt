@@ -22,38 +22,35 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.kernel.messaging
+
+import nl.atlarge.opendc.kernel.Tick
+import nl.atlarge.opendc.topology.Entity
 
 /**
- * An edge that represents a directed relationship between exactly two nodes in a logical topology of a cloud network.
+ * The envelope of a message that is received from a [Channel], also containing the metadata of the message.
  *
- * @param T The relationship type the edge represents within a logical topology.
+ * @param T The shape of the message inside the envelope.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Edge<out T> : Component {
+data class Envelope<out T>(
 	/**
-	 * The label of this edge.
+	 * The message in this envelope.
 	 */
-	val label: T
+	val message: T,
 
 	/**
-	 * A tag to uniquely identify the relationship this edge represents.
+	 * The tick at which the message should be delivered.
 	 */
-	val tag: String?
+	val tick: Tick,
 
 	/**
-	 * The source of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
+	 * The sender of the message.
 	 */
-	val from: Entity<*>
+	val sender: Entity<*>?,
 
 	/**
-	 * The destination of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
+	 * The destination of the message.
 	 */
-	val to: Entity<*>
-}
+	val destination: Entity<*>
+)

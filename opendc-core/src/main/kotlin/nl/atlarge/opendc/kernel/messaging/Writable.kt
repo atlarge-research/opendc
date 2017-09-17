@@ -22,38 +22,22 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.kernel.messaging
+
+import nl.atlarge.opendc.topology.Entity
 
 /**
- * An edge that represents a directed relationship between exactly two nodes in a logical topology of a cloud network.
+ * A [Writable] instance allows entities to send messages.
  *
- * @param T The relationship type the edge represents within a logical topology.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Edge<out T> : Component {
+interface Writable {
 	/**
-	 * The label of this edge.
-	 */
-	val label: T
-
-	/**
-	 * A tag to uniquely identify the relationship this edge represents.
-	 */
-	val tag: String?
-
-	/**
-	 * The source of the edge.
+	 * Send the given message downstream.
 	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
+	 * @param msg The message to send.
+	 * @param sender The sender of the message.
+	 * @param delay The number of ticks before the message should be received.
 	 */
-	val from: Entity<*>
-
-	/**
-	 * The destination of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val to: Entity<*>
+	suspend fun Entity<*>.send(msg: Any?, sender: Entity<*>? = null, delay: Int = 0)
 }

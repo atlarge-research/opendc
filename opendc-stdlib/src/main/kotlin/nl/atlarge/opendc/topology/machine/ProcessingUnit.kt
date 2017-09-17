@@ -22,38 +22,28 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.topology.machine
+
+import nl.atlarge.opendc.topology.Entity
 
 /**
- * An edge that represents a directed relationship between exactly two nodes in a logical topology of a cloud network.
+ * An interface representing a generic processing unit which is placed into a [Machine].
  *
- * @param T The relationship type the edge represents within a logical topology.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Edge<out T> : Component {
+interface ProcessingUnit : Entity<Unit> {
 	/**
-	 * The label of this edge.
+	 * The speed of this [ProcessingUnit] per core.
 	 */
-	val label: T
+	val speed: Int
 
 	/**
-	 * A tag to uniquely identify the relationship this edge represents.
+	 * The amount of cores within this [ProcessingUnit].
 	 */
-	val tag: String?
+	val cores: Int
 
 	/**
-	 * The source of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
+	 * The energy consumption of this [ProcessingUnit] in Kj/s.
 	 */
-	val from: Entity<*>
-
-	/**
-	 * The destination of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val to: Entity<*>
+	val energyConsumption: Int
 }

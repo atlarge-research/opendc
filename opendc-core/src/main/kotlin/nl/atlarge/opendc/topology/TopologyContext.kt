@@ -25,38 +25,24 @@
 package nl.atlarge.opendc.topology
 
 /**
- * A subinterface of [Topology] which adds mutation methods. When mutation is not required, users
- * should prefer the [Topology] interface.
+ * A [TopologyContext] represents the context for entities in a specific topology, providing access to the identifier
+ * and ingoing and outgoing edges of the [Entity] within a [Topology].
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface MutableTopology : Topology, MutableSet<Entity<*>> {
+interface TopologyContext {
 	/**
-	 * Create a directed, labeled edge between two nodes in the topology.
-	 *
-	 * @param from The source of the edge.
-	 * @param to The destination of the edge.
-	 * @param label The label of the edge.
-	 * @param tag The tag of the edge that uniquely identifies the relationship the edge represents.
-	 * @return The edge that has been created.
+	 * A unique identifier of an [Entity] within the topology.
 	 */
-	fun <T> connect(from: Entity<*>, to: Entity<*>, label: T, tag: String? = null): Edge<T>
+	val Entity<*>.id: Int
 
 	/**
-	 * Create a directed, unlabeled edge between two nodes in the topology.
-	 *
-	 * @param from The source of the edge.
-	 * @param to The destination of the edge.
-	 * @param tag The tag of the edge that uniquely identifies the relationship the edge represents.
-	 * @return The edge that has been created.
+	 * The set of ingoing edges of an [Entity].
 	 */
-	fun connect(from: Entity<*>, to: Entity<*>, tag: String? = null): Edge<Unit> = connect(from, to, Unit, tag)
+	val Entity<*>.ingoingEdges: Set<Edge<*>>
 
 	/**
-	 * Create a directed, unlabeled edge between two nodes in the topology.
-	 *
-	 * @param dest The destination of the edge.
-	 * @return The edge that has been created.
+	 * The set of outgoing edges of an [Entity].
 	 */
-	infix fun Entity<*>.to(dest: Entity<*>): Edge<Unit> = connect(this, dest)
+	val Entity<*>.outgoingEdges: Set<Edge<*>>
 }

@@ -25,16 +25,9 @@
 package nl.atlarge.opendc.topology
 
 /**
- * A component within a [Topology], which is either an [Node] or an [Edge] representing the relationship between
+ * A component within a [Topology], which is either a node or an [Edge] representing the relationship between
  * entities within a logical topology of a cloud network.
- *
- * <p>A [Component]'s label provides access to user-specified data.
- *
+ **
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Component<out T> {
-	/**
-	 * The label of this [Component].
-	 */
-	val label: T
-}
+interface Component

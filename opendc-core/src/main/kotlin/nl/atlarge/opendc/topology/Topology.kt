@@ -28,8 +28,15 @@ package nl.atlarge.opendc.topology
  * A graph data structure which represents the logical topology of a cloud network consisting of one or more
  * datacenters.
  *
- * <p>A topology is [Iterable] and allows implementation-dependent iteration of the nodes in the topology.
+ * A topology is [Iterable] and allows implementation-dependent iteration of the nodes in the topology.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Topology: Set<Node<*>>
+interface Topology : TopologyContext, Cloneable, Set<Entity<*>> {
+	/**
+	 * Create a copy of the topology.
+	 *
+	 * @return A new [Topology] with a copy of the graph.
+	 */
+	public override fun clone(): Topology
+}
