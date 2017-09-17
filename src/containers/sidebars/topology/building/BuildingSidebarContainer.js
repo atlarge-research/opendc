@@ -3,7 +3,7 @@ import BuildingSidebarComponent from "../../../../components/sidebars/topology/b
 
 const mapStateToProps = state => {
     return {
-        currentRoomInConstruction: state.construction.currentRoomInConstruction
+        inSimulation: state.construction.currentExperimentId !== -1
     };
 };
 

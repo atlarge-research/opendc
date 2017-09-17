@@ -5,10 +5,10 @@ import React from 'react';
 const FilterButton = ({active, children, onClick}) => (
     <button className={classNames("btn btn-secondary", {"active": active})}
             onClick={() => {
-             if (!active) {
-                 onClick();
-             }
-         }}>
+                if (!active) {
+                    onClick();
+                }
+            }}>
         {children}
     </button>
 );

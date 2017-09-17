@@ -8,7 +8,7 @@ const mapStateToProps = state => {
 
     return {
         datacenter: state.objects.datacenter[state.currentDatacenterId],
-        interactionLevel: state.interactionLevel
+        interactionLevel: state.interactionLevel,
     };
 };
 

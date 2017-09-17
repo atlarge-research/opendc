@@ -1,25 +1,34 @@
 import PropTypes from "prop-types";
 import React from "react";
 import {Group} from "react-konva";
+import {ROOM_DEFAULT_COLOR, ROOM_IN_CONSTRUCTION_COLOR} from "../../../colors/index";
+import RackContainer from "../../../containers/map/RackContainer";
 import Shapes from "../../../shapes/index";
+import {convertLoadToSimulationColor} from "../../../util/simulation-load";
 import RoomTile from "../elements/RoomTile";
-import RackGroup from "./RackGroup";
 
-const TileGroup = ({tile, newTile, onClick}) => {
+const TileGroup = ({tile, newTile, inSimulation, roomLoad, onClick}) => {
     let tileObject;
     switch (tile.objectType) {
         case "RACK":
-            tileObject = <RackGroup tile={tile}/>;
+            tileObject = <RackContainer tile={tile}/>;
             break;
         default:
             tileObject = null;
+    }
+
+    let color = ROOM_DEFAULT_COLOR;
+    if (newTile) {
+        color = ROOM_IN_CONSTRUCTION_COLOR;
+    } else if (inSimulation) {
+        color = convertLoadToSimulationColor(roomLoad);
     }
 
     return (
         <Group
             onClick={() => onClick(tile)}
         >
-            <RoomTile tile={tile} newTile={newTile}/>
+            <RoomTile tile={tile} color={color}/>
             {tileObject}
         </Group>
     );

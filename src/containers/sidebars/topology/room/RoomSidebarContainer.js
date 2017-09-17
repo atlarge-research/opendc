@@ -3,7 +3,9 @@ import RoomSidebarComponent from "../../../../components/sidebars/topology/room/
 
 const mapStateToProps = state => {
     return {
+        roomId: state.interactionLevel.roomId,
         roomType: state.objects.room[state.interactionLevel.roomId].roomType,
+        inSimulation: state.currentExperimentId !== -1,
     };
 };
 

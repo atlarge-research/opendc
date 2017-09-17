@@ -1,6 +1,7 @@
 export const FETCH_EXPERIMENTS_OF_SIMULATION = "FETCH_EXPERIMENTS_OF_SIMULATION";
 export const ADD_EXPERIMENT = "ADD_EXPERIMENT";
 export const DELETE_EXPERIMENT = "DELETE_EXPERIMENT";
+export const OPEN_EXPERIMENT_SUCCEEDED = "OPEN_EXPERIMENT_SUCCEEDED";
 
 export function fetchExperimentsOfSimulation(simulationId) {
     return {
@@ -21,4 +22,11 @@ export function deleteExperiment(id) {
         type: DELETE_EXPERIMENT,
         id
     };
+}
+
+export function openExperimentSucceeded(id) {
+    return {
+        type: OPEN_EXPERIMENT_SUCCEEDED,
+        id
+    }
 }

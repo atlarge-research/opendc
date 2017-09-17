@@ -1,24 +1,30 @@
 import {combineReducers} from "redux";
 import {auth} from "./auth";
-import {construction} from "./construction";
+import {construction} from "./construction-mode";
+import {currentDatacenterId, currentSimulationId} from "./current-ids";
 import {interactionLevel} from "./interaction-level";
 import {map} from "./map";
 import {modals} from "./modals";
 import {objects} from "./objects";
 import {simulationList} from "./simulation-list";
-import {currentSimulationId} from "./simulations";
-import {currentDatacenterId} from "./topology";
+import {currentExperimentId, currentTick, isPlaying, loadMetric} from "./simulation-mode";
+import {states} from "./states";
 
 const rootReducer = combineReducers({
-    auth,
     objects,
+    states,
     modals,
     simulationList,
-    currentSimulationId,
-    currentDatacenterId,
-    interactionLevel,
     construction,
     map,
+    currentSimulationId,
+    currentDatacenterId,
+    currentExperimentId,
+    currentTick,
+    loadMetric,
+    isPlaying,
+    interactionLevel,
+    auth,
 });
 
 export default rootReducer;
