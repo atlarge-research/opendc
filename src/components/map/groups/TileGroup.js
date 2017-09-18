@@ -20,7 +20,7 @@ const TileGroup = ({tile, newTile, inSimulation, roomLoad, onClick}) => {
     let color = ROOM_DEFAULT_COLOR;
     if (newTile) {
         color = ROOM_IN_CONSTRUCTION_COLOR;
-    } else if (inSimulation) {
+    } else if (inSimulation && roomLoad) {
         color = convertLoadToSimulationColor(roomLoad);
     }
 

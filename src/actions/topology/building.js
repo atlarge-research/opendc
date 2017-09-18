@@ -1,5 +1,4 @@
-export const FETCH_LATEST_DATACENTER = "FETCH_LATEST_DATACENTER";
-export const FETCH_LATEST_DATACENTER_SUCCEEDED = "FETCH_LATEST_DATACENTER_SUCCEEDED";
+export const SET_CURRENT_DATACENTER = "SET_CURRENT_DATACENTER";
 export const RESET_CURRENT_DATACENTER = "RESET_CURRENT_DATACENTER";
 export const START_NEW_ROOM_CONSTRUCTION = "START_NEW_ROOM_CONSTRUCTION";
 export const START_NEW_ROOM_CONSTRUCTION_SUCCEEDED = "START_NEW_ROOM_CONSTRUCTION_SUCCEEDED";
@@ -9,19 +8,9 @@ export const CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED = "CANCEL_NEW_ROOM_CONSTRUCT
 export const ADD_TILE = "ADD_TILE";
 export const DELETE_TILE = "DELETE_TILE";
 
-export function fetchLatestDatacenter() {
-    return (dispatch, getState) => {
-        const {currentSimulationId} = getState();
-        dispatch({
-            type: FETCH_LATEST_DATACENTER,
-            currentSimulationId
-        });
-    };
-}
-
-export function fetchLatestDatacenterSucceeded(datacenterId) {
+export function setCurrentDatacenter(datacenterId) {
     return {
-        type: FETCH_LATEST_DATACENTER_SUCCEEDED,
+        type: SET_CURRENT_DATACENTER,
         datacenterId
     };
 }

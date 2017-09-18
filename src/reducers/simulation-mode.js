@@ -6,7 +6,7 @@ import {GO_TO_TICK, SET_LAST_SIMULATED_TICK} from "../actions/simulation/tick";
 export function currentExperimentId(state = -1, action) {
     switch (action.type) {
         case OPEN_EXPERIMENT_SUCCEEDED:
-            return action.id;
+            return action.experimentId;
         default:
             return state;
     }

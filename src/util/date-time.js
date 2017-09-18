@@ -88,7 +88,7 @@ export function getCurrentDateTime() {
  * Pads the given integer to have at least two digits.
  *
  * @param integer An integer to be padded.
- * @returns {string} A string containing the padded integer
+ * @returns {string} A string containing the padded integer.
  */
 export function addPaddingToTwo(integer) {
     if (integer < 10) {
@@ -96,4 +96,26 @@ export function addPaddingToTwo(integer) {
     } else {
         return integer.toString();
     }
+}
+
+/**
+ * Formats the given number of seconds/ticks to a formatted time representation.
+ *
+ * @param seconds The number of seconds.
+ * @returns {string} A string representation of that amount of second, in the from of HH:MM:SS.
+ */
+export function convertSecondsToFormattedTime(seconds) {
+    if (seconds <= 0) {
+        return "00:00:00";
+    }
+
+    let hour = Math.floor(seconds / 3600);
+    let minute = Math.floor(seconds / 60) % 60;
+    let second = seconds % 60;
+
+    hour = isNaN(hour) ? 0 : hour;
+    minute = isNaN(minute) ? 0 : minute;
+    second = isNaN(second) ? 0 : second;
+
+    return addPaddingToTwo(hour) + ":" + addPaddingToTwo(minute) + ":" + addPaddingToTwo(second);
 }

@@ -8,7 +8,7 @@ import {
 } from "../actions/objects";
 import {
     cancelNewRoomConstructionSucceeded,
-    fetchLatestDatacenterSucceeded,
+    setCurrentDatacenter,
     startNewRoomConstructionSucceeded
 } from "../actions/topology/building";
 import {addRoomToDatacenter} from "../api/routes/datacenters";
@@ -38,6 +38,7 @@ import {
     fetchAndStoreGPU,
     fetchAndStoreMachinesOfTile,
     fetchAndStoreMemory,
+    fetchAndStorePath,
     fetchAndStorePathsOfSimulation,
     fetchAndStorePSU,
     fetchAndStoreRackOnTile,
@@ -47,15 +48,31 @@ import {
     fetchAndStoreTilesOfRoom
 } from "./objects";
 
-export function* onFetchLatestDatacenter(action) {
+export function* fetchLatestDatacenter(simulationId) {
     try {
-        const paths = yield fetchAndStorePathsOfSimulation(action.currentSimulationId);
+        const paths = yield fetchAndStorePathsOfSimulation(simulationId);
         const latestPath = paths[paths.length - 1];
         const sections = yield fetchAndStoreSectionsOfPath(latestPath.id);
         const latestSection = sections[sections.length - 1];
         yield fetchAllUnitSpecifications();
         yield fetchDatacenter(latestSection.datacenterId);
-        yield put(fetchLatestDatacenterSucceeded(latestSection.datacenterId));
+        yield put(setCurrentDatacenter(latestSection.datacenterId));
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+export function* fetchAllDatacentersOfExperiment(experiment) {
+    try {
+        const path = yield fetchAndStorePath(experiment.pathId);
+        const sections = yield fetchAndStoreSectionsOfPath(path.id);
+        path.sectionIds = sections.map(section => section.id);
+        yield fetchAllUnitSpecifications();
+
+        for (let i in sections) {
+            yield fetchDatacenter(sections[i].datacenterId);
+        }
+        yield put(setCurrentDatacenter(sections[0].datacenterId));
     } catch (error) {
         console.error(error);
     }

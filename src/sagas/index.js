@@ -1,19 +1,28 @@
 import {takeEvery} from "redux-saga/effects";
 import {LOG_IN} from "../actions/auth";
-import {ADD_EXPERIMENT, DELETE_EXPERIMENT, FETCH_EXPERIMENTS_OF_SIMULATION} from "../actions/experiments";
+import {
+    ADD_EXPERIMENT,
+    DELETE_EXPERIMENT,
+    FETCH_EXPERIMENTS_OF_SIMULATION,
+    OPEN_EXPERIMENT_SUCCEEDED
+} from "../actions/experiments";
 import {ADD_SIMULATION, DELETE_SIMULATION, OPEN_SIMULATION_SUCCEEDED} from "../actions/simulations";
 import {
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
     DELETE_TILE,
-    FETCH_LATEST_DATACENTER,
     START_NEW_ROOM_CONSTRUCTION
 } from "../actions/topology/building";
 import {ADD_UNIT, DELETE_MACHINE, DELETE_UNIT} from "../actions/topology/machine";
 import {ADD_MACHINE, DELETE_RACK, EDIT_RACK_NAME} from "../actions/topology/rack";
 import {ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME} from "../actions/topology/room";
 import {DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER} from "../actions/users";
-import {onAddExperiment, onDeleteExperiment, onFetchExperimentsOfSimulation} from "./experiments";
+import {
+    onAddExperiment,
+    onDeleteExperiment,
+    onFetchExperimentsOfSimulation,
+    onOpenExperimentSucceeded
+} from "./experiments";
 import {onDeleteCurrentUser} from "./profile";
 import {onOpenSimulationSucceeded, onSimulationAdd, onSimulationDelete} from "./simulations";
 import {
@@ -29,7 +38,6 @@ import {
     onDeleteUnit,
     onEditRackName,
     onEditRoomName,
-    onFetchLatestDatacenter,
     onStartNewRoomConstruction
 } from "./topology";
 import {onFetchAuthorizationsOfCurrentUser, onFetchLoggedInUser} from "./users";
@@ -44,8 +52,8 @@ export default function* rootSaga() {
     yield takeEvery(DELETE_CURRENT_USER, onDeleteCurrentUser);
 
     yield takeEvery(OPEN_SIMULATION_SUCCEEDED, onOpenSimulationSucceeded);
+    yield takeEvery(OPEN_EXPERIMENT_SUCCEEDED, onOpenExperimentSucceeded);
 
-    yield takeEvery(FETCH_LATEST_DATACENTER, onFetchLatestDatacenter);
     yield takeEvery(START_NEW_ROOM_CONSTRUCTION, onStartNewRoomConstruction);
     yield takeEvery(CANCEL_NEW_ROOM_CONSTRUCTION, onCancelNewRoomConstruction);
     yield takeEvery(ADD_TILE, onAddTile);

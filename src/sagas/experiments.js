@@ -1,8 +1,20 @@
 import {call, put, select} from "redux-saga/effects";
 import {addPropToStoreObject, addToStore} from "../actions/objects";
-import {deleteExperiment} from "../api/routes/experiments";
+import {deleteExperiment, getExperiment} from "../api/routes/experiments";
 import {addExperiment, getExperimentsOfSimulation} from "../api/routes/simulations";
 import {fetchAndStoreAllSchedulers, fetchAndStoreAllTraces, fetchAndStorePathsOfSimulation} from "./objects";
+import {fetchAllDatacentersOfExperiment} from "./topology";
+
+export function* onOpenExperimentSucceeded(action) {
+    try {
+        const experiment = yield call(getExperiment, action.experimentId);
+        yield put(addToStore("experiment", experiment));
+
+        yield fetchAllDatacentersOfExperiment(experiment);
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 export function* onFetchExperimentsOfSimulation() {
     try {

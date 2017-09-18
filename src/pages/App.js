@@ -2,10 +2,12 @@ import PropTypes from "prop-types";
 import React from "react";
 import {connect} from "react-redux";
 import {ShortcutManager} from "react-shortcuts";
+import {openExperimentSucceeded} from "../actions/experiments";
 import {openSimulationSucceeded} from "../actions/simulations";
-import {fetchLatestDatacenter, resetCurrentDatacenter} from "../actions/topology/building";
+import {resetCurrentDatacenter} from "../actions/topology/building";
 import LoadingScreen from "../components/map/LoadingScreen";
 import AppNavbar from "../components/navigation/AppNavbar";
+import Timeline from "../components/timeline/Timeline";
 import MapStage from "../containers/map/MapStage";
 import DeleteMachineModal from "../containers/modals/DeleteMachineModal";
 import DeleteRackModal from "../containers/modals/DeleteRackModal";
@@ -20,15 +22,20 @@ const shortcutManager = new ShortcutManager(KeymapConfiguration);
 class AppComponent extends React.Component {
     static propTypes = {
         simulationId: PropTypes.number.isRequired,
+        inSimulation: PropTypes.bool,
+        experimentId: PropTypes.number,
     };
     static childContextTypes = {
         shortcuts: PropTypes.object.isRequired
     };
 
     componentDidMount() {
-        this.props.storeSimulationId(this.props.simulationId);
         this.props.resetCurrentDatacenter();
-        this.props.fetchLatestDatacenter();
+        if (this.props.inSimulation) {
+            this.props.openExperimentSucceeded(this.props.simulationId, this.props.experimentId);
+            return;
+        }
+        this.props.openSimulationSucceeded(this.props.simulationId);
     }
 
     getChildContext() {
@@ -48,6 +55,10 @@ class AppComponent extends React.Component {
                     <div className="full-height">
                         <MapStage/>
                         <TopologySidebar/>
+                        {this.props.inSimulation ?
+                            <Timeline/> :
+                            undefined
+                        }
                     </div>
                 }
                 <EditRoomNameModal/>
@@ -68,9 +79,10 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        storeSimulationId: id => dispatch(openSimulationSucceeded(id)),
         resetCurrentDatacenter: () => dispatch(resetCurrentDatacenter()),
-        fetchLatestDatacenter: () => dispatch(fetchLatestDatacenter()),
+        openSimulationSucceeded: id => dispatch(openSimulationSucceeded(id)),
+        openExperimentSucceeded: (simulationId, experimentId) =>
+            dispatch(openExperimentSucceeded(simulationId, experimentId)),
     };
 };
 

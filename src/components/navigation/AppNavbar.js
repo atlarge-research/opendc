@@ -11,10 +11,10 @@ const AppNavbar = ({simulationId, inSimulation}) => (
             <NavItem route={"/simulations/" + simulationId}>
                 <Link
                     className="nav-link"
-                    title="Build"
+                    title="Construction"
                     to={"/simulations/" + simulationId}>
                     <FontAwesome name="industry" className="mr-1"/>
-                    Build
+                    Construction
                 </Link>
             </NavItem> :
             undefined
@@ -23,10 +23,10 @@ const AppNavbar = ({simulationId, inSimulation}) => (
             <NavItem route={"/simulations/" + simulationId + "/experiments"}>
                 <Link
                     className="nav-link"
-                    title="Simulate"
+                    title="Experiments"
                     to={"/simulations/" + simulationId + "/experiments"}>
                     <FontAwesome name="play" className="mr-1"/>
-                    Simulate
+                    Experiments
                 </Link>
             </NavItem> :
             undefined

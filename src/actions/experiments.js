@@ -24,9 +24,10 @@ export function deleteExperiment(id) {
     };
 }
 
-export function openExperimentSucceeded(id) {
+export function openExperimentSucceeded(simulationId, experimentId) {
     return {
         type: OPEN_EXPERIMENT_SUCCEEDED,
-        id
+        simulationId,
+        experimentId
     }
 }

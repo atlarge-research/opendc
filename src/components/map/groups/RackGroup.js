@@ -9,7 +9,7 @@ import TileObject from "../elements/TileObject";
 
 const RackGroup = ({tile, inSimulation, rackLoad}) => {
     let color = RACK_BACKGROUND_COLOR;
-    if (inSimulation) {
+    if (inSimulation && rackLoad) {
         color = convertLoadToSimulationColor(rackLoad);
     }
 
