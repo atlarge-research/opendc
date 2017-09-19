@@ -22,36 +22,58 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.omega
+package nl.atlarge.opendc.kernel.time
 
-import nl.atlarge.opendc.kernel.Kernel
-import nl.atlarge.opendc.kernel.Process
 import nl.atlarge.opendc.kernel.Simulation
-import nl.atlarge.opendc.topology.Entity
-import nl.atlarge.opendc.topology.Topology
 
 /**
- * The Omega simulation kernel is the reference simulation kernel implementation for the OpenDC Simulator core.
- *
- * This simulator implementation is a single-threaded implementation, running simulation kernels synchronously and
- * provides a single priority queue for all events (messages, ticks, etc) that occur in the entities.
- *
- * By default, [Process]s are resolved as part of the [Topology], meaning each [Entity] in the topology should also
- * implement its simulation behaviour by deriving from the [Process] interface.
+ * A clock controls and provides access to the simulation time of a [Simulation].
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-object OmegaKernel : Kernel {
+interface Clock {
 	/**
-	 * The name of the kernel.
+	 * The moment in time the clock is currently at.
 	 */
-	override val name: String = "opendc-omega"
+	val now: Instant
 
 	/**
-	 * Create a new [Simulation] of the given [Topology] that is facilitated by this simulation kernel.
-	 *
-	 * @param topology The [Topology] to create a [Simulation] of.
-	 * @return A [Simulation] instance.
+	 * The duration of a tick in this clock. This is an arbitrary duration of time in which entities in simulation
+	 * perform some defined amount of work.
 	 */
-	override fun create(topology: Topology): Simulation = OmegaSimulation(this, topology)
+	val tick: Duration
+
+	/**
+	 * Advance the clock by the given duration.
+	 *
+	 * @param duration The duration to advance the clock by.
+	 */
+	fun advance(duration: Duration) {
+		require(duration >= 0) { "The duration to advance the clock must not be a negative number" }
+		advanceTo(now + duration)
+	}
+
+	/**
+	 * Rewind the clock by the given duration.
+	 *
+	 * @param duration The duration to rewind the clock by.
+	 */
+	fun rewind(duration: Duration) {
+		require(duration >= 0) { "The duration to rewind the clock must not be a negative number" }
+		rewindTo(now - duration)
+	}
+
+	/**
+	 * Rewind the clock to the given point in time.
+	 *
+	 * @param instant The point in time to rewind the clock to.
+	 */
+	fun rewindTo(instant: Instant)
+
+	/**
+	 * Advance the clock to the given point in time.
+	 *
+	 * @param instant The point in time to advance the clock to.
+	 */
+	fun advanceTo(instant: Instant)
 }

@@ -22,33 +22,14 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
-
-import nl.atlarge.opendc.kernel.time.Duration
-import nl.atlarge.opendc.topology.Entity
+package nl.atlarge.opendc.kernel.time
 
 /**
- * A [Writable] instance allows entities to send messages.
- *
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ * An instantaneous point on the time-line, used to record event time-stamps in a simulation.
  */
-interface Writable {
-	/**
-	 * Send the given message to the specified entity.
-	 *
-	 * @param msg The message to send.
-	 * @param delay The amount of time to wait before the message should be received.
-	 * @return A [Receipt] of the message that has been sent.
-	 */
-	suspend fun Entity<*>.send(msg: Any, delay: Duration = 0): Receipt
+typealias Instant = Long
 
-	/**
-	 * Send the given message to the specified entity.
-	 *
-	 * @param msg The message to send.
-	 * @param sender The sender of the message.
-	 * @param delay The amount of time to wait before the message should be received.
-	 * @return A [Receipt] of the message that has been sent.
-	 */
-	suspend fun Entity<*>.send(msg: Any, sender: Entity<*>, delay: Duration = 0): Receipt
-}
+/**
+ * A time interval which represents the amount of elapsed time between two events.
+ */
+typealias Duration = Long

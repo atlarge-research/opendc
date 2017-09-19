@@ -24,33 +24,27 @@
 
 package nl.atlarge.opendc.kernel.messaging
 
-import nl.atlarge.opendc.kernel.Tick
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * The envelope of a message that is received from a [Channel], also containing the metadata of the message.
+ * The envelope of a message that is sent to an [Entity], also containing the metadata of the message.
  *
  * @param T The shape of the message inside the envelope.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class Envelope<out T>(
+interface Envelope<out T: Any> {
 	/**
 	 * The message in this envelope.
 	 */
-	val message: T,
-
-	/**
-	 * The tick at which the message should be delivered.
-	 */
-	val tick: Tick,
+	val message: T
 
 	/**
 	 * The sender of the message.
 	 */
-	val sender: Entity<*>?,
+	val sender: Entity<*>?
 
 	/**
 	 * The destination of the message.
 	 */
 	val destination: Entity<*>
-)
+}

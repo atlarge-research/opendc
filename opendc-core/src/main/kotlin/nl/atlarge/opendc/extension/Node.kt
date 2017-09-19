@@ -22,33 +22,22 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
+package nl.atlarge.opendc.extension
 
-import nl.atlarge.opendc.kernel.time.Duration
-import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.Edge
 
 /**
- * A [Writable] instance allows entities to send messages.
+ * Filter a [Set] of [Edge]s based on the tag of the edges and return the origin nodes casted to type `T`.
  *
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ * @param tag The tag of the edges to get.
+ * @return An [Iterable] of the specified type `T` with the given tag.
  */
-interface Writable {
-	/**
-	 * Send the given message to the specified entity.
-	 *
-	 * @param msg The message to send.
-	 * @param delay The amount of time to wait before the message should be received.
-	 * @return A [Receipt] of the message that has been sent.
-	 */
-	suspend fun Entity<*>.send(msg: Any, delay: Duration = 0): Receipt
+inline fun <reified T> Set<Edge<*>>.origins(tag: String) = filter { it.tag == tag }.map { it.from as T }
 
-	/**
-	 * Send the given message to the specified entity.
-	 *
-	 * @param msg The message to send.
-	 * @param sender The sender of the message.
-	 * @param delay The amount of time to wait before the message should be received.
-	 * @return A [Receipt] of the message that has been sent.
-	 */
-	suspend fun Entity<*>.send(msg: Any, sender: Entity<*>, delay: Duration = 0): Receipt
-}
+/**
+ * Filter a [Set] of [Edge]s based on the tag of the edges and return the destination nodes casted to type `T`.
+ *
+ * @param tag The tag of the edges to get.
+ * @return An [Iterable] of the specified type `T` with the given tag.
+ */
+inline fun <reified T> Set<Edge<*>>.destinations(tag: String) = filter { it.tag == tag }.map { it.to as T }

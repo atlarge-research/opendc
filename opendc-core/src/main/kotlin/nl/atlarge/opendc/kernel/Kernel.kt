@@ -24,45 +24,26 @@
 
 package nl.atlarge.opendc.kernel
 
-import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.Topology
-import java.lang.Process
 
 /**
  * A message-based discrete event simulator (DES). This interface allows running simulations over a [Topology].
  * This discrete event simulator works by having entities in a [Topology] interchange messages between each other and
  * updating their observable state accordingly.
  *
- * In order to run a simulation, a kernel needs to bootstrapped by an initial set of messages to be processed by
- * entities in the topology of the simulation. Otherwise, the simulation will immediately exit.
- *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Kernel {
 	/**
-	 * The [Topology] over which the simulation is run.
+	 * The name of the kernel.
 	 */
-	val topology: Topology
+	val name: String
 
 	/**
-	 * Step through one cycle in the simulation. This method will process all events in a single tick, update the
-	 * internal clock and then return the control to the user.
-	 */
-	fun step()
-
-	/**
-	 * Run a simulation over the specified [Topology].
-	 * This method will step through multiple cycles in the simulation until no more message exist in the queue.
-	 */
-	fun run()
-
-	/**
-	 * Schedule a message for processing by a [Process].
+	 * Create a new [Simulation] of the given [Topology] that is facilitated by this simulation kernel.
 	 *
-	 * @param message The message to schedule.
-	 * @param destination The destination of the message.
-	 * @param sender The sender of the message.
-	 * @param delay The amount of ticks to wait before processing the message.
+	 * @param topology The [Topology] to create a [Simulation] of.
+	 * @return A [Simulation] instance.
 	 */
-	fun schedule(message: Any?, destination: Entity<*>, sender: Entity<*>? = null, delay: Int = 0)
+	fun create(topology: Topology): Simulation
 }

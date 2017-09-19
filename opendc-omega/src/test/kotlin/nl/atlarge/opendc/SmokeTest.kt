@@ -34,11 +34,11 @@ import org.junit.jupiter.api.Test
 internal class SmokeTest {
 	@Test
 	fun smoke() {
+		val rack = Rack()
 		val builder = AdjacencyList.builder()
 		val topology = builder.construct {
-			val rack = Rack()
 			add(rack)
-			val n = 1000
+			val n = 100
 			// Create n machines in the rack
 			repeat(n) {
 				val machine = Machine()
@@ -55,7 +55,7 @@ internal class SmokeTest {
 			}
 		}
 
-		val simulator = OmegaKernel(topology)
-		simulator.run()
+		val simulation = OmegaKernel.create(topology)
+		simulation.run()
 	}
 }

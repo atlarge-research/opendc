@@ -22,63 +22,32 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.kernel.messaging
 
-import nl.atlarge.opendc.extension.destinations
-import nl.atlarge.opendc.workload.Task
-import nl.atlarge.opendc.kernel.Context
-import nl.atlarge.opendc.kernel.Process
+import nl.atlarge.opendc.kernel.Kernel
 import nl.atlarge.opendc.topology.Entity
 
 /**
- * A Physical Machine (PM) inside a rack of a datacenter. It has a speed, and can be given a workload on which it will
- * work until finished or interrupted.
+ * A receipt of a message that has been scheduled by a simulation [Kernel]. This interface allows the cancellation of a
+ * message that has been scheduled for delivery and for checking the status of a delivery.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Machine : Entity<Machine.State>, Process<Machine> {
+interface Receipt {
 	/**
-	 * The status of a machine.
+	 * A flag to indicate the message has been canceled.
 	 */
-	enum class Status {
-		HALT, IDLE, RUNNING
-	}
+	val canceled: Boolean
 
 	/**
-	 * The shape of the state of a [Machine] entity.
+	 * A flag to indicate the message has been delivered.
 	 */
-	data class State(val status: Status, val task: Task? = null)
+	val delivered: Boolean
 
 	/**
-	 * The initial state of a [Machine] entity.
+	 * Cancel the message to prevent it from being received by an [Entity].
+	 *
+	 * @throws IllegalStateException if the message has already been delivered.
 	 */
-	override val initialState = State(Status.HALT)
-
-	/**
-	 * Run the simulation kernel for this entity.
-	 */
-	override suspend fun Context<Machine>.run() {
-		update(State(Status.IDLE))
-
-		val cpus = outgoingEdges.destinations<Cpu>("cpu")
-		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores }).toLong()
-		var task: Task? = null
-
-		while (true) {
-			if (task != null) {
-				if (task.finished) {
-					task = null
-					update(State(Status.IDLE))
-				} else {
-					task.consume(speed * delta)
-				}
-			}
-
-			val msg = receive()
-			if (msg is Task) {
-				task = msg
-				update(State(Status.RUNNING, task))
-			}
-		}
-	}
+	fun cancel()
 }

@@ -22,33 +22,39 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.messaging
-
-import nl.atlarge.opendc.kernel.time.Duration
-import nl.atlarge.opendc.topology.Entity
+package nl.atlarge.opendc.kernel.time
 
 /**
- * A [Writable] instance allows entities to send messages.
+ * A tick based clock which divides time into a discrete interval of points.
  *
+ * @param initial The initial point in time of the clock.
+ * @param tick The duration of a tick.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Writable {
+class TickClock(initial: Instant = 0, override val tick: Duration = 1) : Clock {
 	/**
-	 * Send the given message to the specified entity.
-	 *
-	 * @param msg The message to send.
-	 * @param delay The amount of time to wait before the message should be received.
-	 * @return A [Receipt] of the message that has been sent.
+	 * The moment in time the clock is currently at.
 	 */
-	suspend fun Entity<*>.send(msg: Any, delay: Duration = 0): Receipt
+	override var now: Instant = initial
+		private set
 
 	/**
-	 * Send the given message to the specified entity.
+	 * Advance the clock to the given point in time.
 	 *
-	 * @param msg The message to send.
-	 * @param sender The sender of the message.
-	 * @param delay The amount of time to wait before the message should be received.
-	 * @return A [Receipt] of the message that has been sent.
+	 * @param instant The moment in time to advance the clock to.
 	 */
-	suspend fun Entity<*>.send(msg: Any, sender: Entity<*>, delay: Duration = 0): Receipt
+	override fun advanceTo(instant: Instant) {
+		require(instant >= now) { "The point to advance to must be at the same point or further than now" }
+		now = instant
+	}
+
+	/**
+	 * Rewind the clock to the given point in time.
+	 *
+	 * @param instant The point in time to rewind the clock to.
+	 */
+	override fun rewindTo(instant: Instant) {
+		require(now >= instant) { "The point to rewind to must be before the current point in time" }
+		now = instant
+	}
 }

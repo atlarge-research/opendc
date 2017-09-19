@@ -22,21 +22,47 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel
+package nl.atlarge.opendc.kernel.omega
+
+import nl.atlarge.opendc.kernel.messaging.Envelope
+import nl.atlarge.opendc.kernel.messaging.Receipt
+import nl.atlarge.opendc.kernel.time.Instant
+import nl.atlarge.opendc.topology.Entity
 
 /**
- * A tick represents a moment of time in which some work is done by an entity.
- */
-typealias Tick = Long
-
-/**
- * The clock of a simulation manages the simulation time of a simulation [Kernel].
+ * A wrapper around a message that has been scheduled for processing.
  *
+ * @property message The message to wrap.
+ * @property time The point in time to deliver the message.
+ * @property sender The sender of the message.
+ * @property destination The destination of the message.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Clock {
+internal data class MessageContainer(override val message: Any,
+									 val time: Instant,
+									 override val sender: Entity<*>?,
+									 override val destination: Entity<*>) : Envelope<Any>, Receipt {
 	/**
-	 * The tick the clock is currently at.
+	 * A flag to indicate the message has been canceled.
 	 */
-	val tick: Tick
+	override var canceled: Boolean = false
+
+	/**
+	 * A flag to indicate the message has been delivered.
+	 */
+	override var delivered: Boolean = false
+
+	/**
+	 * Cancel the message to prevent it from being received by an [Entity].
+	 *
+	 * @throws IllegalStateException if the message has already been delivered.
+	 */
+	override fun cancel() {
+		if (delivered) {
+			throw IllegalStateException("The message has already been delivered")
+		}
+
+		canceled = true
+	}
+
 }

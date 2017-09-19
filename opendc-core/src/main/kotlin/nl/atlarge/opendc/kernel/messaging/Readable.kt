@@ -25,23 +25,26 @@
 package nl.atlarge.opendc.kernel.messaging
 
 /**
- * A [Readable] instance allows objects to pull messages from the instance.
+ * A [Readable] instance has a mailbox associated with the instance to which objects can send messages, which can be
+ * received by the class.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Readable {
 	/**
-	 * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
+	 * Retrieve and removes a single message from the entity's mailbox, suspending the function if the mailbox is empty.
+	 * The execution is resumed after the message has landed in the entity's mailbox after which the message [Envelope]
+	 * is mapped through `block` to generate a processed message.
 	 *
 	 * @param block The block to process the message with.
 	 * @return The processed message.
 	 */
-	suspend fun <T> receive(block: Envelope<*>.(Any?) -> T): T
+	suspend fun <T> receive(block: Envelope<*>.(Any) -> T): T
 
 	/**
-	 * Retrieve a single message from this [Channel].
+	 * Retrieve and removes a single message from the entity's mailbox, suspending the function if the mailbox is empty.
 	 *
-	 * @return The message that was received from the channel
+	 * @return The message that was received from the entity's mailbox.
 	 */
-	suspend fun receive(): Any? = receive { it }
+	suspend fun receive(): Any = receive { it }
 }

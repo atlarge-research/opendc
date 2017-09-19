@@ -22,19 +22,20 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.kernel.omega
+package nl.atlarge.opendc.platform
 
-import nl.atlarge.opendc.kernel.Clock
-import nl.atlarge.opendc.kernel.Tick
+import nl.atlarge.opendc.kernel.Kernel
 
 /**
- * A [Clock] implementation used by the Omega simulation kernel.
+ * A blueprint for a reproducible simulation in a pre-defined setting.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class OmegaClock: Clock {
+interface Experiment<out T> {
 	/**
-	 * The simulation time expressed as the amount of ticks that passed.
+	 * Run the experiment on the specified simulation [Kernel].
+	 *
+	 * @param kernel The simulation kernel to run the experiment.
 	 */
-	override var tick: Tick = 0
+	fun run(kernel: Kernel): T
 }
