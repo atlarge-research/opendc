@@ -31,4 +31,9 @@ import nl.atlarge.opendc.topology.Entity
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Room : Entity<Unit>
+class Room : Entity<Unit> {
+	/**
+	 * The initial state of the entity.
+	 */
+	override val initialState = Unit
+}

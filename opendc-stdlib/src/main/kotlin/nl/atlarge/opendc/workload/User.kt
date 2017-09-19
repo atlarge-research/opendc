@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
+package nl.atlarge.opendc.workload
 
 import nl.atlarge.opendc.topology.Topology
 
 /**
  * A user of a cloud network that provides [Job]s for the simulation.
  *
- * <p>Each [User] in a simulation has its own logical view of the cloud network which is used to route its jobs in the
+ * Each [User] in a simulation has its own logical view of the cloud network which is used to route its jobs in the
  * physical network.
  *
  * @param id The unique identifier of the user.

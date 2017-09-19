@@ -22,21 +22,15 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
-
-import nl.atlarge.opendc.topology.Entity
+package nl.atlarge.opendc.workload
 
 /**
- * A task scheduler that is coupled to an [Entity] in the topology of the cloud network.
+ * A job that is submitted to a cloud network, which consists of one or multiple [Task]s.
  *
+ * @param id The unique identifier of this job.
+ * @param name The name of this job.
+ * @param owner The user to which the job belongs.
+ * @param tasks The tasks of which the job consists.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Scheduler<in E : Entity<*>> {
-	/**
-	 * Schedule the given jobs for the given entity.
-	 *
-	 * @param entity The entity in the cloud network topology representing the entity.
-	 * @param jobs The jobs that have been submitted to the cloud network.
-	 */
-	fun schedule(entity: E, jobs: Set<Job>)
-}
+data class Job(val id: Int, val name: String, val owner: User, val tasks: Collection<Task>)

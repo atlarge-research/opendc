@@ -22,13 +22,50 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.experiment
+package nl.atlarge.opendc.workload
 
 /**
- * A simulation of multiple simultaneous workloads running on top of a topology.
+ * A task represents some computation that is part of a [Job].
  *
- * @param id The unique identifier of the experiment.
- * @param name The name of the experiment.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class Experiment(val id: Int, val name: String)
+data class Task(
+	val id: Int,
+	val dependencies: Set<Task>,
+	val flops: Long
+) {
+	/**
+	 * The remaining amount of flops to compute.
+	 */
+	var remaining: Long = flops
+		private set
+
+	/**
+	 * A flag to indicate whether the task is finished.
+	 */
+	var finished: Boolean = false
+		private set
+
+	/**
+	 * Determine whether the task is ready to be processed.
+	 *
+	 * @return `true` if the task is ready to be processed, `false` otherwise.
+	 */
+	fun isReady() = dependencies.all { it.finished }
+
+	/**
+	 * Consume the given amount of flops of this task.
+	 *
+	 * @param flops The total amount of flops to consume.
+	 */
+	fun consume(flops: Long) {
+		if (finished)
+			return
+		if (remaining <= flops) {
+			finished = true
+			remaining = 0
+		} else {
+			remaining -= flops
+		}
+	}
+}
