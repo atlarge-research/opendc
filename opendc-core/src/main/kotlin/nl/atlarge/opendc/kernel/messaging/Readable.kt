@@ -24,6 +24,9 @@
 
 package nl.atlarge.opendc.kernel.messaging
 
+import nl.atlarge.opendc.kernel.time.Duration
+
+
 /**
  * A [Readable] instance has a mailbox associated with the instance to which objects can send messages, which can be
  * received by the class.
@@ -43,8 +46,30 @@ interface Readable {
 
 	/**
 	 * Retrieve and removes a single message from the entity's mailbox, suspending the function if the mailbox is empty.
+	 * The execution is resumed after the message has landed in the entity's mailbox or the timeout was reached,
+	 *
+	 * If the message has been received, the message [Envelope] is mapped through `block` to generate a processed
+	 * message. If the timeout was reached, `block` is not called and `null` is returned.
+	 *
+	 * @param timeout The duration to wait before resuming execution.
+	 * @param block The block to process the message with.
+	 * @return The processed message or `null` if the timeout was reached.
+	 */
+	suspend fun <T> receive(timeout: Duration, block: Envelope<*>.(Any) -> T): T?
+
+	/**
+	 * Retrieve and removes a single message from the entity's mailbox, suspending the function until a message has
+	 * landed in the entity's mailbox.
 	 *
 	 * @return The message that was received from the entity's mailbox.
 	 */
 	suspend fun receive(): Any = receive { it }
+
+	/**
+	 * Retrieve and removes a single message from the entity's mailbox, suspending the function until a message has
+	 * landed in the entity's mailbox or the timeout has been reached.
+	 *
+	 * @return The message that was received from the entity's mailbox or `null` if the timeout was reached.
+	 */
+	suspend fun receive(timeout: Duration): Any? = receive(timeout) { it }
 }

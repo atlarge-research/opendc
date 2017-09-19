@@ -101,7 +101,13 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 				// Tick has already occurred
 				logger.warn { "message processed out of order" }
 			}
+			// Remove the message from the queue
 			queue.poll()
+
+			// If the sender has canceled the message, we move on to the next message
+			if (envelope.canceled) {
+				continue
+			}
 
 			val context = registry[envelope.destination] ?: continue
 
@@ -244,7 +250,9 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		}
 
 		/**
-		 * Retrieves and removes a single message from this channel suspending the caller while the channel is empty.
+		 * Retrieve and removes a single message from the entity's mailbox, suspending the function if the mailbox is empty.
+		 * The execution is resumed after the message has landed in the entity's mailbox after which the message [Envelope]
+		 * is mapped through `block` to generate a processed message.
 		 *
 		 * @param block The block to process the message with.
 		 * @return The processed message.
@@ -252,6 +260,29 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		suspend override fun <T> receive(block: Envelope<*>.(Any) -> T): T {
 			val envelope = receiveEnvelope()
 			return block(envelope, envelope.message)
+		}
+
+		/**
+		 * Retrieve and removes a single message from the entity's mailbox, suspending the function if the mailbox is empty.
+		 * The execution is resumed after the message has landed in the entity's mailbox or the timeout was reached,
+		 *
+		 * If the message has been received, the message [Envelope] is mapped through `block` to generate a processed
+		 * message. If the timeout was reached, `block` is not called and `null` is returned.
+		 *
+		 * @param timeout The duration to wait before resuming execution.
+		 * @param block The block to process the message with.
+		 * @return The processed message or `null` if the timeout was reached.
+		 */
+		suspend override fun <T> receive(timeout: Duration, block: Envelope<*>.(Any) -> T): T? {
+			val receipt = schedule(Timeout, entity, entity, timeout)
+			val envelope = receiveEnvelope()
+
+			if (envelope.message !is Timeout) {
+				receipt.cancel()
+				return block(envelope, envelope.message)
+			}
+
+			return null
 		}
 
 		/**

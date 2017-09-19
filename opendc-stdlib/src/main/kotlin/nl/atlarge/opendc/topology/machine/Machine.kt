@@ -28,6 +28,7 @@ import nl.atlarge.opendc.extension.destinations
 import nl.atlarge.opendc.workload.Task
 import nl.atlarge.opendc.kernel.Context
 import nl.atlarge.opendc.kernel.Process
+import nl.atlarge.opendc.kernel.time.Duration
 import nl.atlarge.opendc.topology.Entity
 
 /**
@@ -60,6 +61,7 @@ class Machine : Entity<Machine.State>, Process<Machine> {
 	override suspend fun Context<Machine>.run() {
 		update(State(Status.IDLE))
 
+		val interval: Duration = 10
 		val cpus = outgoingEdges.destinations<Cpu>("cpu")
 		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores }).toLong()
 		var task: Task? = null
@@ -74,7 +76,7 @@ class Machine : Entity<Machine.State>, Process<Machine> {
 				}
 			}
 
-			val msg = receive()
+			val msg = receive(interval)
 			if (msg is Task) {
 				task = msg
 				update(State(Status.RUNNING, task))
