@@ -26,3 +26,4 @@ rootProject.name = "opendc-simulator"
 include 'opendc-core'
 include 'opendc-omega'
 include 'opendc-stdlib'
+include 'opendc-integration-jpa'
