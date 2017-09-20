@@ -166,7 +166,7 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 	 * @param delay The amount of time to wait before processing the message.
 	 */
 	override fun schedule(message: Any, destination: Entity<*>, sender: Entity<*>?, delay: Duration): Receipt {
-		require(delay > 0) { "The amount of time to delay the message must be a positive number" }
+		require(delay >= 0) { "The amount of time to delay the message must be a positive number" }
 		val wrapped = MessageContainer(message, clock.now + delay, sender, destination)
 		queue.add(wrapped)
 		return wrapped
@@ -257,7 +257,7 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		 * @param block The block to process the message with.
 		 * @return The processed message.
 		 */
-		suspend override fun <T> receive(block: Envelope<*>.(Any) -> T): T {
+		suspend override fun <T> receive(block: suspend Envelope<*>.(Any) -> T): T {
 			val envelope = receiveEnvelope()
 			return block(envelope, envelope.message)
 		}
@@ -273,7 +273,7 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		 * @param block The block to process the message with.
 		 * @return The processed message or `null` if the timeout was reached.
 		 */
-		suspend override fun <T> receive(timeout: Duration, block: Envelope<*>.(Any) -> T): T? {
+		suspend override fun <T> receive(timeout: Duration, block: suspend Envelope<*>.(Any) -> T): T? {
 			val receipt = schedule(Timeout, entity, entity, timeout)
 			val envelope = receiveEnvelope()
 

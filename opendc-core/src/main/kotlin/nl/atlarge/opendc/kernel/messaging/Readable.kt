@@ -42,7 +42,7 @@ interface Readable {
 	 * @param block The block to process the message with.
 	 * @return The processed message.
 	 */
-	suspend fun <T> receive(block: Envelope<*>.(Any) -> T): T
+	suspend fun <T> receive(block: suspend Envelope<*>.(Any) -> T): T
 
 	/**
 	 * Retrieve and removes a single message from the entity's mailbox, suspending the function if the mailbox is empty.
@@ -55,7 +55,7 @@ interface Readable {
 	 * @param block The block to process the message with.
 	 * @return The processed message or `null` if the timeout was reached.
 	 */
-	suspend fun <T> receive(timeout: Duration, block: Envelope<*>.(Any) -> T): T?
+	suspend fun <T> receive(timeout: Duration, block: suspend Envelope<*>.(Any) -> T): T?
 
 	/**
 	 * Retrieve and removes a single message from the entity's mailbox, suspending the function until a message has
