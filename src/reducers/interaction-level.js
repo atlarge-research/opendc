@@ -6,11 +6,13 @@ import {
     GO_FROM_ROOM_TO_RACK
 } from "../actions/interaction-level";
 import {OPEN_SIMULATION_SUCCEEDED} from "../actions/simulations";
+import {SET_CURRENT_DATACENTER} from "../actions/topology/building";
 
 export function interactionLevel(state = {mode: "BUILDING"}, action) {
     switch (action.type) {
         case OPEN_EXPERIMENT_SUCCEEDED:
         case OPEN_SIMULATION_SUCCEEDED:
+        case SET_CURRENT_DATACENTER:
             return {
                 mode: "BUILDING"
             };

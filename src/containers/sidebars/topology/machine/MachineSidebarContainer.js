@@ -3,8 +3,9 @@ import MachineSidebarComponent from "../../../../components/sidebars/topology/ma
 
 const mapStateToProps = state => {
     return {
-        machineId: state.interactionLevel.machineId,
         inSimulation: state.currentExperimentId !== -1,
+        machineId: state.objects.rack[state.objects.tile[state.interactionLevel.tileId].objectId]
+            .machineIds[state.interactionLevel.position - 1],
     };
 };
 

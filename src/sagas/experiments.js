@@ -1,6 +1,17 @@
+import {delay} from "redux-saga";
 import {call, put, select} from "redux-saga/effects";
 import {addPropToStoreObject, addToStore} from "../actions/objects";
-import {deleteExperiment, getExperiment} from "../api/routes/experiments";
+import {setLastSimulatedTick} from "../actions/simulation/tick";
+import {addToStates} from "../actions/states";
+import {
+    deleteExperiment,
+    getAllMachineStates,
+    getAllRackStates,
+    getAllRoomStates,
+    getAllTaskStates,
+    getExperiment,
+    getLastSimulatedTick
+} from "../api/routes/experiments";
 import {getTasksOfJob} from "../api/routes/jobs";
 import {addExperiment, getExperimentsOfSimulation, getSimulation} from "../api/routes/simulations";
 import {getJobsOfTrace} from "../api/routes/traces";
@@ -19,8 +30,42 @@ export function* onOpenExperimentSucceeded(action) {
         yield fetchWorkloadOfTrace(experiment.traceId);
 
         yield fetchAllDatacentersOfExperiment(experiment);
+        yield startStateFetchLoop(action.experimentId);
     } catch (error) {
         console.error(error);
+    }
+}
+
+function* startStateFetchLoop(experimentId) {
+    try {
+        while (true) {
+            const lastSimulatedTick = (yield call(getLastSimulatedTick, experimentId)).lastSimulatedTick;
+            if (lastSimulatedTick !== (yield select(state => state.lastSimulatedTick))) {
+                yield put(setLastSimulatedTick(lastSimulatedTick));
+
+                const taskStates = yield call(getAllTaskStates, experimentId);
+                const machineStates = yield call(getAllMachineStates, experimentId);
+                const rackStates = yield call(getAllRackStates, experimentId);
+                const roomStates = yield call(getAllRoomStates, experimentId);
+
+                yield addAllStates("task", taskStates);
+                yield addAllStates("machine", machineStates);
+                yield addAllStates("rack", rackStates);
+                yield addAllStates("room", roomStates);
+
+                yield delay(5000);
+            } else {
+                yield delay(10000);
+            }
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function* addAllStates(objectType, states) {
+    for (let i in states) {
+        yield put(addToStates(objectType, states[i].tick, states[i]));
     }
 }
 

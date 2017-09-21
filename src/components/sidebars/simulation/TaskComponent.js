@@ -5,16 +5,16 @@ const TaskComponent = ({task, flopsLeft}) => {
     let stateInfo;
 
     if (flopsLeft === task.totalFlopCount) {
-        stateInfo = <p><span className="fa fa-hourglass-half"/>Waiting</p>;
+        stateInfo = <p><span className="fa fa-hourglass-half mr-2"/>Waiting</p>;
     } else if (flopsLeft > 0) {
         stateInfo = (
             <p>
-                <span className="fa fa-refresh"/>
+                <span className="fa fa-refresh mr-2"/>
                 Running ({task.totalFlopCount - flopsLeft} / {task.totalFlopCount} FLOPS)
             </p>
         );
     } else {
-        stateInfo = <p><span className="fa fa-check"/>Completed</p>;
+        stateInfo = <p><span className="fa fa-check mr-2"/>Completed</p>;
     }
 
     return (

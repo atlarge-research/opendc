@@ -5,10 +5,10 @@ function getXPercentage(tick, maxTick) {
     if (maxTick === 0) {
         return "0%";
     } else if (tick > maxTick) {
-        return "100%";
+        return ((maxTick / (maxTick + 1)) * 100) + "%";
     }
 
-    return (tick / maxTick) + "%";
+    return ((tick / (maxTick + 1)) * 100) + "%";
 }
 
 const TimelineControlsComponent = ({currentTick, lastSimulatedTick, sectionTicks}) => (

@@ -7,7 +7,7 @@ import {map} from "./map";
 import {modals} from "./modals";
 import {objects} from "./objects";
 import {simulationList} from "./simulation-list";
-import {currentExperimentId, currentTick, isPlaying, loadMetric} from "./simulation-mode";
+import {currentExperimentId, currentTick, isPlaying, lastSimulatedTick, loadMetric} from "./simulation-mode";
 import {states} from "./states";
 
 const rootReducer = combineReducers({
@@ -21,6 +21,7 @@ const rootReducer = combineReducers({
     currentDatacenterId,
     currentExperimentId,
     currentTick,
+    lastSimulatedTick,
     loadMetric,
     isPlaying,
     interactionLevel,

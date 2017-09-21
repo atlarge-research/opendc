@@ -22,7 +22,7 @@ function objectStates(type) {
                     [action.tick]: Object.assign(
                         {},
                         state[action.tick],
-                        {[action.object.id]: action.object}
+                        {[action.object[action.objectType + "Id"]]: action.object}
                     )
                 }
             );
