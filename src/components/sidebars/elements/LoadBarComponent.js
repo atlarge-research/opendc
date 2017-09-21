@@ -6,7 +6,7 @@ const LoadBarComponent = ({percent, disabled}) => (
         <strong>Current load</strong>
         <div className={classNames("progress", {disabled})}>
             <div
-                className="progress-bar progress-bar-striped"
+                className="progress-bar"
                 role="progressbar"
                 aria-valuenow={percent}
                 aria-valuemin="0"

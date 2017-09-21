@@ -1,6 +1,7 @@
 import React from "react";
 import LoadBarContainer from "../../../../containers/sidebars/elements/LoadBarContainer";
 import LoadChartContainer from "../../../../containers/sidebars/elements/LoadChartContainer";
+import BackToBuildingContainer from "../../../../containers/sidebars/topology/room/BackToBuildingContainer";
 import DeleteRoomContainer from "../../../../containers/sidebars/topology/room/DeleteRoomContainer";
 import RackConstructionContainer from "../../../../containers/sidebars/topology/room/RackConstructionContainer";
 import RoomNameContainer from "../../../../containers/sidebars/topology/room/RoomNameContainer";
@@ -15,6 +16,7 @@ const RoomSidebarComponent = ({roomId, roomType, inSimulation}) => {
     return (
         <div>
             <RoomNameContainer/>
+            <BackToBuildingContainer/>
             <RoomTypeContainer/>
             {inSimulation ?
                 <div>
