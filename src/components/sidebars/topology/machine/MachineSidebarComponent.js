@@ -4,7 +4,7 @@ import LoadChartContainer from "../../../../containers/sidebars/elements/LoadCha
 import BackToRackContainer from "../../../../containers/sidebars/topology/machine/BackToRackContainer";
 import DeleteMachineContainer from "../../../../containers/sidebars/topology/machine/DeleteMachineContainer";
 import MachineNameContainer from "../../../../containers/sidebars/topology/machine/MachineNameContainer";
-import UnitTabsComponent from "./UnitTabsComponent";
+import UnitTabsContainer from "../../../../containers/sidebars/topology/machine/UnitTabsContainer";
 
 const MachineSidebarComponent = ({inSimulation, machineId}) => {
     return (
@@ -18,7 +18,7 @@ const MachineSidebarComponent = ({inSimulation, machineId}) => {
                 </div> :
                 <DeleteMachineContainer/>
             }
-            <UnitTabsComponent/>
+            <UnitTabsContainer/>
         </div>
     );
 };

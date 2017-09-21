@@ -12,8 +12,8 @@ const LoadChartComponent = ({data, currentTick}) => (
         />
         <VictoryLine
             data={[
-                {x: currentTick, y: 0},
-                {x: currentTick, y: 1},
+                {x: currentTick + 1, y: 0},
+                {x: currentTick + 1, y: 1},
             ]}
             style={{
                 data: {stroke: "#00A6D6", strokeWidth: 3}

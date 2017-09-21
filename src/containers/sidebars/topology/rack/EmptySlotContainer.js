@@ -2,6 +2,12 @@ import {connect} from "react-redux";
 import {addMachine} from "../../../../actions/topology/rack";
 import EmptySlotComponent from "../../../../components/sidebars/topology/rack/EmptySlotComponent";
 
+const mapStateToProps = state => {
+    return {
+        inSimulation: state.currentExperimentId !== -1
+    };
+};
+
 const mapDispatchToProps = (dispatch, ownProps) => {
     return {
         onAdd: () => dispatch(addMachine(ownProps.position)),
@@ -9,7 +15,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
 };
 
 const EmptySlotContainer = connect(
-    undefined,
+    mapStateToProps,
     mapDispatchToProps
 )(EmptySlotComponent);
 

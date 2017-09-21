@@ -2,7 +2,7 @@ import React from "react";
 import UnitAddContainer from "../../../../containers/sidebars/topology/machine/UnitAddContainer";
 import UnitListContainer from "../../../../containers/sidebars/topology/machine/UnitListContainer";
 
-const UnitTabsComponent = () => (
+const UnitTabsComponent = ({inSimulation}) => (
     <div>
         <ul className="nav nav-tabs mt-2 mb-1" role="tablist">
             <li className="nav-item">
@@ -20,19 +20,31 @@ const UnitTabsComponent = () => (
         </ul>
         <div className="tab-content">
             <div className="tab-pane active" id="cpu-units" role="tabpanel">
-                <UnitAddContainer unitType="cpu"/>
+                {inSimulation ?
+                    undefined :
+                    <UnitAddContainer unitType="cpu"/>
+                }
                 <UnitListContainer unitType="cpu"/>
             </div>
             <div className="tab-pane" id="gpu-units" role="tabpanel">
-                <UnitAddContainer unitType="gpu"/>
+                {inSimulation ?
+                    undefined :
+                    <UnitAddContainer unitType="gpu"/>
+                }
                 <UnitListContainer unitType="gpu"/>
             </div>
             <div className="tab-pane" id="memory-units" role="tabpanel">
-                <UnitAddContainer unitType="memory"/>
+                {inSimulation ?
+                    undefined :
+                    <UnitAddContainer unitType="memory"/>
+                }
                 <UnitListContainer unitType="memory"/>
             </div>
             <div className="tab-pane" id="storage-units" role="tabpanel">
-                <UnitAddContainer unitType="storage"/>
+                {inSimulation ?
+                    undefined :
+                    <UnitAddContainer unitType="storage"/>
+                }
                 <UnitListContainer unitType="storage"/>
             </div>
         </div>

@@ -5,6 +5,7 @@ import UnitComponent from "../../../../components/sidebars/topology/machine/Unit
 const mapStateToProps = (state, ownProps) => {
     return {
         unit: state.objects[ownProps.unitType][ownProps.unitId],
+        inSimulation: state.currentExperimentId !== -1
     };
 };
 
