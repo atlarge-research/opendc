@@ -1,5 +1,6 @@
 export const MAP_SIZE = 50;
 export const TILE_SIZE_IN_PIXELS = 100;
+export const TILE_SIZE_IN_METERS = 0.5;
 export const MAP_SIZE_IN_PIXELS = MAP_SIZE * TILE_SIZE_IN_PIXELS;
 
 export const OBJECT_MARGIN_IN_PIXELS = TILE_SIZE_IN_PIXELS / 5;

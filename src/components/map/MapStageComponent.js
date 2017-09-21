@@ -34,6 +34,13 @@ class MapStageComponent extends React.Component {
     componentDidMount() {
         window.addEventListener("resize", this.updateDimensions);
         window.addEventListener("wheel", this.updateScale);
+
+        window["exportCanvasToImage"] = () => {
+            const canvasData = this.stage.getStage().toDataURL();
+            const newWindow = window.open('about:blank', 'OpenDC Canvas Export');
+            newWindow.document.write("<img src='" + canvasData + "' alt='Canvas Image Export'/>");
+            newWindow.document.title = "OpenDC Canvas Export";
+        }
     }
 
     componentWillUnmount() {

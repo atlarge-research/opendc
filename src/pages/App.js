@@ -5,9 +5,11 @@ import {ShortcutManager} from "react-shortcuts";
 import {openExperimentSucceeded} from "../actions/experiments";
 import {openSimulationSucceeded} from "../actions/simulations";
 import {resetCurrentDatacenter} from "../actions/topology/building";
+import ToolPanelComponent from "../components/map/controls/ToolPanelComponent";
 import LoadingScreen from "../components/map/LoadingScreen";
 import AppNavbar from "../components/navigation/AppNavbar";
 import SimulationSidebarComponent from "../components/sidebars/simulation/SimulationSidebarComponent";
+import ScaleIndicatorContainer from "../containers/map/controls/ScaleIndicatorContainer";
 import MapStage from "../containers/map/MapStage";
 import DeleteMachineModal from "../containers/modals/DeleteMachineModal";
 import DeleteRackModal from "../containers/modals/DeleteRackModal";
@@ -55,6 +57,8 @@ class AppComponent extends React.Component {
                     </div> :
                     <div className="full-height">
                         <MapStage/>
+                        <ScaleIndicatorContainer/>
+                        <ToolPanelComponent/>
                         <TopologySidebar/>
                         {this.props.inSimulation ?
                             <TimelineContainer/> :
