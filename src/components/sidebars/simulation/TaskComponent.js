@@ -1,3 +1,4 @@
+import approx from "approximate-number";
 import React from "react";
 import {convertSecondsToFormattedTime} from "../../../util/date-time";
 
@@ -12,7 +13,7 @@ const TaskComponent = ({task, flopsLeft}) => {
         stateInfo = (
             <p>
                 <span className="fa fa-refresh mr-2"/>
-                Running ({task.totalFlopCount - flopsLeft} / {task.totalFlopCount} FLOPS)
+                Running ({approx(task.totalFlopCount - flopsLeft)} / {approx(task.totalFlopCount)} FLOPS)
             </p>
         );
     } else {
@@ -24,7 +25,7 @@ const TaskComponent = ({task, flopsLeft}) => {
     return (
         <li className="list-group-item flex-column align-items-start">
             <div className="d-flex w-100 justify-content-between">
-                <h5 className="mb-1">{task.totalFlopCount} FLOPS</h5>
+                <h5 className="mb-1">{approx(task.totalFlopCount)} FLOPS</h5>
                 <small>Starts at {convertSecondsToFormattedTime(task.startTick)}</small>
             </div>
             {stateInfo}

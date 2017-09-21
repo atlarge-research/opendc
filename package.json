@@ -4,6 +4,7 @@
   "private": true,
   "proxy": "http://localhost:8081",
   "dependencies": {
+    "approximate-number": "^2.0.0",
     "bootstrap": "4.0.0-alpha.6",
     "classnames": "^2.2.5",
     "history": "^4.6.3",
