@@ -1,5 +1,11 @@
 import {SIM_HIGH_COLOR, SIM_LOW_COLOR, SIM_MID_HIGH_COLOR, SIM_MID_LOW_COLOR} from "../colors/index";
 
+export const LOAD_NAME_MAP = {
+    LOAD: "computational load",
+    TEMPERATURE: "temperature",
+    MEMORY: "memory use",
+};
+
 export function convertLoadToSimulationColor(load) {
     if (load <= 0.25) {
         return SIM_LOW_COLOR;
