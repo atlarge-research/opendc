@@ -5,7 +5,9 @@ const mapStateToProps = state => {
     let sectionTicks = [];
     if (state.currentExperimentId !== -1) {
         const sectionIds = state.objects.path[state.objects.experiment[state.currentExperimentId].pathId].sectionIds;
-        sectionTicks = sectionIds.map(sectionId => state.objects.section[sectionId].startTick);
+        if (sectionIds) {
+            sectionTicks = sectionIds.map(sectionId => state.objects.section[sectionId].startTick);
+        }
     }
 
     return {

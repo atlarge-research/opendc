@@ -1,4 +1,5 @@
 import {combineReducers} from "redux";
+import {OPEN_EXPERIMENT_SUCCEEDED} from "../actions/experiments";
 import {
     CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
     FINISH_NEW_ROOM_CONSTRUCTION,
@@ -12,6 +13,7 @@ export function currentRoomInConstruction(state = -1, action) {
             return action.roomId;
         case CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED:
         case FINISH_NEW_ROOM_CONSTRUCTION:
+        case OPEN_EXPERIMENT_SUCCEEDED:
             return -1;
         default:
             return state;
@@ -23,6 +25,7 @@ export function inRackConstructionMode(state = false, action) {
         case START_RACK_CONSTRUCTION:
             return true;
         case STOP_RACK_CONSTRUCTION:
+        case OPEN_EXPERIMENT_SUCCEEDED:
             return false;
         default:
             return state;

@@ -1,4 +1,5 @@
 import {combineReducers} from "redux";
+import {OPEN_EXPERIMENT_SUCCEEDED} from "../actions/experiments";
 import {CLOSE_NEW_EXPERIMENT_MODAL, OPEN_NEW_EXPERIMENT_MODAL} from "../actions/modals/experiments";
 import {CLOSE_DELETE_PROFILE_MODAL, OPEN_DELETE_PROFILE_MODAL} from "../actions/modals/profile";
 import {CLOSE_NEW_SIMULATION_MODAL, OPEN_NEW_SIMULATION_MODAL} from "../actions/modals/simulations";
@@ -21,6 +22,7 @@ function modal(openAction, closeAction) {
             case openAction:
                 return true;
             case closeAction:
+            case OPEN_EXPERIMENT_SUCCEEDED:
                 return false;
             default:
                 return state;

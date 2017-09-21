@@ -7,7 +7,7 @@ import {openSimulationSucceeded} from "../actions/simulations";
 import {resetCurrentDatacenter} from "../actions/topology/building";
 import LoadingScreen from "../components/map/LoadingScreen";
 import AppNavbar from "../components/navigation/AppNavbar";
-import Timeline from "../components/timeline/Timeline";
+import SimulationSidebarComponent from "../components/sidebars/simulation/SimulationSidebarComponent";
 import MapStage from "../containers/map/MapStage";
 import DeleteMachineModal from "../containers/modals/DeleteMachineModal";
 import DeleteRackModal from "../containers/modals/DeleteRackModal";
@@ -15,6 +15,7 @@ import DeleteRoomModal from "../containers/modals/DeleteRoomModal";
 import EditRackNameModal from "../containers/modals/EditRackNameModal";
 import EditRoomNameModal from "../containers/modals/EditRoomNameModal";
 import TopologySidebar from "../containers/sidebars/topology/TopologySidebar";
+import TimelineContainer from "../containers/timeline/TimelineContainer";
 import KeymapConfiguration from "../shortcuts/keymap";
 
 const shortcutManager = new ShortcutManager(KeymapConfiguration);
@@ -56,7 +57,11 @@ class AppComponent extends React.Component {
                         <MapStage/>
                         <TopologySidebar/>
                         {this.props.inSimulation ?
-                            <Timeline/> :
+                            <TimelineContainer/> :
+                            undefined
+                        }
+                        {this.props.inSimulation ?
+                            <SimulationSidebarComponent/> :
                             undefined
                         }
                     </div>

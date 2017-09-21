@@ -1,14 +1,22 @@
 import {call, put, select} from "redux-saga/effects";
 import {addPropToStoreObject, addToStore} from "../actions/objects";
 import {deleteExperiment, getExperiment} from "../api/routes/experiments";
-import {addExperiment, getExperimentsOfSimulation} from "../api/routes/simulations";
+import {getTasksOfJob} from "../api/routes/jobs";
+import {addExperiment, getExperimentsOfSimulation, getSimulation} from "../api/routes/simulations";
+import {getJobsOfTrace} from "../api/routes/traces";
 import {fetchAndStoreAllSchedulers, fetchAndStoreAllTraces, fetchAndStorePathsOfSimulation} from "./objects";
 import {fetchAllDatacentersOfExperiment} from "./topology";
 
 export function* onOpenExperimentSucceeded(action) {
     try {
+        const simulation = yield call(getSimulation, action.simulationId);
+        yield put(addToStore("simulation", simulation));
+
         const experiment = yield call(getExperiment, action.experimentId);
         yield put(addToStore("experiment", experiment));
+
+        yield fetchExperimentSpecifications();
+        yield fetchWorkloadOfTrace(experiment.traceId);
 
         yield fetchAllDatacentersOfExperiment(experiment);
     } catch (error) {
@@ -38,6 +46,24 @@ function* fetchExperimentSpecifications() {
         yield fetchAndStorePathsOfSimulation(currentSimulationId);
         yield fetchAndStoreAllTraces();
         yield fetchAndStoreAllSchedulers();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function* fetchWorkloadOfTrace(traceId) {
+    try {
+        const jobs = yield call(getJobsOfTrace, traceId);
+        for (let i in jobs) {
+            const job = jobs[i];
+            const tasks = yield call(getTasksOfJob, job.id);
+            job.taskIds = tasks.map(task => task.id);
+            for (let j in tasks) {
+                yield put(addToStore("task", tasks[j]));
+            }
+            yield put(addToStore("job", job));
+        }
+        yield put(addPropToStoreObject("trace", traceId, {jobIds: jobs.map(job => job.id)}))
     } catch (error) {
         console.error(error);
     }
