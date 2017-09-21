@@ -106,7 +106,7 @@ export function addPaddingToTwo(integer) {
  */
 export function convertSecondsToFormattedTime(seconds) {
     if (seconds <= 0) {
-        return "00:00:00";
+        return "0s";
     }
 
     let hour = Math.floor(seconds / 3600);
@@ -117,5 +117,11 @@ export function convertSecondsToFormattedTime(seconds) {
     minute = isNaN(minute) ? 0 : minute;
     second = isNaN(second) ? 0 : second;
 
-    return addPaddingToTwo(hour) + ":" + addPaddingToTwo(minute) + ":" + addPaddingToTwo(second);
+    if (hour === 0 && minute === 0) {
+        return second + "s";
+    } else if (hour === 0) {
+        return minute + "m" + addPaddingToTwo(second) + "s";
+    } else {
+        return hour + "h" + addPaddingToTwo(minute) + "m" + addPaddingToTwo(second) + "s";
+    }
 }
