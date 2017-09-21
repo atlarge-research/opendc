@@ -5,7 +5,9 @@ const TaskComponent = ({task, flopsLeft}) => {
     let stateInfo;
 
     if (flopsLeft === task.totalFlopCount) {
-        stateInfo = <p><span className="fa fa-hourglass-half mr-2"/>Waiting</p>;
+        stateInfo = (
+            <p><span className="fa fa-hourglass-half mr-2"/>Waiting</p>
+        );
     } else if (flopsLeft > 0) {
         stateInfo = (
             <p>
@@ -14,14 +16,16 @@ const TaskComponent = ({task, flopsLeft}) => {
             </p>
         );
     } else {
-        stateInfo = <p><span className="fa fa-check mr-2"/>Completed</p>;
+        stateInfo = (
+            <p><span className="fa fa-check mr-2"/>Completed</p>
+        );
     }
 
     return (
         <li className="list-group-item flex-column align-items-start">
             <div className="d-flex w-100 justify-content-between">
                 <h5 className="mb-1">{task.totalFlopCount} FLOPS</h5>
-                <small>Starts: {convertSecondsToFormattedTime(task.startTick)}</small>
+                <small>Starts at {convertSecondsToFormattedTime(task.startTick)}</small>
             </div>
             {stateInfo}
         </li>
