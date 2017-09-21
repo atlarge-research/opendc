@@ -25,25 +25,46 @@
 package nl.atlarge.opendc
 
 import nl.atlarge.opendc.kernel.omega.OmegaKernel
+import nl.atlarge.opendc.scheduler.FifoScheduler
+import nl.atlarge.opendc.scheduler.SrtfScheduler
 import nl.atlarge.opendc.topology.AdjacencyList
+import nl.atlarge.opendc.topology.container.Datacenter
 import nl.atlarge.opendc.topology.container.Rack
+import nl.atlarge.opendc.topology.container.Room
 import nl.atlarge.opendc.topology.machine.Cpu
 import nl.atlarge.opendc.topology.machine.Machine
+import nl.atlarge.opendc.workload.Task
 import org.junit.jupiter.api.Test
+import java.util.*
 
 internal class SmokeTest {
 	@Test
 	fun smoke() {
-		val rack = Rack()
+		val datacenter = Datacenter(SrtfScheduler(), 50)
 		val builder = AdjacencyList.builder()
 		val topology = builder.construct {
-			add(rack)
-			val n = 100
+			add(datacenter)
+
+			// Add a room to the datacenter
+			val room = Room().also {
+				add(it)
+				connect(datacenter, it, tag = "room")
+			}
+
+			// Add a rack to the room
+			val rack = Rack().also {
+				add(it)
+				connect(room, it, tag = "rack")
+			}
+
+			val n = 10
+
 			// Create n machines in the rack
 			repeat(n) {
-				val machine = Machine()
-				add(machine)
-				connect(rack, machine, tag = "machine")
+				val machine = Machine().also {
+					add(it)
+					connect(rack, it, tag = "machine")
+				}
 
 				val cpu1 = Cpu(10, 2, 2)
 				val cpu2 = Cpu(5, 3, 2)
@@ -56,6 +77,12 @@ internal class SmokeTest {
 		}
 
 		val simulation = OmegaKernel.create(topology)
-		simulation.run()
+		val random = Random(0)
+		for (i in 0..100) {
+			val task = Task(i, emptySet(), random.nextInt(10000).toLong())
+			simulation.schedule(task, datacenter, delay = random.nextInt(15000).toLong())
+		}
+		simulation.run(50000)
+
 	}
 }

@@ -24,6 +24,8 @@
 
 package nl.atlarge.opendc.workload
 
+import nl.atlarge.opendc.kernel.time.Instant
+
 /**
  * A task represents some computation that is part of a [Job].
  *

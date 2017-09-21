@@ -54,19 +54,24 @@ class FifoScheduler : Scheduler {
 			return
 		}
 
+		val iterator = queue.iterator()
+
 		machines
-			.filter { it.state.status == Machine.Status.IDLE }
-			.forEach {
-				while (queue.isNotEmpty()) {
-					val task = queue.poll()
+			.forEach { machine ->
+				while (iterator.hasNext()) {
+					val task = iterator.next()
 
 					// TODO What to do with tasks that are not ready yet to be processed
 					if (!task.isReady()) {
+						iterator.remove()
 						submit(task)
+						continue
+					} else if (task.finished) {
+						iterator.remove()
 						continue
 					}
 
-					it.send(task)
+					machine.send(task)
 					break
 				}
 			}

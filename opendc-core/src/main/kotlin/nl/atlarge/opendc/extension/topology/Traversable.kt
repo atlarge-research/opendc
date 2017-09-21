@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.extension
+package nl.atlarge.opendc.extension.topology
 
 import nl.atlarge.opendc.topology.Edge
 

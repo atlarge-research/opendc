@@ -24,7 +24,8 @@
 
 package nl.atlarge.opendc.topology.machine
 
-import nl.atlarge.opendc.extension.destinations
+import mu.KotlinLogging
+import nl.atlarge.opendc.extension.topology.destinations
 import nl.atlarge.opendc.workload.Task
 import nl.atlarge.opendc.kernel.Context
 import nl.atlarge.opendc.kernel.Process
@@ -38,6 +39,11 @@ import nl.atlarge.opendc.topology.Entity
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 class Machine : Entity<Machine.State>, Process<Machine> {
+	/**
+	 * The logger instance to use for the simulator.
+	 */
+	private val logger = KotlinLogging.logger {}
+
 	/**
 	 * The status of a machine.
 	 */
@@ -63,24 +69,38 @@ class Machine : Entity<Machine.State>, Process<Machine> {
 
 		val interval: Duration = 10
 		val cpus = outgoingEdges.destinations<Cpu>("cpu")
-		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores }).toLong()
-		var task: Task? = null
+		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores })
+		var task: Task = receiveTask()
+		update(State(Status.RUNNING, task))
 
 		while (true) {
-			if (task != null) {
-				if (task.finished) {
-					task = null
-					update(State(Status.IDLE))
-				} else {
-					task.consume(speed * delta)
-				}
+			if (task.finished) {
+				logger.info { "${entity.id}: Task ${task.id} finished. Machine idle at $time" }
+				update(State(Status.IDLE))
+				task = receiveTask()
+			} else {
+				task.consume(speed * delta)
 			}
 
+			// Check if we have received a new order in the meantime.
 			val msg = receive(interval)
 			if (msg is Task) {
 				task = msg
 				update(State(Status.RUNNING, task))
 			}
+		}
+	}
+
+	/**
+	 * Wait for a [Task] to be received by the [Process] and discard all other messages received in the meantime.
+	 *
+	 * @return The task that has been received.
+	 */
+	private suspend fun Context<Machine>.receiveTask(): Task {
+		while (true) {
+			val msg = receive()
+			if (msg is Task)
+				return msg
 		}
 	}
 }

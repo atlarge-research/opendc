@@ -33,6 +33,7 @@ import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.Topology
 import nl.atlarge.opendc.topology.TopologyContext
 import java.lang.Process
+import java.util.*
 
 /**
  * This interface provides a context for simulation [Process]es, which defines the environment in which the simulation
@@ -87,7 +88,7 @@ interface Context<out E : Entity<*>> : Readable, Writable, TopologyContext {
 
 	/**
 	 * Suspend the [Process] of the [Entity] in simulation for the given duration of simulation time before resuming
-	 * execution.
+	 * execution and drop all messages that are received during this period.
 	 *
 	 * A call to this method will not make the [Process] sleep for the actual duration of time, but instead suspend
 	 * the process until the no more messages at an earlier point in time have to be processed.
@@ -95,6 +96,18 @@ interface Context<out E : Entity<*>> : Readable, Writable, TopologyContext {
 	 * @param duration The duration of simulation time to wait before resuming execution.
 	 */
 	suspend fun wait(duration: Duration)
+
+	/**
+	 * Suspend the [Process] of the [Entity] in simulation for the given duration of simulation time before resuming
+	 * execution and push all messages that are received during this period to the given queue.
+	 *
+	 * A call to this method will not make the [Process] sleep for the actual duration of time, but instead suspend
+	 * the process until the no more messages at an earlier point in time have to be processed.
+	 *
+	 * @param duration The duration of simulation time to wait before resuming execution.
+	 * @param queue The mutable queue to push the messages to.
+	 */
+	suspend fun wait(duration: Duration, queue: Queue<Any>)
 
 	/**
 	 * Suspend the [Process] of the [Entity] in simulation for one tick in simulation time which is defined by the

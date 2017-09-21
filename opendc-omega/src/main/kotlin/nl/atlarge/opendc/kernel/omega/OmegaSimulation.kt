@@ -202,7 +202,7 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		/**
 		 * The last point in time the process has done some work.
 		 */
-		var last: Instant = 0
+		var last: Instant = -1
 
 		/**
 		 * The state of the entity.
@@ -332,12 +332,42 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		 * @param duration The duration of simulation time to wait before resuming execution.
 		 */
 		suspend override fun wait(duration: Duration) {
-			require(duration > 0) { "The amount of time to suspend must be a non-zero positive number" }
+			require(duration >= 0) { "The amount of time to suspend must be a positive number" }
+
+			if (duration == 0.toLong())
+				return
+
 			schedule(Resume, entity, entity, duration)
 
 			while (true) {
 				if (receive() is Resume)
 					return
+			}
+		}
+
+		/**
+		 * Suspend the [Process] of the [Entity] in simulation for the given duration of simulation time before resuming
+		 * execution and push all messages that are received during this period to the given queue.
+		 *
+		 * A call to this method will not make the [Process] sleep for the actual duration of time, but instead suspend
+		 * the process until the no more messages at an earlier point in time have to be processed.
+		 *
+		 * @param duration The duration of simulation time to wait before resuming execution.
+		 * @param queue The mutable queue to push the messages to.
+		 */
+		suspend override fun wait(duration: Duration, queue: Queue<Any>) {
+			require(duration >= 0) { "The amount of time to suspend must be a positive number" }
+
+			if (duration == 0.toLong())
+				return
+
+			schedule(Resume, entity, entity, duration)
+
+			while (true) {
+				val msg = receive()
+				if (msg is Resume)
+					return
+				queue.add(msg)
 			}
 		}
 
