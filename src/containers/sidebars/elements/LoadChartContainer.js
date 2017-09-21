@@ -15,7 +15,8 @@ const mapStateToProps = (state, ownProps) => {
     }
 
     return {
-        data
+        data,
+        currentTick: state.currentTick,
     };
 };
 
