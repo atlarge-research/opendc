@@ -29,12 +29,18 @@ export function sendSocketRequest(request, callback) {
 
     socket.emit("request", request);
 
-    console.log("Sent socket request:", request);
+    if (process.env.NODE_ENV !== 'production') {
+        console.log("Sent socket request:", request);
+    }
 }
 
 function onSocketResponse(json) {
     const response = JSON.parse(json);
-    console.log("Received socket response:", response);
+
+    if (process.env.NODE_ENV !== 'production') {
+        console.log("Received socket response:", response);
+    }
+
     callbacks[response.id](response);
     delete callbacks[response.id];
 }

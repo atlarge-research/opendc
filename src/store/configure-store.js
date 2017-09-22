@@ -6,23 +6,30 @@ import thunk from "redux-thunk";
 import {authRedirectMiddleware} from "../auth/index";
 import rootReducer from "../reducers/index";
 import rootSaga from "../sagas/index";
+import {dummyMiddleware} from "./middlewares/dummy-middleware";
 import {viewportAdjustmentMiddleware} from "./middlewares/viewport-adjustment";
 
 const sagaMiddleware = createSagaMiddleware();
-const logger = createLogger();
+
+let logger;
+if (process.env.NODE_ENV !== 'production') {
+    logger = createLogger();
+}
+
+const middlewares = [
+    process.env.NODE_ENV === 'production' ? dummyMiddleware : logger,
+    thunk,
+    sagaMiddleware,
+    authRedirectMiddleware,
+    viewportAdjustmentMiddleware,
+];
 
 export default function configureStore() {
     const store = createStore(
         rootReducer,
         compose(
             persistState("auth"),
-            applyMiddleware(
-                logger,
-                thunk,
-                sagaMiddleware,
-                authRedirectMiddleware,
-                viewportAdjustmentMiddleware,
-            )
+            applyMiddleware(...middlewares)
         )
     );
     sagaMiddleware.run(rootSaga);

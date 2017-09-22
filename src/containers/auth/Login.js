@@ -28,7 +28,7 @@ class LoginContainer extends React.Component {
 
         return (
             <GoogleLogin
-                clientId="311799954046-jv2inpg9nu7m0avcg6gulvkuvfgbtgb4.apps.googleusercontent.com"
+                clientId={process.env.REACT_APP_OAUTH_CLIENT_ID}
                 onSuccess={this.onAuthResponse.bind(this)}
                 onFailure={this.onAuthResponse.bind(this)}
                 className="login btn btn-primary"

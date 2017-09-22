@@ -6,10 +6,24 @@ The user-facing component of the OpenDC stack, allowing users to build and inter
 
 
 ## Get Up and Running
-To get started, you'll need the [Node.js environment](https://nodejs.org) and the [Yarn package manager](https://yarnpkg.com). 
+
+Looking for the entire stack? Check out [the main OpenDC repo](https://github.com/atlarge-research/opendc) for instructions on how to set up a Docker container with all of OpenDC, without the hassle of running each of the components manually.
+
+### Installation
+
+To get started, you'll need the [Node.js environment](https://nodejs.org) and the [Yarn package manager](https://yarnpkg.com).
 
 ```bash
 yarn
+```
+
+### Running the development server
+
+First, you need to have a Google OAuth client ID set up. Check the [documentation of the main OpenDC repo](https://github.com/atlarge-research/opendc) if you're not sure how to do this. Once you have such an ID, you need to set it as environment variable `REACT_APP_OAUTH_CLIENT_ID`. One way of doing this is to create an `.env` file with content `REACT_APP_OAUTH_CLIENT_ID=YOUR_ID` (`YOUR_ID` without quotes), in the root directory of this repo.
+
+Once you've set this variable, you're ready to start the development server:
+
+```bash
 yarn start
 ```
 
