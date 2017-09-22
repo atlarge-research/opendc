@@ -1,4 +1,5 @@
 import {SET_MAP_DIMENSIONS, setMapPosition, setMapScale} from "../../actions/map";
+import {SET_CURRENT_DATACENTER} from "../../actions/topology/building";
 import {
     MAP_MAX_SCALE,
     MAP_MIN_SCALE,
@@ -10,12 +11,23 @@ import {calculateRoomListBounds} from "../../util/tile-calculations";
 
 export const viewportAdjustmentMiddleware = store => next => action => {
     const state = store.getState();
-    if (action.type === SET_MAP_DIMENSIONS && state.currentDatacenterId !== -1) {
-        const roomIds = state.objects.datacenter[state.currentDatacenterId].roomIds;
+
+    let datacenterId = -1;
+    let mapDimensions = {};
+    if (action.type === SET_CURRENT_DATACENTER && action.datacenterId !== -1) {
+        datacenterId = action.datacenterId;
+        mapDimensions = state.map.dimensions;
+    } else if (action.type === SET_MAP_DIMENSIONS && state.currentDatacenterId !== -1) {
+        datacenterId = state.currentDatacenterId;
+        mapDimensions = {width: action.width, height: action.height};
+    }
+
+    if (datacenterId !== -1) {
+        const roomIds = state.objects.datacenter[datacenterId].roomIds;
         const rooms = roomIds.map(id => Object.assign({}, state.objects.room[id]));
         rooms.forEach(room => room.tiles = room.tileIds.map(tileId => state.objects.tile[tileId]));
 
-        const viewportParams = calculateParametersToZoomInOnRooms(rooms, action.width, action.height);
+        const viewportParams = calculateParametersToZoomInOnRooms(rooms, mapDimensions.width, mapDimensions.height);
         store.dispatch(setMapPosition(viewportParams.newX, viewportParams.newY));
         store.dispatch(setMapScale(viewportParams.newScale));
     }

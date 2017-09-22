@@ -1,4 +1,5 @@
 import {connect} from "react-redux";
+import {pauseSimulation} from "../../actions/simulation/playback";
 import {incrementTick} from "../../actions/simulation/tick";
 import {setCurrentDatacenter} from "../../actions/topology/building";
 import TimelineComponent from "../../components/timeline/TimelineComponent";
@@ -25,6 +26,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         incrementTick: () => dispatch(incrementTick()),
+        pauseSimulation: () => dispatch(pauseSimulation()),
         setCurrentDatacenter: id => dispatch(setCurrentDatacenter(id))
     };
 };

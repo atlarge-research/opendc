@@ -1,33 +1,39 @@
 import React from "react";
 import PlayButtonContainer from "../../containers/timeline/PlayButtonContainer";
+import {convertTickToPercentage} from "../../util/timeline";
 
-function getXPercentage(tick, maxTick) {
-    if (maxTick === 0) {
-        return "0%";
-    } else if (tick > maxTick) {
-        return ((maxTick / (maxTick + 1)) * 100) + "%";
+class TimelineControlsComponent extends React.Component {
+    onTimelineClick(e) {
+        const percentage = e.nativeEvent.offsetX / this.timeline.clientWidth;
+        const tick = Math.floor(percentage * (this.props.lastSimulatedTick + 1));
+        this.props.goToTick(tick);
     }
 
-    return ((tick / (maxTick + 1)) * 100) + "%";
-}
-
-const TimelineControlsComponent = ({currentTick, lastSimulatedTick, sectionTicks}) => (
-    <div className="timeline-controls">
-        <PlayButtonContainer/>
-        <div className="timeline">
-            <div
-                className="time-marker"
-                style={{left: getXPercentage(currentTick, lastSimulatedTick)}}
-            />
-            {sectionTicks.map(sectionTick => (
+    render() {
+        return (
+            <div className="timeline-controls">
+                <PlayButtonContainer/>
                 <div
-                    key={sectionTick}
-                    className="section-marker"
-                    style={{left: getXPercentage(sectionTick, lastSimulatedTick)}}
-                />
-            ))}
-        </div>
-    </div>
-);
+                    className="timeline"
+                    ref={timeline => this.timeline = timeline}
+                    onClick={this.onTimelineClick.bind(this)}
+                >
+                    <div
+                        className="time-marker"
+                        style={{left: convertTickToPercentage(this.props.currentTick, this.props.lastSimulatedTick)}}
+                    />
+                    {this.props.sectionTicks.map(sectionTick => (
+                        <div
+                            key={sectionTick}
+                            className="section-marker"
+                            style={{left: convertTickToPercentage(sectionTick, this.props.lastSimulatedTick)}}
+                            title="Topology changes at this tick"
+                        />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+}
 
 export default TimelineControlsComponent;

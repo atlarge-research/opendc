@@ -1,4 +1,5 @@
 import {connect} from "react-redux";
+import {goToTick} from "../../actions/simulation/tick";
 import TimelineControlsComponent from "../../components/timeline/TimelineControlsComponent";
 
 const mapStateToProps = state => {
@@ -19,8 +20,15 @@ const mapStateToProps = state => {
     };
 };
 
+const mapDispatchToProps = dispatch => {
+    return {
+        goToTick: (tick) => dispatch(goToTick(tick)),
+    };
+};
+
 const TimelineControlsContainer = connect(
-    mapStateToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(TimelineControlsComponent);
 
 export default TimelineControlsContainer;

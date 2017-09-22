@@ -16,8 +16,8 @@ const RoomSidebarComponent = ({roomId, roomType, inSimulation}) => {
     return (
         <div>
             <RoomNameContainer/>
-            <BackToBuildingContainer/>
             <RoomTypeContainer/>
+            <BackToBuildingContainer/>
             {inSimulation ?
                 <div>
                     <LoadBarContainer objectType="room" objectId={roomId}/>

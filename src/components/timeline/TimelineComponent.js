@@ -11,15 +11,9 @@ class TimelineComponent extends React.Component {
             }
 
             if (this.props.currentTick < this.props.lastSimulatedTick) {
-                for (let i in this.props.sections.reverse()) {
-                    if (this.props.currentTick + 1 >= this.props.sections[i].startTick) {
-                        if (this.props.currentDatacenterId !== this.props.sections[i].datacenterId) {
-                            this.props.setCurrentDatacenter(this.props.sections[i].datacenterId);
-                        }
-                        break;
-                    }
-                }
                 this.props.incrementTick();
+            } else {
+                this.props.pauseSimulation();
             }
         }, 1000);
     }

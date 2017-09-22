@@ -10,7 +10,7 @@ import "./RackSidebarComponent.css";
 const RackSidebarComponent = ({inSimulation, rackId}) => {
     return (
         <div className="rack-sidebar-container flex-column">
-            <div style={{flex: 0}}>
+            <div className="rack-sidebar-header-container">
                 <RackNameContainer/>
                 <BackToRoomContainer/>
                 {inSimulation ?
