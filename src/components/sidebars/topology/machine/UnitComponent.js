@@ -6,7 +6,7 @@ const UnitComponent = ({unit, onDelete, inSimulation}) => (
         {inSimulation ?
             undefined :
             <span className="btn btn-outline-danger" onClick={onDelete}>
-                <span className="fa fa-trash mr-1"/>
+                <span className="fa fa-trash mr-2"/>
                 Delete
             </span>
         }

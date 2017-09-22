@@ -12,7 +12,7 @@ const ExperimentRowComponent = ({experiment, simulationId, onDelete}) => (
         <td className="text-right">
             <Link
                 to={"/simulations/" + simulationId + "/experiments/" + experiment.id}
-                className="btn btn-outline-primary btn-sm mr-1"
+                className="btn btn-outline-primary btn-sm mr-2"
                 title="Open this experiment"
             >
                 <span className="fa fa-play"/>

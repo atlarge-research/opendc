@@ -10,7 +10,7 @@ const EmptySlotComponent = ({position, onAdd, inSimulation}) => (
                 Empty Slot
             </span> :
             <button className="btn btn-outline-primary" onClick={onAdd}>
-                <span className="fa fa-plus mr-1"/>
+                <span className="fa fa-plus mr-2"/>
                 Add machine
             </button>
         }

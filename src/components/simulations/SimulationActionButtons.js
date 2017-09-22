@@ -6,13 +6,13 @@ const SimulationActionButtons = ({simulationId, onViewUsers, onDelete}) => (
     <td className="text-right">
         <Link
             to={"/simulations/" + simulationId}
-            className="btn btn-outline-primary btn-sm mr-1"
+            className="btn btn-outline-primary btn-sm mr-2"
             title="Open this simulation"
         >
             <span className="fa fa-play"/>
         </Link>
         <div
-            className="btn btn-outline-success btn-sm mr-1"
+            className="btn btn-outline-success btn-sm mr-2"
             title="View and edit collaborators"
             onClick={() => onViewUsers(simulationId)}
         >

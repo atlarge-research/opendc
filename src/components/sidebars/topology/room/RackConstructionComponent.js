@@ -4,7 +4,7 @@ const RackConstructionComponent = ({inRackConstructionMode, onStart, onStop}) =>
     if (inRackConstructionMode) {
         return (
             <div className="btn btn-primary btn-block" onClick={onStop}>
-                <span className="fa fa-times mr-1"/>
+                <span className="fa fa-times mr-2"/>
                 Stop rack construction
             </div>
         );
@@ -12,7 +12,7 @@ const RackConstructionComponent = ({inRackConstructionMode, onStart, onStop}) =>
 
     return (
         <div className="btn btn-primary btn-block" onClick={onStart}>
-            <span className="fa fa-plus mr-1"/>
+            <span className="fa fa-plus mr-2"/>
             Start rack construction
         </div>
     );

@@ -4,7 +4,7 @@ const NewRoomConstructionComponent = ({onStart, onFinish, onCancel, currentRoomI
     if (currentRoomInConstruction === -1) {
         return (
             <div className="btn btn-primary btn-block" onClick={onStart}>
-                <span className="fa fa-plus mr-1"/>
+                <span className="fa fa-plus mr-2"/>
                 Construct a new room
             </div>
         );
@@ -12,11 +12,11 @@ const NewRoomConstructionComponent = ({onStart, onFinish, onCancel, currentRoomI
     return (
         <div>
             <div className="btn btn-primary btn-block" onClick={onFinish}>
-                <span className="fa fa-check mr-1"/>
+                <span className="fa fa-check mr-2"/>
                 Finalize new room
             </div>
             <div className="btn btn-default btn-block" onClick={onCancel}>
-                <span className="fa fa-times mr-1"/>
+                <span className="fa fa-times mr-2"/>
                 Cancel construction
             </div>
         </div>

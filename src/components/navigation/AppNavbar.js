@@ -13,7 +13,7 @@ const AppNavbar = ({simulationId, inSimulation}) => (
                     className="nav-link"
                     title="Construction"
                     to={"/simulations/" + simulationId}>
-                    <FontAwesome name="industry" className="mr-1"/>
+                    <FontAwesome name="industry" className="mr-2"/>
                     Construction
                 </Link>
             </NavItem> :
@@ -25,7 +25,7 @@ const AppNavbar = ({simulationId, inSimulation}) => (
                     className="nav-link"
                     title="Experiments"
                     to={"/simulations/" + simulationId + "/experiments"}>
-                    <FontAwesome name="play" className="mr-1"/>
+                    <FontAwesome name="play" className="mr-2"/>
                     Experiments
                 </Link>
             </NavItem> :
@@ -36,14 +36,14 @@ const AppNavbar = ({simulationId, inSimulation}) => (
                 className="nav-link"
                 title="My Simulations"
                 to="/simulations">
-                <FontAwesome name="list" className="mr-1"/>
+                <FontAwesome name="list" className="mr-2"/>
                 My Simulations
             </Link>
         </NavItem>
         <NavItem route="email">
             <Mailto className="nav-link" title="Support" email="opendc@atlarge-research.com"
                     headers={{subject: "OpenDC Support"}}>
-                <FontAwesome name="envelope" className="mr-1"/>
+                <FontAwesome name="envelope" className="mr-2"/>
                 Support
             </Mailto>
         </NavItem>
