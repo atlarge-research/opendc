@@ -48,12 +48,23 @@ const LoggedInSectionWithoutRoute = ({location}) => (
 const Navbar = ({fullWidth, children}) => (
     <nav className="navbar fixed-top navbar-expand-lg navbar-light bg-faded" id="navbar">
         <div className={fullWidth ? "container-fluid" : "container"}>
-            <button className="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+            <button
+                className="navbar-toggler navbar-toggler-right"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
                 <span className="navbar-toggler-icon"/>
             </button>
-            <Link className="navbar-brand opendc-brand" to="/" title="OpenDC">
+            <Link
+                className="navbar-brand opendc-brand"
+                to="/"
+                title="OpenDC"
+                onClick={() => window.scrollTo(0, 0)}
+            >
                 <img src="/img/logo.png" alt="OpenDC"/>
             </Link>
 
