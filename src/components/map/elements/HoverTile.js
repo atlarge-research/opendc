@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import {Rect} from "react-konva";
-import {ROOM_HOVER_INVALID_COLOR, ROOM_HOVER_VALID_COLOR} from "../../../colors/index";
+import {ROOM_HOVER_INVALID_COLOR, ROOM_HOVER_VALID_COLOR} from "../../../util/colors";
 import {TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
 const HoverTile = ({pixelX, pixelY, isValid, scale, onClick}) => (

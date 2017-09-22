@@ -1,6 +1,6 @@
 import React from "react";
 import {Group, Line} from "react-konva";
-import {GRID_COLOR} from "../../../colors/index";
+import {GRID_COLOR} from "../../../util/colors";
 import {GRID_LINE_WIDTH_IN_PIXELS, MAP_SIZE, MAP_SIZE_IN_PIXELS, TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
 const MAP_COORDINATE_ENTRIES = Array.from(new Array(MAP_SIZE), (x, i) => i);

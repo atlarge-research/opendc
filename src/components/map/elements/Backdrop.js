@@ -1,6 +1,6 @@
 import React from "react";
 import {Rect} from "react-konva";
-import {BACKDROP_COLOR} from "../../../colors/index";
+import {BACKDROP_COLOR} from "../../../util/colors";
 import {MAP_SIZE_IN_PIXELS} from "../MapConstants";
 
 const Backdrop = () => (

@@ -1,4 +1,5 @@
 import React from 'react';
+import DocumentTitle from "react-document-title";
 import ContactSection from "../components/home/ContactSection";
 import IntroSection from "../components/home/IntroSection";
 import JumbotronHeader from "../components/home/JumbotronHeader";
@@ -49,6 +50,7 @@ class Home extends React.Component {
                     <TechnologiesSection/>
                     <TeamSection/>
                     <ContactSection/>
+                    <DocumentTitle title="OpenDC"/>
                 </div>
             </div>
         );

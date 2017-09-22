@@ -1,6 +1,6 @@
 import React from "react";
 import {Rect} from "react-konva";
-import {GRAYED_OUT_AREA_COLOR} from "../../../colors/index";
+import {GRAYED_OUT_AREA_COLOR} from "../../../util/colors";
 import {MAP_SIZE_IN_PIXELS} from "../MapConstants";
 
 const GrayLayer = ({onClick}) => (

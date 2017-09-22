@@ -1,4 +1,4 @@
-import {SIM_HIGH_COLOR, SIM_LOW_COLOR, SIM_MID_HIGH_COLOR, SIM_MID_LOW_COLOR} from "../colors/index";
+import {SIM_HIGH_COLOR, SIM_LOW_COLOR, SIM_MID_HIGH_COLOR, SIM_MID_LOW_COLOR} from "./colors";
 
 export const LOAD_NAME_MAP = {
     LOAD: "computational load",

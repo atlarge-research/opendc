@@ -6,7 +6,7 @@ import {
     RACK_ENERGY_BAR_FILL_COLOR,
     RACK_SPACE_BAR_BACKGROUND_COLOR,
     RACK_SPACE_BAR_FILL_COLOR
-} from "../../../colors/index";
+} from "../../../util/colors";
 import {
     OBJECT_BORDER_WIDTH_IN_PIXELS,
     OBJECT_MARGIN_IN_PIXELS,

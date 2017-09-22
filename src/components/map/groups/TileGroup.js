@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 import React from "react";
 import {Group} from "react-konva";
-import {ROOM_DEFAULT_COLOR, ROOM_IN_CONSTRUCTION_COLOR} from "../../../colors/index";
 import RackContainer from "../../../containers/map/RackContainer";
 import Shapes from "../../../shapes/index";
+import {ROOM_DEFAULT_COLOR, ROOM_IN_CONSTRUCTION_COLOR} from "../../../util/colors";
 import {convertLoadToSimulationColor} from "../../../util/simulation-load";
 import RoomTile from "../elements/RoomTile";
 

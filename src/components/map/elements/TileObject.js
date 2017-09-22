@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import {Rect} from "react-konva";
-import {OBJECT_BORDER_COLOR} from "../../../colors/index";
+import {OBJECT_BORDER_COLOR} from "../../../util/colors";
 import {OBJECT_BORDER_WIDTH_IN_PIXELS, OBJECT_MARGIN_IN_PIXELS, TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
 const TileObject = ({positionX, positionY, color}) => (

@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import {Group, Line} from "react-konva";
-import {TILE_PLUS_COLOR} from "../../../colors/index";
+import {TILE_PLUS_COLOR} from "../../../util/colors";
 import {TILE_PLUS_MARGIN_IN_PIXELS, TILE_PLUS_WIDTH_IN_PIXELS, TILE_SIZE_IN_PIXELS} from "../MapConstants";
 
 const TilePlusIcon = ({pixelX, pixelY, mapScale}) => {
