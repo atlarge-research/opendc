@@ -7,9 +7,13 @@ import {parseAndFormatDateTime} from "../../util/date-time";
 
 const SimulationAuthRow = ({simulationAuth}) => (
     <tr>
-        <td>{simulationAuth.simulation.name}</td>
-        <td>{parseAndFormatDateTime(simulationAuth.simulation.datetimeLastEdited)}</td>
-        <td>
+        <td className="pt-3">
+            {simulationAuth.simulation.name}
+        </td>
+        <td className="pt-3">
+            {parseAndFormatDateTime(simulationAuth.simulation.datetimeLastEdited)}
+        </td>
+        <td className="pt-3">
             <span className={classNames("fa", "fa-" + AUTH_ICON_MAP[simulationAuth.authorizationLevel], "mr-2")}/>
             {AUTH_DESCRIPTION_MAP[simulationAuth.authorizationLevel]}
         </td>

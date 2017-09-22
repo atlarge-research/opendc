@@ -5,10 +5,18 @@ import Shapes from "../../shapes/index";
 
 const ExperimentRowComponent = ({experiment, simulationId, onDelete}) => (
     <tr>
-        <td>{experiment.name}</td>
-        <td>{experiment.path.name ? experiment.path.name : "Path " + experiment.path.id}</td>
-        <td>{experiment.trace.name}</td>
-        <td>{experiment.scheduler.name}</td>
+        <td className="pt-3">
+            {experiment.name}
+        </td>
+        <td className="pt-3">
+            {experiment.path.name ? experiment.path.name : "Path " + experiment.path.id}
+        </td>
+        <td className="pt-3">
+            {experiment.trace.name}
+        </td>
+        <td className="pt-3">
+            {experiment.scheduler.name}
+        </td>
         <td className="text-right">
             <Link
                 to={"/simulations/" + simulationId + "/experiments/" + experiment.id}
