@@ -5,6 +5,22 @@
 The user-facing component of the OpenDC stack, allowing users to build and interact with their own (virtual) datacenters. Built in *React.js* and *Redux*, with the help of `create-react-app`.
 
 
+## Get Up and Running
+To get started, you'll need the [Node.js environment](https://nodejs.org) and the [Yarn package manager](https://yarnpkg.com). 
+
+```bash
+yarn
+yarn start
+```
+
+This will start a development server running on [`localhost:3000`](http://localhost:3000), watching for changes you make to the code and rebuilding automatically when you save changes.
+
+To compile everything for camera-ready deployment, use the following command:
+
+```bash
+yarn build
+```
+
 ## Architecture
 
 The codebase follows a standard React.js structure, with static assets being contained in the `public` folder, while dynamic components and their styles are contained in `src`. The app uses client-side routing (with `react-router`), meaning that the only HTML file needed to be served is a `index.html` file.
@@ -35,4 +51,4 @@ Almost all state is kept in a central Redux store. State is kept there in an imm
 
 ### API Interaction
 
-The web-app needs to pull data in from the API of a backend running on a server. The functions that call routes are located in `src/api`. The actual logic responsible for calling these functions is contained in `src/sagas`. These API fetch procedures are written with the help of `redux-saga`. Learn more about this way of getting API data in Redux on [their official documentation](https://redux-saga.js.org/).
+The web-app needs to pull data in from the API of a backend running on a server. The functions that call routes are located in `src/api`. The actual logic responsible for calling these functions is contained in `src/sagas`. These API fetch procedures are written with the help of `redux-saga`. The [official documentation](https://redux-saga.js.org/) of `redux-saga` can be a helpful aid in understanding that part of the codebase.

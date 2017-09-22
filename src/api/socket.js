@@ -6,7 +6,7 @@ let requestIdCounter = 0;
 const callbacks = {};
 
 export function setupSocketConnection(onConnect) {
-    socket = io.connect("http://localhost:8081");
+    socket = io.connect(window.location.protocol + "//" + window.location.hostname + ":8081");
     socket.on("connect", onConnect);
     socket.on("response", onSocketResponse);
 }
