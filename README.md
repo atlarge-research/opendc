@@ -7,7 +7,7 @@ The user-facing component of the OpenDC stack, allowing users to build and inter
 
 ## Get Up and Running
 
-Looking for the entire stack? Check out [the main OpenDC repo](https://github.com/atlarge-research/opendc) for instructions on how to set up a Docker container with all of OpenDC, without the hassle of running each of the components manually.
+*Looking for the full OpenDC stack? Check out [the main OpenDC repo](https://github.com/atlarge-research/opendc) for instructions on how to set up a Docker container with all of OpenDC, without the hassle of running each of the components manually.*
 
 ### Installation
 
