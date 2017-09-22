@@ -1,0 +1,50 @@
+@import ../../../style-globals/_variables.sass
+@import ../../../style-globals/_mixins.sass
+
+.sidebar-collapse-button
+  position: absolute
+  left: 5px
+  top: 5px
+  padding: 5px 7px
+
+  background: white
+  border: solid 1px $gray-semi-light
+  z-index: 99
+
+  +clickable
+  +border-radius(5px)
+  +transition(background, 200ms)
+
+  &.sidebar-collapse-button-right
+    left: auto
+    right: 5px
+    top: 5px
+
+  &:hover
+    background: #eeeeee
+
+.sidebar
+  position: absolute
+  top: 0
+  left: 0
+  width: 350px
+
+  z-index: 100
+  background: white
+
+  border-right: $gray-semi-dark 1px solid
+
+  .sidebar-collapse-button
+    left: auto
+    right: -25px
+
+.sidebar-right
+  left: auto
+  right: 0
+
+  border-left: $gray-semi-dark 1px solid
+  border-right: none
+
+  .sidebar-collapse-button-right
+    left: -25px
+    right: auto

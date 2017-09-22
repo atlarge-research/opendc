@@ -6,7 +6,7 @@ import {
     SIDEBAR_WIDTH,
     TILE_SIZE_IN_PIXELS,
     VIEWPORT_PADDING
-} from "../../components/map/MapConstants";
+} from "../../components/app/map/MapConstants";
 import {calculateRoomListBounds} from "../../util/tile-calculations";
 
 export const viewportAdjustmentMiddleware = store => next => action => {

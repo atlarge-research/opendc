@@ -1,0 +1,112 @@
+@import ../../../style-globals/_variables.sass
+@import ../../../style-globals/_mixins.sass
+
+$container-size: 500px
+$play-btn-size: 40px
+$border-width: 1px
+$timeline-border: $border-width solid $gray-semi-dark
+
+.timeline-bar
+  display: block
+  position: absolute
+  left: 0
+  bottom: 20px
+  width: 100%
+  text-align: center
+  z-index: 2000
+
+  pointer-events: none
+
+.timeline-container
+  display: inline-block
+  margin: 0 auto
+  text-align: left
+
+  width: $container-size
+
+.timeline-labels
+  display: block
+  height: 25px
+  line-height: 25px
+
+  div
+    display: inline-block
+
+  .start-time-label
+    margin-left: $play-btn-size - $border-width
+    padding-left: 4px
+
+  .end-time-label
+    padding-right: 4px
+    float: right
+
+.timeline-controls
+  display: flex
+  border: $timeline-border
+  overflow: hidden
+
+  pointer-events: all
+
+  +border-radius($standard-border-radius)
+
+  .play-btn
+    width: $play-btn-size
+    height: $play-btn-size + $border-width
+    line-height: $play-btn-size + $border-width
+    text-align: center
+    float: left
+    margin-top: -$border-width
+
+    font-size: 16pt
+    background: #333
+    color: #eee
+
+    +transition(background, $transition-length)
+    +user-select
+    +clickable
+
+  .play-btn:hover
+    background: #656565
+
+  .play-btn:active
+    background: #000
+
+  .timeline
+    position: relative
+    flex: 1
+    height: $play-btn-size
+    line-height: $play-btn-size
+    float: right
+
+    background: $blue-light
+
+    z-index: 500
+
+    div
+      +transition(all, $transition-length)
+
+    .time-marker
+      position: absolute
+      top: 0
+      left: 0
+
+      width: 6px
+      height: 100%
+
+      background: $blue-very-dark
+
+      +border-radius(2px)
+
+      z-index: 503
+
+    .section-marker
+      position: absolute
+      top: 0
+      left: 0
+
+      width: 3px
+      height: 100%
+
+      background: #222222
+
+      z-index: 504

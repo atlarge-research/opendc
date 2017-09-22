@@ -26,7 +26,7 @@ import {
     DEFAULT_RACK_POWER_CAPACITY,
     DEFAULT_RACK_SLOT_CAPACITY,
     MAX_NUM_UNITS_PER_MACHINE
-} from "../components/map/MapConstants";
+} from "../components/app/map/MapConstants";
 import {
     fetchAndStoreAllCPUs,
     fetchAndStoreAllGPUs,
