@@ -1,4 +1,5 @@
 import React from 'react';
+import DocumentTitle from "react-document-title";
 import {connect} from "react-redux";
 import {openNewSimulationModal} from "../actions/modals/simulations";
 import {fetchAuthorizationsOfCurrentUser} from "../actions/users";
@@ -15,15 +16,17 @@ class SimulationsContainer extends React.Component {
 
     render() {
         return (
-            <div className="full-height">
-                <AppNavbar inSimulation={false}/>
-                <div className="container text-page-container full-height">
-                    <SimulationFilterPanel/>
-                    <VisibleSimulationList/>
-                    <NewSimulationButtonContainer/>
+            <DocumentTitle title="My Simulations - OpenDC">
+                <div className="full-height">
+                    <AppNavbar inSimulation={false}/>
+                    <div className="container text-page-container full-height">
+                        <SimulationFilterPanel/>
+                        <VisibleSimulationList/>
+                        <NewSimulationButtonContainer/>
+                    </div>
+                    <NewSimulationModal/>
                 </div>
-                <NewSimulationModal/>
-            </div>
+            </DocumentTitle>
         );
     }
 }

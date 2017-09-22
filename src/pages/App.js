@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
+import DocumentTitle from "react-document-title";
 import {connect} from "react-redux";
 import {ShortcutManager} from "react-shortcuts";
 import {openExperimentSucceeded} from "../actions/experiments";
@@ -27,6 +28,7 @@ class AppComponent extends React.Component {
         simulationId: PropTypes.number.isRequired,
         inSimulation: PropTypes.bool,
         experimentId: PropTypes.number,
+        simulationName: PropTypes.string,
     };
     static childContextTypes = {
         shortcuts: PropTypes.object.isRequired
@@ -49,40 +51,50 @@ class AppComponent extends React.Component {
 
     render() {
         return (
-            <div className="page-container full-height">
-                <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
-                {this.props.datacenterIsLoading ?
-                    <div className="full-height d-flex align-items-center justify-content-center">
-                        <LoadingScreen/>
-                    </div> :
-                    <div className="full-height">
-                        <MapStage/>
-                        <ScaleIndicatorContainer/>
-                        <ToolPanelComponent/>
-                        <TopologySidebar/>
-                        {this.props.inSimulation ?
-                            <TimelineContainer/> :
-                            undefined
-                        }
-                        {this.props.inSimulation ?
-                            <SimulationSidebarComponent/> :
-                            undefined
-                        }
-                    </div>
-                }
-                <EditRoomNameModal/>
-                <DeleteRoomModal/>
-                <EditRackNameModal/>
-                <DeleteRackModal/>
-                <DeleteMachineModal/>
-            </div>
+            <DocumentTitle
+                title={this.props.simulationName ? this.props.simulationName + " - OpenDC" : "Simulation - OpenDC"}
+            >
+                <div className="page-container full-height">
+                    <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
+                    {this.props.datacenterIsLoading ?
+                        <div className="full-height d-flex align-items-center justify-content-center">
+                            <LoadingScreen/>
+                        </div> :
+                        <div className="full-height">
+                            <MapStage/>
+                            <ScaleIndicatorContainer/>
+                            <ToolPanelComponent/>
+                            <TopologySidebar/>
+                            {this.props.inSimulation ?
+                                <TimelineContainer/> :
+                                undefined
+                            }
+                            {this.props.inSimulation ?
+                                <SimulationSidebarComponent/> :
+                                undefined
+                            }
+                        </div>
+                    }
+                    <EditRoomNameModal/>
+                    <DeleteRoomModal/>
+                    <EditRackNameModal/>
+                    <DeleteRackModal/>
+                    <DeleteMachineModal/>
+                </div>
+            </DocumentTitle>
         );
     }
 }
 
 const mapStateToProps = state => {
+    let simulationName = undefined;
+    if (state.currentSimulationId !== -1 && state.objects.simulation[state.currentSimulationId]) {
+        simulationName = state.objects.simulation[state.currentSimulationId].name;
+    }
+
     return {
         datacenterIsLoading: state.currentDatacenterId === -1,
+        simulationName,
     };
 };
 

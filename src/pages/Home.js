@@ -12,6 +12,10 @@ import jQuery from "../util/jquery";
 import "./Home.css";
 
 class Home extends React.Component {
+    state = {
+        scrollSpySetup: false,
+    };
+
     componentDidMount() {
         const scrollOffset = 60;
         jQuery("#navbar").find("li a").click(function (e) {
@@ -22,10 +26,14 @@ class Home extends React.Component {
             jQuery(jQuery(this).attr('href'))[0].scrollIntoView();
             window.scrollBy(0, -scrollOffset);
         });
-        jQuery("body").scrollspy({
-            target: "#navbar",
-            offset: scrollOffset
-        });
+
+        if (!this.state.scrollSpySetup) {
+            jQuery("body").scrollspy({
+                target: "#navbar",
+                offset: scrollOffset
+            });
+            this.setState({scrollSpySetup: true});
+        }
     }
 
     render() {

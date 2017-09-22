@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
+import DocumentTitle from "react-document-title";
 import {connect} from "react-redux";
 import {fetchExperimentsOfSimulation} from "../actions/experiments";
 import {openSimulationSucceeded} from "../actions/simulations";
@@ -11,6 +12,7 @@ import NewExperimentModal from "../containers/modals/NewExperimentModal";
 class ExperimentsComponent extends React.Component {
     static propTypes = {
         simulationId: PropTypes.number.isRequired,
+        simulationName: PropTypes.string,
     };
 
     componentDidMount() {
@@ -20,17 +22,34 @@ class ExperimentsComponent extends React.Component {
 
     render() {
         return (
-            <div className="full-height">
-                <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
-                <div className="container text-page-container full-height">
-                    <ExperimentListContainer/>
-                    <NewExperimentButtonContainer/>
+            <DocumentTitle
+                title={this.props.simulationName ?
+                    "Experiments - " + this.props.simulationName + " - OpenDC" :
+                    "Experiments - OpenDC"}
+            >
+                <div className="full-height">
+                    <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
+                    <div className="container text-page-container full-height">
+                        <ExperimentListContainer/>
+                        <NewExperimentButtonContainer/>
+                    </div>
+                    <NewExperimentModal/>
                 </div>
-                <NewExperimentModal/>
-            </div>
+            </DocumentTitle>
         );
     }
 }
+
+const mapStateToProps = state => {
+    let simulationName = undefined;
+    if (state.currentSimulationId !== -1 && state.objects.simulation[state.currentSimulationId]) {
+        simulationName = state.objects.simulation[state.currentSimulationId].name;
+    }
+
+    return {
+        simulationName,
+    };
+};
 
 const mapDispatchToProps = dispatch => {
     return {
@@ -40,7 +59,7 @@ const mapDispatchToProps = dispatch => {
 };
 
 const Experiments = connect(
-    undefined,
+    mapStateToProps,
     mapDispatchToProps
 )(ExperimentsComponent);
 
