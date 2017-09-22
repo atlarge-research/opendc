@@ -9,7 +9,7 @@ const ScrollNavItem = ({id, name}) => (
 );
 
 const HomeNavbar = () => (
-    <Navbar>
+    <Navbar fullWidth={false}>
         <ScrollNavItem id="#stakeholders" name="Stakeholders"/>
         <ScrollNavItem id="#modeling" name="Modeling"/>
         <ScrollNavItem id="#simulation" name="Simulation"/>

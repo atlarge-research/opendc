@@ -5,8 +5,8 @@ import {Link} from "react-router-dom";
 import Navbar, {NavItem} from "./Navbar";
 import "./Navbar.css";
 
-const AppNavbar = ({simulationId, inSimulation}) => (
-    <Navbar>
+const AppNavbar = ({simulationId, inSimulation, fullWidth}) => (
+    <Navbar fullWidth={fullWidth}>
         {inSimulation ?
             <NavItem route={"/simulations/" + simulationId}>
                 <Link

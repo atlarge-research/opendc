@@ -55,7 +55,7 @@ class AppComponent extends React.Component {
                 title={this.props.simulationName ? this.props.simulationName + " - OpenDC" : "Simulation - OpenDC"}
             >
                 <div className="page-container full-height">
-                    <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
+                    <AppNavbar simulationId={this.props.simulationId} inSimulation={true} fullWidth={true}/>
                     {this.props.datacenterIsLoading ?
                         <div className="full-height d-flex align-items-center justify-content-center">
                             <LoadingScreen/>

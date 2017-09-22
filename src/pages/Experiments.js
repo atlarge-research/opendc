@@ -28,7 +28,7 @@ class ExperimentsComponent extends React.Component {
                     "Experiments - OpenDC"}
             >
                 <div className="full-height">
-                    <AppNavbar simulationId={this.props.simulationId} inSimulation={true}/>
+                    <AppNavbar simulationId={this.props.simulationId} inSimulation={true} fullWidth={true}/>
                     <div className="container text-page-container full-height">
                         <ExperimentListContainer/>
                         <NewExperimentButtonContainer/>

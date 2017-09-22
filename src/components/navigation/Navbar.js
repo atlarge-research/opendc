@@ -45,9 +45,9 @@ const LoggedInSectionWithoutRoute = ({location}) => (
     )
 ;
 
-const Navbar = ({children}) => (
+const Navbar = ({fullWidth, children}) => (
     <nav className="navbar fixed-top navbar-expand-lg navbar-light bg-faded" id="navbar">
-        <div className="container">
+        <div className={fullWidth ? "container-fluid" : "container"}>
             <button className="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
                     data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">

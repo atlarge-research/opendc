@@ -18,7 +18,7 @@ class SimulationsContainer extends React.Component {
         return (
             <DocumentTitle title="My Simulations - OpenDC">
                 <div className="full-height">
-                    <AppNavbar inSimulation={false}/>
+                    <AppNavbar inSimulation={false} fullWidth={false}/>
                     <div className="container text-page-container full-height">
                         <SimulationFilterPanel/>
                         <VisibleSimulationList/>
