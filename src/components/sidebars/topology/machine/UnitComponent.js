@@ -5,7 +5,10 @@ const UnitComponent = ({unit, onDelete, inSimulation}) => (
         {unit.manufacturer + " " + unit.family + " " + unit.model + " " + unit.generation}
         {inSimulation ?
             undefined :
-            <span className="btn btn-outline-danger" onClick={onDelete}>Delete</span>
+            <span className="btn btn-outline-danger" onClick={onDelete}>
+                <span className="fa fa-trash mr-1"/>
+                Delete
+            </span>
         }
     </li>
 );

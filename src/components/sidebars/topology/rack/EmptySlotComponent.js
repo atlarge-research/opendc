@@ -1,5 +1,4 @@
 import React from "react";
-import FontAwesome from "react-fontawesome";
 
 const EmptySlotComponent = ({position, onAdd, inSimulation}) => (
     <li className="list-group-item d-flex justify-content-between align-items-center">
@@ -11,7 +10,7 @@ const EmptySlotComponent = ({position, onAdd, inSimulation}) => (
                 Empty Slot
             </span> :
             <button className="btn btn-outline-primary" onClick={onAdd}>
-                <FontAwesome name="plus" className="mr-1"/>
+                <span className="fa fa-plus mr-1"/>
                 Add machine
             </button>
         }

@@ -26,6 +26,7 @@ class UnitAddComponent extends React.Component {
                         className="btn btn-primary"
                         onClick={() => this.props.onAdd(parseInt(this.unitSelect.value, 10))}
                     >
+                        <span className="fa fa-plus mr-1"/>
                         Add
                     </button>
                 </div>
