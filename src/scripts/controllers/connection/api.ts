@@ -758,7 +758,7 @@ export class APIController {
                     }
                 }
 
-                return rack;
+                return <IRack>rack;
             });
         });
     }

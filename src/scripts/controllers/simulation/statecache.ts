@@ -10,7 +10,7 @@ export class StateCache {
     public cacheBlock: boolean;
 
     private simulationController: SimulationController;
-    private intervalId: number;
+    private intervalId: any;
     private caching: boolean;
 
     // Item caches

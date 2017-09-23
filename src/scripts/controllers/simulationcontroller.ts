@@ -42,7 +42,7 @@ export class SimulationController {
     public rackToRoomMap: {[key: number]: number;};
 
     private taskViewController: TaskViewController;
-    private tickerId: number;
+    private tickerId: any;
 
 
     public static showOrHideSimComponents(visibility: boolean): void {
