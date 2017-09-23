@@ -1,0 +1,27 @@
+/* TEAM */
+Benevolent Dictator for Life: Alexandru Iosup.
+Site: http://www.ds.ewi.tudelft.nl/~iosup/
+Twitter: aiosup.
+Location: Delft, Netherlands.
+
+Backend Engineer: Leon Overweel.
+Site: http://leonoverweel.com/
+Twitter: layon_overwhale.
+Location: Delft, Netherlands.
+
+Frontend Engineer: Georgios Andreadis.
+Site: https://github.com/gandreadis
+Location: Delft, Netherlands.
+
+Simulation Engineer: Matthijs Bijman.
+Site: https://github.com/MDBijman
+Location: Delft, Netherlands.
+
+/* THANKS */
+Executive Producer: Vincent van Beek.
+Executive Producer: Tim Hegeman.
+
+/* SITE */
+Standards: HTML5, CSS3, ES5
+Components: jQuery, Bootstrap, CreateJS, c3.js
+Software: WebStorm, Vim, Visual Studio
