@@ -14,7 +14,7 @@ CONNECTION_POOL = None
 
 def init_connection_pool(user, password, database, host, port):
     global CONNECTION_POOL
-    CONNECTION_POOL = MySQLConnectionPool(pool_name = "opendcpool", pool_size = 5, \
+    CONNECTION_POOL = MySQLConnectionPool(pool_name = "opendcpool", pool_size = 5,
                         user=user, password=password, database=database, host=host, port=port)
 
 def execute(statement, t):
