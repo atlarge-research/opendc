@@ -1,0 +1,27 @@
+version: "2"
+services:
+  opendc:
+    build: ./
+    image: opendc
+    ports:
+     - "8081:8081"
+    links:
+     - mariadb
+    depends_on:
+     - mariadb
+    environment:
+     - MYSQL_DATABASE=opendc
+     - MYSQL_USER=opendc
+     - MYSQL_PASSWORD=opendcpassword
+  mariadb:
+    image: mariadb:10.1
+    ports:
+     - "3306:3306" # comment this line out in production
+    environment:
+     - MYSQL_DATABASE=opendc
+     - MYSQL_USER=opendc
+     - MYSQL_PASSWORD=opendcpassword
+     - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    # uncomment in production
+    # volumes:
+    #  - "/data/mariadb:/var/lib/mysql"

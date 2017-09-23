@@ -72,10 +72,10 @@ Now, start the server:
 
 ```bash
 # Build the Docker image
-docker build -t=opendc .
+docker-compose build
 
-# Start a container with the image
-docker run -d --name opendc -p 8081:8081 opendc
+# Start the OpenDC container and the database container
+docker-compose up
 ```
 
 Wait a few seconds and open `http://localhost:8081` in your browser to use OpenDC.

@@ -1,10 +1,13 @@
+-- Tables referred to in foreign key constraints are defined after the constraints are defined
+SET FOREIGN_KEY_CHECKS = 0;
+
 /*
 *   A user is identified by their google_id, which the server gets by authenticating with Google.
 */
 
 -- Users
 CREATE TABLE IF NOT EXISTS users (
-  id          INTEGER PRIMARY KEY     NOT NULL,
+  id          INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   google_id   TEXT                    NOT NULL,
   email       TEXT,
   given_name  TEXT,
@@ -18,9 +21,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- User authorizations
 CREATE TABLE IF NOT EXISTS authorizations (
-  user_id             INTEGER NOT NULL,
-  simulation_id       INTEGER NOT NULL,
-  authorization_level TEXT    NOT NULL,
+  user_id             INTEGER     NOT NULL,
+  simulation_id       INTEGER     NOT NULL,
+  authorization_level VARCHAR(50) NOT NULL,
 
   FOREIGN KEY (user_id) REFERENCES users (id)
     ON DELETE CASCADE
@@ -39,7 +42,7 @@ CREATE UNIQUE INDEX authorizations_index
 
 -- Authorization levels
 CREATE TABLE IF NOT EXISTS authorization_levels (
-  level TEXT PRIMARY KEY        NOT NULL
+  level VARCHAR(50) PRIMARY KEY        NOT NULL
 );
 INSERT INTO authorization_levels (level) VALUES ("OWN");
 INSERT INTO authorization_levels (level) VALUES ("EDIT");
@@ -62,10 +65,10 @@ INSERT INTO authorization_levels (level) VALUES ("VIEW");
 
 -- Simulation
 CREATE TABLE IF NOT EXISTS simulations (
-  id                   INTEGER PRIMARY KEY     NOT NULL,
-  datetime_created     TEXT                    NOT NULL CHECK (datetime_created LIKE '____-__-__T__:__:__'),
-  datetime_last_edited TEXT                    NOT NULL CHECK (datetime_last_edited LIKE '____-__-__T__:__:__'),
-  name                 TEXT                    NOT NULL
+  id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  datetime_created     VARCHAR(50)             NOT NULL CHECK (datetime_created LIKE '____-__-__T__:__:__'),
+  datetime_last_edited VARCHAR(50)             NOT NULL CHECK (datetime_last_edited LIKE '____-__-__T__:__:__'),
+  name                 VARCHAR(50)             NOT NULL
 );
 
 /*
@@ -75,11 +78,11 @@ CREATE TABLE IF NOT EXISTS simulations (
 */
 
 CREATE TABLE IF NOT EXISTS experiments (
-  id                  INTEGER PRIMARY KEY     NOT NULL,
+  id                  INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   simulation_id       INTEGER                 NOT NULL,
   path_id             INTEGER                 NOT NULL,
   trace_id            INTEGER                 NOT NULL,
-  scheduler_name      TEXT                    NOT NULL,
+  scheduler_name      VARCHAR(50)             NOT NULL,
   name                TEXT                    NOT NULL,
   state               TEXT                    NOT NULL,
   last_simulated_tick INTEGER                 NOT NULL DEFAULT 0 CHECK (last_simulated_tick >= 0),
@@ -106,10 +109,10 @@ CREATE TABLE IF NOT EXISTS experiments (
 
 -- Path
 CREATE TABLE IF NOT EXISTS paths (
-  id               INTEGER PRIMARY KEY     NOT NULL,
+  id               INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   simulation_id    INTEGER                 NOT NULL,
   name             TEXT,
-  datetime_created TEXT                    NOT NULL CHECK (datetime_created LIKE '____-__-__T__:__:__'),
+  datetime_created VARCHAR(50)             NOT NULL CHECK (datetime_created LIKE '____-__-__T__:__:__'),
 
   FOREIGN KEY (simulation_id) REFERENCES simulations (id)
     ON DELETE CASCADE
@@ -118,7 +121,7 @@ CREATE TABLE IF NOT EXISTS paths (
 
 -- Sections
 CREATE TABLE IF NOT EXISTS sections (
-  id            INTEGER PRIMARY KEY     NOT NULL,
+  id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   path_id       INTEGER                 NOT NULL,
   datacenter_id INTEGER                 NOT NULL,
   start_tick    INTEGER                 NOT NULL CHECK (start_tick >= 0),
@@ -145,13 +148,13 @@ INSERT INTO schedulers (name) VALUES ("FIFO");
 
 -- A trace describes when tasks arrives in a datacenter 
 CREATE TABLE IF NOT EXISTS traces (
-  id   INTEGER PRIMARY KEY     NOT NULL,
+  id   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   name TEXT                    NOT NULL
 );
 
 -- A job
 CREATE TABLE IF NOT EXISTS jobs (
-  id       INTEGER PRIMARY KEY     NOT NULL,
+  id       INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   name     TEXT                    NOT NULL,
   trace_id INTEGER                 NOT NULL,
 
@@ -162,12 +165,12 @@ CREATE TABLE IF NOT EXISTS jobs (
 
 -- A task that's defined in terms of how many flops (floating point operations) it takes to complete
 CREATE TABLE IF NOT EXISTS tasks (
-  id                 INTEGER PRIMARY KEY     NOT NULL,
+  id                 INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   start_tick         INTEGER                 NOT NULL CHECK (start_tick >= 0),
   total_flop_count   INTEGER                 NOT NULL,
   job_id             INTEGER                 NOT NULL,
   task_dependency_id INTEGER                 NULL,
-  parallelizability  TEXT                    NOT NULL,
+  parallelizability  VARCHAR(50)             NOT NULL,
 
   FOREIGN KEY (job_id) REFERENCES jobs (id)
     ON DELETE CASCADE
@@ -184,7 +187,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 
 -- A state for a task_flop
 CREATE TABLE IF NOT EXISTS task_states (
-  id            INTEGER PRIMARY KEY     NOT NULL,
+  id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   task_id       INTEGER                 NOT NULL,
   experiment_id INTEGER                 NOT NULL,
   tick          INTEGER                 NOT NULL CHECK (tick >= 0),
@@ -197,7 +200,7 @@ CREATE TABLE IF NOT EXISTS task_states (
 
 -- A machine state 
 CREATE TABLE IF NOT EXISTS machine_states (
-  id               INTEGER PRIMARY KEY     NOT NULL,
+  id               INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   task_id          INTEGER,
   machine_id       INTEGER                 NOT NULL,
   experiment_id    INTEGER                 NOT NULL,
@@ -220,7 +223,7 @@ CREATE TABLE IF NOT EXISTS machine_states (
 
 -- Datacenters 
 CREATE TABLE IF NOT EXISTS datacenters (
-  id            INTEGER PRIMARY KEY     NOT NULL,
+  id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   simulation_id INTEGER                 NOT NULL,
   starred       INTEGER CHECK (starred = 0 OR starred = 1),
 
@@ -235,10 +238,10 @@ CREATE TABLE IF NOT EXISTS datacenters (
 
 -- Rooms in a datacenter
 CREATE TABLE IF NOT EXISTS rooms (
-  id            INTEGER PRIMARY KEY     NOT NULL,
+  id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   name          TEXT                    NOT NULL,
   datacenter_id INTEGER                 NOT NULL,
-  type          TEXT                    NOT NULL,
+  type          VARCHAR(50)             NOT NULL,
 
   FOREIGN KEY (datacenter_id) REFERENCES datacenters (id)
     ON DELETE CASCADE
@@ -251,7 +254,7 @@ CREATE TABLE IF NOT EXISTS rooms (
 );
 
 CREATE TABLE IF NOT EXISTS room_types (
-  name TEXT PRIMARY KEY        NOT NULL
+  name VARCHAR(50) PRIMARY KEY        NOT NULL
 );
 INSERT INTO room_types (name) VALUES ('SERVER');
 INSERT INTO room_types (name) VALUES ('HALLWAY');
@@ -267,7 +270,7 @@ INSERT INTO room_types (name) VALUES ('COOLING');
 
 -- Tiles in a room
 CREATE TABLE IF NOT EXISTS tiles (
-  id         INTEGER PRIMARY KEY     NOT NULL,
+  id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   position_x INTEGER                 NOT NULL,
   position_y INTEGER                 NOT NULL,
   room_id    INTEGER                 NOT NULL,
@@ -282,63 +285,61 @@ CREATE TABLE IF NOT EXISTS tiles (
   UNIQUE (object_id)                              -- an object can only be on one tile
 );
 
--- Make sure this datacenter doesn't already have a tile in this location.
-CREATE TRIGGER IF NOT EXISTS before_insert_tiles_check_existence
-  BEFORE
-  INSERT
-  ON tiles
-BEGIN
+DELIMITER //
 
-  -- raise an error if...
-  SELECT RAISE(ABORT, 'OccupiedTilePosition')
-  WHERE (
-
+-- Make sure this datacenter doesn't already have a tile in this location
+-- and tiles in a room are connected.
+DROP TRIGGER IF EXISTS before_insert_tiles_check_existence;
+CREATE TRIGGER before_insert_tiles_check_existence
+BEFORE INSERT ON tiles
+FOR EACH ROW
+  BEGIN
+    -- checking tile overlap
     -- a tile already exists such that..
-    EXISTS(SELECT datacenter_id
-           FROM tiles
-             JOIN rooms ON tiles.room_id = rooms.id
-           WHERE (
+    IF EXISTS(SELECT datacenter_id
+              FROM tiles
+                JOIN rooms ON tiles.room_id = rooms.id
+              WHERE (
 
-             -- it's in the same datacenter as the new tile...
-             datacenter_id = (SELECT datacenter_id
-                              FROM rooms
-                              WHERE rooms.id = NEW.room_id)
+                -- it's in the same datacenter as the new tile...
+                datacenter_id = (SELECT datacenter_id
+                                 FROM rooms
+                                 WHERE rooms.id = NEW.room_id)
 
-             -- and in the the same position as the new tile.
-             AND NEW.position_x = tiles.position_x AND NEW.position_y = tiles.position_y
-           ))
-  );
-END;
+                -- and in the the same position as the new tile.
+                AND NEW.position_x = tiles.position_x AND NEW.position_y = tiles.position_y
+              ))
+    THEN
+      -- raise an error
+      SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = "OccupiedTilePosition";
+    END IF;
 
--- Make sure tiles in a room are all connected.
-CREATE TRIGGER IF NOT EXISTS before_insert_tiles_check_adjacency
-  BEFORE
-  INSERT
-  ON tiles
-BEGIN
-
-  -- raise an error if...
-  SELECT RAISE(ABORT, 'InvalidTilePosition')
-  WHERE (
-
+    -- checking tile adjacency
     -- this isn't the first tile, ...
-    EXISTS(SELECT *
-           FROM tiles
-           WHERE (NEW.room_id = tiles.room_id))
+    IF (EXISTS(SELECT *
+               FROM tiles
+               WHERE (NEW.room_id = tiles.room_id))
 
-    -- and the new tile isn't directly to right, to the left, above, or below an exisiting tile.
-    AND NOT EXISTS(SELECT *
-                   FROM tiles
-                   WHERE (
-                     NEW.room_id = tiles.room_id AND (
-                       (NEW.position_x + 1 = tiles.position_x AND NEW.position_y = tiles.position_y)     -- right
-                       OR (NEW.position_x - 1 = tiles.position_x AND NEW.position_y = tiles.position_y)  -- left
-                       OR (NEW.position_x = tiles.position_x AND NEW.position_y + 1 = tiles.position_y)  -- above
-                       OR (NEW.position_x = tiles.position_x AND NEW.position_y - 1 = tiles.position_y)  -- below
-                     )
-                   ))
-  );
-END;
+        -- and the new tile isn't directly to right, to the left, above, or below an exisiting tile.
+        AND NOT EXISTS(SELECT *
+                       FROM tiles
+                       WHERE (
+                         NEW.room_id = tiles.room_id AND (
+                           (NEW.position_x + 1 = tiles.position_x AND NEW.position_y = tiles.position_y)     -- right
+                           OR (NEW.position_x - 1 = tiles.position_x AND NEW.position_y = tiles.position_y)  -- left
+                           OR (NEW.position_x = tiles.position_x AND NEW.position_y + 1 = tiles.position_y)  -- above
+                           OR (NEW.position_x = tiles.position_x AND NEW.position_y - 1 = tiles.position_y)  -- below
+                         )
+                       )))
+    THEN
+      -- raise an error
+      SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'InvalidTilePosition';
+    END IF;
+  END//
+
+DELIMITER ;
 
 /*
 *   Objects are on tiles and have a type. They form an extra abstraction layer to make it easier to find what object is
@@ -352,15 +353,15 @@ END;
 
 -- Objects
 CREATE TABLE IF NOT EXISTS objects (
-  id   INTEGER PRIMARY KEY     NOT NULL,
-  type TEXT                    NOT NULL,
+  id   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  type VARCHAR(50)             NOT NULL,
 
   FOREIGN KEY (type) REFERENCES object_types (name)
 );
 
 -- Object types
 CREATE TABLE IF NOT EXISTS object_types (
-  name TEXT PRIMARY KEY        NOT NULL
+  name VARCHAR(50) PRIMARY KEY        NOT NULL
 );
 INSERT INTO object_types (name) VALUES ('PSU');
 INSERT INTO object_types (name) VALUES ('COOLING_ITEM');
@@ -368,46 +369,53 @@ INSERT INTO object_types (name) VALUES ('RACK');
 
 -- Allowed objects table
 CREATE TABLE IF NOT EXISTS allowed_objects (
-  room_type   TEXT NOT NULL,
-  object_type TEXT NOT NULL,
+  room_type   VARCHAR(50) NOT NULL,
+  object_type VARCHAR(50) NOT NULL,
 
   FOREIGN KEY (room_type) REFERENCES room_types (name),
-  FOREIGN KEY (object_type) REFERENCES object_types
+  FOREIGN KEY (object_type) REFERENCES object_types (name)
 );
 
 -- Allowed objects per room
 INSERT INTO allowed_objects (room_type, object_type) VALUES ('SERVER', 'RACK');
---INSERT INTO allowed_objects (room_type, object_type) VALUES ('POWER', 'PSU');
---INSERT INTO allowed_objects (room_type, object_type) VALUES ('COOLING', 'COOLING_ITEM');
+-- INSERT INTO allowed_objects (room_type, object_type) VALUES ('POWER', 'PSU');
+-- INSERT INTO allowed_objects (room_type, object_type) VALUES ('COOLING', 'COOLING_ITEM');
+
+DELIMITER //
 
 -- Make sure objects are added to tiles in rooms they're allowed to be in.
-CREATE TRIGGER IF NOT EXISTS before_update_tiles
-  BEFORE
-  UPDATE
-  ON tiles
-BEGIN
+DROP TRIGGER IF EXISTS before_update_tiles;
+CREATE TRIGGER before_update_tiles
+BEFORE UPDATE ON tiles
+FOR EACH ROW
+  BEGIN
 
-  -- raise an error if...
-  SELECT RAISE(ABORT, 'ForbiddenObjectType')
-  WHERE (NEW.object_id IS NOT NULL) AND (
+    IF ((NEW.object_id IS NOT NULL) AND (
 
-    -- the type of the object being added to the tile...
-    (
-      SELECT objects.type
-      FROM objects
-        JOIN tiles ON tiles.object_id = objects.id
-      WHERE tiles.id = NEW.id
-    )
+      -- the type of the object being added to the tile...
+      (
+        SELECT objects.type
+        FROM objects
+          JOIN tiles ON tiles.object_id = objects.id
+        WHERE tiles.id = NEW.id
+      )
 
-    -- is not in the set of allowed object types for the room the tile is in.
-    NOT IN (
-      SELECT object_type
-      FROM allowed_objects
-        JOIN rooms ON rooms.type = allowed_objects.room_type
-      WHERE rooms.id = NEW.room_id
-    )
-  );
-END;
+      -- is not in the set of allowed object types for the room the tile is in.
+      NOT IN (
+        SELECT object_type
+        FROM allowed_objects
+          JOIN rooms ON rooms.type = allowed_objects.room_type
+        WHERE rooms.id = NEW.room_id
+      )
+    ))
+    THEN
+      -- raise an error
+      SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'ForbiddenObjectType';
+    END IF;
+  END//
+
+DELIMITER ;
 
 /*
 *   PSUs are a type of object.
@@ -415,10 +423,10 @@ END;
 
 -- PSUs on tiles
 CREATE TABLE IF NOT EXISTS psus (
-  id               INTEGER NOT NULL,
-  energy_kwh       INTEGER NOT NULL CHECK (energy_kwh > 0),
-  type             TEXT    NOT NULL,
-  failure_model_id INTEGER NOT NULL,
+  id               INTEGER     NOT NULL AUTO_INCREMENT,
+  energy_kwh       INTEGER     NOT NULL CHECK (energy_kwh > 0),
+  type             VARCHAR(50) NOT NULL,
+  failure_model_id INTEGER     NOT NULL,
 
   FOREIGN KEY (id) REFERENCES objects (id)
     ON DELETE CASCADE
@@ -436,10 +444,10 @@ CREATE TABLE IF NOT EXISTS psus (
 
 -- Cooling items on tiles
 CREATE TABLE IF NOT EXISTS cooling_items (
-  id                   INTEGER NOT NULL,
-  energy_consumption_w INTEGER NOT NULL CHECK (energy_consumption_w > 0),
-  type                 TEXT    NOT NULL,
-  failure_model_id     INTEGER NOT NULL,
+  id                   INTEGER     NOT NULL AUTO_INCREMENT,
+  energy_consumption_w INTEGER     NOT NULL CHECK (energy_consumption_w > 0),
+  type                 VARCHAR(50) NOT NULL,
+  failure_model_id     INTEGER     NOT NULL,
 
   FOREIGN KEY (id) REFERENCES objects (id)
     ON DELETE CASCADE
@@ -457,7 +465,7 @@ CREATE TABLE IF NOT EXISTS cooling_items (
 
 -- Racks on tiles
 CREATE TABLE IF NOT EXISTS racks (
-  id               INTEGER NOT NULL,
+  id               INTEGER NOT NULL AUTO_INCREMENT,
   name             TEXT,
   capacity         INTEGER NOT NULL CHECK (capacity > 0),
   power_capacity_w INTEGER NOT NULL CHECK (power_capacity_w > 0),
@@ -476,7 +484,7 @@ CREATE TABLE IF NOT EXISTS racks (
 
 -- Machines in racks
 CREATE TABLE IF NOT EXISTS machines (
-  id       INTEGER PRIMARY KEY     NOT NULL,
+  id       INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   rack_id  INTEGER                 NOT NULL,
   position INTEGER                 NOT NULL CHECK (position > 0),
 
@@ -488,19 +496,27 @@ CREATE TABLE IF NOT EXISTS machines (
   UNIQUE (rack_id, position)
 );
 
+DELIMITER //
+
 -- Make sure a machine is not inserted at a position that does not exist for its rack.
-CREATE TRIGGER IF NOT EXISTS before_insert_machine
-  BEFORE
-  INSERT
-  ON machines
-BEGIN
-  SELECT RAISE(ABORT, 'InvalidMachinePosition')
-  WHERE (
-    NEW.position > (SELECT capacity
-                    FROM racks
-                    WHERE racks.id = NEW.rack_id)
-  );
-END;
+DROP TRIGGER IF EXISTS before_inser_machine;
+CREATE TRIGGER before_insert_machine
+BEFORE INSERT ON machines
+FOR EACH ROW
+  BEGIN
+    IF (
+      NEW.position > (SELECT capacity
+                      FROM racks
+                      WHERE racks.id = NEW.rack_id)
+    )
+    THEN
+      -- raise an error
+      SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'InvalidMachinePosition';
+    END IF;
+  END//
+
+DELIMITER ;
 
 /*
 *   A machine can have a tag for easy search and filtering.
@@ -522,7 +538,7 @@ CREATE TABLE IF NOT EXISTS machine_tags (
 
 -- Failure models
 CREATE TABLE IF NOT EXISTS failure_models (
-  id   INTEGER PRIMARY KEY     NOT NULL,
+  id   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   name TEXT                    NOT NULL,
   rate REAL                    NOT NULL CHECK (rate >= 0 AND rate <= 1)
 );
@@ -533,7 +549,7 @@ CREATE TABLE IF NOT EXISTS failure_models (
 
 -- CPU specs
 CREATE TABLE IF NOT EXISTS cpus (
-  id                   INTEGER PRIMARY KEY     NOT NULL,
+  id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   manufacturer         TEXT                    NOT NULL,
   family               TEXT                    NOT NULL,
   generation           TEXT                    NOT NULL,
@@ -550,7 +566,7 @@ CREATE TABLE IF NOT EXISTS cpus (
 
 -- CPUs in machines
 CREATE TABLE IF NOT EXISTS machine_cpus (
-  id         INTEGER PRIMARY KEY     NOT NULL,
+  id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   machine_id INTEGER                 NOT NULL,
   cpu_id     INTEGER                 NOT NULL,
 
@@ -568,7 +584,7 @@ CREATE TABLE IF NOT EXISTS machine_cpus (
 
 -- GPU specs
 CREATE TABLE IF NOT EXISTS gpus (
-  id                   INTEGER PRIMARY KEY     NOT NULL,
+  id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   manufacturer         TEXT                    NOT NULL,
   family               TEXT                    NOT NULL,
   generation           TEXT                    NOT NULL,
@@ -585,7 +601,7 @@ CREATE TABLE IF NOT EXISTS gpus (
 
 -- GPUs in machines
 CREATE TABLE IF NOT EXISTS machine_gpus (
-  id         INTEGER PRIMARY KEY     NOT NULL,
+  id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   machine_id INTEGER                 NOT NULL,
   gpu_id     INTEGER                 NOT NULL,
 
@@ -604,7 +620,7 @@ CREATE TABLE IF NOT EXISTS machine_gpus (
 
 -- Memory specs
 CREATE TABLE IF NOT EXISTS memories (
-  id                   INTEGER PRIMARY KEY     NOT NULL,
+  id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   manufacturer         TEXT                    NOT NULL,
   family               TEXT                    NOT NULL,
   generation           TEXT                    NOT NULL,
@@ -621,7 +637,7 @@ CREATE TABLE IF NOT EXISTS memories (
 
 -- Memory in machines
 CREATE TABLE IF NOT EXISTS machine_memories (
-  id         INTEGER PRIMARY KEY     NOT NULL,
+  id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   machine_id INTEGER                 NOT NULL,
   memory_id  INTEGER                 NOT NULL,
 
@@ -640,7 +656,7 @@ CREATE TABLE IF NOT EXISTS machine_memories (
 
 -- Storage specs
 CREATE TABLE IF NOT EXISTS storages (
-  id                   INTEGER PRIMARY KEY     NOT NULL,
+  id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   manufacturer         TEXT                    NOT NULL,
   family               TEXT                    NOT NULL,
   generation           TEXT                    NOT NULL,
@@ -657,7 +673,7 @@ CREATE TABLE IF NOT EXISTS storages (
 
 -- Storage in machines
 CREATE TABLE IF NOT EXISTS machine_storages (
-  id         INTEGER PRIMARY KEY     NOT NULL,
+  id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   machine_id INTEGER                 NOT NULL,
   storage_id INTEGER                 NOT NULL,
 
