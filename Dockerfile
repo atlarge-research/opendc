@@ -1,7 +1,7 @@
 FROM node:7.4
 MAINTAINER Sacheendra Talluri <sacheendra.t@gmail.com>
 
-# Installing python, yarn, gulp and web-server dependencies
+# Installing python, yarn, and web-server dependencies
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 	&& echo "deb http://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
 	&& echo "deb http://ftp.debian.org/debian stretch main" >> /etc/apt/sources.list \
@@ -9,13 +9,9 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 	&& apt-get -y -t stretch install gcc-6 g++-6 \
 	&& apt-get install -y python python-pip yarn git sqlite3 sed supervisor \
 	&& pip install oauth2client eventlet flask-socketio \
-	&& npm install -g gulp-cli \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Fix for Bower issue https://github.com/bower/bower/issues/1492
-ENV GIT_DIR=/opendc
-
-# Copy opendc
+# Copy OpenDC directory
 COPY ./ /opendc
 
 # Setting up simulator
@@ -27,9 +23,11 @@ RUN mkdir -p /data/database \
 	&& chmod 555 ./simulator \
 	&& git config --global url."https://".insteadOf git:// \
 	&& cd /opendc/opendc-frontend \
-	&& rm -rf /opendc/opendc-frontend/build \
+	&& rm -rf ./build \
+	&& rm -rf ./node_modules \
 	&& yarn \
-	&& gulp --config=../keys.json
+	&& export REACT_APP_OAUTH_CLIENT_ID=$(cat ../keys.json | python -c "import sys, json; print json.load(sys.stdin)['OAUTH_CLIENT_ID']") \
+	&& yarn build
 
 CMD ["sh", "-c", "cd /opendc && ./build/configure.sh /data/database && /usr/bin/supervisord -c /opendc/build/supervisord.conf"]
 
