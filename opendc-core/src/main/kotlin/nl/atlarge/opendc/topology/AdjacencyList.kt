@@ -75,6 +75,11 @@ internal class AdjacencyListTopology : MutableTopology {
 	// Topology
 
 	/**
+	 * The listeners of this topology.
+	 */
+	override val listeners: MutableSet<TopologyListener> = HashSet()
+
+	/**
 	 * A unique identifier of this node within the topology.
 	 */
 	override val Entity<*>.id: Int
@@ -109,6 +114,7 @@ internal class AdjacencyListTopology : MutableTopology {
 		val edge = Edge(label, tag, from, to)
 		from.outgoingEdges.add(edge)
 		to.ingoingEdges.add(edge)
+		listeners.forEach { it.run { this@AdjacencyListTopology.onEdgeAdded(edge) } }
 		return edge
 	}
 
@@ -156,7 +162,13 @@ internal class AdjacencyListTopology : MutableTopology {
 	 * @param element The element to add to this graph.
 	 * @return `true` if the graph has changed, `false` otherwise.
 	 */
-	override fun add(element: Entity<*>): Boolean = nodes.putIfAbsent(element, Node(nextId.getAndIncrement())) == null
+	override fun add(element: Entity<*>): Boolean {
+		if (nodes.putIfAbsent(element, Node(nextId.getAndIncrement())) == null) {
+			listeners.forEach { it.run { this@AdjacencyListTopology.onNodeAdded(element) } }
+			return true
+		}
+		return false
+	}
 
 	/**
 	 * Add all nodes in the specified collection to the graph.
@@ -184,7 +196,11 @@ internal class AdjacencyListTopology : MutableTopology {
 		nodes[element]?.outgoingEdges?.forEach {
 			it.to.ingoingEdges.remove(it)
 		}
-		return nodes.keys.remove(element)
+		if (nodes.keys.remove(element)) {
+			listeners.forEach { it.run { this@AdjacencyListTopology.onNodeRemoved(element) } }
+			return true
+		}
+		return false
 	}
 
 

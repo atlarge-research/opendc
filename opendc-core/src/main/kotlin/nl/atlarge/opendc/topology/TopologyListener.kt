@@ -22,27 +22,40 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology
+package nl.atlarge.opendc.topology;
 
 /**
- * A graph data structure which represents the logical topology of a cloud network consisting of one or more
- * datacenters.
- *
- * A topology is [Iterable] and allows implementation-dependent iteration of the nodes in the topology.
+ * A listener interface for [Topology] instances. The methods of this interface are invoked on
+ * mutation of the topology the listener is listening to.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Topology : TopologyContext, Cloneable, Set<Entity<*>> {
+interface TopologyListener {
 	/**
-	 * The listeners of this topology.
-	 */
-	val listeners: MutableSet<TopologyListener>
-
-	/**
-	 * Create a copy of the topology.
+	 * This method is invoked when an [Entity] is added to the [Topology].
 	 *
-	 * @return A new [Topology] with a copy of the graph.
+	 * @param node The entity that has been added to the [Topology].
 	 */
-	public override fun clone(): Topology
-}
+	fun Topology.onNodeAdded(node: Entity<*>) {}
 
+	/**
+	 * This method is invoked when an [Entity] is removed from the [Topology].
+	 *
+	 * @param node The entity that has been removed from the [Topology].
+	 */
+	fun Topology.onNodeRemoved(node: Entity<*>) {}
+
+	/**
+	 * This method is invoked when an [Edge] is added to the [Topology].
+	 *
+	 * @param edge The edge that has been added to the [Topology].
+	 */
+	fun Topology.onEdgeAdded(edge: Edge<*>) {}
+
+	/**
+	 * This method is invoked when an [Edge] is removed from the [Topology].
+	 *
+	 * @param edge The entity that has been removed from the [Topology].
+	 */
+	fun Topology.onEdgeRemoved(edge: Edge<*>) {}
+}

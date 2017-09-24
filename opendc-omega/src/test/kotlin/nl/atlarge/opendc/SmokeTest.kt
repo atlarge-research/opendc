@@ -28,6 +28,7 @@ import nl.atlarge.opendc.kernel.omega.OmegaKernel
 import nl.atlarge.opendc.scheduler.FifoScheduler
 import nl.atlarge.opendc.scheduler.SrtfScheduler
 import nl.atlarge.opendc.topology.AdjacencyList
+import nl.atlarge.opendc.topology.TopologyListener
 import nl.atlarge.opendc.topology.container.Datacenter
 import nl.atlarge.opendc.topology.container.Rack
 import nl.atlarge.opendc.topology.container.Room
