@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS sections (
 
 -- Scheduler names
 CREATE TABLE IF NOT EXISTS schedulers (
-  name TEXT PRIMARY KEY        NOT NULL
+  name VARCHAR(50) PRIMARY KEY        NOT NULL
 );
 INSERT INTO schedulers (name) VALUES ("DEFAULT");
 INSERT INTO schedulers (name) VALUES ("SRTF");
