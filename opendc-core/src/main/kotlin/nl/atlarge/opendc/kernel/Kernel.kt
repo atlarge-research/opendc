@@ -24,6 +24,7 @@
 
 package nl.atlarge.opendc.kernel
 
+import nl.atlarge.opendc.topology.MutableTopology
 import nl.atlarge.opendc.topology.Topology
 
 /**
@@ -45,5 +46,5 @@ interface Kernel {
 	 * @param topology The [Topology] to create a [Simulation] of.
 	 * @return A [Simulation] instance.
 	 */
-	fun create(topology: Topology): Simulation
+	fun create(topology: MutableTopology): Simulation
 }

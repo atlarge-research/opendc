@@ -28,6 +28,7 @@ import nl.atlarge.opendc.kernel.Kernel
 import nl.atlarge.opendc.kernel.Process
 import nl.atlarge.opendc.kernel.Simulation
 import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.MutableTopology
 import nl.atlarge.opendc.topology.Topology
 
 /**
@@ -53,5 +54,5 @@ object OmegaKernel : Kernel {
 	 * @param topology The [Topology] to create a [Simulation] of.
 	 * @return A [Simulation] instance.
 	 */
-	override fun create(topology: Topology): Simulation = OmegaSimulation(this, topology)
+	override fun create(topology: MutableTopology): Simulation = OmegaSimulation(this, topology)
 }

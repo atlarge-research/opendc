@@ -30,6 +30,7 @@ import nl.atlarge.opendc.kernel.time.Clock
 import nl.atlarge.opendc.kernel.time.Duration
 import nl.atlarge.opendc.kernel.time.Instant
 import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.MutableTopology
 import nl.atlarge.opendc.topology.Topology
 import nl.atlarge.opendc.topology.TopologyContext
 import java.lang.Process
@@ -50,7 +51,7 @@ interface Context<out E : Entity<*>> : Readable, Writable, TopologyContext {
 	/**
 	 * The [Topology] over which the simulation is run.
 	 */
-	val topology: Topology
+	val topology: MutableTopology
 
 	/**
 	 * The current point in simulation time.

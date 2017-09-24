@@ -33,6 +33,7 @@ import nl.atlarge.opendc.kernel.time.Duration
 import nl.atlarge.opendc.kernel.time.Instant
 import nl.atlarge.opendc.kernel.time.TickClock
 import nl.atlarge.opendc.topology.Entity
+import nl.atlarge.opendc.topology.MutableTopology
 import nl.atlarge.opendc.topology.Topology
 import nl.atlarge.opendc.topology.TopologyContext
 import java.util.*
@@ -52,7 +53,7 @@ import kotlin.coroutines.experimental.*
  * @property clock The clock to use for simulation time.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-internal class OmegaSimulation(override val kernel: OmegaKernel, override val topology: Topology,
+internal class OmegaSimulation(override val kernel: OmegaKernel, override val topology: MutableTopology,
 							   override val clock: Clock = TickClock()) : Simulation {
 	/**
 	 * The logger instance to use for the simulator.
@@ -212,7 +213,7 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		/**
 		 * The [Topology] over which the simulation is run.
 		 */
-		override val topology: Topology = this@OmegaSimulation.topology
+		override val topology = this@OmegaSimulation.topology
 
 		/**
 		 * The current point in simulation time.

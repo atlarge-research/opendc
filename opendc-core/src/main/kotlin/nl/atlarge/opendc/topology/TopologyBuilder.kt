@@ -36,7 +36,7 @@ interface TopologyBuilder {
 	 * @param block The block to construct the topology.
 	 * @return The topology that has been built.
 	 */
-	fun construct(block: MutableTopology.() -> Unit): Topology = build().apply(block)
+	fun construct(block: MutableTopology.() -> Unit): MutableTopology = build().apply(block)
 
 	/**
 	 * Build a [Topology] instance from the current state of this builder.
