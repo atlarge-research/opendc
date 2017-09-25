@@ -8,7 +8,7 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 	&& apt-get update \
 	&& apt-get -y -t stretch install gcc-6 g++-6 \
 	&& apt-get install -y python python-pip yarn git sqlite3 sed supervisor mysql-client \
-	&& pip install oauth2client eventlet flask-socketio \
+	&& pip install oauth2client eventlet flask-socketio mysql-connector-python-rf \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Copy OpenDC directory
