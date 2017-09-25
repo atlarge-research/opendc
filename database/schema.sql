@@ -6,7 +6,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 */
 
 -- Users
-CREATE TABLE IF NOT EXISTS users (
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
   id          INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   google_id   TEXT                    NOT NULL,
   email       TEXT,
@@ -20,7 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
 */
 
 -- User authorizations
-CREATE TABLE IF NOT EXISTS authorizations (
+DROP TABLE IF EXISTS authorizations;
+CREATE TABLE authorizations (
   user_id             INTEGER     NOT NULL,
   simulation_id       INTEGER     NOT NULL,
   authorization_level VARCHAR(50) NOT NULL,
@@ -41,12 +43,13 @@ CREATE UNIQUE INDEX authorizations_index
   );
 
 -- Authorization levels
-CREATE TABLE IF NOT EXISTS authorization_levels (
+DROP TABLE IF EXISTS authorization_levels;
+CREATE TABLE authorization_levels (
   level VARCHAR(50) PRIMARY KEY        NOT NULL
 );
-INSERT INTO authorization_levels (level) VALUES ("OWN");
-INSERT INTO authorization_levels (level) VALUES ("EDIT");
-INSERT INTO authorization_levels (level) VALUES ("VIEW");
+INSERT INTO authorization_levels (level) VALUES ('OWN');
+INSERT INTO authorization_levels (level) VALUES ('EDIT');
+INSERT INTO authorization_levels (level) VALUES ('VIEW');
 
 /*
 *   A Simulation has several Paths, which define the topology of the datacenter at different times. A Simulation also
@@ -64,7 +67,8 @@ INSERT INTO authorization_levels (level) VALUES ("VIEW");
 */
 
 -- Simulation
-CREATE TABLE IF NOT EXISTS simulations (
+DROP TABLE IF EXISTS simulations;
+CREATE TABLE simulations (
   id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   datetime_created     VARCHAR(50)             NOT NULL CHECK (datetime_created LIKE '____-__-__T__:__:__'),
   datetime_last_edited VARCHAR(50)             NOT NULL CHECK (datetime_last_edited LIKE '____-__-__T__:__:__'),
@@ -77,7 +81,8 @@ CREATE TABLE IF NOT EXISTS simulations (
 *   Trace defines which tasks have to be run in the simulation.
 */
 
-CREATE TABLE IF NOT EXISTS experiments (
+DROP TABLE IF EXISTS experiments;
+CREATE TABLE experiments (
   id                  INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   simulation_id       INTEGER                 NOT NULL,
   path_id             INTEGER                 NOT NULL,
@@ -108,7 +113,8 @@ CREATE TABLE IF NOT EXISTS experiments (
 */
 
 -- Path
-CREATE TABLE IF NOT EXISTS paths (
+DROP TABLE IF EXISTS paths;
+CREATE TABLE paths (
   id               INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   simulation_id    INTEGER                 NOT NULL,
   name             TEXT,
@@ -120,7 +126,8 @@ CREATE TABLE IF NOT EXISTS paths (
 );
 
 -- Sections
-CREATE TABLE IF NOT EXISTS sections (
+DROP TABLE IF EXISTS sections;
+CREATE TABLE sections (
   id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   path_id       INTEGER                 NOT NULL,
   datacenter_id INTEGER                 NOT NULL,
@@ -135,25 +142,28 @@ CREATE TABLE IF NOT EXISTS sections (
 );
 
 -- Scheduler names
-CREATE TABLE IF NOT EXISTS schedulers (
+DROP TABLE IF EXISTS schedulers;
+CREATE TABLE schedulers (
   name VARCHAR(50) PRIMARY KEY        NOT NULL
 );
-INSERT INTO schedulers (name) VALUES ("DEFAULT");
-INSERT INTO schedulers (name) VALUES ("SRTF");
-INSERT INTO schedulers (name) VALUES ("FIFO");
+INSERT INTO schedulers (name) VALUES ('DEFAULT');
+INSERT INTO schedulers (name) VALUES ('SRTF');
+INSERT INTO schedulers (name) VALUES ('FIFO');
 
 /*
 *   Each simulation has a single trace. A trace contains tasks and their start times.
 */
 
--- A trace describes when tasks arrives in a datacenter 
-CREATE TABLE IF NOT EXISTS traces (
+-- A trace describes when tasks arrives in a datacenter
+DROP TABLE IF EXISTS traces;
+CREATE TABLE traces (
   id   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   name TEXT                    NOT NULL
 );
 
 -- A job
-CREATE TABLE IF NOT EXISTS jobs (
+DROP TABLE IF EXISTS jobs;
+CREATE TABLE jobs (
   id       INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   name     TEXT                    NOT NULL,
   trace_id INTEGER                 NOT NULL,
@@ -164,7 +174,8 @@ CREATE TABLE IF NOT EXISTS jobs (
 );
 
 -- A task that's defined in terms of how many flops (floating point operations) it takes to complete
-CREATE TABLE IF NOT EXISTS tasks (
+DROP TABLE IF EXISTS tasks;
+CREATE TABLE tasks (
   id                 INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   start_tick         INTEGER                 NOT NULL CHECK (start_tick >= 0),
   total_flop_count   INTEGER                 NOT NULL,
@@ -186,7 +197,8 @@ CREATE TABLE IF NOT EXISTS tasks (
 */
 
 -- A state for a task_flop
-CREATE TABLE IF NOT EXISTS task_states (
+DROP TABLE IF EXISTS task_states;
+CREATE TABLE task_states (
   id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   task_id       INTEGER                 NOT NULL,
   experiment_id INTEGER                 NOT NULL,
@@ -198,8 +210,9 @@ CREATE TABLE IF NOT EXISTS task_states (
   FOREIGN KEY (experiment_id) REFERENCES experiments (id)
 );
 
--- A machine state 
-CREATE TABLE IF NOT EXISTS machine_states (
+-- A machine state
+DROP TABLE IF EXISTS machine_states;
+CREATE TABLE machine_states (
   id               INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   task_id          INTEGER,
   machine_id       INTEGER                 NOT NULL,
@@ -221,8 +234,9 @@ CREATE TABLE IF NOT EXISTS machine_states (
 *   forth between different topologies.
 */
 
--- Datacenters 
-CREATE TABLE IF NOT EXISTS datacenters (
+-- Datacenters
+DROP TABLE IF EXISTS datacenters;
+CREATE TABLE datacenters (
   id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   simulation_id INTEGER                 NOT NULL,
   starred       INTEGER CHECK (starred = 0 OR starred = 1),
@@ -237,7 +251,8 @@ CREATE TABLE IF NOT EXISTS datacenters (
 */
 
 -- Rooms in a datacenter
-CREATE TABLE IF NOT EXISTS rooms (
+DROP TABLE IF EXISTS rooms;
+CREATE TABLE rooms (
   id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   name          TEXT                    NOT NULL,
   datacenter_id INTEGER                 NOT NULL,
@@ -253,7 +268,8 @@ CREATE TABLE IF NOT EXISTS rooms (
   UNIQUE (name, datacenter_id)
 );
 
-CREATE TABLE IF NOT EXISTS room_types (
+DROP TABLE IF EXISTS room_types;
+CREATE TABLE room_types (
   name VARCHAR(50) PRIMARY KEY        NOT NULL
 );
 INSERT INTO room_types (name) VALUES ('SERVER');
@@ -269,7 +285,8 @@ INSERT INTO room_types (name) VALUES ('COOLING');
 */
 
 -- Tiles in a room
-CREATE TABLE IF NOT EXISTS tiles (
+DROP TABLE IF EXISTS tiles;
+CREATE TABLE tiles (
   id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   position_x INTEGER                 NOT NULL,
   position_y INTEGER                 NOT NULL,
@@ -312,7 +329,7 @@ FOR EACH ROW
     THEN
       -- raise an error
       SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = "OccupiedTilePosition";
+      SET MESSAGE_TEXT = 'OccupiedTilePosition';
     END IF;
 
     -- checking tile adjacency
@@ -352,7 +369,8 @@ DELIMITER ;
 */
 
 -- Objects
-CREATE TABLE IF NOT EXISTS objects (
+DROP TABLE IF EXISTS objects;
+CREATE TABLE objects (
   id   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   type VARCHAR(50)             NOT NULL,
 
@@ -360,7 +378,8 @@ CREATE TABLE IF NOT EXISTS objects (
 );
 
 -- Object types
-CREATE TABLE IF NOT EXISTS object_types (
+DROP TABLE IF EXISTS object_types;
+CREATE TABLE object_types (
   name VARCHAR(50) PRIMARY KEY        NOT NULL
 );
 INSERT INTO object_types (name) VALUES ('PSU');
@@ -368,7 +387,8 @@ INSERT INTO object_types (name) VALUES ('COOLING_ITEM');
 INSERT INTO object_types (name) VALUES ('RACK');
 
 -- Allowed objects table
-CREATE TABLE IF NOT EXISTS allowed_objects (
+DROP TABLE IF EXISTS allowed_objects;
+CREATE TABLE allowed_objects (
   room_type   VARCHAR(50) NOT NULL,
   object_type VARCHAR(50) NOT NULL,
 
@@ -422,7 +442,8 @@ DELIMITER ;
 */
 
 -- PSUs on tiles
-CREATE TABLE IF NOT EXISTS psus (
+DROP TABLE IF EXISTS psus;
+CREATE TABLE psus (
   id               INTEGER     NOT NULL AUTO_INCREMENT,
   energy_kwh       INTEGER     NOT NULL CHECK (energy_kwh > 0),
   type             VARCHAR(50) NOT NULL,
@@ -443,7 +464,8 @@ CREATE TABLE IF NOT EXISTS psus (
 */
 
 -- Cooling items on tiles
-CREATE TABLE IF NOT EXISTS cooling_items (
+DROP TABLE IF EXISTS cooling_items;
+CREATE TABLE cooling_items (
   id                   INTEGER     NOT NULL AUTO_INCREMENT,
   energy_consumption_w INTEGER     NOT NULL CHECK (energy_consumption_w > 0),
   type                 VARCHAR(50) NOT NULL,
@@ -464,7 +486,8 @@ CREATE TABLE IF NOT EXISTS cooling_items (
 */
 
 -- Racks on tiles
-CREATE TABLE IF NOT EXISTS racks (
+DROP TABLE IF EXISTS racks;
+CREATE TABLE racks (
   id               INTEGER NOT NULL AUTO_INCREMENT,
   name             TEXT,
   capacity         INTEGER NOT NULL CHECK (capacity > 0),
@@ -483,7 +506,8 @@ CREATE TABLE IF NOT EXISTS racks (
 */
 
 -- Machines in racks
-CREATE TABLE IF NOT EXISTS machines (
+DROP TABLE IF EXISTS machines;
+CREATE TABLE machines (
   id       INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   rack_id  INTEGER                 NOT NULL,
   position INTEGER                 NOT NULL CHECK (position > 0),
@@ -523,7 +547,8 @@ DELIMITER ;
 */
 
 -- Tags for machines
-CREATE TABLE IF NOT EXISTS machine_tags (
+DROP TABLE IF EXISTS machine_tags;
+CREATE TABLE machine_tags (
   name       TEXT    NOT NULL,
   machine_id INTEGER NOT NULL,
 
@@ -537,7 +562,8 @@ CREATE TABLE IF NOT EXISTS machine_tags (
 */
 
 -- Failure models
-CREATE TABLE IF NOT EXISTS failure_models (
+DROP TABLE IF EXISTS failure_models;
+CREATE TABLE failure_models (
   id   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   name TEXT                    NOT NULL,
   rate REAL                    NOT NULL CHECK (rate >= 0 AND rate <= 1)
@@ -548,7 +574,8 @@ CREATE TABLE IF NOT EXISTS failure_models (
 */
 
 -- CPU specs
-CREATE TABLE IF NOT EXISTS cpus (
+DROP TABLE IF EXISTS cpus;
+CREATE TABLE cpus (
   id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   manufacturer         TEXT                    NOT NULL,
   family               TEXT                    NOT NULL,
@@ -565,7 +592,8 @@ CREATE TABLE IF NOT EXISTS cpus (
 );
 
 -- CPUs in machines
-CREATE TABLE IF NOT EXISTS machine_cpus (
+DROP TABLE IF EXISTS machine_cpus;
+CREATE TABLE machine_cpus (
   id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   machine_id INTEGER                 NOT NULL,
   cpu_id     INTEGER                 NOT NULL,
@@ -583,7 +611,8 @@ CREATE TABLE IF NOT EXISTS machine_cpus (
 */
 
 -- GPU specs
-CREATE TABLE IF NOT EXISTS gpus (
+DROP TABLE IF EXISTS gpus;
+CREATE TABLE gpus (
   id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   manufacturer         TEXT                    NOT NULL,
   family               TEXT                    NOT NULL,
@@ -600,7 +629,8 @@ CREATE TABLE IF NOT EXISTS gpus (
 );
 
 -- GPUs in machines
-CREATE TABLE IF NOT EXISTS machine_gpus (
+DROP TABLE IF EXISTS machine_gpus;
+CREATE TABLE machine_gpus (
   id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   machine_id INTEGER                 NOT NULL,
   gpu_id     INTEGER                 NOT NULL,
@@ -619,7 +649,8 @@ CREATE TABLE IF NOT EXISTS machine_gpus (
 */
 
 -- Memory specs
-CREATE TABLE IF NOT EXISTS memories (
+DROP TABLE IF EXISTS memories;
+CREATE TABLE memories (
   id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   manufacturer         TEXT                    NOT NULL,
   family               TEXT                    NOT NULL,
@@ -636,7 +667,8 @@ CREATE TABLE IF NOT EXISTS memories (
 );
 
 -- Memory in machines
-CREATE TABLE IF NOT EXISTS machine_memories (
+DROP TABLE IF EXISTS machine_memories;
+CREATE TABLE machine_memories (
   id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   machine_id INTEGER                 NOT NULL,
   memory_id  INTEGER                 NOT NULL,
@@ -655,7 +687,8 @@ CREATE TABLE IF NOT EXISTS machine_memories (
 */
 
 -- Storage specs
-CREATE TABLE IF NOT EXISTS storages (
+DROP TABLE IF EXISTS storages;
+CREATE TABLE storages (
   id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   manufacturer         TEXT                    NOT NULL,
   family               TEXT                    NOT NULL,
@@ -672,7 +705,8 @@ CREATE TABLE IF NOT EXISTS storages (
 );
 
 -- Storage in machines
-CREATE TABLE IF NOT EXISTS machine_storages (
+DROP TABLE IF EXISTS machine_storages;
+CREATE TABLE machine_storages (
   id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   machine_id INTEGER                 NOT NULL,
   storage_id INTEGER                 NOT NULL,

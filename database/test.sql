@@ -312,7 +312,7 @@ INSERT INTO cpus (manufacturer, family, generation, model, clock_rate_mhz, numbe
 
 -- GPUs
 INSERT INTO gpus (manufacturer, family, generation, model, clock_rate_mhz, number_of_cores, energy_consumption_w,
-                  failure_model_id) VALUES ("NVIDIA", "GTX", "4", "1080", 1200, 200, 250, 1);
+                  failure_model_id) VALUES ('NVIDIA', 'GTX', '4', '1080', 1200, 200, 250, 1);
 
 -- CPUs in machines
 INSERT INTO machine_cpus (machine_id, cpu_id) VALUES (1, 1);
