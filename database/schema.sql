@@ -442,7 +442,7 @@ DELIMITER ;
 -- PSUs on tiles
 DROP TABLE IF EXISTS psus;
 CREATE TABLE psus (
-  id               INTEGER     NOT NULL AUTO_INCREMENT,
+  id               INTEGER     NOT NULL,
   energy_kwh       INTEGER     NOT NULL CHECK (energy_kwh > 0),
   type             VARCHAR(50) NOT NULL,
   failure_model_id INTEGER     NOT NULL,
@@ -464,7 +464,7 @@ CREATE TABLE psus (
 -- Cooling items on tiles
 DROP TABLE IF EXISTS cooling_items;
 CREATE TABLE cooling_items (
-  id                   INTEGER     NOT NULL AUTO_INCREMENT,
+  id                   INTEGER     NOT NULL,
   energy_consumption_w INTEGER     NOT NULL CHECK (energy_consumption_w > 0),
   type                 VARCHAR(50) NOT NULL,
   failure_model_id     INTEGER     NOT NULL,
@@ -486,7 +486,7 @@ CREATE TABLE cooling_items (
 -- Racks on tiles
 DROP TABLE IF EXISTS racks;
 CREATE TABLE racks (
-  id               INTEGER NOT NULL AUTO_INCREMENT,
+  id               INTEGER NOT NULL,
   name             TEXT,
   capacity         INTEGER NOT NULL CHECK (capacity > 0),
   power_capacity_w INTEGER NOT NULL CHECK (power_capacity_w > 0),

@@ -215,52 +215,52 @@ INSERT INTO tiles (position_x, position_y, room_id) VALUES (10, 13, 5);
 
 -- Racks
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 1', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (1, 42, 'rack 1', 5000);
 UPDATE tiles
 SET object_id = 1
 WHERE id = 1;
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 2', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (2, 42, 'rack 2', 5000);
 UPDATE tiles
 SET object_id = 2
 WHERE id = 2;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 1', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (3, 42, 'rack 1', 5000);
 UPDATE tiles
 SET object_id = 3
 WHERE id = 4;
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 2', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (4, 42, 'rack 2', 5000);
 UPDATE tiles
 SET object_id = 4
 WHERE id = 5;
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 3', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (5, 42, 'rack 3', 5000);
 UPDATE tiles
 SET object_id = 5
 WHERE id = 7;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 1', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (6, 42, 'rack 1', 5000);
 UPDATE tiles
 SET object_id = 6
 WHERE id = 8;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 2', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (7, 42, 'rack 2', 5000);
 UPDATE tiles
 SET object_id = 7
 WHERE id = 9;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 3', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (8, 42, 'rack 3', 5000);
 UPDATE tiles
 SET object_id = 8
 WHERE id = 11;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (capacity, name, power_capacity_w) VALUES (42, 'rack 4', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (9, 42, 'rack 4', 5000);
 UPDATE tiles
 SET object_id = 9
 WHERE id = 12;
