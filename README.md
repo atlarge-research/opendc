@@ -35,6 +35,8 @@ To compile everything for camera-ready deployment, use the following command:
 yarn build
 ```
 
+**Note:** Perhaps this goes without saying, but for any functionality beyond visiting the entry page, a server backend running in the background is necessary. The easiest way to do this is to have an OpenDC docker container running, see [the main repo](https://github.com/atlarge-research/opendc) for more information on how to do this.
+
 ## Architecture
 
 The codebase follows a standard React.js structure, with static assets being contained in the `public` folder, while dynamic components and their styles are contained in `src`. The app uses client-side routing (with `react-router`), meaning that the only HTML file needed to be served is a `index.html` file.
