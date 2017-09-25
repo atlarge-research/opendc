@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from opendc.models.authorization import Authorization
 from opendc.models.simulation import Simulation
-from opendc.models.user import User
 from opendc.util import database, exceptions
 from opendc.util.rest import Response
+
 
 def DELETE(request):
     """Delete this Simulation."""
@@ -13,14 +12,14 @@ def DELETE(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int'
             }
         )
-    
+
     except exceptions.ParameterError as e:
         return Response(400, e.message)
-    
+
     # Instantiate a Simulation and make sure it exists
 
     simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
@@ -45,6 +44,7 @@ def DELETE(request):
         simulation.to_JSON()
     )
 
+
 def GET(request):
     """Get this Simulation."""
 
@@ -52,7 +52,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int'
             }
         )
@@ -82,6 +82,7 @@ def GET(request):
         simulation.to_JSON()
     )
 
+
 def PUT(request):
     """Update a simulation's name."""
 
@@ -89,12 +90,12 @@ def PUT(request):
 
     try:
         request.check_required_parameters(
-            body = {
+            body={
                 'simulation': {
                     'name': 'name'
                 }
             },
-            path = {
+            path={
                 'simulationId': 'int'
             }
         )
@@ -115,7 +116,7 @@ def PUT(request):
         return Response(403, 'Forbidden from editing {}.'.format(simulation))
 
     # Update this Simulation in the database
-    
+
     simulation.read()
 
     simulation.name = request.params_body['simulation']['name']

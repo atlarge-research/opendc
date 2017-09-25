@@ -11,6 +11,7 @@ from opendc.models.tile import Tile
 from opendc.util import database, exceptions
 from opendc.util.rest import Request, Response
 
+
 def POST(request):
     """Create a new Path that branches off of this Path at the specified tick."""
 
@@ -18,10 +19,10 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'pathId': 'int'
             },
-            body = {
+            body={
                 'section': {
                     'startTick': 'int'
                 }
@@ -48,8 +49,8 @@ def POST(request):
     # Create the new Path
 
     new_path = Path(
-        simulation_id = current_path.simulation_id,
-        datetime_created = database.datetime_to_string(datetime.now())
+        simulation_id=current_path.simulation_id,
+        datetime_created=database.datetime_to_string(datetime.now())
     )
 
     new_path.insert()
@@ -62,11 +63,10 @@ def POST(request):
     for current_section in current_sections:
 
         if current_section.start_tick < request.params_body['section']['startTick'] or current_section.start_tick == 0:
-
             new_section = Section(
-                path_id = new_path.id,
-                datacenter_id = current_section.datacenter_id,
-                start_tick = current_section.start_tick
+                path_id=new_path.id,
+                datacenter_id=current_section.datacenter_id,
+                start_tick=current_section.start_tick
             )
 
             new_section.insert()
@@ -92,9 +92,9 @@ def POST(request):
 
     if last_section.start_tick != 0:
         new_section = Section(
-            path_id = new_path.id,
-            datacenter_id = path_parameters['datacenterId'],
-            start_tick = request.params_body['section']['startTick']
+            path_id=new_path.id,
+            datacenter_id=path_parameters['datacenterId'],
+            start_tick=request.params_body['section']['startTick']
         )
 
         new_section.insert()
@@ -113,7 +113,7 @@ def POST(request):
 
         message = old_room.generate_api_call(path_parameters, request.token)
         response = Request(message).process()
-        
+
         path_parameters['roomId'] = response.content['id']
 
         # ... then the Tiles, ...
@@ -147,10 +147,9 @@ def POST(request):
                 old_machines = Machine.query('rack_id', old_rack.id)
 
                 for old_machine in old_machines:
-
                     old_machine.read()
                     old_machine.rack_id = path_parameters['rackId']
-                    
+
                     message = old_machine.generate_api_call(path_parameters, request.token)
                     response = Request(message).process()
 

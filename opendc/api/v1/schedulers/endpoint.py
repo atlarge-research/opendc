@@ -1,6 +1,7 @@
 from opendc.models.scheduler import Scheduler
 from opendc.util.rest import Response
 
+
 def GET(request):
     """Get all available Schedulers."""
 

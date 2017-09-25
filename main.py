@@ -2,13 +2,12 @@
 
 import json
 import os
-import urllib2
-
 import sys
 import traceback
+import urllib2
 
-from flask import Flask, abort, request, send_from_directory, session, jsonify
 import flask_socketio
+from flask import Flask, request, send_from_directory, jsonify
 from oauth2client import client, crypt
 
 from opendc.models.user import User
@@ -19,22 +18,24 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 # Get keys from config file
-with open(sys.argv[1]) as file:
-    KEYS = json.load(file)
+with open(sys.argv[1]) as f:
+    KEYS = json.load(f)
 
 STATIC_ROOT = os.path.join(KEYS['ROOT_DIR'], 'opendc-frontend', 'build')
 
 database.init_connection_pool(user=KEYS['MYSQL_USER'], password=KEYS['MYSQL_PASSWORD'],
-                    database=KEYS['MYSQL_DATABASE'], host=KEYS['MYSQL_HOST'], port=KEYS['MYSQL_PORT'])
+                              database=KEYS['MYSQL_DATABASE'], host=KEYS['MYSQL_HOST'], port=KEYS['MYSQL_PORT'])
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
 FLASK_CORE_APP.config['SECREY_KEY'] = KEYS['FLASK_SECRET']
 
 SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP)
 
+
 @FLASK_CORE_APP.errorhandler(404)
 def page_not_found(e):
     return send_from_directory(STATIC_ROOT, 'index.html')
+
 
 @FLASK_CORE_APP.route('/tokensignin', methods=['POST'])
 def sign_in():
@@ -73,7 +74,8 @@ def sign_in():
 
     return jsonify(**data)
 
-@FLASK_CORE_APP.route('/api/<string:version>/<path:endpoint_path>', methods = ['GET', 'POST', 'PUT', 'DELETE'])
+
+@FLASK_CORE_APP.route('/api/<string:version>/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_call(version, endpoint_path):
     """Call an API endpoint directly over HTTP"""
 
@@ -117,11 +119,13 @@ def api_call(version, endpoint_path):
     flask_response.status_code = response.status['code']
     return flask_response
 
+
 @FLASK_CORE_APP.route('/my-auth-token')
 def serve_web_server_test():
     """Serve the web server test."""
 
     return send_from_directory(os.path.join(KEYS['ROOT_DIR'], 'opendc-web-server', 'static'), 'index.html')
+
 
 @FLASK_CORE_APP.route('/')
 @FLASK_CORE_APP.route('/simulations')
@@ -131,6 +135,7 @@ def serve_web_server_test():
 @FLASK_CORE_APP.route('/profile')
 def serve_index():
     return send_from_directory(STATIC_ROOT, 'index.html')
+
 
 @SOCKET_IO_CORE.on('request')
 def receive_message(message):
@@ -148,11 +153,12 @@ def receive_message(message):
 
     flask_socketio.emit('response', response.to_JSON(), json=True)
 
+
 def _process_message(message):
     """Process a request message and return the response."""
 
     try:
-        request  = rest.Request(message)
+        request = rest.Request(message)
         response = request.process()
 
         return (request, response)
@@ -181,5 +187,6 @@ def _process_message(message):
     request.path = message['path']
 
     return (request, response)
+
 
 SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)

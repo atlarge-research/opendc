@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class Scheduler(Model):
 
+class Scheduler(Model):
     JSON_TO_PYTHON_DICT = {
         'Scheduler': {
             'name': 'name'

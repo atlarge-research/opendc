@@ -1,6 +1,7 @@
-from setuptools import setup
 from codecs import open
 from os import path
+
+from setuptools import setup
 
 # Get the long description from the README file
 here = path.abspath(path.dirname(__file__))

@@ -1,7 +1,8 @@
-from opendc.models.section import Section
 from opendc.models.path import Path
-from opendc.util import database, exceptions
+from opendc.models.section import Section
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Path's Sections."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'pathId': 'int'
             }
         )

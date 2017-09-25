@@ -1,6 +1,7 @@
 from opendc.models.section import Section
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Path's Sections."""
@@ -9,13 +10,12 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'sectionId': 'int'
             }
         )
     except exceptions.ParameterError as e:
         return Response(400, e.message)
-
 
     # Instantiate a Section from the database
 
@@ -34,7 +34,7 @@ def GET(request):
     # Return the Section
 
     section.read()
-    
+
     return Response(
         200,
         'Successfully retrieved {}.'.format(section),

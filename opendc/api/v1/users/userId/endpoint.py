@@ -1,6 +1,7 @@
 from opendc.models.user import User
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def DELETE(request):
     """Delete this user."""
@@ -9,7 +10,7 @@ def DELETE(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'userId': 'int'
             }
         )
@@ -37,9 +38,10 @@ def DELETE(request):
 
     return Response(
         200,
-        'Succesfully deleted {}'.format(user),
+        'Successfully deleted {}'.format(user),
         user.to_JSON()
     )
+
 
 def GET(request):
     """Get this User."""
@@ -48,7 +50,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'userId': 'int'
             }
         )
@@ -71,6 +73,7 @@ def GET(request):
         user.to_JSON(),
     )
 
+
 def PUT(request):
     """Update this User's given name and/ or family name."""
 
@@ -78,13 +81,13 @@ def PUT(request):
 
     try:
         request.check_required_parameters(
-            body = {
+            body={
                 'user': {
                     'givenName': 'string',
                     'familyName': 'string'
                 }
             },
-            path = {
+            path={
                 'userId': 'int'
             }
         )
@@ -103,9 +106,9 @@ def PUT(request):
 
     if not user.google_id_has_at_least(request.google_id, 'OWN'):
         return Response(403, 'Forbidden from editing {}.'.format(user))
-    
+
     # Update this User
-    
+
     user.given_name = request.params_body['user']['givenName']
     user.family_name = request.params_body['user']['familyName']
 
@@ -118,4 +121,3 @@ def PUT(request):
         'Successfully updated {}.'.format(user),
         user.to_JSON()
     )
-

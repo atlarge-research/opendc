@@ -1,7 +1,8 @@
-from opendc.models.room import Room
 from opendc.models.datacenter import Datacenter
-from opendc.util import database, exceptions
+from opendc.models.room import Room
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Datacenter's Rooms."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'datacenterId': 'int'
             }
         )
@@ -41,6 +42,7 @@ def GET(request):
         [x.to_JSON() for x in rooms]
     )
 
+
 def POST(request):
     """Add a Room."""
 
@@ -48,10 +50,10 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'datacenterId': 'int'
             },
-            body = {
+            body={
                 'room': {
                     'id': 'int',
                     'datacenterId': 'int',
@@ -61,7 +63,7 @@ def POST(request):
         )
     except exceptions.ParameterError as e:
         return Response(400, e.message)
- 
+
     # Make sure the passed object's datacenter id matches the path datacenter id
 
     if request.params_path['datacenterId'] != request.params_body['room']['datacenterId']:

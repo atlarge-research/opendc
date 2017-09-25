@@ -2,6 +2,7 @@ from opendc.models.allowed_object import AllowedObject
 from opendc.util import exceptions
 from opendc.util.rest import Response
 
+
 def GET(request):
     """Get this room's allowed objects."""
 
@@ -9,7 +10,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'name': 'string'
             }
         )
@@ -27,4 +28,4 @@ def GET(request):
         200,
         'Successfully retrieved AllowedObjects.',
         [x.to_JSON() for x in allowed_objects]
-    ) 
+    )

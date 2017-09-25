@@ -1,7 +1,8 @@
 from opendc.models.machine import Machine
 from opendc.models.rack import Rack
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Rack's Machines."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int'
             }
         )
@@ -45,6 +46,7 @@ def GET(request):
         [x.to_JSON() for x in machines]
     )
 
+
 def POST(request):
     """Add a Machine to this rack."""
 
@@ -52,10 +54,10 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int'
             },
-            body = {
+            body={
                 'machine': {
                     'rackId': 'int',
                     'position': 'int',
@@ -91,14 +93,14 @@ def POST(request):
         return Response(403, 'Forbidden from viewing {}.'.format(rack))
 
     # Instantiate a Machine
-    
+
     machine = Machine.from_JSON(request.params_body['machine'])
-    
+
     # Try to insert this Machine
 
     try:
         machine.insert()
-    
+
     except exceptions.ForeignKeyError:
         return Response(409, 'Rack position occupied.')
 

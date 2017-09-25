@@ -1,6 +1,5 @@
 import importlib
 import json
-import os
 import sys
 
 from oauth2client import client, crypt
@@ -9,6 +8,7 @@ from opendc.util import exceptions, parameter_checker
 
 with open(sys.argv[1]) as file:
     KEYS = json.load(file)
+
 
 class Request(object):
     """WebSocket message to REST request mapping."""
@@ -23,16 +23,16 @@ class Request(object):
 
         try:
             self.message = message
-            
+
             self.id = message['id']
-            
+
             self.path = message['path']
             self.method = message['method']
-            
+
             self.params_body = message['parameters']['body']
             self.params_path = message['parameters']['path']
             self.params_query = message['parameters']['query']
-            
+
             self.token = message['token']
 
         except KeyError as exception:
@@ -40,9 +40,9 @@ class Request(object):
 
         # Parse the path and import the appropriate module
 
-        try: 
+        try:
             self.path = message['path'].encode('ascii', 'ignore').strip('/')
-            
+
             module_base = 'opendc.api.{}.endpoint'
             module_path = self.path.translate(None, '{}').replace('/', '.')
 
@@ -62,10 +62,11 @@ class Request(object):
             raise exceptions.UnsupportedMethodError('Non-rest method: {}'.format(self.method))
 
         if not hasattr(self.module, self.method):
-            raise exceptions.UnsupportedMethodError('Unimplemented method at endpoint {}: {}'.format(self.path, self.method))
+            raise exceptions.UnsupportedMethodError(
+                'Unimplemented method at endpoint {}: {}'.format(self.path, self.method))
 
         # Verify the user
-        
+
         try:
             self.google_id = self._verify_token(self.token)
 
@@ -87,7 +88,7 @@ class Request(object):
             raise crypt.AppIdentityError('Unrecognized client.')
 
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-             raise crypt.AppIdentityError('Wrong issuer.')
+            raise crypt.AppIdentityError('Wrong issuer.')
 
         return idinfo['sub']
 
@@ -114,6 +115,7 @@ class Request(object):
 
         return json.dumps(self.message)
 
+
 class Response(object):
     """Response to websocket mapping"""
 
@@ -125,7 +127,7 @@ class Response(object):
             'description': status_description
         }
         self.content = content
-    
+
     def to_JSON(self):
         """"Return a JSON representation of this Response"""
 

@@ -1,10 +1,10 @@
 from opendc.models.authorization import Authorization
 from opendc.models.model import Model
 from opendc.models.user import User
-from opendc.util import database, exceptions
+from opendc.util import exceptions
+
 
 class Path(Model):
-
     JSON_TO_PYTHON_DICT = {
         'Path': {
             'id': 'id',

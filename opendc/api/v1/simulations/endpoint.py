@@ -9,6 +9,7 @@ from opendc.models.user import User
 from opendc.util import database, exceptions
 from opendc.util.rest import Response
 
+
 def POST(request):
     """Create a new simulation, and return that new simulation."""
 
@@ -16,7 +17,7 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            body = {
+            body={
                 'simulation': {
                     'name': 'string'
                 }
@@ -42,9 +43,9 @@ def POST(request):
     # Instantiate an Authorization and insert it into the database
 
     authorization = Authorization(
-        user_id             = User.from_google_id(request.google_id).id, 
-        simulation_id       = simulation.id,
-        authorization_level = 'OWN'
+        user_id=User.from_google_id(request.google_id).id,
+        simulation_id=simulation.id,
+        authorization_level='OWN'
     )
 
     authorization.insert()
@@ -52,8 +53,8 @@ def POST(request):
     # Instantiate a Path and insert it into the database
 
     path = Path(
-        simulation_id    = simulation.id,
-        datetime_created = database.datetime_to_string(datetime.now())
+        simulation_id=simulation.id,
+        datetime_created=database.datetime_to_string(datetime.now())
     )
 
     path.insert()
@@ -61,8 +62,8 @@ def POST(request):
     # Instantiate a Datacenter and insert it into the database
 
     datacenter = Datacenter(
-        starred = 0,
-        simulation_id = simulation.id
+        starred=0,
+        simulation_id=simulation.id
     )
 
     datacenter.insert()
@@ -70,9 +71,9 @@ def POST(request):
     # Instantiate a Section and insert it into the database
 
     section = Section(
-        path_id = path.id,
-        datacenter_id = datacenter.id,
-        start_tick = 0
+        path_id=path.id,
+        datacenter_id=datacenter.id,
+        start_tick=0
     )
 
     section.insert()

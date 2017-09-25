@@ -1,7 +1,8 @@
 from opendc.models.rack import Rack
 from opendc.models.tile import Tile
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Tile's Rack."""
@@ -10,11 +11,11 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int'
             },
         )
-    
+
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
@@ -51,6 +52,7 @@ def GET(request):
         rack.to_JSON()
     )
 
+
 def POST(request):
     """Add a Rack to this Tile if it is empty."""
 
@@ -58,10 +60,10 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int'
             },
-            body = {
+            body={
                 'rack': {
                     'name': 'string',
                     'capacity': 'int',
@@ -69,7 +71,7 @@ def POST(request):
                 }
             }
         )
-    
+
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
@@ -93,7 +95,7 @@ def POST(request):
         return Response(409, '{} occupied.'.format(tile))
 
     # Instantiate a Rack and insert it into the database
-    
+
     rack = Rack.from_JSON(request.params_body['rack'])
     rack.insert()
 
@@ -112,7 +114,8 @@ def POST(request):
         'Successfully added {}.'.format(rack),
         rack.to_JSON()
     )
- 
+
+
 def PUT(request):
     """Update the Rack on this Tile."""
 
@@ -120,10 +123,10 @@ def PUT(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int'
             },
-            body = {
+            body={
                 'rack': {
                     'name': 'string',
                     'capacity': 'int',
@@ -131,7 +134,7 @@ def PUT(request):
                 }
             }
         )
-    
+
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
@@ -175,6 +178,7 @@ def PUT(request):
         rack.to_JSON()
     )
 
+
 def DELETE(request):
     """Delete this Tile's Rack."""
 
@@ -182,11 +186,11 @@ def DELETE(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int'
             },
         )
-    
+
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
@@ -217,7 +221,7 @@ def DELETE(request):
 
     tile.object_id = None
     tile.object_type = None
-    
+
     tile.update()
 
     # Delete this Rack

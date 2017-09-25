@@ -1,6 +1,7 @@
 from opendc.models.tile import Tile
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Tile."""
@@ -9,7 +10,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int'
             }
         )
@@ -41,6 +42,7 @@ def GET(request):
         tile.to_JSON()
     )
 
+
 def DELETE(request):
     """Delete this Tile."""
 
@@ -48,7 +50,7 @@ def DELETE(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int'
             }
         )

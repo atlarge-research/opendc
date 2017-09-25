@@ -18,7 +18,7 @@ The `Util` package handles several miscellaneous tasks:
 
 * `REST`: Parses SockerIO messages into `Request` objects, and calls the appropriate `API` endpoint to get a `Response` object to return to the `Main Server Loop`.
 * `Param Checker`: Recursively checks whether required `Request` parameters are present and correctly typed.
-* `Exceptions`: Holds definitions for exceptions used throughough the web server.
+* `Exceptions`: Holds definitions for exceptions used throughout the web server.
 * `Database API`: Wraps SQLite functionality used by `Models` to read themselves from/ write themselves into the database.
 
 ### API Package

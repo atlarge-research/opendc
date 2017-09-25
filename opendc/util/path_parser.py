@@ -1,6 +1,6 @@
 import json
-import sys, os
-import re
+import os
+
 
 def parse(version, endpoint_path):
     """Map an HTTP endpoint path to an API path"""

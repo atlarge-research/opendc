@@ -1,9 +1,9 @@
 from opendc.models.model import Model
 from opendc.models.path import Path
-from opendc.util import database, exceptions
+from opendc.util import exceptions
+
 
 class Section(Model):
-
     JSON_TO_PYTHON_DICT = {
         'Section': {
             'id': 'id',
@@ -23,7 +23,7 @@ class Section(Model):
         # Get the Path
 
         try:
-            path = Path.from_primary_key((self.path_id,)) 
+            path = Path.from_primary_key((self.path_id,))
         except exceptions.RowNotFoundError:
             return False
 

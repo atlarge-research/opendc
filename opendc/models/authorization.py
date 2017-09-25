@@ -1,10 +1,8 @@
-import json
-
 from opendc.models.model import Model
 from opendc.models.user import User
 
-class Authorization(Model):
 
+class Authorization(Model):
     JSON_TO_PYTHON_DICT = {
         'Authorization': {
             'userId': 'user_id',
@@ -26,12 +24,12 @@ class Authorization(Model):
                 self.simulation_id
             )
         )
-        
+
         if authorization is None:
             return False
 
         return authorization.has_at_least(authorization_level)
-    
+
     def has_at_least(self, required_level):
         """Return True if this Authorization has at least the required level."""
 
@@ -41,7 +39,7 @@ class Authorization(Model):
         authorization_levels = ['VIEW', 'EDIT', 'OWN']
 
         try:
-            index_actual   = authorization_levels.index(self.authorization_level)
+            index_actual = authorization_levels.index(self.authorization_level)
             index_required = authorization_levels.index(required_level)
         except:
             return False
@@ -50,4 +48,3 @@ class Authorization(Model):
             return True
         else:
             return False
-

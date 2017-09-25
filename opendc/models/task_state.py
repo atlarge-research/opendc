@@ -1,8 +1,8 @@
 from opendc.models.model import Model
 from opendc.util import database
 
-class TaskState(Model):
 
+class TaskState(Model):
     JSON_TO_PYTHON_DICT = {
         'TaskState': {
             'id': 'id',
@@ -31,18 +31,18 @@ class TaskState(Model):
         for row in results:
             task_states.append(
                 cls(
-                    id = row[0],
-                    task_id = row[1],
-                    experiment_id = row[2],
-                    tick = row[3],
-                    flops_left = row[4]
+                    id=row[0],
+                    task_id=row[1],
+                    experiment_id=row[2],
+                    tick=row[3],
+                    flops_left=row[4]
                 )
             )
 
         return task_states
 
     def google_id_has_at_least(self, google_id, authorization_level):
-        """Return True if the Use rhas at least the given auth level over this TaskState."""
+        """Return True if the User has at least the given auth level over this TaskState."""
 
         if authorization_level in ['EDIT', 'OWN']:
             return False

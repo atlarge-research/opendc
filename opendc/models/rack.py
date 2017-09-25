@@ -1,10 +1,9 @@
 from opendc.models.model import Model
-from opendc.models.tile import Tile
 from opendc.models.object import Object
-from opendc.util import database, exceptions
+from opendc.models.tile import Tile
+
 
 class Rack(Model):
-
     JSON_TO_PYTHON_DICT = {
         'rack': {
             'id': 'id',
@@ -27,7 +26,7 @@ class Rack(Model):
         tile = Tile.from_primary_key((tile_id,))
 
         if not tile.exists():
-            return Rack(id = -1)
+            return Rack(id=-1)
 
         return cls.from_primary_key((tile.object_id,))
 
@@ -48,7 +47,7 @@ class Rack(Model):
     def insert(self):
         """Insert a Rack by first inserting an object."""
 
-        obj = Object(type = 'RACK')
+        obj = Object(type='RACK')
         obj.insert()
 
         self.id = obj.id

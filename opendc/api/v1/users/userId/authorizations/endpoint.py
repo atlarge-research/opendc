@@ -1,7 +1,8 @@
 from opendc.models.authorization import Authorization
 from opendc.models.user import User
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this User's Authorizations."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'userId': 'int'
             }
         )

@@ -2,6 +2,7 @@ from opendc.models.storage import Storage
 from opendc.util import exceptions
 from opendc.util.rest import Response
 
+
 def GET(request):
     """Get the specs of a Storage."""
 
@@ -9,7 +10,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'id': 'int'
             }
         )

@@ -1,7 +1,8 @@
 from opendc.models.experiment import Experiment
 from opendc.models.room_state import RoomState
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Experiment's Room States."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'experimentId': 'int'
             }
         )
@@ -22,7 +23,7 @@ def GET(request):
 
     experiment = Experiment.from_primary_key((request.params_path['experimentId'],))
 
-    # Make sure this Experiment exisits
+    # Make sure this Experiment exists
 
     if not experiment.exists():
         return Response(404, '{} not found.'.format(experiment))

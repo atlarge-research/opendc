@@ -1,8 +1,9 @@
 from opendc.models.authorization import Authorization
 from opendc.models.simulation import Simulation
 from opendc.models.user import User
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def DELETE(request):
     """Delete a user's authorization level over a simulation."""
@@ -11,7 +12,7 @@ def DELETE(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int',
                 'userId': 'int'
             }
@@ -21,7 +22,7 @@ def DELETE(request):
         return Response(400, e.message)
 
     # Instantiate an Authorization
-    
+
     authorization = Authorization.from_primary_key((
         request.params_path['userId'],
         request.params_path['simulationId']
@@ -30,7 +31,7 @@ def DELETE(request):
     # Make sure this Authorization exists in the database
 
     if not authorization.exists():
-        return Response (404, '{} not found.'.format(authorization))
+        return Response(404, '{} not found.'.format(authorization))
 
     # Make sure this User is allowed to delete this Authorization
 
@@ -47,14 +48,15 @@ def DELETE(request):
         authorization.to_JSON()
     )
 
+
 def GET(request):
     """Get this User's Authorization over this Simulation."""
-    
+
     # Make sure required parameters are there
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int',
                 'userId': 'int'
             }
@@ -62,7 +64,7 @@ def GET(request):
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
-    
+
     # Instantiate an Authorization
 
     authorization = Authorization.from_primary_key((
@@ -87,6 +89,7 @@ def GET(request):
         authorization.to_JSON()
     )
 
+
 def POST(request):
     """Add an authorization for a user's access to a simulation."""
 
@@ -94,11 +97,11 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'userId': 'int',
                 'simulationId': 'int'
             },
-            body = {
+            body={
                 'authorization': {
                     'authorizationLevel': 'string'
                 }
@@ -143,7 +146,7 @@ def POST(request):
 
     except exceptions.ForeignKeyError:
         return Response(400, 'Invalid authorizationLevel')
-    
+
     # Return this Authorization
 
     return Response(
@@ -152,6 +155,7 @@ def POST(request):
         authorization.to_JSON()
     )
 
+
 def PUT(request):
     """Change a user's authorization level over a simulation."""
 
@@ -159,11 +163,11 @@ def PUT(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int',
                 'userId': 'int'
             },
-            body = {
+            body={
                 'authorization': {
                     'authorizationLevel': 'string'
                 }
@@ -192,7 +196,7 @@ def PUT(request):
         return Response(403, 'Forbidden from updating {}.'.format(authorization))
 
     # Try to update this Authorization
-    
+
     try:
         authorization.update()
 
@@ -200,7 +204,7 @@ def PUT(request):
         return Response(400, 'Invalid authorization level.')
 
     # Return this Authorization
-    
+
     return Response(
         200,
         'Successfully updated {}.'.format(authorization),

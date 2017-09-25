@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class Memory(Model):
 
+class Memory(Model):
     JSON_TO_PYTHON_DICT = {
         'Memory': {
             'id': 'id',

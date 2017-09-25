@@ -1,6 +1,7 @@
 from opendc.models.gpu import GPU
 from opendc.util.rest import Response
 
+
 def GET(request):
     """Get a list of the specifications of all GPUs."""
 

@@ -1,12 +1,10 @@
-import json
-
 from opendc.models.authorization import Authorization
 from opendc.models.model import Model
 from opendc.models.user import User
-from opendc.util import database, exceptions
+from opendc.util import exceptions
+
 
 class Simulation(Model):
-
     JSON_TO_PYTHON_DICT = {
         'Simulation': {
             'id': 'id',
@@ -22,7 +20,7 @@ class Simulation(Model):
 
     def google_id_has_at_least(self, google_id, authorization_level):
         """Return True if the user has at least the given auth level over this Simulation."""
- 
+
         # Get the User id
 
         try:

@@ -1,7 +1,8 @@
 from opendc.models.machine import Machine
 from opendc.models.rack import Rack
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get the Machine at this location in this Rack."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int',
                 'position': 'int'
             }
@@ -43,16 +44,17 @@ def GET(request):
         machine.to_JSON()
     )
 
+
 def PUT(request):
     """Update the Machine at this location in this Rack."""
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int',
                 'position': 'int'
             },
-            body = {
+            body={
                 'machine': {
                     'rackId': 'int',
                     'position': 'int',
@@ -91,7 +93,7 @@ def PUT(request):
 
     # Update this Machine
 
-    machine.positoin = request.params_body['machine']['position']
+    machine.position = request.params_body['machine']['position']
     machine.tags = request.params_body['machine']['tags']
     machine.cpu_ids = request.params_body['machine']['cpuIds']
     machine.gpu_ids = request.params_body['machine']['gpuIds']
@@ -100,7 +102,7 @@ def PUT(request):
 
     try:
         machine.update()
-    
+
     except exceptions.ForeignKeyError:
         return Response(409, 'Rack position occupied.')
 
@@ -118,6 +120,7 @@ def PUT(request):
         machine.to_JSON()
     )
 
+
 def DELETE(request):
     """Delete the Machine at this location in this Rack."""
 
@@ -125,7 +128,7 @@ def DELETE(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'tileId': 'int',
                 'position': 'int'
             }

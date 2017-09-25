@@ -1,9 +1,9 @@
-from opendc.models.model import Model
 from opendc.models.datacenter import Datacenter
-from opendc.util import database, exceptions
+from opendc.models.model import Model
+from opendc.util import exceptions
+
 
 class Room(Model):
-
     JSON_TO_PYTHON_DICT = {
         'room': {
             'id': 'id',

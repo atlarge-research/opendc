@@ -1,7 +1,7 @@
 from opendc.models.path import Path
-from opendc.models.simulation import Simulation
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Path."""
@@ -10,7 +10,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'pathId': 'int'
             }
         )

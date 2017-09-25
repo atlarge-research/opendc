@@ -1,10 +1,10 @@
 from opendc.models.model import Model
-from opendc.models.room import Room
 from opendc.models.object import Object
-from opendc.util import database, exceptions
+from opendc.models.room import Room
+from opendc.util import exceptions
+
 
 class Tile(Model):
-
     JSON_TO_PYTHON_DICT = {
         'tile': {
             'id': 'id',
@@ -42,6 +42,5 @@ class Tile(Model):
         super(Tile, self).read()
 
         if self.object_id is not None:
-            
             obj = Object.from_primary_key((self.object_id,))
             self.object_type = obj.type

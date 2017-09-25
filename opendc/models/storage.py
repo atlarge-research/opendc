@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class Storage(Model):
 
+class Storage(Model):
     JSON_TO_PYTHON_DICT = {
         'Storage': {
             'id': 'id',

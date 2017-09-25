@@ -1,8 +1,8 @@
 from opendc.models.model import Model
 from opendc.util import database
 
-class TaskDuration(Model):
 
+class TaskDuration(Model):
     JSON_TO_PYTHON_DICT = {
         'TaskDuration': {
             'taskId': 'task_id',
@@ -15,8 +15,8 @@ class TaskDuration(Model):
         """Instantiate a RoomState from a database row."""
 
         return cls(
-            task_id = row[0],
-            duration = row[1]
+            task_id=row[0],
+            duration=row[1]
         )
 
     @classmethod

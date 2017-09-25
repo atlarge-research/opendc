@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class RoomType(Model):
 
+class RoomType(Model):
     JSON_TO_PYTHON_DICT = {
         'RoomType': {
             'name': 'name'

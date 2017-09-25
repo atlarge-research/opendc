@@ -1,11 +1,8 @@
-import json
-
 from opendc.models.model import Model
 from opendc.models.section import Section
-from opendc.util import database, exceptions
+
 
 class Datacenter(Model):
-
     JSON_TO_PYTHON_DICT = {
         'datacenter': {
             'id': 'id',

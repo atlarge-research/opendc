@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
+
 class Task(Model):
-    
     JSON_TO_PYTHON_DICT = {
         'Task': {
             'id': 'id',

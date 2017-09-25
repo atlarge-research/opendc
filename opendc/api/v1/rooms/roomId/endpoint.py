@@ -1,6 +1,7 @@
 from opendc.models.room import Room
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Room."""
@@ -9,7 +10,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'roomId': 'int'
             }
         )
@@ -41,24 +42,25 @@ def GET(request):
         room.to_JSON()
     )
 
+
 def PUT(request):
     """Update this Room's name and type."""
 
     # Make sure required parameters are there
-    
+
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'roomId': 'int'
             },
-            body = {
+            body={
                 'room': {
                     'name': 'string',
                     'roomType': 'string'
                 }
             }
         )
-        
+
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
@@ -94,6 +96,7 @@ def PUT(request):
         room.to_JSON()
     )
 
+
 def DELETE(request):
     """Delete this Room."""
 
@@ -101,7 +104,7 @@ def DELETE(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'roomId': 'int'
             }
         )
@@ -129,6 +132,6 @@ def DELETE(request):
 
     return Response(
         200,
-        'Sucessfully deleted {}.'.format(room),
+        'Successfully deleted {}.'.format(room),
         room.to_JSON()
     )

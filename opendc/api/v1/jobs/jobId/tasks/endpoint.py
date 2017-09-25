@@ -1,7 +1,8 @@
 from opendc.models.job import Job
 from opendc.models.task import Task
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Job's Tasks."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'jobId': 'int'
             }
         )

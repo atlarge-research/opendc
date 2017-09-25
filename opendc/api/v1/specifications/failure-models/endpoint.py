@@ -1,6 +1,7 @@
 from opendc.models.failure_model import FailureModel
 from opendc.util.rest import Response
 
+
 def GET(request):
     """Get all Failure Models."""
 

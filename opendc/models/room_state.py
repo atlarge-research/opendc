@@ -1,8 +1,8 @@
 from opendc.models.model import Model
 from opendc.util import database
 
-class RoomState(Model):
 
+class RoomState(Model):
     JSON_TO_PYTHON_DICT = {
         'RoomState': {
             'roomId': 'room_id',
@@ -16,9 +16,9 @@ class RoomState(Model):
         """Instantiate a RoomState from a database row."""
 
         return cls(
-            room_id = row[0],
-            load_fraction = row[1],
-            tick = row[2]
+            room_id=row[0],
+            load_fraction=row[1],
+            tick=row[2]
         )
 
     @classmethod
@@ -71,7 +71,6 @@ class RoomState(Model):
             room_states.append(cls._from_database_row(row))
 
         return room_states
-    
 
     def google_id_has_at_least(self, google_id, authorization_level):
         """Return True if the User has at least the given auth level over this RackState."""

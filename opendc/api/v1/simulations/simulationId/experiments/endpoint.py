@@ -1,8 +1,8 @@
 from opendc.models.experiment import Experiment
-from opendc.models.queued_experiment import QueuedExperiment
 from opendc.models.simulation import Simulation
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Simulation's Experiments."""
@@ -11,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int'
             }
         )
@@ -43,6 +43,7 @@ def GET(request):
         [x.to_JSON() for x in experiments]
     )
 
+
 def POST(request):
     """Add a new Experiment for this Simulation."""
 
@@ -50,10 +51,10 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int'
             },
-            body = {
+            body={
                 'experiment': {
                     'simulationId': 'int',
                     'pathId': 'int',
@@ -96,12 +97,12 @@ def POST(request):
 
     try:
         experiment.insert()
-    
+
     except exceptions.ForeignKeyError as e:
         return Response(400, 'Foreign key constraint not met.' + e.message)
 
     # Return this Experiment
-    
+
     experiment.read()
 
     return Response(

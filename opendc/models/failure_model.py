@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class FailureModel(Model):
 
+class FailureModel(Model):
     JSON_TO_PYTHON_DICT = {
         'FailureModel': {
             'id': 'id',

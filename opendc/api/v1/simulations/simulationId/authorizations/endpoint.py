@@ -1,7 +1,8 @@
 from opendc.models.authorization import Authorization
 from opendc.models.simulation import Simulation
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Find all authorizations for a Simulation."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int'
             }
         )

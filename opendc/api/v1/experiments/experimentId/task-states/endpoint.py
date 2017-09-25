@@ -1,7 +1,8 @@
 from opendc.models.experiment import Experiment
 from opendc.models.task_state import TaskState
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Experiment's Task States."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'experimentId': 'int'
             }
         )

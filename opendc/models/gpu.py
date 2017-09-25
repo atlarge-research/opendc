@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class GPU(Model):
 
+class GPU(Model):
     JSON_TO_PYTHON_DICT = {
         'GPU': {
             'id': 'id',

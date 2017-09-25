@@ -1,7 +1,7 @@
 from opendc.util import database, exceptions
 
-class Model(object):
 
+class Model(object):
     # MUST OVERRIDE IN DERIVED CLASS
 
     JSON_TO_PYTHON_DICT = {
@@ -9,14 +9,14 @@ class Model(object):
             'jsonParameterName': 'python_parameter_name'
         }
     }
-    
+
     PATH = ''
     PATH_PARAMETERS = {}
 
     TABLE_NAME = ''
     COLUMNS = []
     COLUMNS_PRIMARY_KEY = []
-   
+
     # INITIALIZATION
 
     def __init__(self, **kwargs):
@@ -50,7 +50,7 @@ class Model(object):
         for json_name in parameter_map:
 
             python_name = parameter_map[json_name]
-            
+
             if json_name in json_object:
                 parameters[python_name] = json_object.get(json_name)
 
@@ -71,12 +71,11 @@ class Model(object):
 
             if hasattr(self, python_name):
                 parameters[json_name] = getattr(self, python_name)
-            
+
             else:
                 parameters[json_name] = None
 
         return parameters
-    
 
     # API CALL GENERATION
 
@@ -114,7 +113,7 @@ class Model(object):
     @classmethod
     def _generate_primary_key_string(cls):
         """Generate the SQLite primary key string for this Model."""
-        
+
         return ' AND '.join(['{} = %s'.format(x) for x in cls.COLUMNS_PRIMARY_KEY])
 
     @classmethod
@@ -199,7 +198,7 @@ class Model(object):
         parameters = {}
         for i, column in enumerate(cls.COLUMNS_PRIMARY_KEY):
             parameters[column] = primary_key_tuple[i]
-        
+
         return cls(**parameters)
 
     @classmethod
@@ -209,7 +208,7 @@ class Model(object):
         if column_name is not None and value is not None:
             statement = 'SELECT * FROM {} WHERE {} = %s'.format(cls.TABLE_NAME, column_name)
             database_models = database.fetchall(statement, (value,))
-        
+
         else:
             statement = 'SELECT * FROM {}'.format(cls.TABLE_NAME)
             database_models = database.fetchall(statement)
@@ -288,7 +287,7 @@ class Model(object):
         )
 
         values = self._generate_insert_columns_tuple()
-        
+
         try:
             last_row_id = database.execute(statement, values)
         except Exception as e:

@@ -1,7 +1,8 @@
-from opendc.models.tile import Tile
 from opendc.models.room import Room
-from opendc.util import database, exceptions
+from opendc.models.tile import Tile
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Room's Tiles."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'roomId': 'int'
             }
         )
@@ -45,6 +46,7 @@ def GET(request):
         [x.to_JSON() for x in tiles]
     )
 
+
 def POST(request):
     """Add a Tile."""
 
@@ -52,10 +54,10 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'roomId': 'int'
             },
-            body = {
+            body={
                 'tile': {
                     'roomId': 'int',
                     'positionX': 'int',
@@ -104,7 +106,7 @@ def POST(request):
 
         if e.message == 'OccupiedTilePosition':
             return Response(409, 'Tile position occupied.')
-        
+
         elif e.message == 'InvalidTilePosition':
             return Response(400, 'Invalid Tile position (new Tiles must neighbor existing Tiles).')
 

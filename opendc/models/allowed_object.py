@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class AllowedObject(Model):
 
+class AllowedObject(Model):
     JSON_TO_PYTHON_DICT = {
         'AllowedObject': {
             'roomType': 'room_type',

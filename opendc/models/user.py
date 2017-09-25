@@ -1,9 +1,7 @@
-import json
-
 from opendc.models.model import Model
 
-class User(Model):
 
+class User(Model):
     JSON_TO_PYTHON_DICT = {
         'User': {
             'id': 'id',

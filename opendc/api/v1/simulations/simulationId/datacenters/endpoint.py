@@ -1,7 +1,8 @@
 from opendc.models.datacenter import Datacenter
 from opendc.models.simulation import Simulation
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def POST(request):
     """Add a new Datacenter to this Simulation."""
@@ -10,10 +11,10 @@ def POST(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'simulationId': 'int'
             },
-            body = {
+            body={
                 'datacenter': {
                     'starred': 'int',
                     'simulationId': 'int'

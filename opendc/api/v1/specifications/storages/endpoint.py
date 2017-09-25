@@ -1,6 +1,7 @@
 from opendc.models.storage import Storage
 from opendc.util.rest import Response
 
+
 def GET(request):
     """Get a list of the specifications of all Storages."""
 

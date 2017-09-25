@@ -1,9 +1,9 @@
 from opendc.models.model import Model
 from opendc.models.simulation import Simulation
-from opendc.util import database, exceptions
+from opendc.util import exceptions
+
 
 class Experiment(Model):
-
     JSON_TO_PYTHON_DICT = {
         'Experiment': {
             'id': 'id',

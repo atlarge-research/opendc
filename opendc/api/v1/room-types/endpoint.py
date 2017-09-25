@@ -1,6 +1,7 @@
 from opendc.models.room_type import RoomType
 from opendc.util.rest import Response
 
+
 def GET(request):
     """Get all available room types."""
 

@@ -4,8 +4,8 @@ from opendc.models.model import Model
 from opendc.models.rack import Rack
 from opendc.util import database, exceptions
 
-class Machine(Model):
 
+class Machine(Model):
     JSON_TO_PYTHON_DICT = {
         'machine': {
             'id': 'id',
@@ -34,7 +34,7 @@ class Machine(Model):
 
     def _update_devices(self, before_insert):
         """Update this Machine's devices in the database."""
-        
+
         for device_table in self.device_table_to_attribute.keys():
 
             # First, create the statements to execute
@@ -48,15 +48,14 @@ class Machine(Model):
             database.execute(statement, (before_insert.id,))
 
             # Then, add current ones
-            
-            for device_id in getattr(before_insert, before_insert.device_table_to_attribute[device_table]):
 
+            for device_id in getattr(before_insert, before_insert.device_table_to_attribute[device_table]):
                 statement = 'INSERT INTO machine_{} (machine_id, {}) VALUES (%s, %s)'.format(
                     device_table,
                     before_insert.device_table_to_attribute[device_table][:-1]
                 )
-                
-                database.execute(statement, (before_insert.id, device_id)) 
+
+                database.execute(statement, (before_insert.id, device_id))
 
     @classmethod
     def from_tile_id_and_rack_position(cls, tile_id, position):
@@ -65,13 +64,13 @@ class Machine(Model):
         try:
             rack = Rack.from_tile_id(tile_id)
         except:
-            return cls(id = -1)
-        
+            return cls(id=-1)
+
         try:
             statement = 'SELECT id FROM machines WHERE rack_id = %s AND position = %s'
             machine_id = database.fetchone(statement, (rack.id, position))[0]
         except:
-            return cls(id = -1)
+            return cls(id=-1)
 
         return cls.from_primary_key((machine_id,))
 
@@ -93,7 +92,7 @@ class Machine(Model):
         """Insert this Machine by also updating its devices."""
 
         before_insert = copy.deepcopy(self)
-        
+
         super(Machine, self).insert()
 
         before_insert.id = self.id
@@ -101,21 +100,21 @@ class Machine(Model):
 
     def read(self):
         """Read this Machine by also getting its CPU, GPU, Memory and Storage IDs."""
-        
+
         super(Machine, self).read()
 
         for device_table in self.device_table_to_attribute.keys():
-            
+
             statement = 'SELECT * FROM machine_{} WHERE machine_id = %s'.format(device_table)
             results = database.fetchall(statement, (self.id,))
-        
+
             device_ids = []
 
             for row in results:
                 device_ids.append(row[2])
 
             setattr(self, self.device_table_to_attribute[device_table], device_ids)
-        
+
         setattr(self, 'tags', [])
 
     def update(self):

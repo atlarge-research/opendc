@@ -1,13 +1,14 @@
 from opendc.models.experiment import Experiment
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Experiment."""
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'experimentId': 'int'
             }
         )
@@ -39,6 +40,7 @@ def GET(request):
         experiment.to_JSON()
     )
 
+
 def PUT(request):
     """Update this Experiment's Path, Trace, Scheduler, and/or name."""
 
@@ -46,10 +48,10 @@ def PUT(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'experimentId': 'int'
             },
-            body = {
+            body={
                 'experiment': {
                     'pathId': 'int',
                     'traceId': 'int',
@@ -97,6 +99,7 @@ def PUT(request):
         experiment.to_JSON()
     )
 
+
 def DELETE(request):
     """Delete this Experiment."""
 
@@ -104,7 +107,7 @@ def DELETE(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'experimentId': 'int'
             }
         )

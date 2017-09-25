@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class Job(Model):
 
+class Job(Model):
     JSON_TO_PYTHON_DICT = {
         'Job': {
             'id': 'id',

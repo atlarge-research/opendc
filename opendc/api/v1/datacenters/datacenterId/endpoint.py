@@ -1,6 +1,7 @@
 from opendc.models.datacenter import Datacenter
-from opendc.util import database, exceptions
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Datacenter."""
@@ -9,7 +10,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'datacenterId': 'int'
             }
         )

@@ -1,7 +1,7 @@
 from opendc.models.model import Model
 
-class Trace(Model):
 
+class Trace(Model):
     JSON_TO_PYTHON_DICT = {
         'Trace': {
             'id': 'id',

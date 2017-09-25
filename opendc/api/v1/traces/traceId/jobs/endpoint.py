@@ -1,7 +1,8 @@
-from opendc.models.trace import Trace
 from opendc.models.job import Job
-from opendc.util import database, exceptions
+from opendc.models.trace import Trace
+from opendc.util import exceptions
 from opendc.util.rest import Response
+
 
 def GET(request):
     """Get this Trace's Jobs."""
@@ -10,7 +11,7 @@ def GET(request):
 
     try:
         request.check_required_parameters(
-            path = {
+            path={
                 'traceId': 'int'
             }
         )
