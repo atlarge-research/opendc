@@ -52,7 +52,7 @@ class Rack(Model):
         obj.insert()
 
         self.id = obj.id
-        self.insert_with_id()
+        self.insert_with_id(is_auto_generated=False)
 
     def delete(self):
         """Delete a Rack by deleting its associated object."""

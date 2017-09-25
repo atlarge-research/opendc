@@ -278,7 +278,7 @@ class Model(object):
 
         self.insert_with_id()
 
-    def insert_with_id(self):
+    def insert_with_id(self, is_auto_generated=True):
         """Insert this Model into the database without removing its id."""
 
         statement = 'INSERT INTO {} ({}) VALUES ({})'.format(
@@ -296,7 +296,8 @@ class Model(object):
             raise exceptions.ForeignKeyError(e.message)
 
         if 'id' in self.COLUMNS_PRIMARY_KEY:
-            setattr(self, 'id', last_row_id)
+            if is_auto_generated:
+                setattr(self, 'id', last_row_id)
             self.read()
 
     def read(self):
