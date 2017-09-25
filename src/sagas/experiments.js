@@ -38,7 +38,7 @@ export function* onOpenExperimentSucceeded(action) {
 
 function* startStateFetchLoop(experimentId) {
     try {
-        while (true) {
+        while ((yield select(state => state.currentExperimentId)) !== -1) {
             const lastSimulatedTick = (yield call(getLastSimulatedTick, experimentId)).lastSimulatedTick;
             if (lastSimulatedTick !== (yield select(state => state.lastSimulatedTick))) {
                 yield put(setLastSimulatedTick(lastSimulatedTick));
