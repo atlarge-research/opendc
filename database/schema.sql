@@ -263,9 +263,7 @@ CREATE TABLE rooms (
     ON UPDATE CASCADE,
   FOREIGN KEY (type) REFERENCES room_types (name)
     ON DELETE CASCADE
-    ON UPDATE CASCADE,
-
-  UNIQUE (name, datacenter_id)
+    ON UPDATE CASCADE
 );
 
 DROP TABLE IF EXISTS room_types;
