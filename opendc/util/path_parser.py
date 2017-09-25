@@ -1,17 +1,17 @@
 import json
-import sys
+import sys, os
 import re
 
 def parse(version, endpoint_path):
     """Map an HTTP endpoint path to an API path"""
 
     # Get possible paths
-    with open('opendc/api/{}/paths.json'.format(version)) as paths_file:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'api', '{}', 'paths.json').format(version)) as paths_file:
         paths = json.load(paths_file)
-    
+
     # Find API path that matches endpoint_path
     endpoint_path_parts = endpoint_path.strip('/').split('/')
-    paths_parts = [x.split('/') for x in paths if len(x.split('/')) == len(endpoint_path_parts)]
+    paths_parts = [x.strip('/').split('/') for x in paths if len(x.strip('/').split('/')) == len(endpoint_path_parts)]
     path = None
 
     for path_parts in paths_parts:
