@@ -25,7 +25,7 @@ class Datacenter(Model):
 
         try:
             section = Section.query('datacenter_id', self.id)[0]
-        except Exception as e:
+        except:
             return False
 
         # Check the Section's Authorization

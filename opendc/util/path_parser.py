@@ -36,4 +36,4 @@ def parse(version, endpoint_path):
             except:
                 parameters[name.strip('{}')] = value
 
-    return ('{}/{}'.format(version, '/'.join(path)), parameters)
+    return '{}/{}'.format(version, '/'.join(path)), parameters

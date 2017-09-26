@@ -85,7 +85,7 @@ def POST(request):
 
     # Add a name if not provided
 
-    if not 'name' in request.params_body['room']:
+    if 'name' not in request.params_body['room']:
         room_count = len(Room.query('datacenter_id', datacenter.id))
         request.params_body['room']['name'] = 'Room {}'.format(room_count)
 
@@ -97,7 +97,7 @@ def POST(request):
 
     try:
         room.insert()
-    except Exception as e:
+    except:
         return Response(400, 'Invalid `roomType` or existing `name`.')
 
     # Return this Room

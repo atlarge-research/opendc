@@ -6,7 +6,7 @@ def _missing_parameter(params_required, params_actual, parent=''):
 
     for param_name in params_required:
 
-        if not param_name in params_actual:
+        if param_name not in params_actual:
             return '{}.{}'.format(parent, param_name)
 
         param_required = params_required.get(param_name)

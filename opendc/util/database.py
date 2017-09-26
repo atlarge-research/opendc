@@ -5,8 +5,8 @@ from datetime import datetime
 from mysql.connector.pooling import MySQLConnectionPool
 
 # Get keys from config file
-with open(sys.argv[1]) as file:
-    KEYS = json.load(file)
+with open(sys.argv[1]) as f:
+    KEYS = json.load(f)
 
 DATETIME_STRING_FORMAT = '%Y-%m-%dT%H:%M:%S'
 CONNECTION_POOL = None

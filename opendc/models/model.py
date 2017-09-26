@@ -121,7 +121,7 @@ class Model(object):
         """Generate a SQLite updatable columns string for this Model."""
 
         return ', '.join(
-            ['{} = %s'.format(x) for x in cls.COLUMNS if not x in cls.COLUMNS_PRIMARY_KEY]
+            ['{} = %s'.format(x) for x in cls.COLUMNS if x not in cls.COLUMNS_PRIMARY_KEY]
         )
 
     # SQL TUPLE GENERATION METHODS
@@ -151,7 +151,7 @@ class Model(object):
 
         value_list = []
 
-        for column in [x for x in self.COLUMNS if not x in self.COLUMNS_PRIMARY_KEY]:
+        for column in [x for x in self.COLUMNS if x not in self.COLUMNS_PRIMARY_KEY]:
             value_list.append(getattr(self, column, None))
 
         return tuple(value_list)

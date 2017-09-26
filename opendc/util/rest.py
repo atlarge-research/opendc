@@ -6,8 +6,8 @@ from oauth2client import client, crypt
 
 from opendc.util import exceptions, parameter_checker
 
-with open(sys.argv[1]) as file:
-    KEYS = json.load(file)
+with open(sys.argv[1]) as f:
+    KEYS = json.load(f)
 
 
 class Request(object):
@@ -48,7 +48,7 @@ class Request(object):
 
             self.module = importlib.import_module(module_base.format(module_path))
 
-        except UnicodeError as e:
+        except UnicodeError:
             raise exceptions.UnimplementedEndpointError('Non-ASCII path')
 
         except ImportError:
@@ -58,7 +58,7 @@ class Request(object):
 
         # Check the method
 
-        if not self.method in ['POST', 'GET', 'PUT', 'PATCH', 'DELETE']:
+        if self.method not in ['POST', 'GET', 'PUT', 'PATCH', 'DELETE']:
             raise exceptions.UnsupportedMethodError('Non-rest method: {}'.format(self.method))
 
         if not hasattr(self.module, self.method):
