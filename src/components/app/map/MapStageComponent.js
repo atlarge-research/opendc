@@ -58,7 +58,9 @@ class MapStageComponent extends React.Component {
             x: this.state.mouseX / this.props.mapScale - this.props.mapPosition.x / this.props.mapScale,
             y: this.state.mouseY / this.props.mapScale - this.props.mapPosition.y / this.props.mapScale,
         };
-        const newScale = e.deltaY < 0 ? this.props.mapScale * MAP_SCALE_PER_EVENT : this.props.mapScale / MAP_SCALE_PER_EVENT;
+        const newScale = e.deltaY < 0 ?
+            this.props.mapScale * MAP_SCALE_PER_EVENT :
+            this.props.mapScale / MAP_SCALE_PER_EVENT;
         const boundedScale = Math.min(Math.max(MAP_MIN_SCALE, newScale), MAP_MAX_SCALE);
 
         const newX = -(mousePointsTo.x - this.state.mouseX / boundedScale) * boundedScale;
