@@ -9,14 +9,15 @@ class Room(Model):
             'id': 'id',
             'datacenterId': 'datacenter_id',
             'name': 'name',
-            'roomType': 'type'
+            'roomType': 'type',
+            'topologyId': 'topology_id'
         }
     }
 
     PATH = '/v1/datacenters/{datacenterId}/rooms'
 
     TABLE_NAME = 'rooms'
-    COLUMNS = ['id', 'name', 'datacenter_id', 'type']
+    COLUMNS = ['id', 'name', 'datacenter_id', 'type', 'topology_id']
     COLUMNS_PRIMARY_KEY = ['id']
 
     def google_id_has_at_least(self, google_id, authorization_level):

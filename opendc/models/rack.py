@@ -9,14 +9,15 @@ class Rack(Model):
             'id': 'id',
             'name': 'name',
             'capacity': 'capacity',
-            'powerCapacityW': 'power_capacity_w'
+            'powerCapacityW': 'power_capacity_w',
+            'topologyId': 'topology_id'
         }
     }
 
     PATH = '/v1/tiles/{tileId}/rack'
 
     TABLE_NAME = 'racks'
-    COLUMNS = ['id', 'name', 'capacity', 'power_capacity_w']
+    COLUMNS = ['id', 'name', 'capacity', 'power_capacity_w', 'topology_id']
     COLUMNS_PRIMARY_KEY = ['id']
 
     @classmethod

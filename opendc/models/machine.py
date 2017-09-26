@@ -15,14 +15,15 @@ class Machine(Model):
             'cpuIds': 'cpu_ids',
             'gpuIds': 'gpu_ids',
             'memoryIds': 'memory_ids',
-            'storageIds': 'storage_ids'
+            'storageIds': 'storage_ids',
+            'topologyId': 'topology_id'
         }
     }
 
     PATH = '/v1/tiles/{tileId}/rack/machines'
 
     TABLE_NAME = 'machines'
-    COLUMNS = ['id', 'rack_id', 'position']
+    COLUMNS = ['id', 'rack_id', 'position', 'topology_id']
     COLUMNS_PRIMARY_KEY = ['id']
 
     device_table_to_attribute = {
@@ -36,11 +37,6 @@ class Machine(Model):
         """Update this Machine's devices in the database."""
 
         for device_table in self.device_table_to_attribute.keys():
-
-            # First, create the statements to execute
-
-            statements = []
-            values = []
 
             # First, delete current machine-device links
 

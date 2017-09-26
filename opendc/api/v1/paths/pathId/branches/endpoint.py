@@ -111,6 +111,9 @@ def POST(request):
 
         old_room.datacenter_id = path_parameters['datacenterId']
 
+        if old_room.topology_id is None:
+            old_room.topology_id = old_room.id
+
         message = old_room.generate_api_call(path_parameters, request.token)
         response = Request(message).process()
 
@@ -123,6 +126,9 @@ def POST(request):
         for old_tile in old_tiles:
 
             old_tile.room_id = path_parameters['roomId']
+
+            if old_tile.topology_id is None:
+                old_tile.topology_id = old_tile.id
 
             message = old_tile.generate_api_call(path_parameters, request.token)
             response = Request(message).process()
@@ -137,6 +143,9 @@ def POST(request):
 
                 old_rack = Rack.query('id', old_objects[0].id)[0]
 
+                if old_rack.topology_id is None:
+                    old_rack.topology_id = old_rack.id
+
                 message = old_rack.generate_api_call(path_parameters, request.token)
                 response = Request(message).process()
 
@@ -149,6 +158,9 @@ def POST(request):
                 for old_machine in old_machines:
                     old_machine.read()
                     old_machine.rack_id = path_parameters['rackId']
+
+                    if old_machine.topology_id is None:
+                        old_machine.topology_id = old_machine.id
 
                     message = old_machine.generate_api_call(path_parameters, request.token)
                     response = Request(message).process()

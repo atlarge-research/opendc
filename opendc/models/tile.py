@@ -12,14 +12,15 @@ class Tile(Model):
             'objectId': 'object_id',
             'objectType': 'object_type',
             'positionX': 'position_x',
-            'positionY': 'position_y'
+            'positionY': 'position_y',
+            'topologyId': 'topology_id'
         }
     }
 
     PATH = '/v1/rooms/{roomId}/tiles'
 
     TABLE_NAME = 'tiles'
-    COLUMNS = ['id', 'position_x', 'position_y', 'room_id', 'object_id']
+    COLUMNS = ['id', 'position_x', 'position_y', 'room_id', 'object_id', 'topology_id']
     COLUMNS_PRIMARY_KEY = ['id']
 
     def google_id_has_at_least(self, google_id, authorization_level):

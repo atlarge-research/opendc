@@ -1,12 +1,11 @@
 #!/var/www/opendc.ewi.tudelft.nl/web-server/venv/bin/python
 
+import flask_socketio
 import json
 import os
 import sys
 import traceback
 import urllib2
-
-import flask_socketio
 from flask import Flask, request, send_from_directory, jsonify
 from oauth2client import client, crypt
 
@@ -133,7 +132,7 @@ def serve_web_server_test():
 @FLASK_CORE_APP.route('/simulations/<path:simulation_id>/experiments')
 @FLASK_CORE_APP.route('/simulations/<path:simulation_id>/experiments/<path:experiment_id>')
 @FLASK_CORE_APP.route('/profile')
-def serve_index():
+def serve_index(simulation_id=None, experiment_id=None):
     return send_from_directory(STATIC_ROOT, 'index.html')
 
 
