@@ -257,12 +257,16 @@ CREATE TABLE rooms (
   name          TEXT                    NOT NULL,
   datacenter_id INTEGER                 NOT NULL,
   type          VARCHAR(50)             NOT NULL,
+  topology_id   INTEGER,
 
   FOREIGN KEY (datacenter_id) REFERENCES datacenters (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   FOREIGN KEY (type) REFERENCES room_types (name)
     ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (topology_id) REFERENCES rooms (id)
+    ON DELETE NO ACTION
     ON UPDATE CASCADE
 );
 
@@ -285,19 +289,23 @@ INSERT INTO room_types (name) VALUES ('COOLING');
 -- Tiles in a room
 DROP TABLE IF EXISTS tiles;
 CREATE TABLE tiles (
-  id         INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
-  position_x INTEGER                 NOT NULL,
-  position_y INTEGER                 NOT NULL,
-  room_id    INTEGER                 NOT NULL,
-  object_id  INTEGER,
+  id          INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  position_x  INTEGER                 NOT NULL,
+  position_y  INTEGER                 NOT NULL,
+  room_id     INTEGER                 NOT NULL,
+  object_id   INTEGER,
+  topology_id INTEGER,
 
   FOREIGN KEY (room_id) REFERENCES rooms (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   FOREIGN KEY (object_id) REFERENCES objects (id),
+  FOREIGN KEY (topology_id) REFERENCES tiles (id)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE,
 
   UNIQUE (position_x, position_y, room_id), -- only one tile can be in the same position in a room
-  UNIQUE (object_id)                              -- an object can only be on one tile
+  UNIQUE (object_id)                        -- an object can only be on one tile
 );
 
 DELIMITER //
@@ -490,9 +498,13 @@ CREATE TABLE racks (
   name             TEXT,
   capacity         INTEGER NOT NULL CHECK (capacity > 0),
   power_capacity_w INTEGER NOT NULL CHECK (power_capacity_w > 0),
+  topology_id      INTEGER,
 
   FOREIGN KEY (id) REFERENCES objects (id)
     ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (topology_id) REFERENCES racks (id)
+    ON DELETE NO ACTION
     ON UPDATE CASCADE,
 
   PRIMARY KEY (id)
@@ -506,12 +518,16 @@ CREATE TABLE racks (
 -- Machines in racks
 DROP TABLE IF EXISTS machines;
 CREATE TABLE machines (
-  id       INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
-  rack_id  INTEGER                 NOT NULL,
-  position INTEGER                 NOT NULL CHECK (position > 0),
+  id          INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  rack_id     INTEGER                 NOT NULL,
+  position    INTEGER                 NOT NULL CHECK (position > 0),
+  topology_id INTEGER,
 
   FOREIGN KEY (rack_id) REFERENCES racks (id)
     ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (topology_id) REFERENCES machines (id)
+    ON DELETE NO ACTION
     ON UPDATE CASCADE,
 
   -- Prevent machines from occupying the same position in a rack.
@@ -521,7 +537,7 @@ CREATE TABLE machines (
 DELIMITER //
 
 -- Make sure a machine is not inserted at a position that does not exist for its rack.
-DROP TRIGGER IF EXISTS before_inser_machine;
+DROP TRIGGER IF EXISTS before_insert_machine;
 CREATE TRIGGER before_insert_machine
 BEFORE INSERT ON machines
 FOR EACH ROW

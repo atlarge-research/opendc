@@ -188,8 +188,8 @@ VALUES (1, 1, 3, 'FIFO', 'Path planning trace, FIFO', 'QUEUED', 0);
 
 -- Rooms
 INSERT INTO rooms (name, datacenter_id, type) VALUES ('room 1', 1, 'SERVER');
-INSERT INTO rooms (name, datacenter_id, type) VALUES ('room 1', 2, 'SERVER');
-INSERT INTO rooms (name, datacenter_id, type) VALUES ('room 1', 3, 'SERVER');
+INSERT INTO rooms (name, datacenter_id, type, topology_id) VALUES ('room 1', 2, 'SERVER', 1);
+INSERT INTO rooms (name, datacenter_id, type, topology_id) VALUES ('room 1', 3, 'SERVER', 1);
 INSERT INTO rooms (name, datacenter_id, type) VALUES ('room 2', 3, 'SERVER');
 INSERT INTO rooms (name, datacenter_id, type) VALUES ('Power Room', 1, 'POWER');
 
@@ -198,15 +198,16 @@ INSERT INTO tiles (position_x, position_y, room_id) VALUES (10, 10, 1);
 INSERT INTO tiles (position_x, position_y, room_id) VALUES (9, 10, 1);
 INSERT INTO tiles (position_x, position_y, room_id) VALUES (10, 11, 1);
 
-INSERT INTO tiles (position_x, position_y, room_id) VALUES (10, 10, 2);
-INSERT INTO tiles (position_x, position_y, room_id) VALUES (9, 10, 2);
-INSERT INTO tiles (position_x, position_y, room_id) VALUES (10, 11, 2);
+INSERT INTO tiles (position_x, position_y, room_id, topology_id) VALUES (10, 10, 2, 1);
+INSERT INTO tiles (position_x, position_y, room_id, topology_id) VALUES (9, 10, 2, 2);
+INSERT INTO tiles (position_x, position_y, room_id, topology_id) VALUES (10, 11, 2, 3);
 INSERT INTO tiles (position_x, position_y, room_id) VALUES (11, 11, 2);
 
-INSERT INTO tiles (position_x, position_y, room_id) VALUES (10, 10, 3);
-INSERT INTO tiles (position_x, position_y, room_id) VALUES (9, 10, 3);
-INSERT INTO tiles (position_x, position_y, room_id) VALUES (10, 11, 3);
-INSERT INTO tiles (position_x, position_y, room_id) VALUES (11, 11, 3);
+INSERT INTO tiles (position_x, position_y, room_id, topology_id) VALUES (10, 10, 3, 1);
+INSERT INTO tiles (position_x, position_y, room_id, topology_id) VALUES (9, 10, 3, 2);
+INSERT INTO tiles (position_x, position_y, room_id, topology_id) VALUES (10, 11, 3, 3);
+INSERT INTO tiles (position_x, position_y, room_id, topology_id) VALUES (11, 11, 3, 7);
+
 INSERT INTO tiles (position_x, position_y, room_id) VALUES (11, 10, 4);
 INSERT INTO tiles (position_x, position_y, room_id) VALUES (12, 10, 4);
 
@@ -215,52 +216,52 @@ INSERT INTO tiles (position_x, position_y, room_id) VALUES (10, 13, 5);
 
 -- Racks
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (1, 42, 'rack 1', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (1, 42, 'Rack 1', 5000);
 UPDATE tiles
 SET object_id = 1
 WHERE id = 1;
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (2, 42, 'rack 2', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (2, 42, 'Rack 2', 5000);
 UPDATE tiles
 SET object_id = 2
 WHERE id = 2;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (3, 42, 'rack 1', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w, topology_id) VALUES (3, 42, 'Rack 1', 5000, 1);
 UPDATE tiles
 SET object_id = 3
 WHERE id = 4;
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (4, 42, 'rack 2', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w, topology_id) VALUES (4, 42, 'Rack 2', 5000, 2);
 UPDATE tiles
 SET object_id = 4
 WHERE id = 5;
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (5, 42, 'rack 3', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (5, 42, 'Rack 3', 5000);
 UPDATE tiles
 SET object_id = 5
 WHERE id = 7;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (6, 42, 'rack 1', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w, topology_id) VALUES (6, 42, 'Rack 1', 5000, 1);
 UPDATE tiles
 SET object_id = 6
 WHERE id = 8;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (7, 42, 'rack 2', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w, topology_id) VALUES (7, 42, 'Rack 2', 5000, 2);
 UPDATE tiles
 SET object_id = 7
 WHERE id = 9;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (8, 42, 'rack 3', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w, topology_id) VALUES (8, 42, 'Rack 3', 5000, 5);
 UPDATE tiles
 SET object_id = 8
 WHERE id = 11;
 
 INSERT INTO objects (type) VALUES ('RACK');
-INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (9, 42, 'rack 4', 5000);
+INSERT INTO racks (id, capacity, name, power_capacity_w) VALUES (9, 42, 'Rack 4', 5000);
 UPDATE tiles
 SET object_id = 9
 WHERE id = 12;
@@ -273,25 +274,25 @@ INSERT INTO machines (rack_id, position) VALUES (1, 10);
 INSERT INTO machines (rack_id, position) VALUES (2, 1);
 INSERT INTO machines (rack_id, position) VALUES (2, 2);
 
-INSERT INTO machines (rack_id, position) VALUES (3, 1);
-INSERT INTO machines (rack_id, position) VALUES (3, 2);
-INSERT INTO machines (rack_id, position) VALUES (3, 6);
-INSERT INTO machines (rack_id, position) VALUES (3, 10);
-INSERT INTO machines (rack_id, position) VALUES (4, 1);
-INSERT INTO machines (rack_id, position) VALUES (4, 2);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (3, 1, 1);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (3, 2, 2);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (3, 6, 3);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (3, 10, 4);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (4, 1, 5);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (4, 2, 6);
 INSERT INTO machines (rack_id, position) VALUES (5, 1);
 INSERT INTO machines (rack_id, position) VALUES (5, 2);
 INSERT INTO machines (rack_id, position) VALUES (5, 3);
 
-INSERT INTO machines (rack_id, position) VALUES (6, 1);
-INSERT INTO machines (rack_id, position) VALUES (6, 2);
-INSERT INTO machines (rack_id, position) VALUES (6, 6);
-INSERT INTO machines (rack_id, position) VALUES (6, 10);
-INSERT INTO machines (rack_id, position) VALUES (7, 1);
-INSERT INTO machines (rack_id, position) VALUES (7, 2);
-INSERT INTO machines (rack_id, position) VALUES (8, 1);
-INSERT INTO machines (rack_id, position) VALUES (8, 2);
-INSERT INTO machines (rack_id, position) VALUES (8, 3);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (6, 1, 1);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (6, 2, 2);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (6, 6, 3);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (6, 10, 4);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (7, 1, 5);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (7, 2, 6);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (8, 1, 13);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (8, 2, 14);
+INSERT INTO machines (rack_id, position, topology_id) VALUES (8, 3, 15);
 INSERT INTO machines (rack_id, position) VALUES (9, 4);
 INSERT INTO machines (rack_id, position) VALUES (9, 5);
 INSERT INTO machines (rack_id, position) VALUES (9, 6);
