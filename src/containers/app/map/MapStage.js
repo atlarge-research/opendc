@@ -1,20 +1,19 @@
 import {connect} from "react-redux";
-import {setMapDimensions, setMapPosition, setMapScale} from "../../../actions/map";
+import {setMapDimensions, setMapPositionWithBoundsCheck, zoomInOnPosition} from "../../../actions/map";
 import MapStageComponent from "../../../components/app/map/MapStageComponent";
 
 const mapStateToProps = state => {
     return {
         mapPosition: state.map.position,
         mapDimensions: state.map.dimensions,
-        mapScale: state.map.scale,
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return {
-        setMapPosition: (x, y) => dispatch(setMapPosition(x, y)),
+        zoomInOnPosition: (zoomIn, x, y) => dispatch(zoomInOnPosition(zoomIn, x, y)),
+        setMapPositionWithBoundsCheck: (x, y) => dispatch(setMapPositionWithBoundsCheck(x, y)),
         setMapDimensions: (width, height) => dispatch(setMapDimensions(width, height)),
-        setMapScale: (scale) => dispatch(setMapScale(scale)),
     };
 };
 

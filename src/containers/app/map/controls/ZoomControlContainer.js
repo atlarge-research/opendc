@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import {setMapScale} from "../../../../actions/map";
+import {zoomInOnCenter} from "../../../../actions/map";
 import ZoomControlComponent from "../../../../components/app/map/controls/ZoomControlComponent";
 
 const mapStateToProps = state => {
@@ -10,7 +10,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        setMapScale: scale => dispatch(setMapScale(scale)),
+        zoomInOnCenter: zoomIn => dispatch(zoomInOnCenter(zoomIn)),
     };
 };
 

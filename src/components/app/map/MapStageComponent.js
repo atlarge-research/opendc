@@ -6,13 +6,7 @@ import ObjectHoverLayer from "../../../containers/app/map/layers/ObjectHoverLaye
 import RoomHoverLayer from "../../../containers/app/map/layers/RoomHoverLayer";
 import jQuery from "../../../util/jquery";
 import {NAVBAR_HEIGHT} from "../../navigation/Navbar";
-import {
-    MAP_MAX_SCALE,
-    MAP_MIN_SCALE,
-    MAP_MOVE_PIXELS_PER_EVENT,
-    MAP_SCALE_PER_EVENT,
-    MAP_SIZE_IN_PIXELS
-} from "./MapConstants";
+import {MAP_MOVE_PIXELS_PER_EVENT} from "./MapConstants";
 
 class MapStageComponent extends React.Component {
     state = {
@@ -54,20 +48,7 @@ class MapStageComponent extends React.Component {
 
     updateScale(e) {
         e.preventDefault();
-        const mousePointsTo = {
-            x: this.state.mouseX / this.props.mapScale - this.props.mapPosition.x / this.props.mapScale,
-            y: this.state.mouseY / this.props.mapScale - this.props.mapPosition.y / this.props.mapScale,
-        };
-        const newScale = e.deltaY < 0 ?
-            this.props.mapScale * MAP_SCALE_PER_EVENT :
-            this.props.mapScale / MAP_SCALE_PER_EVENT;
-        const boundedScale = Math.min(Math.max(MAP_MIN_SCALE, newScale), MAP_MAX_SCALE);
-
-        const newX = -(mousePointsTo.x - this.state.mouseX / boundedScale) * boundedScale;
-        const newY = -(mousePointsTo.y - this.state.mouseY / boundedScale) * boundedScale;
-
-        this.setPositionWithBoundsCheck(newX, newY);
-        this.props.setMapScale(boundedScale);
+        this.props.zoomInOnPosition(e.deltaY < 0, this.state.mouseX, this.state.mouseY);
     }
 
     updateMousePosition() {
@@ -95,26 +76,16 @@ class MapStageComponent extends React.Component {
     }
 
     moveWithDelta(deltaX, deltaY) {
-        this.setPositionWithBoundsCheck(this.props.mapPosition.x + deltaX, this.props.mapPosition.y + deltaY);
-    }
-
-    setPositionWithBoundsCheck(newX, newY) {
-        const scaledMapSize = MAP_SIZE_IN_PIXELS * this.props.mapScale;
-        const updatedX = newX > 0 ? 0 :
-            (newX < -scaledMapSize + this.props.mapDimensions.width
-                ? -scaledMapSize + this.props.mapDimensions.width : newX);
-        const updatedY = newY > 0 ? 0 :
-            (newY < -scaledMapSize + this.props.mapDimensions.height
-                ? -scaledMapSize + this.props.mapDimensions.height : newY);
-
-        this.props.setMapPosition(updatedX, updatedY);
+        this.props.setMapPositionWithBoundsCheck(this.props.mapPosition.x + deltaX, this.props.mapPosition.y + deltaY);
     }
 
     render() {
         return (
             <Shortcuts name="MAP" handler={this.handleShortcuts.bind(this)} targetNodeSelector="body">
                 <Stage
-                    ref={(stage) => {this.stage = stage;}}
+                    ref={(stage) => {
+                        this.stage = stage;
+                    }}
                     width={this.props.mapDimensions.width}
                     height={this.props.mapDimensions.height}
                     onMouseMove={this.updateMousePosition.bind(this)}
