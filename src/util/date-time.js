@@ -45,7 +45,7 @@ export function parseDateTime(dateTimeString) {
 /**
  * Serializes the given date and time value to a human-friendly string.
  *
- * @param dateTime An rack representation of a date and time.
+ * @param dateTime An object representation of a date and time.
  * @returns {string} A human-friendly string version of that date and time.
  */
 export function formatDateTime(dateTime) {
@@ -68,34 +68,6 @@ export function formatDateTime(dateTime) {
     return date + ", " +
         addPaddingToTwo(dateTime.hour) + ":" +
         addPaddingToTwo(dateTime.minute);
-}
-
-/**
- * Returns a string representation of the current date and time.
- *
- * The format assumed is "YYYY-MM-DDTHH:MM:SS".
- *
- * @returns {string} A string representation of the current date and time.
- */
-export function getCurrentDateTime() {
-    const currentDate = new Date();
-    return currentDate.getFullYear() + "-" + addPaddingToTwo(currentDate.getMonth() + 1) + "-" +
-        addPaddingToTwo(currentDate.getDate()) + "T" + addPaddingToTwo(currentDate.getHours()) + ":" +
-        addPaddingToTwo(currentDate.getMinutes()) + ":" + addPaddingToTwo(currentDate.getSeconds());
-}
-
-/**
- * Pads the given integer to have at least two digits.
- *
- * @param integer An integer to be padded.
- * @returns {string} A string containing the padded integer.
- */
-export function addPaddingToTwo(integer) {
-    if (integer < 10) {
-        return "0" + integer.toString();
-    } else {
-        return integer.toString();
-    }
 }
 
 /**
@@ -123,5 +95,19 @@ export function convertSecondsToFormattedTime(seconds) {
         return minute + "m" + addPaddingToTwo(second) + "s";
     } else {
         return hour + "h" + addPaddingToTwo(minute) + "m" + addPaddingToTwo(second) + "s";
+    }
+}
+
+/**
+ * Pads the given integer to have at least two digits.
+ *
+ * @param integer An integer to be padded.
+ * @returns {string} A string containing the padded integer.
+ */
+function addPaddingToTwo(integer) {
+    if (integer < 10) {
+        return "0" + integer.toString();
+    } else {
+        return integer.toString();
     }
 }
