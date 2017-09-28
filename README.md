@@ -1,4 +1,11 @@
-# OpenDC Web Server
+<h1 align="center">
+  <img src="images/logo.png" width="100" alt="OpenDC">
+  <br>
+  OpenDC Web Server
+</h1>
+<p align="center">
+Collaborative Datacenter Simulation and Exploration for Everybody
+</p>
 
 The OpenDC web server is the bridge between OpenDC's frontend and database. It is built with Flask/SocketIO in Python and implements the OpenAPI-compliant [OpenDC API specification](https://github.com/atlarge-research/opendc/blob/master/opendc-api-spec.json).
 
