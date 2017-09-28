@@ -7,7 +7,7 @@ The user-facing component of the OpenDC stack, allowing users to build and inter
 
 ## Get Up and Running
 
-*Looking for the full OpenDC stack? Check out [the main OpenDC repo](https://github.com/atlarge-research/opendc) for instructions on how to set up a Docker container with all of OpenDC, without the hassle of running each of the components manually.*
+Looking for the full OpenDC stack? Check out [the main OpenDC repo](https://github.com/atlarge-research/opendc) for instructions on how to set up a Docker container with all of OpenDC, without the hassle of running each of the components manually.
 
 ### Installation
 
@@ -36,6 +36,7 @@ yarn build
 ```
 
 **Note:** Perhaps this goes without saying, but for any functionality beyond visiting the entry page, a server backend running in the background is necessary. The easiest way to do this is to have an OpenDC docker container running, see [the main repo](https://github.com/atlarge-research/opendc) for more information on how to do this.
+
 
 ## Architecture
 
@@ -68,3 +69,21 @@ Almost all state is kept in a central Redux store. State is kept there in an imm
 ### API Interaction
 
 The web-app needs to pull data in from the API of a backend running on a server. The functions that call routes are located in `src/api`. The actual logic responsible for calling these functions is contained in `src/sagas`. These API fetch procedures are written with the help of `redux-saga`. The [official documentation](https://redux-saga.js.org/) of `redux-saga` can be a helpful aid in understanding that part of the codebase.
+
+
+## Tests
+
+Files containing tests can be recognized by the `.test.js` suffix. They are usually located right next to the source code they are testing, to make discovery easier.
+
+### Running all tests
+
+The following command runs all tests in the codebase. On top of this, it also watches the code for changes and reruns the tests when files are changed, automatically.
+
+```bash
+yarn test
+```
+
+
+## License
+
+The code is released under the MIT license. See `LICENSE.md`.
