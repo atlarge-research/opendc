@@ -26,6 +26,7 @@ package nl.atlarge.opendc.platform
 
 import mu.KotlinLogging
 import nl.atlarge.opendc.kernel.omega.OmegaKernel
+import java.util.concurrent.Executors
 import javax.persistence.Persistence
 
 val logger = KotlinLogging.logger {}
@@ -37,16 +38,21 @@ val logger = KotlinLogging.logger {}
  * @param args The command line arguments of the program.
  */
 fun main(args: Array<String>) {
+	val threads = 1
+	val executorService = Executors.newFixedThreadPool(threads)
 	val factory = Persistence.createEntityManagerFactory("opendc-frontend")
-	val manager = factory.createEntityManager()
-	val experiments = JpaExperimentManager(manager)
+	val experiments = JpaExperimentManager(factory)
 
 	logger.info { "Waiting for enqueued experiments..." }
 	while (true) {
 		val experiment = experiments.poll()
-		experiment?.run {
-			logger.info { "Found experiment. Running simulating now..." }
-			run(OmegaKernel)
+		executorService.submit {
+			experiment?.run {
+				logger.info { "Found experiment. Running simulating now..." }
+				run(OmegaKernel)
+			}
 		}
+
+		Thread.sleep(500)
 	}
 }

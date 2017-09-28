@@ -57,7 +57,7 @@ data class Datacenter(
 	 * The interval at which task will be (re)scheduled.
 	 * We set this to a fixed constant since the database provides no way of configuring this.
 	 */
-	override val interval: Duration = 50
+	override val interval: Duration = 10
 
 	/**
 	 * The initial state of the datacenter.

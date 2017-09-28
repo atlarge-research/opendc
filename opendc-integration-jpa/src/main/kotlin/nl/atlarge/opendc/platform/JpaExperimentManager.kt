@@ -27,14 +27,21 @@ package nl.atlarge.opendc.platform
 import nl.atlarge.opendc.integration.jpa.schema.Experiment as InternalExperiment
 import nl.atlarge.opendc.integration.jpa.schema.ExperimentState
 import javax.persistence.EntityManager
+import javax.persistence.EntityManagerFactory
 
 /**
  * A manager for [Experiment]s received from a JPA database.
  *
- * @property manager The JPA entity manager to retrieve entities from the database from.
+ * @property factory The JPA entity manager factory to create [EntityManager]s to retrieve entities from the database
+ * 					 from.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class JpaExperimentManager(private val manager: EntityManager) {
+class JpaExperimentManager(private val factory: EntityManagerFactory) {
+	/**
+	 * The entity manager for this experiment.
+	 */
+	private val manager: EntityManager = factory.createEntityManager()
+
 	/**
 	 * The amount of experiments in the queue. This property makes a call to the database and does therefore not
 	 * run in O(1) time.
@@ -68,6 +75,6 @@ class JpaExperimentManager(private val manager: EntityManager) {
 			experiment!!.state = ExperimentState.CLAIMED
 		}
 		manager.transaction.commit()
-		return experiment?.let { JpaExperiment(manager, it) }
+		return experiment?.let { JpaExperiment(factory.createEntityManager(), it) }
 	}
 }

@@ -102,8 +102,6 @@ class JpaExperiment(val manager: EntityManager,
 		logger.info { "Starting simulation" }
 
 		while (trace.jobs.any { !it.finished }) {
-			simulation.run(simulation.clock.now + 1)
-
 			// Collect data of simulation cycle
 			manager.transaction.begin()
 			machines.forEach { machine ->
@@ -134,6 +132,8 @@ class JpaExperiment(val manager: EntityManager,
 				}
 			manager.transaction.commit()
 
+			// Run next simulation cycle
+			simulation.run(simulation.clock.now + 1)
 			experiment.last = simulation.clock.now
 		}
 

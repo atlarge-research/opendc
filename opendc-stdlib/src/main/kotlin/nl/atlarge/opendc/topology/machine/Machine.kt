@@ -79,7 +79,7 @@ open class Machine : Entity<Machine.State>, Process<Machine> {
 
 		val interval: Duration = 10
 		val cpus = outgoingEdges.destinations<Cpu>("cpu")
-		val speed = cpus.fold(0, { acc, cpu -> acc + cpu.clockRate * cpu.cores }) / 10
+		val speed = cpus.fold(0, { acc, cpu -> acc + cpu.clockRate * cpu.cores })
 
 		var task: Task = receiveTask()
 		update(State(Status.RUNNING, task, load = 1.0, memory = state.memory + 50, temperature = 30.0))
