@@ -42,7 +42,7 @@ const AppNavbar = ({simulationId, inSimulation, fullWidth}) => (
         </NavItem>
         <NavItem route="email">
             <Mailto className="nav-link" title="Support" email="opendc@atlarge-research.com"
-                    headers={{subject: "OpenDC Support"}}>
+                    headers={{subject: "[support]"}}>
                 <FontAwesome name="envelope" className="mr-2"/>
                 Support
             </Mailto>
