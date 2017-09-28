@@ -20,7 +20,7 @@ const mapStateToProps = state => {
             const newRoom = Object.assign({}, state.objects.room[state.construction.currentRoomInConstruction]);
             const oldRooms = Object.keys(state.objects.room)
                 .map(id => Object.assign({}, state.objects.room[id]))
-                .filter(room => room.datacenterId === state.currentDatacenterId
+                .filter(room => state.objects.datacenter[state.currentDatacenterId].roomIds.indexOf(room.id) !== -1
                     && room.id !== state.construction.currentRoomInConstruction);
 
             [...oldRooms, newRoom].forEach(room => {
