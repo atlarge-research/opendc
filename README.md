@@ -1,4 +1,11 @@
-# OpenDC
+<h1 align="center">
+  <img src="images/logo.png" width="100" alt="OpenDC">
+  <br>
+  OpenDC
+</h1>
+<p align="center">
+Collaborative Datacenter Simulation and Exploration for Everybody
+</p>
 
 OpenDC is an open-source simulator for datacenters aimed at both research and education.
 
