@@ -54,6 +54,12 @@ git clone --recursive https://github.com/atlarge-research/opendc.git
 
 # Enter the directory
 cd opendc/
+
+# If you're on Windows:
+# Turn off automatic line-ending conversion in the simulator sub-repository
+cd opendc-simulator/
+git config core.autocrlf false
+cd ..
 ```
 
 In the directory you just entered, you need to set up a small configuration file. To do this, create a file called `keys.json` in the `opendc` folder. In this file, simply replace `your-google-oauth-client-id` with your `client_id` from the OAuth client ID you created. For a standard setup, you can leave the other settings as-is.
