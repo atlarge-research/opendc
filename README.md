@@ -60,7 +60,9 @@ All pages are represented by a component in the `src/pages` directory. There are
 
 ### Components & Containers
 
-The building blocks of the UI are divided into so-called *components* and *containers* (as [encouraged](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0) by the author of Redux). *Components* are considered 'pure', rendered as a function of input properties. *Containers*, on the other hand, are wrappers around *components*, injecting state through the properties of the components they wrap.
+The building blocks of the UI are divided into so-called *components* and *containers* ([as encouraged](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0) by the author of Redux). *Components* are considered 'pure', rendered as a function of input properties. *Containers*, on the other hand, are wrappers around *components*, injecting state through the properties of the components they wrap.
+
+Even the canvas (the main component of the app) is built using React components, with the help of the `react-konva` module. To illustrate: A rectangular object on the canvas is defined in a way that is not very different from how we define a standard `div` element on the splashpage.
 
 ### State Management
 
@@ -77,7 +79,7 @@ Files containing tests can be recognized by the `.test.js` suffix. They are usua
 
 ### Running all tests
 
-The following command runs all tests in the codebase. On top of this, it also watches the code for changes and reruns the tests when files are changed, automatically.
+The following command runs all tests in the codebase. On top of this, it also watches the code for changes and reruns the tests whenever any file is saved.
 
 ```bash
 yarn test
