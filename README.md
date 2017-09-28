@@ -1,4 +1,11 @@
-# OpenDC Frontend
+<h1 align="center">
+  <img src="public/img/logo.png" width="100" alt="OpenDC">
+  <br>
+  OpenDC Frontend
+</h1>
+<p align="center">
+Collaborative Datacenter Simulation and Exploration for Everybody
+</p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
