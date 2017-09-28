@@ -15,7 +15,7 @@ const UnitIcon = ({id, type}) => (
 
 const MachineComponent = ({position, machine, inSimulation, machineLoad, onClick}) => {
     let color = "white";
-    if (inSimulation && machineLoad) {
+    if (inSimulation && machineLoad >= 0) {
         color = convertLoadToSimulationColor(machineLoad);
     }
     const hasNoUnits = machine.cpuIds.length + machine.gpuIds.length + machine.memoryIds.length

@@ -27,6 +27,6 @@ export function getStateLoad(loadMetric, state) {
         case "MEMORY":
             return state.inUseMemoryMb / 10000.0;
         default:
-            return 0;
+            return -1;
     }
 }

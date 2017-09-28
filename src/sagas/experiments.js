@@ -2,7 +2,7 @@ import {delay} from "redux-saga";
 import {call, put, select} from "redux-saga/effects";
 import {addPropToStoreObject, addToStore} from "../actions/objects";
 import {setLastSimulatedTick} from "../actions/simulation/tick";
-import {addToStates} from "../actions/states";
+import {addBatchToStates} from "../actions/states";
 import {
     deleteExperiment,
     getAllMachineStates,
@@ -48,10 +48,10 @@ function* startStateFetchLoop(experimentId) {
                 const rackStates = yield call(getAllRackStates, experimentId);
                 const roomStates = yield call(getAllRoomStates, experimentId);
 
-                yield addAllStates("task", taskStates);
-                yield addAllStates("machine", machineStates);
-                yield addAllStates("rack", rackStates);
-                yield addAllStates("room", roomStates);
+                yield put(addBatchToStates("task", taskStates));
+                yield put(addBatchToStates("machine", machineStates));
+                yield put(addBatchToStates("rack", rackStates));
+                yield put(addBatchToStates("room", roomStates));
 
                 yield delay(5000);
             } else {
@@ -60,12 +60,6 @@ function* startStateFetchLoop(experimentId) {
         }
     } catch (error) {
         console.error(error);
-    }
-}
-
-function* addAllStates(objectType, states) {
-    for (let i in states) {
-        yield put(addToStates(objectType, states[i].tick, states[i]));
     }
 }
 

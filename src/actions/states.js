@@ -1,10 +1,9 @@
-export const ADD_TO_STATES = "ADD_TO_STATES";
+export const ADD_BATCH_TO_STATES = "ADD_BATCH_TO_STATES";
 
-export function addToStates(objectType, tick, object) {
+export function addBatchToStates(objectType, objects) {
     return {
-        type: ADD_TO_STATES,
+        type: ADD_BATCH_TO_STATES,
         objectType,
-        tick,
-        object
+        objects
     };
 }
