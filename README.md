@@ -23,7 +23,7 @@ OpenDC is a project by the [@Large Research Group](http://atlarge-research.com).
 
 ## Architecture
 
-OpenDC consists of four components: a C++ simulator, a SQLite database, a Python Flask web server, and a TypeScript frontend.
+OpenDC consists of four components: a Kotlin simulator, a MariaDB database, a Python Flask web server, and a React.js frontend.
 
 ![opendc-component-diagram](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-component-diagram.png)
 
