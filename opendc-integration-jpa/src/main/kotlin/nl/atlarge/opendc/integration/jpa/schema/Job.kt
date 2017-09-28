@@ -22,12 +22,38 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.platform.workload.Job
+import nl.atlarge.opendc.platform.workload.Task
+import nl.atlarge.opendc.platform.workload.User
+import javax.persistence.*
 
 /**
- * A graphics processing unit.
+ * A [Job] backed by the JPA API and an underlying database connection.
  *
+ * @property id The unique identifier of the job.
+ * @property tasks The collection of tasks the job consists of.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
+@Entity
+data class Job(
+	override val id: Int,
+	override val tasks: Set<Task>
+) : Job {
+	/**
+	 * The owner of the job, which is a singleton, since the database has no
+	 * concept of ownership yet.
+	 */
+	override val owner: User = object : User {
+		/**
+         * The unique identifier of the user.
+         */
+		override val id: Int = 0
 
+		/**
+         * The name of this user.
+         */
+		override val name: String = "admin"
+	}
+}

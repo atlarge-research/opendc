@@ -22,12 +22,24 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.kernel.time.Instant
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * A [Section] holds a datacenter and the tick on which the parent experiment should
+ * switch to this section.
  *
+ * @property id The unique identifier of the section.
+ * @property datacenter The datacenter of this section.
+ * @property startTime The position in time when the experiment should start using the
+ * 					   topology of this section.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+@Entity
+data class Section(
+	val id: Int,
+	val datacenter: Datacenter,
+	val startTime: Instant
+)

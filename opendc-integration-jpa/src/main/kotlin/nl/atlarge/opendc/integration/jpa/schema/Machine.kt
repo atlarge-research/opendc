@@ -22,12 +22,24 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.topology.machine.Machine
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * A machine entity in the persistent schema.
  *
+ * @property id The unique identifier of the machine.
+ * @property position The position of the machine in the rack.
+ * @property cpus The CPUs in the machine.
+ * @property gpus The GPUs in the machine.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+@Entity
+data class Machine(
+	val id: Int,
+	val position: Int,
+	val cpus: Set<Cpu>,
+	val gpus: Set<Gpu>
+): Machine()

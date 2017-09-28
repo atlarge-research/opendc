@@ -25,8 +25,8 @@
 package nl.atlarge.opendc.topology.machine
 
 import mu.KotlinLogging
-import nl.atlarge.opendc.extension.topology.destinations
-import nl.atlarge.opendc.workload.Task
+import nl.atlarge.opendc.topology.destinations
+import nl.atlarge.opendc.platform.workload.Task
 import nl.atlarge.opendc.kernel.Context
 import nl.atlarge.opendc.kernel.Process
 import nl.atlarge.opendc.kernel.time.Duration
@@ -38,7 +38,7 @@ import nl.atlarge.opendc.topology.Entity
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Machine : Entity<Machine.State>, Process<Machine> {
+open class Machine : Entity<Machine.State>, Process<Machine> {
 	/**
 	 * The logger instance to use for the simulator.
 	 */
@@ -53,8 +53,18 @@ class Machine : Entity<Machine.State>, Process<Machine> {
 
 	/**
 	 * The shape of the state of a [Machine] entity.
+	 *
+	 * @property status The status of the machine.
+	 * @property task The task assign to the machine.
+	 * @property memory The memory usage of the machine (defaults to 50mb for the kernel)
+	 * @property load The load on the machine (defaults to 0.0)
+	 * @property temperature The temperature of the machine (defaults to 23 degrees Celcius)
 	 */
-	data class State(val status: Status, val task: Task? = null)
+	data class State(val status: Status,
+					 val task: Task? = null,
+					 val memory: Int = 50,
+					 val load: Double = 0.0,
+					 val temperature: Double = 23.0)
 
 	/**
 	 * The initial state of a [Machine] entity.
@@ -69,24 +79,28 @@ class Machine : Entity<Machine.State>, Process<Machine> {
 
 		val interval: Duration = 10
 		val cpus = outgoingEdges.destinations<Cpu>("cpu")
-		val speed = cpus.fold(0, { acc, (speed, cores) -> acc + speed * cores })
+		val speed = cpus.fold(0, { acc, cpu -> acc + cpu.clockRate * cpu.cores }) / 10
+
 		var task: Task = receiveTask()
-		update(State(Status.RUNNING, task))
+		update(State(Status.RUNNING, task, load = 1.0, memory = state.memory + 50, temperature = 30.0))
+		task.run { start() }
 
 		while (true) {
-			if (task.finished) {
+			if (task.remaining <= 0) {
+				task.run { finalize() }
 				logger.info { "${entity.id}: Task ${task.id} finished. Machine idle at $time" }
 				update(State(Status.IDLE))
 				task = receiveTask()
 			} else {
-				task.consume(speed * delta)
+				task.run { consume(speed * delta) }
 			}
 
 			// Check if we have received a new order in the meantime.
 			val msg = receive(interval)
 			if (msg is Task) {
 				task = msg
-				update(State(Status.RUNNING, task))
+				update(State(Status.RUNNING, task, load = 1.0, memory = state.memory + 50, temperature = 30.0))
+				task.run { start() }
 			}
 		}
 	}

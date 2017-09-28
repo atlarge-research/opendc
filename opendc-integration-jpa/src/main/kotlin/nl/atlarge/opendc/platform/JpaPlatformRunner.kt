@@ -22,12 +22,31 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.platform
+
+import mu.KotlinLogging
+import nl.atlarge.opendc.kernel.omega.OmegaKernel
+import javax.persistence.Persistence
+
+val logger = KotlinLogging.logger {}
 
 /**
- * A graphics processing unit.
+ * The main entry point of the program. This program polls experiments from a database and runs the
+ * simulation and reports the results back to the database.
  *
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ * @param args The command line arguments of the program.
  */
-interface Gpu : ProcessingUnit
+fun main(args: Array<String>) {
+	val factory = Persistence.createEntityManagerFactory("opendc-frontend")
+	val manager = factory.createEntityManager()
+	val experiments = JpaExperimentManager(manager)
 
+	logger.info { "Waiting for enqueued experiments..." }
+	while (true) {
+		val experiment = experiments.poll()
+		experiment?.run {
+			logger.info { "Found experiment. Running simulating now..." }
+			run(OmegaKernel)
+		}
+	}
+}

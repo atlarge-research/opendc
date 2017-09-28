@@ -22,12 +22,45 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.kernel.time.Duration
+import nl.atlarge.opendc.platform.scheduler.Scheduler
+import nl.atlarge.opendc.topology.container.Datacenter
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * A datacenter entity in the persistent schema.
  *
+ * @property id The unique identifier of the datacenter.
+ * @property rooms The rooms in the datacenter.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
+@Entity
+data class Datacenter(
+	val id: Int,
+	val rooms: Set<Room>
+): Datacenter {
+	/**
+	 * Construct a datacenter. We need this useless constructor in order for Kotlin correctly initialise the
+	 * constant fields of the class.
+	 */
+	private constructor() : this(-1, emptySet())
 
+	/**
+	 * The task scheduler the datacenter uses.
+	 */
+	override lateinit var scheduler: Scheduler
+		internal set
+
+	/**
+	 * The interval at which task will be (re)scheduled.
+	 * We set this to a fixed constant since the database provides no way of configuring this.
+	 */
+	override val interval: Duration = 50
+
+	/**
+	 * The initial state of the datacenter.
+	 */
+	override val initialState = Unit
+}

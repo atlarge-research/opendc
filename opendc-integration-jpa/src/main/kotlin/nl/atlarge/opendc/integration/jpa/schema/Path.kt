@@ -22,12 +22,19 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * A [Path] holds all sections of the parent experiment.
  *
+ * @property id The unique identifier of the path.
+ * @property sections The sections of the path.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+@Entity
+open class Path(
+	val id: Int,
+	val sections: List<Section>
+)

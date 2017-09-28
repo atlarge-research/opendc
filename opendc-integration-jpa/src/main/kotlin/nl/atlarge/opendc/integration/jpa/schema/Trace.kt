@@ -22,12 +22,23 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.platform.workload.Job
+import nl.atlarge.opendc.platform.workload.Trace
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * A [Trace] backed by the JPA API and an underlying database connection.
  *
+ * @property id The unique identifier of the trace.
+ * @property name The name of the trace.
+ * @property jobs The collection of jobs for this trace.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+@Entity
+data class Trace(
+	val id: Int,
+	val name: String,
+	override val jobs: Set<Job>
+) : Trace

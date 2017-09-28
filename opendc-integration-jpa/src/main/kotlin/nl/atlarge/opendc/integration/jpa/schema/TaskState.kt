@@ -22,12 +22,28 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.kernel.time.Instant
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * The state of a [Task].
  *
+ * @property id The unique identifier of the state.
+ * @property task The task this is the state of.
+ * @property experiment The experiment the machine is running in.
+ * @property time The current moment in time.
+ * @property remaining The remaining flops for the task.
+ * @property cores The cores used for the task.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+@Entity
+data class TaskState(
+	val id: Int,
+	val task: Task,
+	val experiment: Experiment,
+	val time: Instant,
+	val remaining: Int,
+	val cores: Int
+)

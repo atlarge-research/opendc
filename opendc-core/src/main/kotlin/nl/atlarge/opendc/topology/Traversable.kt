@@ -22,12 +22,20 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.topology
 
 /**
- * A graphics processing unit.
+ * Filter a [Set] of [Edge]s based on the tag of the edges and return the origin nodes casted to type `T`.
  *
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ * @param tag The tag of the edges to get.
+ * @return An [Iterable] of the specified type `T` with the given tag.
  */
-interface Gpu : ProcessingUnit
+inline fun <reified T> Set<Edge<*>>.origins(tag: String) = filter { it.tag == tag }.map { it.from as T }
 
+/**
+ * Filter a [Set] of [Edge]s based on the tag of the edges and return the destination nodes casted to type `T`.
+ *
+ * @param tag The tag of the edges to get.
+ * @return An [Iterable] of the specified type `T` with the given tag.
+ */
+inline fun <reified T> Set<Edge<*>>.destinations(tag: String) = filter { it.tag == tag }.map { it.to as T }

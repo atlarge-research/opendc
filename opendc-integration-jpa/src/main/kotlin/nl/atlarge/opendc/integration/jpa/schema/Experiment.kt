@@ -22,12 +22,39 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.kernel.time.Instant
+import nl.atlarge.opendc.platform.Experiment
+import nl.atlarge.opendc.platform.scheduler.Scheduler
+import nl.atlarge.opendc.platform.workload.Trace
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * An experiment definition for the OpenDC database schema.
  *
+ * @property id The identifier of the experiment.
+ * @property name The name of the experiment.
+ * @property scheduler The scheduler used in the experiment.
+ * @property trace The trace used for the simulation.
+ * @property path The path of the experiment.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
+@Entity
+data class Experiment(
+	val id: Int,
+	val name: String,
+	val scheduler: Scheduler,
+	val trace: Trace,
+	val path: Path
+) {
+	/**
+	 * The state of the experiment.
+	 */
+	var state: ExperimentState = ExperimentState.QUEUED
 
+	/**
+	 * The last tick that has been simulated.
+	 */
+	var last: Instant = 0
+}

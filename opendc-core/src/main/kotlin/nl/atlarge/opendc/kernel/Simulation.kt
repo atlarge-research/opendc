@@ -62,6 +62,11 @@ interface Simulation {
 	val clock: Clock
 
 	/**
+	 * The observable state of an [Entity] in simulation, which is provided by the simulation context.
+	 */
+	val <E : Entity<S>, S> E.state: S
+
+	/**
 	 * Step through one cycle in the simulation. This method will process all events in a single tick, update the
 	 * internal clock and then return the control to the user.
 	 */

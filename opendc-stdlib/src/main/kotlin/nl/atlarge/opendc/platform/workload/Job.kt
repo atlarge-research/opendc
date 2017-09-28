@@ -22,12 +22,32 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.platform.workload
 
 /**
- * A graphics processing unit.
+ * A job that is submitted to a cloud network, which consists of one or multiple [Task]s.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
+interface Job {
+	/**
+	 * A unique identifier of the job.
+	 */
+	val id: Int
 
+	/**
+	 * The owner of this job.
+	 */
+	val owner: User
+
+	/**
+	 * The tasks this job consists of.
+	 */
+	val tasks: Set<Task>
+
+	/**
+	 * A flag to indicate the job has finished.
+	 */
+	val finished: Boolean
+		get() = !tasks.any { !it.finished }
+}

@@ -33,9 +33,9 @@ import nl.atlarge.opendc.topology.Entity
  */
 interface ProcessingUnit : Entity<Unit> {
 	/**
-	 * The speed of this [ProcessingUnit] per core.
+	 * The speed of this [ProcessingUnit] per core in MHz.
 	 */
-	val speed: Int
+	val clockRate: Int
 
 	/**
 	 * The amount of cores within this [ProcessingUnit].
@@ -43,7 +43,7 @@ interface ProcessingUnit : Entity<Unit> {
 	val cores: Int
 
 	/**
-	 * The energy consumption of this [ProcessingUnit] in Kj/s.
+	 * The energy consumption of this [ProcessingUnit] in Watt.
 	 */
-	val energyConsumption: Int
+	val energyConsumption: Double
 }

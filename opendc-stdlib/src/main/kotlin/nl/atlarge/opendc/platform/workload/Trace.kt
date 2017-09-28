@@ -22,12 +22,16 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.platform.workload
 
 /**
- * A graphics processing unit.
+ * A timestamped sequence of jobs received in a cloud network.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+interface Trace {
+	/**
+	 * The [Job]s in the trace.
+	 */
+	val jobs: Set<Job>
+}

@@ -22,12 +22,24 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.platform.workload
 
 /**
- * A graphics processing unit.
+ * A user of a cloud network that provides [Job]s for the simulation.
+ *
+ * Each user in a simulation has its own logical view of the cloud network which is used to route its jobs in the
+ * physical network.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
+interface User {
+	/**
+	 * The unique identifier of the user.
+	 */
+	val id: Int
 
+	/**
+	 * The name of this user.
+	 */
+	val name: String
+}

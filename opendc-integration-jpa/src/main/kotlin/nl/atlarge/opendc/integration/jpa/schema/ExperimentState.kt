@@ -22,12 +22,32 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
 
 /**
- * A graphics processing unit.
+ * Enumerations of the states an [Experiment] can assume.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
+enum class ExperimentState {
+	/**
+	 * This state indicates the experiment has been queued for simulation, but has not yet started.
+	 */
+	QUEUED,
 
+	/**
+	 * This state indicates the experiment has been claimed by a simulator for simulation, but
+	 * not yet started.
+	 */
+	CLAIMED,
+
+	/**
+	 * This state indicates the experiment is currently in simulation.
+	 */
+	SIMULATING,
+
+	/**
+	 * This state indicates the experiment has finished simulating.
+	 */
+	FINISHED,
+}

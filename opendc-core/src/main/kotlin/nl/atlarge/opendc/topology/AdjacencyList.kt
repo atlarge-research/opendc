@@ -55,7 +55,7 @@ internal class AdjacencyListTopologyBuilder : TopologyBuilder {
 	 *
 	 * @return The graph built from this builder.
 	 */
-	override fun build(): MutableTopology = AdjacencyListTopology()
+	override fun create(): MutableTopology = AdjacencyListTopology()
 }
 
 /**

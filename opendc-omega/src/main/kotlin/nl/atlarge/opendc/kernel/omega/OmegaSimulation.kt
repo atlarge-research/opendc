@@ -71,6 +71,13 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 	private val queue: Queue<MessageContainer> = PriorityQueue(Comparator.comparingLong(MessageContainer::time))
 
 	/**
+	 * The observable state of an [Entity] in simulation, which is provided by the simulation context.
+	 */
+	@Suppress("UNCHECKED_CAST")
+	override val <E : Entity<S>, S> E.state: S
+		get() = (resolve(this) as OmegaContext<E, S>?)?.state ?: initialState
+
+	/**
 	 * Initialise the simulator.
 	 */
 	init {
@@ -334,12 +341,7 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		 */
 		suspend override fun wait(duration: Duration) {
 			require(duration >= 0) { "The amount of time to suspend must be a positive number" }
-
-			if (duration == 0.toLong())
-				return
-
 			schedule(Resume, entity, entity, duration)
-
 			while (true) {
 				if (receive() is Resume)
 					return
@@ -358,12 +360,7 @@ internal class OmegaSimulation(override val kernel: OmegaKernel, override val to
 		 */
 		suspend override fun wait(duration: Duration, queue: Queue<Any>) {
 			require(duration >= 0) { "The amount of time to suspend must be a positive number" }
-
-			if (duration == 0.toLong())
-				return
-
 			schedule(Resume, entity, entity, duration)
-
 			while (true) {
 				val msg = receive()
 				if (msg is Resume)

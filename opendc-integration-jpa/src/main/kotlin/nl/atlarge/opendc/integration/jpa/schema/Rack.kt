@@ -22,12 +22,31 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.topology.container.Rack
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * A rack entity in a room in the persistent schema.
  *
+ * @property id The unique identifier of the rack.
+ * @property name The name of the rack.
+ * @property capacity The capacity of the rack in terms of units.
+ * @property powerCapacity The power capacity of the rack in Watt.
+ * @property machines The machines in the rack.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+@Entity
+class Rack(
+	id: Int,
+	val name: String,
+	val capacity: Int,
+	val powerCapacity: Int,
+	val machines: List<Machine>
+): RoomObject(id), Rack {
+	/**
+	 * The initial state of the entity.
+	 */
+	override val initialState = Unit
+}

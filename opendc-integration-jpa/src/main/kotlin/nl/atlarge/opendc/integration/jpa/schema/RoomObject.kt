@@ -22,12 +22,15 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * An object in a room.
  *
+ * @property id The unique identifier of the room.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+@Entity
+abstract class RoomObject(val id: Int)

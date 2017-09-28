@@ -22,12 +22,19 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.topology
 
 /**
- * A graphics processing unit.
+ * An interface for producing [Topology] instances. Implementors of this interface provide a way of generating a
+ * topology based on the state of the factory.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+interface TopologyFactory {
+	/**
+	 * Create a [MutableTopology] instance.
+	 *
+	 * @return A mutable topology.
+	 */
+	fun create(): MutableTopology
+}

@@ -22,12 +22,29 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
+
+import nl.atlarge.opendc.topology.container.Room
+import javax.persistence.Entity
 
 /**
- * A graphics processing unit.
+ * A room entity in the persistent schema.
  *
+ * @property id The unique identifier of the room.
+ * @property name The name of the room.
+ * @property type The type of the room.
+ * @property objects The objects in the room.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+@Entity
+data class Room(
+	val id: Int,
+	val name: String,
+	val type: RoomType,
+	val objects: Set<RoomObject>
+): Room {
+	/**
+	 * The initial state of the entity.
+	 */
+	override val initialState = Unit
+}

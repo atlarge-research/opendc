@@ -22,12 +22,13 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.topology.machine
+package nl.atlarge.opendc.integration.jpa.schema
 
 /**
- * A graphics processing unit.
+ * This enumeration defines the room types available in the OpenDC frontend.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Gpu : ProcessingUnit
-
+enum class RoomType {
+	COOLING, HALLWAY, OFFICE, POWER, SERVER
+}

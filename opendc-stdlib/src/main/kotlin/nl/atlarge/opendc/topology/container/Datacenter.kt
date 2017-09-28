@@ -25,14 +25,14 @@
 package nl.atlarge.opendc.topology.container
 
 import mu.KotlinLogging
-import nl.atlarge.opendc.extension.topology.destinations
+import nl.atlarge.opendc.topology.destinations
 import nl.atlarge.opendc.kernel.Context
 import nl.atlarge.opendc.kernel.Process
 import nl.atlarge.opendc.kernel.time.Duration
-import nl.atlarge.opendc.scheduler.Scheduler
+import nl.atlarge.opendc.platform.scheduler.Scheduler
 import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.machine.Machine
-import nl.atlarge.opendc.workload.Task
+import nl.atlarge.opendc.platform.workload.Task
 import java.util.*
 
 /**
@@ -42,16 +42,16 @@ import java.util.*
  * @property interval The interval at which task will be (re)scheduled.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Datacenter(val scheduler: Scheduler, val interval: Duration) : Entity<Unit>, Process<Datacenter> {
+interface Datacenter : Entity<Unit>, Process<Datacenter> {
 	/**
-	 * The logger instance to use for the simulator.
+	 * The task scheduler the datacenter uses.
 	 */
-	private val logger = KotlinLogging.logger {}
+	val scheduler: Scheduler
 
 	/**
-	 * The initial state of the entity.
+	 * The interval at which task will be (re)scheduled.
 	 */
-	override val initialState = Unit
+	val interval: Duration
 
 	/**
 	 * This method is invoked to start the simulation an [Entity] associated with this [Process].
@@ -69,6 +69,8 @@ class Datacenter(val scheduler: Scheduler, val interval: Duration) : Entity<Unit
 	 * simulation will not run any further.
 	 */
 	suspend override fun Context<Datacenter>.run() {
+		val logger = KotlinLogging.logger {}
+
 		// The queue of messages to be processed after a cycle
 		val queue: Queue<Any> = ArrayDeque()
 		// Find all machines in the datacenter

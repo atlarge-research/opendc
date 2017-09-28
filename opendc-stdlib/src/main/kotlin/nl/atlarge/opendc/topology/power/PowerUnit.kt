@@ -29,9 +29,6 @@ import nl.atlarge.opendc.topology.Entity
 /**
  * An [Entity] which provides power for other entities a cloud network to run.
  *
- * @param output The power output of the power unit in Watt.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class PowerUnit(val output: Double) : Entity<Unit> {
-	override val initialState = Unit
-}
+interface PowerUnit : Entity<Unit>

@@ -32,6 +32,4 @@ import nl.atlarge.opendc.topology.Entity
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class Rack : Entity<Unit> {
-	override val initialState = Unit
-}
+interface Rack : Entity<Unit>
