@@ -60,7 +60,6 @@ In the directory you just entered, you need to set up a small configuration file
 
 ```json
 {
-  "DATABASE_LOCATION": "/data/database/opendc.db",
   "FLASK_SECRET": "This is a super duper secret flask key",
   "OAUTH_CLIENT_ID": "your-google-oauth-client-id",
   "ROOT_DIR": "/opendc",
