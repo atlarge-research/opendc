@@ -16,7 +16,7 @@ const TeamMember = ({photoId, name, description}) => (
 );
 
 const TeamSection = () => (
-    <ContentSection name="team" title="The Team">
+    <ContentSection name="team" title="Core Team">
         <div className="row justify-content-center">
             <TeamMember photoId="aiosup" name="Prof. dr. ir. Alexandru Iosup"
                         description="Project Lead"/>
@@ -27,6 +27,15 @@ const TeamSection = () => (
                         description="Software Engineer responsible for the frontend web application"/>
             <TeamMember photoId="mbijman" name="Matthijs Bijman"
                         description="Software Engineer responsible for the datacenter simulator"/>
+        </div>
+        <div className="text-center lead mt-3">
+            See
+            {" "}
+            <a target="_blank" href="http://atlarge.science/opendc#team" rel="noopener noreferrer">
+                atlarge.science/opendc
+            </a>
+            {" "}
+            for the full team!
         </div>
     </ContentSection>
 );
