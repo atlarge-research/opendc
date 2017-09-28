@@ -7,6 +7,8 @@
 Collaborative Datacenter Simulation and Exploration for Everybody
 </p>
 
+<br>
+
 OpenDC is an open-source simulator for datacenters aimed at both research and education.
 
 ![opendc-frontend-construction](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-frontend-construction.PNG)
