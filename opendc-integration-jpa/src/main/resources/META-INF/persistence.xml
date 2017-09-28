@@ -32,9 +32,9 @@
 		<mapping-file>jpa/schema.xml</mapping-file>
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://mariadbt s:3306/opendc" />
-			<property name="javax.persistence.jdbc.user" value="opendc" />
-			<property name="javax.persistence.jdbc.password" value="opendcpassword" />
+			<property name="javax.persistence.jdbc.url" value="@persistence.url@" />
+			<property name="javax.persistence.jdbc.user" value="@persistence.user@" />
+			<property name="javax.persistence.jdbc.password" value="@persistence.password@" />
 
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
 			<property name="hibernate.show_sql" value="false" />

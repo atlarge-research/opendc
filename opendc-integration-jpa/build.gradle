@@ -80,6 +80,16 @@ repositories {
 	jcenter()
 }
 
+import org.apache.tools.ant.filters.*
+
+processResources {
+	filter ReplaceTokens, tokens: [
+		'persistence.url': project.findProperty('persistence.url') ?: '',
+		'persistence.user': project.findProperty('persistence.user') ?: '',
+		'persistence.password': project.findProperty('persistence.password') ?: '',
+	]
+}
+
 dependencies {
 	compile project(':opendc-core')
 	compile project(':opendc-stdlib')
