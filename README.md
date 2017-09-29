@@ -73,7 +73,7 @@ Even the canvas (the main component of the app) is built using React components,
 
 ### State Management
 
-Almost all state is kept in a central Redux store. State is kept there in an immutable form, only to be modified through actions being dispatched. These actions are contained in the `src/actions` folder, and the reducers (managing how state is updated according to dispatched actions) are located in `src/reducers`. If you're not familiar with the Redux approach to state management, have a look at [their official documentation](http://redux.js.org/).
+Almost all state is kept in a central Redux store. State is kept there in an immutable form, only to be modified through actions being dispatched. These actions are contained in the `src/actions` folder, and the reducers (managing how state is updated according to dispatched actions) are located in `src/reducers`. If you're not familiar with the Redux approach to state management, have a look at their [official documentation](http://redux.js.org/).
 
 ### API Interaction
 
