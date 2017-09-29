@@ -25,7 +25,7 @@ const TeamSection = () => (
                         API specification"/>
             <TeamMember photoId="gandreadis" name="Georgios Andreadis"
                         description="Software Engineer responsible for the frontend web application"/>
-            <TeamMember photoId="mbijman" name="Matthijs Bijman"
+            <TeamMember photoId="fmastenbroek" name="Fabian Mastenbroek"
                         description="Software Engineer responsible for the datacenter simulator"/>
         </div>
         <div className="text-center lead mt-3">
