@@ -16,13 +16,10 @@ const RackGroup = ({tile, inSimulation, rackLoad}) => {
     return (
         <Group>
             <TileObject positionX={tile.positionX} positionY={tile.positionY} color={color}/>
-            {inSimulation ?
-                undefined :
-                <Group>
-                    <RackSpaceFillContainer tileId={tile.id} positionX={tile.positionX} positionY={tile.positionY}/>
-                    <RackEnergyFillContainer tileId={tile.id} positionX={tile.positionX} positionY={tile.positionY}/>
-                </Group>
-            }
+            <Group opacity={inSimulation ? 0.3 : 1}>
+                <RackSpaceFillContainer tileId={tile.id} positionX={tile.positionX} positionY={tile.positionY}/>
+                <RackEnergyFillContainer tileId={tile.id} positionX={tile.positionX} positionY={tile.positionY}/>
+            </Group>
         </Group>
     );
 };
