@@ -27,9 +27,19 @@ export const viewportAdjustmentMiddleware = store => next => action => {
         const rooms = roomIds.map(id => Object.assign({}, state.objects.room[id]));
         rooms.forEach(room => room.tiles = room.tileIds.map(tileId => state.objects.tile[tileId]));
 
-        const viewportParams = calculateParametersToZoomInOnRooms(rooms, mapDimensions.width, mapDimensions.height);
-        store.dispatch(setMapPosition(viewportParams.newX, viewportParams.newY));
-        store.dispatch(setMapScale(viewportParams.newScale));
+        let hasNoTiles = true;
+        for (let i in rooms) {
+            if (rooms[i].tiles.length > 0) {
+                hasNoTiles = false;
+                break;
+            }
+        }
+
+        if (!hasNoTiles) {
+            const viewportParams = calculateParametersToZoomInOnRooms(rooms, mapDimensions.width, mapDimensions.height);
+            store.dispatch(setMapPosition(viewportParams.newX, viewportParams.newY));
+            store.dispatch(setMapScale(viewportParams.newScale));
+        }
     }
 
     next(action);
