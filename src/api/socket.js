@@ -6,7 +6,11 @@ let requestIdCounter = 0;
 const callbacks = {};
 
 export function setupSocketConnection(onConnect) {
-    socket = io.connect(window.location.protocol + "//" + window.location.hostname + ":" + window.location.port);
+    let port = window.location.port;
+    if (process.env.NODE_ENV !== 'production') {
+        port = 8081
+    }
+    socket = io.connect(window.location.protocol + "//" + window.location.hostname + ":" + port);
     socket.on("connect", onConnect);
     socket.on("response", onSocketResponse);
 }
