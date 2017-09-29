@@ -145,5 +145,6 @@ class JpaExperiment(val manager: EntityManager,
 		}
 
 		logger.info { "Simulation done" }
+		manager.close()
 	}
 }

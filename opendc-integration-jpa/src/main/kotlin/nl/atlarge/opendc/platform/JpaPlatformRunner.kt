@@ -38,9 +38,15 @@ val logger = KotlinLogging.logger {}
  * @param args The command line arguments of the program.
  */
 fun main(args: Array<String>) {
+	val properties = HashMap<Any, Any>()
+	val env = System.getenv()
+	properties["javax.persistence.jdbc.url"] = env["PERSISTENCE_URL"] ?: ""
+	properties["javax.persistence.jdbc.user"] = env["PERSISTENCE_USER"] ?: ""
+	properties["javax.persistence.jdbc.password"] = env["PERSISTENCE_PASSWORD"] ?: ""
+	val factory = Persistence.createEntityManagerFactory("opendc-simulator", properties)
+
 	val threads = 1
 	val executorService = Executors.newFixedThreadPool(threads)
-	val factory = Persistence.createEntityManagerFactory("opendc-simulator")
 	val experiments = JpaExperimentManager(factory)
 
 	logger.info { "Waiting for enqueued experiments..." }
