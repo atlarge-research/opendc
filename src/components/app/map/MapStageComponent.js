@@ -31,7 +31,7 @@ class MapStageComponent extends React.Component {
 
         window["exportCanvasToImage"] = () => {
             const canvasData = this.stage.getStage().toDataURL();
-            const newWindow = window.open('about:blank', 'OpenDC Canvas Export');
+            const newWindow = window.open("");
             newWindow.document.write("<img src='" + canvasData + "' alt='Canvas Image Export'/>");
             newWindow.document.title = "OpenDC Canvas Export";
         }
