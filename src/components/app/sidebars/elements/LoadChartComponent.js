@@ -1,15 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom/server";
+import SvgSaver from "svgsaver";
 import {VictoryAxis, VictoryChart, VictoryLine, VictoryScatter} from "victory";
 import {convertSecondsToFormattedTime} from "../../../../util/date-time";
 
 const LoadChartComponent = ({data, currentTick}) => {
     const onExport = () => {
-        const newWindow = window.open("");
-        newWindow.document.write(ReactDOM.renderToString(
+        const div = document.createElement("div");
+        div.innerHTML = ReactDOM.renderToString(
             <VictoryChartComponent data={data} currentTick={currentTick} showCurrentTick={false}/>
-        ));
-        newWindow.document.title = "OpenDC Chart Export";
+        );
+        div.firstChild.style = "font-family: Roboto, Arial, sans-serif; font-size: 10pt;";
+        const svgSaver = new SvgSaver();
+        svgSaver.asSvg(div.firstChild);
     };
 
     return (

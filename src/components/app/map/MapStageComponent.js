@@ -30,10 +30,10 @@ class MapStageComponent extends React.Component {
         window.addEventListener("wheel", this.updateScale);
 
         window["exportCanvasToImage"] = () => {
-            const canvasData = this.stage.getStage().toDataURL();
-            const newWindow = window.open("");
-            newWindow.document.write("<img src='" + canvasData + "' alt='Canvas Image Export'/>");
-            newWindow.document.title = "OpenDC Canvas Export";
+            const download = document.createElement("a");
+            download.href = this.stage.getStage().toDataURL();
+            download.download = "opendc-canvas-export-" + Date.now() + ".png";
+            download.click();
         }
     }
 
