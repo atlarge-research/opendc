@@ -16,9 +16,9 @@ services:
   opendc-simulator:
     build: ./opendc-simulator
     environment:
-      - MYSQL_DATABASE=opendc
-      - MYSQL_USER=opendc
-      - MYSQL_PASSWORD=opendcpassword
+      - PERSISTENCE_URL=jdbc:mysql://mariadb:3306/opendc
+      - PERSISTENCE_USER=opendc
+      - PERSISTENCE_PASSWORD=opendcpassword
   mariadb:
     image: mariadb:10.1
     ports:
