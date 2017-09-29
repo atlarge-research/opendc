@@ -13,4 +13,4 @@ USER gradle
 WORKDIR /simulator/opendc-integration-jpa
 
 # Run the application
-CMD ["/bin/sh", "-c", "gradle run -Ppersistence.url=$PERSISTENCE_URL -Ppersistence.user=$PERSISTENCE_USER -Ppersistence.password=$PERSISTENCE_PASSWORD"]
+CMD ["/bin/sh", "-c", "gradle run -Ppersistence.url=$(echo \"jdbc:mysql://mariadb:3306/\"$MYSQL_DATABASE) -Ppersistence.user=$MYSQL_USER -Ppersistence.password=$MYSQL_PASSWORD"]

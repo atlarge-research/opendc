@@ -40,7 +40,7 @@ val logger = KotlinLogging.logger {}
 fun main(args: Array<String>) {
 	val threads = 1
 	val executorService = Executors.newFixedThreadPool(threads)
-	val factory = Persistence.createEntityManagerFactory("opendc-frontend")
+	val factory = Persistence.createEntityManagerFactory("opendc-simulator")
 	val experiments = JpaExperimentManager(factory)
 
 	logger.info { "Waiting for enqueued experiments..." }
