@@ -15,13 +15,11 @@ COPY ./ /opendc
 
 # Setting up simulator
 RUN chmod 555 /opendc/build/configure.sh \
-	&& cd /opendc/opendc-simulator \
-	&& ./gradlew build \
 	&& cd /opendc/opendc-frontend \
 	&& rm -rf ./build \
 	&& rm -rf ./node_modules \
-	&& npm install \
+	&& yarn \
 	&& export REACT_APP_OAUTH_CLIENT_ID=$(cat ../keys.json | python -c "import sys, json; print json.load(sys.stdin)['OAUTH_CLIENT_ID']") \
-	&& npm run build
+	&& yarn build
 
 CMD ["sh", "-c", "cd /opendc && ./build/configure.sh && /usr/bin/supervisord -c /opendc/build/supervisord.conf"]
