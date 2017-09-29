@@ -12,7 +12,7 @@ const LoadChartComponent = ({data, currentTick}) => {
         );
         div.firstChild.style = "font-family: Roboto, Arial, sans-serif; font-size: 10pt;";
         const svgSaver = new SvgSaver();
-        svgSaver.asSvg(div.firstChild);
+        svgSaver.asSvg(div.firstChild, "opendc-chart-export-" + Date.now() + ".svg");
     };
 
     return (
