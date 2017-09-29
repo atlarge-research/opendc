@@ -16,7 +16,7 @@ const TaskComponent = ({task, flopsLeft}) => {
         stateInfo = (
             <div>
                 <span className="fa fa-refresh mr-2"/>
-                Running ({approx(task.totalFlopCount - flopsLeft)} / {approx(task.totalFlopCount)} FLOPS)
+                Running ({approx(task.totalFlopCount - flopsLeft)} / {approx(task.totalFlopCount)} FLOP)
             </div>
         );
     } else {
@@ -31,7 +31,7 @@ const TaskComponent = ({task, flopsLeft}) => {
     return (
         <li className="list-group-item flex-column align-items-start">
             <div className="d-flex w-100 justify-content-between">
-                <h5 className="mb-1">{approx(task.totalFlopCount)} FLOPS</h5>
+                <h5 className="mb-1">{approx(task.totalFlopCount)} FLOP</h5>
                 <small>Starts at {convertSecondsToFormattedTime(task.startTick)}</small>
             </div>
             {stateInfo}
