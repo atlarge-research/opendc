@@ -208,6 +208,8 @@ CREATE TABLE task_states (
 
   FOREIGN KEY (task_id) REFERENCES tasks (id),
   FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
 );
 
 -- A machine state
@@ -227,6 +229,8 @@ CREATE TABLE machine_states (
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
 );
 
 /*
