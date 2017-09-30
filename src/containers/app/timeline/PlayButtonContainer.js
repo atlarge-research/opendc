@@ -5,6 +5,8 @@ import PlayButtonComponent from "../../../components/app/timeline/PlayButtonComp
 const mapStateToProps = state => {
     return {
         isPlaying: state.isPlaying,
+        currentTick: state.currentTick,
+        lastSimulatedTick: state.lastSimulatedTick,
     };
 };
 
