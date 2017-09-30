@@ -4,7 +4,7 @@ import ScreenshotSection from "./ScreenshotSection";
 const ModelingSection = () => (
     <ScreenshotSection name="simulation" title="Datacenter Simulation"
                        imageUrl="https://github.com/atlarge-research/opendc/raw/master/images/opendc-frontend-simulation-zoom.PNG"
-                       caption="The same simulation at node level"
+                       caption="Running an experiment in OpenDC"
                        imageIsRight={false}>
         <h3>Working with OpenDC:</h3>
         <ul>
