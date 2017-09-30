@@ -1,10 +1,10 @@
 <h1 align="center">
-  <img src="images/logo.png" width="100" alt="OpenDC">
-  <br>
-  OpenDC
+    <img src="images/logo.png" width="100" alt="OpenDC">
+    <br>
+    OpenDC
 </h1>
 <p align="center">
-Collaborative Datacenter Simulation and Exploration for Everybody
+    Collaborative Datacenter Simulation and Exploration for Everybody
 </p>
 
 <br>
@@ -25,7 +25,9 @@ OpenDC is a project by the [@Large Research Group](http://atlarge-research.com).
 
 OpenDC consists of four components: a Kotlin simulator, a MariaDB database, a Python Flask web server, and a React.js frontend.
 
-![opendc-component-diagram](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-component-diagram.png)
+<p align="center">
+    <img src="https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-component-diagram.png" alt="OpenDC Component Diagram">
+</p>
 
 On the frontend, users can construct a topology by specifying a datacenter's rooms, racks and machines, and create experiments to see how a workload trace runs on that topology. The frontend communicates with the web server over SocketIO, through a custom REST request/response layer. For example, the frontend might make a `GET` request to `/api/v1/users/{userId}`, but this request is completed via SocketIO, not plain HTTP requests.
 
