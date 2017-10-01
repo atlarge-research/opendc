@@ -12,7 +12,7 @@ const SimulationActionButtons = ({simulationId, onViewUsers, onDelete}) => (
             <span className="fa fa-play"/>
         </Link>
         <div
-            className="btn btn-outline-success btn-sm mr-2"
+            className="btn btn-outline-success btn-sm disabled mr-2"
             title="View and edit collaborators (not supported yet)"
             onClick={() => onViewUsers(simulationId)}
         >
