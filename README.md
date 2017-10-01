@@ -19,7 +19,7 @@ Looking for the full OpenDC stack? Check out [the main OpenDC repo](https://gith
 
 ### Installation
 
-To get started, you'll need the [Node.js environment](https://nodejs.org) and the [Yarn package manager](https://yarnpkg.com).
+To get started, you'll need the [Node.js environment](https://nodejs.org) and the [Yarn package manager](https://yarnpkg.com). Once you have those installed, run the following command from the root directory of this repo:
 
 ```bash
 yarn
