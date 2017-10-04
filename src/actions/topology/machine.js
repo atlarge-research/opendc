@@ -3,23 +3,23 @@ export const ADD_UNIT = "ADD_UNIT";
 export const DELETE_UNIT = "DELETE_UNIT";
 
 export function deleteMachine() {
-    return {
-        type: DELETE_MACHINE
-    };
+  return {
+    type: DELETE_MACHINE
+  };
 }
 
 export function addUnit(unitType, id) {
-    return {
-        type: ADD_UNIT,
-        unitType,
-        id
-    };
+  return {
+    type: ADD_UNIT,
+    unitType,
+    id
+  };
 }
 
 export function deleteUnit(unitType, index) {
-    return {
-        type: DELETE_UNIT,
-        unitType,
-        index
-    };
+  return {
+    type: DELETE_UNIT,
+    unitType,
+    index
+  };
 }

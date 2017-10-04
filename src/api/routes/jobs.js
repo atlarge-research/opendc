@@ -1,5 +1,5 @@
-import {getById} from "./util";
+import { getById } from "./util";
 
 export function getTasksOfJob(jobId) {
-    return getById("/jobs/{jobId}/tasks", {jobId});
+  return getById("/jobs/{jobId}/tasks", { jobId });
 }
