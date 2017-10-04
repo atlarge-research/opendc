@@ -30,9 +30,10 @@ import nl.atlarge.opendc.kernel.Context
 import nl.atlarge.opendc.kernel.Process
 import nl.atlarge.opendc.kernel.time.Duration
 import nl.atlarge.opendc.platform.scheduler.Scheduler
+import nl.atlarge.opendc.platform.workload.Job
+import nl.atlarge.opendc.platform.workload.Task
 import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.machine.Machine
-import nl.atlarge.opendc.platform.workload.Task
 import java.util.*
 
 /**
@@ -88,6 +89,7 @@ interface Datacenter : Entity<Unit>, Process<Datacenter> {
 			while (queue.isNotEmpty()) {
 				val msg = queue.poll()
 				if (msg is Task) {
+					msg.arrive(time)
 					scheduler.submit(msg)
 				}
 			}

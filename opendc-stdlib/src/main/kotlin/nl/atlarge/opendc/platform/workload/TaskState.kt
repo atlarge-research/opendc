@@ -22,50 +22,51 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.platform.scheduler
+package nl.atlarge.opendc.platform.workload
 
-import nl.atlarge.opendc.kernel.Context
-import nl.atlarge.opendc.platform.workload.Task
-import nl.atlarge.opendc.topology.Entity
-import nl.atlarge.opendc.topology.machine.Machine
+import nl.atlarge.opendc.kernel.time.Instant
+
 
 /**
- * A task scheduler that is coupled to an [Entity] in the topology of the cloud network.
+ * This class hierarchy describes the states of a [Task].
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Scheduler {
+sealed class TaskState {
 	/**
-	 * The name of this scheduler.
+	 * A state to indicate the task has not yet arrived at the [Datacenter].
 	 */
-	val name: String
+	object Underway : TaskState()
 
 	/**
-	 * (Re)schedule the tasks submitted to the scheduler over the specified set of machines.
+	 * A state to indicate the task has arrived at the [Datacenter].
 	 *
-	 * This method should be invoked at some interval to allow the scheduler to reschedule existing tasks and schedule
-	 * new tasks.
+	 * @property at The moment in time the task has arrived.
 	 */
-	suspend fun <E: Entity<*>> Context<E>.schedule()
+	data class Queued(val at: Instant) : TaskState()
 
 	/**
-	 * Submit a [Task] to this scheduler.
+	 * A state to indicate the task has started running on a machine.
 	 *
-	 * @param task The task to submit to the scheduler.
+	 * @property previous The previous state of the task.
+	 * @property at The moment in time the task started.
 	 */
-	fun submit(task: Task)
+	data class Running(val previous: Queued, val at: Instant) : TaskState()
 
 	/**
-	 * Register a [Machine] to this scheduler.
+	 * A state to indicate the task has finished.
 	 *
-	 * @param machine The machine to register.
+	 * @property previous The previous state of the task.
+	 * @property at The moment in time the task finished.
 	 */
-	fun register(machine: Machine)
+	data class Finished(val previous: Running, val at: Instant) : TaskState()
 
 	/**
-	 * Deregister a [Machine] from this scheduler.
+	 * A state to indicate the task has failed.
 	 *
-	 * @param machine The machine to deregister.
+	 * @property previous The previous state of the task.
+	 * @property at The moment in time the task failed.
+	 * @property reason The reason of the failure.
 	 */
-	fun deregister(machine: Machine)
+	data class Failed(val previous: Running, val at: Instant, val reason: String) : TaskState()
 }

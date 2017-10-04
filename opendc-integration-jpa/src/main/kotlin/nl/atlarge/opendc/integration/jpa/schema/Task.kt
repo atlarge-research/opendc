@@ -24,11 +24,9 @@
 
 package nl.atlarge.opendc.integration.jpa.schema
 
-import nl.atlarge.opendc.kernel.Context
 import nl.atlarge.opendc.kernel.time.Instant
 import nl.atlarge.opendc.platform.workload.Task
-import nl.atlarge.opendc.topology.container.Datacenter
-import nl.atlarge.opendc.topology.machine.Machine
+import nl.atlarge.opendc.platform.workload.TaskState
 import javax.persistence.*
 
 /**
@@ -52,90 +50,68 @@ data class Task(
 	/**
 	 * The dependencies of the task.
 	 */
-	override val dependencies: Set<Task>
-		get() {
-			if (_dependencies != null)
-				return _dependencies!!
-			_dependencies = dependency?.let(::setOf) ?: emptySet()
-			return _dependencies!!
-		}
-
-	/**
-	 * The dependencies set cache.
-	 */
-	private var _dependencies: Set<Task>? = null
-
-	/**
-	 * The remaining amount of flops to compute.
-	 */
-	override var remaining: Long
-		get() {
-			if (_remaining == null)
-				_remaining = flops
-			return _remaining!!
-		}
-		private set(value) { _remaining = value }
-	private var _remaining: Long? = -1
-
-	/**
-	 * A flag to indicate the task has been accepted by the datacenter.
-	 */
-	override var accepted: Boolean = false
+	override lateinit var dependencies: Set<Task>
 		private set
 
 	/**
-	 * A flag to indicate the task has been started.
+	 * The remaining flops for this task.
 	 */
-	override var started: Boolean = false
+	override var remaining: Long = 0
 		private set
 
 	/**
-	 * A flag to indicate whether the task is finished.
+	 * A flag to indicate whether the task has finished.
 	 */
 	override var finished: Boolean = false
 		private set
 
 	/**
-	 * Accept the task into the scheduling queue.
+	 * The state of the task.
 	 */
-	override fun Context<Datacenter>.accept() {
-		accepted = true
+	override lateinit var state: TaskState
+		private set
+
+	/**
+	 * This method initialises the task object after it has been created by the JPA implementation. We use this
+	 * initialisation method because JPA implementations only call the default constructor
+	 */
+	@PostLoad
+	internal fun init() {
+		remaining = flops
+		dependencies = dependency?.let(::setOf) ?: emptySet()
+		state = TaskState.Underway
 	}
 
 	/**
-	 * Start a task.
+	 * This method is invoked when a task has arrived at a datacenter.
+	 *
+	 * @param time The moment in time the task has arrived at the datacenter.
 	 */
-	override fun Context<Machine>.start() {
-		started = true
+	override fun arrive(time: Instant) {
+		if (state !is TaskState.Underway) {
+			throw IllegalStateException("The task has already been submitted to a datacenter")
+		}
+		remaining = flops
+		state = TaskState.Queued(time)
 	}
 
 	/**
 	 * Consume the given amount of flops of this task.
 	 *
+	 * @param time The current moment in time of the consumption.
 	 * @param flops The total amount of flops to consume.
 	 */
-	override fun Context<Machine>.consume(flops: Long) {
-		if (finished)
+	override fun consume(time: Instant, flops: Long) {
+		if (state is TaskState.Queued) {
+			state = TaskState.Running(state as TaskState.Queued, time)
+		} else if (finished) {
 			return
-		if (remaining <= flops) {
-			remaining = 0
-		} else {
-			remaining -= flops
 		}
-	}
-
-	/**
-	 * Finalise the task.
-	 */
-	override fun Context<Machine>.finalize() {
-		finished = true
-	}
-
-	/**
-	 * Reset the task.
-	 */
-	internal fun reset() {
-		remaining = flops
-		finished = false
+		remaining -= flops
+		if (remaining <= 0) {
+			remaining = 0
+			finished = true
+			state = TaskState.Finished(state as TaskState.Running, time)
+		}
 	}
 }

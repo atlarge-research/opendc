@@ -85,7 +85,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="Trace" access="FIELD" name="traces">
+	<entity class="Trace" access="FIELD" name="traces" cacheable="false">
 		<attributes>
 			<id name="id" />
 			<basic name="name">
@@ -97,17 +97,17 @@
 		</attributes>
 	</entity>
 
-	<entity class="Job" access="FIELD" name="jobs">
+	<entity class="Job" access="FIELD" name="jobs" cacheable="false">
 		<attributes>
 			<id name="id" />
-			<one-to-many name="tasks" target-entity="nl.atlarge.opendc.integration.jpa.schema.Task">
+			<one-to-many name="tasks" target-entity="Task">
 				<join-column name="job_id" />
 			</one-to-many>
 			<transient name="owner" />
 		</attributes>
 	</entity>
 
-	<entity class="Task" access="FIELD" name="tasks">
+	<entity class="Task" access="FIELD" name="tasks" cacheable="false">
 		<convert converter="nl.atlarge.opendc.integration.jpa.converter.ParallelizableConverter" attribute-name="parallelizable" />
 		<attributes>
 			<id name="id" />
@@ -121,13 +121,12 @@
 				<column name="parallelizability" column-definition="text" />
 			</basic>
 
-			<one-to-one name="dependency" target-entity="nl.atlarge.opendc.integration.jpa.schema.Task">
+			<one-to-one name="dependency" target-entity="Task">
 				<join-column name="task_dependency_id" />
 			</one-to-one>
-			<transient name="_dependencies" />
-			<transient name="_remaining" />
-			<transient name="accepted" />
-			<transient name="started" />
+			<transient name="dependencies" />
+			<transient name="state" />
+			<transient name="remaining" />
 			<transient name="finished" />
 		</attributes>
 	</entity>

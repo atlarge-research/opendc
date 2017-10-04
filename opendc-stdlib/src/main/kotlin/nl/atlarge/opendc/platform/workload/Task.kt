@@ -24,12 +24,11 @@
 
 package nl.atlarge.opendc.platform.workload
 
-import nl.atlarge.opendc.kernel.Context
-import nl.atlarge.opendc.topology.container.Datacenter
+import nl.atlarge.opendc.kernel.time.Instant
 import nl.atlarge.opendc.topology.machine.Machine
 
 /**
- * A task represents some computation that is part of a [Job].
+ * A task that runs as part of a [Job] on a [Machine].
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
@@ -55,51 +54,39 @@ interface Task {
 	val parallelizable: Boolean
 
 	/**
-	 * The remaining amount of flops to compute.
+	 * The remaining flops for this task.
 	 */
 	val remaining: Long
 
 	/**
-	 * A flag to indicate the task has been accepted by the datacenter.
+	 * The state of the task.
 	 */
-	val accepted: Boolean
+	val state: TaskState
 
 	/**
-	 * A flag to indicate the task has been started.
+	 * A flag to indicate whether the task is ready to be started.
 	 */
-	val started: Boolean
+	val ready: Boolean
+		get() = !dependencies.any { !it.finished }
 
 	/**
-	 * A flag to indicate whether the task is finished.
+	 * A flag to indicate whether the task has finished.
 	 */
 	val finished: Boolean
+		get() = state is TaskState.Finished
 
 	/**
-	 * Determine whether the task is ready to be processed.
+	 * This method is invoked when a task has arrived at a datacenter.
 	 *
-	 * @return `true` if the task is ready to be processed, `false` otherwise.
+	 * @param time The moment in time the task has arrived at the datacenter.
 	 */
-	fun isReady() = dependencies.all { it.finished }
-
-	/**
-	 * Accept the task into the scheduling queue.
-	 */
-	fun Context<Datacenter>.accept()
-
-	/**
-	 * Start a task.
-	 */
-	fun Context<Machine>.start()
+	fun arrive(time: Instant)
 
 	/**
 	 * Consume the given amount of flops of this task.
 	 *
+	 * @param time The current moment in time of the consumption.
 	 * @param flops The total amount of flops to consume.
 	 */
-	fun Context<Machine>.consume(flops: Long)
-
-	/**
-	 * Finalise the task.
-	 */
-	fun Context<Machine>.finalize()
+	fun consume(time: Instant, flops: Long)
 }

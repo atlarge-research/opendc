@@ -24,6 +24,7 @@
 
 package nl.atlarge.opendc.platform
 
+import nl.atlarge.opendc.integration.jpa.transaction
 import nl.atlarge.opendc.integration.jpa.schema.Experiment as InternalExperiment
 import nl.atlarge.opendc.integration.jpa.schema.ExperimentState
 import javax.persistence.EntityManager
@@ -36,11 +37,11 @@ import javax.persistence.EntityManagerFactory
  * 					 from.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class JpaExperimentManager(private val factory: EntityManagerFactory) {
+class JpaExperimentManager(private val factory: EntityManagerFactory): AutoCloseable {
 	/**
 	 * The entity manager for this experiment.
 	 */
-	private val manager: EntityManager = factory.createEntityManager()
+	private var manager: EntityManager = factory.createEntityManager()
 
 	/**
 	 * The amount of experiments in the queue. This property makes a call to the database and does therefore not
@@ -60,21 +61,33 @@ class JpaExperimentManager(private val factory: EntityManagerFactory) {
 	 * @return The experiment that has been polled from the database or `null` if there are no experiments in the
 	 * 		   queue.
 	 */
-	fun poll(): Experiment<Unit>? {
-		manager.transaction.begin()
-		var experiment: InternalExperiment? = null
-		val results = manager.createQuery("SELECT e FROM experiments e WHERE e.state = :s",
+	fun poll(): JpaExperiment? {
+		var result: JpaExperiment? = null
+		manager.transaction {
+			var experiment: InternalExperiment? = null
+			val results = manager.createQuery("SELECT e FROM experiments e WHERE e.state = :s",
 				InternalExperiment::class.java)
-			.setParameter("s", ExperimentState.QUEUED)
-			.setMaxResults(1)
-			.resultList
+				.setParameter("s", ExperimentState.QUEUED)
+				.setMaxResults(1)
+				.resultList
 
 
-		if (!results.isEmpty()) {
-			experiment = results.first()
-			experiment!!.state = ExperimentState.CLAIMED
+			if (!results.isEmpty()) {
+				experiment = results.first()
+				experiment!!.state = ExperimentState.CLAIMED
+			}
+			result = experiment?.let { JpaExperiment(manager, it) }
 		}
-		manager.transaction.commit()
-		return experiment?.let { JpaExperiment(factory.createEntityManager(), it) }
+		manager = factory.createEntityManager()
+		return result
 	}
+
+	/**
+	 * Close this resource, relinquishing any underlying resources.
+	 * This method is invoked automatically on objects managed by the
+	 * `try`-with-resources statement.*
+	 *
+	 * @throws Exception if this resource cannot be closed
+	 */
+	override fun close() = manager.close()
 }

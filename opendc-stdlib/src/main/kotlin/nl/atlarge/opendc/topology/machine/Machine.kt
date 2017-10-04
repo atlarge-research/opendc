@@ -83,16 +83,14 @@ open class Machine : Entity<Machine.State>, Process<Machine> {
 
 		var task: Task = receiveTask()
 		update(State(Status.RUNNING, task, load = 1.0, memory = state.memory + 50, temperature = 30.0))
-		task.run { start() }
 
 		while (true) {
-			if (task.remaining <= 0) {
-				task.run { finalize() }
+			if (task.finished) {
 				logger.info { "${entity.id}: Task ${task.id} finished. Machine idle at $time" }
 				update(State(Status.IDLE))
 				task = receiveTask()
 			} else {
-				task.run { consume(speed * delta) }
+				task.consume(time, speed * delta)
 			}
 
 			// Check if we have received a new order in the meantime.
@@ -100,7 +98,6 @@ open class Machine : Entity<Machine.State>, Process<Machine> {
 			if (msg is Task) {
 				task = msg
 				update(State(Status.RUNNING, task, load = 1.0, memory = state.memory + 50, temperature = 30.0))
-				task.run { start() }
 			}
 		}
 	}

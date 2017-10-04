@@ -25,6 +25,7 @@
 package nl.atlarge.opendc.platform.scheduler
 
 import nl.atlarge.opendc.kernel.Context
+import nl.atlarge.opendc.platform.workload.Job
 import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.machine.Machine
 import nl.atlarge.opendc.platform.workload.Task
@@ -69,7 +70,7 @@ class FifoScheduler : Scheduler {
 					val task = iterator.next()
 
 					// TODO What to do with tasks that are not ready yet to be processed
-					if (!task.isReady()) {
+					if (!task.ready) {
 						iterator.remove()
 						rescheduled.add(task)
 						continue
@@ -85,7 +86,7 @@ class FifoScheduler : Scheduler {
 
 		// Reschedule all tasks that are not ready yet
 		while (!rescheduled.isEmpty()) {
-			submit(rescheduled.poll())
+			queue.add(rescheduled.poll())
 		}
 	}
 

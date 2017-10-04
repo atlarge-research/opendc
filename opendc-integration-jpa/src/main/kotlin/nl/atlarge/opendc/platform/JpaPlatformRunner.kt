@@ -45,17 +45,17 @@ fun main(args: Array<String>) {
 	properties["javax.persistence.jdbc.password"] = env["PERSISTENCE_PASSWORD"] ?: ""
 	val factory = Persistence.createEntityManagerFactory("opendc-simulator", properties)
 
-	val threads = 1
+	val threads = 4
 	val executorService = Executors.newFixedThreadPool(threads)
 	val experiments = JpaExperimentManager(factory)
+	val kernel = OmegaKernel
 
 	logger.info { "Waiting for enqueued experiments..." }
 	while (true) {
-		val experiment = experiments.poll()
-		executorService.submit {
-			experiment?.run {
-				logger.info { "Found experiment. Running simulating now..." }
-				run(OmegaKernel)
+		experiments.poll()?.let { experiment ->
+			logger.info { "Found experiment. Submitting for simulation now..." }
+			executorService.submit {
+				experiment.use { it.run(kernel) }
 			}
 		}
 

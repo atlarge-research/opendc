@@ -25,9 +25,9 @@
 package nl.atlarge.opendc.platform.scheduler
 
 import nl.atlarge.opendc.kernel.Context
+import nl.atlarge.opendc.platform.workload.Task
 import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.machine.Machine
-import nl.atlarge.opendc.platform.workload.Task
 import java.util.*
 
 /**
@@ -67,8 +67,8 @@ class SrtfScheduler : Scheduler {
 					val task = iterator.next()
 
 					// TODO What to do with tasks that are not ready yet to be processed
-					if (!task.isReady()) {
-						submit(task)
+					if (!task.ready) {
+						tasks.add(task)
 						continue
 					} else if (task.finished) {
 						tasks.remove(task)

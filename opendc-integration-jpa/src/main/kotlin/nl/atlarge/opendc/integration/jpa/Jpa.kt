@@ -22,32 +22,17 @@
  * SOFTWARE.
  */
 
-package nl.atlarge.opendc.platform.workload
+package nl.atlarge.opendc.integration.jpa
+
+import javax.persistence.EntityManager
 
 /**
- * A bag of tasks which are submitted by a [User] to the cloud network.
+ * Run the given block in a transaction, committing on return of the block.
  *
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ * @param block The block to execute in the transaction.
  */
-interface Job {
-	/**
-	 * A unique identifier of the job.
-	 */
-	val id: Int
-
-	/**
-	 * The owner of this job.
-	 */
-	val owner: User
-
-	/**
-	 * The tasks this job consists of.
-	 */
-	val tasks: Set<Task>
-
-	/**
-	 * A flag to indicate the job has finished.
-	 */
-	val finished: Boolean
-		get() = !tasks.any { !it.finished }
+inline fun EntityManager.transaction(block: () -> Unit) {
+	transaction.begin()
+	block()
+	transaction.commit()
 }
