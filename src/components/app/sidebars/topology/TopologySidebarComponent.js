@@ -5,31 +5,27 @@ import RackSidebarContainer from "../../../../containers/app/sidebars/topology/r
 import RoomSidebarContainer from "../../../../containers/app/sidebars/topology/room/RoomSidebarContainer";
 import Sidebar from "../Sidebar";
 
-const TopologySidebarComponent = ({interactionLevel}) => {
-    let sidebarContent;
+const TopologySidebarComponent = ({ interactionLevel }) => {
+  let sidebarContent;
 
-    switch (interactionLevel.mode) {
-        case "BUILDING":
-            sidebarContent = <BuildingSidebarContainer/>;
-            break;
-        case "ROOM":
-            sidebarContent = <RoomSidebarContainer/>;
-            break;
-        case "RACK":
-            sidebarContent = <RackSidebarContainer/>;
-            break;
-        case "MACHINE":
-            sidebarContent = <MachineSidebarContainer/>;
-            break;
-        default:
-            sidebarContent = "Missing Content";
-    }
+  switch (interactionLevel.mode) {
+    case "BUILDING":
+      sidebarContent = <BuildingSidebarContainer />;
+      break;
+    case "ROOM":
+      sidebarContent = <RoomSidebarContainer />;
+      break;
+    case "RACK":
+      sidebarContent = <RackSidebarContainer />;
+      break;
+    case "MACHINE":
+      sidebarContent = <MachineSidebarContainer />;
+      break;
+    default:
+      sidebarContent = "Missing Content";
+  }
 
-    return (
-        <Sidebar isRight={true}>
-            {sidebarContent}
-        </Sidebar>
-    );
+  return <Sidebar isRight={true}>{sidebarContent}</Sidebar>;
 };
 
 export default TopologySidebarComponent;

@@ -1,5 +1,5 @@
-import {getById} from "./util";
+import { getById } from "./util";
 
 export function getSection(sectionId) {
-    return getById("/sections/{sectionId}", {sectionId});
+  return getById("/sections/{sectionId}", { sectionId });
 }

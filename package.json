@@ -49,8 +49,8 @@
     "victory": "^0.22.2"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,json,sass}": [
-      "prettier --single-quote --write",
+    "src/**/*.{js,jsx,json}": [
+      "prettier --write",
       "git add"
     ]
   },

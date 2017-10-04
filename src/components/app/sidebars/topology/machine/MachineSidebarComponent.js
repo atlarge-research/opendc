@@ -6,21 +6,22 @@ import DeleteMachineContainer from "../../../../../containers/app/sidebars/topol
 import MachineNameContainer from "../../../../../containers/app/sidebars/topology/machine/MachineNameContainer";
 import UnitTabsContainer from "../../../../../containers/app/sidebars/topology/machine/UnitTabsContainer";
 
-const MachineSidebarComponent = ({inSimulation, machineId}) => {
-    return (
+const MachineSidebarComponent = ({ inSimulation, machineId }) => {
+  return (
+    <div>
+      <MachineNameContainer />
+      <BackToRackContainer />
+      {inSimulation ? (
         <div>
-            <MachineNameContainer/>
-            <BackToRackContainer/>
-            {inSimulation ?
-                <div>
-                    <LoadBarContainer objectType="machine" objectId={machineId}/>
-                    <LoadChartContainer objectType="machine" objectId={machineId}/>
-                </div> :
-                <DeleteMachineContainer/>
-            }
-            <UnitTabsContainer/>
+          <LoadBarContainer objectType="machine" objectId={machineId} />
+          <LoadChartContainer objectType="machine" objectId={machineId} />
         </div>
-    );
+      ) : (
+        <DeleteMachineContainer />
+      )}
+      <UnitTabsContainer />
+    </div>
+  );
 };
 
 export default MachineSidebarComponent;

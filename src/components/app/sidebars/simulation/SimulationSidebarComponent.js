@@ -6,17 +6,17 @@ import Sidebar from "../Sidebar";
 import "./SimulationSidebarComponent.css";
 
 const SimulationSidebarComponent = () => {
-    return (
-        <Sidebar isRight={false}>
-            <div className="simulation-sidebar-container flex-column">
-                <ExperimentMetadataContainer/>
-                <LoadMetricContainer/>
-                <div className="trace-container">
-                    <TraceContainer/>
-                </div>
-            </div>
-        </Sidebar>
-    );
+  return (
+    <Sidebar isRight={false}>
+      <div className="simulation-sidebar-container flex-column">
+        <ExperimentMetadataContainer />
+        <LoadMetricContainer />
+        <div className="trace-container">
+          <TraceContainer />
+        </div>
+      </div>
+    </Sidebar>
+  );
 };
 
 export default SimulationSidebarComponent;
