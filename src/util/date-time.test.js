@@ -5,12 +5,12 @@ describe("date-time parsing", () => {
     const dateString = "2017-09-27T20:55:01";
     const parsedDate = parseDateTime(dateString);
 
-    expect(parsedDate.year).toEqual(2017);
-    expect(parsedDate.month).toEqual(9);
-    expect(parsedDate.day).toEqual(27);
-    expect(parsedDate.hour).toEqual(20);
-    expect(parsedDate.minute).toEqual(55);
-    expect(parsedDate.second).toEqual(1);
+    expect(parsedDate.getUTCFullYear()).toEqual(2017);
+    expect(parsedDate.getUTCMonth()).toEqual(8);
+    expect(parsedDate.getUTCDate()).toEqual(27);
+    expect(parsedDate.getUTCHours()).toEqual(20);
+    expect(parsedDate.getUTCMinutes()).toEqual(55);
+    expect(parsedDate.getUTCSeconds()).toEqual(1);
   });
 });
 
