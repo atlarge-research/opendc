@@ -11,35 +11,15 @@ export function parseAndFormatDateTime(dateTimeString) {
 }
 
 /**
- * Parses date-time string representations and returns a parsed rack.
+ * Parses date-time string representations and returns a parsed object.
  *
  * The format assumed is "YYYY-MM-DDTHH:MM:SS".
  *
  * @param dateTimeString A string expressing a date and a time, in the above mentioned format.
- * @returns {object} An rack with the parsed date and time information as content.
+ * @returns {object} A Date object with the parsed date and time information as content.
  */
 export function parseDateTime(dateTimeString) {
-  const output = {
-    year: 0,
-    month: 0,
-    day: 0,
-    hour: 0,
-    minute: 0,
-    second: 0
-  };
-
-  const dateAndTime = dateTimeString.split("T");
-  const dateComponents = dateAndTime[0].split("-");
-  output.year = parseInt(dateComponents[0], 10);
-  output.month = parseInt(dateComponents[1], 10);
-  output.day = parseInt(dateComponents[2], 10);
-
-  const timeComponents = dateAndTime[1].split(":");
-  output.hour = parseInt(timeComponents[0], 10);
-  output.minute = parseInt(timeComponents[1], 10);
-  output.second = parseInt(timeComponents[2], 10);
-
-  return output;
+  return new Date(dateTimeString + ".000Z");
 }
 
 /**
@@ -53,19 +33,19 @@ export function formatDateTime(dateTime) {
   const currentDate = new Date();
 
   date =
-    addPaddingToTwo(dateTime.day) +
+    addPaddingToTwo(dateTime.getDay()) +
     "/" +
-    addPaddingToTwo(dateTime.month) +
+    addPaddingToTwo(dateTime.getMonth()) +
     "/" +
-    addPaddingToTwo(dateTime.year);
+    addPaddingToTwo(dateTime.getFullYear());
 
   if (
-    dateTime.year === currentDate.getFullYear() &&
-    dateTime.month === currentDate.getMonth() + 1
+    dateTime.getFullYear() === currentDate.getFullYear() &&
+    dateTime.getMonth() === currentDate.getMonth()
   ) {
-    if (dateTime.day === currentDate.getDate()) {
+    if (dateTime.getDate() === currentDate.getDate()) {
       date = "Today";
-    } else if (dateTime.day === currentDate.getDate() - 1) {
+    } else if (dateTime.getDate() === currentDate.getDate() - 1) {
       date = "Yesterday";
     }
   }
@@ -73,9 +53,9 @@ export function formatDateTime(dateTime) {
   return (
     date +
     ", " +
-    addPaddingToTwo(dateTime.hour) +
+    addPaddingToTwo(dateTime.getHours()) +
     ":" +
-    addPaddingToTwo(dateTime.minute)
+    addPaddingToTwo(dateTime.getMinutes())
   );
 }
 
