@@ -7,6 +7,7 @@ import sys
 import traceback
 import urllib2
 from flask import Flask, request, send_from_directory, jsonify
+from flask_compress import Compress
 from oauth2client import client, crypt
 
 from opendc.models.user import User
@@ -27,6 +28,9 @@ database.init_connection_pool(user=KEYS['MYSQL_USER'], password=KEYS['MYSQL_PASS
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
 FLASK_CORE_APP.config['SECREY_KEY'] = KEYS['FLASK_SECRET']
+
+compress = Compress()
+compress.init_app(FLASK_CORE_APP)
 
 SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP)
 
