@@ -7,7 +7,7 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 	&& echo "deb http://ftp.debian.org/debian stretch main" >> /etc/apt/sources.list \
 	&& apt-get update \
 	&& apt-get install -y python python-pip yarn git sed supervisor openjdk-8-jdk mysql-client \
-	&& pip install oauth2client eventlet flask-socketio mysql-connector-python-rf \
+	&& pip install oauth2client eventlet flask-socketio flask-compress mysql-connector-python-rf \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Copy OpenDC directory
