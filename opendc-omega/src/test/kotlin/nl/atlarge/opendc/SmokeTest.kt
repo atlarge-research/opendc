@@ -24,8 +24,11 @@
 
 package nl.atlarge.opendc
 
+import nl.atlarge.opendc.kernel.Context
+import nl.atlarge.opendc.kernel.Process
 import nl.atlarge.opendc.kernel.omega.OmegaKernel
 import nl.atlarge.opendc.topology.AdjacencyList
+import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.machine.Machine
 import org.junit.jupiter.api.Test
 
@@ -44,7 +47,7 @@ internal class SmokeTest {
 		val builder = AdjacencyList.builder()
 		repeat(n) {
 			val root = Machine()
-			val topology = AdjacencyList.builder().construct {
+			val topology = builder.construct {
 				add(root)
 
 				val other = Machine()
@@ -62,5 +65,51 @@ internal class SmokeTest {
 
 			simulation.run()
 		}
+	}
+
+	class NullProcess : Entity<Unit>, Process<NullProcess> {
+		override val initialState = Unit
+		suspend override fun Context<NullProcess>.run() {}
+	}
+
+	/**
+	 * Test if the kernel allows sending messages to [Process] instances that have already stopped.
+	 */
+	@Test
+	fun `sending message to process that has gracefully stopped`() {
+
+		val builder = AdjacencyList.builder()
+		val process = NullProcess()
+		val topology = builder.construct {
+			add(process)
+		}
+
+		val simulation = OmegaKernel.create(topology)
+		simulation.schedule(0, process)
+		simulation.run()
+	}
+
+	class CrashProcess : Entity<Unit>, Process<NullProcess> {
+		override val initialState = Unit
+		suspend override fun Context<NullProcess>.run() {
+			TODO()
+		}
+	}
+
+	/**
+	 * Test if the kernel allows sending messages to [Process] instances that have crashed.
+	 */
+	@Test
+	fun `sending message to process that has crashed`() {
+
+		val builder = AdjacencyList.builder()
+		val process = CrashProcess()
+		val topology = builder.construct {
+			add(process)
+		}
+
+		val simulation = OmegaKernel.create(topology)
+		simulation.schedule(0, process)
+		simulation.run()
 	}
 }
