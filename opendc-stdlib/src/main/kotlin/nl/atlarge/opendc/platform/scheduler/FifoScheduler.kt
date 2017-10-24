@@ -65,6 +65,7 @@ class FifoScheduler : Scheduler {
 		val iterator = queue.iterator()
 
 		machines
+			.filter { it.state.status != Machine.Status.HALT }
 			.forEach { machine ->
 				while (iterator.hasNext()) {
 					val task = iterator.next()

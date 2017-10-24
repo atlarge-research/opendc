@@ -30,7 +30,6 @@ import nl.atlarge.opendc.kernel.Context
 import nl.atlarge.opendc.kernel.Process
 import nl.atlarge.opendc.kernel.time.Duration
 import nl.atlarge.opendc.platform.scheduler.Scheduler
-import nl.atlarge.opendc.platform.workload.Job
 import nl.atlarge.opendc.platform.workload.Task
 import nl.atlarge.opendc.topology.Entity
 import nl.atlarge.opendc.topology.machine.Machine

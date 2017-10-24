@@ -62,6 +62,7 @@ class SrtfScheduler : Scheduler {
 		val iterator = tasks.sortedBy { it.remaining }.iterator()
 
 		machines
+			.filter { it.state.status != Machine.Status.HALT }
 			.forEach { machine ->
 				while (iterator.hasNext()) {
 					val task = iterator.next()

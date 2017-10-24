@@ -81,6 +81,12 @@ open class Machine : Entity<Machine.State>, Process<Machine> {
 		val cpus = outgoingEdges.destinations<Cpu>("cpu")
 		val speed = cpus.fold(0, { acc, cpu -> acc + cpu.clockRate * cpu.cores })
 
+		// Halt the machine if it has not processing units (see bug #4)
+		if (cpus.isEmpty()) {
+			update(State(Status.HALT))
+			return
+		}
+
 		var task: Task = receiveTask()
 		update(State(Status.RUNNING, task, load = 1.0, memory = state.memory + 50, temperature = 30.0))
 
