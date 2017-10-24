@@ -33,6 +33,7 @@ import nl.atlarge.opendc.integration.jpa.schema.TaskState as InternalTaskState
 import nl.atlarge.opendc.integration.jpa.schema.Experiment as InternalExperiment
 import nl.atlarge.opendc.integration.jpa.schema.Task as InternalTask
 import nl.atlarge.opendc.kernel.Kernel
+import nl.atlarge.opendc.kernel.time.Duration
 import nl.atlarge.opendc.platform.workload.TaskState
 import nl.atlarge.opendc.topology.JpaTopologyFactory
 import nl.atlarge.opendc.topology.container.Rack
@@ -60,9 +61,10 @@ class JpaExperiment(private val manager: EntityManager,
 	 * Run the experiment on the specified simulation [Kernel].
 	 *
 	 * @param kernel The simulation kernel to run the experiment.
-	 * @throws IllegalStateException if the simulation is already running or finished.
+	 * @param timeout The maximum duration of the experiment before returning to the caller.
+	 * @return The result of the experiment or `null`.
 	 */
-	override fun run(kernel: Kernel) {
+	override fun run(kernel: Kernel, timeout: Duration): Unit? {
 		if (experiment.state != ExperimentState.CLAIMED) {
 			throw IllegalStateException("The experiment is in illegal state ${experiment.state}")
 		}
@@ -103,6 +105,10 @@ class JpaExperiment(private val manager: EntityManager,
 		logger.info { "Starting simulation" }
 
 		while (trace.jobs.any { !it.finished }) {
+			// If we have reached a timeout, return
+			if (simulation.clock.now >= timeout)
+				return null
+
 			// Collect data of simulation cycle
 			manager.transaction {
 				experiment.last = simulation.clock.now
@@ -163,7 +169,17 @@ class JpaExperiment(private val manager: EntityManager,
 		logger.info { "Average waiting time: $waiting seconds" }
 		logger.info { "Average execution time: $execution seconds" }
 		logger.info { "Average turnaround time: $turnaround seconds" }
+
+		return Unit
 	}
+
+	/**
+	 * Run the experiment on the specified simulation [Kernel].
+	 *
+	 * @param kernel The simulation kernel to run the experiment.
+	 * @throws IllegalStateException if the simulation is already running or finished.
+	 */
+	override fun run(kernel: Kernel) = run(kernel, -1)!!
 
 	/**
 	 * Closes this resource, relinquishing any underlying resources.

@@ -25,6 +25,7 @@
 package nl.atlarge.opendc.platform
 
 import nl.atlarge.opendc.kernel.Kernel
+import nl.atlarge.opendc.kernel.time.Duration
 
 /**
  * A blueprint for a reproducible simulation in a pre-defined setting.
@@ -36,6 +37,16 @@ interface Experiment<out T> {
 	 * Run the experiment on the specified simulation [Kernel].
 	 *
 	 * @param kernel The simulation kernel to run the experiment.
+	 * @return The result of the experiment.
 	 */
 	fun run(kernel: Kernel): T
+
+	/**
+	 * Run the experiment on the specified simulation [Kernel].
+	 *
+	 * @param kernel The simulation kernel to run the experiment.
+	 * @param timeout The maximum duration of the experiment before returning to the caller.
+	 * @return The result of the experiment or `null`.
+	 */
+	fun run(kernel: Kernel, timeout: Duration): T?
 }
