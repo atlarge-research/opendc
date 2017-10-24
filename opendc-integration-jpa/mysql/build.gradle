@@ -21,10 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-omega'
-include 'opendc-stdlib'
-include 'opendc-integration-jpa:core'
-include 'opendc-integration-jpa:mysql'
+apply plugin: 'java'
+apply plugin: 'application'
+mainClassName = "nl.atlarge.opendc.platform.JpaPlatformRunnerKt"
+
+repositories {
+	jcenter()
+}
+
+dependencies {
+	compile project(':opendc-integration-jpa:core')
+	runtime 'org.slf4j:slf4j-simple:1.7.25'
+	runtime 'org.hibernate:hibernate-core:5.2.5.Final'
+	runtime 'mysql:mysql-connector-java:5.1.13'
+}
