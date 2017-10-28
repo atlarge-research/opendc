@@ -1,6 +1,5 @@
 import React from "react";
 import FontAwesome from "react-fontawesome";
-import Mailto from "react-mailto";
 import { Link } from "react-router-dom";
 import Navbar, { NavItem } from "./Navbar";
 import "./Navbar.css";
@@ -42,15 +41,14 @@ const AppNavbar = ({ simulationId, inSimulation, fullWidth }) => (
       </Link>
     </NavItem>
     <NavItem route="email">
-      <Mailto
+      <a
         className="nav-link"
         title="Support"
-        email="opendc@atlarge-research.com"
-        headers={{ subject: "[support]" }}
+        href="mailto:opendc@atlarge-research.com"
       >
         <FontAwesome name="envelope" className="mr-2" />
         Support
-      </Mailto>
+      </a>
     </NavItem>
   </Navbar>
 );
