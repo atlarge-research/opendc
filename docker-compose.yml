@@ -1,8 +1,9 @@
 version: "2"
 services:
-  opendc:
+  frontend:
     build: ./
-    image: opendc
+    image: frontend
+    restart: on-failure
     ports:
       - "8081:8081"
     links:
@@ -13,14 +14,23 @@ services:
       - MYSQL_DATABASE=opendc
       - MYSQL_USER=opendc
       - MYSQL_PASSWORD=opendcpassword
-  opendc-simulator:
-    build: ./opendc-simulator
+  simulator:
+    build:
+        context: ./opendc-simulator
+        dockerfile: opendc-integration-jpa/mysql/Dockerfile
+    image: simulator
+    restart: on-failure
+    links:
+      - mariadb
+    depends_on:
+      - mariadb
     environment:
       - PERSISTENCE_URL=jdbc:mysql://mariadb:3306/opendc
       - PERSISTENCE_USER=opendc
       - PERSISTENCE_PASSWORD=opendcpassword
   mariadb:
     image: mariadb:10.1
+    restart: on-failure
     ports:
       - "3306:3306" # comment this line out in production
     environment:
