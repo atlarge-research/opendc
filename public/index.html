@@ -4,16 +4,26 @@
   <meta charset="utf-8">
   <title>OpenDC</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="theme-color" content="#000000">
-
   <!-- Standard meta tags -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#00A6D6">
   <meta name="description" content="Collaborative Datacenter Simulation and Exploration for Everybody">
-  <meta name="author" content="Alexandru Iosup, Leon Overweel, Georgios Andreadis, Matthijs Bijman">
+  <meta name="author" content="@Large Research">
   <meta name="keywords" content="OpenDC, Datacenter, Simulation, Simulator, Collaborative, Distributed, Cluster">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  <!-- Twitter Card data -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@LargeResearch">
+  <meta name="twitter:title" content="OpenDC">
+  <meta name="twitter:description" content="Collaborative Datacenter Simulation and Exploration for Everybody">
+  <meta name="twitter:creator" content="@LargeResearch">
+  <meta name="twitter:image" content="http://opendc.org/img/logo.png">
 
   <!-- OpenGraph meta tags -->
-  <meta property="og:title" content="OpenDC: Collaborative Datacenter Simulation and Exploration for Everybody">
+  <meta property="og:title" content="OpenDC">
+  <meta property="og:site_name" content="OpenDC">
   <meta property="og:type" content="website">
   <meta property="og:image" content="http://opendc.org/img/logo.png">
   <meta property="og:url" content="http://opendc.org/">
@@ -22,21 +32,34 @@
           simulation, and exploratory datacenter performance feedback.">
   <meta property="og:locale" content="en_US">
 
-  <link rel="manifest" href="/manifest.json">
-  <link rel="shortcut icon" href="/favicon.ico">
-
+  <!-- Google meta tags -->
   <meta name="google-signin-client_id" content="%REACT_APP_OAUTH_CLIENT_ID%">
+  <meta name="google-site-verification" content="YIR4LkQTv6WmOdWv8MkeiUKni-0Yu3WHylLp4VvUMig"/>
 
+  <!-- CDN dependencies -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
         integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <script src="https://use.fontawesome.com/ece66a2e7c.js"></script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-84285092-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+
+    gtag('config', 'UA-84285092-3');
+  </script>
 </head>
 <body data-spy="scroll" data-target="#navbar">
 <noscript>
   You need to enable JavaScript to run this app.
 </noscript>
 <div id="root"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"
         integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
         crossorigin="anonymous"></script>
