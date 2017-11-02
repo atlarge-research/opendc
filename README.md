@@ -1,3 +1,4 @@
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/atlarge-research/opendc-frontend.png?columns=all)](https://waffle.io/atlarge-research/opendc-frontend?utm_source=badge)
 <h1 align="center">
   <img src="public/img/logo.png" width="100" alt="OpenDC">
   <br>
