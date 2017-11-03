@@ -7,6 +7,7 @@ const mapStateToProps = state => {
     !("experimentIds" in state.objects.simulation[state.currentSimulationId])
   ) {
     return {
+      loading: true,
       experimentIds: []
     };
   }
