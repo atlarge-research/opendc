@@ -4,6 +4,7 @@ import SvgSaver from "svgsaver";
 import {
   VictoryAxis,
   VictoryChart,
+  VictoryLabel,
   VictoryLine,
   VictoryScatter
 } from "victory";
@@ -56,9 +57,17 @@ const VictoryChartComponent = ({ data, currentTick, showCurrentTick }) => (
     <VictoryScatter data={data} />
     {showCurrentTick ? (
       <VictoryLine
+        labelComponent={
+          <VictoryLabel renderInPortal angle={90} dy={-5} dx={60} />
+        }
         data={[{ x: currentTick + 1, y: 0 }, { x: currentTick + 1, y: 1 }]}
+        labels={point =>
+          point.y === 1
+            ? "Current tick : " + convertSecondsToFormattedTime(currentTick)
+            : ""}
         style={{
-          data: { stroke: "#00A6D6", strokeWidth: 3 }
+          data: { stroke: "#00A6D6", strokeWidth: 4 },
+          labels: { fill: "#00A6D6" }
         }}
       />
     ) : (
