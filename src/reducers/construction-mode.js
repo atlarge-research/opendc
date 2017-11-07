@@ -1,5 +1,6 @@
 import { combineReducers } from "redux";
 import { OPEN_EXPERIMENT_SUCCEEDED } from "../actions/experiments";
+import { GO_DOWN_ONE_INTERACTION_LEVEL } from "../actions/interaction-level";
 import {
   CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
   FINISH_NEW_ROOM_CONSTRUCTION,
@@ -29,6 +30,7 @@ export function inRackConstructionMode(state = false, action) {
       return true;
     case STOP_RACK_CONSTRUCTION:
     case OPEN_EXPERIMENT_SUCCEEDED:
+    case GO_DOWN_ONE_INTERACTION_LEVEL:
       return false;
     default:
       return state;
