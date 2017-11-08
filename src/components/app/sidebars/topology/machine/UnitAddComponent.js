@@ -29,7 +29,7 @@ class UnitAddComponent extends React.Component {
           </select>
           <button
             type="submit"
-            className="btn btn-primary"
+            className="btn btn-outline-primary"
             onClick={() =>
               this.props.onAdd(parseInt(this.unitSelect.value, 10))}
           >

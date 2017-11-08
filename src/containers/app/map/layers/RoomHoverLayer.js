@@ -13,10 +13,6 @@ const mapStateToProps = state => {
     mapScale: state.map.scale,
     isEnabled: () => state.construction.currentRoomInConstruction !== -1,
     isValid: (x, y) => {
-      if (state.interactionLevel.mode !== "BUILDING") {
-        return false;
-      }
-
       const newRoom = Object.assign(
         {},
         state.objects.room[state.construction.currentRoomInConstruction]

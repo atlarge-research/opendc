@@ -7,7 +7,8 @@ import RackConstructionComponent from "../../../../../components/app/sidebars/to
 
 const mapStateToProps = state => {
   return {
-    inRackConstructionMode: state.construction.inRackConstructionMode
+    inRackConstructionMode: state.construction.inRackConstructionMode,
+    isEditingRoom: state.construction.currentRoomInConstruction !== -1
   };
 };
 

@@ -7,6 +7,8 @@ export const FINISH_NEW_ROOM_CONSTRUCTION = "FINISH_NEW_ROOM_CONSTRUCTION";
 export const CANCEL_NEW_ROOM_CONSTRUCTION = "CANCEL_NEW_ROOM_CONSTRUCTION";
 export const CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED =
   "CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED";
+export const START_ROOM_EDIT = "START_ROOM_EDIT";
+export const FINISH_ROOM_EDIT = "FINISH_ROOM_EDIT";
 export const ADD_TILE = "ADD_TILE";
 export const DELETE_TILE = "DELETE_TILE";
 
@@ -61,6 +63,22 @@ export function cancelNewRoomConstruction() {
 export function cancelNewRoomConstructionSucceeded() {
   return {
     type: CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED
+  };
+}
+
+export function startRoomEdit() {
+  return (dispatch, getState) => {
+    const { interactionLevel } = getState();
+    dispatch({
+      type: START_ROOM_EDIT,
+      roomId: interactionLevel.roomId
+    });
+  };
+}
+
+export function finishRoomEdit() {
+  return {
+    type: FINISH_ROOM_EDIT
   };
 }
 
