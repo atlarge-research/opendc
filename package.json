@@ -21,7 +21,6 @@
     "approximate-number": "^2.0.0",
     "classnames": "^2.2.5",
     "husky": "^0.14.3",
-    "isomorphic-fetch": "^2.2.1",
     "konva": "^1.7.2",
     "lint-staged": "^4.3.0",
     "node-sass-chokidar": "^0.0.3",
