@@ -1,9 +1,11 @@
+import classNames from "classnames";
 import React from "react";
 
 const RackConstructionComponent = ({
-  inRackConstructionMode,
   onStart,
-  onStop
+  onStop,
+  inRackConstructionMode,
+  isEditingRoom
 }) => {
   if (inRackConstructionMode) {
     return (
@@ -15,7 +17,12 @@ const RackConstructionComponent = ({
   }
 
   return (
-    <div className="btn btn-primary btn-block" onClick={onStart}>
+    <div
+      className={classNames("btn btn-outline-primary btn-block", {
+        disabled: isEditingRoom
+      })}
+      onClick={() => (isEditingRoom ? undefined : onStart())}
+    >
       <span className="fa fa-plus mr-2" />
       Start rack construction
     </div>

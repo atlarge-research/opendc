@@ -3,6 +3,7 @@ import LoadBarContainer from "../../../../../containers/app/sidebars/elements/Lo
 import LoadChartContainer from "../../../../../containers/app/sidebars/elements/LoadChartContainer";
 import BackToBuildingContainer from "../../../../../containers/app/sidebars/topology/room/BackToBuildingContainer";
 import DeleteRoomContainer from "../../../../../containers/app/sidebars/topology/room/DeleteRoomContainer";
+import EditRoomContainer from "../../../../../containers/app/sidebars/topology/room/EditRoomContainer";
 import RackConstructionContainer from "../../../../../containers/app/sidebars/topology/room/RackConstructionContainer";
 import RoomNameContainer from "../../../../../containers/app/sidebars/topology/room/RoomNameContainer";
 import RoomTypeContainer from "../../../../../containers/app/sidebars/topology/room/RoomTypeContainer";
@@ -26,6 +27,7 @@ const RoomSidebarComponent = ({ roomId, roomType, inSimulation }) => {
       ) : (
         <div>
           {allowedObjects}
+          <EditRoomContainer />
           <DeleteRoomContainer />
         </div>
       )}

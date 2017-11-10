@@ -8,7 +8,7 @@ const NewRoomConstructionComponent = ({
 }) => {
   if (currentRoomInConstruction === -1) {
     return (
-      <div className="btn btn-primary btn-block" onClick={onStart}>
+      <div className="btn btn-outline-primary btn-block" onClick={onStart}>
         <span className="fa fa-plus mr-2" />
         Construct a new room
       </div>
