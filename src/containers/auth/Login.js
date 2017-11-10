@@ -33,7 +33,9 @@ class LoginContainer extends React.Component {
         onFailure={this.onAuthResponse.bind(this)}
         className="login btn btn-primary"
       >
-        <span className="fa fa-google" /> <span>Login with Google</span>
+        <span>
+          <span className="fa fa-google" /> Login with Google
+        </span>
       </GoogleLogin>
     );
   }

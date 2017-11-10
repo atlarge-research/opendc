@@ -1,6 +1,5 @@
 import React from "react";
 import FontAwesome from "react-fontawesome";
-import Mailto from "react-mailto";
 import "./ContactSection.css";
 import ContentSection from "./ContentSection";
 
@@ -15,11 +14,11 @@ const ContactSection = () => (
         </a>
       </div>
       <div className="col-4">
-        <Mailto title="Contact us" email="opendc@atlarge-research.com">
+        <a href="mailto:opendc@atlarge-research.com">
           <FontAwesome name="envelope" size="3x" className="mb-2" />
           <div className="w-100" />
           opendc@atlarge-research.com
-        </Mailto>
+        </a>
       </div>
     </div>
     <div className="row">
