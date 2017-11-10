@@ -1,12 +1,16 @@
 export function deriveWallLocations(tiles) {
+  const { verticalWalls, horizontalWalls } = getWallSegments(tiles);
+  return mergeWallSegments(verticalWalls, horizontalWalls);
+}
+
+function getWallSegments(tiles) {
   const verticalWalls = {};
   const horizontalWalls = {};
-
-  // Determine wall segments
 
   tiles.forEach(tile => {
     const x = tile.positionX,
       y = tile.positionY;
+
     for (let dX = -1; dX <= 1; dX++) {
       for (let dY = -1; dY <= 1; dY++) {
         if (Math.abs(dX) === Math.abs(dY)) {
@@ -14,14 +18,15 @@ export function deriveWallLocations(tiles) {
         }
 
         let doInsert = true;
-        tiles.forEach(otherTile => {
+        for (let tileIndex in tiles) {
           if (
-            otherTile.positionX === x + dX &&
-            otherTile.positionY === y + dY
+            tiles[tileIndex].positionX === x + dX &&
+            tiles[tileIndex].positionY === y + dY
           ) {
             doInsert = false;
+            break;
           }
-        });
+        }
         if (!doInsert) {
           continue;
         }
@@ -59,10 +64,13 @@ export function deriveWallLocations(tiles) {
     }
   });
 
-  // Merge walls into longer segments
+  return { verticalWalls, horizontalWalls };
+}
 
+function mergeWallSegments(vertical, horizontal) {
   const result = [];
-  const walls = [verticalWalls, horizontalWalls];
+  const walls = [vertical, horizontal];
+
   for (let i = 0; i < 2; i++) {
     const wallList = walls[i];
     for (let a in wallList) {

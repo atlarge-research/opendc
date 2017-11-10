@@ -1,0 +1,17 @@
+{
+  "ignore": [
+  ],
+  "test": [
+  ],
+  "dependencies": {
+    "unused-ignores": [
+      "react-scripts",
+      "prettier",
+      "node-sass-chokidar",
+      "lint-staged",
+      "konva",
+      "husky",
+      "npm-run-all"
+    ]
+  }
+}
