@@ -4,14 +4,16 @@
   OpenDC Frontend
 </h1>
 <p align="center">
-Collaborative Datacenter Simulation and Exploration for Everybody
+  Collaborative Datacenter Simulation and Exploration for Everybody
 </p>
 
-[![Build Status](https://travis-ci.org/atlarge-research/opendc-frontend.svg?branch=master)](https://travis-ci.org/atlarge-research/opendc-frontend)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-[![bitHound Overall Score](https://www.bithound.io/github/atlarge-research/opendc-frontend/badges/score.svg)](https://www.bithound.io/github/atlarge-research/opendc-frontend)<br/>
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/atlarge-research/opendc-frontend.png?columns=all)](https://waffle.io/atlarge-research/opendc-frontend?utm_source=badge)
+<p align="center">
+  <a href="https://travis-ci.org/atlarge-research/opendc-frontend"><img src="https://travis-ci.org/atlarge-research/opendc-frontend.svg?branch=master" alt="Build Status"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/styled_with-prettier-ff69b4.svg" alt="styled with prettier"></a>
+  <a href="https://www.bithound.io/github/atlarge-research/opendc-frontend"><img src="https://www.bithound.io/github/atlarge-research/opendc-frontend/badges/score.svg" alt="bitHound Overall Score"></a><br/>
+  <a href="https://waffle.io/atlarge-research/opendc-frontend?utm_source=badge"><img src="https://badge.waffle.io/atlarge-research/opendc-frontend.png?columns=all" alt="Waffle.io - Columns and their card count"></a>
+</p>
 
 The user-facing component of the OpenDC stack, allowing users to build and interact with their own (virtual) datacenters. Built in *React.js* and *Redux*, with the help of `create-react-app`.
 
