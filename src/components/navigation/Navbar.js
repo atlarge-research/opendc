@@ -14,6 +14,16 @@ export const LoggedInSection = withRouter(props => (
   <LoggedInSectionWithoutRoute {...props} />
 ));
 
+const GitHubLink = () => (
+  <a
+    href="https://github.com/atlarge-research/opendc"
+    className="ml-2 mr-3 text-dark"
+    style={{ position: "relative", top: 7 }}
+  >
+    <span className="fa fa-github fa-2x" />
+  </a>
+);
+
 const NavItemWithoutRoute = ({ route, location, children }) => (
   <li
     className={classNames(
@@ -48,6 +58,7 @@ const LoggedInSectionWithoutRoute = ({ location }) => (
       ]
     ) : (
       <NavItem route="login">
+        <GitHubLink />
         <Login visible={true} />
       </NavItem>
     )}
