@@ -21,11 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.platform.workload
+
+/**
+ * A user of a cloud network that provides [Job]s for the simulation.
+ *
+ * Each user in a simulation has its own logical view of the cloud network which is used to route its jobs in the
+ * physical network.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface User {
+	/**
+	 * The unique identifier of the user.
+	 */
+	val id: Int
+
+	/**
+	 * The name of this user.
+	 */
+	val name: String
+}

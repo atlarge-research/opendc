@@ -24,7 +24,7 @@
 
 /* Build configuration */
 buildscript {
-	ext.kotlin_version = '1.1.4-3'
+	ext.kotlin_version = '1.2.10'
 	ext.dokka_version = '0.9.15'
 
 	repositories {
@@ -68,8 +68,8 @@ dokka {
 }
 
 /* Project configuration */
-group 'nl.atlarge.opendc'
-version '1.0'
+group 'com.atlarge.opendc'
+version '1.1'
 
 repositories {
 	jcenter()
@@ -78,7 +78,7 @@ repositories {
 dependencies {
 	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 	compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-	compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.18"
+	compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21"
 
 	testCompile "org.junit.jupiter:junit-jupiter-api:5.0.0-RC3"
 	testRuntime "org.junit.jupiter:junit-jupiter-engine:5.0.0-RC3"

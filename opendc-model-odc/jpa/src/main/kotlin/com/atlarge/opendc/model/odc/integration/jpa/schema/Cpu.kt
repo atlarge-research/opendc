@@ -21,11 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.model.odc.topology.machine.Cpu
+import javax.persistence.Entity
+
+/**
+ * A cpu entity in the persistent schema.
+ *
+ * @property id The unique identifier of the cpu.
+ * @property manufacturer The manufacturer of the cpu.
+ * @property family The family of the cpu.
+ * @property generation The generation of the cpu.
+ * @property model The model of the cpu.
+ * @property clockRate The clock rate of the cpu.
+ * @property cores The amount of cores in the gpu.
+ * @property energyConsumption The energy consumption of the cpu in Watt.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class Cpu(
+	val id: Int,
+	val manufacturer: String,
+	val family: String,
+	val generation: String,
+	val model: String,
+	override val clockRate: Int,
+	override val cores: Int,
+	override val energyConsumption: Double
+) : Cpu {
+	/**
+	 * The initial state of the entity.
+	 */
+	override val initialState = Unit
+}

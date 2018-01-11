@@ -21,11 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.simulator.Instant
+import com.atlarge.opendc.model.odc.platform.scheduler.Scheduler
+import javax.persistence.Entity
+
+/**
+ * An experiment definition for the OpenDC database schema.
+ *
+ * @property id The identifier of the experiment.
+ * @property name The name of the experiment.
+ * @property scheduler The scheduler used in the experiment.
+ * @property trace The trace used for the simulation.
+ * @property path The path of the experiment.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class Experiment(
+	val id: Int,
+	val name: String,
+	val scheduler: Scheduler,
+	val trace: Trace,
+	val path: Path
+) {
+	/**
+	 * The state of the experiment.
+	 */
+	var state: ExperimentState = ExperimentState.QUEUED
+
+	/**
+	 * The last tick that has been simulated.
+	 */
+	var last: Instant = 0
+}

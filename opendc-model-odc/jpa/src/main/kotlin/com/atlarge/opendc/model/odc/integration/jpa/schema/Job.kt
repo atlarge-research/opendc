@@ -21,11 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.model.odc.platform.workload.Job
+import com.atlarge.opendc.model.odc.platform.workload.User
+import javax.persistence.*
+
+/**
+ * A [Job] backed by the JPA API and an underlying database connection.
+ *
+ * @property id The unique identifier of the job.
+ * @property tasks The collection of tasks the job consists of.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class Job(
+	override val id: Int,
+	override val tasks: Set<Task>
+) : Job {
+	/**
+	 * The owner of the job, which is a singleton, since the database has no
+	 * concept of ownership yet.
+	 */
+	override val owner: User = object : User {
+		/**
+         * The unique identifier of the user.
+         */
+		override val id: Int = 0
+
+		/**
+         * The name of this user.
+         */
+		override val name: String = "admin"
+	}
+}

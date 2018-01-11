@@ -21,11 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.simulator
+
+/**
+ * An instantaneous point on the time-line, used to record event time-stamps in a simulation.
+ */
+typealias Instant = Long
+
+/**
+ * A time interval which represents the amount of elapsed time between two events.
+ */
+typealias Duration = Long

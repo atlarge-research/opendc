@@ -21,11 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.topology
+
+import com.atlarge.opendc.simulator.Entity
+
+/**
+ * A graph data structure which represents the logical topology of a cloud network consisting of one or more
+ * datacenters.
+ *
+ * A topology is [Iterable] and allows implementation-dependent iteration of the nodes in the topology.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Topology : TopologyContext, Cloneable, Set<Entity<*, Topology>> {
+	/**
+	 * The listeners of this topology.
+	 */
+	val listeners: MutableSet<TopologyListener>
+
+	/**
+	 * Create a copy of the topology.
+	 *
+	 * @return A new [Topology] with a copy of the graph.
+	 */
+	public override fun clone(): Topology
+}
+

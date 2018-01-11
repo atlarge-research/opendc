@@ -21,11 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.model.odc.topology.machine.Gpu
+import javax.persistence.Entity
+
+/**
+ * A gpu entity in the persistent schema.
+ *
+ * @property id The unique identifier of the gpu.
+ * @property manufacturer The manufacturer of the gpu.
+ * @property family The family of the gpu.
+ * @property generation The generation of the gpu.
+ * @property model The model of the gpu.
+ * @property clockRate The clock rate of the gpu.
+ * @property cores The amount of cores in the gpu.
+ * @property energyConsumption The energy consumption of the gpu in Watt.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class Gpu(
+	val id: Int,
+	val manufacturer: String,
+	val family: String,
+	val generation: String,
+	val model: String,
+	override val clockRate: Int,
+	override val cores: Int,
+	override val energyConsumption: Double
+) : Gpu {
+	/**
+	 * The initial state of the entity.
+	 */
+	override val initialState = Unit
+}

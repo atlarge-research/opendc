@@ -21,11 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.topology
+
+import com.atlarge.opendc.simulator.Entity
+
+/**
+ * An edge that represents a directed relationship between exactly two nodes in a logical topology of a cloud network.
+ *
+ * @param T The relationship type the edge represents within a logical topology.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Edge<out T> : Component {
+	/**
+	 * The label of this edge.
+	 */
+	val label: T
+
+	/**
+	 * A tag to uniquely identify the relationship this edge represents.
+	 */
+	val tag: String?
+
+	/**
+	 * The source of the edge.
+	 *
+	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
+	 * <code>O(n)</code>, with respect to the size of the topology.
+	 */
+	val from: Entity<*, Topology>
+
+	/**
+	 * The destination of the edge.
+	 *
+	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
+	 * <code>O(n)</code>, with respect to the size of the topology.
+	 */
+	val to: Entity<*, Topology>
+}

@@ -21,11 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.model.odc.topology.machine.Machine
+import javax.persistence.Entity
+
+/**
+ * A machine entity in the persistent schema.
+ *
+ * @property id The unique identifier of the machine.
+ * @property position The position of the machine in the rack.
+ * @property cpus The CPUs in the machine.
+ * @property gpus The GPUs in the machine.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class Machine(
+	val id: Int,
+	val position: Int,
+	val cpus: Set<Cpu>,
+	val gpus: Set<Gpu>
+): Machine()

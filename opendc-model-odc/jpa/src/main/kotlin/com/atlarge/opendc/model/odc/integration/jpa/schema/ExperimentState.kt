@@ -21,11 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+/**
+ * Enumerations of the states an [Experiment] can assume.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+enum class ExperimentState {
+	/**
+	 * This state indicates the experiment has been queued for simulation, but has not yet started.
+	 */
+	QUEUED,
+
+	/**
+	 * This state indicates the experiment has been claimed by a simulator for simulation, but
+	 * not yet started.
+	 */
+	CLAIMED,
+
+	/**
+	 * This state indicates the experiment is currently in simulation.
+	 */
+	SIMULATING,
+
+	/**
+	 * This state indicates the experiment has finished simulating.
+	 */
+	FINISHED,
+}

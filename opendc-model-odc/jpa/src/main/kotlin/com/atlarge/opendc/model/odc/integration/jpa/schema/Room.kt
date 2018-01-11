@@ -21,11 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.model.odc.topology.container.Room
+import javax.persistence.Entity
+
+/**
+ * A room entity in the persistent schema.
+ *
+ * @property id The unique identifier of the room.
+ * @property name The name of the room.
+ * @property type The type of the room.
+ * @property objects The objects in the room.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class Room(
+	val id: Int,
+	val name: String,
+	val type: RoomType,
+	val objects: Set<RoomObject>
+): Room {
+	/**
+	 * The initial state of the entity.
+	 */
+	override val initialState = Unit
+}

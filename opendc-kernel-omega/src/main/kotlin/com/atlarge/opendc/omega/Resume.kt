@@ -21,11 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.omega
+
+import com.atlarge.opendc.simulator.Context
+import com.atlarge.opendc.simulator.Process
+
+/**
+ * An internal message used by the Omega simulation kernel to indicate to a suspended [Process], that it should wake up
+ * and resume execution.
+ *
+ * This message is not guaranteed to work on other simulation kernels and [Context.interrupt] should be preferred to
+ * wake up a process from another entity.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+object Resume

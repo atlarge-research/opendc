@@ -21,11 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.omega
+
+import com.atlarge.opendc.simulator.Instant
+import com.atlarge.opendc.simulator.Entity
+import com.atlarge.opendc.simulator.Envelope
+
+/**
+ * A wrapper around a message that has been scheduled for processing.
+ *
+ * @property message The message to wrap.
+ * @property time The point in time to deliver the message.
+ * @property sender The sender of the message.
+ * @property destination The destination of the message.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+internal data class MessageContainer(override val message: Any,
+									 val time: Instant,
+									 override val sender: Entity<*, *>?,
+									 override val destination: Entity<*, *>) : Envelope<Any> {
+	/**
+	 * A flag to indicate the message has been canceled.
+	 */
+	internal var canceled: Boolean = false
+}

@@ -21,11 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.simulator.platform
+
+import com.atlarge.opendc.simulator.kernel.KernelFactory
+import com.atlarge.opendc.simulator.Duration
+
+/**
+ * A blueprint for a reproducible simulation in a pre-defined setting.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Experiment<out T> {
+	/**
+	 * Run the experiment on the specified kernel implementation.
+	 *
+	 * @param factory The factory to create the simulation kernel with.
+	 * @return The result of the experiment.
+	 */
+	fun run(factory: KernelFactory): T
+
+	/**
+	 * Run the experiment on the specified kernel implementation.
+	 *
+	 * @param factory The factory to create the simulation kernel with.
+	 * @param timeout The maximum duration of the experiment before returning to the caller.
+	 * @return The result of the experiment or `null`.
+	 */
+	fun run(factory: KernelFactory, timeout: Duration): T?
+}

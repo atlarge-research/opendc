@@ -21,11 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.topology
+
+/**
+ * An interface for producing [Topology] instances. Implementors of this interface provide a way of generating a
+ * topology based on the state of the factory.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface TopologyFactory {
+	/**
+	 * Create a [MutableTopology] instance.
+	 *
+	 * @return A mutable topology.
+	 */
+	fun create(): MutableTopology
+}
