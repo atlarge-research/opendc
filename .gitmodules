@@ -1,12 +1,12 @@
 [submodule "opendc-web-server"]
 	path = opendc-web-server
-	url = https://github.com/atlarge-research/opendc-web-server.git
+	url = https://atlarge.ewi.tudelft.nl/gitlab/opendc/opendc-web-server.git
 	branch = master
 [submodule "opendc-frontend"]
 	path = opendc-frontend
-	url = https://github.com/atlarge-research/opendc-frontend.git
+	url = https://atlarge.ewi.tudelft.nl/gitlab/opendc/opendc-frontend.git
 	branch = master
 [submodule "opendc-simulator"]
 	path = opendc-simulator
-	url = https://github.com/atlarge-research/opendc-simulator.git
+	url = https://atlarge.ewi.tudelft.nl/gitlab/opendc/opendc-simulator.git
 	branch = master
