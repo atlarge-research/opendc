@@ -63,7 +63,7 @@ INSERT INTO authorization_levels (level) VALUES ('VIEW');
 *       -   DD is the two-digit day of the month (1-31)
 *       -   HH is the two-digit hours part (0-23)
 *       -   MM is the two-digit minutes part (0-59)
-*       -   SS is the two-digit secodns part (0-59)
+*       -   SS is the two-digit seconds part (0-59)
 */
 
 -- Simulation
@@ -180,13 +180,24 @@ CREATE TABLE tasks (
   start_tick         INTEGER                 NOT NULL CHECK (start_tick >= 0),
   total_flop_count   INTEGER                 NOT NULL,
   job_id             INTEGER                 NOT NULL,
-  task_dependency_id INTEGER                 NULL,
   parallelizability  VARCHAR(50)             NOT NULL,
 
   FOREIGN KEY (job_id) REFERENCES jobs (id)
     ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+-- A dependency between two tasks.
+DROP TABLE IF EXISTS task_dependencies;
+CREATE TABLE task_dependencies (
+  first_task_id  INTEGER NOT NULL,
+  second_task_id INTEGER NOT NULL,
+
+  PRIMARY KEY (first_task_id, second_task_id),
+  FOREIGN KEY (first_task_id) REFERENCES tasks (id)
+    ON DELETE CASCADE
     ON UPDATE CASCADE,
-  FOREIGN KEY (task_dependency_id) REFERENCES tasks (id)
+  FOREIGN KEY (second_task_id) REFERENCES tasks (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
@@ -318,8 +329,9 @@ DELIMITER //
 -- and tiles in a room are connected.
 DROP TRIGGER IF EXISTS before_insert_tiles_check_existence;
 CREATE TRIGGER before_insert_tiles_check_existence
-BEFORE INSERT ON tiles
-FOR EACH ROW
+  BEFORE INSERT
+  ON tiles
+  FOR EACH ROW
   BEGIN
     -- checking tile overlap
     -- a tile already exists such that..
@@ -416,8 +428,9 @@ DELIMITER //
 -- Make sure objects are added to tiles in rooms they're allowed to be in.
 DROP TRIGGER IF EXISTS before_update_tiles;
 CREATE TRIGGER before_update_tiles
-BEFORE UPDATE ON tiles
-FOR EACH ROW
+  BEFORE UPDATE
+  ON tiles
+  FOR EACH ROW
   BEGIN
 
     IF ((NEW.object_id IS NOT NULL) AND (
@@ -543,8 +556,9 @@ DELIMITER //
 -- Make sure a machine is not inserted at a position that does not exist for its rack.
 DROP TRIGGER IF EXISTS before_insert_machine;
 CREATE TRIGGER before_insert_machine
-BEFORE INSERT ON machines
-FOR EACH ROW
+  BEFORE INSERT
+  ON machines
+  FOR EACH ROW
   BEGIN
     IF (
       NEW.position > (SELECT capacity

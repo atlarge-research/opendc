@@ -43,8 +43,9 @@ INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALU
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (25, 10000, 1, 'PARALLEL');
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (25, 10000, 1, 'PARALLEL');
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (26, 10000, 1, 'PARALLEL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (80, 200000, 1, 1, 'PARALLEL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (80, 200000, 1, 'PARALLEL');
+
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (1, 5);
 
 -- Image Processing Trace
 INSERT INTO traces (name) VALUES ('Image Processing');
@@ -121,38 +122,39 @@ INSERT INTO traces (name) VALUES ('Path planning');
 INSERT INTO jobs (name, trace_id) VALUES ('Path planning', 3);
 
 INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (0, 1000000, 3, 'PARALLEL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (11, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (12, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (13, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (14, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (11, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (12, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (13, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (14, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (11, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (12, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (13, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (14, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (11, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (12, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (13, 200000, 3, 66, 'SEQUENTIAL');
-INSERT INTO tasks (start_tick, total_flop_count, job_id, task_dependency_id, parallelizability)
-VALUES (14, 200000, 3, 66, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (11, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (12, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (13, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (14, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (11, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (12, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (13, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (14, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (11, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (12, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (13, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (14, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (11, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (12, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (13, 200000, 3, 'SEQUENTIAL');
+INSERT INTO tasks (start_tick, total_flop_count, job_id, parallelizability) VALUES (14, 200000, 3, 'SEQUENTIAL');
+
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 67);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 68);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 69);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 70);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 71);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 72);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 73);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 74);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 75);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 76);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 77);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 78);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 79);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 80);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 81);
+INSERT INTO task_dependencies (first_task_id, second_task_id) VALUES (66, 82);
 
 -- Parallelizable Trace
 INSERT INTO traces (name) VALUES ('Parallel heavy trace');
