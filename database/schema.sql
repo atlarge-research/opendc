@@ -185,11 +185,11 @@ CREATE TABLE jobs (
 -- A task that's defined in terms of how many flops (floating point operations) it takes to complete
 DROP TABLE IF EXISTS tasks;
 CREATE TABLE tasks (
-  id                 INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
-  start_tick         INTEGER                 NOT NULL CHECK (start_tick >= 0),
-  total_flop_count   INTEGER                 NOT NULL,
-  job_id             INTEGER                 NOT NULL,
-  parallelizability  VARCHAR(50)             NOT NULL,
+  id               INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  start_tick       INTEGER                 NOT NULL CHECK (start_tick >= 0),
+  total_flop_count BIGINT                  NOT NULL CHECK (total_flop_count >= 0),
+  core_count       INTEGER                 NOT NULL CHECK (core_count >= 0),
+  job_id           INTEGER                 NOT NULL,
 
   FOREIGN KEY (job_id) REFERENCES jobs (id)
     ON DELETE CASCADE
@@ -236,7 +236,6 @@ CREATE TABLE task_states (
 DROP TABLE IF EXISTS machine_states;
 CREATE TABLE machine_states (
   id               INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
-  task_id          INTEGER,
   machine_id       INTEGER                 NOT NULL,
   experiment_id    INTEGER                 NOT NULL,
   tick             INTEGER                 NOT NULL,
@@ -244,7 +243,6 @@ CREATE TABLE machine_states (
   in_use_memory_mb INTEGER,
   load_fraction    REAL CHECK (load_fraction >= 0 AND load_fraction <= 1),
 
-  FOREIGN KEY (task_id) REFERENCES tasks (id),
   FOREIGN KEY (machine_id) REFERENCES machines (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
