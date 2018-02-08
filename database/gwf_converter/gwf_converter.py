@@ -67,7 +67,7 @@ def write_to_db(trace_name, jobs):
 
         for task in job.tasks:
             task.db_id = execute_insert_query(conn, cursor, "INSERT INTO tasks (start_tick, total_flop_count, job_id, "
-                                                            "parallelizability) VALUES (%d,%d,%d,'SEQUENTIAL')"
+                                                            "parallelizability) VALUES (%d,%d,%d,'PARALLEL')"
                                               % (task.submit_time, task.flops, job.db_id))
 
     for job in jobs:
