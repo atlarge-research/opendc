@@ -42,12 +42,12 @@ import javax.persistence.Entity
  */
 @Entity
 data class MachineState(
-	val id: Int,
-	val machine: Machine,
-	val task: Task?,
-	val experiment: Experiment,
-	val time: Instant,
-	val temperature: Double,
-	val memoryUsage: Int,
-	val load: Double
+    val id: Int,
+    val machine: Machine,
+    val task: Task?,
+    val experiment: Experiment,
+    val time: Instant,
+    val temperature: Double,
+    val memoryUsage: Int,
+    val load: Double
 )

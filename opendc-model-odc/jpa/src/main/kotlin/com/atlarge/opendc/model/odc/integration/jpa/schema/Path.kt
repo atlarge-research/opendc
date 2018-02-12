@@ -35,6 +35,6 @@ import javax.persistence.Entity
  */
 @Entity
 open class Path(
-	val id: Int,
-	val sections: List<Section>
+    val id: Int,
+    val sections: List<Section>
 )

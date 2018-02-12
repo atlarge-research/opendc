@@ -33,40 +33,40 @@ import com.atlarge.opendc.simulator.Instant
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 sealed class TaskState {
-	/**
-	 * A state to indicate the task has not yet arrived at the [Datacenter].
-	 */
-	object Underway : TaskState()
+    /**
+     * A state to indicate the task has not yet arrived at the [Datacenter].
+     */
+    object Underway : TaskState()
 
-	/**
-	 * A state to indicate the task has arrived at the [Datacenter].
-	 *
-	 * @property at The moment in time the task has arrived.
-	 */
-	data class Queued(val at: Instant) : TaskState()
+    /**
+     * A state to indicate the task has arrived at the [Datacenter].
+     *
+     * @property at The moment in time the task has arrived.
+     */
+    data class Queued(val at: Instant) : TaskState()
 
-	/**
-	 * A state to indicate the task has started running on a machine.
-	 *
-	 * @property previous The previous state of the task.
-	 * @property at The moment in time the task started.
-	 */
-	data class Running(val previous: Queued, val at: Instant) : TaskState()
+    /**
+     * A state to indicate the task has started running on a machine.
+     *
+     * @property previous The previous state of the task.
+     * @property at The moment in time the task started.
+     */
+    data class Running(val previous: Queued, val at: Instant) : TaskState()
 
-	/**
-	 * A state to indicate the task has finished.
-	 *
-	 * @property previous The previous state of the task.
-	 * @property at The moment in time the task finished.
-	 */
-	data class Finished(val previous: Running, val at: Instant) : TaskState()
+    /**
+     * A state to indicate the task has finished.
+     *
+     * @property previous The previous state of the task.
+     * @property at The moment in time the task finished.
+     */
+    data class Finished(val previous: Running, val at: Instant) : TaskState()
 
-	/**
-	 * A state to indicate the task has failed.
-	 *
-	 * @property previous The previous state of the task.
-	 * @property at The moment in time the task failed.
-	 * @property reason The reason of the failure.
-	 */
-	data class Failed(val previous: Running, val at: Instant, val reason: String) : TaskState()
+    /**
+     * A state to indicate the task has failed.
+     *
+     * @property previous The previous state of the task.
+     * @property at The moment in time the task failed.
+     * @property reason The reason of the failure.
+     */
+    data class Failed(val previous: Running, val at: Instant, val reason: String) : TaskState()
 }

@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.model.odc.topology.power
 
-import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.model.topology.Topology
+import com.atlarge.opendc.simulator.Entity
 
 /**
  * An [Entity] which provides power for other entities a cloud network to run.

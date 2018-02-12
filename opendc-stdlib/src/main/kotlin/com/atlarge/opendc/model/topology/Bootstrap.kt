@@ -8,16 +8,16 @@ import com.atlarge.opendc.simulator.Entity
  *
  * @return A bootstrap procedure for the topology.
  */
-fun <T: Topology> T.bootstrap(): Bootstrap<T> = Bootstrap.create { ctx ->
-	forEach { ctx.register(it) }
-	listeners += object : TopologyListener {
-		override fun Topology.onNodeAdded(node: Entity<*, Topology>) {
-			ctx.register(node)
-		}
+fun <T : Topology> T.bootstrap(): Bootstrap<T> = Bootstrap.create { ctx ->
+    forEach { ctx.register(it) }
+    listeners += object : TopologyListener {
+        override fun Topology.onNodeAdded(node: Entity<*, Topology>) {
+            ctx.register(node)
+        }
 
-		override fun Topology.onNodeRemoved(node: Entity<*, Topology>) {
-			ctx.deregister(node)
-		}
-	}
-	this
+        override fun Topology.onNodeRemoved(node: Entity<*, Topology>) {
+            ctx.deregister(node)
+        }
+    }
+    this
 }

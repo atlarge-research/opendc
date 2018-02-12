@@ -39,14 +39,14 @@ import javax.persistence.Entity
  */
 @Entity
 class Rack(
-	id: Int,
-	val name: String,
-	val capacity: Int,
-	val powerCapacity: Int,
-	val machines: List<Machine>
-): RoomObject(id), Rack {
-	/**
-	 * The initial state of the entity.
-	 */
-	override val initialState = Unit
+    id: Int,
+    val name: String,
+    val capacity: Int,
+    val powerCapacity: Int,
+    val machines: List<Machine>
+) : RoomObject(id), Rack {
+    /**
+     * The initial state of the entity.
+     */
+    override val initialState = Unit
 }

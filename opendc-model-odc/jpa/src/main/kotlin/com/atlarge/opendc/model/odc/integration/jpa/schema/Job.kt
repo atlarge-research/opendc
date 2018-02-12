@@ -26,7 +26,7 @@ package com.atlarge.opendc.model.odc.integration.jpa.schema
 
 import com.atlarge.opendc.model.odc.platform.workload.Job
 import com.atlarge.opendc.model.odc.platform.workload.User
-import javax.persistence.*
+import javax.persistence.Entity
 
 /**
  * A [Job] backed by the JPA API and an underlying database connection.
@@ -37,22 +37,22 @@ import javax.persistence.*
  */
 @Entity
 data class Job(
-	override val id: Int,
-	override val tasks: Set<Task>
+    override val id: Int,
+    override val tasks: Set<Task>
 ) : Job {
-	/**
-	 * The owner of the job, which is a singleton, since the database has no
-	 * concept of ownership yet.
-	 */
-	override val owner: User = object : User {
-		/**
+    /**
+     * The owner of the job, which is a singleton, since the database has no
+     * concept of ownership yet.
+     */
+    override val owner: User = object : User {
+        /**
          * The unique identifier of the user.
          */
-		override val id: Int = 0
+        override val id: Int = 0
 
-		/**
+        /**
          * The name of this user.
          */
-		override val name: String = "admin"
-	}
+        override val name: String = "admin"
+    }
 }

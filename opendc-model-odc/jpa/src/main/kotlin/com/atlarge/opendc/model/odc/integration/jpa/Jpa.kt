@@ -32,7 +32,7 @@ import javax.persistence.EntityManager
  * @param block The block to execute in the transaction.
  */
 inline fun EntityManager.transaction(block: () -> Unit) {
-	transaction.begin()
-	block()
-	transaction.commit()
+    transaction.begin()
+    block()
+    transaction.commit()
 }

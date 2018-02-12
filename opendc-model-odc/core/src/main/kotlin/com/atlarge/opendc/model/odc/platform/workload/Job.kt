@@ -30,24 +30,24 @@ package com.atlarge.opendc.model.odc.platform.workload
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Job {
-	/**
-	 * A unique identifier of the job.
-	 */
-	val id: Int
+    /**
+     * A unique identifier of the job.
+     */
+    val id: Int
 
-	/**
-	 * The owner of this job.
-	 */
-	val owner: User
+    /**
+     * The owner of this job.
+     */
+    val owner: User
 
-	/**
-	 * The tasks this job consists of.
-	 */
-	val tasks: Set<Task>
+    /**
+     * The tasks this job consists of.
+     */
+    val tasks: Set<Task>
 
-	/**
-	 * A flag to indicate the job has finished.
-	 */
-	val finished: Boolean
-		get() = !tasks.any { !it.finished }
+    /**
+     * A flag to indicate the job has finished.
+     */
+    val finished: Boolean
+        get() = !tasks.any { !it.finished }
 }

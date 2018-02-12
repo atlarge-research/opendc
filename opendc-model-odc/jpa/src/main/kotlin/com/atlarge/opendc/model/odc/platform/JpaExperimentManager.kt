@@ -24,12 +24,12 @@
 
 package com.atlarge.opendc.model.odc.platform
 
-import com.atlarge.opendc.simulator.platform.Experiment
-import com.atlarge.opendc.model.odc.integration.jpa.transaction
-import com.atlarge.opendc.model.odc.integration.jpa.schema.Experiment as InternalExperiment
 import com.atlarge.opendc.model.odc.integration.jpa.schema.ExperimentState
+import com.atlarge.opendc.model.odc.integration.jpa.transaction
+import com.atlarge.opendc.simulator.platform.Experiment
 import javax.persistence.EntityManager
 import javax.persistence.EntityManagerFactory
+import com.atlarge.opendc.model.odc.integration.jpa.schema.Experiment as InternalExperiment
 
 /**
  * A manager for [Experiment]s received from a JPA database.
@@ -38,56 +38,56 @@ import javax.persistence.EntityManagerFactory
  * 					 from.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-class JpaExperimentManager(private val factory: EntityManagerFactory): AutoCloseable {
-	/**
-	 * The entity manager for this experiment.
-	 */
-	private var manager: EntityManager = factory.createEntityManager()
+class JpaExperimentManager(private val factory: EntityManagerFactory) : AutoCloseable {
+    /**
+     * The entity manager for this experiment.
+     */
+    private var manager: EntityManager = factory.createEntityManager()
 
-	/**
-	 * The amount of experiments in the queue. This property is not guaranteed to run in constant time.
-	 */
-	val size: Int
-		get() {
-			return manager.createQuery("SELECT COUNT(e.id) FROM experiments e WHERE e.state = :s",
-					java.lang.Long::class.java)
-				.setParameter("s", ExperimentState.QUEUED)
-				.singleResult.toInt()
-		}
+    /**
+     * The amount of experiments in the queue. This property is not guaranteed to run in constant time.
+     */
+    val size: Int
+        get() {
+            return manager.createQuery("SELECT COUNT(e.id) FROM experiments e WHERE e.state = :s",
+                java.lang.Long::class.java)
+                .setParameter("s", ExperimentState.QUEUED)
+                .singleResult.toInt()
+        }
 
-	/**
-	 * Poll an [Experiment] from the database and claim it.
-	 *
-	 * @return The experiment that has been polled from the database or `null` if there are no experiments in the
-	 * 		   queue.
-	 */
-	fun poll(): JpaExperiment? {
-		var result: JpaExperiment? = null
-		manager.transaction {
-			var experiment: InternalExperiment? = null
-			val results = manager.createQuery("SELECT e FROM experiments e WHERE e.state = :s",
-				InternalExperiment::class.java)
-				.setParameter("s", ExperimentState.QUEUED)
-				.setMaxResults(1)
-				.resultList
+    /**
+     * Poll an [Experiment] from the database and claim it.
+     *
+     * @return The experiment that has been polled from the database or `null` if there are no experiments in the
+     * 		   queue.
+     */
+    fun poll(): JpaExperiment? {
+        var result: JpaExperiment? = null
+        manager.transaction {
+            var experiment: InternalExperiment? = null
+            val results = manager.createQuery("SELECT e FROM experiments e WHERE e.state = :s",
+                InternalExperiment::class.java)
+                .setParameter("s", ExperimentState.QUEUED)
+                .setMaxResults(1)
+                .resultList
 
 
-			if (!results.isEmpty()) {
-				experiment = results.first()
-				experiment!!.state = ExperimentState.CLAIMED
-			}
-			result = experiment?.let { JpaExperiment(manager, it) }
-		}
-		manager = factory.createEntityManager()
-		return result
-	}
+            if (!results.isEmpty()) {
+                experiment = results.first()
+                experiment!!.state = ExperimentState.CLAIMED
+            }
+            result = experiment?.let { JpaExperiment(manager, it) }
+        }
+        manager = factory.createEntityManager()
+        return result
+    }
 
-	/**
-	 * Close this resource, relinquishing any underlying resources.
-	 * This method is invoked automatically on objects managed by the
-	 * `try`-with-resources statement.*
-	 *
-	 * @throws Exception if this resource cannot be closed
-	 */
-	override fun close() = manager.close()
+    /**
+     * Close this resource, relinquishing any underlying resources.
+     * This method is invoked automatically on objects managed by the
+     * `try`-with-resources statement.*
+     *
+     * @throws Exception if this resource cannot be closed
+     */
+    override fun close() = manager.close()
 }

@@ -30,5 +30,5 @@ package com.atlarge.opendc.model.odc.integration.jpa.schema
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 enum class RoomType {
-	COOLING, HALLWAY, OFFICE, POWER, SERVER
+    COOLING, HALLWAY, OFFICE, POWER, SERVER
 }

@@ -10,5 +10,5 @@ import com.atlarge.opendc.model.topology.MutableTopology
  * @property topology The topology the simulation runs on.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class JpaModel(val experiment: Experiment, val topology: MutableTopology): OdcModel, MutableTopology by topology
+data class JpaModel(val experiment: Experiment, val topology: MutableTopology) : OdcModel, MutableTopology by topology
 

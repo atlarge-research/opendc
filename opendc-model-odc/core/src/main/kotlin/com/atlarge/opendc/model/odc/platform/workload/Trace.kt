@@ -30,8 +30,8 @@ package com.atlarge.opendc.model.odc.platform.workload
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Trace {
-	/**
-	 * The [Job]s in the trace.
-	 */
-	val jobs: Set<Job>
+    /**
+     * The [Job]s in the trace.
+     */
+    val jobs: Set<Job>
 }

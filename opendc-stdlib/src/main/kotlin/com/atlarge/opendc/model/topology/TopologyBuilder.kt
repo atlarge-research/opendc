@@ -30,11 +30,11 @@ package com.atlarge.opendc.model.topology
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface TopologyBuilder : TopologyFactory {
-	/**
-	 * Construct a [Topology] from the given block and return it.
-	 *
-	 * @param block The block to construct the topology.
-	 * @return The topology that has been built.
-	 */
-	fun construct(block: MutableTopology.() -> Unit): MutableTopology = create().apply(block)
+    /**
+     * Construct a [Topology] from the given block and return it.
+     *
+     * @param block The block to construct the topology.
+     * @return The topology that has been built.
+     */
+    fun construct(block: MutableTopology.() -> Unit): MutableTopology = create().apply(block)
 }

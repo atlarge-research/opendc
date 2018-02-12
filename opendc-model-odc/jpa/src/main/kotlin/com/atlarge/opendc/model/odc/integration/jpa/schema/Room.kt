@@ -38,13 +38,13 @@ import javax.persistence.Entity
  */
 @Entity
 data class Room(
-	val id: Int,
-	val name: String,
-	val type: RoomType,
-	val objects: Set<RoomObject>
-): Room {
-	/**
-	 * The initial state of the entity.
-	 */
-	override val initialState = Unit
+    val id: Int,
+    val name: String,
+    val type: RoomType,
+    val objects: Set<RoomObject>
+) : Room {
+    /**
+     * The initial state of the entity.
+     */
+    override val initialState = Unit
 }

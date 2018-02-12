@@ -24,9 +24,9 @@
 
 package com.atlarge.opendc.omega
 
+import com.atlarge.opendc.simulator.Bootstrap
 import com.atlarge.opendc.simulator.Context
 import com.atlarge.opendc.simulator.Process
-import com.atlarge.opendc.simulator.Bootstrap
 import org.junit.jupiter.api.Test
 
 /**
@@ -35,82 +35,82 @@ import org.junit.jupiter.api.Test
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 internal class SmokeTest {
-	class EchoProcess : Process<Unit, Unit> {
-		override val initialState = Unit
-		suspend override fun Context<Unit, Unit>.run() {
-			while (true) {
-				receive {
-					sender?.send(message)
-				}
-			}
-		}
-	}
+    class EchoProcess : Process<Unit, Unit> {
+        override val initialState = Unit
+        override suspend fun Context<Unit, Unit>.run() {
+            while (true) {
+                receive {
+                    sender?.send(message)
+                }
+            }
+        }
+    }
 
-	/**
-	 * Run a large amount of simulations and test if any exceptions occur.
-	 */
-	@Test
-	fun smoke() {
-		val n = 1000
-		val messages = 100
-		val bootstrap: Bootstrap<Unit> = Bootstrap.create { ctx ->
-			repeat(n) {
-				EchoProcess().also {
-					ctx.register(it)
+    /**
+     * Run a large amount of simulations and test if any exceptions occur.
+     */
+    @Test
+    fun smoke() {
+        val n = 1000
+        val messages = 100
+        val bootstrap: Bootstrap<Unit> = Bootstrap.create { ctx ->
+            repeat(n) {
+                EchoProcess().also {
+                    ctx.register(it)
 
-					for (i in 1 until messages) {
-						ctx.schedule(i, it, delay = i.toLong())
-					}
-				}
-			}
-		}
-		val kernel = OmegaKernelFactory.create(bootstrap)
-		kernel.run()
-	}
+                    for (i in 1 until messages) {
+                        ctx.schedule(i, it, delay = i.toLong())
+                    }
+                }
+            }
+        }
+        val kernel = OmegaKernelFactory.create(bootstrap)
+        kernel.run()
+    }
 
-	class NullProcess : Process<Unit, Unit> {
-		override val initialState = Unit
-		suspend override fun Context<Unit, Unit>.run() {}
-	}
+    class NullProcess : Process<Unit, Unit> {
+        override val initialState = Unit
+        override suspend fun Context<Unit, Unit>.run() {}
+    }
 
-	/**
-	 * Test if the kernel allows sending messages to [Context] instances that have already stopped.
-	 */
-	@Test
-	fun `sending message to process that has gracefully stopped`() {
-		val process = NullProcess()
-		val bootstrap: Bootstrap<Unit> = Bootstrap.create { ctx ->
-			process.also {
-				ctx.register(it)
-				ctx.schedule(0, it)
-			}
-		}
+    /**
+     * Test if the kernel allows sending messages to [Context] instances that have already stopped.
+     */
+    @Test
+    fun `sending message to process that has gracefully stopped`() {
+        val process = NullProcess()
+        val bootstrap: Bootstrap<Unit> = Bootstrap.create { ctx ->
+            process.also {
+                ctx.register(it)
+                ctx.schedule(0, it)
+            }
+        }
 
-		val kernel = OmegaKernelFactory.create(bootstrap)
-		kernel.run()
-	}
+        val kernel = OmegaKernelFactory.create(bootstrap)
+        kernel.run()
+    }
 
-	class CrashProcess : Process<Unit, Unit> {
-		override val initialState = Unit
-		suspend override fun Context<Unit, Unit>.run() {
-			TODO("This process should crash")
-		}
-	}
+    class CrashProcess : Process<Unit, Unit> {
+        override val initialState = Unit
+        override suspend fun Context<Unit, Unit>.run() {
+            TODO("This process should crash")
+        }
+    }
 
-	/**
-	 * Test if the kernel allows sending messages to [Context] instances that have crashed.
-	 */
-	@Test
-	fun `sending message to process that has crashed`() {
-		val process = CrashProcess()
-		val bootstrap: Bootstrap<Unit> = Bootstrap.create { ctx ->
-			process.also {
-				ctx.register(it)
-				ctx.schedule(0, it)
-			}
-		}
+    /**
+     * Test if the kernel allows sending messages to [Context] instances that have crashed.
+     */
+    @Test
+    fun `sending message to process that has crashed`() {
+        val process = CrashProcess()
+        val bootstrap: Bootstrap<Unit> = Bootstrap.create { ctx ->
+            process.also {
+                ctx.register(it)
+                ctx.schedule(0, it)
+            }
+        }
 
-		val kernel = OmegaKernelFactory.create(bootstrap)
-		kernel.run()
-	}
+        val kernel = OmegaKernelFactory.create(bootstrap)
+        kernel.run()
+    }
 }

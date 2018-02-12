@@ -24,10 +24,10 @@
 
 package com.atlarge.opendc.model.odc.platform.scheduler
 
-import com.atlarge.opendc.simulator.Context
-import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.model.odc.platform.workload.Task
 import com.atlarge.opendc.model.odc.topology.machine.Machine
+import com.atlarge.opendc.simulator.Context
+import com.atlarge.opendc.simulator.Entity
 
 /**
  * A task scheduler that is coupled to an [Entity] in the topology of the cloud network.
@@ -35,37 +35,37 @@ import com.atlarge.opendc.model.odc.topology.machine.Machine
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Scheduler {
-	/**
-	 * The name of this scheduler.
-	 */
-	val name: String
+    /**
+     * The name of this scheduler.
+     */
+    val name: String
 
-	/**
-	 * (Re)schedule the tasks submitted to the scheduler over the specified set of machines.
-	 *
-	 * This method should be invoked at some interval to allow the scheduler to reschedule existing tasks and schedule
-	 * new tasks.
-	 */
-	suspend fun <S, M> Context<S, M>.schedule()
+    /**
+     * (Re)schedule the tasks submitted to the scheduler over the specified set of machines.
+     *
+     * This method should be invoked at some interval to allow the scheduler to reschedule existing tasks and schedule
+     * new tasks.
+     */
+    suspend fun <S, M> Context<S, M>.schedule()
 
-	/**
-	 * Submit a [Task] to this scheduler.
-	 *
-	 * @param task The task to submit to the scheduler.
-	 */
-	fun submit(task: Task)
+    /**
+     * Submit a [Task] to this scheduler.
+     *
+     * @param task The task to submit to the scheduler.
+     */
+    fun submit(task: Task)
 
-	/**
-	 * Register a [Machine] to this scheduler.
-	 *
-	 * @param machine The machine to register.
-	 */
-	fun register(machine: Machine)
+    /**
+     * Register a [Machine] to this scheduler.
+     *
+     * @param machine The machine to register.
+     */
+    fun register(machine: Machine)
 
-	/**
-	 * Deregister a [Machine] from this scheduler.
-	 *
-	 * @param machine The machine to deregister.
-	 */
-	fun deregister(machine: Machine)
+    /**
+     * Deregister a [Machine] from this scheduler.
+     *
+     * @param machine The machine to deregister.
+     */
+    fun deregister(machine: Machine)
 }

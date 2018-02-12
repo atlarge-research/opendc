@@ -24,10 +24,11 @@
 
 package com.atlarge.opendc.model.odc.integration.jpa.schema
 
-import com.atlarge.opendc.simulator.Instant
 import com.atlarge.opendc.model.odc.platform.workload.Task
 import com.atlarge.opendc.model.odc.platform.workload.TaskState
-import javax.persistence.*
+import com.atlarge.opendc.simulator.Instant
+import javax.persistence.Entity
+import javax.persistence.PostLoad
 
 /**
  * A [Task] backed by the JPA API and an underlying database connection.
@@ -41,77 +42,77 @@ import javax.persistence.*
  */
 @Entity
 data class Task(
-	override val id: Int,
-	override val flops: Long,
-	private val dependency: Task?,
-	override val parallelizable: Boolean,
-	val startTime: Instant
+    override val id: Int,
+    override val flops: Long,
+    private val dependency: Task?,
+    override val parallelizable: Boolean,
+    val startTime: Instant
 ) : Task {
-	/**
-	 * The dependencies of the task.
-	 */
-	override lateinit var dependencies: Set<Task>
-		private set
+    /**
+     * The dependencies of the task.
+     */
+    override lateinit var dependencies: Set<Task>
+        private set
 
-	/**
-	 * The remaining flops for this task.
-	 */
-	override var remaining: Long = 0
-		private set
+    /**
+     * The remaining flops for this task.
+     */
+    override var remaining: Long = 0
+        private set
 
-	/**
-	 * A flag to indicate whether the task has finished.
-	 */
-	override var finished: Boolean = false
-		private set
+    /**
+     * A flag to indicate whether the task has finished.
+     */
+    override var finished: Boolean = false
+        private set
 
-	/**
-	 * The state of the task.
-	 */
-	override lateinit var state: TaskState
-		private set
+    /**
+     * The state of the task.
+     */
+    override lateinit var state: TaskState
+        private set
 
-	/**
-	 * This method initialises the task object after it has been created by the JPA implementation. We use this
-	 * initialisation method because JPA implementations only call the default constructor
-	 */
-	@PostLoad
-	internal fun init() {
-		remaining = flops
-		dependencies = dependency?.let(::setOf) ?: emptySet()
-		state = TaskState.Underway
-	}
+    /**
+     * This method initialises the task object after it has been created by the JPA implementation. We use this
+     * initialisation method because JPA implementations only call the default constructor
+     */
+    @PostLoad
+    internal fun init() {
+        remaining = flops
+        dependencies = dependency?.let(::setOf) ?: emptySet()
+        state = TaskState.Underway
+    }
 
-	/**
-	 * This method is invoked when a task has arrived at a datacenter.
-	 *
-	 * @param time The moment in time the task has arrived at the datacenter.
-	 */
-	override fun arrive(time: Instant) {
-		if (state !is TaskState.Underway) {
-			throw IllegalStateException("The task has already been submitted to a datacenter")
-		}
-		remaining = flops
-		state = TaskState.Queued(time)
-	}
+    /**
+     * This method is invoked when a task has arrived at a datacenter.
+     *
+     * @param time The moment in time the task has arrived at the datacenter.
+     */
+    override fun arrive(time: Instant) {
+        if (state !is TaskState.Underway) {
+            throw IllegalStateException("The task has already been submitted to a datacenter")
+        }
+        remaining = flops
+        state = TaskState.Queued(time)
+    }
 
-	/**
-	 * Consume the given amount of flops of this task.
-	 *
-	 * @param time The current moment in time of the consumption.
-	 * @param flops The total amount of flops to consume.
-	 */
-	override fun consume(time: Instant, flops: Long) {
-		if (state is TaskState.Queued) {
-			state = TaskState.Running(state as TaskState.Queued, time)
-		} else if (finished) {
-			return
-		}
-		remaining -= flops
-		if (remaining <= 0) {
-			remaining = 0
-			finished = true
-			state = TaskState.Finished(state as TaskState.Running, time)
-		}
-	}
+    /**
+     * Consume the given amount of flops of this task.
+     *
+     * @param time The current moment in time of the consumption.
+     * @param flops The total amount of flops to consume.
+     */
+    override fun consume(time: Instant, flops: Long) {
+        if (state is TaskState.Queued) {
+            state = TaskState.Running(state as TaskState.Queued, time)
+        } else if (finished) {
+            return
+        }
+        remaining -= flops
+        if (remaining <= 0) {
+            remaining = 0
+            finished = true
+            state = TaskState.Finished(state as TaskState.Running, time)
+        }
+    }
 }

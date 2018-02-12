@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.model.odc.topology.container
 
-import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.model.topology.Topology
+import com.atlarge.opendc.simulator.Entity
 
 /**
  * A physical room in a datacenter with relationships to the entities within the room.

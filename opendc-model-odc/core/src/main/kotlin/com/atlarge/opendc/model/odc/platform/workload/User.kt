@@ -33,13 +33,13 @@ package com.atlarge.opendc.model.odc.platform.workload
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface User {
-	/**
-	 * The unique identifier of the user.
-	 */
-	val id: Int
+    /**
+     * The unique identifier of the user.
+     */
+    val id: Int
 
-	/**
-	 * The name of this user.
-	 */
-	val name: String
+    /**
+     * The name of this user.
+     */
+    val name: String
 }

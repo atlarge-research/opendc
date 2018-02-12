@@ -24,9 +24,9 @@
 
 package com.atlarge.opendc.omega
 
-import com.atlarge.opendc.simulator.Instant
 import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.simulator.Envelope
+import com.atlarge.opendc.simulator.Instant
 
 /**
  * A wrapper around a message that has been scheduled for processing.
@@ -38,11 +38,11 @@ import com.atlarge.opendc.simulator.Envelope
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 internal data class MessageContainer(override val message: Any,
-									 val time: Instant,
-									 override val sender: Entity<*, *>?,
-									 override val destination: Entity<*, *>) : Envelope<Any> {
-	/**
-	 * A flag to indicate the message has been canceled.
-	 */
-	internal var canceled: Boolean = false
+                                     val time: Instant,
+                                     override val sender: Entity<*, *>?,
+                                     override val destination: Entity<*, *>) : Envelope<Any> {
+    /**
+     * A flag to indicate the message has been canceled.
+     */
+    internal var canceled: Boolean = false
 }

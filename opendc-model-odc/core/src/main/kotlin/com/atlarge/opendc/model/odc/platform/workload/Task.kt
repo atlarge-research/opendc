@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.model.odc.platform.workload
 
-import com.atlarge.opendc.simulator.Instant
 import com.atlarge.opendc.model.odc.topology.machine.Machine
+import com.atlarge.opendc.simulator.Instant
 
 /**
  * A task that runs as part of a [Job] on a [Machine].
@@ -33,60 +33,60 @@ import com.atlarge.opendc.model.odc.topology.machine.Machine
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Task {
-	/**
-	 * The unique identifier of the task.
-	 */
-	val id: Int
+    /**
+     * The unique identifier of the task.
+     */
+    val id: Int
 
-	/**
-	 * The amount of flops for this task.
-	 */
-	val flops: Long
+    /**
+     * The amount of flops for this task.
+     */
+    val flops: Long
 
-	/**
-	 * The dependencies of the task.
-	 */
-	val dependencies: Set<Task>
+    /**
+     * The dependencies of the task.
+     */
+    val dependencies: Set<Task>
 
-	/**
-	 * A flag to indicate the task is parallelizable.
-	 */
-	val parallelizable: Boolean
+    /**
+     * A flag to indicate the task is parallelizable.
+     */
+    val parallelizable: Boolean
 
-	/**
-	 * The remaining flops for this task.
-	 */
-	val remaining: Long
+    /**
+     * The remaining flops for this task.
+     */
+    val remaining: Long
 
-	/**
-	 * The state of the task.
-	 */
-	val state: TaskState
+    /**
+     * The state of the task.
+     */
+    val state: TaskState
 
-	/**
-	 * A flag to indicate whether the task is ready to be started.
-	 */
-	val ready: Boolean
-		get() = !dependencies.any { !it.finished }
+    /**
+     * A flag to indicate whether the task is ready to be started.
+     */
+    val ready: Boolean
+        get() = !dependencies.any { !it.finished }
 
-	/**
-	 * A flag to indicate whether the task has finished.
-	 */
-	val finished: Boolean
-		get() = state is TaskState.Finished
+    /**
+     * A flag to indicate whether the task has finished.
+     */
+    val finished: Boolean
+        get() = state is TaskState.Finished
 
-	/**
-	 * This method is invoked when a task has arrived at a datacenter.
-	 *
-	 * @param time The moment in time the task has arrived at the datacenter.
-	 */
-	fun arrive(time: Instant)
+    /**
+     * This method is invoked when a task has arrived at a datacenter.
+     *
+     * @param time The moment in time the task has arrived at the datacenter.
+     */
+    fun arrive(time: Instant)
 
-	/**
-	 * Consume the given amount of flops of this task.
-	 *
-	 * @param time The current moment in time of the consumption.
-	 * @param flops The total amount of flops to consume.
-	 */
-	fun consume(time: Instant, flops: Long)
+    /**
+     * Consume the given amount of flops of this task.
+     *
+     * @param time The current moment in time of the consumption.
+     * @param flops The total amount of flops to consume.
+     */
+    fun consume(time: Instant, flops: Long)
 }

@@ -25,8 +25,8 @@
 package com.atlarge.opendc.model.topology
 
 import com.atlarge.opendc.simulator.Entity
-import com.atlarge.opendc.model.topology.Edge as BaseEdge
 import java.util.concurrent.atomic.AtomicInteger
+import com.atlarge.opendc.model.topology.Edge as BaseEdge
 
 /**
  * This module provides a [Topology] implementation backed internally by an adjacency list.
@@ -37,12 +37,12 @@ import java.util.concurrent.atomic.AtomicInteger
  * *Note that this implementation is not synchronized.*
  */
 object AdjacencyList {
-	/**
-	 * Return a [TopologyBuilder] that constructs the topology represents as an adjacency list.
-	 *
-	 * @return A [TopologyBuilder] instance.
-	 */
-	fun builder(): TopologyBuilder = AdjacencyListTopologyBuilder()
+    /**
+     * Return a [TopologyBuilder] that constructs the topology represents as an adjacency list.
+     *
+     * @return A [TopologyBuilder] instance.
+     */
+    fun builder(): TopologyBuilder = AdjacencyListTopologyBuilder()
 }
 
 /**
@@ -51,210 +51,210 @@ object AdjacencyList {
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 internal class AdjacencyListTopologyBuilder : TopologyBuilder {
-	/**
-	 * Build a [Topology] instance from the current state of this builder.
-	 *
-	 * @return The graph built from this builder.
-	 */
-	override fun create(): MutableTopology = AdjacencyListTopology()
+    /**
+     * Build a [Topology] instance from the current state of this builder.
+     *
+     * @return The graph built from this builder.
+     */
+    override fun create(): MutableTopology = AdjacencyListTopology()
 }
 
 /**
  * A [Topology] whose graph is represented as adjacency list.
  */
 internal class AdjacencyListTopology : MutableTopology {
-	/**
-	 * The identifier for the next node in the graph.
-	 */
-	private var nextId: AtomicInteger = AtomicInteger(0)
+    /**
+     * The identifier for the next node in the graph.
+     */
+    private var nextId: AtomicInteger = AtomicInteger(0)
 
-	/**
-	 * A mapping of nodes to their internal representation with the edges of the nodes.
-	 */
-	private var nodes: MutableMap<Entity<*, Topology>, Node> = HashMap()
+    /**
+     * A mapping of nodes to their internal representation with the edges of the nodes.
+     */
+    private var nodes: MutableMap<Entity<*, Topology>, Node> = HashMap()
 
-	// Topology
+    // Topology
 
-	/**
-	 * The listeners of this topology.
-	 */
-	override val listeners: MutableSet<TopologyListener> = HashSet()
+    /**
+     * The listeners of this topology.
+     */
+    override val listeners: MutableSet<TopologyListener> = HashSet()
 
-	/**
-	 * A unique identifier of this node within the topology.
-	 */
-	override val Entity<*, Topology>.id: Int
-		get() = nodes[this]!!.id
+    /**
+     * A unique identifier of this node within the topology.
+     */
+    override val Entity<*, Topology>.id: Int
+        get() = nodes[this]!!.id
 
-	/**
-	 * The set of ingoing edges of this node.
-	 */
-	override val Entity<*, Topology>.ingoingEdges: MutableSet<BaseEdge<*>>
-		get() = nodes[this]!!.ingoingEdges
+    /**
+     * The set of ingoing edges of this node.
+     */
+    override val Entity<*, Topology>.ingoingEdges: MutableSet<BaseEdge<*>>
+        get() = nodes[this]!!.ingoingEdges
 
-	/**
-	 * The set of outgoing edges of this node.
-	 */
-	override val Entity<*, Topology>.outgoingEdges: MutableSet<BaseEdge<*>>
-		get() = nodes[this]!!.outgoingEdges
+    /**
+     * The set of outgoing edges of this node.
+     */
+    override val Entity<*, Topology>.outgoingEdges: MutableSet<BaseEdge<*>>
+        get() = nodes[this]!!.outgoingEdges
 
-	// MutableTopology
+    // MutableTopology
 
-	/**
-	 * Create a directed edge between two [Node]s in the topology.
-	 *
-	 * @param from The source of the edge.
-	 * @param to The destination of the edge.
-	 * @param label The label of the edge.
-	 * @param tag The tag of the edge that uniquely identifies the relationship the edge represents.
-	 * @return The edge that has been created.
-	 */
-	override fun <T> connect(from: Entity<*, Topology>, to: Entity<*, Topology>, label: T, tag: String?): BaseEdge<T> {
-		if (!contains(from) || !contains(to))
-			throw IllegalArgumentException("One of the entities is not part of the topology")
-		val edge = Edge(label, tag, from, to)
-		from.outgoingEdges.add(edge)
-		to.ingoingEdges.add(edge)
-		listeners.forEach { it.run { this@AdjacencyListTopology.onEdgeAdded(edge) } }
-		return edge
-	}
+    /**
+     * Create a directed edge between two [Node]s in the topology.
+     *
+     * @param from The source of the edge.
+     * @param to The destination of the edge.
+     * @param label The label of the edge.
+     * @param tag The tag of the edge that uniquely identifies the relationship the edge represents.
+     * @return The edge that has been created.
+     */
+    override fun <T> connect(from: Entity<*, Topology>, to: Entity<*, Topology>, label: T, tag: String?): BaseEdge<T> {
+        if (!contains(from) || !contains(to))
+            throw IllegalArgumentException("One of the entities is not part of the topology")
+        val edge = Edge(label, tag, from, to)
+        from.outgoingEdges.add(edge)
+        to.ingoingEdges.add(edge)
+        listeners.forEach { it.run { this@AdjacencyListTopology.onEdgeAdded(edge) } }
+        return edge
+    }
 
-	// Cloneable
+    // Cloneable
 
-	/**
-	 * Create a copy of the graph.
-	 *
-	 * @return A new [Topology] instance with a copy of the graph.
-	 */
-	override fun clone(): Topology {
-		val copy = AdjacencyListTopology()
-		copy.nextId = AtomicInteger(nextId.get())
-		copy.nodes = HashMap(nodes)
-		return copy
-	}
+    /**
+     * Create a copy of the graph.
+     *
+     * @return A new [Topology] instance with a copy of the graph.
+     */
+    override fun clone(): Topology {
+        val copy = AdjacencyListTopology()
+        copy.nextId = AtomicInteger(nextId.get())
+        copy.nodes = HashMap(nodes)
+        return copy
+    }
 
-	// Set
+    // Set
 
-	/**
-	 * Returns the size of the collection.
-	 */
-	override val size: Int = nodes.size
+    /**
+     * Returns the size of the collection.
+     */
+    override val size: Int = nodes.size
 
-	/**
-	 * Checks if the specified element is contained in this collection.
-	 */
-	override fun contains(element: Entity<*, Topology>): Boolean = nodes.contains(element)
+    /**
+     * Checks if the specified element is contained in this collection.
+     */
+    override fun contains(element: Entity<*, Topology>): Boolean = nodes.contains(element)
 
-	/**
-	 * Checks if all elements in the specified collection are contained in this collection.
-	 */
-	override fun containsAll(elements: Collection<Entity<*, Topology>>): Boolean =
-		elements.all { nodes.containsKey(it) }
+    /**
+     * Checks if all elements in the specified collection are contained in this collection.
+     */
+    override fun containsAll(elements: Collection<Entity<*, Topology>>): Boolean =
+        elements.all { nodes.containsKey(it) }
 
-	/**
-	 * Returns `true` if the collection is empty (contains no elements), `false` otherwise.
-	 */
-	override fun isEmpty(): Boolean = nodes.isEmpty()
+    /**
+     * Returns `true` if the collection is empty (contains no elements), `false` otherwise.
+     */
+    override fun isEmpty(): Boolean = nodes.isEmpty()
 
-	// MutableSet
+    // MutableSet
 
-	/**
-	 * Add a node to the graph.
-	 *
-	 * @param element The element to add to this graph.
-	 * @return `true` if the graph has changed, `false` otherwise.
-	 */
-	override fun add(element: Entity<*, Topology>): Boolean {
-		if (nodes.putIfAbsent(element, Node(nextId.getAndIncrement())) == null) {
-			listeners.forEach { it.run { this@AdjacencyListTopology.onNodeAdded(element) } }
-			return true
-		}
-		return false
-	}
+    /**
+     * Add a node to the graph.
+     *
+     * @param element The element to add to this graph.
+     * @return `true` if the graph has changed, `false` otherwise.
+     */
+    override fun add(element: Entity<*, Topology>): Boolean {
+        if (nodes.putIfAbsent(element, Node(nextId.getAndIncrement())) == null) {
+            listeners.forEach { it.run { this@AdjacencyListTopology.onNodeAdded(element) } }
+            return true
+        }
+        return false
+    }
 
-	/**
-	 * Add all nodes in the specified collection to the graph.
-	 *
-	 * @param elements The nodes to add to this graph.
-	 * @return `true` if the graph has changed, `false` otherwise.
-	 */
-	override fun addAll(elements: Collection<Entity<*, Topology>>): Boolean = elements.any { add(it) }
+    /**
+     * Add all nodes in the specified collection to the graph.
+     *
+     * @param elements The nodes to add to this graph.
+     * @return `true` if the graph has changed, `false` otherwise.
+     */
+    override fun addAll(elements: Collection<Entity<*, Topology>>): Boolean = elements.any { add(it) }
 
-	/**
-	 * Remove all nodes and their respective edges from the graph.
-	 */
-	override fun clear() = nodes.clear()
+    /**
+     * Remove all nodes and their respective edges from the graph.
+     */
+    override fun clear() = nodes.clear()
 
-	/**
-	 * Remove the given node and its edges from the graph.
-	 *
-	 * @param element The element to remove from the graph.
-	 * @return `true` if the graph has changed, `false` otherwise.
-	 */
-	override fun remove(element: Entity<*, Topology>): Boolean {
-		nodes[element]?.ingoingEdges?.forEach {
-			it.from.outgoingEdges.remove(it)
-		}
-		nodes[element]?.outgoingEdges?.forEach {
-			it.to.ingoingEdges.remove(it)
-		}
-		if (nodes.keys.remove(element)) {
-			listeners.forEach { it.run { this@AdjacencyListTopology.onNodeRemoved(element) } }
-			return true
-		}
-		return false
-	}
+    /**
+     * Remove the given node and its edges from the graph.
+     *
+     * @param element The element to remove from the graph.
+     * @return `true` if the graph has changed, `false` otherwise.
+     */
+    override fun remove(element: Entity<*, Topology>): Boolean {
+        nodes[element]?.ingoingEdges?.forEach {
+            it.from.outgoingEdges.remove(it)
+        }
+        nodes[element]?.outgoingEdges?.forEach {
+            it.to.ingoingEdges.remove(it)
+        }
+        if (nodes.keys.remove(element)) {
+            listeners.forEach { it.run { this@AdjacencyListTopology.onNodeRemoved(element) } }
+            return true
+        }
+        return false
+    }
 
 
-	/**
-	 * Remove all nodes in the given collection from the graph.
-	 *
-	 * @param elements The elements to remove from the graph.
-	 * @return `true` if the graph has changed, `false` otherwise.
-	 */
-	override fun removeAll(elements: Collection<Entity<*, Topology>>): Boolean = elements.any(this::remove)
+    /**
+     * Remove all nodes in the given collection from the graph.
+     *
+     * @param elements The elements to remove from the graph.
+     * @return `true` if the graph has changed, `false` otherwise.
+     */
+    override fun removeAll(elements: Collection<Entity<*, Topology>>): Boolean = elements.any(this::remove)
 
-	/**
-	 * Remove all nodes in the graph, except those in the specified collection.
-	 *
-	 * Take note that this method currently only guarantees a maximum runtime complexity of O(n^2).
-	 *
-	 * @param elements The elements to retain in the graph.
-	 */
-	override fun retainAll(elements: Collection<Entity<*, Topology>>): Boolean {
-		val iterator = nodes.keys.iterator()
-		var changed = false
-		while (iterator.hasNext()) {
-			val entity = iterator.next()
+    /**
+     * Remove all nodes in the graph, except those in the specified collection.
+     *
+     * Take note that this method currently only guarantees a maximum runtime complexity of O(n^2).
+     *
+     * @param elements The elements to retain in the graph.
+     */
+    override fun retainAll(elements: Collection<Entity<*, Topology>>): Boolean {
+        val iterator = nodes.keys.iterator()
+        var changed = false
+        while (iterator.hasNext()) {
+            val entity = iterator.next()
 
-			if (entity !in elements) {
-				iterator.remove()
-				changed = true
-			}
-		}
-		return changed
-	}
+            if (entity !in elements) {
+                iterator.remove()
+                changed = true
+            }
+        }
+        return changed
+    }
 
-	/**
-	 * Return a mutable iterator over the nodes of the graph.
-	 *
-	 * @return A [MutableIterator] over the nodes of the graph.
-	 */
-	override fun iterator(): MutableIterator<Entity<*, Topology>> = nodes.keys.iterator()
+    /**
+     * Return a mutable iterator over the nodes of the graph.
+     *
+     * @return A [MutableIterator] over the nodes of the graph.
+     */
+    override fun iterator(): MutableIterator<Entity<*, Topology>> = nodes.keys.iterator()
 
-	/**
-	 * The internal representation of a node within the graph.
-	 */
-	internal data class Node(val id: Int) {
-		val ingoingEdges: MutableSet<BaseEdge<*>> = HashSet()
-		val outgoingEdges: MutableSet<BaseEdge<*>> = HashSet()
-	}
+    /**
+     * The internal representation of a node within the graph.
+     */
+    internal data class Node(val id: Int) {
+        val ingoingEdges: MutableSet<BaseEdge<*>> = HashSet()
+        val outgoingEdges: MutableSet<BaseEdge<*>> = HashSet()
+    }
 
-	/**
-	 * The internal representation of an edge within the graph.
-	 */
-	internal class Edge<out T>(override val label: T,
-							   override val tag: String?,
-							   override val from: Entity<*, Topology>,
-							   override val to: Entity<*, Topology>) : BaseEdge<T>
+    /**
+     * The internal representation of an edge within the graph.
+     */
+    internal class Edge<out T>(override val label: T,
+                               override val tag: String?,
+                               override val from: Entity<*, Topology>,
+                               override val to: Entity<*, Topology>) : BaseEdge<T>
 }

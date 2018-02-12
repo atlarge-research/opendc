@@ -39,7 +39,7 @@ import javax.persistence.Entity
  */
 @Entity
 data class Section(
-	val id: Int,
-	val datacenter: Datacenter,
-	val startTime: Instant
+    val id: Int,
+    val datacenter: Datacenter,
+    val startTime: Instant
 )

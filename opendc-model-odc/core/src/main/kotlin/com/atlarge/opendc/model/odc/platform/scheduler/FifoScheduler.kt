@@ -24,9 +24,9 @@
 
 package com.atlarge.opendc.model.odc.platform.scheduler
 
-import com.atlarge.opendc.simulator.Context
 import com.atlarge.opendc.model.odc.platform.workload.Task
 import com.atlarge.opendc.model.odc.topology.machine.Machine
+import com.atlarge.opendc.simulator.Context
 import java.util.*
 
 /**
@@ -35,84 +35,84 @@ import java.util.*
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 class FifoScheduler : Scheduler {
-	/**
-	 * The name of this scheduler.
-	 */
-	override val name: String = "FIFO"
+    /**
+     * The name of this scheduler.
+     */
+    override val name: String = "FIFO"
 
-	/**
-	 * The set of machines the scheduler knows of.
-	 */
-	val machines: MutableSet<Machine> = HashSet()
+    /**
+     * The set of machines the scheduler knows of.
+     */
+    private val machines: MutableSet<Machine> = HashSet()
 
-	/**
-	 * The queue of [Task]s that need to be scheduled.
-	 */
-	val queue: Queue<Task> = ArrayDeque()
+    /**
+     * The queue of [Task]s that need to be scheduled.
+     */
+    private val queue: Queue<Task> = ArrayDeque()
 
-	/**
-	 * (Re)schedule the tasks submitted to the scheduler over the specified set of machines.
-	 */
-	override suspend fun <S, M> Context<S, M>.schedule() {
-		if (queue.isEmpty()) {
-			return
-		}
+    /**
+     * (Re)schedule the tasks submitted to the scheduler over the specified set of machines.
+     */
+    override suspend fun <S, M> Context<S, M>.schedule() {
+        if (queue.isEmpty()) {
+            return
+        }
 
-		// The tasks that need to be rescheduled
-		val rescheduled = ArrayDeque<Task>()
-		val iterator = queue.iterator()
+        // The tasks that need to be rescheduled
+        val rescheduled = ArrayDeque<Task>()
+        val iterator = queue.iterator()
 
-		machines
-			.filter { it.state.status != Machine.Status.HALT }
-			.forEach { machine ->
-				while (iterator.hasNext()) {
-					val task = iterator.next()
+        machines
+            .filter { it.state.status != Machine.Status.HALT }
+            .forEach { machine ->
+                while (iterator.hasNext()) {
+                    val task = iterator.next()
 
-					// TODO What to do with tasks that are not ready yet to be processed
-					if (!task.ready) {
-						iterator.remove()
-						rescheduled.add(task)
-						continue
-					} else if (task.finished) {
-						iterator.remove()
-						continue
-					}
+                    // TODO What to do with tasks that are not ready yet to be processed
+                    if (!task.ready) {
+                        iterator.remove()
+                        rescheduled.add(task)
+                        continue
+                    } else if (task.finished) {
+                        iterator.remove()
+                        continue
+                    }
 
-					machine.send(task)
-					break
-				}
-			}
+                    machine.send(task)
+                    break
+                }
+            }
 
-		// Reschedule all tasks that are not ready yet
-		while (!rescheduled.isEmpty()) {
-			queue.add(rescheduled.poll())
-		}
-	}
+        // Reschedule all tasks that are not ready yet
+        while (!rescheduled.isEmpty()) {
+            queue.add(rescheduled.poll())
+        }
+    }
 
-	/**
-	 * Submit a [Task] to this scheduler.
-	 *
-	 * @param task The task to submit to the scheduler.
-	 */
-	override fun submit(task: Task) {
-		queue.add(task)
-	}
+    /**
+     * Submit a [Task] to this scheduler.
+     *
+     * @param task The task to submit to the scheduler.
+     */
+    override fun submit(task: Task) {
+        queue.add(task)
+    }
 
-	/**
-	 * Register a [Machine] to this scheduler.
-	 *
-	 * @param machine The machine to register.
-	 */
-	override fun register(machine: Machine) {
-		machines.add(machine)
-	}
+    /**
+     * Register a [Machine] to this scheduler.
+     *
+     * @param machine The machine to register.
+     */
+    override fun register(machine: Machine) {
+        machines.add(machine)
+    }
 
-	/**
-	 * Deregister a [Machine] from this scheduler.
-	 *
-	 * @param machine The machine to deregister.
-	 */
-	override fun deregister(machine: Machine) {
-		machines.remove(machine)
-	}
+    /**
+     * Deregister a [Machine] from this scheduler.
+     *
+     * @param machine The machine to deregister.
+     */
+    override fun deregister(machine: Machine) {
+        machines.remove(machine)
+    }
 }

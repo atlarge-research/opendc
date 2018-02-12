@@ -42,17 +42,17 @@ import javax.persistence.Entity
  */
 @Entity
 data class Gpu(
-	val id: Int,
-	val manufacturer: String,
-	val family: String,
-	val generation: String,
-	val model: String,
-	override val clockRate: Int,
-	override val cores: Int,
-	override val energyConsumption: Double
+    val id: Int,
+    val manufacturer: String,
+    val family: String,
+    val generation: String,
+    val model: String,
+    override val clockRate: Int,
+    override val cores: Int,
+    override val energyConsumption: Double
 ) : Gpu {
-	/**
-	 * The initial state of the entity.
-	 */
-	override val initialState = Unit
+    /**
+     * The initial state of the entity.
+     */
+    override val initialState = Unit
 }

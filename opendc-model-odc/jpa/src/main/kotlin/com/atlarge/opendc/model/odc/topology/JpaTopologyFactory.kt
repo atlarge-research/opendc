@@ -28,11 +28,7 @@ import com.atlarge.opendc.model.odc.integration.jpa.schema.Rack
 import com.atlarge.opendc.model.odc.integration.jpa.schema.Room
 import com.atlarge.opendc.model.odc.integration.jpa.schema.RoomObject
 import com.atlarge.opendc.model.odc.integration.jpa.schema.Section
-import com.atlarge.opendc.model.topology.AdjacencyList
-import com.atlarge.opendc.model.topology.Topology
-import com.atlarge.opendc.model.topology.MutableTopology
-import com.atlarge.opendc.model.topology.TopologyBuilder
-import com.atlarge.opendc.model.topology.TopologyFactory
+import com.atlarge.opendc.model.topology.*
 
 /**
  * A [TopologyFactory] that converts a [Section] of an experiment as defined by the API, into a proper [Topology].
@@ -42,54 +38,54 @@ import com.atlarge.opendc.model.topology.TopologyFactory
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 class JpaTopologyFactory(val section: Section, val builder: TopologyBuilder = AdjacencyList.builder()) : TopologyFactory {
-	/**
-	 * Create a [MutableTopology] instance.
-	 *
-	 * @return A mutable topology.
-	 */
-	override fun create(): MutableTopology = builder.construct {
-		val datacenter = section.datacenter
-		add(datacenter)
-		datacenter.rooms.forEach { room ->
-			add(room)
-			connect(datacenter, room, tag = "room")
+    /**
+     * Create a [MutableTopology] instance.
+     *
+     * @return A mutable topology.
+     */
+    override fun create(): MutableTopology = builder.construct {
+        val datacenter = section.datacenter
+        add(datacenter)
+        datacenter.rooms.forEach { room ->
+            add(room)
+            connect(datacenter, room, tag = "room")
 
-			room.objects.forEach { roomObject(room, it) }
-		}
-	}
+            room.objects.forEach { roomObject(room, it) }
+        }
+    }
 
-	/**
-	 * Handle the objects in a room.
-	 *
-	 * @param obj The obj to handle.
-	 */
-	private fun MutableTopology.roomObject(parent: Room, obj: RoomObject) = when(obj) {
-		is Rack -> rack(parent, obj)
-		else -> Unit
-	}
+    /**
+     * Handle the objects in a room.
+     *
+     * @param obj The obj to handle.
+     */
+    private fun MutableTopology.roomObject(parent: Room, obj: RoomObject) = when (obj) {
+        is Rack -> rack(parent, obj)
+        else -> Unit
+    }
 
-	/**
-	 * Handle a rack in a room.
-	 *
-	 * @param parent The parent of the rack.
-	 * @param rack The rack to handle.
-	 */
-	private fun MutableTopology.rack(parent: Room, rack: Rack) {
-		add(rack)
-		connect(parent, rack, tag = "rack")
-		rack.machines.forEach { machine ->
-			add(machine)
-			connect(rack, machine, tag = "machine")
+    /**
+     * Handle a rack in a room.
+     *
+     * @param parent The parent of the rack.
+     * @param rack The rack to handle.
+     */
+    private fun MutableTopology.rack(parent: Room, rack: Rack) {
+        add(rack)
+        connect(parent, rack, tag = "rack")
+        rack.machines.forEach { machine ->
+            add(machine)
+            connect(rack, machine, tag = "machine")
 
-			machine.cpus.forEach { cpu ->
-				add(cpu)
-				connect(machine, cpu, tag = "cpu")
-			}
+            machine.cpus.forEach { cpu ->
+                add(cpu)
+                connect(machine, cpu, tag = "cpu")
+            }
 
-			machine.gpus.forEach { gpu ->
-				add(gpu)
-				connect(machine, gpu, tag = "gpu")
-			}
-		}
-	}
+            machine.gpus.forEach { gpu ->
+                add(gpu)
+                connect(machine, gpu, tag = "gpu")
+            }
+        }
+    }
 }

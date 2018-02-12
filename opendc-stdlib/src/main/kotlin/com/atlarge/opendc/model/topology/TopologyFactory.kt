@@ -31,10 +31,10 @@ package com.atlarge.opendc.model.topology
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface TopologyFactory {
-	/**
-	 * Create a [MutableTopology] instance.
-	 *
-	 * @return A mutable topology.
-	 */
-	fun create(): MutableTopology
+    /**
+     * Create a [MutableTopology] instance.
+     *
+     * @return A mutable topology.
+     */
+    fun create(): MutableTopology
 }

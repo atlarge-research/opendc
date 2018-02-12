@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.model.odc.topology.container
 
-import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.model.topology.Topology
+import com.atlarge.opendc.simulator.Entity
 
 /**
  * A type of physical steel and electronic framework that is designed to house servers, networking devices, cables and

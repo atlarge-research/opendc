@@ -35,16 +35,16 @@ import com.atlarge.opendc.simulator.Entity
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Topology : TopologyContext, Cloneable, Set<Entity<*, Topology>> {
-	/**
-	 * The listeners of this topology.
-	 */
-	val listeners: MutableSet<TopologyListener>
+    /**
+     * The listeners of this topology.
+     */
+    val listeners: MutableSet<TopologyListener>
 
-	/**
-	 * Create a copy of the topology.
-	 *
-	 * @return A new [Topology] with a copy of the graph.
-	 */
-	public override fun clone(): Topology
+    /**
+     * Create a copy of the topology.
+     *
+     * @return A new [Topology] with a copy of the graph.
+     */
+    public override fun clone(): Topology
 }
 

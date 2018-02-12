@@ -24,9 +24,9 @@
 
 package com.atlarge.opendc.model.odc.integration.jpa.schema
 
-import com.atlarge.opendc.simulator.Duration
 import com.atlarge.opendc.model.odc.platform.scheduler.Scheduler
 import com.atlarge.opendc.model.odc.topology.container.Datacenter
+import com.atlarge.opendc.simulator.Duration
 import javax.persistence.Entity
 
 /**
@@ -38,29 +38,29 @@ import javax.persistence.Entity
  */
 @Entity
 data class Datacenter(
-	val id: Int,
-	val rooms: Set<Room>
-): Datacenter {
-	/**
-	 * Construct a datacenter. We need this useless constructor in order for Kotlin correctly initialise the
-	 * constant fields of the class.
-	 */
-	private constructor() : this(-1, emptySet())
+    val id: Int,
+    val rooms: Set<Room>
+) : Datacenter {
+    /**
+     * Construct a datacenter. We need this useless constructor in order for Kotlin correctly initialise the
+     * constant fields of the class.
+     */
+    private constructor() : this(-1, emptySet())
 
-	/**
-	 * The task scheduler the datacenter uses.
-	 */
-	override lateinit var scheduler: Scheduler
-		internal set
+    /**
+     * The task scheduler the datacenter uses.
+     */
+    override lateinit var scheduler: Scheduler
+        internal set
 
-	/**
-	 * The interval at which task will be (re)scheduled.
-	 * We set this to a fixed constant since the database provides no way of configuring this.
-	 */
-	override val interval: Duration = 10
+    /**
+     * The interval at which task will be (re)scheduled.
+     * We set this to a fixed constant since the database provides no way of configuring this.
+     */
+    override val interval: Duration = 10
 
-	/**
-	 * The initial state of the datacenter.
-	 */
-	override val initialState = Unit
+    /**
+     * The initial state of the datacenter.
+     */
+    override val initialState = Unit
 }

@@ -33,29 +33,29 @@ import com.atlarge.opendc.simulator.Entity
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Edge<out T> : Component {
-	/**
-	 * The label of this edge.
-	 */
-	val label: T
+    /**
+     * The label of this edge.
+     */
+    val label: T
 
-	/**
-	 * A tag to uniquely identify the relationship this edge represents.
-	 */
-	val tag: String?
+    /**
+     * A tag to uniquely identify the relationship this edge represents.
+     */
+    val tag: String?
 
-	/**
-	 * The source of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val from: Entity<*, Topology>
+    /**
+     * The source of the edge.
+     *
+     * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
+     * <code>O(n)</code>, with respect to the size of the topology.
+     */
+    val from: Entity<*, Topology>
 
-	/**
-	 * The destination of the edge.
-	 *
-	 * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
-	 * <code>O(n)</code>, with respect to the size of the topology.
-	 */
-	val to: Entity<*, Topology>
+    /**
+     * The destination of the edge.
+     *
+     * This property is not guaranteed to have a runtime complexity of <code>O(1)</code>, but must be at least
+     * <code>O(n)</code>, with respect to the size of the topology.
+     */
+    val to: Entity<*, Topology>
 }

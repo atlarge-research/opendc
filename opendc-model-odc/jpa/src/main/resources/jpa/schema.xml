@@ -22,303 +22,305 @@
   ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   ~ SOFTWARE.
   -->
-<entity-mappings version="2.1"
-				 xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
-				 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-				 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm_2_1.xsd">
+<entity-mappings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 version="2.1"
+                 xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+>
 
-	<package>com.atlarge.opendc.model.odc.integration.jpa.schema</package>
+    <package>com.atlarge.opendc.model.odc.integration.jpa.schema</package>
 
-	<entity class="Experiment" access="FIELD" name="experiments">
-		<convert converter="com.atlarge.opendc.model.odc.integration.jpa.converter.SchedulerConverter" attribute-name="scheduler" />
-		<attributes>
-			<id name="id" />
+    <entity class="Experiment" access="FIELD" name="experiments">
+        <convert converter="com.atlarge.opendc.model.odc.integration.jpa.converter.SchedulerConverter"
+                 attribute-name="scheduler"/>
+        <attributes>
+            <id name="id"/>
 
-			<basic name="name">
-				<column column-definition="text" />
-			</basic>
+            <basic name="name">
+                <column column-definition="text"/>
+            </basic>
 
-			<basic name="state">
-				<column column-definition="text" />
-				<enumerated>STRING</enumerated>
-			</basic>
+            <basic name="state">
+                <column column-definition="text"/>
+                <enumerated>STRING</enumerated>
+            </basic>
 
-			<basic name="last">
-				<column name="last_simulated_tick" column-definition="int(11)" />
-			</basic>
+            <basic name="last">
+                <column name="last_simulated_tick" column-definition="int(11)"/>
+            </basic>
 
-			<basic name="scheduler">
-				<column name="scheduler_name" />
-			</basic>
+            <basic name="scheduler">
+                <column name="scheduler_name"/>
+            </basic>
 
-			<many-to-one name="trace" target-entity="com.atlarge.opendc.model.odc.integration.jpa.schema.Trace">
-				<join-column name="trace_id" />
-			</many-to-one>
+            <many-to-one name="trace" target-entity="com.atlarge.opendc.model.odc.integration.jpa.schema.Trace">
+                <join-column name="trace_id"/>
+            </many-to-one>
 
-			<one-to-one name="path" target-entity="com.atlarge.opendc.model.odc.integration.jpa.schema.Path">
-				<join-column name="path_id" />
-			</one-to-one>
-		</attributes>
-	</entity>
+            <one-to-one name="path" target-entity="com.atlarge.opendc.model.odc.integration.jpa.schema.Path">
+                <join-column name="path_id"/>
+            </one-to-one>
+        </attributes>
+    </entity>
 
-	<entity class="Path" access="FIELD" name="paths">
-		<attributes>
-			<id name="id" />
+    <entity class="Path" access="FIELD" name="paths">
+        <attributes>
+            <id name="id"/>
 
-			<one-to-many name="sections" target-entity="com.atlarge.opendc.model.odc.integration.jpa.schema.Section">
-				<join-column name="path_id" />
-			</one-to-many>
-		</attributes>
-	</entity>
+            <one-to-many name="sections" target-entity="com.atlarge.opendc.model.odc.integration.jpa.schema.Section">
+                <join-column name="path_id"/>
+            </one-to-many>
+        </attributes>
+    </entity>
 
-	<entity class="Section" access="FIELD" name="sections">
-		<attributes>
-			<id name="id" />
+    <entity class="Section" access="FIELD" name="sections">
+        <attributes>
+            <id name="id"/>
 
-			<basic name="startTime">
-				<column name="start_tick" column-definition="int(11)" />
-			</basic>
+            <basic name="startTime">
+                <column name="start_tick" column-definition="int(11)"/>
+            </basic>
 
-			<many-to-one name="datacenter">
-				<join-column name="datacenter_id" />
-			</many-to-one>
-		</attributes>
-	</entity>
+            <many-to-one name="datacenter">
+                <join-column name="datacenter_id"/>
+            </many-to-one>
+        </attributes>
+    </entity>
 
-	<entity class="Trace" access="FIELD" name="traces" cacheable="false">
-		<attributes>
-			<id name="id" />
-			<basic name="name">
-				<column column-definition="text" />
-			</basic>
-			<one-to-many name="jobs" target-entity="com.atlarge.opendc.model.odc.integration.jpa.schema.Job">
-				<join-column name="trace_id" />
-			</one-to-many>
-		</attributes>
-	</entity>
+    <entity class="Trace" access="FIELD" name="traces" cacheable="false">
+        <attributes>
+            <id name="id"/>
+            <basic name="name">
+                <column column-definition="text"/>
+            </basic>
+            <one-to-many name="jobs" target-entity="com.atlarge.opendc.model.odc.integration.jpa.schema.Job">
+                <join-column name="trace_id"/>
+            </one-to-many>
+        </attributes>
+    </entity>
 
-	<entity class="Job" access="FIELD" name="jobs" cacheable="false">
-		<attributes>
-			<id name="id" />
-			<one-to-many name="tasks" target-entity="Task">
-				<join-column name="job_id" />
-			</one-to-many>
-			<transient name="owner" />
-		</attributes>
-	</entity>
+    <entity class="Job" access="FIELD" name="jobs" cacheable="false">
+        <attributes>
+            <id name="id"/>
+            <one-to-many name="tasks" target-entity="Task">
+                <join-column name="job_id"/>
+            </one-to-many>
+            <transient name="owner"/>
+        </attributes>
+    </entity>
 
-	<entity class="Task" access="FIELD" name="tasks" cacheable="false">
-		<convert converter="com.atlarge.opendc.model.odc.integration.jpa.converter.ParallelizableConverter" attribute-name="parallelizable" />
-		<attributes>
-			<id name="id" />
-			<basic name="flops">
-				<column name="total_flop_count" column-definition="int(11)" />
-			</basic>
-			<basic name="startTime">
-				<column name="start_tick" column-definition="int(11)" />
-			</basic>
-			<basic name="parallelizable">
-				<column name="parallelizability" column-definition="text" />
-			</basic>
+    <entity class="Task" access="FIELD" name="tasks" cacheable="false">
+        <convert converter="com.atlarge.opendc.model.odc.integration.jpa.converter.ParallelizableConverter"
+                 attribute-name="parallelizable"/>
+        <attributes>
+            <id name="id"/>
+            <basic name="flops">
+                <column name="total_flop_count" column-definition="int(11)"/>
+            </basic>
+            <basic name="startTime">
+                <column name="start_tick" column-definition="int(11)"/>
+            </basic>
+            <basic name="parallelizable">
+                <column name="parallelizability" column-definition="text"/>
+            </basic>
 
-			<one-to-one name="dependency" target-entity="Task">
-				<join-column name="task_dependency_id" />
-			</one-to-one>
-			<transient name="dependencies" />
-			<transient name="state" />
-			<transient name="remaining" />
-			<transient name="finished" />
-		</attributes>
-	</entity>
+            <one-to-one name="dependency" target-entity="Task">
+                <join-column name="task_dependency_id"/>
+            </one-to-one>
+            <transient name="dependencies"/>
+            <transient name="state"/>
+            <transient name="remaining"/>
+            <transient name="finished"/>
+        </attributes>
+    </entity>
 
-	<entity class="Datacenter" access="FIELD" name="datacenters">
-		<attributes>
-			<id name="id" />
+    <entity class="Datacenter" access="FIELD" name="datacenters">
+        <attributes>
+            <id name="id"/>
 
-			<one-to-many name="rooms" target-entity="Room">
-				<join-column name="datacenter_id" />
-			</one-to-many>
-			<transient name="scheduler" />
-			<transient name="interval" />
-			<transient name="initialState" />
-		</attributes>
-	</entity>
+            <one-to-many name="rooms" target-entity="Room">
+                <join-column name="datacenter_id"/>
+            </one-to-many>
+            <transient name="scheduler"/>
+            <transient name="interval"/>
+            <transient name="initialState"/>
+        </attributes>
+    </entity>
 
-	<entity class="Room" access="FIELD" name="rooms">
-		<attributes>
-			<id name="id" />
-			<basic name="name">
-				<column column-definition="text" />
-			</basic>
-			<basic name="type">
-				<enumerated>STRING</enumerated>
-			</basic>
-			<one-to-many name="objects">
-				<join-table name="tiles">
-					<join-column name="room_id" />
-					<inverse-join-column name="object_id" />
-				</join-table>
-			</one-to-many>
-			<transient name="initialState" />
-		</attributes>
-	</entity>
+    <entity class="Room" access="FIELD" name="rooms">
+        <attributes>
+            <id name="id"/>
+            <basic name="name">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="type">
+                <enumerated>STRING</enumerated>
+            </basic>
+            <one-to-many name="objects">
+                <join-table name="tiles">
+                    <join-column name="room_id"/>
+                    <inverse-join-column name="object_id"/>
+                </join-table>
+            </one-to-many>
+            <transient name="initialState"/>
+        </attributes>
+    </entity>
 
-	<entity class="RoomObject" access="FIELD" name="objects">
-		<inheritance strategy="JOINED" />
-		<discriminator-column name="type" />
-		<attributes>
-			<id name="id"/>
-		</attributes>
-	</entity>
+    <entity class="RoomObject" access="FIELD" name="objects">
+        <inheritance strategy="JOINED"/>
+        <discriminator-column name="type"/>
+        <attributes>
+            <id name="id"/>
+        </attributes>
+    </entity>
 
-	<entity class="Rack" access="FIELD" name="racks">
-		<discriminator-value>RACK</discriminator-value>
-		<attributes>
-			<id name="id" />
-			<basic name="name">
-				<column column-definition="text" />
-			</basic>
-			<basic name="capacity" />
-			<basic name="powerCapacity">
-				<column name="power_capacity_w" />
-			</basic>
+    <entity class="Rack" access="FIELD" name="racks">
+        <discriminator-value>RACK</discriminator-value>
+        <attributes>
+            <id name="id"/>
+            <basic name="name">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="capacity"/>
+            <basic name="powerCapacity">
+                <column name="power_capacity_w"/>
+            </basic>
 
-			<one-to-many name="machines">
-				<join-column name="rack_id" />
-			</one-to-many>
-			<transient name="initialState" />
-		</attributes>
-	</entity>
+            <one-to-many name="machines">
+                <join-column name="rack_id"/>
+            </one-to-many>
+            <transient name="initialState"/>
+        </attributes>
+    </entity>
 
-	<entity class="Machine" access="FIELD" name="machines">
-		<attributes>
-			<id name="id" />
-			<basic name="position" />
+    <entity class="Machine" access="FIELD" name="machines">
+        <attributes>
+            <id name="id"/>
+            <basic name="position"/>
 
-			<many-to-many name="cpus">
-				<join-table name="machine_cpus">
-					<join-column name="machine_id" />
-					<inverse-join-column name="cpu_id" />
-				</join-table>
-			</many-to-many>
+            <many-to-many name="cpus">
+                <join-table name="machine_cpus">
+                    <join-column name="machine_id"/>
+                    <inverse-join-column name="cpu_id"/>
+                </join-table>
+            </many-to-many>
 
-			<many-to-many name="gpus">
-				<join-table name="machine_gpus">
-					<join-column name="machine_id" />
-					<inverse-join-column name="gpu_id" />
-				</join-table>
-			</many-to-many>
-			<transient name="initialState" />
-		</attributes>
-	</entity>
+            <many-to-many name="gpus">
+                <join-table name="machine_gpus">
+                    <join-column name="machine_id"/>
+                    <inverse-join-column name="gpu_id"/>
+                </join-table>
+            </many-to-many>
+            <transient name="initialState"/>
+        </attributes>
+    </entity>
 
-	<entity class="Cpu" access="FIELD" name="cpus">
-		<attributes>
-			<id name="id" />
-			<basic name="manufacturer">
-				<column column-definition="text" />
-			</basic>
-			<basic name="family">
-				<column column-definition="text" />
-			</basic>
-			<basic name="generation">
-				<column column-definition="text" />
-			</basic>
-			<basic name="model">
-				<column column-definition="text" />
-			</basic>
-			<basic name="clockRate">
-				<column name="clock_rate_mhz" />
-			</basic>
-			<basic name="cores">
-				<column name="number_of_cores" />
-			</basic>
-			<basic name="energyConsumption">
-				<column name="energy_consumption_w" />
-			</basic>
-			<transient name="initialState" />
-		</attributes>
-	</entity>
+    <entity class="Cpu" access="FIELD" name="cpus">
+        <attributes>
+            <id name="id"/>
+            <basic name="manufacturer">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="family">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="generation">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="model">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="clockRate">
+                <column name="clock_rate_mhz"/>
+            </basic>
+            <basic name="cores">
+                <column name="number_of_cores"/>
+            </basic>
+            <basic name="energyConsumption">
+                <column name="energy_consumption_w"/>
+            </basic>
+            <transient name="initialState"/>
+        </attributes>
+    </entity>
 
-	<entity class="Gpu" access="FIELD" name="gpus">
-		<attributes>
-			<id name="id" />
-			<basic name="manufacturer">
-				<column column-definition="text" />
-			</basic>
-			<basic name="family">
-				<column column-definition="text" />
-			</basic>
-			<basic name="generation">
-				<column column-definition="text" />
-			</basic>
-			<basic name="model">
-				<column column-definition="text" />
-			</basic>
-			<basic name="clockRate">
-				<column name="clock_rate_mhz" />
-			</basic>
-			<basic name="cores">
-				<column name="number_of_cores" />
-			</basic>
-			<basic name="energyConsumption">
-				<column name="energy_consumption_w" />
-			</basic>
-			<transient name="initialState" />
-		</attributes>
-	</entity>
+    <entity class="Gpu" access="FIELD" name="gpus">
+        <attributes>
+            <id name="id"/>
+            <basic name="manufacturer">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="family">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="generation">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="model">
+                <column column-definition="text"/>
+            </basic>
+            <basic name="clockRate">
+                <column name="clock_rate_mhz"/>
+            </basic>
+            <basic name="cores">
+                <column name="number_of_cores"/>
+            </basic>
+            <basic name="energyConsumption">
+                <column name="energy_consumption_w"/>
+            </basic>
+            <transient name="initialState"/>
+        </attributes>
+    </entity>
 
-	<entity class="MachineState" access="FIELD" name="machine_states">
-		<attributes>
-			<id name="id">
-				<generated-value strategy="IDENTITY" />
-			</id>
-			<basic name="time">
-				<column name="tick" column-definition="int(11)" />
-			</basic>
-			<basic name="temperature">
-				<column name="temperature_c" />
-			</basic>
-			<basic name="memoryUsage">
-				<column name="in_use_memory_mb" />
-			</basic>
-			<basic name="load">
-				<column name="load_fraction" />
-			</basic>
+    <entity class="MachineState" access="FIELD" name="machine_states">
+        <attributes>
+            <id name="id">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="time">
+                <column name="tick" column-definition="int(11)"/>
+            </basic>
+            <basic name="temperature">
+                <column name="temperature_c"/>
+            </basic>
+            <basic name="memoryUsage">
+                <column name="in_use_memory_mb"/>
+            </basic>
+            <basic name="load">
+                <column name="load_fraction"/>
+            </basic>
 
-			<many-to-one name="task">
-				<join-column name="task_id" />
-			</many-to-one>
-			<many-to-one name="machine">
-				<join-column name="machine_id" />
-			</many-to-one>
-			<many-to-one name="experiment">
-				<join-column name="experiment_id" />
-			</many-to-one>
-		</attributes>
-	</entity>
+            <many-to-one name="task">
+                <join-column name="task_id"/>
+            </many-to-one>
+            <many-to-one name="machine">
+                <join-column name="machine_id"/>
+            </many-to-one>
+            <many-to-one name="experiment">
+                <join-column name="experiment_id"/>
+            </many-to-one>
+        </attributes>
+    </entity>
 
-	<entity class="TaskState" access="FIELD" name="task_states">
-		<attributes>
-			<id name="id">
-				<generated-value strategy="IDENTITY" />
-			</id>
-			<basic name="time">
-				<column name="tick" column-definition="int(11)" />
-			</basic>
-			<basic name="remaining">
-				<column name="flops_left" />
-			</basic>
-			<basic name="cores">
-				<column name="cores_used" />
-			</basic>
+    <entity class="TaskState" access="FIELD" name="task_states">
+        <attributes>
+            <id name="id">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="time">
+                <column name="tick" column-definition="int(11)"/>
+            </basic>
+            <basic name="remaining">
+                <column name="flops_left"/>
+            </basic>
+            <basic name="cores">
+                <column name="cores_used"/>
+            </basic>
 
-			<many-to-one name="task">
-				<join-column name="task_id" />
-			</many-to-one>
-			<many-to-one name="experiment">
-				<join-column name="experiment_id" />
-			</many-to-one>
-		</attributes>
-	</entity>
+            <many-to-one name="task">
+                <join-column name="task_id"/>
+            </many-to-one>
+            <many-to-one name="experiment">
+                <join-column name="experiment_id"/>
+            </many-to-one>
+        </attributes>
+    </entity>
 </entity-mappings>

@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.model.odc.integration.jpa.schema
 
-import com.atlarge.opendc.simulator.Instant
 import com.atlarge.opendc.model.odc.platform.scheduler.Scheduler
+import com.atlarge.opendc.simulator.Instant
 import javax.persistence.Entity
 
 /**
@@ -40,19 +40,19 @@ import javax.persistence.Entity
  */
 @Entity
 data class Experiment(
-	val id: Int,
-	val name: String,
-	val scheduler: Scheduler,
-	val trace: Trace,
-	val path: Path
+    val id: Int,
+    val name: String,
+    val scheduler: Scheduler,
+    val trace: Trace,
+    val path: Path
 ) {
-	/**
-	 * The state of the experiment.
-	 */
-	var state: ExperimentState = ExperimentState.QUEUED
+    /**
+     * The state of the experiment.
+     */
+    var state: ExperimentState = ExperimentState.QUEUED
 
-	/**
-	 * The last tick that has been simulated.
-	 */
-	var last: Instant = 0
+    /**
+     * The last tick that has been simulated.
+     */
+    var last: Instant = 0
 }

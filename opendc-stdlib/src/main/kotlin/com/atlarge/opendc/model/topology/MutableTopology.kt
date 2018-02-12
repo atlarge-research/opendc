@@ -33,33 +33,33 @@ import com.atlarge.opendc.simulator.Entity
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface MutableTopology : Topology, MutableSet<Entity<*, Topology>> {
-	/**
-	 * Create a directed, labeled edge between two nodes in the topology.
-	 *
-	 * @param from The source of the edge.
-	 * @param to The destination of the edge.
-	 * @param label The label of the edge.
-	 * @param tag The tag of the edge that uniquely identifies the relationship the edge represents.
-	 * @return The edge that has been created.
-	 */
-	fun <T> connect(from: Entity<*, Topology>, to: Entity<*, Topology>, label: T, tag: String? = null): Edge<T>
+    /**
+     * Create a directed, labeled edge between two nodes in the topology.
+     *
+     * @param from The source of the edge.
+     * @param to The destination of the edge.
+     * @param label The label of the edge.
+     * @param tag The tag of the edge that uniquely identifies the relationship the edge represents.
+     * @return The edge that has been created.
+     */
+    fun <T> connect(from: Entity<*, Topology>, to: Entity<*, Topology>, label: T, tag: String? = null): Edge<T>
 
-	/**
-	 * Create a directed, unlabeled edge between two nodes in the topology.
-	 *
-	 * @param from The source of the edge.
-	 * @param to The destination of the edge.
-	 * @param tag The tag of the edge that uniquely identifies the relationship the edge represents.
-	 * @return The edge that has been created.
-	 */
-	fun connect(from: Entity<*, Topology>, to: Entity<*, Topology>, tag: String? = null): Edge<Unit> =
-		connect(from, to, Unit, tag)
+    /**
+     * Create a directed, unlabeled edge between two nodes in the topology.
+     *
+     * @param from The source of the edge.
+     * @param to The destination of the edge.
+     * @param tag The tag of the edge that uniquely identifies the relationship the edge represents.
+     * @return The edge that has been created.
+     */
+    fun connect(from: Entity<*, Topology>, to: Entity<*, Topology>, tag: String? = null): Edge<Unit> =
+        connect(from, to, Unit, tag)
 
-	/**
-	 * Create a directed, unlabeled edge between two nodes in the topology.
-	 *
-	 * @param dest The destination of the edge.
-	 * @return The edge that has been created.
-	 */
-	infix fun Entity<*, Topology>.to(dest: Entity<*, Topology>): Edge<Unit> = connect(this, dest)
+    /**
+     * Create a directed, unlabeled edge between two nodes in the topology.
+     *
+     * @param dest The destination of the edge.
+     * @return The edge that has been created.
+     */
+    infix fun Entity<*, Topology>.to(dest: Entity<*, Topology>): Edge<Unit> = connect(this, dest)
 }

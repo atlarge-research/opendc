@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.model.odc.topology.network
 
-import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.model.topology.Topology
+import com.atlarge.opendc.simulator.Entity
 
 /**
  * A generic interface for a network unit in a cloud network.

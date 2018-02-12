@@ -32,11 +32,11 @@ import com.atlarge.opendc.simulator.Bootstrap
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface KernelFactory {
-	/**
-	 * Create a simulation over the given model facilitated by this simulation kernel.
-	 *
-	 * @param bootstrap The bootstrap procedure to bootstrap the simulation with.
-	 * @return A [Kernel] instance to control the simulation.
-	 */
-	fun <M> create(bootstrap: Bootstrap<M>): Kernel<M>
+    /**
+     * Create a simulation over the given model facilitated by this simulation kernel.
+     *
+     * @param bootstrap The bootstrap procedure to bootstrap the simulation with.
+     * @return A [Kernel] instance to control the simulation.
+     */
+    fun <M> create(bootstrap: Bootstrap<M>): Kernel<M>
 }

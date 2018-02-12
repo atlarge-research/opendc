@@ -33,31 +33,31 @@ import com.atlarge.opendc.simulator.Entity
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface TopologyListener {
-	/**
-	 * This method is invoked when an [Entity] is added to the [Topology].
-	 *
-	 * @param node The entity that has been added to the [Topology].
-	 */
-	fun Topology.onNodeAdded(node: Entity<*, Topology>) {}
+    /**
+     * This method is invoked when an [Entity] is added to the [Topology].
+     *
+     * @param node The entity that has been added to the [Topology].
+     */
+    fun Topology.onNodeAdded(node: Entity<*, Topology>) {}
 
-	/**
-	 * This method is invoked when an [Entity] is removed from the [Topology].
-	 *
-	 * @param node The entity that has been removed from the [Topology].
-	 */
-	fun Topology.onNodeRemoved(node: Entity<*, Topology>) {}
+    /**
+     * This method is invoked when an [Entity] is removed from the [Topology].
+     *
+     * @param node The entity that has been removed from the [Topology].
+     */
+    fun Topology.onNodeRemoved(node: Entity<*, Topology>) {}
 
-	/**
-	 * This method is invoked when an [Edge] is added to the [Topology].
-	 *
-	 * @param edge The edge that has been added to the [Topology].
-	 */
-	fun Topology.onEdgeAdded(edge: Edge<*>) {}
+    /**
+     * This method is invoked when an [Edge] is added to the [Topology].
+     *
+     * @param edge The edge that has been added to the [Topology].
+     */
+    fun Topology.onEdgeAdded(edge: Edge<*>) {}
 
-	/**
-	 * This method is invoked when an [Edge] is removed from the [Topology].
-	 *
-	 * @param edge The entity that has been removed from the [Topology].
-	 */
-	fun Topology.onEdgeRemoved(edge: Edge<*>) {}
+    /**
+     * This method is invoked when an [Edge] is removed from the [Topology].
+     *
+     * @param edge The entity that has been removed from the [Topology].
+     */
+    fun Topology.onEdgeRemoved(edge: Edge<*>) {}
 }

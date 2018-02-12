@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.model.odc.integration.jpa.converter
 
-import com.atlarge.opendc.model.odc.platform.scheduler.Scheduler
 import com.atlarge.opendc.model.odc.platform.scheduler.FifoScheduler
+import com.atlarge.opendc.model.odc.platform.scheduler.Scheduler
 import com.atlarge.opendc.model.odc.platform.scheduler.SrtfScheduler
 import javax.persistence.AttributeConverter
 
@@ -38,29 +38,29 @@ import javax.persistence.AttributeConverter
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 class SchedulerConverter : AttributeConverter<Scheduler, String> {
-	/**
-	 * Converts the data stored in the database column into the
-	 * value to be stored in the entity attribute.
-	 * Note that it is the responsibility of the converter writer to
-	 * specify the correct dbData type for the corresponding column
-	 * for use by the JDBC driver: i.e., persistence providers are
-	 * not expected to do such type conversion.
-	 *
-	 * @param dbData the data from the database column to be converted
-	 * @return the converted value to be stored in the entity attribute
-	 */
-	override fun convertToEntityAttribute(dbData: String?): Scheduler = when(dbData?.toUpperCase()) {
-		"SRTF" -> SrtfScheduler()
-		else -> FifoScheduler()
-	}
+    /**
+     * Converts the data stored in the database column into the
+     * value to be stored in the entity attribute.
+     * Note that it is the responsibility of the converter writer to
+     * specify the correct dbData type for the corresponding column
+     * for use by the JDBC driver: i.e., persistence providers are
+     * not expected to do such type conversion.
+     *
+     * @param dbData the data from the database column to be converted
+     * @return the converted value to be stored in the entity attribute
+     */
+    override fun convertToEntityAttribute(dbData: String?): Scheduler = when (dbData?.toUpperCase()) {
+        "SRTF" -> SrtfScheduler()
+        else -> FifoScheduler()
+    }
 
-	/**
-	 * Converts the value stored in the entity attribute into the
-	 * data representation to be stored in the database.
-	 *
-	 * @param attribute the entity attribute value to be converted
-	 * @return the converted data to be stored in the database column
-	 */
-	override fun convertToDatabaseColumn(attribute: Scheduler?): String =
-		attribute?.name?.toUpperCase() ?: "FIFO"
+    /**
+     * Converts the value stored in the entity attribute into the
+     * data representation to be stored in the database.
+     *
+     * @param attribute the entity attribute value to be converted
+     * @return the converted data to be stored in the database column
+     */
+    override fun convertToDatabaseColumn(attribute: Scheduler?): String =
+        attribute?.name?.toUpperCase() ?: "FIFO"
 }

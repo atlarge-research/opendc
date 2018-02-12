@@ -33,18 +33,18 @@ import com.atlarge.opendc.simulator.Entity
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface TopologyContext {
-	/**
-	 * A unique identifier of an [Entity] within the topology.
-	 */
-	val Entity<*, Topology>.id: Int
+    /**
+     * A unique identifier of an [Entity] within the topology.
+     */
+    val Entity<*, Topology>.id: Int
 
-	/**
-	 * The set of ingoing edges of an [Entity].
-	 */
-	val Entity<*, Topology>.ingoingEdges: Set<Edge<*>>
+    /**
+     * The set of ingoing edges of an [Entity].
+     */
+    val Entity<*, Topology>.ingoingEdges: Set<Edge<*>>
 
-	/**
-	 * The set of outgoing edges of an [Entity].
-	 */
-	val Entity<*, Topology>.outgoingEdges: Set<Edge<*>>
+    /**
+     * The set of outgoing edges of an [Entity].
+     */
+    val Entity<*, Topology>.outgoingEdges: Set<Edge<*>>
 }

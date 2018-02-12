@@ -37,8 +37,8 @@ package com.atlarge.opendc.simulator
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 interface Entity<out S, in M> {
-	/**
-	 * The initial state of the entity.
-	 */
-	val initialState: S
+    /**
+     * The initial state of the entity.
+     */
+    val initialState: S
 }

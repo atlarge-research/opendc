@@ -7,4 +7,4 @@ import com.atlarge.opendc.model.topology.MutableTopology
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface OdcModel: MutableTopology
+interface OdcModel : MutableTopology

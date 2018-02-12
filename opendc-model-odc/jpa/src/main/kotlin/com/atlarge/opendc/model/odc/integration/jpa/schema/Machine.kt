@@ -38,8 +38,8 @@ import javax.persistence.Entity
  */
 @Entity
 data class Machine(
-	val id: Int,
-	val position: Int,
-	val cpus: Set<Cpu>,
-	val gpus: Set<Gpu>
-): Machine()
+    val id: Int,
+    val position: Int,
+    val cpus: Set<Cpu>,
+    val gpus: Set<Gpu>
+) : Machine()
