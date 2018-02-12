@@ -24,7 +24,7 @@
 
 /* Build configuration */
 buildscript {
-	ext.kotlin_version = '1.2.10'
+	ext.kotlin_version = '1.2.21'
 	ext.dokka_version = '0.9.15'
 
 	repositories {
@@ -78,6 +78,8 @@ repositories {
 }
 
 dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
 	compile project(':opendc-core')
 	compile project(':opendc-stdlib')
 	compile project(':opendc-model-odc:core')

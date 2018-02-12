@@ -24,7 +24,7 @@
 
 /* Build configuration */
 buildscript {
-	ext.kotlin_version = '1.2.10'
+	ext.kotlin_version = '1.2.21'
 	ext.dokka_version = '0.9.15'
 
 	repositories {
@@ -35,7 +35,7 @@ buildscript {
 	dependencies {
 		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 		classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
-		classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC3'
+		classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
 	}
 }
 
@@ -76,6 +76,8 @@ repositories {
 }
 
 dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.22.2"
 	compile project(':opendc-core')
 	compile "io.github.microutils:kotlin-logging:1.4.6"
 
