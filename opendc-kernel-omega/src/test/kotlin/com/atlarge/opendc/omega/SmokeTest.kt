@@ -27,6 +27,8 @@ package com.atlarge.opendc.omega
 import com.atlarge.opendc.simulator.Bootstrap
 import com.atlarge.opendc.simulator.Context
 import com.atlarge.opendc.simulator.Process
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -68,7 +70,7 @@ internal class SmokeTest {
         kernel.run()
     }
 
-    class NullProcess : Process<Unit, Unit> {
+    object NullProcess : Process<Unit, Unit> {
         override val initialState = Unit
         override suspend fun Context<Unit, Unit>.run() {}
     }
@@ -78,7 +80,7 @@ internal class SmokeTest {
      */
     @Test
     fun `sending message to process that has gracefully stopped`() {
-        val process = NullProcess()
+        val process = NullProcess
         val bootstrap: Bootstrap<Unit> = Bootstrap.create { ctx ->
             process.also {
                 ctx.register(it)
@@ -90,7 +92,7 @@ internal class SmokeTest {
         kernel.run()
     }
 
-    class CrashProcess : Process<Unit, Unit> {
+    object CrashProcess : Process<Unit, Unit> {
         override val initialState = Unit
         override suspend fun Context<Unit, Unit>.run() {
             TODO("This process should crash")
@@ -102,7 +104,7 @@ internal class SmokeTest {
      */
     @Test
     fun `sending message to process that has crashed`() {
-        val process = CrashProcess()
+        val process = CrashProcess
         val bootstrap: Bootstrap<Unit> = Bootstrap.create { ctx ->
             process.also {
                 ctx.register(it)
@@ -112,5 +114,31 @@ internal class SmokeTest {
 
         val kernel = OmegaKernelFactory.create(bootstrap)
         kernel.run()
+    }
+
+    class ModelProcess(private val value: Int) : Process<Boolean, Int> {
+        override val initialState = false
+        override suspend fun Context<Boolean, Int>.run() {
+            assertEquals(value, model)
+            state = true
+            hold(10)
+        }
+    }
+    /**
+     * Test if the kernel allows access to the simulation model object.
+     */
+    @Test
+    fun `access simulation model`() {
+        val value = 1
+        val process = ModelProcess(value)
+        val bootstrap: Bootstrap<Int> = Bootstrap.create { ctx ->
+            ctx.register(process)
+            value
+        }
+
+        val kernel = OmegaKernelFactory.create(bootstrap)
+        kernel.run(5)
+
+        assertTrue(kernel.run { process.state })
     }
 }
