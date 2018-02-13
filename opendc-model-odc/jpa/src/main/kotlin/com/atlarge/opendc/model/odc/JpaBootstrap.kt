@@ -5,6 +5,7 @@ import com.atlarge.opendc.model.odc.integration.jpa.schema.Task
 import com.atlarge.opendc.model.odc.topology.JpaTopologyFactory
 import com.atlarge.opendc.model.topology.bootstrap
 import com.atlarge.opendc.simulator.Bootstrap
+import mu.KotlinLogging
 
 /**
  * A [Bootstrap] procedure for experiments retrieved from a JPA data store.
@@ -12,6 +13,11 @@ import com.atlarge.opendc.simulator.Bootstrap
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
 class JpaBootstrap(val experiment: Experiment) : Bootstrap<JpaModel> {
+    /**
+     * The logging instance.
+     */
+    private val logger = KotlinLogging.logger {}
+
     /**
      * Bootstrap a model `M` for a kernel in the given context.
      *
@@ -35,6 +41,7 @@ class JpaBootstrap(val experiment: Experiment) : Bootstrap<JpaModel> {
         // Schedule all messages in the trace
         tasks.forEach { task ->
             if (task is Task) {
+                logger.info { "Scheduling $task" }
                 context.schedule(task, section.datacenter, delay = task.startTime)
             }
         }

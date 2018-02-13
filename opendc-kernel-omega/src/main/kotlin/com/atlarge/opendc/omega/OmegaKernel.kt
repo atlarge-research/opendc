@@ -122,7 +122,7 @@ internal class OmegaKernel<M>(bootstrap: Bootstrap<M>) : Kernel<M>, Bootstrap.Co
                 break
             } else if (delivery < time) {
                 // Tick has already occurred
-                logger.warn { "message processed out of order" }
+                logger.warn { "Message processed out of order" }
             }
 
             queue.poll()
@@ -270,7 +270,7 @@ internal class OmegaKernel<M>(bootstrap: Bootstrap<M>) : Kernel<M>, Bootstrap.Co
         override suspend fun Entity<*, *>.send(msg: Any, delay: Duration) = send(msg, process, delay)
 
         override suspend fun Entity<*, *>.send(msg: Any, sender: Entity<*, *>, delay: Duration) =
-            schedule(prepare(msg, sender, delay = delay))
+            schedule(prepare(msg, this, sender, delay))
 
         override suspend fun Entity<*, *>.interrupt() = send(Interrupt)
 

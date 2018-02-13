@@ -115,22 +115,20 @@ class JpaExperiment(private val manager: EntityManager,
                     manager.persist(wrapped)
                 }
 
-                trace.jobs.asSequence()
-                    .flatMap { it.tasks.asSequence() }
-                    .forEach { task ->
-                        val state = InternalTaskState(0,
-                            task as com.atlarge.opendc.model.odc.integration.jpa.schema.Task,
-                            experiment,
-                            simulation.time,
-                            task.remaining.toInt(),
-                            1
-                        )
-                        manager.persist(state)
-                    }
+                tasks.forEach { task ->
+                    val state = InternalTaskState(0,
+                        task as com.atlarge.opendc.model.odc.integration.jpa.schema.Task,
+                        experiment,
+                        simulation.time,
+                        task.remaining.toInt(),
+                        1
+                    )
+                    manager.persist(state)
+                }
             }
 
             // Run next simulation cycle
-            simulation.run(simulation.time + 1)
+            simulation.step()
         }
 
         // Set the experiment state

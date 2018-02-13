@@ -17,7 +17,7 @@ USER root
 WORKDIR $APP_HOME
 
 # Build the application
-RUN gradle --no-daemon :opendc-model-odc:setup:installDist
+RUN gradle --no-daemon assemble installDist
 
 # Fix permissions
 RUN chown -R gradle:gradle $APP_HOME
@@ -26,5 +26,4 @@ RUN chown -R gradle:gradle $APP_HOME
 USER gradle
 
 # Start the Gradle application on run
-CMD opendc-odc-model/setup/build/install/setup/bin/setup
-
+CMD opendc-model-odc/setup/build/install/setup/bin/setup

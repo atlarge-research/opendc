@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package platform
+package com.atlarge.opendc.model.odc.platform
 
 import com.atlarge.opendc.model.odc.platform.JpaExperimentManager
 import com.atlarge.opendc.omega.OmegaKernelFactory
