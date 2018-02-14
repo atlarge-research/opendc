@@ -26,6 +26,9 @@ package com.atlarge.opendc.simulator.kernel
 
 import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.simulator.Instant
+import com.atlarge.opendc.simulator.instrumentation.Instrument
+import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
 
 /**
  * A message based discrete event simulation over some model `M`. This interface provides direct control over the
@@ -50,6 +53,30 @@ interface Simulation<out M> {
      * The observable state of an [Entity] in simulation, which is provided by the simulation context.
      */
     val <E : Entity<S, *>, S> E.state: S
+
+    /**
+     * Install the given instrumentation device in this kernel to produce a stream of measurements of type
+     * <code>T</code>.
+     *
+     * The [ReceiveChannel] returned by this channel is by default conflated, which means the channel buffers at most
+     * one measurement, so that the receiver always gets the most recently sent element.
+     * Back-to-send sent measurements are conflated – only the the most recently sent element is received, while
+     * previously sent elements are lost.
+     *
+     * @param instrument The instrumentation device to install.
+     * @return A [ReceiveChannel] to which the of measurements produced by the instrument are published.
+     */
+    fun <T> install(instrument: Instrument<T, M>): ReceiveChannel<T> = install(Channel.CONFLATED, instrument)
+
+    /**
+     * Install the given instrumentation device in this kernel to produce a stream of measurements of type
+     * <code>T</code>.
+     *
+     * @param capacity The capacity of the buffer of the channel.
+     * @param instrument The instrumentation device to install.
+     * @return A [ReceiveChannel] to which the of measurements produced by the instrument are published.
+     */
+    fun <T> install(capacity: Int = Channel.CONFLATED, instrument: Instrument<T, M>): ReceiveChannel<T>
 
     /**
      * Step through one cycle in the simulation. This method will process all events in a single tick, update the
