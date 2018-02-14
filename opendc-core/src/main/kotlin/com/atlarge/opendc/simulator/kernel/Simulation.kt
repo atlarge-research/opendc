@@ -38,7 +38,7 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
  * @param M The shape of the model over which the simulation runs.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Simulation<out M> {
+interface Simulation<M> {
     /**
      * The model in which the simulation runs.
      */

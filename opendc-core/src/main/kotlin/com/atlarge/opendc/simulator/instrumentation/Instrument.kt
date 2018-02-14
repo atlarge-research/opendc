@@ -28,4 +28,4 @@ typealias Instrument<T, M> = suspend InstrumentScope<T, M>.() -> Unit
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface InstrumentScope<in T, out M>: SendChannel<T>, Context<Unit, M>
+interface InstrumentScope<in T, M>: SendChannel<T>, Context<Unit, M>
