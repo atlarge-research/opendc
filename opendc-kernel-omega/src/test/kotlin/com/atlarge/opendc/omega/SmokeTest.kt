@@ -66,8 +66,8 @@ internal class SmokeTest {
                 }
             }
         }
-        val kernel = OmegaKernelFactory.create(bootstrap)
-        kernel.run()
+        val simulation = OmegaKernel.create(bootstrap)
+        simulation.run()
     }
 
     object NullProcess : Process<Unit, Unit> {
@@ -88,8 +88,8 @@ internal class SmokeTest {
             }
         }
 
-        val kernel = OmegaKernelFactory.create(bootstrap)
-        kernel.run()
+        val simulation = OmegaKernel.create(bootstrap)
+        simulation.run()
     }
 
     object CrashProcess : Process<Unit, Unit> {
@@ -112,8 +112,8 @@ internal class SmokeTest {
             }
         }
 
-        val kernel = OmegaKernelFactory.create(bootstrap)
-        kernel.run()
+        val simulation = OmegaKernel.create(bootstrap)
+        simulation.run()
     }
 
     class ModelProcess(private val value: Int) : Process<Boolean, Int> {
@@ -136,9 +136,9 @@ internal class SmokeTest {
             value
         }
 
-        val kernel = OmegaKernelFactory.create(bootstrap)
-        kernel.run(5)
+        val simulation = OmegaKernel.create(bootstrap)
+        simulation.run(5)
 
-        assertTrue(kernel.run { process.state })
+        assertTrue(simulation.run { process.state })
     }
 }

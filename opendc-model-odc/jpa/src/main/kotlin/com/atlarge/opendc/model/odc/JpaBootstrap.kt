@@ -21,20 +21,20 @@ class JpaBootstrap(val experiment: Experiment) : Bootstrap<JpaModel> {
     /**
      * Bootstrap a model `M` for a kernel in the given context.
      *
-     * @param context The context to bootstrap to model in.
+     * @param context The context to apply to model in.
      * @return The initialised model for the simulation.
      */
-    override fun bootstrap(context: Bootstrap.Context<JpaModel>): JpaModel {
+    override fun apply(context: Bootstrap.Context<JpaModel>): JpaModel {
         val section = experiment.path.sections.first()
 
-        // TODO We should not modify parts of the experiment in a bootstrap as the bootstrap should be reproducible.
+        // TODO We should not modify parts of the experiment in a apply as the apply should be reproducible.
         // Important: initialise the scheduler of the datacenter
         section.datacenter.scheduler = experiment.scheduler
 
         val topology = JpaTopologyFactory(section)
             .create()
             .bootstrap()
-            .bootstrap(context)
+            .apply(context)
         val trace = experiment.trace
         val tasks = trace.jobs.flatMap { it.tasks }
 

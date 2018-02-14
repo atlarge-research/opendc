@@ -25,7 +25,7 @@
 package com.atlarge.opendc.simulator.platform
 
 import com.atlarge.opendc.simulator.Duration
-import com.atlarge.opendc.simulator.kernel.KernelFactory
+import com.atlarge.opendc.simulator.kernel.Kernel
 
 /**
  * A blueprint for a reproducible simulation in a pre-defined setting.
@@ -39,7 +39,7 @@ interface Experiment<out T> {
      * @param factory The factory to create the simulation kernel with.
      * @return The result of the experiment.
      */
-    fun run(factory: KernelFactory): T
+    fun run(factory: Kernel): T
 
     /**
      * Run the experiment on the specified kernel implementation.
@@ -48,5 +48,5 @@ interface Experiment<out T> {
      * @param timeout The maximum duration of the experiment before returning to the caller.
      * @return The result of the experiment or `null`.
      */
-    fun run(factory: KernelFactory, timeout: Duration): T?
+    fun run(factory: Kernel, timeout: Duration): T?
 }

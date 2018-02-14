@@ -34,7 +34,7 @@ import com.atlarge.opendc.model.odc.topology.container.Room
 import com.atlarge.opendc.model.odc.topology.machine.Machine
 import com.atlarge.opendc.model.topology.destinations
 import com.atlarge.opendc.simulator.Duration
-import com.atlarge.opendc.simulator.kernel.KernelFactory
+import com.atlarge.opendc.simulator.kernel.Kernel
 import com.atlarge.opendc.simulator.platform.Experiment
 import mu.KotlinLogging
 import java.io.Closeable
@@ -65,7 +65,7 @@ class JpaExperiment(private val manager: EntityManager,
      * @param timeout The maximum duration of the experiment before returning to the caller.
      * @return The result of the experiment or `null`.
      */
-    override fun run(factory: KernelFactory, timeout: Duration): Unit? {
+    override fun run(factory: Kernel, timeout: Duration): Unit? {
         if (experiment.state != ExperimentState.CLAIMED) {
             throw IllegalStateException("The experiment is in illegal state ${experiment.state}")
         }
@@ -136,7 +136,7 @@ class JpaExperiment(private val manager: EntityManager,
             experiment.state = ExperimentState.FINISHED
         }
 
-        logger.info { "Kernel done" }
+        logger.info { "Simulation done" }
         val waiting: Long = tasks.fold(0.toLong()) { acc, task ->
             val finished = task.state as TaskState.Finished
             acc + (finished.previous.at - finished.previous.previous.at)
@@ -165,7 +165,7 @@ class JpaExperiment(private val manager: EntityManager,
      * @param factory The factory to create the simulation kernel with.
      * @throws IllegalStateException if the simulation is already running or finished.
      */
-    override fun run(factory: KernelFactory) = run(factory, -1)!!
+    override fun run(factory: Kernel) = run(factory, -1)!!
 
     /**
      * Closes this resource, relinquishing any underlying resources.

@@ -9,15 +9,15 @@ package com.atlarge.opendc.simulator
  */
 interface Bootstrap<M> {
     /**
-     * Bootstrap a model `M` for a kernel in the given context.
+     * Apply the apply procedure for model `M` for a simulation in the given context.
      *
-     * @param context The context to bootstrap to model in.
-     * @return The initialised model for the simulation.
+     * @param context The context to apply to model in.
+     * @return The initialised, resulting model for the simulation.
      */
-    fun bootstrap(context: Context<M>): M
+    fun apply(context: Context<M>): M
 
     /**
-     * A context for the bootstrap of some model type `M` that allows the model to register the entities of the model to
+     * A context for the apply of some model type `M` that allows the model to register the entities of the model to
      * the simulation kernel.
      *
      * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
@@ -40,7 +40,7 @@ interface Bootstrap<M> {
         fun deregister(entity: Entity<*, M>): Boolean
 
         /**
-         * Schedule a message for processing by a [Context].
+         * Schedule a message to be received by the given [Entity].
          *
          * @param message The message to schedule.
          * @param destination The destination of the message.
@@ -52,13 +52,13 @@ interface Bootstrap<M> {
 
     companion object {
         /**
-         * Create a [Bootstrap] procedure using the given block to produce a bootstrap for a model of type `M`.
+         * Create a [Bootstrap] procedure using the given block to produce a apply for a model of type `M`.
          *
-         * @param block The block to produce the bootstrap.
-         * @return The bootstrap procedure that has been built.
+         * @param block The block to produce the apply.
+         * @return The apply procedure that has been built.
          */
         fun <M> create(block: (Context<M>) -> M): Bootstrap<M> = object : Bootstrap<M> {
-            override fun bootstrap(context: Context<M>) = block(context)
+            override fun apply(context: Context<M>) = block(context)
         }
     }
 }

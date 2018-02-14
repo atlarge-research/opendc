@@ -6,7 +6,7 @@ import com.atlarge.opendc.simulator.Entity
 /**
  * Create a [Bootstrap] procedure for the given [Topology].
  *
- * @return A bootstrap procedure for the topology.
+ * @return A apply procedure for the topology.
  */
 fun <T : Topology> T.bootstrap(): Bootstrap<T> = Bootstrap.create { ctx ->
     forEach { ctx.register(it) }

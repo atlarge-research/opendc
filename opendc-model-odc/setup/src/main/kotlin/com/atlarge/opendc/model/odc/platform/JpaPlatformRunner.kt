@@ -24,8 +24,7 @@
 
 package com.atlarge.opendc.model.odc.platform
 
-import com.atlarge.opendc.model.odc.platform.JpaExperimentManager
-import com.atlarge.opendc.omega.OmegaKernelFactory
+import com.atlarge.opendc.omega.OmegaKernel
 import mu.KotlinLogging
 import java.util.concurrent.Executors
 import javax.persistence.Persistence
@@ -50,7 +49,7 @@ fun main(args: Array<String>) {
     val threads = 4
     val executorService = Executors.newFixedThreadPool(threads)
     val experiments = JpaExperimentManager(factory)
-    val kernel = OmegaKernelFactory
+    val kernel = OmegaKernel
 
     logger.info { "Waiting for enqueued experiments..." }
     while (true) {
