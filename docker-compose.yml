@@ -29,7 +29,9 @@ services:
       - PERSISTENCE_USER=opendc
       - PERSISTENCE_PASSWORD=opendcpassword
   mariadb:
-    image: mariadb:10.1
+    build:
+        context: ./database
+    image: database
     restart: on-failure
     ports:
       - "3306:3306" # comment this line out in production
