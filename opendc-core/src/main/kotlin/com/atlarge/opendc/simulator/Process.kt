@@ -8,7 +8,7 @@ package com.atlarge.opendc.simulator
  * @param M The shape of the model in which the process exists.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Process<S, in M> : Entity<S, M> {
+interface Process<S, M> : Entity<S, M> {
     /**
      * This method is invoked to start the simulation a process.
      *

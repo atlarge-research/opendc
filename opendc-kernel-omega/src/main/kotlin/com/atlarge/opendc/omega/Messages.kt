@@ -27,4 +27,4 @@ object Timeout
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-data class Launch<in M>(val process: Process<*, M>)
+data class Launch<M>(val process: Process<*, M>)

@@ -242,7 +242,8 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
     /**
      * This internal class provides the default implementation for the [Context] interface for this simulator.
      */
-    private inner class OmegaContext<S>(val process: Process<S, M>) : Context<S, M>, Continuation<Unit> {
+    private inner class OmegaContext<S>(val process: Process<S, M>) : Context<S, M>, Continuation<Unit>,
+        AbstractCoroutineContextElement(Context) {
         /**
          * The model in which the process exists.
          */
@@ -254,6 +255,12 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
          */
         override val time: Instant
             get() = this@OmegaSimulation.time
+
+        /**
+         * The [Entity] associated with this context.
+         */
+        override val self: Entity<S, M>
+            get() = process
 
         /**
          * The duration between the current point in simulation time and the last point in simulation time where the
@@ -281,7 +288,7 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
         /**
          * The [CoroutineContext] for a [Context].
          */
-        override val context: CoroutineContext = EmptyCoroutineContext
+        override val context: CoroutineContext = this
 
         /**
          * The continuation to resume the execution of the process.
@@ -321,7 +328,7 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
         override suspend fun Entity<*, *>.send(msg: Any, sender: Entity<*, *>, delay: Duration) =
             schedule(prepare(msg, this, sender, delay))
 
-        override suspend fun Entity<*, *>.interrupt() = send(Interrupt)
+        override suspend fun Entity<*, *>.interrupt(interrupt: Interrupt) = send(interrupt)
 
         override suspend fun hold(duration: Duration) {
             require(duration >= 0) { "The amount of time to hold must be a positive number" }

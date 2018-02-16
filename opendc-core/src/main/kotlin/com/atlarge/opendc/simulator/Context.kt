@@ -25,6 +25,7 @@
 package com.atlarge.opendc.simulator
 
 import java.util.*
+import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * This interface provides a context for simulation of [Entity] instances, by defining the environment in which the
@@ -33,7 +34,7 @@ import java.util.*
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Context<S, out M> {
+interface Context<S, M> : CoroutineContext.Element {
     /**
      * The model of simulation in which the entity exists.
      */
@@ -49,6 +50,11 @@ interface Context<S, out M> {
      * [Entity] has done some work. This means the `run()` co-routine has been resumed.
      */
     val delta: Duration
+
+    /**
+     * The [Entity] associated with this context.
+     */
+    val self: Entity<S, M>
 
     /**
      * The sender of the last received message or `null` in case the process has not received any messages yet.
@@ -71,12 +77,22 @@ interface Context<S, out M> {
     /**
      * Interrupt an [Entity] process in simulation.
      *
+     * @see [Entity.interrupt(Interrupt)]
+     * @param reason The reason for interrupting the entity.
+     */
+    suspend fun Entity<*, *>.interrupt(reason: String) = interrupt(Interrupt(reason))
+
+    /**
+     * Interrupt an [Entity] process in simulation.
+     *
      * If an [Entity] process has been suspended, the suspending call will throw an [Interrupt] object as a result of
      * this call.
      * Make sure the [Entity] process actually has error handling in place, so it won't take down the whole [Entity]
      * process as result of the interrupt.
+     *
+     * @param interrupt The interrupt to throw at the entity.
      */
-    suspend fun Entity<*, *>.interrupt()
+    suspend fun Entity<*, *>.interrupt(interrupt: Interrupt)
 
     /**
      * Suspend the [Context] of the [Entity] in simulation for the given duration of simulation time before resuming
@@ -159,6 +175,11 @@ interface Context<S, out M> {
      * @param delay The amount of time to wait before the message should be received by the entity.
      */
     suspend fun Entity<*, *>.send(msg: Any, sender: Entity<*, *>, delay: Duration = 0)
+
+    /**
+     * This key provides users access to an untyped process context in case the coroutine runs inside a simulation.
+     */
+    companion object Key : CoroutineContext.Key<Context<*, *>>
 }
 
 /**
@@ -185,8 +206,9 @@ interface Envelope<out T : Any> {
 }
 
 /**
- * An [Interrupt] message is sent to a [Entity] process in order to interrupt its suspended state.
+ * An [Interrupt] message is sent to an [Entity] process in order to interrupt its suspended state.
  *
+ * @param reason The reason for the interruption of the process.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-object Interrupt : Throwable("The entity process has been interrupted by another entity")
+open class Interrupt(reason: String) : Throwable(reason)
