@@ -250,11 +250,6 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
             get() = this@OmegaSimulation.model
 
         /**
-         * The state of the entity.
-         */
-        override var state: S = process.initialState
-
-        /**
          * The current point in simulation time.
          */
         override val time: Instant
@@ -268,15 +263,25 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
             get() = maxOf(time - last, 0)
 
         /**
-         * The [CoroutineContext] for a [Context].
+         * The state of the entity.
          */
-        override val context: CoroutineContext = EmptyCoroutineContext
+        override var state: S = process.initialState
 
         /**
          * The observable state of an [Entity] within the simulation is provided by the context of the simulation.
          */
         override val <T : Entity<S, *>, S> T.state: S
             get() = context?.state ?: initialState
+
+        /**
+         * The sender of the last received message or `null` in case the process has not received any messages yet.
+         */
+        override var sender: Entity<*, *>? = null
+
+        /**
+         * The [CoroutineContext] for a [Context].
+         */
+        override val context: CoroutineContext = EmptyCoroutineContext
 
         /**
          * The continuation to resume the execution of the process.
@@ -359,7 +364,8 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
          *
          * @return The envelope containing the message.
          */
-        suspend fun receiveEnvelope(): Envelope<*> = suspendCoroutine { continuation = it }
+        suspend fun receiveEnvelope() = suspendCoroutine<Envelope<*>> { continuation = it }
+            .also { sender = it.sender }
 
         // Completion continuation implementation
         /**

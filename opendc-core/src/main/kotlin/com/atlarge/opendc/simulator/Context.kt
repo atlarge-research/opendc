@@ -51,6 +51,14 @@ interface Context<S, out M> {
     val delta: Duration
 
     /**
+     * The sender of the last received message or `null` in case the process has not received any messages yet.
+     *
+     * Note that this property is only guaranteed to be correct when accessing after a single suspending call. Methods
+     * like `hold()` and `interrupt()` may change the value of this property.
+     */
+    val sender: Entity<*, *>?
+
+    /**
      * The observable state of the entity bound to this scope.
      */
     var state: S
