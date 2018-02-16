@@ -300,7 +300,7 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
             try {
                 val received = receiveEnvelope()
 
-                if (received.message == Timeout) {
+                if (received.message != Timeout) {
                     send.canceled = true
                     return transform(received, received.message)
                 }
