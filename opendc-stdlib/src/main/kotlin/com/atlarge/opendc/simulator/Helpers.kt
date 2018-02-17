@@ -1,6 +1,6 @@
 package com.atlarge.opendc.simulator
 
-import kotlin.coroutines.experimental.intrinsics.*
+import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
 
 /**
  * Try to find the [Context] instance associated with the [Process] in the call chain which has (indirectly) invoked the

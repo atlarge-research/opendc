@@ -22,9 +22,9 @@
   ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   ~ SOFTWARE.
   -->
-<entity-mappings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 version="2.1"
-                 xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+<entity-mappings
+    version="2.1"
+    xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
 >
 
     <package>com.atlarge.opendc.model.odc.integration.jpa.schema</package>

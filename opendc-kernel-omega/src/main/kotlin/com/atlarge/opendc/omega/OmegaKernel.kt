@@ -25,8 +25,8 @@
 package com.atlarge.opendc.omega
 
 import com.atlarge.opendc.simulator.Bootstrap
-import com.atlarge.opendc.simulator.kernel.Simulation
 import com.atlarge.opendc.simulator.kernel.Kernel
+import com.atlarge.opendc.simulator.kernel.Simulation
 
 /**
  * The Omega simulation kernel is the reference simulation kernel implementation for the OpenDC Simulator core.
