@@ -119,34 +119,11 @@ interface Context<S, M> : CoroutineContext.Element {
 
     /**
      * Retrieve and remove a single message from the instance's mailbox, suspending the function if the mailbox is
-     * empty. The execution is resumed after the head of the mailbox is removed after which the message [Envelope] is
-     * transformed through `transform` to return the transformed result.
-     *
-     * @param transform The block to transform the message with in an envelope context, providing access to the sender
-     * 					of the message.
-     * @return The transformed message.
-     */
-    suspend fun <T> receive(transform: suspend Envelope<*>.(Any) -> T): T
-
-    /**
-     * Retrieve and remove a single message from the instance's mailbox, suspending the function if the mailbox is
-     * empty. The execution is either resumed after the head of the mailbox is removed after which the message
-     * [Envelope] is transformed through `transform` to return the transformed result or the timeout has been reached.
-     *
-     * @param timeout The duration to wait before resuming execution.
-     * @param transform The block to transform the message with in an envelope context, providing access to the sender
-     * 					of the message.
-     * @return The processed message or `null` if the timeout was reached.
-     */
-    suspend fun <T> receive(timeout: Duration, transform: suspend Envelope<*>.(Any) -> T): T?
-
-    /**
-     * Retrieve and remove a single message from the instance's mailbox, suspending the function if the mailbox is
      * empty. The execution is resumed after the head of the mailbox is removed and returned.
      *
      * @return The received message.
      */
-    suspend fun receive(): Any = receive { it }
+    suspend fun receive(): Any
 
     /**
      * Retrieve and remove a single message from the instance's mailbox, suspending the function if the mailbox is
@@ -155,7 +132,7 @@ interface Context<S, M> : CoroutineContext.Element {
      *
      * @return The received message or `null` if the timeout was reached.
      */
-    suspend fun receive(timeout: Duration): Any? = receive(timeout) { it }
+    suspend fun receive(timeout: Duration): Any?
 
     /**
      * Send the given message to the specified entity, without providing any guarantees about the actual delivery of
@@ -180,29 +157,6 @@ interface Context<S, M> : CoroutineContext.Element {
      * This key provides users access to an untyped process context in case the coroutine runs inside a simulation.
      */
     companion object Key : CoroutineContext.Key<Context<*, *>>
-}
-
-/**
- * The message envelope that is sent to an [Entity], also containing the metadata of the message.
- *
- * @param T The shape of the message inside the envelope.
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
- */
-interface Envelope<out T : Any> {
-    /**
-     * The message in this envelope.
-     */
-    val message: T
-
-    /**
-     * The sender of the message.
-     */
-    val sender: Entity<*, *>?
-
-    /**
-     * The destination of the message.
-     */
-    val destination: Entity<*, *>
 }
 
 /**

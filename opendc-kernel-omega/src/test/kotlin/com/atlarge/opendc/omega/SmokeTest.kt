@@ -41,9 +41,8 @@ internal class SmokeTest {
         override val initialState = Unit
         override suspend fun Context<Unit, Unit>.run() {
             while (true) {
-                receive {
-                    sender?.send(message)
-                }
+                val msg = receive()
+                sender?.send(msg)
             }
         }
     }
