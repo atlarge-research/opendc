@@ -77,14 +77,6 @@ interface Context<S, M> : CoroutineContext.Element {
     /**
      * Interrupt an [Entity] process in simulation.
      *
-     * @see [Entity.interrupt(Interrupt)]
-     * @param reason The reason for interrupting the entity.
-     */
-    suspend fun Entity<*, *>.interrupt(reason: String) = interrupt(Interrupt(reason))
-
-    /**
-     * Interrupt an [Entity] process in simulation.
-     *
      * If an [Entity] process has been suspended, the suspending call will throw an [Interrupt] object as a result of
      * this call.
      * Make sure the [Entity] process actually has error handling in place, so it won't take down the whole [Entity]
@@ -93,6 +85,14 @@ interface Context<S, M> : CoroutineContext.Element {
      * @param interrupt The interrupt to throw at the entity.
      */
     suspend fun Entity<*, *>.interrupt(interrupt: Interrupt)
+
+    /**
+     * Interrupt an [Entity] process in simulation.
+     *
+     * @see [Entity.interrupt(Interrupt)]
+     * @param reason The reason for interrupting the entity.
+     */
+    suspend fun Entity<*, *>.interrupt(reason: String) = interrupt(Interrupt(reason))
 
     /**
      * Suspend the [Context] of the [Entity] in simulation for the given duration of simulation time before resuming
@@ -139,19 +139,19 @@ interface Context<S, M> : CoroutineContext.Element {
      * the message.
      *
      * @param msg The message to send.
+     * @param sender The sender of the message.
      * @param delay The amount of time to wait before the message should be received by the entity.
      */
-    suspend fun Entity<*, *>.send(msg: Any, delay: Duration = 0)
+    suspend fun Entity<*, *>.send(msg: Any, sender: Entity<*, *>, delay: Duration = 0)
 
     /**
      * Send the given message to the specified entity, without providing any guarantees about the actual delivery of
      * the message.
      *
      * @param msg The message to send.
-     * @param sender The sender of the message.
      * @param delay The amount of time to wait before the message should be received by the entity.
      */
-    suspend fun Entity<*, *>.send(msg: Any, sender: Entity<*, *>, delay: Duration = 0)
+    suspend fun Entity<*, *>.send(msg: Any, delay: Duration = 0) = send(msg, self, delay)
 
     /**
      * This key provides users access to an untyped process context in case the coroutine runs inside a simulation.
