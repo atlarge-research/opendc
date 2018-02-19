@@ -53,7 +53,9 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
     /**
      * The message queue.
      */
-    private val queue: Queue<MessageContainer> = PriorityQueue(Comparator.comparingLong(MessageContainer::time))
+    private val queue: Queue<MessageContainer> = PriorityQueue(Comparator
+        .comparingLong(MessageContainer::time)
+        .thenComparingLong(MessageContainer::id))
 
     /**
      * The kernel process instance that handles internal operations during the simulation.
@@ -185,15 +187,22 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
     }
 
     /**
+     * The identifier for the next message to be scheduled.
+     */
+    private var nextId: Long = 0
+
+    /**
      * A wrapper around a message that has been scheduled for processing.
      *
+     * @property id The identifier of the message to keep the priority queue stable
      * @property message The message to wrap.
      * @property time The point in time to deliver the message.
      * @property sender The sender of the message.
      * @property destination The destination of the message.
      * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
      */
-    private data class MessageContainer(override val message: Any,
+    private data class MessageContainer(val id: Long,
+                                        override val message: Any,
                                         val time: Instant,
                                         override val sender: Entity<*, *>?,
                                         override val destination: Entity<*, *>) : Envelope<Any> {
@@ -223,7 +232,7 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
     private fun prepare(message: Any, destination: Entity<*, *>, sender: Entity<*, *>? = null,
                         delay: Duration): MessageContainer {
         require(delay >= 0) { "The amount of time to delay the message must be a positive number" }
-        return MessageContainer(message, time + delay, sender, destination)
+        return MessageContainer(nextId++, message, time + delay, sender, destination)
     }
 
     /**
