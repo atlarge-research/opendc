@@ -21,11 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.topology.machine
+
+import com.atlarge.opendc.model.topology.Topology
+import com.atlarge.opendc.simulator.Entity
+
+/**
+ * An interface representing a generic processing unit which is placed into a [Machine].
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface ProcessingUnit : Entity<Unit, Topology> {
+    /**
+     * The speed of this [ProcessingUnit] per core in MHz.
+     */
+    val clockRate: Int
+
+    /**
+     * The amount of cores within this [ProcessingUnit].
+     */
+    val cores: Int
+
+    /**
+     * The energy consumption of this [ProcessingUnit] in Watt.
+     */
+    val energyConsumption: Double
+}

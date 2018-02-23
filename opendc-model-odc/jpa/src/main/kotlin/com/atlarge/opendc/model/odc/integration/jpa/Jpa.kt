@@ -21,11 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa
+
+import javax.persistence.EntityManager
+
+/**
+ * Run the given block in a transaction, committing on return of the block.
+ *
+ * @param block The block to execute in the transaction.
+ */
+inline fun EntityManager.transaction(block: () -> Unit) {
+    transaction.begin()
+    block()
+    transaction.commit()
+}

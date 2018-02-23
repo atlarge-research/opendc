@@ -21,11 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.topology
+
+/**
+ * Filter a [Set] of [Edge]s based on the tag of the edges and return the origin nodes casted to type `T`.
+ *
+ * @param tag The tag of the edges to get.
+ * @return An [Iterable] of the specified type `T` with the given tag.
+ */
+inline fun <reified T> Set<Edge<*>>.origins(tag: String) = filter { it.tag == tag }.map { it.from as T }
+
+/**
+ * Filter a [Set] of [Edge]s based on the tag of the edges and return the destination nodes casted to type `T`.
+ *
+ * @param tag The tag of the edges to get.
+ * @return An [Iterable] of the specified type `T` with the given tag.
+ */
+inline fun <reified T> Set<Edge<*>>.destinations(tag: String) = filter { it.tag == tag }.map { it.to as T }

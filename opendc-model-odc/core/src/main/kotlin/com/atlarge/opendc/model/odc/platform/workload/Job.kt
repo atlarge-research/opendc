@@ -21,11 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.platform.workload
+
+/**
+ * A bag of tasks which are submitted by a [User] to the cloud network.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Job {
+    /**
+     * A unique identifier of the job.
+     */
+    val id: Int
+
+    /**
+     * The owner of this job.
+     */
+    val owner: User
+
+    /**
+     * The tasks this job consists of.
+     */
+    val tasks: Set<Task>
+
+    /**
+     * A flag to indicate the job has finished.
+     */
+    val finished: Boolean
+        get() = !tasks.any { !it.finished }
+}

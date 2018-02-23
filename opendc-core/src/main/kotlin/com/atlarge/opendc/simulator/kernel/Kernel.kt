@@ -21,11 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.simulator.kernel
+
+import com.atlarge.opendc.simulator.Bootstrap
+
+/**
+ * A message-based discrete event simulator (DES). This interface is a factory for creating [Simulation]s using the
+ * provided [Bootstrap] for the model.
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Kernel {
+    /**
+     * Create a simulation over the given model facilitated by this simulation kernel.
+     *
+     * @param bootstrap The apply procedure to apply the simulation with.
+     * @return A [Simulation] instance representing the simulation.
+     */
+    fun <M> create(bootstrap: Bootstrap<M>): Simulation<M>
+}

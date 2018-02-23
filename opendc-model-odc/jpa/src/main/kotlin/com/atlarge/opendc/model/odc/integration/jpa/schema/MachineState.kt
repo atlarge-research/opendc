@@ -21,11 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.simulator.Instant
+import javax.persistence.Entity
+
+/**
+ * The state of a [Machine].
+ *
+ * @property id The unique identifier of the state.
+ * @property machine The machine of the state.
+ * @property task The task the machine has been assigned.
+ * @property experiment The experiment the machine is running in.
+ * @property time The current moment in time.
+ * @property temperature The temperature of the machine.
+ * @property memoryUsage The memory usage of the machine.
+ * @property load The load of the machine.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class MachineState(
+    val id: Int,
+    val machine: Machine,
+    val task: Task?,
+    val experiment: Experiment,
+    val time: Instant,
+    val temperature: Double,
+    val memoryUsage: Int,
+    val load: Double
+)

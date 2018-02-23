@@ -21,11 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.model.odc.platform.workload.Job
+import com.atlarge.opendc.model.odc.platform.workload.Trace
+import javax.persistence.Entity
+
+/**
+ * A [Trace] backed by the JPA API and an underlying database connection.
+ *
+ * @property id The unique identifier of the trace.
+ * @property name The name of the trace.
+ * @property jobs The collection of jobs for this trace.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class Trace(
+    val id: Int,
+    val name: String,
+    override val jobs: Set<Job>
+) : Trace

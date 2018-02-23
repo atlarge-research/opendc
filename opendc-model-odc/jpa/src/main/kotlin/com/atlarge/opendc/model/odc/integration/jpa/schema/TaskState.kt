@@ -21,11 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.simulator.Instant
+import javax.persistence.Entity
+
+/**
+ * The state of a [Task].
+ *
+ * @property id The unique identifier of the state.
+ * @property task The task this is the state of.
+ * @property experiment The experiment the machine is running in.
+ * @property time The current moment in time.
+ * @property remaining The remaining flops for the task.
+ * @property cores The cores used for the task.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+data class TaskState(
+    val id: Int,
+    val task: Task,
+    val experiment: Experiment,
+    val time: Instant,
+    val remaining: Int,
+    val cores: Int
+)

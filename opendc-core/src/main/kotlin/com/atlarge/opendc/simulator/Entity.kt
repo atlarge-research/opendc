@@ -21,11 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.simulator
+
+/**
+ * An entity in some model `M`.
+ *
+ * <p>A [Entity] directly contains its immutable properties that remain unchanged during simulation.
+ *
+ * <p>In addition, other entities in simulation have direct, immutable access to the observable state of this entity.
+ *
+ * @param S The shape of the observable state of this entity, which is directly accessible by other components within
+ * a simulation.
+ * @param M The shape of the model in which the entity exists.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+interface Entity<out S, in M> {
+    /**
+     * The initial state of the entity.
+     */
+    val initialState: S
+}

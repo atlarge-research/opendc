@@ -78,7 +78,12 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
+    compile project(':opendc-core')
+    compile project(':opendc-stdlib')
+    compile "io.github.microutils:kotlin-logging:1.4.6"
+
     testCompile "org.junit.jupiter:junit-jupiter-api:5.0.0-RC3"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:5.0.0-RC3"
     testCompile "org.junit.platform:junit-platform-launcher:1.0.0-RC3"
+    testCompile "org.slf4j:slf4j-simple:1.7.25"
 }

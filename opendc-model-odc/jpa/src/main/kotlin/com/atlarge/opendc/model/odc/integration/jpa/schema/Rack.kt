@@ -21,11 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+package com.atlarge.opendc.model.odc.integration.jpa.schema
+
+import com.atlarge.opendc.model.odc.topology.container.Rack
+import javax.persistence.Entity
+
+/**
+ * A rack entity in a room in the persistent schema.
+ *
+ * @property id The unique identifier of the rack.
+ * @property name The name of the rack.
+ * @property capacity The capacity of the rack in terms of units.
+ * @property powerCapacity The power capacity of the rack in Watt.
+ * @property machines The machines in the rack.
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+@Entity
+class Rack(
+    id: Int,
+    val name: String,
+    val capacity: Int,
+    val powerCapacity: Int,
+    val machines: List<Machine>
+) : RoomObject(id), Rack {
+    /**
+     * The initial state of the entity.
+     */
+    override val initialState = Unit
+}
