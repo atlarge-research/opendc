@@ -28,11 +28,10 @@ import com.atlarge.opendc.simulator.Bootstrap
 import com.atlarge.opendc.simulator.Context
 import com.atlarge.opendc.simulator.Process
 import com.atlarge.opendc.simulator.instrumentation.Instrument
-import com.atlarge.opendc.simulator.kernel.Kernel
 import com.atlarge.opendc.simulator.kernel.Simulation
 import kotlinx.coroutines.experimental.Unconfined
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.channels.*
+import kotlinx.coroutines.experimental.channels.consumeEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -159,12 +158,11 @@ internal class SmokeTest {
         }
 
         val simulation: Simulation<Unit> = OmegaKernel.create(Bootstrap.create { Unit })
-        val stream = simulation.install(instrument)
+        val stream = simulation.openPort().install(instrument)
 
         val res = async(Unconfined) {
             stream.consumeEach { println(it) }
         }
-
         simulation.run(100)
     }
 }

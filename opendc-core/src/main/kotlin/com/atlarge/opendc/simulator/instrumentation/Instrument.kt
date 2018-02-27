@@ -1,19 +1,17 @@
 package com.atlarge.opendc.simulator.instrumentation
 
-import com.atlarge.opendc.simulator.kernel.Kernel
-import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.simulator.Context
+import com.atlarge.opendc.simulator.Entity
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.SendChannel
 
-/**
+    /**
  * A kernel instrumentation device that allows the observation and measurement of properties of interest within some
  * model.
  *
  * An instrument is a [Process] that emits measurements from within some model in the form of a typed stream. An
- * instrument is attached to a simulation using the [Kernel.install] method, which returns a [ReceiveChannel] from which
- * the measurements can be extracted out of the simulation.
- *
+ * instrument is attached to a simulation using the [Port.install] method, which returns a [ReceiveChannel] from
+ * which the measurements can be extracted out of the simulation.
  *
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
