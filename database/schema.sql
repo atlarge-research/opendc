@@ -232,6 +232,20 @@ CREATE TABLE task_states (
     ON UPDATE CASCADE
 );
 
+-- The measurements of a single stage
+CREATE TABLE stage_measurements (
+  id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  experiment_id INTEGER                 NOT NULL,
+  tick          INTEGER                 NOT NULL CHECK (tick >= 0),
+  stage         INTEGER                 NOT NULL CHECK (stage >= 0),
+  duration      INTEGER                 NOT NULL CHECK (duration >= 0),
+  size          INTEGER                 NOT NULL CHECK (size >= 0),
+
+  FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
 -- A machine state
 DROP TABLE IF EXISTS machine_states;
 CREATE TABLE machine_states (
