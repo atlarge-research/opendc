@@ -233,6 +233,7 @@ CREATE TABLE task_states (
 );
 
 -- The measurements of a single stage
+DROP TABLE IF EXISTS stage_measurements;
 CREATE TABLE stage_measurements (
   id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   experiment_id INTEGER                 NOT NULL,
@@ -242,6 +243,24 @@ CREATE TABLE stage_measurements (
   size          INTEGER                 NOT NULL CHECK (size >= 0),
 
   FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+-- Metrics of a single task
+DROP TABLE IF EXISTS task_metrics;
+CREATE TABLE task_metrics (
+  id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  experiment_id INTEGER                 NOT NULL,
+  task_id       INTEGER                 NOT NULL,
+  waiting       INTEGER                 NOT NULL CHECK (waiting >= 0),
+  execution     INTEGER                 NOT NULL CHECK (execution >= 0),
+  turnaround    INTEGER                 NOT NULL CHECK (turnaround >= 0),
+
+  FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (task_id) REFERENCES tasks (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
