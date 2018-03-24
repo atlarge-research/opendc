@@ -239,8 +239,10 @@ CREATE TABLE stage_measurements (
   experiment_id INTEGER                 NOT NULL,
   tick          INTEGER                 NOT NULL CHECK (tick >= 0),
   stage         INTEGER                 NOT NULL CHECK (stage >= 0),
-  duration      INTEGER                 NOT NULL CHECK (duration >= 0),
+  cpu           INTEGER                 NOT NULL CHECK (cpu >= 0),
+  wall          INTEGER                 NOT NULL CHECK (wall >= 0),
   size          INTEGER                 NOT NULL CHECK (size >= 0),
+  iterations    INTEGER                 NOT NULL CHECK (iterations >= 0),
 
   FOREIGN KEY (experiment_id) REFERENCES experiments (id)
     ON DELETE CASCADE
