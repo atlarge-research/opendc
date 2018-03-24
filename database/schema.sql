@@ -253,6 +253,7 @@ CREATE TABLE task_metrics (
   id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
   experiment_id INTEGER                 NOT NULL,
   task_id       INTEGER                 NOT NULL,
+  job_id        INTEGER                 NOT NULL,
   waiting       INTEGER                 NOT NULL CHECK (waiting >= 0),
   execution     INTEGER                 NOT NULL CHECK (execution >= 0),
   turnaround    INTEGER                 NOT NULL CHECK (turnaround >= 0),
@@ -261,6 +262,9 @@ CREATE TABLE task_metrics (
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   FOREIGN KEY (task_id) REFERENCES tasks (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (job_id) REFERENCES jobs (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
