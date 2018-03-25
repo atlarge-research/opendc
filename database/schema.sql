@@ -239,12 +239,32 @@ CREATE TABLE stage_measurements (
   experiment_id INTEGER                 NOT NULL,
   tick          INTEGER                 NOT NULL CHECK (tick >= 0),
   stage         INTEGER                 NOT NULL CHECK (stage >= 0),
-  cpu           INTEGER                 NOT NULL CHECK (cpu >= 0),
-  wall          INTEGER                 NOT NULL CHECK (wall >= 0),
+  cpu           BIGINT                  NOT NULL CHECK (cpu >= 0),
+  wall          BIGINT                  NOT NULL CHECK (wall >= 0),
   size          INTEGER                 NOT NULL CHECK (size >= 0),
   iterations    INTEGER                 NOT NULL CHECK (iterations >= 0),
 
   FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+-- Metrics of a job task
+DROP TABLE IF EXISTS job_metrics;
+CREATE TABLE job_metrics (
+  id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  experiment_id        INTEGER                 NOT NULL,
+  job_id               INTEGER                 NOT NULL,
+  critical_path        INTEGER                 NOT NULL CHECK (critical_path >= 0),
+  critical_path_length INTEGER                 NOT NULL CHECK (critical_path_length >= 0),
+  waiting_time         INTEGER                 NOT NULL CHECK (waiting_time >= 0),
+  makespan             INTEGER                 NOT NULL CHECK (makespan >= 0),
+  nsl                  INTEGER                 NOT NULL CHECK (nsl >= 0),
+
+  FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (job_id) REFERENCES jobs (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
