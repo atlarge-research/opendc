@@ -13,15 +13,13 @@ interface Port<M> {
     /**
      * Install the given instrumentation device to produce a stream of measurements of type <code>T</code>.
      *
-     * The [ReceiveChannel] returned by this channel is by default unlimited, which means the channel buffers at most
-     * one measurement, so that the receiver always gets the most recently sent element.
-     * Back-to-send sent measurements are conflated – only the the most recently sent element is received, while
-     * previously sent elements are lost.
+     * The [ReceiveChannel] returned by this channel is by default backed by an unlimited buffer
+     * (using [Channel.UNLIMITED]), which may induce unnecessary overhead.
      *
      * @param instrument The instrumentation device to install.
      * @return A [ReceiveChannel] to which the of measurements produced by the instrument are published.
      */
-    fun <T> install(instrument: Instrument<T, M>): ReceiveChannel<T> = install(Channel.CONFLATED, instrument)
+    fun <T> install(instrument: Instrument<T, M>): ReceiveChannel<T> = install(Channel.UNLIMITED, instrument)
 
     /**
      * Install the given instrumentation device to produce a stream of measurements of type code>T</code>.
