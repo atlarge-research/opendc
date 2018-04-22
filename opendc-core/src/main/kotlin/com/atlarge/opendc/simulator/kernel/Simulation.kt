@@ -26,6 +26,8 @@ package com.atlarge.opendc.simulator.kernel
 
 import com.atlarge.opendc.simulator.Entity
 import com.atlarge.opendc.simulator.Instant
+import com.atlarge.opendc.simulator.instrumentation.Instrument
+import com.atlarge.opendc.simulator.instrumentation.Port
 
 /**
  * A message based discrete event simulation over some model `M`. This interface provides direct control over the
@@ -35,7 +37,7 @@ import com.atlarge.opendc.simulator.Instant
  * @param M The shape of the model over which the simulation runs.
  * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
  */
-interface Simulation<out M> {
+interface Simulation<M> {
     /**
      * The model in which the simulation runs.
      */
@@ -50,6 +52,13 @@ interface Simulation<out M> {
      * The observable state of an [Entity] in simulation, which is provided by the simulation context.
      */
     val <E : Entity<S, *>, S> E.state: S
+
+    /**
+     * Open a new [Port] to manage [Instrument]s.
+     *
+     * @return A new [Port] instance to install [Instrument]s to.
+     */
+    fun openPort(): Port<M>
 
     /**
      * Step through one cycle in the simulation. This method will process all events in a single tick, update the

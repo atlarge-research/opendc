@@ -27,8 +27,12 @@ package com.atlarge.opendc.omega
 import com.atlarge.opendc.simulator.Bootstrap
 import com.atlarge.opendc.simulator.Context
 import com.atlarge.opendc.simulator.Process
+import com.atlarge.opendc.simulator.instrumentation.Instrument
+import com.atlarge.opendc.simulator.kernel.Simulation
+import kotlinx.coroutines.experimental.Unconfined
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.channels.consumeEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -123,6 +127,7 @@ internal class SmokeTest {
             hold(10)
         }
     }
+
     /**
      * Test if the kernel allows access to the simulation model object.
      */
@@ -135,9 +140,29 @@ internal class SmokeTest {
             value
         }
 
-        val simulation = OmegaKernel.create(bootstrap)
-        simulation.run(5)
+        val kernel = OmegaKernel.create(bootstrap)
+        kernel.run(5)
+    }
 
-        assertTrue(simulation.run { process.state })
+
+    @Test
+    fun `instrumentation works`() {
+        val instrument: Instrument<Int, Unit> = {
+            var value = 0
+
+            for (i in 1..10) {
+                send(value)
+                value += 10
+                hold(20)
+            }
+        }
+
+        val simulation: Simulation<Unit> = OmegaKernel.create(Bootstrap.create { Unit })
+        val stream = simulation.openPort().install(instrument)
+
+        val res = async(Unconfined) {
+            stream.consumeEach { println(it) }
+        }
+        simulation.run(100)
     }
 }

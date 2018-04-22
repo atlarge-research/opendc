@@ -45,7 +45,7 @@ fun main(args: Array<String>) {
     properties["javax.persistence.jdbc.password"] = env["PERSISTENCE_PASSWORD"] ?: ""
     val factory = Persistence.createEntityManagerFactory("opendc-simulator", properties)
 
-    val timeout = 10000L
+    val timeout = 30000L
     val threads = 4
     val executorService = Executors.newFixedThreadPool(threads)
     val experiments = JpaExperimentManager(factory)
