@@ -22,24 +22,64 @@
  * SOFTWARE.
  */
 
-/* Build configuration */
-apply from: '../../gradle/kotlin.gradle'
-apply plugin: 'java-library'
+/* Default configuration for Kotlin projects */
+apply plugin: 'kotlin'
+apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'jacoco'
 
-/* Project configuration */
+sourceCompatibility = 1.8
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
+
+/* Configure test setup */
+test {
+    useJUnitPlatform {}
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+
+    reports {
+        html.enabled = true
+    }
+
+    finalizedBy jacocoTestReport
+}
+
+/* Coverage */
 repositories {
-    jcenter()
+    // This repository is needed to get the latest snapshot of Jacoco
+    maven { url = "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-
-    api project(':opendc-core')
-    api project(':opendc-stdlib')
-    implementation "io.github.microutils:kotlin-logging:1.4.6"
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_jupiter_version"
-    testImplementation "org.junit.platform:junit-platform-launcher:$junit_platform_version"
-    testRuntimeOnly "org.slf4j:slf4j-simple:1.7.25"
+jacoco {
+    // We use the latest snapshot of Jacoco in order to get it to ignore Kotlin-generated code
+    toolVersion = jacoco_version
 }
+
+jacocoTestReport {
+    reports {
+        html.enabled = true
+        xml.enabled = true
+    }
+}
+
+/* Documentation generation */
+dokka {}
+
