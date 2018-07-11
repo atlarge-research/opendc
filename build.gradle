@@ -22,6 +22,24 @@
  * SOFTWARE.
  */
 
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.2.51' apply false
+    id 'org.jetbrains.kotlin.plugin.jpa' version '1.2.51' apply false
+    id 'org.jetbrains.dokka' version '0.9.17' apply false
+}
+
+allprojects {
+    group = 'com.atlarge.opendc'
+    version = '1.2'
+
+    ext {
+        kotlinx_coroutines_version = '0.23.4'
+        junit_jupiter_version = '5.2.0'
+        junit_platform_version = '1.2.0'
+        jacoco_version = '0.8.2-SNAPSHOT'
+    }
+}
+
 wrapper {
     gradleVersion = '4.8'
 }
