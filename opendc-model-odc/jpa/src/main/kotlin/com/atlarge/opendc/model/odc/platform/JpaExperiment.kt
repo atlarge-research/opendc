@@ -25,20 +25,31 @@
 package com.atlarge.opendc.model.odc.platform
 
 import com.atlarge.opendc.model.odc.JpaBootstrap
+import com.atlarge.opendc.model.odc.JpaModel
+import com.atlarge.opendc.model.odc.integration.jpa.persist
 import com.atlarge.opendc.model.odc.integration.jpa.schema.ExperimentState
+import com.atlarge.opendc.model.odc.integration.jpa.schema.interpolate
 import com.atlarge.opendc.model.odc.integration.jpa.schema.MachineState
 import com.atlarge.opendc.model.odc.integration.jpa.transaction
+import com.atlarge.opendc.model.odc.platform.workload.Task
 import com.atlarge.opendc.model.odc.platform.workload.TaskState
 import com.atlarge.opendc.model.odc.topology.container.Rack
 import com.atlarge.opendc.model.odc.topology.container.Room
 import com.atlarge.opendc.model.odc.topology.machine.Machine
 import com.atlarge.opendc.model.topology.destinations
 import com.atlarge.opendc.simulator.Duration
+import com.atlarge.opendc.simulator.instrumentation.*
 import com.atlarge.opendc.simulator.kernel.Kernel
 import com.atlarge.opendc.simulator.platform.Experiment
+import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.channels.asReceiveChannel
+import kotlinx.coroutines.experimental.channels.map
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import mu.KotlinLogging
 import java.io.Closeable
 import javax.persistence.EntityManager
+import kotlin.system.measureTimeMillis
 import com.atlarge.opendc.model.odc.integration.jpa.schema.Experiment as InternalExperiment
 import com.atlarge.opendc.model.odc.integration.jpa.schema.Task as InternalTask
 import com.atlarge.opendc.model.odc.integration.jpa.schema.TaskState as InternalTaskState
@@ -70,6 +81,8 @@ class JpaExperiment(private val manager: EntityManager,
             throw IllegalStateException("The experiment is in illegal state ${experiment.state}")
         }
 
+        logger.info { "Initialising experiment ${experiment.id}" }
+
         // Set the simulation state
         manager.transaction {
             experiment.state = ExperimentState.SIMULATING
@@ -77,66 +90,128 @@ class JpaExperiment(private val manager: EntityManager,
 
         val bootstrap = JpaBootstrap(experiment)
         val simulation = factory.create(bootstrap)
-        val topology = simulation.model
 
         val section = experiment.path.sections.first()
         val trace = experiment.trace
         val tasks = trace.jobs.flatMap { it.tasks }
 
+        // The port we use to install the instruments
+        val port = simulation.openPort()
+
         // Find all machines in the datacenter
-        val machines = topology.run {
+        val machines = simulation.model.run {
             section.datacenter.outgoingEdges.destinations<Room>("room").asSequence()
                 .flatMap { it.outgoingEdges.destinations<Rack>("rack").asSequence() }
                 .flatMap { it.outgoingEdges.destinations<Machine>("machine").asSequence() }.toList()
         }
 
-        logger.info { "Starting simulation" }
-
-        while (trace.jobs.any { !it.finished }) {
-            // If we have reached a timeout, return
-            if (simulation.time >= timeout)
-                return null
-
-            // Collect data of simulation cycle
-            manager.transaction {
-                experiment.last = simulation.time
-
-                machines.forEach { machine ->
-                    val state = simulation.run { machine.state }
-                    val wrapped = MachineState(0,
-                        machine as com.atlarge.opendc.model.odc.integration.jpa.schema.Machine,
-                        state.task as com.atlarge.opendc.model.odc.integration.jpa.schema.Task?,
-                        experiment,
-                        simulation.time,
-                        state.temperature,
-                        state.memory,
-                        state.load
-                    )
-                    manager.persist(wrapped)
-                }
-
-                tasks.forEach { task ->
-                    val state = InternalTaskState(0,
-                        task as com.atlarge.opendc.model.odc.integration.jpa.schema.Task,
-                        experiment,
-                        simulation.time,
-                        task.remaining.toInt(),
-                        1
-                    )
-                    manager.persist(state)
-                }
+        // The instrument used for monitoring machines
+        fun machine(machine: Machine): Instrument<MachineState, JpaModel> = {
+            while (true) {
+                send(MachineState(
+                    0,
+                    machine as com.atlarge.opendc.model.odc.integration.jpa.schema.Machine,
+                    machine.state.task as InternalTask?,
+                    experiment,
+                    time,
+                    machine.state.temperature,
+                    machine.state.memory,
+                    machine.state.load
+                ))
+                hold(10)
             }
-
-            // Run next simulation cycle
-            simulation.step()
         }
 
-        // Set the experiment state
+        // The stream of machine state measurements
+        val machineStates = machines
+            .asReceiveChannel()
+            .map { machine(it) }
+            .flatMapMerge { port.install(Channel.UNLIMITED, it).interpolate(9) }
+
+        // The instrument used for monitoring tasks
+        fun task(task: Task): Instrument<InternalTaskState, JpaModel> = {
+            while (true) {
+                send(InternalTaskState(
+                    0,
+                    task as InternalTask,
+                    experiment,
+                    time,
+                    task.remaining.toInt(),
+                    1
+                ))
+
+                hold(10)
+            }
+        }
+
+        // The stream of task state measurements
+        val taskStates = tasks
+            .asReceiveChannel()
+            .map { task(it) }
+            .flatMapMerge { port.install(it).interpolate(9) }
+
+        // A job which writes the data to database in a separate thread
+        val writer = launch {
+            taskStates.merge(coroutineContext, machineStates)
+                .persist(manager.entityManagerFactory)
+        }
+
+        // A method to flush the remaining measurements to the database
+        fun finalize() = runBlocking {
+            logger.info { "Flushing remaining measurements to database" }
+
+            // Stop gathering new measurements
+            port.close()
+
+            // Wait for writer thread to finish
+            writer.join()
+        }
+
+        logger.info { "Starting simulation" }
+        logger.info { "Scheduling total of ${trace.jobs.size} jobs and ${tasks.size} tasks" }
+
+        val measurement = measureTimeMillis {
+            while (true) {
+                // Have all jobs finished yet
+                if (trace.jobs.all { it.finished })
+                    break
+
+                // If we have reached a timeout, return
+                if (simulation.time >= timeout) {
+                    // Flush remaining data
+                    finalize()
+
+                    // Mark the experiment as aborted
+                    manager.transaction {
+                        experiment.last = simulation.time
+                        experiment.state = ExperimentState.ABORTED
+                    }
+
+                    logger.warn { "Experiment aborted due to timeout" }
+                    return null
+                }
+
+                try {
+                    // Run next simulation cycle
+                    simulation.step()
+                } catch (e: Throwable) {
+                    logger.error(e) { "An error occurred during execution of the experiment" }
+                }
+            }
+        }
+
+        logger.info { "Simulation done in $measurement milliseconds" }
+
+        // Flush remaining data to database
+        finalize()
+
+        // Mark experiment as finished
         manager.transaction {
+            experiment.last = simulation.time
             experiment.state = ExperimentState.FINISHED
         }
 
-        logger.info { "Simulation done" }
+        logger.info { "Computing statistics" }
         val waiting: Long = tasks.fold(0.toLong()) { acc, task ->
             val finished = task.state as TaskState.Finished
             acc + (finished.previous.at - finished.previous.previous.at)

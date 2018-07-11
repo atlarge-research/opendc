@@ -24,7 +24,11 @@
 
 package com.atlarge.opendc.model.odc.integration.jpa
 
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.consume
 import javax.persistence.EntityManager
+import javax.persistence.EntityManagerFactory
+import javax.persistence.RollbackException
 
 /**
  * Run the given block in a transaction, committing on return of the block.
@@ -35,4 +39,47 @@ inline fun EntityManager.transaction(block: () -> Unit) {
     transaction.begin()
     block()
     transaction.commit()
+}
+
+/**
+ * Write the given channel in batch to the database.
+ *
+ * @param factory The [EntityManagerFactory] to use to create an [EntityManager] which can persist the entities.
+ * @param batchSize The size of each batch.
+ */
+suspend fun <E> ReceiveChannel<E>.persist(factory: EntityManagerFactory, batchSize: Int = 1000) {
+    val writer = factory.createEntityManager()
+
+    this.consume {
+        val transaction = writer.transaction
+        var counter = 0
+        try {
+            transaction.begin()
+
+            for (element in this) {
+                // Commit batch every batch size
+                if (counter > 0 && counter % batchSize == 0) {
+                    writer.flush()
+                    writer.clear()
+
+                    transaction.commit()
+                    transaction.begin()
+                }
+
+                writer.persist(element)
+                counter++
+            }
+
+            transaction.commit()
+        } catch(e: RollbackException) {
+            // Rollback transaction if still active
+            if (transaction.isActive) {
+                transaction.rollback()
+            }
+
+            throw e
+        } finally {
+            writer.close()
+        }
+    }
 }

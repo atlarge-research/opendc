@@ -41,7 +41,6 @@ class JpaBootstrap(val experiment: Experiment) : Bootstrap<JpaModel> {
         // Schedule all messages in the trace
         tasks.forEach { task ->
             if (task is Task) {
-                logger.info { "Scheduling $task" }
                 context.schedule(task, section.datacenter, delay = task.startTime)
             }
         }

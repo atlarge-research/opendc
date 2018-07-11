@@ -50,4 +50,9 @@ enum class ExperimentState {
      * This state indicates the experiment has finished simulating.
      */
     FINISHED,
+
+    /**
+     * This states indicates the experiment was aborted due to a timeout.
+     */
+    ABORTED,
 }

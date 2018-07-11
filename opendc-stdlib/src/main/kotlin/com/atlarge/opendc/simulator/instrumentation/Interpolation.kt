@@ -41,8 +41,15 @@ import kotlin.coroutines.experimental.CoroutineContext
  * @param interpolator A function to interpolate between the two element occurrences.
  */
 fun <E> ReceiveChannel<E>.interpolate(n: Int, context: CoroutineContext = Unconfined,
-                                      interpolator: (Double, E, E) -> E): ReceiveChannel<E> =
-    produce(context) {
+                                      interpolator: (Double, E, E) -> E): ReceiveChannel<E> {
+    require(n >= 0) { "The amount to interpolate must be non-negative" }
+
+    // If we do not want to interpolate any elements, just return the original channel
+    if (n == 0) {
+        return this
+    }
+
+    return produce(context) {
         consume {
             val iterator = iterator()
 
@@ -62,6 +69,7 @@ fun <E> ReceiveChannel<E>.interpolate(n: Int, context: CoroutineContext = Unconf
             }
         }
     }
+}
 
 /**
  * Perform a linear interpolation on the given double values.
