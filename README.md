@@ -20,9 +20,9 @@ Collaborative Datacenter Simulation and Exploration for Everybody
 ## Getting the source
 Download the source code by running the following code in your command prompt:
 ```sh
-$ git clone -b kotlin https://github.com/atlarge-research/opendc-simulator.git
+$ git clone https://github.com/atlarge-research/opendc-simulator.git
 ```
-or simply [grab](https://github.com/atlarge-research/opendc-simulator/archive/kotlin.zip) a copy of the source code as a Zip file.
+or simply [grab](https://github.com/atlarge-research/opendc-simulator/archive/master.zip) a copy of the source code as a Zip file.
 
 ## Building
 For building the source code, we use Gradle. To run gradle, enter the following in your command prompt:
