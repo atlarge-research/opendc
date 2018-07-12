@@ -7,6 +7,7 @@ import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.channels.toChannel
 import kotlinx.coroutines.experimental.launch
 import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.experimental.coroutineContext
 
 /**
  * Transform each element in the channel into a [ReceiveChannel] of output elements that is then flattened into the
