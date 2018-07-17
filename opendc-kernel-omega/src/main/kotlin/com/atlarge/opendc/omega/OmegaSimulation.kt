@@ -184,11 +184,15 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
             }
 
             val context = envelope.destination.context ?: continue
+            val continuation = context.continuation ?: continue
 
-            if (envelope.message !is Interrupt) {
-                context.continuation.resume(envelope)
+            // Clear the continuation to prevent resuming an already resumed continuation
+            context.continuation = null
+
+            if (envelope.message is Interrupt) {
+                continuation.resumeWithException(envelope.message)
             } else {
-                context.continuation.resumeWithException(envelope.message)
+                continuation.resume(envelope)
             }
 
             context.last = time
@@ -335,7 +339,7 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
         /**
          * The continuation to resume the execution of the process.
          */
-        lateinit var continuation: Continuation<Envelope>
+        var continuation: Continuation<Envelope>? = null
 
         /**
          * The last point in time the process has done some work.
