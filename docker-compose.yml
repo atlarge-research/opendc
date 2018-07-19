@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 services:
   frontend:
     build: ./
@@ -17,7 +17,7 @@ services:
   simulator:
     build:
         context: ./opendc-simulator
-        dockerfile: opendc-integration-jpa/mysql/Dockerfile
+        dockerfile: opendc-model-odc/setup/Dockerfile
     image: simulator
     restart: on-failure
     links:
