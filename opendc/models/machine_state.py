@@ -5,7 +5,6 @@ from opendc.util import database
 class MachineState(Model):
     JSON_TO_PYTHON_DICT = {
         'MachineState': {
-            'taskId': 'task_id',
             'machineId': 'machine_id',
             'temperatureC': 'temperature_c',
             'inUseMemoryMb': 'in_use_memory_mb',
@@ -15,7 +14,7 @@ class MachineState(Model):
     }
 
     TABLE_NAME = 'machine_states'
-    COLUMNS = ['id', 'task_id', 'machine_id', 'experiment_id', 'tick', 'temperature_c', 'in_use_memory_mb',
+    COLUMNS = ['id', 'machine_id', 'experiment_id', 'tick', 'temperature_c', 'in_use_memory_mb',
                'load_fraction']
 
     COLUMNS_PRIMARY_KEY = ['id']
@@ -25,12 +24,11 @@ class MachineState(Model):
         """Instantiate a MachineState from a database row (including tick from the TaskState)."""
 
         return cls(
-            task_id=row[1],
-            machine_id=row[2],
-            temperature_c=row[5],
-            in_use_memory_mb=row[6],
-            load_fraction=row[7],
-            tick=row[4]
+            machine_id=row[1],
+            temperature_c=row[4],
+            in_use_memory_mb=row[5],
+            load_fraction=row[6],
+            tick=row[3]
         )
 
     @classmethod

@@ -7,14 +7,13 @@ class Task(Model):
             'id': 'id',
             'startTick': 'start_tick',
             'totalFlopCount': 'total_flop_count',
+            'coreCount': 'core_count',
             'jobId': 'job_id',
-            'taskDependencyId': 'task_dependency_id',
-            'parallelizability': 'parallelizability'
         }
     }
 
     TABLE_NAME = 'tasks'
-    COLUMNS = ['id', 'start_tick', 'total_flop_count', 'job_id', 'task_dependency_id', 'parallelizability']
+    COLUMNS = ['id', 'start_tick', 'total_flop_count', 'job_id', 'core_count']
     COLUMNS_PRIMARY_KEY = ['id']
 
     def google_id_has_at_least(self, google_id, authorization_level):
