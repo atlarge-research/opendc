@@ -34,6 +34,7 @@ import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.consumeEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 /**
  * This test suite checks for smoke when running a large amount of simulations.
@@ -98,7 +99,7 @@ internal class SmokeTest {
     object CrashProcess : Process<Unit, Unit> {
         override val initialState = Unit
         override suspend fun Context<Unit, Unit>.run() {
-            TODO("This process should crash")
+            throw RuntimeException("This process should crash")
         }
     }
 
@@ -116,7 +117,7 @@ internal class SmokeTest {
         }
 
         val simulation = OmegaKernel.create(bootstrap)
-        simulation.run()
+        assertThrows<RuntimeException> {  simulation.run() }
     }
 
     class ModelProcess(private val value: Int) : Process<Boolean, Int> {

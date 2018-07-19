@@ -63,18 +63,24 @@ interface Simulation<M> {
     /**
      * Step through one cycle in the simulation. This method will process all events in a single tick, update the
      * internal clock and then return the control to the user.
+     *
+     * This method will throw if a process running during the cycle throws an exception.
      */
     fun step()
 
     /**
      * Run a simulation over the specified model.
      * This method will step through multiple cycles in the simulation until no more message exist in the queue.
+     *
+     * This method will throw if a process running during a cycle throws an exception.
      */
     fun run()
 
     /**
      * Run a simulation over the specified model, stepping through cycles until the specified clock tick has
      * occurred. The control is then handed back to the user.
+     *
+     * This method will throw if a process running during a cycle throws an exception.
      *
      * @param until The point in simulation time at which the simulation should be paused and the control is handed
      * 				back to the user.

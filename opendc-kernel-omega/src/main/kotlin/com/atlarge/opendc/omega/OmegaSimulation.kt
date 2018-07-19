@@ -430,11 +430,6 @@ internal class OmegaSimulation<M>(bootstrap: Bootstrap<M>) : Simulation<M>, Boot
          *
          * @param exception The exception to resume with.
          */
-        override fun resumeWithException(exception: Throwable) {
-            // Deregister process from registry in order to have the GC collect this context:w
-            registry.remove(process)
-
-            logger.error(exception) { "An exception occurred during the execution of a process" }
-        }
+        override fun resumeWithException(exception: Throwable) = throw exception
     }
 }
