@@ -63,7 +63,7 @@ INSERT INTO authorization_levels (level) VALUES ('VIEW');
 *       -   DD is the two-digit day of the month (1-31)
 *       -   HH is the two-digit hours part (0-23)
 *       -   MM is the two-digit minutes part (0-59)
-*       -   SS is the two-digit secodns part (0-59)
+*       -   SS is the two-digit seconds part (0-59)
 */
 
 -- Simulation
@@ -146,9 +146,18 @@ DROP TABLE IF EXISTS schedulers;
 CREATE TABLE schedulers (
   name VARCHAR(50) PRIMARY KEY        NOT NULL
 );
-INSERT INTO schedulers (name) VALUES ('DEFAULT');
-INSERT INTO schedulers (name) VALUES ('SRTF');
-INSERT INTO schedulers (name) VALUES ('FIFO');
+INSERT INTO schedulers (name) VALUES ('FIFO-FIRSTFIT');
+INSERT INTO schedulers (name) VALUES ('FIFO-BESTFIT');
+INSERT INTO schedulers (name) VALUES ('FIFO-WORSTFIT');
+INSERT INTO schedulers (name) VALUES ('FIFO-RANDOM');
+INSERT INTO schedulers (name) VALUES ('SRTF-FIRSTFIT');
+INSERT INTO schedulers (name) VALUES ('SRTF-BESTFIT');
+INSERT INTO schedulers (name) VALUES ('SRTF-WORSTFIT');
+INSERT INTO schedulers (name) VALUES ('SRTF-RANDOM');
+INSERT INTO schedulers (name) VALUES ('RANDOM-FIRSTFIT');
+INSERT INTO schedulers (name) VALUES ('RANDOM-BESTFIT');
+INSERT INTO schedulers (name) VALUES ('RANDOM-WORSTFIT');
+INSERT INTO schedulers (name) VALUES ('RANDOM-RANDOM');
 
 /*
 *   Each simulation has a single trace. A trace contains tasks and their start times.
@@ -176,17 +185,28 @@ CREATE TABLE jobs (
 -- A task that's defined in terms of how many flops (floating point operations) it takes to complete
 DROP TABLE IF EXISTS tasks;
 CREATE TABLE tasks (
-  id                 INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
-  start_tick         INTEGER                 NOT NULL CHECK (start_tick >= 0),
-  total_flop_count   INTEGER                 NOT NULL,
-  job_id             INTEGER                 NOT NULL,
-  task_dependency_id INTEGER                 NULL,
-  parallelizability  VARCHAR(50)             NOT NULL,
+  id               INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  start_tick       INTEGER                 NOT NULL CHECK (start_tick >= 0),
+  total_flop_count BIGINT                  NOT NULL CHECK (total_flop_count >= 0),
+  core_count       INTEGER                 NOT NULL CHECK (core_count >= 0),
+  job_id           INTEGER                 NOT NULL,
 
   FOREIGN KEY (job_id) REFERENCES jobs (id)
     ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+-- A dependency between two tasks.
+DROP TABLE IF EXISTS task_dependencies;
+CREATE TABLE task_dependencies (
+  first_task_id  INTEGER NOT NULL,
+  second_task_id INTEGER NOT NULL,
+
+  PRIMARY KEY (first_task_id, second_task_id),
+  FOREIGN KEY (first_task_id) REFERENCES tasks (id)
+    ON DELETE CASCADE
     ON UPDATE CASCADE,
-  FOREIGN KEY (task_dependency_id) REFERENCES tasks (id)
+  FOREIGN KEY (second_task_id) REFERENCES tasks (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
@@ -212,11 +232,69 @@ CREATE TABLE task_states (
     ON UPDATE CASCADE
 );
 
+-- The measurements of a single stage
+DROP TABLE IF EXISTS stage_measurements;
+CREATE TABLE stage_measurements (
+  id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  experiment_id INTEGER                 NOT NULL,
+  tick          INTEGER                 NOT NULL CHECK (tick >= 0),
+  stage         INTEGER                 NOT NULL CHECK (stage >= 0),
+  cpu           BIGINT                  NOT NULL CHECK (cpu >= 0),
+  wall          BIGINT                  NOT NULL CHECK (wall >= 0),
+  size          INTEGER                 NOT NULL CHECK (size >= 0),
+  iterations    INTEGER                 NOT NULL CHECK (iterations >= 0),
+
+  FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+-- Metrics of a job task
+DROP TABLE IF EXISTS job_metrics;
+CREATE TABLE job_metrics (
+  id                   INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  experiment_id        INTEGER                 NOT NULL,
+  job_id               INTEGER                 NOT NULL,
+  critical_path        INTEGER                 NOT NULL CHECK (critical_path >= 0),
+  critical_path_length INTEGER                 NOT NULL CHECK (critical_path_length >= 0),
+  waiting_time         INTEGER                 NOT NULL CHECK (waiting_time >= 0),
+  makespan             INTEGER                 NOT NULL CHECK (makespan >= 0),
+  nsl                  INTEGER                 NOT NULL CHECK (nsl >= 0),
+
+  FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (job_id) REFERENCES jobs (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+-- Metrics of a single task
+DROP TABLE IF EXISTS task_metrics;
+CREATE TABLE task_metrics (
+  id            INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
+  experiment_id INTEGER                 NOT NULL,
+  task_id       INTEGER                 NOT NULL,
+  job_id        INTEGER                 NOT NULL,
+  waiting       INTEGER                 NOT NULL CHECK (waiting >= 0),
+  execution     INTEGER                 NOT NULL CHECK (execution >= 0),
+  turnaround    INTEGER                 NOT NULL CHECK (turnaround >= 0),
+
+  FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (task_id) REFERENCES tasks (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  FOREIGN KEY (job_id) REFERENCES jobs (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
 -- A machine state
 DROP TABLE IF EXISTS machine_states;
 CREATE TABLE machine_states (
   id               INTEGER PRIMARY KEY     NOT NULL AUTO_INCREMENT,
-  task_id          INTEGER,
   machine_id       INTEGER                 NOT NULL,
   experiment_id    INTEGER                 NOT NULL,
   tick             INTEGER                 NOT NULL,
@@ -224,7 +302,6 @@ CREATE TABLE machine_states (
   in_use_memory_mb INTEGER,
   load_fraction    REAL CHECK (load_fraction >= 0 AND load_fraction <= 1),
 
-  FOREIGN KEY (task_id) REFERENCES tasks (id),
   FOREIGN KEY (machine_id) REFERENCES machines (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
@@ -318,8 +395,9 @@ DELIMITER //
 -- and tiles in a room are connected.
 DROP TRIGGER IF EXISTS before_insert_tiles_check_existence;
 CREATE TRIGGER before_insert_tiles_check_existence
-BEFORE INSERT ON tiles
-FOR EACH ROW
+  BEFORE INSERT
+  ON tiles
+  FOR EACH ROW
   BEGIN
     -- checking tile overlap
     -- a tile already exists such that..
@@ -416,8 +494,9 @@ DELIMITER //
 -- Make sure objects are added to tiles in rooms they're allowed to be in.
 DROP TRIGGER IF EXISTS before_update_tiles;
 CREATE TRIGGER before_update_tiles
-BEFORE UPDATE ON tiles
-FOR EACH ROW
+  BEFORE UPDATE
+  ON tiles
+  FOR EACH ROW
   BEGIN
 
     IF ((NEW.object_id IS NOT NULL) AND (
@@ -543,8 +622,9 @@ DELIMITER //
 -- Make sure a machine is not inserted at a position that does not exist for its rack.
 DROP TRIGGER IF EXISTS before_insert_machine;
 CREATE TRIGGER before_insert_machine
-BEFORE INSERT ON machines
-FOR EACH ROW
+  BEFORE INSERT
+  ON machines
+  FOR EACH ROW
   BEGIN
     IF (
       NEW.position > (SELECT capacity
