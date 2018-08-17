@@ -24,20 +24,19 @@ const TeamSection = () => (
         description="Project Lead"
       />
       <TeamMember
-        photoId="loverweel"
-        name="Leon Overweel"
-        description="Product Lead and Software Engineer responsible for the web server, database, and
-                        API specification"
-      />
-      <TeamMember
         photoId="gandreadis"
         name="Georgios Andreadis"
-        description="Software Engineer responsible for the frontend web application"
+        description="Technology Lead and Software Engineer responsible for the frontend web application"
       />
       <TeamMember
         photoId="fmastenbroek"
         name="Fabian Mastenbroek"
         description="Software Engineer responsible for the datacenter simulator"
+      />
+      <TeamMember
+        photoId="loverweel"
+        name="Leon Overweel"
+        description="Software Engineer responsible for the web server, database, and API specification"
       />
     </div>
     <div className="text-center lead mt-3">
