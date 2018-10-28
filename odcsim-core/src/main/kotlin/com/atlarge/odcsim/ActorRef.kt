@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,47 +22,22 @@
  * SOFTWARE.
  */
 
-/* Default configuration for Kotlin projects */
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'jacoco'
+package com.atlarge.odcsim
 
-sourceCompatibility = 1.8
+/**
+ * A reference to an entity in simulation that accepts messages of type [T].
+ */
+interface ActorRef<in T : Any> {
+    /**
+     * The path for this actor (from this actor up to the root actor).
+     */
+    val path: ActorPath
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    /**
+     * Send the specified message to the actor referenced by this [ActorRef].
+     *
+     * @param msg The message to send to the referenced architecture.
+     * @param after The delay after which the message should be received by the actor.
+     */
+    fun send(msg: T, after: Duration = 0.1)
 }
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
-
-/* Configure test setup */
-test {
-    useJUnitPlatform {}
-
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
-
-    reports {
-        html.enabled = true
-    }
-
-    finalizedBy jacocoTestReport
-}
-
-/* Coverage */
-jacocoTestReport {
-    reports {
-        html.enabled = true
-    }
-}
-
-/* Documentation generation */
-dokka {}
-

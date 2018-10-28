@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,47 +22,23 @@
  * SOFTWARE.
  */
 
-/* Default configuration for Kotlin projects */
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'jacoco'
+package com.atlarge.odcsim
 
-sourceCompatibility = 1.8
+/**
+ * The behavior of an actor defines how it reacts to the messages that it receives.
+ * The message may either be of the type that the actor declares and which is part of the [ActorRef] signature,
+ * or it may be a system [Signal] that expresses a lifecycle event of either this actor or one of its child actors.
+ *
+ * @param T The shape of the messages the behavior accepts.
+ */
+interface Behavior<T : Any> {
+    /**
+     * Process an incoming message and return the actor's next [Behavior].
+     */
+    fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> = this
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    /**
+     * Process an incoming [Signal] and return the actor's next [Behavior].
+     */
+    fun receiveSignal(ctx: ActorContext<T>, signal: Signal): Behavior<T> = this
 }
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
-
-/* Configure test setup */
-test {
-    useJUnitPlatform {}
-
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
-
-    reports {
-        html.enabled = true
-    }
-
-    finalizedBy jacocoTestReport
-}
-
-/* Coverage */
-jacocoTestReport {
-    reports {
-        html.enabled = true
-    }
-}
-
-/* Documentation generation */
-dokka {}
-

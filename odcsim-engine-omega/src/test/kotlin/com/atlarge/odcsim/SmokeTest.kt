@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,47 +22,30 @@
  * SOFTWARE.
  */
 
-/* Default configuration for Kotlin projects */
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'jacoco'
+package com.atlarge.odcsim
 
-sourceCompatibility = 1.8
+import com.atlarge.odcsim.engine.omega.OmegaActorSystem
+import org.junit.jupiter.api.Test
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
+/**
+ * A test to verify the system runs without smoking.
+ */
+class SmokeTest {
+    @Test
+    fun `hello-world`() {
+        val system = OmegaActorSystem(object : Behavior<String> {
+            override fun receive(ctx: ActorContext<String>, msg: String): Behavior<String> {
+                println("${ctx.time} $msg")
+                return this
+            }
+
+            override fun receiveSignal(ctx: ActorContext<String>, signal: Signal): Behavior<String> {
+                println("${ctx.time} $signal")
+                return this
+            }
+        }, name = "test")
+
+        system.send("Hello World", after = 1.2)
+        system.run()
     }
 }
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
-
-/* Configure test setup */
-test {
-    useJUnitPlatform {}
-
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
-
-    reports {
-        html.enabled = true
-    }
-
-    finalizedBy jacocoTestReport
-}
-
-/* Coverage */
-jacocoTestReport {
-    reports {
-        html.enabled = true
-    }
-}
-
-/* Documentation generation */
-dokka {}
-

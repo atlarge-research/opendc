@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,47 +22,17 @@
  * SOFTWARE.
  */
 
-/* Default configuration for Kotlin projects */
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'jacoco'
+package com.atlarge.odcsim.engine.omega
 
-sourceCompatibility = 1.8
+import com.atlarge.odcsim.ActorSystem
+import com.atlarge.odcsim.ActorSystemFactory
+import com.atlarge.odcsim.Behavior
+import java.util.ServiceLoader
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+/**
+ * An [ActorSystemFactory] for the Omega engine, used by the [ServiceLoader] API to create [OmegaActorSystem] instances.
+ */
+class OmegaActorSystemFactory : ActorSystemFactory {
+    override operator fun <T : Any> invoke(root: Behavior<T>, name: String): ActorSystem<T> =
+        OmegaActorSystem(root, name)
 }
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
-
-/* Configure test setup */
-test {
-    useJUnitPlatform {}
-
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
-
-    reports {
-        html.enabled = true
-    }
-
-    finalizedBy jacocoTestReport
-}
-
-/* Coverage */
-jacocoTestReport {
-    reports {
-        html.enabled = true
-    }
-}
-
-/* Documentation generation */
-dokka {}
-

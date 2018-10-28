@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,47 +22,31 @@
  * SOFTWARE.
  */
 
-/* Default configuration for Kotlin projects */
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'jacoco'
+package com.atlarge.odcsim
 
-sourceCompatibility = 1.8
+/**
+ * An actor system is a hierarchical grouping of actors that represents a discrete event simulation.
+ *
+ * An implementation of this interface should be provided by an engine. See for example *odcsim-engine-omega*,
+ * which is the reference implementation of the *odcsim* API.
+ *
+ * @param T The shape of the messages the root actor in the system can receive.
+ */
+interface ActorSystem<in T : Any> : ActorRef<T> {
+    /**
+     * The current point in simulation time.
+     */
+    val time: Instant
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    /**
+     * The name of this engine instance, used to distinguish between multiple engines running within the same JVM.
+     */
+    val name: String
+
+    /**
+     * Run the actors until the specified point in simulation time.
+     *
+     * @param until The point until which the simulation should run.
+     */
+    fun run(until: Duration = Duration.POSITIVE_INFINITY)
 }
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
-
-/* Configure test setup */
-test {
-    useJUnitPlatform {}
-
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
-
-    reports {
-        html.enabled = true
-    }
-
-    finalizedBy jacocoTestReport
-}
-
-/* Coverage */
-jacocoTestReport {
-    reports {
-        html.enabled = true
-    }
-}
-
-/* Documentation generation */
-dokka {}
-

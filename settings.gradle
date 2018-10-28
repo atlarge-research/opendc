@@ -21,11 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
+rootProject.name = 'opendc-simulator'
 
-include 'opendc-core'
-include 'opendc-kernel-omega'
-include 'opendc-stdlib'
-include 'opendc-model-odc:core'
-include 'opendc-model-odc:jpa'
-include 'opendc-model-odc:setup'
+include 'odcsim-core'
+include 'odcsim-engine-omega'

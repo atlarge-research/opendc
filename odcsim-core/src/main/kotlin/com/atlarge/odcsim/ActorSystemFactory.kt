@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,47 +22,17 @@
  * SOFTWARE.
  */
 
-/* Default configuration for Kotlin projects */
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'jacoco'
+package com.atlarge.odcsim
 
-sourceCompatibility = 1.8
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+/**
+ * A factory for [ActorSystem] instances that allows users to dynamically load engine implementations.
+ */
+interface ActorSystemFactory {
+    /**
+     * Create an [ActorSystem] with the given root [Behavior] and the given name.
+     *
+     * @param root The behavior of the root actor.
+     * @param name The name of the engine instance.
+     */
+    operator fun <T : Any> invoke(root: Behavior<T>, name: String): ActorSystem<T>
 }
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
-
-/* Configure test setup */
-test {
-    useJUnitPlatform {}
-
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
-
-    reports {
-        html.enabled = true
-    }
-
-    finalizedBy jacocoTestReport
-}
-
-/* Coverage */
-jacocoTestReport {
-    reports {
-        html.enabled = true
-    }
-}
-
-/* Documentation generation */
-dokka {}
-
