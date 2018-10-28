@@ -34,7 +34,6 @@ import com.atlarge.odcsim.Instant
 import com.atlarge.odcsim.PostStop
 import com.atlarge.odcsim.PreStart
 import com.atlarge.odcsim.Signal
-import mu.KotlinLogging
 import java.util.PriorityQueue
 import kotlin.math.max
 
@@ -56,7 +55,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
     /**
      * The path to the root actor.
      */
-    override val path: ActorPath = ActorPath.Root()
+    override val path: ActorPath = ActorPath.Root(name = "/user")
 
     /**
      * The event queue to process
@@ -70,19 +69,16 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
      */
     private val registry: MutableMap<ActorPath, Actor<*>> = HashMap()
 
-    private val logger = KotlinLogging.logger {}
-
     override fun run(until: Duration) {
-        require(until >= .0) { "The given instant must be a positive number" }
+        require(until >= .0) { "The given instant must be a non-negative number" }
 
         while (true) {
             val envelope = queue.peek() ?: break
             val delivery = envelope.time.takeUnless { it > until } ?: break
 
-            if (delivery < time) {
-                // Message out of order
-                logger.warn { "Message delivered out of order [expected=$delivery, actual=$time]" }
-            }
+            // A message should never be delivered out of order in this single-threaded implementation. Assert for
+            // sanity
+            assert(delivery >= time) { "Message delivered out of order [expected=$delivery, actual=$time]" }
 
             time = delivery
             queue.poll()
@@ -114,7 +110,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         override val time: Instant
             get() = this@OmegaActorSystem.time
 
-        override fun <U : Any> spawn(name: String, behavior: Behavior<U>): ActorRef<U> {
+        override fun <U : Any> spawn(behavior: Behavior<U>, name: String): ActorRef<U> {
             val ref = ActorRefImpl<U>(self.path.child(name))
             if (ref.path !in registry) {
                 val actor = Actor(ref, behavior)
@@ -125,9 +121,9 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
             return ref
         }
 
-        override fun <U : Any> stop(child: ActorRef<U>): Boolean {
-            if (child.path.root != this@OmegaActorSystem.path) {
-                // This child is not part of the hierarchy.
+        override fun stop(child: ActorRef<*>): Boolean {
+            if (child.path.parent != self.path) {
+                // This is not a child of this actor
                 return false
             }
             val ref = registry[child.path] ?: return false

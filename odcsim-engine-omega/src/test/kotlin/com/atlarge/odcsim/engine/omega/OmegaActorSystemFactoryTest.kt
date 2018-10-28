@@ -22,30 +22,16 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim
+package com.atlarge.odcsim.engine.omega
 
-import com.atlarge.odcsim.engine.omega.OmegaActorSystem
-import org.junit.jupiter.api.Test
+import com.atlarge.odcsim.ActorSystemFactory
+import com.atlarge.odcsim.ActorSystemFactoryTest
+import org.junit.jupiter.api.DisplayName
 
 /**
- * A test to verify the system runs without smoking.
+ * The [ActorSystemFactoryTest] suite for the Omega engine implementation.
  */
-class SmokeTest {
-    @Test
-    fun `hello-world`() {
-        val system = OmegaActorSystem(object : Behavior<String> {
-            override fun receive(ctx: ActorContext<String>, msg: String): Behavior<String> {
-                println("${ctx.time} $msg")
-                return this
-            }
-
-            override fun receiveSignal(ctx: ActorContext<String>, signal: Signal): Behavior<String> {
-                println("${ctx.time} $signal")
-                return this
-            }
-        }, name = "test")
-
-        system.send("Hello World", after = 1.2)
-        system.run()
-    }
+@DisplayName("OmegaActorSystemFactory")
+class OmegaActorSystemFactoryTest : ActorSystemFactoryTest() {
+    override fun createFactory(): ActorSystemFactory = OmegaActorSystemFactory()
 }

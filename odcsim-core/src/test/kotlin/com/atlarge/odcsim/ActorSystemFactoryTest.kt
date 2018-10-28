@@ -24,6 +24,10 @@
 
 package com.atlarge.odcsim
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+
 /**
  * A conformance test suite for implementors of the [ActorSystemFactory] interface.
  */
@@ -32,4 +36,31 @@ abstract class ActorSystemFactoryTest {
      * Create an [ActorSystemFactory] instance to test.
      */
     abstract fun createFactory(): ActorSystemFactory
+
+    /**
+     * Test whether the factory will create an [ActorSystem] with correct name.
+     */
+    @Test
+    fun `should create a system with correct name`() {
+        val factory = createFactory()
+        val name = "test"
+        val system = factory(object : Behavior<Unit> {}, name)
+
+        assertEquals(name, system.name)
+    }
+
+    /**
+     * Test whether the factory will create an [ActorSystem] with valid root behavior.
+     */
+    @Test
+    fun `should create a system with correct root behavior`() {
+        val factory = createFactory()
+        val system = factory(object : Behavior<Unit> {
+            override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
+                throw UnsupportedOperationException()
+            }
+        }, "test")
+
+        assertThrows<UnsupportedOperationException> { system.run(until = 10.0) }
+    }
 }
