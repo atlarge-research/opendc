@@ -25,6 +25,7 @@
 /* Default configuration for Kotlin projects */
 apply plugin: 'kotlin'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'org.jlleitschuh.gradle.ktlint'
 apply plugin: 'jacoco'
 
 sourceCompatibility = 1.8

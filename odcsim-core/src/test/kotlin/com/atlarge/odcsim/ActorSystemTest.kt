@@ -154,7 +154,6 @@ abstract class ActorSystemTest {
         }
     }
 
-
     @Nested
     @DisplayName("Actor")
     inner class Actor {
@@ -257,7 +256,6 @@ abstract class ActorSystemTest {
                     msg.send(Unit) // This actor should be stopped now and not receive the message anymore
                     Behavior.stopped()
                 }
-
             }, name = "test")
 
             system.run()
