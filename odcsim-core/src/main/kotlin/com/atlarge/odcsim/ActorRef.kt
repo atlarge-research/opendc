@@ -41,3 +41,9 @@ interface ActorRef<in T : Any> {
      */
     fun send(msg: T, after: Duration = 0.1)
 }
+
+/**
+ * Unsafe helper method for widening the type accepted by this [ActorRef].
+ */
+@Suppress("UNCHECKED_CAST")
+fun <U : Any, T : U> ActorRef<T>.upcast(): ActorRef<U> = this as ActorRef<U>

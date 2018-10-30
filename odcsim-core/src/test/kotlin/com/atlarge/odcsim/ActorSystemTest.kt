@@ -24,6 +24,11 @@
 
 package com.atlarge.odcsim
 
+import com.atlarge.odcsim.dsl.empty
+import com.atlarge.odcsim.dsl.ignore
+import com.atlarge.odcsim.dsl.receive
+import com.atlarge.odcsim.dsl.receiveMessage
+import com.atlarge.odcsim.dsl.setup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -49,7 +54,7 @@ abstract class ActorSystemTest {
     @Test
     fun `should have a name`() {
         val name = "test"
-        val system = factory(object : Behavior<Unit> {}, name)
+        val system = factory(Behavior.empty<Unit>(), name)
 
         assertEquals(name, system.name)
     }
@@ -59,7 +64,7 @@ abstract class ActorSystemTest {
      */
     @Test
     fun `should have a path`() {
-        val system = factory(object : Behavior<Unit> {}, "test")
+        val system = factory(Behavior.empty<Unit>(), "test")
 
         assertTrue(system.path is ActorPath.Root)
     }
@@ -69,7 +74,7 @@ abstract class ActorSystemTest {
      */
     @Test
     fun `should start at t=0`() {
-        val system = factory(object : Behavior<Unit> {}, name = "test")
+        val system = factory(Behavior.empty<Unit>(), name = "test")
 
         assertTrue(Math.abs(system.time) < DELTA)
     }
@@ -79,7 +84,7 @@ abstract class ActorSystemTest {
      */
     @Test
     fun `should not accept negative instants for running`() {
-        val system = factory(object : Behavior<Unit> {}, name = "test")
+        val system = factory(Behavior.empty<Unit>(), name = "test")
         assertThrows<IllegalArgumentException> { system.run(-10.0) }
     }
 
@@ -90,7 +95,7 @@ abstract class ActorSystemTest {
     @Test
     fun `should not jump backward in time`() {
         val until = 10.0
-        val system = factory(object : Behavior<Unit> {}, name = "test")
+        val system = factory(Behavior.empty<Unit>(), name = "test")
 
         system.run(until = until)
         system.run(until = until - 0.5)
@@ -103,7 +108,7 @@ abstract class ActorSystemTest {
     @Test
     fun `should jump forward in time`() {
         val until = 10.0
-        val system = factory(object : Behavior<Unit> {}, name = "test")
+        val system = factory(Behavior.empty<Unit>(), name = "test")
 
         system.run(until = until)
         assertTrue(Math.abs(system.time - until) < DELTA)
@@ -114,21 +119,26 @@ abstract class ActorSystemTest {
      */
     @Test
     fun `should order messages at the instant by insertion time`() {
-        val behavior = object : Behavior<Int> {
-            override fun receive(ctx: ActorContext<Int>, msg: Int): Behavior<Int> {
-                assertEquals(1, msg)
-                return object : Behavior<Int> {
-                    override fun receive(ctx: ActorContext<Int>, msg: Int): Behavior<Int> {
-                        assertEquals(2, msg)
-                        return this
-                    }
-                }
+        val behavior = Behavior.receiveMessage<Int> { msg ->
+            assertEquals(1, msg)
+
+            Behavior.receiveMessage {
+                assertEquals(2, it)
+                Behavior.ignore()
             }
         }
         val system = factory(behavior, name = "test")
         system.send(1, after = 1.0)
         system.send(2, after = 1.0)
         system.run(until = 10.0)
+    }
+
+    /**
+     * Test whether an [ActorSystem] will not initialize the root actor if the system has not been run yet.
+     */
+    @Test
+    fun `should not initialize root actor if not run`() {
+        factory(Behavior.setup<Unit> { TODO() }, name = "test")
     }
 
     @Nested
@@ -139,7 +149,7 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should disallow messages in the past`() {
-            val system = factory(object : Behavior<Unit> {}, name = "test")
+            val system = factory(Behavior.empty<Unit>(), name = "test")
             assertThrows<IllegalArgumentException> { system.send(Unit, after = -1.0) }
         }
     }
@@ -153,11 +163,9 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should pre-start at t=0 if root`() {
-            val behavior = object : Behavior<Unit> {
-                override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                    assertTrue(Math.abs(ctx.time) < DELTA)
-                    return this
-                }
+            val behavior = Behavior.setup<Unit> { ctx ->
+                assertTrue(Math.abs(ctx.time) < DELTA)
+                Behavior.ignore()
             }
 
             val system = factory(behavior, "test")
@@ -169,21 +177,12 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should allow spawning of child actors`() {
-            val behavior = object : Behavior<Unit> {
-                override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                    throw UnsupportedOperationException("b")
-                }
-            }
+            val behavior = Behavior.setup<Unit> { throw UnsupportedOperationException("b") }
 
-            val system = factory(object : Behavior<Unit> {
-                override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                    if (signal is PreStart) {
-                        val ref = ctx.spawn(behavior, "child")
-                        assertEquals("child", ref.path.name)
-                    }
-
-                    return this
-                }
+            val system = factory(Behavior.setup<Unit> { ctx ->
+                val ref = ctx.spawn(behavior, "child")
+                assertEquals("child", ref.path.name)
+                Behavior.ignore()
             }, name = "test")
 
             assertThrows<UnsupportedOperationException> { system.run(until = 10.0) }
@@ -194,20 +193,12 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should allow stopping of child actors`() {
-            val system = factory(object : Behavior<Unit> {
-                override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                    if (signal is PreStart) {
-                        val ref = ctx.spawn(object : Behavior<Unit> {
-                            override fun receive(ctx: ActorContext<Unit>, msg: Unit): Behavior<Unit> {
-                                throw UnsupportedOperationException()
-                            }
-                        }, "child")
-                        assertTrue(ctx.stop(ref))
-                        assertEquals("child", ref.path.name)
-                    }
+            val system = factory(Behavior.setup<Unit> { ctx ->
+                val ref = ctx.spawn(Behavior.receiveMessage<Unit> { throw UnsupportedOperationException() }, "child")
+                assertTrue(ctx.stop(ref))
+                assertEquals("child", ref.path.name)
 
-                    return this
-                }
+                Behavior.ignore()
             }, name = "test")
 
             system.run(until = 10.0)
@@ -218,17 +209,15 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should only be able to terminate child actors`() {
-            val system = factory(object : Behavior<Unit> {
-                override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                    val child1 = ctx.spawn(object : Behavior<Unit> {}, "child-1")
-                    ctx.spawn(object : Behavior<Unit> {
-                        override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                            assertFalse(ctx.stop(child1))
-                            return this
-                        }
-                    }, "child-2")
-                    return this
-                }
+            val system = factory(Behavior.setup<Unit> { ctx ->
+                val child1 = ctx.spawn(Behavior.ignore<Unit>(), "child-1")
+
+                ctx.spawn(Behavior.setup<Unit> {
+                    assertFalse(it.stop(child1))
+                    Behavior.ignore()
+                }, "child-2")
+
+                Behavior.ignore()
             }, name = "test")
             system.run()
         }
@@ -238,13 +227,11 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should not be able to stop an already terminated child`() {
-            val system = factory(object : Behavior<Unit> {
-                override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                    val child = ctx.spawn(object : Behavior<Unit> {}, "child")
-                    ctx.stop(child)
-                    assertFalse(ctx.stop(child))
-                    return this
-                }
+            val system = factory(Behavior.setup<Unit> { ctx ->
+                val child = ctx.spawn(Behavior.ignore<Unit>(), "child")
+                ctx.stop(child)
+                assertFalse(ctx.stop(child))
+                Behavior.ignore()
             }, name = "test")
             system.run()
         }
@@ -254,34 +241,48 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should terminate children of child when terminating it`() {
-            val system = factory(object : Behavior<ActorRef<Unit>> {
-                lateinit var child: ActorRef<Unit>
-
-                override fun receive(ctx: ActorContext<ActorRef<Unit>>, msg: ActorRef<Unit>): Behavior<ActorRef<Unit>> {
-                    assertTrue(ctx.stop(child))
-                    msg.send(Unit) // This actor should be stopped now and not receive the message anymore
-                    return this
-                }
-
-                override fun receiveSignal(ctx: ActorContext<ActorRef<Unit>>, signal: Signal): Behavior<ActorRef<Unit>> {
-                    val root = ctx.self
-                    child = ctx.spawn(object : Behavior<Unit> {
-                        override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                            if (signal is PreStart) {
-                                val child = ctx.spawn(object : Behavior<Unit> {
-                                    override fun receive(ctx: ActorContext<Unit>, msg: Unit): Behavior<Unit> {
-                                        throw IllegalStateException()
-                                    }
-                                }, "child")
-                                root.send(child)
-                            }
-                            return this
-                        }
+            val system = factory(Behavior.setup<ActorRef<Unit>> { ctx1 ->
+                val root = ctx1.self
+                val child = ctx1.spawn(Behavior.setup<Unit> {
+                    val child = ctx1.spawn(Behavior.receiveMessage<Unit> {
+                        throw IllegalStateException("DELIBERATE")
                     }, "child")
-                    return this
+                    root.send(child)
+                    Behavior.ignore()
+                }, "child")
+
+
+                Behavior.receive { ctx2, msg ->
+                    assertTrue(ctx2.stop(child))
+                    msg.send(Unit) // This actor should be stopped now and not receive the message anymore
+                    Behavior.stopped()
                 }
+
             }, name = "test")
+
             system.run()
+        }
+
+        /**
+         * Test whether [Behavior.Companion.same] works correctly.
+         */
+        @Test
+        fun `should keep same behavior on same`() {
+            var counter = 0
+
+            val behavior = Behavior.setup<Unit> { ctx ->
+                    counter++
+                    ctx.self.send(Unit)
+
+                Behavior.receiveMessage {
+                    counter++
+                    Behavior.same()
+                }
+            }
+
+            val system = factory(behavior, "test")
+            system.run()
+            assertEquals(2, counter)
         }
 
         /**
@@ -289,18 +290,49 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should have reference to itself`() {
-            val behavior = object : Behavior<Unit> {
-                override fun receive(ctx: ActorContext<Unit>, msg: Unit): Behavior<Unit> {
-                    throw UnsupportedOperationException()
-                }
-                override fun receiveSignal(ctx: ActorContext<Unit>, signal: Signal): Behavior<Unit> {
-                    ctx.self.send(Unit)
-                    return this
-                }
+            val behavior: Behavior<Unit> = Behavior.setup { ctx ->
+                ctx.self.send(Unit)
+                Behavior.receiveMessage { throw UnsupportedOperationException() }
             }
 
             val system = factory(behavior, "test")
             assertThrows<UnsupportedOperationException> { system.run() }
+        }
+
+        /**
+         * Test whether we cannot start an actor with the [Behavior.Companion.same] behavior.
+         */
+        @Test
+        fun `should not start with same behavior`() {
+            val system = factory(Behavior.same<Unit>(), "test")
+            assertThrows<IllegalArgumentException> { system.run() }
+        }
+
+        /**
+         * Test whether we cannot start an actor with the [Behavior.Companion.unhandled] behavior.
+         */
+        @Test
+        fun `should not start with unhandled behavior`() {
+            val system = factory(Behavior.unhandled<Unit>(), "test")
+            assertThrows<IllegalArgumentException> { system.run() }
+        }
+
+        /**
+         * Test whether we cannot start an actor with deferred unhandled behavior.
+         */
+        @Test
+        fun `should not start with deferred unhandled behavior`() {
+            val system = factory(Behavior.setup<Unit> { Behavior.unhandled() }, "test")
+            assertThrows<IllegalArgumentException> { system.run() }
+        }
+
+        /**
+         * Test whether we can start an actor with the [Behavior.Companion.stopped] behavior.
+         */
+        @Test
+        fun `should start with stopped behavior`() {
+            val system = factory(Behavior.stopped<Unit>(), "test")
+            system.run()
         }
     }
 }

@@ -29,7 +29,7 @@ package com.atlarge.odcsim
  *
  * @param T The shape of the messages the actor accepts.
  */
-interface ActorContext<in T : Any> {
+interface ActorContext<T : Any> {
     /**
      * The identity of the actor, bound to the lifecycle of this actor instance.
      */

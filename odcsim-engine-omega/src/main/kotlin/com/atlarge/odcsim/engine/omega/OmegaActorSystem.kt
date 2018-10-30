@@ -29,6 +29,7 @@ import com.atlarge.odcsim.ActorPath
 import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.ActorSystem
 import com.atlarge.odcsim.Behavior
+import com.atlarge.odcsim.BehaviorInterpreter
 import com.atlarge.odcsim.Duration
 import com.atlarge.odcsim.Instant
 import com.atlarge.odcsim.PostStop
@@ -58,6 +59,11 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
     override val path: ActorPath = ActorPath.Root(name = "/user")
 
     /**
+     * A flag to indicate the system has started.
+     */
+    private var isStarted: Boolean = false
+
+    /**
      * The event queue to process
      */
     private val queue: PriorityQueue<Envelope> = PriorityQueue(Comparator
@@ -69,10 +75,21 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
      */
     private val registry: MutableMap<ActorPath, Actor<*>> = HashMap()
 
+    init {
+        registry[path] = Actor(this, root)
+        schedule(this, PreStart, .0)
+    }
+
     override fun run(until: Duration) {
         require(until >= .0) { "The given instant must be a non-negative number" }
 
-        while (true) {
+        // Start the root actor on initial run
+        if (!isStarted) {
+            registry[path]!!.start()
+            isStarted = true
+        }
+
+        while (time < until) {
             val envelope = queue.peek() ?: break
             val delivery = envelope.time.takeUnless { it > until } ?: break
 
@@ -99,13 +116,15 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
      */
     private var nextId: Long = 0
 
-    init {
-        registry[path] = Actor(this, root)
-        schedule(this, PreStart, .0)
-    }
-
-    private inner class Actor<T : Any>(override val self: ActorRef<T>, var behavior: Behavior<T>) : ActorContext<T> {
+    /**
+     * An actor as represented in the Omega engine.
+     *
+     * @param self The [ActorRef] to this actor.
+     * @param initialBehavior The initial behavior of this actor.
+     */
+    private inner class Actor<T : Any>(override val self: ActorRef<T>, initialBehavior: Behavior<T>) : ActorContext<T> {
         val children: MutableSet<Actor<*>> = mutableSetOf()
+        val interpreter = BehaviorInterpreter(initialBehavior)
 
         override val time: Instant
             get() = this@OmegaActorSystem.time
@@ -117,6 +136,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
                 registry[ref.path] = actor
                 children += actor
                 schedule(ref, PreStart, .0)
+                actor.start()
             }
             return ref
         }
@@ -127,8 +147,24 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
                 return false
             }
             val ref = registry[child.path] ?: return false
-            ref.terminate()
+            ref.stop()
             return true
+        }
+
+        /**
+         * Start this actor.
+         */
+        fun start() {
+            interpreter.start(this)
+        }
+
+        /**
+         * Stop this actor.
+         */
+        fun stop() {
+            interpreter.stop(this)
+            terminate()
+            interpreter.interpretSignal(this, PostStop)
         }
 
         /**
@@ -137,15 +173,23 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         fun terminate() {
             children.forEach { it.terminate() }
             registry.remove(self.path)
-            interpretMessage(PostStop)
         }
 
         /**
-         * Interpret the given message send to an actor. Make sure the message is of the correct type.
+         * Interpret the given message send to an actor.
          */
         fun interpretMessage(msg: Any) {
-            @Suppress("UNCHECKED_CAST")
-            behavior = if (msg is Signal) behavior.receiveSignal(this, msg) else behavior.receive(this, msg as T)
+            if (msg is Signal) {
+                interpreter.interpretSignal(this, msg)
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                interpreter.interpretMessage(this, msg as T)
+            }
+
+            if (!interpreter.isAlive) {
+                terminate()
+                interpreter.interpretSignal(this, PostStop)
+            }
         }
 
         override fun equals(other: Any?): Boolean =
