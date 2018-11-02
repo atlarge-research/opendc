@@ -26,10 +26,12 @@ package com.atlarge.odcsim.dsl
 
 import com.atlarge.odcsim.ActorContext
 import com.atlarge.odcsim.Behavior
-import com.atlarge.odcsim.BehaviorInterpreter
 import com.atlarge.odcsim.DeferredBehavior
 import com.atlarge.odcsim.ReceivingBehavior
 import com.atlarge.odcsim.Signal
+import com.atlarge.odcsim.internal.BehaviorInterpreter
+import com.atlarge.odcsim.internal.EmptyBehavior
+import com.atlarge.odcsim.internal.IgnoreBehavior
 
 /**
  * A factory for [Behavior]. Creation of the behavior instance is deferred until the actor is started.
@@ -46,27 +48,9 @@ fun <T : Any> Behavior.Companion.setup(block: (ActorContext<T>) -> Behavior<T>):
 fun <T : Any> Behavior.Companion.ignore(): Behavior<T> = IgnoreBehavior.narrow()
 
 /**
- * A [Behavior] object that ignores all messages sent to the actor.
- */
-private object IgnoreBehavior : ReceivingBehavior<Any>() {
-    override fun receive(ctx: ActorContext<Any>, msg: Any): Behavior<Any> = this
-
-    override fun receiveSignal(ctx: ActorContext<Any>, signal: Signal): Behavior<Any> = this
-
-    override fun toString() = "Ignore"
-}
-
-/**
  * A [Behavior] that treats every incoming message or signal as unhandled.
  */
 fun <T : Any> Behavior.Companion.empty(): Behavior<T> = EmptyBehavior.narrow()
-
-/**
- * A [Behavior] object that does not handle any message it receives.
- */
-private object EmptyBehavior : ReceivingBehavior<Any>() {
-    override fun toString() = "Empty"
-}
 
 /**
  * Construct a [Behavior] that reacts to incoming messages, provides access to the [ActorContext] and returns the

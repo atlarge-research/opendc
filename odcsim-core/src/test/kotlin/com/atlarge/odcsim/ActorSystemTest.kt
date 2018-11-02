@@ -250,7 +250,6 @@ abstract class ActorSystemTest {
                     Behavior.ignore()
                 }, "child")
 
-
                 Behavior.receive { ctx2, msg ->
                     assertTrue(ctx2.stop(child))
                     msg.send(Unit) // This actor should be stopped now and not receive the message anymore
@@ -331,6 +330,24 @@ abstract class ActorSystemTest {
         fun `should start with stopped behavior`() {
             val system = factory(Behavior.stopped<Unit>(), "test")
             system.run()
+        }
+
+        /**
+         * Test whether deferred behavior that returns [Behavior.Companion.same] fails.
+         */
+        @Test
+        fun `should not allow setup to return same`() {
+            val system = factory(Behavior.setup<Unit> { Behavior.same() }, "test")
+            assertThrows<IllegalArgumentException> { system.run() }
+        }
+
+        /**
+         * Test whether deferred behavior that returns [Behavior.Companion.unhandled] fails.
+         */
+        @Test
+        fun `should not allow setup to return unhandled`() {
+            val system = factory(Behavior.setup<Unit> { Behavior.unhandled() }, "test")
+            assertThrows<IllegalArgumentException> { system.run() }
         }
     }
 }

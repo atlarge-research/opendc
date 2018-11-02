@@ -174,164 +174,25 @@ val <T : Any> Behavior<T>.isAlive get() = this !is StoppedBehavior
  */
 val <T : Any> Behavior<T>.isUnhandled get() = this !is UnhandledBehavior
 
+// The special behaviors are kept in this file as to be able to seal the Behavior class to prevent users from extending
+// it.
 /**
  * A special [Behavior] instance that signals that the actor has stopped.
  */
-private object StoppedBehavior : Behavior<Any>() {
+internal object StoppedBehavior : Behavior<Any>() {
     override fun toString() = "Stopped"
 }
 
 /**
  * A special [Behavior] object to signal that the actor wants to reuse its previous behavior.
  */
-private object SameBehavior : Behavior<Nothing>() {
+internal object SameBehavior : Behavior<Nothing>() {
     override fun toString() = "Same"
 }
 
 /**
  * A special [Behavior] object that indicates that the last message or signal was not handled.
  */
-private object UnhandledBehavior : Behavior<Nothing>() {
+internal object UnhandledBehavior : Behavior<Nothing>() {
     override fun toString() = "Unhandled"
-}
-
-/**
- * Helper class that interprets messages/signals, canonicalizes special objects and manages the life-cycle of
- * [Behavior] instances.
- *
- * @param initialBehavior The initial behavior to use.
- */
-class BehaviorInterpreter<T : Any>(initialBehavior: Behavior<T>) {
-    /**
-     * The current [Behavior] instance.
-     */
-    var behavior: Behavior<T> = initialBehavior
-
-    /**
-     * A flag to indicate whether the current behavior is still alive.
-     */
-    val isAlive: Boolean get() = behavior.isAlive
-
-    /**
-     * Construct a [BehaviorInterpreter] with the specified initial behavior and immediately start it in the specified
-     * context.
-     *
-     * @param initialBehavior The initial behavior of the actor.
-     * @param ctx The [ActorContext] to run the behavior in.
-     */
-    constructor(initialBehavior: Behavior<T>, ctx: ActorContext<T>) : this(initialBehavior) {
-        start(ctx)
-    }
-
-    /**
-     * Start the initial behavior.
-     *
-     * @param ctx The [ActorContext] to start the behavior in.
-     */
-    fun start(ctx: ActorContext<T>) {
-        behavior = validateAsInitial(start(behavior, ctx))
-    }
-
-    /**
-     * Stop the current active behavior and move into the stopped state.
-     *
-     * @param ctx The [ActorContext] this takes place in.
-     */
-    fun stop(ctx: ActorContext<T>) {
-        behavior = start(StoppedBehavior.narrow(), ctx)
-    }
-
-    /**
-     * Interpret the given message of type [T] using the current active behavior.
-     *
-     * @return `true` if the message was handled by the active behavior, `false` otherwise.
-     */
-    fun interpretMessage(ctx: ActorContext<T>, msg: T): Boolean = interpret(ctx, msg, false)
-
-    /**
-     * Interpret the given [Signal] using the current active behavior.
-     *
-     * @return `true` if the signal was handled by the active behavior, `false` otherwise.
-     */
-    fun interpretSignal(ctx: ActorContext<T>, signal: Signal): Boolean = interpret(ctx, signal, true)
-
-    /**
-     * Interpret the given message or signal using the current active behavior.
-     *
-     * @return `true` if the message or signal was handled by the active behavior, `false` otherwise.
-     */
-    private fun interpret(ctx: ActorContext<T>, msg: Any, isSignal: Boolean): Boolean =
-        if (isAlive) {
-            val next = when (val current = behavior) {
-                is DeferredBehavior<T> ->
-                    throw IllegalStateException("Deferred [$current] should not be passed to interpreter")
-                is ReceivingBehavior<T> ->
-                    if (isSignal)
-                        current.receiveSignal(ctx, msg as Signal)
-                    else
-                        @Suppress("UNCHECKED_CAST")
-                        current.receive(ctx, msg as T)
-                is SameBehavior, is UnhandledBehavior ->
-                    throw IllegalStateException("Cannot execute with [$current] as behavior")
-                is StoppedBehavior -> current
-            }
-
-            val unhandled = next.isUnhandled
-            behavior = canonicalize(next, behavior, ctx)
-            !unhandled
-        } else {
-            false
-        }
-
-    /**
-     * Validate whether the given [Behavior] can be used as initial behavior. Throw an [IllegalArgumentException] if
-     * the [Behavior] is not valid.
-     *
-     * @param behavior The behavior to validate.
-     */
-    private fun validateAsInitial(behavior: Behavior<T>): Behavior<T> =
-        when (behavior) {
-            is SameBehavior, is UnhandledBehavior ->
-                throw IllegalArgumentException("Cannot use [$behavior] as initial behavior")
-            else -> behavior
-        }
-
-    /**
-     * Helper methods to properly manage the special, canned behavior objects. It highly recommended to use the
-     * [BehaviorInterpreter] instead to properly manage the life-cycles of the behavior objects.
-     */
-    companion object {
-        /**
-         * Start the initial behavior of an actor in the specified [ActorContext].
-         *
-         * This will activate the initial behavior and canonicalize the resulting behavior.
-         *
-         * @param behavior The initial behavior to start.
-         * @param ctx The [ActorContext] to start the behavior in.
-         * @return The behavior that has been started.
-         */
-        tailrec fun <T : Any> start(behavior: Behavior<T>, ctx: ActorContext<T>): Behavior<T> =
-            when (behavior) {
-                is DeferredBehavior<T> -> start(behavior(ctx), ctx)
-                else -> behavior
-            }
-
-        /**
-         * Given a possibly special behavior (same or unhandled) and a "current" behavior (which defines the meaning of
-         * encountering a `same` behavior) this method computes the next behavior, suitable for passing a message or
-         * signal.
-         *
-         * @param behavior The actor's next behavior.
-         * @param current The actor's current behavior.
-         * @param ctx The context in which the actor runs.
-         * @return The actor's canonicalized next behavior.
-         */
-        tailrec fun <T : Any> canonicalize(behavior: Behavior<T>, current: Behavior<T>, ctx: ActorContext<T>): Behavior<T> =
-            when (behavior) {
-                is SameBehavior, current -> current
-                is UnhandledBehavior -> current
-                is DeferredBehavior<T> -> canonicalize(behavior(ctx), current, ctx)
-                else -> behavior
-            }
-    }
 }

@@ -29,12 +29,12 @@ import com.atlarge.odcsim.ActorPath
 import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.ActorSystem
 import com.atlarge.odcsim.Behavior
-import com.atlarge.odcsim.BehaviorInterpreter
 import com.atlarge.odcsim.Duration
 import com.atlarge.odcsim.Instant
 import com.atlarge.odcsim.PostStop
 import com.atlarge.odcsim.PreStart
 import com.atlarge.odcsim.Signal
+import com.atlarge.odcsim.internal.BehaviorInterpreter
 import java.util.PriorityQueue
 import kotlin.math.max
 
