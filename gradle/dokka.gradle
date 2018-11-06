@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,43 +22,26 @@
  * SOFTWARE.
  */
 
-/* Default configuration for Kotlin projects */
-apply plugin: 'kotlin'
-apply plugin: 'org.jlleitschuh.gradle.ktlint'
-apply plugin: 'jacoco'
+/* Documentation generation for project */
+apply plugin: 'org.jetbrains.dokka'
 
-sourceCompatibility = 1.8
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+repositories {
+    jcenter()
 }
 
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = '1.8'
+dokka {
+    moduleName = 'odcsim'
+    outputFormat = 'html'
+    kotlinTasks {
+        subprojects.compileKotlin
     }
-}
+    includes = ['docs/packages.md']
+    samples = []
+    jdkVersion = 8
 
-/* Configure test setup */
-test {
-    useJUnitPlatform {}
-
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
-
-    reports {
-        html.enabled = true
-    }
-
-    finalizedBy jacocoTestReport
-}
-
-/* Coverage */
-jacocoTestReport {
-    reports {
-        html.enabled = true
+    linkMapping {
+        dir = rootProject.projectDir.absolutePath
+        url = "$github_url/tree/master"
+        suffix = '#L'
     }
 }
