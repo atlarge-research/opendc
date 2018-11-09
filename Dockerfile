@@ -5,15 +5,14 @@ MAINTAINER Sacheendra Talluri <sacheendra.t@gmail.com>
 RUN echo "deb http://ftp.debian.org/debian stretch main" >> /etc/apt/sources.list \
 	&& apt-get update \
 	&& apt-get install -y python python-pip yarn git sed mysql-client \
-	&& pip install oauth2client eventlet flask-socketio flask-compress mysql-connector-python-rf \
-	&& pip install --upgrade pyasn1-modules \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Copy OpenDC directory
 COPY ./ /opendc
 
 # Setting up simulator
-RUN chmod 555 /opendc/build/configure.sh \
+RUN python /opendc/opendc-web-server/setup.py install \
+	&& chmod 555 /opendc/build/configure.sh \
 	&& cd /opendc/opendc-frontend \
 	&& rm -rf ./build \
 	&& rm -rf ./node_modules \
