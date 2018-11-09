@@ -34,10 +34,11 @@ setup(
     packages=['opendc'],
 
     install_requires=[
-        'flask',
-        'flask_socketio',
-        'oauth2client',
-        'eventlet',
-        'flask-compress'
+        'Flask==1.0.2',
+        'Flask-SocketIO==3.0.2',
+        'oauth2client==4.1.3',
+        'eventlet==0.24.1',
+        'Flask-Compress==1.4.0',
+        'pyasn1-modules==0.2.2'
     ],
 )
