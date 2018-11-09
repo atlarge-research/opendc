@@ -1,6 +1,11 @@
-.DS_Store
-
 # JetBrains platform
 .idea/
 
+# Credential setup file
 keys.json
+
+# pyenv version files
+.python-version
+
+# macOS-specific files
+.DS_Store
