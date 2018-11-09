@@ -6,6 +6,7 @@ RUN echo "deb http://ftp.debian.org/debian stretch main" >> /etc/apt/sources.lis
 	&& apt-get update \
 	&& apt-get install -y python python-pip yarn git sed mysql-client \
 	&& pip install oauth2client eventlet flask-socketio flask-compress mysql-connector-python-rf \
+	&& pip install --upgrade pyasn1-modules \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Copy OpenDC directory
