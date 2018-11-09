@@ -3,10 +3,6 @@ MAINTAINER Sacheendra Talluri <sacheendra.t@gmail.com>
 
 # Installing python and web-server dependencies
 RUN echo "deb http://ftp.debian.org/debian stretch main" >> /etc/apt/sources.list \
-#	&& apt-get update \
-#	&& apt-get install -y apt-transport-https \
-#	&& curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-#	&& echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
 	&& apt-get update \
 	&& apt-get install -y python python-pip yarn git sed mysql-client \
 	&& rm -rf /var/lib/apt/lists/*
