@@ -21,9 +21,6 @@ yarn-error.log*
 # IntelliJ IDEA
 /.idea
 
-# Yarn
-yarn.lock
-
 # Environment variables
 .env
 
