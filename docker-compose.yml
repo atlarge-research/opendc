@@ -28,6 +28,11 @@ services:
       - PERSISTENCE_URL=jdbc:mysql://mariadb:3306/opendc
       - PERSISTENCE_USER=opendc
       - PERSISTENCE_PASSWORD=opendcpassword
+      - COLLECT_MACHINE_STATES=ON
+      - COLLECT_TASK_STATES=ON
+      - COLLECT_STAGE_MEASUREMENTS=OFF
+      - COLLECT_TASK_METRICS=OFF
+      - COLLECT_JOB_METRICS=OFF
   mariadb:
     build:
         context: ./database
