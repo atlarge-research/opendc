@@ -35,6 +35,7 @@ import com.atlarge.odcsim.PostStop
 import com.atlarge.odcsim.PreStart
 import com.atlarge.odcsim.Signal
 import com.atlarge.odcsim.internal.BehaviorInterpreter
+import mu.KotlinLogging
 import java.util.PriorityQueue
 import kotlin.math.max
 
@@ -75,6 +76,11 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
      */
     private val registry: MutableMap<ActorPath, Actor<*>> = HashMap()
 
+    /**
+     * A [KotlinLogging] instance that writes logs to a SLF4J implementation.
+     */
+    private val logger = KotlinLogging.logger {}
+
     init {
         registry[path] = Actor(this, root)
         schedule(this, PreStart, .0)
@@ -100,8 +106,16 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
             time = delivery
             queue.poll()
 
-            // Notice that messages for unknown/terminated actors are ignored for now
-            registry[envelope.destination]?.interpretMessage(envelope.message)
+            val actor = registry[envelope.destination] ?: continue
+            try {
+                // Notice that messages for unknown/terminated actors are ignored for now
+                actor.interpretMessage(envelope.message)
+            } catch (e: Exception) {
+                // Forcefully stop the actor if it crashed
+                actor.stop()
+
+                logger.error(e) { "Unhandled exception in actor ${envelope.destination}" }
+            }
         }
 
         // Jump forward in time as the caller expects the system to have run until the specified instant
@@ -171,7 +185,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
          * Terminate this actor and its children.
          */
         fun terminate() {
-            children.forEach { it.terminate() }
+            children.forEach { it.stop() }
             registry.remove(self.path)
         }
 

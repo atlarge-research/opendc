@@ -24,6 +24,7 @@
 
 package com.atlarge.odcsim
 
+import com.atlarge.odcsim.Behavior.Companion.same
 import com.atlarge.odcsim.dsl.empty
 import com.atlarge.odcsim.dsl.ignore
 import com.atlarge.odcsim.dsl.receive
@@ -134,6 +135,23 @@ abstract class ActorSystemTest {
     }
 
     /**
+     * Test whether an [ActorSystem] will not process messages in the queue after the deadline.
+     */
+    @Test
+    fun `should not process messages after deadline`() {
+        var counter = 0
+        val behavior = Behavior.receiveMessage<Unit> { _ ->
+            counter++
+            same()
+        }
+        val system = factory(behavior, name = "test")
+        system.send(Unit, after = 3.0)
+        system.send(Unit, after = 1.0)
+        system.run(until = 2.0)
+        assertEquals(1, counter)
+    }
+
+    /**
      * Test whether an [ActorSystem] will not initialize the root actor if the system has not been run yet.
      */
     @Test
@@ -176,7 +194,8 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should allow spawning of child actors`() {
-            val behavior = Behavior.setup<Unit> { throw UnsupportedOperationException("b") }
+            var spawned = false
+            val behavior = Behavior.setup<Unit> { spawned = true; Behavior.empty() }
 
             val system = factory(Behavior.setup<Unit> { ctx ->
                 val ref = ctx.spawn(behavior, "child")
@@ -184,7 +203,8 @@ abstract class ActorSystemTest {
                 Behavior.ignore()
             }, name = "test")
 
-            assertThrows<UnsupportedOperationException> { system.run(until = 10.0) }
+            system.run(until = 10.0)
+            assertTrue(spawned)
         }
 
         /**
@@ -287,13 +307,15 @@ abstract class ActorSystemTest {
          */
         @Test
         fun `should have reference to itself`() {
+            var flag = false
             val behavior: Behavior<Unit> = Behavior.setup { ctx ->
                 ctx.self.send(Unit)
-                Behavior.receiveMessage { throw UnsupportedOperationException() }
+                Behavior.receiveMessage { flag = true; same() }
             }
 
             val system = factory(behavior, "test")
-            assertThrows<UnsupportedOperationException> { system.run() }
+            system.run()
+            assertTrue(flag)
         }
 
         /**
@@ -306,24 +328,6 @@ abstract class ActorSystemTest {
         }
 
         /**
-         * Test whether we cannot start an actor with the [Behavior.Companion.unhandled] behavior.
-         */
-        @Test
-        fun `should not start with unhandled behavior`() {
-            val system = factory(Behavior.unhandled<Unit>(), "test")
-            assertThrows<IllegalArgumentException> { system.run() }
-        }
-
-        /**
-         * Test whether we cannot start an actor with deferred unhandled behavior.
-         */
-        @Test
-        fun `should not start with deferred unhandled behavior`() {
-            val system = factory(Behavior.setup<Unit> { Behavior.unhandled() }, "test")
-            assertThrows<IllegalArgumentException> { system.run() }
-        }
-
-        /**
          * Test whether we can start an actor with the [Behavior.Companion.stopped] behavior.
          */
         @Test
@@ -332,22 +336,23 @@ abstract class ActorSystemTest {
             system.run()
         }
 
-        /**
-         * Test whether deferred behavior that returns [Behavior.Companion.same] fails.
-         */
-        @Test
-        fun `should not allow setup to return same`() {
-            val system = factory(Behavior.setup<Unit> { Behavior.same() }, "test")
-            assertThrows<IllegalArgumentException> { system.run() }
-        }
 
         /**
-         * Test whether deferred behavior that returns [Behavior.Companion.unhandled] fails.
+         * Test whether an actor that is crashed cannot receive more messages.
          */
         @Test
-        fun `should not allow setup to return unhandled`() {
-            val system = factory(Behavior.setup<Unit> { Behavior.unhandled() }, "test")
-            assertThrows<IllegalArgumentException> { system.run() }
+        fun `should stop if it crashes`() {
+            var counter = 0
+            val system = factory(Behavior.receiveMessage<Unit> {
+                counter++
+                throw IllegalArgumentException("STAGED")
+            }, "test")
+
+            system.send(Unit)
+            system.send(Unit)
+
+            system.run()
+            assertEquals(1, counter)
         }
     }
 }
