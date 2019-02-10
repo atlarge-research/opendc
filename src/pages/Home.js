@@ -11,7 +11,6 @@ import TechnologiesSection from "../components/home/TechnologiesSection";
 import HomeNavbar from "../components/navigation/HomeNavbar";
 import jQuery from "../util/jquery";
 import "./Home.css";
-import SC18Section from "../components/home/SC18Section";
 
 class Home extends React.Component {
   state = {
@@ -46,7 +45,6 @@ class Home extends React.Component {
         <HomeNavbar />
         <div className="body-wrapper page-container">
           <JumbotronHeader />
-          <SC18Section/>
           <IntroSection />
           <StakeholderSection />
           <ModelingSection />
