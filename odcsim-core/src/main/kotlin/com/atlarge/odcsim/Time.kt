@@ -33,3 +33,43 @@ typealias Instant = Double
  * A time interval which represents the amount of elapsed time between two messages.
  */
 typealias Duration = Double
+
+/**
+ * Convert this [Int] into an [Instant].
+ */
+fun Int.toInstant(): Instant = toDouble()
+
+/**
+ * Convert this [Int] into a [Duration].
+ */
+fun Int.toDuration(): Duration = toDouble()
+
+/**
+ * Convert this [Long] into an [Instant].
+ */
+fun Long.toInstant(): Instant = toDouble()
+
+/**
+ * Convert this [Long] into a [Duration].
+ */
+fun Long.toDuration(): Duration = toDouble()
+
+/**
+ * Convert this [Float] into an [Instant].
+ */
+fun Float.toInstant(): Instant = toDouble()
+
+/**
+ * Convert this [Float] into a [Duration].
+ */
+fun Float.toDuration(): Duration = toDouble()
+
+/**
+ * Convert this [Double] into an [Instant].
+ */
+fun Double.toInstant(): Instant = toDouble()
+
+/**
+ * Convert this [Double] into a [Duration].
+ */
+fun Double.toDuration(): Duration = toDouble()

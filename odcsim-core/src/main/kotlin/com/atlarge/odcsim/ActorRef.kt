@@ -36,7 +36,7 @@ interface ActorRef<in T : Any> {
     /**
      * Send the specified message to the actor referenced by this [ActorRef].
      *
-     * @param msg The message to send to the referenced architecture.
+     * @param msg The message to send to the referenced actor.
      * @param after The delay after which the message should be received by the actor.
      */
     fun send(msg: T, after: Duration = 0.1)
