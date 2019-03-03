@@ -28,9 +28,10 @@ import com.atlarge.odcsim.ActorContext
 import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.DeferredBehavior
 import com.atlarge.odcsim.Signal
-import com.atlarge.odcsim.internal.SuspendingBehaviorContext
+import com.atlarge.odcsim.internal.SuspendingActorContextImpl
 import com.atlarge.odcsim.internal.SuspendingBehaviorImpl
 import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.suspendCoroutine
 
 /**
@@ -65,7 +66,7 @@ fun <T : Any> Behavior.Companion.suspending(block: suspend (SuspendingActorConte
  *
  * @param T The shape of the messages the actor accepts.
  */
-interface SuspendingActorContext<T : Any> : ActorContext<T> {
+interface SuspendingActorContext<T : Any> : ActorContext<T>, CoroutineContext.Element {
     /**
      * Suspend execution of the active coroutine to wait for a message of type [T] to be received in the actor's
      * mailbox. During suspension, incoming signals will be marked unhandled.
@@ -81,6 +82,12 @@ interface SuspendingActorContext<T : Any> : ActorContext<T> {
      * @return The [Signal] that has been received.
      */
     suspend fun receiveSignal(): Signal
+
+    /**
+     * A key to provide access to the untyped [SuspendingActorContext] via [CoroutineContext] for suspending methods
+     * running inside a [SuspendingBehavior].
+     */
+    companion object Key : CoroutineContext.Key<SuspendingActorContext<*>>
 }
 
 /**
@@ -91,7 +98,7 @@ interface SuspendingActorContext<T : Any> : ActorContext<T> {
 suspend fun <T : Any, U> suspendWithBehavior(block: (Continuation<U>, () -> Behavior<T>) -> Behavior<T>): U =
     suspendCoroutine { cont ->
         @Suppress("UNCHECKED_CAST")
-        val ctx = cont.context[SuspendingBehaviorContext] as? SuspendingBehaviorContext<T>
+        val ctx = cont.context[SuspendingActorContext] as? SuspendingActorContextImpl<T>
             ?: throw UnsupportedOperationException("Coroutine does not run inside SuspendingBehavior")
         ctx.become(block(cont) { ctx.behavior })
     }

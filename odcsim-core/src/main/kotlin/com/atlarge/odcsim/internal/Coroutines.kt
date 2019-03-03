@@ -41,15 +41,10 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
 
 /**
- * The interface that is exposed from the [CoroutineContext] and provides control over the [SuspendingBehavior]
- * instance.
+ * This interface exposes internal functionality provided by [SuspendingBehaviorImpl] on [SuspendingActorContext] to
+ * control the active behavior of the coroutine.
  */
-interface SuspendingBehaviorContext<T : Any> : CoroutineContext.Element {
-    /**
-     * The [ActorContext] in which the actor currently runs.
-     */
-    val context: SuspendingActorContext<T>
-
+interface SuspendingActorContextImpl<T : Any> : SuspendingActorContext<T> {
     /**
      * The current active behavior
      */
@@ -61,12 +56,6 @@ interface SuspendingBehaviorContext<T : Any> : CoroutineContext.Element {
      * @param next The behavior to replace the current behavior with.
      */
     fun become(next: Behavior<T>)
-
-    /**
-     * This key provides users access to an untyped actor context in case the coroutine runs inside a
-     * [SuspendingBehavior].
-     */
-    companion object Key : CoroutineContext.Key<SuspendingBehaviorContext<*>>
 }
 
 /**
@@ -75,7 +64,7 @@ interface SuspendingBehaviorContext<T : Any> : CoroutineContext.Element {
  * This implementation uses the fact that each actor is thread-safe (as it processes its mailbox sequentially).
  */
 internal class SuspendingBehaviorImpl<T : Any>(actorContext: ActorContext<T>, initialBehavior: SuspendingBehavior<T>) :
-        ReceivingBehavior<T>(), SuspendingActorContext<T>, SuspendingBehaviorContext<T> {
+        ReceivingBehavior<T>(), SuspendingActorContextImpl<T> {
     /**
      * The next behavior to use.
      */
@@ -128,15 +117,13 @@ internal class SuspendingBehaviorImpl<T : Any>(actorContext: ActorContext<T>, in
         }
     }
 
-    override val context: SuspendingActorContext<T> get() = this
-
     override val behavior: Behavior<T> get() = interpreter.behavior
 
     override fun become(next: Behavior<T>) {
         interpreter.become(actorContext, next)
     }
 
-    override val key: CoroutineContext.Key<*> = SuspendingBehaviorContext.Key
+    override val key: CoroutineContext.Key<*> = SuspendingActorContext.Key
 
     /**
      * Start the suspending behavior.
