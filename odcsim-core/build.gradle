@@ -42,7 +42,6 @@ dependencies {
 
 /* Create configuration for test suite used by implementors */
 task testJar(type: Jar, dependsOn: testClasses) {
-    baseName = "test-${project.archivesBaseName}"
     from sourceSets.test.output
 }
 
