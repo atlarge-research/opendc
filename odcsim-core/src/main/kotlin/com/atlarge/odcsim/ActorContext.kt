@@ -56,4 +56,41 @@ interface ActorContext<T : Any> {
      * @return `true` if the ref points to a child actor, otherwise `false`.
      */
     fun stop(child: ActorRef<*>): Boolean
+
+    /**
+     * Synchronize the local virtual time of this target with the other referenced actor's local virtual time.
+     *
+     * By default, actors are not guaranteed to be synchronized, meaning that for some implementations, virtual time may
+     * drift between different actors. Synchronization between two actors ensures that virtual time remains consistent
+     * between at least the two actors.
+     *
+     * Be aware that this method may cause a jump in virtual time in order to get consistent with [target].
+     * Furthermore, please note that synchronization might incur performance degradation and should only be used
+     * when necessary.
+     *
+     * @param target The reference to the target actor to synchronize with.
+     */
+    fun sync(target: ActorRef<*>)
+
+    /**
+     * Desynchronize virtual time between two actors if possible.
+     *
+     * Please note that this method only provides a hint to the [ActorSystem] that it may drop synchronization between
+     * the actors, but [ActorSystem] is not compelled to actually do so (i.e. in the case where synchronization is
+     * always guaranteed).
+     *
+     * Furthermore, if [target] is already desychronized, the method should return without error. [ActorContext.isSync]
+     * may be used to determine if an actor is synchronized.
+     *
+     * @param target The reference to the target actor to desynchronize with.
+     */
+    fun unsync(target: ActorRef<*>)
+
+    /**
+     * Determine whether this actor and [target] are synchronized in virtual time.
+     *
+     * @param target The target to check for synchronization.
+     * @return `true` if [target] is synchronized with this actor, `false` otherwise.
+     */
+    fun isSync(target: ActorRef<*>): Boolean
 }

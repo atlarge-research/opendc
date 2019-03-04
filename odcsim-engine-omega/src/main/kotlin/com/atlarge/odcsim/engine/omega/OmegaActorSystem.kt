@@ -165,6 +165,14 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
             return true
         }
 
+        // Synchronization of actors in a single-threaded simulation is trivial: all actors are consistent in virtual
+        // time.
+        override fun sync(target: ActorRef<*>) {}
+
+        override fun unsync(target: ActorRef<*>) {}
+
+        override fun isSync(target: ActorRef<*>): Boolean = true
+
         /**
          * Start this actor.
          */

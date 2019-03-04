@@ -36,6 +36,11 @@ interface ActorRef<in T : Any> {
     /**
      * Send the specified message to the actor referenced by this [ActorRef].
      *
+     * Please note that callees must guarantee that messages are sent strictly in increasing time.
+     * If so, this method guarantees that:
+     * - A message will never be received earlier than specified
+     * - A message might arrive later than specified if the two actors are not synchronized.
+     *
      * @param msg The message to send to the referenced actor.
      * @param after The delay after which the message should be received by the actor.
      */
