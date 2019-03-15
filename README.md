@@ -11,7 +11,6 @@
   <a href="https://travis-ci.org/atlarge-research/opendc-frontend"><img src="https://travis-ci.org/atlarge-research/opendc-frontend.svg?branch=master" alt="Build Status"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/styled_with-prettier-ff69b4.svg" alt="styled with prettier"></a><br/>
-  <a href="https://waffle.io/atlarge-research/opendc-frontend?utm_source=badge"><img src="https://badge.waffle.io/atlarge-research/opendc-frontend.png?columns=all" alt="Waffle.io - Columns and their card count"></a>
 </p>
 
 The user-facing component of the OpenDC stack, allowing users to build and interact with their own (virtual) datacenters. Built in *React.js* and *Redux*, with the help of `create-react-app`.
