@@ -24,7 +24,6 @@
 
 package com.atlarge.odcsim
 
-import com.atlarge.odcsim.dsl.setup
 import com.atlarge.odcsim.internal.BehaviorInterpreter
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.DisplayName
@@ -37,12 +36,12 @@ import org.junit.jupiter.api.assertThrows
 @DisplayName("Behavior")
 class BehaviorTest {
     /**
-     * Test whether we cannot start an actor with the [Behavior.Companion.unhandled] behavior.
+     * Test whether we cannot start an actor with the [unhandled] behavior.
      */
     @Test
     fun `should not start with unhandled behavior`() {
         val ctx = mock<ActorContext<Unit>>()
-        val interpreter = BehaviorInterpreter(Behavior.unhandled<Unit>())
+        val interpreter = BehaviorInterpreter(unhandled<Unit>())
         assertThrows<IllegalArgumentException> { interpreter.start(ctx) }
     }
 
@@ -52,27 +51,27 @@ class BehaviorTest {
     @Test
     fun `should not start with deferred unhandled behavior`() {
         val ctx = mock<ActorContext<Unit>>()
-        val interpreter = BehaviorInterpreter(Behavior.setup<Unit> { Behavior.unhandled() })
+        val interpreter = BehaviorInterpreter(setup<Unit> { unhandled() })
         assertThrows<IllegalArgumentException> { interpreter.start(ctx) }
     }
 
     /**
-     * Test whether deferred behavior that returns [Behavior.Companion.same] fails.
+     * Test whether deferred behavior that returns [same] fails.
      */
     @Test
     fun `should not allow setup to return same`() {
         val ctx = mock<ActorContext<Unit>>()
-        val interpreter = BehaviorInterpreter(Behavior.setup<Unit> { Behavior.same() })
+        val interpreter = BehaviorInterpreter(setup<Unit> { same() })
         assertThrows<IllegalArgumentException> { interpreter.start(ctx) }
     }
 
     /**
-     * Test whether deferred behavior that returns [Behavior.Companion.unhandled] fails.
+     * Test whether deferred behavior that returns [unhandled] fails.
      */
     @Test
     fun `should not allow setup to return unhandled`() {
         val ctx = mock<ActorContext<Unit>>()
-        val interpreter = BehaviorInterpreter(Behavior.setup<Unit> { Behavior.unhandled() })
+        val interpreter = BehaviorInterpreter(setup<Unit> { unhandled() })
         assertThrows<IllegalArgumentException> { interpreter.start(ctx) }
     }
 }

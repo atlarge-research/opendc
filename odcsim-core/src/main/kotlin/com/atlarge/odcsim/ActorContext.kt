@@ -41,6 +41,20 @@ interface ActorContext<T : Any> {
     val time: Instant
 
     /**
+     * Send the specified message to the actor referenced by this [ActorRef].
+     *
+     * Please note that callees must guarantee that messages are sent strictly in increasing time.
+     * If so, this method guarantees that:
+     * - A message will never be received earlier than specified
+     * - A message might arrive later than specified if the two actors are not synchronized.
+     *
+     * @param ref The actor to send the message to.
+     * @param msg The message to send to the referenced actor.
+     * @param after The delay after which the message should be received by the actor.
+     */
+    fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration = 0.0)
+
+    /**
      * Spawn a child actor from the given [Behavior] and with the specified name.
      *
      * @param behavior The behavior of the child actor to spawn.
@@ -94,3 +108,4 @@ interface ActorContext<T : Any> {
      */
     fun isSync(target: ActorRef<*>): Boolean
 }
+

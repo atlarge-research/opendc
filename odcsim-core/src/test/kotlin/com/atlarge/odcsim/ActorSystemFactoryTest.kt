@@ -24,8 +24,6 @@
 
 package com.atlarge.odcsim
 
-import com.atlarge.odcsim.dsl.empty
-import com.atlarge.odcsim.dsl.setup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -46,7 +44,7 @@ abstract class ActorSystemFactoryTest {
     fun `should create a system with correct name`() {
         val factory = createFactory()
         val name = "test"
-        val system = factory(Behavior.empty<Unit>(), name)
+        val system = factory(empty<Unit>(), name)
 
         assertEquals(name, system.name)
     }
@@ -57,7 +55,7 @@ abstract class ActorSystemFactoryTest {
     @Test
     fun `should create a system with correct root behavior`() {
         val factory = createFactory()
-        val system = factory(Behavior.setup<Unit> { throw UnsupportedOperationException() }, "test")
+        val system = factory(setup<Unit> { throw UnsupportedOperationException() }, "test")
 
         assertThrows<UnsupportedOperationException> { system.run(until = 10.0) }
     }

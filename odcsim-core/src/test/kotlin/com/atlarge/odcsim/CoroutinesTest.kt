@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,29 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim.internal
+package com.atlarge.odcsim
 
-import com.atlarge.odcsim.ActorRef
-import com.atlarge.odcsim.Duration
-import com.atlarge.odcsim.Signal
+import com.atlarge.odcsim.coroutines.suspending
+import com.atlarge.odcsim.coroutines.SuspendingBehavior
+import com.atlarge.odcsim.internal.BehaviorInterpreter
+import com.atlarge.odcsim.internal.EmptyBehavior
+import com.nhaarman.mockitokotlin2.mock
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 
 /**
- * Send the specified system [Signal] to the given [ActorRef].
+ * Test suite for [SuspendingBehavior] using Kotlin Coroutines.
  */
-fun <T : Any> ActorRef<T>.send(signal: Signal, duration: Duration) {
-    @Suppress("UNCHECKED_CAST")
-    send(signal as T, duration)
+@DisplayName("Coroutines")
+internal class CoroutinesTest {
+    private val ctx = mock<ActorContext<Nothing>>()
+
+    @Test
+    fun `should immediately return new behavior`() {
+        val behavior = suspending<Nothing> { empty() }
+        val interpreter = BehaviorInterpreter(behavior)
+        interpreter.start(ctx)
+        assertTrue(interpreter.behavior as Behavior<*> is EmptyBehavior)
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,22 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:JvmName("Behaviors")
+package com.atlarge.odcsim
 
-package com.atlarge.odcsim.dsl
-
-import com.atlarge.odcsim.ActorContext
-import com.atlarge.odcsim.Behavior
-import com.atlarge.odcsim.DeferredBehavior
-import com.atlarge.odcsim.ReceivingBehavior
-import com.atlarge.odcsim.Signal
 import com.atlarge.odcsim.internal.BehaviorInterpreter
 import com.atlarge.odcsim.internal.EmptyBehavior
 import com.atlarge.odcsim.internal.IgnoreBehavior
 
 /**
+ * This [Behavior] is used to signal that this actor shall terminate voluntarily. If this actor has created child actors
+ * then these will be stopped as part of the shutdown procedure.
+ */
+fun <T : Any> stopped(): Behavior<T> {
+    @Suppress("UNCHECKED_CAST")
+    return StoppedBehavior as Behavior<T>
+}
+
+/**
+ * This [Behavior] is used to signal that this actor wants to reuse its previous behavior.
+ */
+fun <T : Any> same(): Behavior<T> {
+    @Suppress("UNCHECKED_CAST")
+    return SameBehavior as Behavior<T>
+}
+
+/**
+ * This [Behavior] is used to signal to the system that the last message or signal went unhandled. This will
+ * reuse the previous behavior.
+ */
+fun <T : Any> unhandled(): Behavior<T> {
+    @Suppress("UNCHECKED_CAST")
+    return UnhandledBehavior as Behavior<T>
+}
+
+/**
  * A factory for [Behavior]. Creation of the behavior instance is deferred until the actor is started.
  */
-fun <T : Any> Behavior.Companion.setup(block: (ActorContext<T>) -> Behavior<T>): Behavior<T> {
+fun <T : Any> setup(block: (ActorContext<T>) -> Behavior<T>): Behavior<T> {
     return object : DeferredBehavior<T>() {
         override fun invoke(ctx: ActorContext<T>): Behavior<T> = block(ctx)
     }
@@ -45,18 +66,18 @@ fun <T : Any> Behavior.Companion.setup(block: (ActorContext<T>) -> Behavior<T>):
 /**
  * A [Behavior] that ignores any incoming message or signal and keeps the same behavior.
  */
-fun <T : Any> Behavior.Companion.ignore(): Behavior<T> = IgnoreBehavior.narrow()
+fun <T : Any> ignore(): Behavior<T> = IgnoreBehavior.narrow()
 
 /**
  * A [Behavior] that treats every incoming message or signal as unhandled.
  */
-fun <T : Any> Behavior.Companion.empty(): Behavior<T> = EmptyBehavior.narrow()
+fun <T : Any> empty(): Behavior<T> = EmptyBehavior.narrow()
 
 /**
  * Construct a [Behavior] that reacts to incoming messages, provides access to the [ActorContext] and returns the
  * actor's next behavior.
  */
-fun <T : Any> Behavior.Companion.receive(handler: (ActorContext<T>, T) -> Behavior<T>): Behavior<T> {
+fun <T : Any> receive(handler: (ActorContext<T>, T) -> Behavior<T>): Behavior<T> {
     return object : ReceivingBehavior<T>() {
         override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> = handler(ctx, msg)
     }
@@ -65,9 +86,9 @@ fun <T : Any> Behavior.Companion.receive(handler: (ActorContext<T>, T) -> Behavi
 /**
  * Construct a [Behavior] that reacts to incoming messages and returns the actor's next behavior.
  */
-fun <T : Any> Behavior.Companion.receiveMessage(onMessage: (T) -> Behavior<T>): Behavior<T> {
+fun <T : Any> receiveMessage(handler: (T) -> Behavior<T>): Behavior<T> {
     return object : ReceivingBehavior<T>() {
-        override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> = onMessage(msg)
+        override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> = handler(msg)
     }
 }
 
@@ -75,7 +96,7 @@ fun <T : Any> Behavior.Companion.receiveMessage(onMessage: (T) -> Behavior<T>): 
  * Construct a [Behavior] that reacts to incoming signals, provides access to the [ActorContext] and returns the
  * actor's next behavior.
  */
-fun <T : Any> Behavior.Companion.receiveSignal(handler: (ActorContext<T>, Signal) -> Behavior<T>): Behavior<T> {
+fun <T : Any> receiveSignal(handler: (ActorContext<T>, Signal) -> Behavior<T>): Behavior<T> {
     return object : ReceivingBehavior<T>() {
         override fun receiveSignal(ctx: ActorContext<T>, signal: Signal): Behavior<T> = handler(ctx, signal)
     }
@@ -85,6 +106,6 @@ fun <T : Any> Behavior.Companion.receiveSignal(handler: (ActorContext<T>, Signal
  * Construct a [Behavior] that wraps another behavior instance and uses a [BehaviorInterpreter] to pass incoming
  * messages and signals to the wrapper behavior.
  */
-fun <T : Any> Behavior.Companion.wrap(behavior: Behavior<T>, wrap: (BehaviorInterpreter<T>) -> Behavior<T>): Behavior<T> {
-    return Behavior.setup { ctx -> wrap(BehaviorInterpreter(behavior, ctx)) }
+fun <T : Any> wrap(behavior: Behavior<T>, wrap: (BehaviorInterpreter<T>) -> Behavior<T>): Behavior<T> {
+    return setup { ctx -> wrap(BehaviorInterpreter(behavior, ctx)) }
 }

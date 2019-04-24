@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,41 @@
 
 package com.atlarge.odcsim.coroutines.dsl
 
+import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.Duration
-import com.atlarge.odcsim.Timeout
 import com.atlarge.odcsim.coroutines.SuspendingActorContext
 import com.atlarge.odcsim.coroutines.suspendWithBehavior
-import com.atlarge.odcsim.setup
-import com.atlarge.odcsim.receiveSignal
+import com.atlarge.odcsim.receiveMessage
 import com.atlarge.odcsim.unhandled
 import kotlin.coroutines.resume
 
 /**
- * Block execution for the specified duration.
+ * Receive only messages of type [U] and mark all other messages as unhandled.
  *
- * @param after The duration after which execution should continue.
+ * @return The received message.
  */
-suspend fun <T : Any> SuspendingActorContext<T>.timeout(after: Duration) =
-    suspendWithBehavior<T, Unit> { cont, next ->
-        setup { ctx ->
-            val target = this
-            @Suppress("UNCHECKED_CAST")
-            ctx.send(ctx.self, Timeout(target) as T, after)
-            receiveSignal { _, signal ->
-                if (signal is Timeout && signal.target == target) {
-                    cont.resume(Unit)
-                    next()
-                } else {
-                    unhandled()
-                }
+suspend inline fun <T : Any, reified U : T> SuspendingActorContext<T>.receiveOf(): U =
+    suspendWithBehavior<T, U> { cont, next ->
+        receiveMessage { msg ->
+            if (msg is U) {
+                cont.resume(msg)
+                next()
+            } else {
+                unhandled()
             }
         }
     }
+
+/**
+ * Send the specified message to the given reference and wait for a reply.
+ *
+ * @param ref The actor to send the message to.
+ * @param after The delay after which the message should be received by the actor.
+ * @param transform The block to transform `self` to a message.
+ */
+suspend inline fun <T : Any, U : Any, reified V : T> SuspendingActorContext<T>.ask(ref: ActorRef<U>,
+                                                                                   after: Duration = 0.0,
+                                                                                   transform: (ActorRef<T>) -> U): V {
+    send(ref, transform(self), after)
+    return receiveOf()
+}

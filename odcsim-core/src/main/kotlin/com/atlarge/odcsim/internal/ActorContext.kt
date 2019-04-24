@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,22 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim.coroutines.dsl
+package com.atlarge.odcsim.internal
 
+import com.atlarge.odcsim.ActorContext
+import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.Duration
-import com.atlarge.odcsim.Timeout
-import com.atlarge.odcsim.coroutines.SuspendingActorContext
-import com.atlarge.odcsim.coroutines.suspendWithBehavior
-import com.atlarge.odcsim.setup
-import com.atlarge.odcsim.receiveSignal
-import com.atlarge.odcsim.unhandled
-import kotlin.coroutines.resume
+import com.atlarge.odcsim.Signal
 
 /**
- * Block execution for the specified duration.
+ * Send the specified [Signal] to the given actor reference after the specified duration.
  *
- * @param after The duration after which execution should continue.
+ * @param ref The actor to send the signal to.
+ * @param signal The signal to send to the referenced actor.
+ * @param after The delay after which the signal should be received by the actor.
  */
-suspend fun <T : Any> SuspendingActorContext<T>.timeout(after: Duration) =
-    suspendWithBehavior<T, Unit> { cont, next ->
-        setup { ctx ->
-            val target = this
-            @Suppress("UNCHECKED_CAST")
-            ctx.send(ctx.self, Timeout(target) as T, after)
-            receiveSignal { _, signal ->
-                if (signal is Timeout && signal.target == target) {
-                    cont.resume(Unit)
-                    next()
-                } else {
-                    unhandled()
-                }
-            }
-        }
-    }
+fun ActorContext<*>.sendSignal(ref: ActorRef<*>, signal: Signal, after: Duration = 0.0) {
+    // Signals are currently processed as regular messages
+    @Suppress("UNCHECKED_CAST")
+    send(ref as ActorRef<Any>, signal, after)
+}

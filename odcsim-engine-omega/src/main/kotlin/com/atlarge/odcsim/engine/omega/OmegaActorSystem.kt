@@ -143,6 +143,8 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         override val time: Instant
             get() = this@OmegaActorSystem.time
 
+        override fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration) = schedule(ref, msg, after)
+
         override fun <U : Any> spawn(behavior: Behavior<U>, name: String): ActorRef<U> {
             val ref = ActorRefImpl<U>(self.path.child(name))
             if (ref.path !in registry) {
@@ -220,9 +222,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         override fun hashCode(): Int = self.path.hashCode()
     }
 
-    private inner class ActorRefImpl<T : Any>(override val path: ActorPath) : ActorRef<T> {
-        override fun send(msg: T, after: Duration) = schedule(this, msg, after)
-    }
+    private inner class ActorRefImpl<T : Any>(override val path: ActorPath) : ActorRef<T>
 
     /**
      * A wrapper around a message that has been scheduled for processing.

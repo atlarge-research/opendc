@@ -49,4 +49,12 @@ interface ActorSystem<in T : Any> : ActorRef<T> {
      * @param until The point until which the simulation should run.
      */
     fun run(until: Duration = Duration.POSITIVE_INFINITY)
+
+    /**
+     * Send the specified message to the root actor of this [ActorSystem].
+     *
+     * @param msg The message to send to the referenced actor.
+     * @param after The delay after which the message should be received by the actor.
+     */
+    fun send(msg: T, after: Duration = 0.1)
 }

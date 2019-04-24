@@ -24,8 +24,6 @@
 
 package com.atlarge.odcsim
 
-import com.atlarge.odcsim.dsl.wrap
-
 /**
  * The representation of the behavior of an actor.
  *
@@ -51,35 +49,35 @@ sealed class Behavior<T : Any> {
     }
 
     /**
-     * Companion object used to bind factory methods to.
+     * Compose this [Behavior] with a fallback [Behavior] which is used in case this [Behavior] does not handle the
+     * incoming message or signal.
      */
-    companion object {
-        /**
-         * This [Behavior] is used to signal that this actor shall terminate voluntarily. If this actor has created child actors
-         * then these will be stopped as part of the shutdown procedure.
-         */
-        fun <T : Any> stopped(): Behavior<T> {
-            @Suppress("UNCHECKED_CAST")
-            return StoppedBehavior as Behavior<T>
-        }
+    fun orElse(behavior: Behavior<T>): Behavior<T> =
+        wrap(this) { left ->
+            wrap(behavior) { right ->
+                object : ReceivingBehavior<T>() {
+                    override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> {
+                        if (left.interpretMessage(ctx, msg)) {
+                            return left.behavior
+                        } else if (right.interpretMessage(ctx, msg)) {
+                            return right.behavior
+                        }
 
-        /**
-         * This [Behavior] is used to signal that this actor wants to reuse its previous behavior.
-         */
-        fun <T : Any> same(): Behavior<T> {
-            @Suppress("UNCHECKED_CAST")
-            return SameBehavior as Behavior<T>
-        }
+                        return unhandled()
+                    }
 
-        /**
-         * This [Behavior] is used to signal to the system that the last message or signal went unhandled. This will
-         * reuse the previous behavior.
-         */
-        fun <T : Any> unhandled(): Behavior<T> {
-            @Suppress("UNCHECKED_CAST")
-            return UnhandledBehavior as Behavior<T>
+                    override fun receiveSignal(ctx: ActorContext<T>, signal: Signal): Behavior<T> {
+                        if (left.interpretSignal(ctx, signal)) {
+                            return left.behavior
+                        } else if (right.interpretSignal(ctx, signal)) {
+                            return right.behavior
+                        }
+
+                        return unhandled()
+                    }
+                }
+            }
         }
-    }
 }
 
 /**
@@ -103,66 +101,35 @@ abstract class DeferredBehavior<T : Any> : Behavior<T>() {
  * The message may either be of the type that the actor declares and which is part of the [ActorRef] signature,
  * or it may be a system [Signal] that expresses a lifecycle event of either this actor or one of its child actors.
  *
- * @param T The shape of the messages the behavior accepts.*
+ * @param T The shape of the messages the behavior accepts.
  */
 abstract class ReceivingBehavior<T : Any> : Behavior<T>() {
     /**
      * Process an incoming message of type [T] and return the actor's next behavior.
      *
      * The returned behavior can in addition to normal behaviors be one of the canned special objects:
-     * - returning [Behavior.Companion.stopped] will terminate this Behavior
-     * - returning [Behavior.Companion.same] designates to reuse the current Behavior
-     * - returning [Behavior.Companion.unhandled] keeps the same Behavior and signals that the message was not yet handled
+     * - returning [stopped] will terminate this Behavior
+     * - returning [same] designates to reuse the current Behavior
+     * - returning [unhandled] keeps the same Behavior and signals that the message was not yet handled
      *
      * @param ctx The [ActorContext] in which the actor is currently running.
      * @param msg The message that was received.
      */
-    open fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> = Behavior.unhandled()
+    open fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> = unhandled()
 
     /**
      * Process an incoming [Signal] and return the actor's next behavior.
      *
      * The returned behavior can in addition to normal behaviors be one of the canned special objects:
-     * - returning [Behavior.Companion.stopped] will terminate this Behavior
-     * - returning [Behavior.Companion.same] designates to reuse the current Behavior
-     * - returning [Behavior.Companion.unhandled] keeps the same Behavior and signals that the message was not yet handled
+     * - returning [stopped] will terminate this Behavior
+     * - returning [same] designates to reuse the current Behavior
+     * - returning [unhandled] keeps the same Behavior and signals that the message was not yet handled
      *
      * @param ctx The [ActorContext] in which the actor is currently running.
      * @param signal The [Signal] that was received.
      */
-    open fun receiveSignal(ctx: ActorContext<T>, signal: Signal): Behavior<T> = Behavior.unhandled()
+    open fun receiveSignal(ctx: ActorContext<T>, signal: Signal): Behavior<T> = unhandled()
 }
-
-/**
- * Compose this [Behavior] with a fallback [Behavior] which is used in case this [Behavior] does not handle the incoming
- * message or signal.
- */
-fun <T : Any> Behavior<T>.orElse(behavior: Behavior<T>): Behavior<T> =
-    Behavior.wrap(this) { left ->
-        Behavior.wrap(behavior) { right ->
-            object : ReceivingBehavior<T>() {
-                override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> {
-                    if (left.interpretMessage(ctx, msg)) {
-                        return left.behavior
-                    } else if (right.interpretMessage(ctx, msg)) {
-                        return right.behavior
-                    }
-
-                    return Behavior.unhandled()
-                }
-
-                override fun receiveSignal(ctx: ActorContext<T>, signal: Signal): Behavior<T> {
-                    if (left.interpretSignal(ctx, signal)) {
-                        return left.behavior
-                    } else if (right.interpretSignal(ctx, signal)) {
-                        return right.behavior
-                    }
-
-                    return Behavior.unhandled()
-                }
-            }
-        }
-    }
 
 /**
  * A flag to indicate whether a [Behavior] instance is still alive.

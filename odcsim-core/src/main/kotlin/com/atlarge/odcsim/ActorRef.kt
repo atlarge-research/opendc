@@ -32,23 +32,12 @@ interface ActorRef<in T : Any> {
      * The path for this actor (from this actor up to the root actor).
      */
     val path: ActorPath
-
-    /**
-     * Send the specified message to the actor referenced by this [ActorRef].
-     *
-     * Please note that callees must guarantee that messages are sent strictly in increasing time.
-     * If so, this method guarantees that:
-     * - A message will never be received earlier than specified
-     * - A message might arrive later than specified if the two actors are not synchronized.
-     *
-     * @param msg The message to send to the referenced actor.
-     * @param after The delay after which the message should be received by the actor.
-     */
-    fun send(msg: T, after: Duration = 0.1)
 }
 
 /**
  * Unsafe helper method for widening the type accepted by this [ActorRef].
  */
-@Suppress("UNCHECKED_CAST")
-fun <U : Any, T : U> ActorRef<T>.upcast(): ActorRef<U> = this as ActorRef<U>
+fun <U : Any, T : U> ActorRef<T>.upcast(): ActorRef<U> {
+    @Suppress("UNCHECKED_CAST")
+    return this as ActorRef<U>
+}

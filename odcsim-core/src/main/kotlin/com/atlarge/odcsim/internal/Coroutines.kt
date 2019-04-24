@@ -27,14 +27,15 @@ package com.atlarge.odcsim.internal
 import com.atlarge.odcsim.ActorContext
 import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.Behavior
+import com.atlarge.odcsim.Duration
 import com.atlarge.odcsim.Instant
 import com.atlarge.odcsim.ReceivingBehavior
 import com.atlarge.odcsim.Signal
 import com.atlarge.odcsim.coroutines.SuspendingActorContext
 import com.atlarge.odcsim.coroutines.SuspendingBehavior
-import com.atlarge.odcsim.dsl.receiveMessage
-import com.atlarge.odcsim.dsl.receiveSignal
+import com.atlarge.odcsim.receiveSignal
 import com.atlarge.odcsim.coroutines.suspendWithBehavior
+import com.atlarge.odcsim.receiveMessage
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -63,8 +64,10 @@ interface SuspendingActorContextImpl<T : Any> : SuspendingActorContext<T> {
  * interface.
  * This implementation uses the fact that each actor is thread-safe (as it processes its mailbox sequentially).
  */
-internal class SuspendingBehaviorImpl<T : Any>(actorContext: ActorContext<T>, initialBehavior: SuspendingBehavior<T>) :
-        ReceivingBehavior<T>(), SuspendingActorContextImpl<T> {
+internal class SuspendingBehaviorImpl<T : Any>(
+    private var actorContext: ActorContext<T>,
+    initialBehavior: SuspendingBehavior<T>) : ReceivingBehavior<T>(), SuspendingActorContextImpl<T> {
+
     /**
      * The next behavior to use.
      */
@@ -74,16 +77,6 @@ internal class SuspendingBehaviorImpl<T : Any>(actorContext: ActorContext<T>, in
      * The [BehaviorInterpreter] to wrap the suspending behavior.
      */
     private val interpreter = BehaviorInterpreter(initialBehavior)
-
-    /**
-     * The current active [ActorContext].
-     */
-    private var actorContext: ActorContext<T>
-
-    init {
-        this.actorContext = actorContext
-        this.start()
-    }
 
     override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> {
         this.actorContext = ctx
@@ -99,9 +92,17 @@ internal class SuspendingBehaviorImpl<T : Any>(actorContext: ActorContext<T>, in
 
     override val time: Instant get() = actorContext.time
 
+    override fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration) = actorContext.send(ref, msg, after)
+
     override fun <U : Any> spawn(behavior: Behavior<U>, name: String) = actorContext.spawn(behavior, name)
 
     override fun stop(child: ActorRef<*>): Boolean = actorContext.stop(child)
+
+    override fun sync(target: ActorRef<*>) = actorContext.sync(target)
+
+    override fun unsync(target: ActorRef<*>) = actorContext.unsync(target)
+
+    override fun isSync(target: ActorRef<*>): Boolean = actorContext.isSync(target)
 
     override suspend fun receive(): T = suspendWithBehavior<T, T> { cont, next ->
         receiveMessage { msg ->
@@ -128,10 +129,11 @@ internal class SuspendingBehaviorImpl<T : Any>(actorContext: ActorContext<T>, in
     /**
      * Start the suspending behavior.
      */
-    private fun start() {
+    internal fun start(): Behavior<T> {
         val behavior = interpreter.behavior as SuspendingBehavior<T>
-        val block: suspend () -> Unit = { behavior(this) }
+        val block: suspend () -> Behavior<T> = { behavior(this) }
         block.startCoroutine(SuspendingBehaviorImplContinuation())
+        return next
     }
 
     /**
@@ -144,13 +146,15 @@ internal class SuspendingBehaviorImpl<T : Any>(actorContext: ActorContext<T>, in
     /**
      * The continuation of suspending behavior.
      */
-    private inner class SuspendingBehaviorImplContinuation : Continuation<Unit> {
+    private inner class SuspendingBehaviorImplContinuation : Continuation<Behavior<T>> {
         override val context = this@SuspendingBehaviorImpl
 
-        override fun resumeWith(result: Result<Unit>) {
-            // TODO Add some form of error handling here
-            stop()
-            next = Behavior.stopped()
+        override fun resumeWith(result: Result<Behavior<T>>) {
+            if (result.isSuccess) {
+                next = result.getOrNull()!!
+            } else if (result.isFailure) {
+                throw result.exceptionOrNull()!!
+            }
         }
     }
 }
