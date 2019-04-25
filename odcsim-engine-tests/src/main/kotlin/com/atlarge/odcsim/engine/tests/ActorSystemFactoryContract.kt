@@ -27,9 +27,10 @@ package com.atlarge.odcsim.engine.tests
 import com.atlarge.odcsim.ActorSystemFactory
 import com.atlarge.odcsim.empty
 import com.atlarge.odcsim.setup
+import com.atlarge.odcsim.stopped
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 /**
  * A conformance test suite for implementors of the [ActorSystemFactory] interface.
@@ -50,6 +51,7 @@ abstract class ActorSystemFactoryContract {
         val system = factory(empty<Unit>(), name)
 
         assertEquals(name, system.name)
+        system.terminate()
     }
 
     /**
@@ -57,9 +59,15 @@ abstract class ActorSystemFactoryContract {
      */
     @Test
     fun `should create a system with correct root behavior`() {
+        var flag = false
         val factory = createFactory()
-        val system = factory(setup<Unit> { throw UnsupportedOperationException() }, "test")
+        val system = factory(setup<Unit> {
+            flag = true
+            stopped()
+        }, "test")
 
-        assertThrows<UnsupportedOperationException> { system.run(until = 10.0) }
+        system.run(until = 10.0)
+        system.terminate()
+        assertTrue(flag)
     }
 }

@@ -57,4 +57,13 @@ interface ActorSystem<in T : Any> : ActorRef<T> {
      * @param after The delay after which the message should be received by the actor.
      */
     fun send(msg: T, after: Duration = 0.1)
+
+    /**
+     * Terminates this actor system.
+     *
+     * This will stop the root actor and in turn will recursively stop all its child actors.
+     *
+     * This is an asynchronous operation.
+     */
+    fun terminate()
 }

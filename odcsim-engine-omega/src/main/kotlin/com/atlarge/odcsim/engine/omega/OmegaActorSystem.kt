@@ -62,7 +62,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
     /**
      * A flag to indicate the system has started.
      */
-    private var isStarted: Boolean = false
+    private var state: ActorSystemState = ActorSystemState.PENDING
 
     /**
      * The event queue to process
@@ -90,9 +90,11 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         require(until >= .0) { "The given instant must be a non-negative number" }
 
         // Start the root actor on initial run
-        if (!isStarted) {
-            registry[path]!!.start()
-            isStarted = true
+        if (state == ActorSystemState.PENDING) {
+            registry[path]!!.isolate { it.start() }
+            state = ActorSystemState.STARTED
+        } else if (state == ActorSystemState.TERMINATED) {
+            throw IllegalStateException("The ActorSystem has been terminated.")
         }
 
         while (time < until) {
@@ -107,15 +109,8 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
             queue.poll()
 
             val actor = registry[envelope.destination] ?: continue
-            try {
-                // Notice that messages for unknown/terminated actors are ignored for now
-                actor.interpretMessage(envelope.message)
-            } catch (e: Exception) {
-                // Forcefully stop the actor if it crashed
-                actor.stop()
-
-                logger.error(e) { "Unhandled exception in actor ${envelope.destination}" }
-            }
+            // Notice that messages for unknown/terminated actors are ignored for now
+            actor.isolate { it.interpretMessage(envelope.message) }
         }
 
         // Jump forward in time as the caller expects the system to have run until the specified instant
@@ -124,6 +119,10 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
     }
 
     override fun send(msg: T, after: Duration) = schedule(this, msg, after)
+
+    override fun terminate() {
+        registry[path]?.stop()
+    }
 
     /**
      * The identifier for the next message to be scheduled.
@@ -220,6 +219,22 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
             other is OmegaActorSystem<*>.Actor<*> && self.path == other.self.path
 
         override fun hashCode(): Int = self.path.hashCode()
+    }
+
+    private inline fun <T : Any, U> Actor<T>.isolate(block: (Actor<T>) -> U): U? {
+        return try {
+            block(this)
+        } catch (e: Exception) {
+            // Forcefully stop the actor if it crashed
+            stop()
+            logger.error(e) { "Unhandled exception in actor $path" }
+            null
+        }
+    }
+
+
+        private enum class ActorSystemState {
+        PENDING, STARTED, TERMINATED
     }
 
     private inner class ActorRefImpl<T : Any>(override val path: ActorPath) : ActorRef<T>

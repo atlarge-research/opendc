@@ -60,6 +60,7 @@ abstract class ActorSystemContract {
         val system = factory(empty<Unit>(), name)
 
         assertEquals(name, system.name)
+        system.terminate()
     }
 
     /**
@@ -70,6 +71,7 @@ abstract class ActorSystemContract {
         val system = factory(empty<Unit>(), "test")
 
         assertTrue(system.path is ActorPath.Root)
+        system.terminate()
     }
 
     /**
@@ -80,6 +82,7 @@ abstract class ActorSystemContract {
         val system = factory(empty<Unit>(), name = "test")
 
         assertEquals(.0, system.time, DELTA)
+        system.terminate()
     }
 
     /**
@@ -89,6 +92,7 @@ abstract class ActorSystemContract {
     fun `should not accept negative instants for running`() {
         val system = factory(empty<Unit>(), name = "test")
         assertThrows<IllegalArgumentException> { system.run(-10.0) }
+        system.terminate()
     }
 
     /**
@@ -103,6 +107,7 @@ abstract class ActorSystemContract {
         system.run(until = until)
         system.run(until = until - 0.5)
         assertEquals(until, system.time, DELTA)
+        system.terminate()
     }
 
     /**
@@ -115,6 +120,7 @@ abstract class ActorSystemContract {
 
         system.run(until = until)
         assertEquals(until, system.time, DELTA)
+        system.terminate()
     }
 
     /**
@@ -133,6 +139,7 @@ abstract class ActorSystemContract {
         system.send(1, after = 1.0)
         system.send(2, after = 1.0)
         system.run(until = 10.0)
+        system.terminate()
     }
 
     /**
@@ -150,6 +157,7 @@ abstract class ActorSystemContract {
         system.send(Unit, after = 1.0)
         system.run(until = 2.0)
         assertEquals(1, counter)
+        system.terminate()
     }
 
     /**
@@ -157,7 +165,8 @@ abstract class ActorSystemContract {
      */
     @Test
     fun `should not initialize root actor if not run`() {
-        factory(setup<Unit> { TODO() }, name = "test")
+        val system = factory(setup<Unit> { TODO() }, name = "test")
+        system.terminate()
     }
 
 
@@ -171,6 +180,7 @@ abstract class ActorSystemContract {
         fun `should disallow messages in the past`() {
             val system = factory(empty<Unit>(), name = "test")
             assertThrows<IllegalArgumentException> { system.send(Unit, after = -1.0) }
+            system.terminate()
         }
     }
 
@@ -189,6 +199,7 @@ abstract class ActorSystemContract {
 
             val system = factory(behavior, "test")
             system.run()
+            system.terminate()
         }
 
         /**
@@ -207,6 +218,7 @@ abstract class ActorSystemContract {
 
             system.run(until = 10.0)
             assertTrue(spawned)
+            system.terminate()
         }
 
         /**
@@ -223,6 +235,7 @@ abstract class ActorSystemContract {
             }, name = "test")
 
             system.run(until = 10.0)
+            system.terminate()
         }
 
         /**
@@ -240,6 +253,7 @@ abstract class ActorSystemContract {
                 ignore()
             }, name = "test")
             system.run()
+            system.terminate()
         }
 
         /**
@@ -254,6 +268,7 @@ abstract class ActorSystemContract {
                 ignore()
             }, name = "test")
             system.run()
+            system.terminate()
         }
 
         /**
@@ -279,6 +294,7 @@ abstract class ActorSystemContract {
             }, name = "test")
 
             system.run()
+            system.terminate()
         }
 
         /**
@@ -300,6 +316,7 @@ abstract class ActorSystemContract {
             val system = factory(behavior, "test")
             system.run()
             assertEquals(2, counter)
+            system.terminate()
         }
 
         /**
@@ -316,24 +333,17 @@ abstract class ActorSystemContract {
             val system = factory(behavior, "test")
             system.run()
             assertTrue(flag)
+            system.terminate()
         }
 
         /**
-         * Test whether we cannot start an actor with the [Behavior.Companion.same] behavior.
-         */
-        @Test
-        fun `should not start with same behavior`() {
-            val system = factory(same<Unit>(), "test")
-            assertThrows<IllegalArgumentException> { system.run() }
-        }
-
-        /**
-         * Test whether we can start an actor with the [Behavior.Companion.stopped] behavior.
+         * Test whether we can start an actor with the [stopped] behavior.
          */
         @Test
         fun `should start with stopped behavior`() {
             val system = factory(stopped<Unit>(), "test")
             system.run()
+            system.terminate()
         }
 
 
@@ -353,6 +363,7 @@ abstract class ActorSystemContract {
 
             system.run()
             assertEquals(1, counter)
+            system.terminate()
         }
     }
 
