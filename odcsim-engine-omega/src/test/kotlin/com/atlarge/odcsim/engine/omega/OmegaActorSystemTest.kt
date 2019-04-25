@@ -24,13 +24,14 @@
 
 package com.atlarge.odcsim.engine.omega
 
-import com.atlarge.odcsim.ActorSystemTest
+import com.atlarge.odcsim.ActorSystem
+import com.atlarge.odcsim.engine.tests.ActorSystemContract
 import org.junit.jupiter.api.DisplayName
 
 /**
- * The [ActorSystemTest] suite for the Omega engine implementation.
+ * The [ActorSystem] test suite for the Omega engine implementation.
  */
 @DisplayName("OmegaActorSystem")
-class OmegaActorSystemTest : ActorSystemTest() {
+class OmegaActorSystemTest : ActorSystemContract() {
     override val factory = OmegaActorSystemFactory()
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,11 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim
+package com.atlarge.odcsim.engine.tests
 
+import com.atlarge.odcsim.ActorSystemFactory
+import com.atlarge.odcsim.empty
+import com.atlarge.odcsim.setup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -31,7 +34,7 @@ import org.junit.jupiter.api.assertThrows
 /**
  * A conformance test suite for implementors of the [ActorSystemFactory] interface.
  */
-abstract class ActorSystemFactoryTest {
+abstract class ActorSystemFactoryContract {
     /**
      * Create an [ActorSystemFactory] instance to test.
      */

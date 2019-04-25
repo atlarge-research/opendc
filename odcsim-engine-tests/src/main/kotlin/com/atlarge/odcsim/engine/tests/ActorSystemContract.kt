@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,18 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim
+package com.atlarge.odcsim.engine.tests
 
+import com.atlarge.odcsim.ActorPath
+import com.atlarge.odcsim.ActorRef
+import com.atlarge.odcsim.ActorSystemFactory
+import com.atlarge.odcsim.Behavior
+import com.atlarge.odcsim.empty
+import com.atlarge.odcsim.ignore
+import com.atlarge.odcsim.receiveMessage
+import com.atlarge.odcsim.same
+import com.atlarge.odcsim.setup
+import com.atlarge.odcsim.stopped
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -32,12 +42,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-const val DELTA: Double = 0.0001
-
 /**
  * A conformance test suite for implementors of the [ActorSystem] interface.
  */
-abstract class ActorSystemTest {
+abstract class ActorSystemContract {
     /**
      * An [ActorSystemFactory] provided by implementors to create the [ActorSystem] to be tested.
      */
@@ -71,7 +79,7 @@ abstract class ActorSystemTest {
     fun `should start at t=0`() {
         val system = factory(empty<Unit>(), name = "test")
 
-        assertTrue(Math.abs(system.time) < DELTA)
+        assertEquals(.0, system.time, DELTA)
     }
 
     /**
@@ -94,7 +102,7 @@ abstract class ActorSystemTest {
 
         system.run(until = until)
         system.run(until = until - 0.5)
-        assertTrue(Math.abs(system.time - until) < DELTA)
+        assertEquals(until, system.time, DELTA)
     }
 
     /**
@@ -106,7 +114,7 @@ abstract class ActorSystemTest {
         val system = factory(empty<Unit>(), name = "test")
 
         system.run(until = until)
-        assertTrue(Math.abs(system.time - until) < DELTA)
+        assertEquals(until, system.time, DELTA)
     }
 
     /**
@@ -152,6 +160,7 @@ abstract class ActorSystemTest {
         factory(setup<Unit> { TODO() }, name = "test")
     }
 
+
     @Nested
     @DisplayName("ActorRef")
     inner class ActorRefTest {
@@ -174,7 +183,7 @@ abstract class ActorSystemTest {
         @Test
         fun `should pre-start at t=0 if root`() {
             val behavior = setup<Unit> { ctx ->
-                assertTrue(Math.abs(ctx.time) < DELTA)
+                assertEquals(.0, ctx.time, DELTA)
                 ignore()
             }
 
@@ -310,7 +319,7 @@ abstract class ActorSystemTest {
         }
 
         /**
-         * Test whether we cannot start an actor with the [same] behavior.
+         * Test whether we cannot start an actor with the [Behavior.Companion.same] behavior.
          */
         @Test
         fun `should not start with same behavior`() {
@@ -319,7 +328,7 @@ abstract class ActorSystemTest {
         }
 
         /**
-         * Test whether we can start an actor with the [stopped] behavior.
+         * Test whether we can start an actor with the [Behavior.Companion.stopped] behavior.
          */
         @Test
         fun `should start with stopped behavior`() {
@@ -345,5 +354,9 @@ abstract class ActorSystemTest {
             system.run()
             assertEquals(1, counter)
         }
+    }
+
+    companion object {
+        private const val DELTA: Double = 0.0001
     }
 }

@@ -39,18 +39,3 @@ dependencies {
     testImplementation "org.junit.platform:junit-platform-launcher:$junit_platform_version"
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0"
 }
-
-/* Create configuration for test suite used by implementors */
-task testJar(type: Jar, dependsOn: testClasses) {
-    from sourceSets.test.output
-}
-
-configurations {
-    tests
-}
-
-artifacts {
-    tests testJar
-}
-
-

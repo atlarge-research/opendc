@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,18 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim.engine.omega
+/* Build configuration */
+apply from: '../gradle/kotlin.gradle'
+apply plugin: 'java-library'
 
-import com.atlarge.odcsim.ActorSystemFactory
-import com.atlarge.odcsim.engine.tests.ActorSystemFactoryContract
-import org.junit.jupiter.api.DisplayName
+/* Project configuration */
+repositories {
+    jcenter()
+}
 
-/**
- * The [ActorSystemFactory] test suite for the Omega engine implementation.
- */
-@DisplayName("OmegaActorSystemFactory")
-class OmegaActorSystemFactoryTest : ActorSystemFactoryContract() {
-    override fun createFactory(): ActorSystemFactory = OmegaActorSystemFactory()
+dependencies {
+    api project(':odcsim-core')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
 }
