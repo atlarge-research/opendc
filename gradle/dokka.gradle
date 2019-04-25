@@ -41,7 +41,7 @@ dokka {
 
     linkMapping {
         dir = rootProject.projectDir.absolutePath
-        url = "$github_url/tree/master"
+        url = "$githubUrl/tree/master"
         suffix = '#L'
     }
 }

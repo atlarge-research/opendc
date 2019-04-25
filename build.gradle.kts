@@ -23,28 +23,29 @@
  */
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.3.30' apply false
-    id 'org.jetbrains.dokka' version '0.9.18' apply false
-    id 'org.jlleitschuh.gradle.ktlint' version '7.4.0' apply false
+    kotlin("jvm") version "1.3.30" apply false
+    id("org.jetbrains.dokka") version "0.9.18" apply false
+    id("org.jlleitschuh.gradle.ktlint") version "7.4.0" apply false
 }
 
 allprojects {
-    group = 'com.atlarge.opendc'
-    version = '2.0.0'
+    group = "com.atlarge.opendc"
+    version = "2.0.0"
 
-    ext {
-        junit_jupiter_version = '5.4.2'
-        junit_platform_version = '1.4.2'
-        github_url = "https://github.com/atlarge-research/${rootProject.name}"
-    }
+
+    extra["junitJupiterVersion"] = "5.4.2"
+    extra["junitPlatformVersion"] = "1.4.2"
+    extra["githubUrl"] = "https://github.com/atlarge-research/${rootProject.name}"
 }
 
-wrapper {
-    gradleVersion = '5.1'
+tasks.wrapper {
+    gradleVersion = "5.1"
 }
 
 // Wait for children to evaluate so we can configure tasks that are dependant on children
 project.evaluationDependsOnChildren()
 
-apply from: 'gradle/jacoco.gradle'
-apply from: 'gradle/dokka.gradle'
+apply {
+    from("gradle/jacoco.gradle")
+    from("gradle/dokka.gradle")
+}

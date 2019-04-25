@@ -21,8 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = 'opendc-simulator'
 
-include 'odcsim-core'
-include 'odcsim-engine-tests'
-include 'odcsim-engine-omega'
+/* Build configuration */
+apply(from = "../gradle/kotlin.gradle")
+plugins {
+    `java-library`
+}
+
+/* Project configuration */
+repositories {
+    jcenter()
+}
+
+val junitJupiterVersion: String by extra
+val junitPlatformVersion: String by extra
+
+dependencies {
+    implementation(kotlin("stdlib"))
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testImplementation("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0")
+}

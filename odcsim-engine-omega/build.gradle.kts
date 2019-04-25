@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,28 @@
  */
 
 /* Build configuration */
-apply from: '../gradle/kotlin.gradle'
-apply plugin: 'java-library'
+apply(from = "../gradle/kotlin.gradle")
+plugins {
+    `java-library`
+}
 
 /* Project configuration */
 repositories {
     jcenter()
 }
 
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+val junitJupiterVersion: String by extra
+val junitPlatformVersion: String by extra
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_jupiter_version"
-    testImplementation "org.junit.platform:junit-platform-launcher:$junit_platform_version"
-    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0"
+dependencies {
+    api(project(":odcsim-core"))
+
+    implementation(kotlin("stdlib"))
+    implementation("io.github.microutils:kotlin-logging:1.6.20")
+
+    testCompile(project(":odcsim-engine-tests"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testImplementation("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.25")
 }
