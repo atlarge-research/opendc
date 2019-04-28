@@ -35,7 +35,8 @@ import com.atlarge.odcsim.PostStop
 import com.atlarge.odcsim.PreStart
 import com.atlarge.odcsim.Signal
 import com.atlarge.odcsim.internal.BehaviorInterpreter
-import mu.KotlinLogging
+import com.atlarge.odcsim.internal.logging.LoggerImpl
+import org.slf4j.Logger
 import java.util.PriorityQueue
 import kotlin.math.max
 
@@ -75,11 +76,6 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
      * The registry of actors in the system.
      */
     private val registry: MutableMap<ActorPath, Actor<*>> = HashMap()
-
-    /**
-     * A [KotlinLogging] instance that writes logs to a SLF4J implementation.
-     */
-    private val logger = KotlinLogging.logger {}
 
     init {
         registry[path] = Actor(this, root)
@@ -143,6 +139,11 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
 
         override val time: Instant
             get() = this@OmegaActorSystem.time
+
+        override val system: ActorSystem<*>
+            get() = this@OmegaActorSystem
+
+        override val log: Logger by lazy(LazyThreadSafetyMode.NONE) { LoggerImpl(this) }
 
         override fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration) = schedule(ref, msg, after)
 
@@ -232,7 +233,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         } catch (e: Exception) {
             // Forcefully stop the actor if it crashed
             stop()
-            logger.error(e) { "Unhandled exception in actor $path" }
+            log.error("Unhandled exception in actor $path", e)
             null
         }
     }

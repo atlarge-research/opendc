@@ -24,6 +24,8 @@
 
 package com.atlarge.odcsim
 
+import org.slf4j.Logger
+
 /**
  * Represents the context in which the execution of an actor's behavior takes place.
  *
@@ -39,6 +41,16 @@ interface ActorContext<T : Any> {
      * The point of time within the simulation.
      */
     val time: Instant
+
+    /**
+     * The [ActorSystem] the actor is part of.
+     */
+    val system: ActorSystem<*>
+
+    /**
+     * An actor specific logger instance.
+     */
+    val log: Logger
 
     /**
      * Send the specified message to the actor referenced by this [ActorRef].

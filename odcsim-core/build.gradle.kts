@@ -38,6 +38,7 @@ val junitPlatformVersion: String by extra
 
 dependencies {
     implementation(kotlin("stdlib"))
+    api("org.slf4j:slf4j-api:1.7.26")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")

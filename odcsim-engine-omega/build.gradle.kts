@@ -40,7 +40,6 @@ dependencies {
     api(project(":odcsim-core"))
 
     implementation(kotlin("stdlib"))
-    implementation("io.github.microutils:kotlin-logging:1.6.20")
 
     testCompile(project(":odcsim-engine-tests"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")

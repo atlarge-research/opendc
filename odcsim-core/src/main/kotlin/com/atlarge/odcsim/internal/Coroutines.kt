@@ -26,6 +26,7 @@ package com.atlarge.odcsim.internal
 
 import com.atlarge.odcsim.ActorContext
 import com.atlarge.odcsim.ActorRef
+import com.atlarge.odcsim.ActorSystem
 import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.Duration
 import com.atlarge.odcsim.Instant
@@ -36,6 +37,7 @@ import com.atlarge.odcsim.coroutines.SuspendingBehavior
 import com.atlarge.odcsim.receiveSignal
 import com.atlarge.odcsim.coroutines.suspendWithBehavior
 import com.atlarge.odcsim.receiveMessage
+import org.slf4j.Logger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -91,6 +93,12 @@ internal class SuspendingBehaviorImpl<T : Any>(
     override val self: ActorRef<T> get() = actorContext.self
 
     override val time: Instant get() = actorContext.time
+
+    override val system: ActorSystem<*>
+        get() = actorContext.system
+
+    override val log: Logger
+        get() = actorContext.log
 
     override fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration) = actorContext.send(ref, msg, after)
 
