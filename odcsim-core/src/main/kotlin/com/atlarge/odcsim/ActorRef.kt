@@ -24,10 +24,12 @@
 
 package com.atlarge.odcsim
 
+import java.io.Serializable
+
 /**
  * A reference to an entity in simulation that accepts messages of type [T].
  */
-interface ActorRef<in T : Any> {
+interface ActorRef<in T : Any> : Comparable<ActorRef<*>>, Serializable {
     /**
      * The path for this actor (from this actor up to the root actor).
      */

@@ -60,9 +60,9 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
     override val path: ActorPath = ActorPath.Root(name = "/user")
 
     /**
-     * A flag to indicate the system has started.
+     * The state of the actor system.
      */
-    private var state: ActorSystemState = ActorSystemState.PENDING
+    private var state: ActorSystemState = ActorSystemState.CREATED
 
     /**
      * The event queue to process
@@ -90,7 +90,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         require(until >= .0) { "The given instant must be a non-negative number" }
 
         // Start the root actor on initial run
-        if (state == ActorSystemState.PENDING) {
+        if (state == ActorSystemState.CREATED) {
             registry[path]!!.isolate { it.start() }
             state = ActorSystemState.STARTED
         } else if (state == ActorSystemState.TERMINATED) {
@@ -124,6 +124,8 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         registry[path]?.stop()
     }
 
+    override fun compareTo(other: ActorRef<*>): Int = path.compareTo(other.path)
+
     /**
      * The identifier for the next message to be scheduled.
      */
@@ -145,7 +147,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         override fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration) = schedule(ref, msg, after)
 
         override fun <U : Any> spawn(behavior: Behavior<U>, name: String): ActorRef<U> {
-            val ref = ActorRefImpl<U>(self.path.child(name))
+            val ref = ActorRefImpl<U>(this@OmegaActorSystem, self.path.child(name))
             if (ref.path !in registry) {
                 val actor = Actor(ref, behavior)
                 registry[ref.path] = actor
@@ -221,6 +223,9 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         override fun hashCode(): Int = self.path.hashCode()
     }
 
+    /**
+     * Isolate uncaught exceptions originating from actor interpreter invocations.
+     */
     private inline fun <T : Any, U> Actor<T>.isolate(block: (Actor<T>) -> U): U? {
         return try {
             block(this)
@@ -232,12 +237,22 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         }
     }
 
-
-        private enum class ActorSystemState {
-        PENDING, STARTED, TERMINATED
+    /**
+     * Enumeration to track the state of the actor system.
+     */
+    private enum class ActorSystemState {
+        CREATED, STARTED, TERMINATED
     }
 
-    private inner class ActorRefImpl<T : Any>(override val path: ActorPath) : ActorRef<T>
+    /**
+     * Internal [ActorRef] implementation for this actor system.
+     */
+    private data class ActorRefImpl<T : Any>(private val owner: OmegaActorSystem<*>,
+                                             override val path: ActorPath) : ActorRef<T> {
+        override fun toString(): String = "Actor[$path]"
+
+        override fun compareTo(other: ActorRef<*>): Int = path.compareTo(other.path)
+    }
 
     /**
      * A wrapper around a message that has been scheduled for processing.
