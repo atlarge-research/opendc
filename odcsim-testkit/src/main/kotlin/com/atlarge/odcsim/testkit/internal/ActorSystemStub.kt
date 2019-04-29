@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,31 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim.coroutines.dsl
+package com.atlarge.odcsim.testkit.internal
 
+import com.atlarge.odcsim.ActorPath
+import com.atlarge.odcsim.ActorSystem
 import com.atlarge.odcsim.Duration
-import com.atlarge.odcsim.Timeout
-import com.atlarge.odcsim.coroutines.SuspendingActorContext
-import com.atlarge.odcsim.coroutines.suspendWithBehavior
-import com.atlarge.odcsim.receiveSignal
-import com.atlarge.odcsim.setup
-import com.atlarge.odcsim.unhandled
-import kotlin.coroutines.resume
+import com.atlarge.odcsim.Instant
 
 /**
- * Block execution for the specified duration.
+ * A stubbed [ActorSystem] for synchronous testing of behavior.
  *
- * @param after The duration after which execution should continue.
+ * @property owner The owner of this actor system.
  */
-suspend fun <T : Any> SuspendingActorContext<T>.timeout(after: Duration) =
-    suspendWithBehavior<T, Unit> { cont, next ->
-        setup { ctx ->
-            val target = this
-            @Suppress("UNCHECKED_CAST")
-            ctx.send(ctx.self, Timeout(target) as T, after)
-            receiveSignal { _, signal ->
-                if (signal is Timeout && signal.target == target) {
-                    cont.resume(Unit)
-                    next()
-                } else {
-                    unhandled()
-                }
-            }
-        }
-    }
+internal class ActorSystemStub<T : Any>(private val owner: BehaviorTestKitImpl<T>) : ActorSystem<T> {
+    override val time: Instant
+        get() = owner.time
+
+    override val name: String
+        get() = owner.ref.path.name
+
+    override fun run(until: Duration) = throw IllegalStateException("Cannot run ActorSystem within actor")
+
+    override fun send(msg: T, after: Duration) = owner.context.send(owner.context.self, msg, after)
+
+    override fun terminate() {}
+
+    override val path: ActorPath
+        get() = owner.ref.path
+}

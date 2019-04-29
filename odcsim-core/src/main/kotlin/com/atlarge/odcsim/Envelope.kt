@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,36 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim.coroutines.dsl
+package com.atlarge.odcsim
 
-import com.atlarge.odcsim.Duration
-import com.atlarge.odcsim.Timeout
-import com.atlarge.odcsim.coroutines.SuspendingActorContext
-import com.atlarge.odcsim.coroutines.suspendWithBehavior
-import com.atlarge.odcsim.receiveSignal
-import com.atlarge.odcsim.setup
-import com.atlarge.odcsim.unhandled
-import kotlin.coroutines.resume
+import java.io.Serializable
 
 /**
- * Block execution for the specified duration.
- *
- * @param after The duration after which execution should continue.
+ * A timestamped wrapper for messages that will be delivered to an actor.
  */
-suspend fun <T : Any> SuspendingActorContext<T>.timeout(after: Duration) =
-    suspendWithBehavior<T, Unit> { cont, next ->
-        setup { ctx ->
-            val target = this
-            @Suppress("UNCHECKED_CAST")
-            ctx.send(ctx.self, Timeout(target) as T, after)
-            receiveSignal { _, signal ->
-                if (signal is Timeout && signal.target == target) {
-                    cont.resume(Unit)
-                    next()
-                } else {
-                    unhandled()
-                }
-            }
-        }
-    }
+interface Envelope<T : Any> : Comparable<Envelope<*>>, Serializable {
+    /**
+     * The time at which this message should be delivered.
+     */
+    val time: Instant
+
+    /**
+     * The message contained in this envelope, of type [T]
+     */
+    val message: T
+
+    /**
+     * Extract the delivery time from the envelope.
+     */
+    operator fun component1(): Instant = time
+
+    /**
+     * Extract the message from this envelope.
+     */
+    operator fun component2(): T = message
+
+    /**
+     * Compare this envelope to the [other] envelope, ordered increasingly in time.
+     */
+    override fun compareTo(other: Envelope<*>): Int = time.compareTo(other.time)
+}

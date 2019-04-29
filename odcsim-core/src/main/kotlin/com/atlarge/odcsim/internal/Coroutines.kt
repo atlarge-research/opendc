@@ -34,9 +34,9 @@ import com.atlarge.odcsim.ReceivingBehavior
 import com.atlarge.odcsim.Signal
 import com.atlarge.odcsim.coroutines.SuspendingActorContext
 import com.atlarge.odcsim.coroutines.SuspendingBehavior
-import com.atlarge.odcsim.receiveSignal
 import com.atlarge.odcsim.coroutines.suspendWithBehavior
 import com.atlarge.odcsim.receiveMessage
+import com.atlarge.odcsim.receiveSignal
 import org.slf4j.Logger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext

@@ -34,6 +34,11 @@ interface ActorRef<in T : Any> : Comparable<ActorRef<*>>, Serializable {
      * The path for this actor (from this actor up to the root actor).
      */
     val path: ActorPath
+
+    /**
+     * Compare this reference to another actor reference.
+     */
+    override fun compareTo(other: ActorRef<*>): Int = path.compareTo(other.path)
 }
 
 /**

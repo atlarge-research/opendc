@@ -30,6 +30,7 @@ import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.ActorSystem
 import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.Duration
+import com.atlarge.odcsim.Envelope
 import com.atlarge.odcsim.Instant
 import com.atlarge.odcsim.PostStop
 import com.atlarge.odcsim.PreStart
@@ -68,9 +69,9 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
     /**
      * The event queue to process
      */
-    private val queue: PriorityQueue<Envelope> = PriorityQueue(Comparator
-        .comparingDouble(Envelope::time)
-        .thenComparingLong(Envelope::id))
+    private val queue: PriorityQueue<EnvelopeImpl> = PriorityQueue(Comparator
+        .comparingDouble(EnvelopeImpl::time)
+        .thenComparingLong(EnvelopeImpl::id))
 
     /**
      * The registry of actors in the system.
@@ -258,12 +259,15 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
     /**
      * A wrapper around a message that has been scheduled for processing.
      *
-     * @property time The point in time to deliver the message.
      * @property id The identifier of the message to keep the priority queue stable.
      * @property destination The destination of the message.
+     * @property time The point in time to deliver the message.
      * @property message The message to wrap.
      */
-    private class Envelope(val time: Instant, val id: Long, val destination: ActorPath, val message: Any)
+    private class EnvelopeImpl(val id: Long,
+                               val destination: ActorPath,
+                               override val time: Instant,
+                               override val message: Any) : Envelope<Any>
 
     /**
      * Schedule a message to be processed by the engine.
@@ -274,6 +278,6 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
      */
     private fun schedule(destination: ActorRef<*>, message: Any, delay: Duration) {
         require(delay >= .0) { "The given delay must be a non-negative number" }
-        queue.add(Envelope(time + delay, nextId++, destination.path, message))
+        queue.add(EnvelopeImpl(nextId++, destination.path, time + delay, message))
     }
 }
