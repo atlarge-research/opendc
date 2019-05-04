@@ -27,6 +27,7 @@ package com.atlarge.odcsim
 import com.atlarge.odcsim.internal.BehaviorInterpreter
 import com.atlarge.odcsim.internal.EmptyBehavior
 import com.atlarge.odcsim.internal.IgnoreBehavior
+import com.atlarge.odcsim.internal.TimerSchedulerImpl
 
 /**
  * This [Behavior] is used to signal that this actor shall terminate voluntarily. If this actor has created child actors
@@ -114,6 +115,25 @@ fun <T : Any> receiveSignal(handler: (ActorContext<T>, Signal) -> Behavior<T>): 
  */
 fun <T : Any> wrap(behavior: Behavior<T>, wrap: (BehaviorInterpreter<T>) -> Behavior<T>): Behavior<T> {
     return setup { ctx -> wrap(BehaviorInterpreter(behavior, ctx)) }
+}
+
+/**
+ * Obtain a [TimerScheduler] for building a [Behavior] instance.
+ */
+fun <T : Any> withTimers(handler: (TimerScheduler<T>) -> Behavior<T>): Behavior<T> {
+    return setup { ctx ->
+        val scheduler = TimerSchedulerImpl(ctx)
+        receiveSignal<T> { _, signal ->
+            if (signal is TimerSchedulerImpl.TimerSignal) {
+                val res = scheduler.interceptTimerSignal(signal)
+                if (res != null) {
+                    ctx.send(ctx.self, res)
+                    return@receiveSignal same()
+                }
+            }
+            unhandled()
+        }.join(handler(scheduler))
+    }
 }
 
 /**
