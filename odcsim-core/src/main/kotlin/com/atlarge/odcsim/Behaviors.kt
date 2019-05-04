@@ -32,27 +32,18 @@ import com.atlarge.odcsim.internal.IgnoreBehavior
  * This [Behavior] is used to signal that this actor shall terminate voluntarily. If this actor has created child actors
  * then these will be stopped as part of the shutdown procedure.
  */
-fun <T : Any> stopped(): Behavior<T> {
-    @Suppress("UNCHECKED_CAST")
-    return StoppedBehavior as Behavior<T>
-}
+fun <T : Any> stopped(): Behavior<T> = StoppedBehavior.unsafeCast()
 
 /**
  * This [Behavior] is used to signal that this actor wants to reuse its previous behavior.
  */
-fun <T : Any> same(): Behavior<T> {
-    @Suppress("UNCHECKED_CAST")
-    return SameBehavior as Behavior<T>
-}
+fun <T : Any> same(): Behavior<T> = SameBehavior.unsafeCast()
 
 /**
  * This [Behavior] is used to signal to the system that the last message or signal went unhandled. This will
  * reuse the previous behavior.
  */
-fun <T : Any> unhandled(): Behavior<T> {
-    @Suppress("UNCHECKED_CAST")
-    return UnhandledBehavior as Behavior<T>
-}
+fun <T : Any> unhandled(): Behavior<T> = UnhandledBehavior.unsafeCast()
 
 /**
  * A factory for [Behavior]. Creation of the behavior instance is deferred until the actor is started.
@@ -84,6 +75,21 @@ fun <T : Any> receive(handler: (ActorContext<T>, T) -> Behavior<T>): Behavior<T>
 }
 
 /**
+ * Construct a [Behavior] that reacts to incoming messages of type [U], provides access to the [ActorContext] and
+ * returns the actor's next behavior. Other messages will be unhandled.
+ */
+inline fun <T : Any, reified U : T> receiveOf(crossinline handler: (ActorContext<T>, U) -> Behavior<T>): Behavior<T> {
+    return object : ReceivingBehavior<T>() {
+        override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> {
+            return if (msg is U)
+                handler(ctx, msg)
+            else
+                unhandled()
+        }
+    }
+}
+
+/**
  * Construct a [Behavior] that reacts to incoming messages and returns the actor's next behavior.
  */
 fun <T : Any> receiveMessage(handler: (T) -> Behavior<T>): Behavior<T> {
@@ -109,3 +115,69 @@ fun <T : Any> receiveSignal(handler: (ActorContext<T>, Signal) -> Behavior<T>): 
 fun <T : Any> wrap(behavior: Behavior<T>, wrap: (BehaviorInterpreter<T>) -> Behavior<T>): Behavior<T> {
     return setup { ctx -> wrap(BehaviorInterpreter(behavior, ctx)) }
 }
+
+/**
+ * Join together both [Behavior] with another [Behavior], essentially running them side-by-side, only directly
+ * propagating stopped behavior.
+ *
+ * @param that The behavior to join with.
+ */
+fun <T : Any> Behavior<T>.join(that: Behavior<T>): Behavior<T> =
+    wrap(this) { left ->
+        wrap(that) { right ->
+            object : ReceivingBehavior<T>() {
+                override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> {
+                    if (left.interpretMessage(ctx, msg)) {
+                        return left.propagate(this) // Propagate stopped behavior
+                    } else if (right.interpretMessage(ctx, msg)) {
+                        return right.propagate(this)
+                    }
+
+                    return unhandled()
+                }
+
+                override fun receiveSignal(ctx: ActorContext<T>, signal: Signal): Behavior<T> {
+                    if (left.interpretSignal(ctx, signal)) {
+                        return left.propagate(this)
+                    } else if (right.interpretSignal(ctx, signal)) {
+                        return right.propagate(this)
+                    }
+
+                    return unhandled()
+                }
+            }
+        }
+    }
+
+/**
+ * Widen the type of messages the [Behavior] by marking all other messages as unhandled.
+ */
+inline fun <U : Any, reified T : U> Behavior<T>.widen(): Behavior<U> = widen {
+    if (it is T)
+        it
+    else
+        null
+}
+
+/**
+ * Keep the specified [Behavior] alive if it returns the stopped behavior.
+ */
+fun <T : Any> Behavior<T>.keepAlive(): Behavior<T> =
+    wrap(this) { interpreter ->
+        object : ReceivingBehavior<T>() {
+            override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> {
+                if (interpreter.interpretMessage(ctx, msg)) {
+                    return this
+                }
+                return empty()
+            }
+
+            override fun receiveSignal(ctx: ActorContext<T>, signal: Signal): Behavior<T> {
+                if (interpreter.interpretSignal(ctx, signal)) {
+                    return this
+                }
+
+                return empty()
+            }
+        }
+    }

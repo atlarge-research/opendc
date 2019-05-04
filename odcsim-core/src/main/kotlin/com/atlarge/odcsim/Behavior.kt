@@ -43,18 +43,36 @@ sealed class Behavior<T : Any> {
      * This is almost always a safe operation, but might cause [ClassCastException] in case a narrowed behavior sends
      * messages of a different type to itself and is chained via [Behavior.orElse].
      */
-    fun <U : T> narrow(): Behavior<U> {
-        @Suppress("UNCHECKED_CAST")
-        return this as Behavior<U>
+    fun <U : T> narrow(): Behavior<U> = unsafeCast()
+
+    /**
+     * Widen the type of this behavior by placing a funnel in front of it.
+     *
+     * @param transform The mapping from the widened type to the original type, returning `null` in-case the message
+     * should not be handled.
+     */
+    fun <U : Any> widen(transform: (U) -> T?): Behavior<U> {
+        return wrap(this) { interpreter ->
+            receive<U> { ctx, msg ->
+                val res = transform(msg)
+                @Suppress("UNCHECKED_CAST")
+                if (res == null || interpreter.interpretMessage(ctx as ActorContext<T>, res))
+                    unhandled()
+                else
+                    interpreter.behavior.unsafeCast()
+            }.unsafeCast()
+        }.unsafeCast()
     }
 
     /**
      * Compose this [Behavior] with a fallback [Behavior] which is used in case this [Behavior] does not handle the
      * incoming message or signal.
+     *
+     * @param that The fallback behavior.
      */
-    fun orElse(behavior: Behavior<T>): Behavior<T> =
+    fun orElse(that: Behavior<T>): Behavior<T> =
         wrap(this) { left ->
-            wrap(behavior) { right ->
+            wrap(that) { right ->
                 object : ReceivingBehavior<T>() {
                     override fun receive(ctx: ActorContext<T>, msg: T): Behavior<T> {
                         if (left.interpretMessage(ctx, msg)) {
@@ -78,6 +96,16 @@ sealed class Behavior<T : Any> {
                 }
             }
         }
+
+    /**
+     * Unsafe utility method for changing the type accepted by this [Behavior].
+     * Be aware that changing the type might result in [ClassCastException], when sending a message to the resulting
+     * behavior.
+     */
+    fun <U : Any> unsafeCast(): Behavior<U> {
+        @Suppress("UNCHECKED_CAST")
+        return this as Behavior<U>
+    }
 }
 
 /**
