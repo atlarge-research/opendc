@@ -84,6 +84,23 @@ interface ActorContext<T : Any> {
     fun stop(child: ActorRef<*>): Boolean
 
     /**
+     * Watch the specified [ActorRef] for termination of the referenced actor. On termination of the watched actor,
+     * a [Terminated] signal is sent to this actor.
+     *
+     * @param target The target actor to watch.
+     */
+    fun watch(target: ActorRef<*>)
+
+    /**
+     * Revoke the registration established by [watch].
+     *
+     * In case there exists no registration for the specified [target], no action will be performed.
+     *
+     * @param target The target actor to unwatch.
+     */
+    fun unwatch(target: ActorRef<*>)
+
+    /**
      * Synchronize the local virtual time of this target with the other referenced actor's local virtual time.
      *
      * By default, actors are not guaranteed to be synchronized, meaning that for some implementations, virtual time may

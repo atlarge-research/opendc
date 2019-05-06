@@ -81,6 +81,10 @@ internal class ActorContextStub<T : Any>(private val owner: BehaviorTestKitImpl<
         return true
     }
 
+    override fun watch(target: ActorRef<*>) {}
+
+    override fun unwatch(target: ActorRef<*>) {}
+
     override fun sync(target: ActorRef<*>) {}
 
     override fun unsync(target: ActorRef<*>) {}

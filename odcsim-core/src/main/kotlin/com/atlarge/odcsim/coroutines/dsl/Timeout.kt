@@ -28,6 +28,7 @@ import com.atlarge.odcsim.Duration
 import com.atlarge.odcsim.Timeout
 import com.atlarge.odcsim.coroutines.SuspendingActorContext
 import com.atlarge.odcsim.coroutines.suspendWithBehavior
+import com.atlarge.odcsim.internal.sendSignal
 import com.atlarge.odcsim.receiveSignal
 import com.atlarge.odcsim.setup
 import com.atlarge.odcsim.unhandled
@@ -43,7 +44,7 @@ suspend fun <T : Any> SuspendingActorContext<T>.timeout(after: Duration) =
         setup { ctx ->
             val target = this
             @Suppress("UNCHECKED_CAST")
-            ctx.send(ctx.self, Timeout(target) as T, after)
+            ctx.sendSignal(ctx.self, Timeout(target), after)
             receiveSignal { _, signal ->
                 if (signal is Timeout && signal.target == target) {
                     cont.resume(Unit)

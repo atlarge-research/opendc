@@ -68,7 +68,8 @@ interface SuspendingActorContextImpl<T : Any> : SuspendingActorContext<T> {
  */
 internal class SuspendingBehaviorImpl<T : Any>(
     private var actorContext: ActorContext<T>,
-    initialBehavior: SuspendingBehavior<T>) : ReceivingBehavior<T>(), SuspendingActorContextImpl<T> {
+    initialBehavior: SuspendingBehavior<T>
+) : ReceivingBehavior<T>(), SuspendingActorContextImpl<T> {
 
     /**
      * The next behavior to use.
@@ -105,6 +106,10 @@ internal class SuspendingBehaviorImpl<T : Any>(
     override fun <U : Any> spawn(behavior: Behavior<U>, name: String) = actorContext.spawn(behavior, name)
 
     override fun stop(child: ActorRef<*>): Boolean = actorContext.stop(child)
+
+    override fun watch(target: ActorRef<*>) = actorContext.watch(target)
+
+    override fun unwatch(target: ActorRef<*>) = actorContext.unwatch(target)
 
     override fun sync(target: ActorRef<*>) = actorContext.sync(target)
 

@@ -167,7 +167,7 @@ val <T : Any> Behavior<T>.isAlive get() = this !is StoppedBehavior
 /**
  * A flag to indicate whether the last message/signal went unhandled.
  */
-val <T : Any> Behavior<T>.isUnhandled get() = this !is UnhandledBehavior
+val <T : Any> Behavior<T>.isUnhandled get() = this is UnhandledBehavior
 
 // The special behaviors are kept in this file as to be able to seal the Behavior class to prevent users from extending
 // it.

@@ -28,9 +28,13 @@ import com.atlarge.odcsim.ActorPath
 import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.ActorSystemFactory
 import com.atlarge.odcsim.Behavior
+import com.atlarge.odcsim.Terminated
+import com.atlarge.odcsim.coroutines.dsl.timeout
+import com.atlarge.odcsim.coroutines.suspending
 import com.atlarge.odcsim.empty
 import com.atlarge.odcsim.ignore
 import com.atlarge.odcsim.receiveMessage
+import com.atlarge.odcsim.receiveSignal
 import com.atlarge.odcsim.same
 import com.atlarge.odcsim.setup
 import com.atlarge.odcsim.stopped
@@ -278,7 +282,7 @@ abstract class ActorSystemContract {
             val system = factory(setup<ActorRef<Unit>> { ctx ->
                 val root = ctx.self
                 val child = ctx.spawn(setup<Unit> {
-                    val child = ctx.spawn(receiveMessage<Unit> {
+                    val child = it.spawn(receiveMessage<Unit> {
                         throw IllegalStateException("DELIBERATE")
                     }, "child")
                     ctx.send(root, child)
@@ -362,6 +366,36 @@ abstract class ActorSystemContract {
             system.run()
             assertEquals(1, counter)
             system.terminate()
+        }
+
+        /**
+         * Test whether an actor can watch for termination.
+         */
+        @Test
+        fun `should watch for termination`() {
+            var received = false
+            val system = factory(setup<Nothing> { ctx ->
+                val child = ctx.spawn(suspending<Nothing> {
+                    it.timeout(50.0)
+                    stopped()
+                }, "child")
+                ctx.watch(child)
+
+                receiveSignal { _, signal ->
+                    when (signal) {
+                        is Terminated -> {
+                            received = true
+                            stopped()
+                        }
+                        else ->
+                            same()
+                    }
+                }
+            }, "test")
+
+            system.run()
+            system.terminate()
+            assertTrue(received)
         }
     }
 
