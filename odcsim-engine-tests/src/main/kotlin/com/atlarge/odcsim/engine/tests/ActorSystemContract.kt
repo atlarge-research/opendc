@@ -169,7 +169,6 @@ abstract class ActorSystemContract {
         system.terminate()
     }
 
-
     @Nested
     @DisplayName("ActorRef")
     inner class ActorRefTest {
@@ -345,7 +344,6 @@ abstract class ActorSystemContract {
             system.run()
             system.terminate()
         }
-
 
         /**
          * Test whether an actor that is crashed cannot receive more messages.

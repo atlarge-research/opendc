@@ -120,4 +120,3 @@ interface ActorContext<T : Any> {
      */
     fun isSync(target: ActorRef<*>): Boolean
 }
-

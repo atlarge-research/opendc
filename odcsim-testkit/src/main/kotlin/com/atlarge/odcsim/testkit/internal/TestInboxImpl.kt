@@ -84,9 +84,11 @@ internal class TestInboxImpl<T : Any>(private val owner: BehaviorTestKitImpl<*>,
      * @property time The point in time to deliver the message.
      * @property message The message to wrap.
      */
-    private inner class EnvelopeImpl(val id: Long,
-                                     override val time: Instant,
-                                     override val message: T) : Envelope<T> {
+    private inner class EnvelopeImpl(
+        val id: Long,
+        override val time: Instant,
+        override val message: T
+    ) : Envelope<T> {
         override fun compareTo(other: Envelope<*>): Int {
             val cmp = super.compareTo(other)
             return if (cmp == 0 && other is EnvelopeImpl)
@@ -95,5 +97,4 @@ internal class TestInboxImpl<T : Any>(private val owner: BehaviorTestKitImpl<*>,
                 cmp
         }
     }
-
 }

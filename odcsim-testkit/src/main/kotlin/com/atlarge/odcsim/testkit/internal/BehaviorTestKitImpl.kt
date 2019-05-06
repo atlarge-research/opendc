@@ -40,8 +40,10 @@ import kotlin.math.max
  * @param initialBehavior The initial behavior to initialize the actor of the test kit with.
  * @param path The path to the actor.
  */
-internal class BehaviorTestKitImpl<T : Any>(initialBehavior: Behavior<T>,
-                                            path: ActorPath) : BehaviorTestKit<T> {
+internal class BehaviorTestKitImpl<T : Any>(
+    initialBehavior: Behavior<T>,
+    path: ActorPath
+) : BehaviorTestKit<T> {
     /**
      * The [BehaviorInterpreter] used to interpret incoming messages.
      */

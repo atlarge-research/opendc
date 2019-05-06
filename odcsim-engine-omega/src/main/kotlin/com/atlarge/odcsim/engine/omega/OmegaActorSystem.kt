@@ -88,8 +88,8 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
 
         // Start the root actor on initial run
         if (state == ActorSystemState.CREATED) {
-            registry[path]!!.isolate { it.start() }
             state = ActorSystemState.STARTED
+            registry[path]!!.isolate { it.start() }
         } else if (state == ActorSystemState.TERMINATED) {
             throw IllegalStateException("The ActorSystem has been terminated.")
         }
@@ -106,6 +106,7 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
             queue.poll()
 
             val actor = registry[envelope.destination] ?: continue
+
             // Notice that messages for unknown/terminated actors are ignored for now
             actor.isolate { it.interpretMessage(envelope.message) }
         }
@@ -249,8 +250,10 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
     /**
      * Internal [ActorRef] implementation for this actor system.
      */
-    private data class ActorRefImpl<T : Any>(private val owner: OmegaActorSystem<*>,
-                                             override val path: ActorPath) : ActorRef<T> {
+    private data class ActorRefImpl<T : Any>(
+        private val owner: OmegaActorSystem<*>,
+        override val path: ActorPath
+    ) : ActorRef<T> {
         override fun toString(): String = "Actor[$path]"
 
         override fun compareTo(other: ActorRef<*>): Int = path.compareTo(other.path)
@@ -264,10 +267,12 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
      * @property time The point in time to deliver the message.
      * @property message The message to wrap.
      */
-    private class EnvelopeImpl(val id: Long,
-                               val destination: ActorPath,
-                               override val time: Instant,
-                               override val message: Any) : Envelope<Any>
+    private class EnvelopeImpl(
+        val id: Long,
+        val destination: ActorPath,
+        override val time: Instant,
+        override val message: Any
+    ) : Envelope<Any>
 
     /**
      * Schedule a message to be processed by the engine.

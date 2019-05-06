@@ -65,7 +65,7 @@ sealed class ActorPath : Comparable<ActorPath>, Serializable {
             require(name.length == 1 || name.indexOf('/', 1) == -1) {
                 "/ may only exist at the beginning of the root actors name"
             }
-            require(name.indexOf('#') == -1) { "# may not exist in a path component"}
+            require(name.indexOf('#') == -1) { "# may not exist in a path component" }
         }
 
         override val parent: ActorPath = this
@@ -95,7 +95,7 @@ sealed class ActorPath : Comparable<ActorPath>, Serializable {
     data class Child(override val parent: ActorPath, override val name: String) : ActorPath() {
         init {
             require(name.indexOf('/') == -1) { "/ may not exist in a path component" }
-            require(name.indexOf('#') == -1) { "# may not exist in a path component"}
+            require(name.indexOf('#') == -1) { "# may not exist in a path component" }
         }
 
         override val root: Root by lazy {
