@@ -38,10 +38,10 @@ import com.atlarge.odcsim.Signal
 import com.atlarge.odcsim.Terminated
 import com.atlarge.odcsim.internal.BehaviorInterpreter
 import com.atlarge.odcsim.internal.logging.LoggerImpl
-import com.sun.xml.internal.messaging.saaj.soap.impl.EnvelopeImpl
 import org.slf4j.Logger
 import java.util.Collections
 import java.util.PriorityQueue
+import java.util.UUID
 import java.util.WeakHashMap
 import kotlin.math.max
 
@@ -155,6 +155,16 @@ class OmegaActorSystem<in T : Any>(root: Behavior<T>, override val name: String)
         override fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration) = schedule(ref, msg, after)
 
         override fun <U : Any> spawn(behavior: Behavior<U>, name: String): ActorRef<U> {
+            require(!name.startsWith("$")) { "Name may not start with $-sign" }
+            return internalSpawn(behavior, name)
+        }
+
+        override fun <U : Any> spawnAnonymous(behavior: Behavior<U>): ActorRef<U> {
+            val name = "$" + UUID.randomUUID()
+            return internalSpawn(behavior, name)
+        }
+
+        private fun <U : Any> internalSpawn(behavior: Behavior<U>, name: String): ActorRef<U> {
             val ref = ActorRefImpl<U>(this@OmegaActorSystem, self.path.child(name))
             if (ref.path !in registry) {
                 val actor = Actor(ref, behavior)

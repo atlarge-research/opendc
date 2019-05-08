@@ -24,8 +24,8 @@
 
 package com.atlarge.odcsim
 
-import com.atlarge.odcsim.coroutines.suspending
 import com.atlarge.odcsim.coroutines.SuspendingBehavior
+import com.atlarge.odcsim.coroutines.suspending
 import com.atlarge.odcsim.internal.BehaviorInterpreter
 import com.atlarge.odcsim.internal.EmptyBehavior
 import com.nhaarman.mockitokotlin2.mock

@@ -32,8 +32,8 @@ import com.atlarge.odcsim.internal.SuspendingActorContextImpl
 import com.atlarge.odcsim.internal.SuspendingBehaviorImpl
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.suspendCoroutine
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * A [Behavior] that allows method calls to suspend execution via Kotlin coroutines.

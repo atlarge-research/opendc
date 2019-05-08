@@ -105,6 +105,8 @@ internal class SuspendingBehaviorImpl<T : Any>(
 
     override fun <U : Any> spawn(behavior: Behavior<U>, name: String) = actorContext.spawn(behavior, name)
 
+    override fun <U : Any> spawnAnonymous(behavior: Behavior<U>) = actorContext.spawnAnonymous(behavior)
+
     override fun stop(child: ActorRef<*>): Boolean = actorContext.stop(child)
 
     override fun watch(target: ActorRef<*>) = actorContext.watch(target)

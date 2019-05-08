@@ -32,6 +32,7 @@ import com.atlarge.odcsim.Duration
 import com.atlarge.odcsim.Instant
 import com.atlarge.odcsim.internal.logging.LoggerImpl
 import org.slf4j.Logger
+import java.util.UUID
 
 /**
  * A stubbed [ActorContext] implementation for synchronous behavior testing.
@@ -70,6 +71,10 @@ internal class ActorContextStub<T : Any>(private val owner: BehaviorTestKitImpl<
         val btk = BehaviorTestKitImpl(behavior, self.path.child(name))
         children[name] = btk
         return btk.ref
+    }
+
+    override fun <U : Any> spawnAnonymous(behavior: Behavior<U>): ActorRef<U> {
+        return spawn(behavior, "$" + UUID.randomUUID())
     }
 
     override fun stop(child: ActorRef<*>): Boolean {

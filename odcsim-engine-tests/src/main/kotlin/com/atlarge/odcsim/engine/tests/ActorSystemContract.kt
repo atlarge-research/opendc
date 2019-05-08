@@ -29,7 +29,6 @@ import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.ActorSystemFactory
 import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.Terminated
-import com.atlarge.odcsim.coroutines.dsl.timeout
 import com.atlarge.odcsim.coroutines.suspending
 import com.atlarge.odcsim.empty
 import com.atlarge.odcsim.ignore

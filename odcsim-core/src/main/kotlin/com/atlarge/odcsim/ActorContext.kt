@@ -76,6 +76,14 @@ interface ActorContext<T : Any> {
     fun <U : Any> spawn(behavior: Behavior<U>, name: String): ActorRef<U>
 
     /**
+     * Spawn an anonymous child actor from the given [Behavior].
+     *
+     * @param behavior The behavior of the child actor to spawn.
+     * @return A reference to the child that has/will be spawned.
+     */
+    fun <U : Any> spawnAnonymous(behavior: Behavior<U>): ActorRef<U>
+
+    /**
      * Request the specified child actor to be stopped in asynchronous fashion.
      *
      * @param child The reference to the child actor to stop.
