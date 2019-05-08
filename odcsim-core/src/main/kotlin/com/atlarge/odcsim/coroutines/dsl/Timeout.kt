@@ -25,13 +25,8 @@
 package com.atlarge.odcsim.coroutines.dsl
 
 import com.atlarge.odcsim.Duration
-import com.atlarge.odcsim.Timeout
-import com.atlarge.odcsim.coroutines.SuspendingActorContext
 import com.atlarge.odcsim.coroutines.suspendWithBehavior
-import com.atlarge.odcsim.internal.sendSignal
-import com.atlarge.odcsim.receiveSignal
-import com.atlarge.odcsim.setup
-import com.atlarge.odcsim.unhandled
+import com.atlarge.odcsim.withTimeout
 import kotlin.coroutines.resume
 
 /**
@@ -39,19 +34,9 @@ import kotlin.coroutines.resume
  *
  * @param after The duration after which execution should continue.
  */
-suspend fun <T : Any> SuspendingActorContext<T>.timeout(after: Duration) =
-    suspendWithBehavior<T, Unit> { cont, next ->
-        setup { ctx ->
-            val target = this
-            @Suppress("UNCHECKED_CAST")
-            ctx.sendSignal(ctx.self, Timeout(target), after)
-            receiveSignal { _, signal ->
-                if (signal is Timeout && signal.target == target) {
-                    cont.resume(Unit)
-                    next()
-                } else {
-                    unhandled()
-                }
-            }
-        }
+suspend fun timeout(after: Duration) = suspendWithBehavior<Any, Unit> { cont, next ->
+    withTimeout(after) {
+        cont.resume(Unit)
+        next()
     }
+}

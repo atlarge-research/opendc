@@ -28,6 +28,7 @@ import com.atlarge.odcsim.internal.BehaviorInterpreter
 import com.atlarge.odcsim.internal.EmptyBehavior
 import com.atlarge.odcsim.internal.IgnoreBehavior
 import com.atlarge.odcsim.internal.TimerSchedulerImpl
+import com.atlarge.odcsim.internal.sendSignal
 
 /**
  * This [Behavior] is used to signal that this actor shall terminate voluntarily. If this actor has created child actors
@@ -135,6 +136,25 @@ fun <T : Any> withTimers(handler: (TimerScheduler<T>) -> Behavior<T>): Behavior<
         }.join(handler(scheduler))
     }
 }
+
+/**
+ * Construct a [Behavior] that waits for the specified duration before constructing the next behavior.
+ *
+ * @param after The delay before constructing the next behavior.
+ * @param handler The handler to construct the behavior with.
+ */
+fun <T : Any> withTimeout(after: Duration, handler: (ActorContext<T>) -> Behavior<T>): Behavior<T> =
+    setup { ctx ->
+        val target = Any()
+        ctx.sendSignal(ctx.self, Timeout(target), after)
+        receiveSignal { _, signal ->
+            if (signal is Timeout && signal.target == target) {
+                handler(ctx)
+            } else {
+                unhandled()
+            }
+        }
+    }
 
 /**
  * Join together both [Behavior] with another [Behavior], essentially running them side-by-side, only directly

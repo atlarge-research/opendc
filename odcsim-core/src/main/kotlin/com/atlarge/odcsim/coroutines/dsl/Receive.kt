@@ -56,9 +56,11 @@ suspend inline fun <T : Any, reified U : T> SuspendingActorContext<T>.receiveOf(
  * @param after The delay after which the message should be received by the actor.
  * @param transform The block to transform `self` to a message.
  */
-suspend inline fun <T : Any, U : Any, reified V : T> SuspendingActorContext<T>.ask(ref: ActorRef<U>,
-                                                                                   after: Duration = 0.0,
-                                                                                   transform: (ActorRef<T>) -> U): V {
+suspend inline fun <T : Any, U : Any, reified V : T> SuspendingActorContext<T>.ask(
+    ref: ActorRef<U>,
+    after: Duration = 0.0,
+    transform: (ActorRef<T>) -> U
+): V {
     send(ref, transform(self), after)
     return receiveOf()
 }
