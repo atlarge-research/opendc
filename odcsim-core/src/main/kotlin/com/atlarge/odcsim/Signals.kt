@@ -37,8 +37,17 @@ object PreStart : Signal
 
 /**
  * Lifecycle signal that is fired after this actor and all its child actors (transitively) have terminated.
+ * The [Terminated] signal is only sent to registered watchers after this signal has been processed.
  */
 object PostStop : Signal
+
+/**
+ * A lifecycle signal to indicate that an actor that was watched has terminated.
+ *
+ * @property ref The reference to the actor that has terminated.
+ * @property failure The failure that caused the termination, or `null` on graceful termination.
+ */
+data class Terminated(val ref: ActorRef<*>, val failure: Throwable? = null) : Signal
 
 /**
  * A [Signal] to indicate an actor has timed out.
@@ -49,11 +58,3 @@ object PostStop : Signal
  * @property target The target object that has timed out.
  */
 data class Timeout(val target: Any) : Signal
-
-/**
- * A lifecycle signal to indicate that an actor that was watched has terminated.
- *
- * @property ref The reference to the actor that has terminated.
- * @property failure The failure that caused the termination, or `null` on graceful termination.
- */
-data class Terminated(val ref: ActorRef<*>, val failure: Throwable? = null) : Signal

@@ -38,6 +38,11 @@ interface ActorContext<T : Any> {
     val self: ActorRef<T>
 
     /**
+     * A view of the children of this actor.
+     */
+    val children: List<ActorRef<*>>
+
+    /**
      * The point of time within the simulation.
      */
     val time: Instant
@@ -51,6 +56,14 @@ interface ActorContext<T : Any> {
      * An actor specific logger instance.
      */
     val log: Logger
+
+    /**
+     * Obtain the child of this actor with the specified name.
+     *
+     * @param name The name of the child actor to obtain.
+     * @return The reference to the child actor or `null` if it does not exist.
+     */
+    fun getChild(name: String): ActorRef<*>?
 
     /**
      * Send the specified message to the actor referenced by this [ActorRef].
@@ -69,6 +82,9 @@ interface ActorContext<T : Any> {
     /**
      * Spawn a child actor from the given [Behavior] and with the specified name.
      *
+     * The name may not be empty or start with "$". Moreover, the name of an actor must be unique and this method
+     * will throw an [IllegalArgumentException] in case a child actor of the given name already exists.
+     *
      * @param behavior The behavior of the child actor to spawn.
      * @param name The name of the child actor to spawn.
      * @return A reference to the child that has/will be spawned.
@@ -84,12 +100,16 @@ interface ActorContext<T : Any> {
     fun <U : Any> spawnAnonymous(behavior: Behavior<U>): ActorRef<U>
 
     /**
-     * Request the specified child actor to be stopped in asynchronous fashion.
+     * Force the specified child actor to terminate after it finishes processing its current message.
+     * Nothing will happen if the child is already stopped.
+     *
+     * Only direct children of an actor may be stopped through the actor context. Trying to stop other actors via this
+     * method will result in an [IllegalArgumentException]. Instead, stopping other actors has to be expressed as
+     * an explicit stop message that the actor accept.
      *
      * @param child The reference to the child actor to stop.
-     * @return `true` if the ref points to a child actor, otherwise `false`.
      */
-    fun stop(child: ActorRef<*>): Boolean
+    fun stop(child: ActorRef<*>)
 
     /**
      * Watch the specified [ActorRef] for termination of the referenced actor. On termination of the watched actor,

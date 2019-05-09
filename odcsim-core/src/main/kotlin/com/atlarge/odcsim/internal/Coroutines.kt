@@ -95,11 +95,16 @@ internal class SuspendingBehaviorImpl<T : Any>(
 
     override val time: Instant get() = actorContext.time
 
+    override val children: List<ActorRef<*>>
+        get() = actorContext.children
+
     override val system: ActorSystem<*>
         get() = actorContext.system
 
     override val log: Logger
         get() = actorContext.log
+
+    override fun getChild(name: String): ActorRef<*>? = actorContext.getChild(name)
 
     override fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration) = actorContext.send(ref, msg, after)
 
@@ -107,7 +112,7 @@ internal class SuspendingBehaviorImpl<T : Any>(
 
     override fun <U : Any> spawnAnonymous(behavior: Behavior<U>) = actorContext.spawnAnonymous(behavior)
 
-    override fun stop(child: ActorRef<*>): Boolean = actorContext.stop(child)
+    override fun stop(child: ActorRef<*>) = actorContext.stop(child)
 
     override fun watch(target: ActorRef<*>) = actorContext.watch(target)
 

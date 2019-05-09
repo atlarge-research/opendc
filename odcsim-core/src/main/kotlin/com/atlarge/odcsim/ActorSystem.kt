@@ -59,11 +59,18 @@ interface ActorSystem<in T : Any> : ActorRef<T> {
     fun send(msg: T, after: Duration = 0.1)
 
     /**
-     * Terminates this actor system.
+     * Terminates this actor system in an asynchronous fashion.
      *
      * This will stop the root actor and in turn will recursively stop all its child actors.
-     *
-     * This is an asynchronous operation.
      */
     fun terminate()
+
+    /**
+     * Create an actor in the "/system" namespace. This actor will be shut down during `system.terminate()` only after
+     * all user actors have terminated.
+     *
+     * @param behavior The behavior of the system actor to spawn.
+     * @param name The name of the system actor to spawn.
+     */
+    suspend fun <U : Any> spawnSystem(behavior: Behavior<U>, name: String): ActorRef<U>
 }

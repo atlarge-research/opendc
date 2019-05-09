@@ -97,7 +97,7 @@ internal class BehaviorTestKitImpl<T : Any>(
 
     override fun <U : Any> childTestKit(name: String): BehaviorTestKit<U> {
         @Suppress("UNCHECKED_CAST")
-        return context.children[ref.path.name] as BehaviorTestKitImpl<U>? ?: throw IllegalArgumentException("$ref is not a child of $this")
+        return context.childActors[ref.path.name] as BehaviorTestKitImpl<U>? ?: throw IllegalArgumentException("$ref is not a child of $this")
     }
 
     override fun <U : Any> childTestKit(ref: ActorRef<U>): BehaviorTestKit<U> {

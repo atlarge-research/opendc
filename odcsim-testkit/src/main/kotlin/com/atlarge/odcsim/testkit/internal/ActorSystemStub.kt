@@ -25,7 +25,9 @@
 package com.atlarge.odcsim.testkit.internal
 
 import com.atlarge.odcsim.ActorPath
+import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.ActorSystem
+import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.Duration
 import com.atlarge.odcsim.Instant
 
@@ -49,4 +51,8 @@ internal class ActorSystemStub<T : Any>(private val owner: BehaviorTestKitImpl<T
 
     override val path: ActorPath
         get() = owner.ref.path
+
+    override suspend fun <U : Any> spawnSystem(behavior: Behavior<U>, name: String): ActorRef<U> {
+        throw IllegalStateException("Cannot spawn system actor")
+    }
 }

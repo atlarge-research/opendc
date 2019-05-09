@@ -51,6 +51,11 @@ sealed class ActorPath : Comparable<ActorPath>, Serializable {
     fun child(name: String): ActorPath = Child(this, name)
 
     /**
+     * Create a new child actor path.
+     */
+    operator fun div(name: String): ActorPath = child(name)
+
+    /**
      * Recursively create a descendant’s path by appending all child names.
      */
     fun descendant(children: Iterable<String>): ActorPath = children.fold(this) { parent, name ->

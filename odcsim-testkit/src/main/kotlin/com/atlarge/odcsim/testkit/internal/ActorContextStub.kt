@@ -43,10 +43,13 @@ internal class ActorContextStub<T : Any>(private val owner: BehaviorTestKitImpl<
     /**
      * The children of this context.
      */
-    val children = HashMap<String, BehaviorTestKitImpl<*>>()
+    val childActors = HashMap<String, BehaviorTestKitImpl<*>>()
 
     override val self: ActorRef<T>
         get() = owner.ref
+
+    override val children: List<ActorRef<*>>
+        get() = childActors.values.map { it.ref }
 
     override val time: Instant
         get() = owner.time
@@ -59,6 +62,8 @@ internal class ActorContextStub<T : Any>(private val owner: BehaviorTestKitImpl<
         LoggerImpl(this)
     }
 
+    override fun getChild(name: String): ActorRef<*>? = childActors[name]?.ref
+
     override fun <U : Any> send(ref: ActorRef<U>, msg: U, after: Duration) {
         if (ref !is TestInboxImpl.ActorRefImpl) {
             throw IllegalArgumentException("The referenced ActorRef is not part of the test kit")
@@ -69,7 +74,7 @@ internal class ActorContextStub<T : Any>(private val owner: BehaviorTestKitImpl<
 
     override fun <U : Any> spawn(behavior: Behavior<U>, name: String): ActorRef<U> {
         val btk = BehaviorTestKitImpl(behavior, self.path.child(name))
-        children[name] = btk
+        childActors[name] = btk
         return btk.ref
     }
 
@@ -77,13 +82,9 @@ internal class ActorContextStub<T : Any>(private val owner: BehaviorTestKitImpl<
         return spawn(behavior, "$" + UUID.randomUUID())
     }
 
-    override fun stop(child: ActorRef<*>): Boolean {
-        if (child.path.parent != self.path) {
-            // This is not a child of this actor
-            return false
-        }
-        children -= child.path.name
-        return true
+    override fun stop(child: ActorRef<*>) {
+        require(child.path.parent == self.path) { "Only direct children of an actor may be stopped through the actor context." }
+        childActors -= child.path.name
     }
 
     override fun watch(target: ActorRef<*>) {}

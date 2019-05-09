@@ -29,6 +29,7 @@ import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.ActorSystemFactory
 import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.Terminated
+import com.atlarge.odcsim.coroutines.dsl.timeout
 import com.atlarge.odcsim.coroutines.suspending
 import com.atlarge.odcsim.empty
 import com.atlarge.odcsim.ignore
@@ -38,7 +39,6 @@ import com.atlarge.odcsim.same
 import com.atlarge.odcsim.setup
 import com.atlarge.odcsim.stopped
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -230,9 +230,8 @@ abstract class ActorSystemContract {
         fun `should allow stopping of child actors`() {
             val system = factory(setup<Unit> { ctx ->
                 val ref = ctx.spawn(receiveMessage<Unit> { throw UnsupportedOperationException() }, "child")
-                assertTrue(ctx.stop(ref))
+                ctx.stop(ref)
                 assertEquals("child", ref.path.name)
-
                 ignore()
             }, name = "test")
 
@@ -248,7 +247,7 @@ abstract class ActorSystemContract {
             val system = factory(setup<Unit> { ctx1 ->
                 val child1 = ctx1.spawn(ignore<Unit>(), "child-1")
                 ctx1.spawn(setup<Unit> { ctx2 ->
-                    assertFalse(ctx2.stop(child1))
+                    ctx2.stop(child1)
                     ignore()
                 }, "child-2")
 
@@ -259,14 +258,14 @@ abstract class ActorSystemContract {
         }
 
         /**
-         * Test whether terminating an already terminated child fails.
+         * Test whether stopping a child is idempotent.
          */
         @Test
-        fun `should not be able to stop an already terminated child`() {
+        fun `should be able to stop a child twice`() {
             val system = factory(setup<Unit> { ctx ->
                 val child = ctx.spawn(ignore<Unit>(), "child")
                 ctx.stop(child)
-                assertFalse(ctx.stop(child))
+                ctx.stop(child)
                 ignore()
             }, name = "test")
             system.run()
@@ -289,7 +288,7 @@ abstract class ActorSystemContract {
                 }, "child")
 
                 receiveMessage { msg ->
-                    assertTrue(ctx.stop(child))
+                    ctx.stop(child)
                     ctx.send(msg, Unit) // This actor should be stopped now and not receive the message anymore
                     stopped()
                 }
@@ -375,7 +374,7 @@ abstract class ActorSystemContract {
             var received = false
             val system = factory(setup<Nothing> { ctx ->
                 val child = ctx.spawn(suspending<Nothing> {
-                    it.timeout(50.0)
+                    timeout(50.0)
                     stopped()
                 }, "child")
                 ctx.watch(child)
