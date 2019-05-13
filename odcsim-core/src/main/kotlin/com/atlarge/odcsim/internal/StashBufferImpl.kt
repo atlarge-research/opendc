@@ -71,5 +71,4 @@ internal class StashBufferImpl<T : Any>(private val capacity: Int) : StashBuffer
 
         return interpreter.behavior
     }
-
 }

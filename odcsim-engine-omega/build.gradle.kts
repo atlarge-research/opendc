@@ -40,6 +40,7 @@ dependencies {
     api(project(":odcsim-core"))
 
     implementation(kotlin("stdlib"))
+    implementation("org.jetbrains:annotations:17.0.0")
 
     testCompile(project(":odcsim-engine-tests"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
