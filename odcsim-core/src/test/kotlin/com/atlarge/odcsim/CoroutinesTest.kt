@@ -32,19 +32,32 @@ import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * Test suite for [SuspendingBehavior] using Kotlin Coroutines.
  */
 @DisplayName("Coroutines")
 internal class CoroutinesTest {
-    private val ctx = mock<ActorContext<Nothing>>()
 
     @Test
     fun `should immediately return new behavior`() {
+        val ctx = mock<ActorContext<Nothing>>()
         val behavior = suspending<Nothing> { empty() }
         val interpreter = BehaviorInterpreter(behavior)
         interpreter.start(ctx)
         assertTrue(interpreter.behavior as Behavior<*> is EmptyBehavior)
+    }
+
+    @Test
+    fun `should be able to invoke regular suspend methods`() {
+        val ctx = mock<ActorContext<Unit>>()
+        val behavior = suspending<Unit> {
+            suspendCoroutine<Unit> { cont -> }
+            stopped()
+        }
+        val interpreter = BehaviorInterpreter(behavior)
+        interpreter.start(ctx)
+        interpreter.interpretMessage(ctx, Unit)
     }
 }

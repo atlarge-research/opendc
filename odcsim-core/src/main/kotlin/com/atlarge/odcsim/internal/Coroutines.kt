@@ -35,6 +35,7 @@ import com.atlarge.odcsim.Signal
 import com.atlarge.odcsim.coroutines.SuspendingActorContext
 import com.atlarge.odcsim.coroutines.SuspendingBehavior
 import com.atlarge.odcsim.coroutines.suspendWithBehavior
+import com.atlarge.odcsim.empty
 import com.atlarge.odcsim.receiveMessage
 import com.atlarge.odcsim.receiveSignal
 import org.slf4j.Logger
@@ -151,7 +152,8 @@ internal class SuspendingBehaviorImpl<T : Any>(
      */
     internal fun start(): Behavior<T> {
         val behavior = interpreter.behavior as SuspendingBehavior<T>
-        val block: suspend () -> Behavior<T> = { behavior(this) }
+        val block = suspend { behavior(this) }
+        interpreter.become(actorContext, empty())
         block.startCoroutine(SuspendingBehaviorImplContinuation())
         return next
     }
