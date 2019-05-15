@@ -165,3 +165,11 @@ interface ActorContext<T : Any> {
      */
     fun isSync(target: ActorRef<*>): Boolean
 }
+
+/**
+ * Unsafe helper method for widening the type accepted by this [ActorContext].
+ */
+fun <U : Any, T : U> ActorContext<T>.unsafeCast(): ActorContext<U> {
+    @Suppress("UNCHECKED_CAST")
+    return this as ActorContext<U>
+}

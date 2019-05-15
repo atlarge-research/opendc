@@ -44,7 +44,7 @@ interface ActorRef<in T : Any> : Comparable<ActorRef<*>>, Serializable {
 /**
  * Unsafe helper method for widening the type accepted by this [ActorRef].
  */
-fun <U : Any, T : U> ActorRef<T>.unsafeUpcast(): ActorRef<U> {
+fun <U : Any, T : U> ActorRef<T>.unsafeCast(): ActorRef<U> {
     @Suppress("UNCHECKED_CAST")
     return this as ActorRef<U>
 }

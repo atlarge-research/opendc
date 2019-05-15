@@ -53,7 +53,7 @@ internal class CoroutinesTest {
     fun `should be able to invoke regular suspend methods`() {
         val ctx = mock<ActorContext<Unit>>()
         val behavior = suspending<Unit> {
-            suspendCoroutine<Unit> { cont -> }
+            suspendCoroutine<Unit> {}
             stopped()
         }
         val interpreter = BehaviorInterpreter(behavior)
