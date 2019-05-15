@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+package com.atlarge.opendc.model
+
+import com.atlarge.odcsim.Behavior
+
+/**
+ * A broker acting on the various cloud platforms on behalf of the user.
+ */
+interface Broker {
+    /**
+     * Build the runtime behavior of the [Broker].
+     *
+     * @param platforms A list of available cloud platforms.
+     * @return The runtime behavior of the broker.
+     */
+    operator fun invoke(platforms: List<PlatformRef>): Behavior<*>
+}

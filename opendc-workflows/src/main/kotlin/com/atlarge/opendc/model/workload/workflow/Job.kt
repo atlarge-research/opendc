@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+package com.atlarge.opendc.model.workload.workflow
+
+import com.atlarge.opendc.model.User
+import com.atlarge.opendc.model.workload.Workload
+import java.util.UUID
+
+/**
+ * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.
+ *
+ * @property uid A unique identified of this workflow.
+ * @property name The name of this workflow.
+ * @property owner The owner of the workflow.
+ * @property tasks The tasks that are part of this workflow.
+ */
+data class Job(
+    override val uid: UUID,
+    override val name: String,
+    override val owner: User,
+    val tasks: Set<Task>
+) : Workload {
+    override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
+
+    override fun hashCode(): Int = uid.hashCode()
+}

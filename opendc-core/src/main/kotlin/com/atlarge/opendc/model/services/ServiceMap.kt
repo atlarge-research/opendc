@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+package com.atlarge.opendc.model.services
+
+import com.atlarge.odcsim.ActorRef
+
+/**
+ * A map containing services.
+ */
+interface ServiceMap {
+    /**
+     * Determine if this map contains the service with the specified [Service].
+     *
+     * @param key The key of the service to check for.
+     * @return `true` if the service is in the map, `false` otherwise.
+     */
+    operator fun contains(key: Service<*>): Boolean
+
+    /**
+     * Obtain the service with the specified [Service].
+     *
+     * @param key The key of the service to obtain.
+     * @return The references to the service.
+     * @throws IllegalArgumentException if the key does not exists in the map.
+     */
+    operator fun <T : Any> get(key: Service<T>): ActorRef<T>
+}

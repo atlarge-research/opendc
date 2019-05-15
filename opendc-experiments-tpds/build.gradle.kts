@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+/* Build configuration */
+apply(from = "../gradle/kotlin.gradle")
+plugins {
+    `java-library`
+    application
+}
+
+/* Project configuration */
+repositories {
+    jcenter()
+}
+
+application {
+    mainClassName = "com.atlarge.opendc.experiments.tpds.TestExperiment"
+}
+
+dependencies {
+    api(project(":opendc-core"))
+    implementation(project(":opendc-format-gwf"))
+    implementation(project(":opendc-format-sc18"))
+    implementation(project(":opendc-workflows"))
+    implementation(kotlin("stdlib"))
+
+    runtimeOnly(project(":odcsim-engine-omega"))
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.11.2")
+}

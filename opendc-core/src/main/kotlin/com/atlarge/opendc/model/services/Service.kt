@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+package com.atlarge.opendc.model.services
+
+import com.atlarge.opendc.model.Identity
+import java.util.UUID
+
+/**
+ * An interface for identifying service implementations of the same type (providing the same service).
+ *
+ * @param T The shape of the messages the service responds to.
+ */
+interface Service<T : Any> : Identity
+
+/**
+ * Helper class for constructing a [Service].
+ *
+ * @property uid The unique identifier of the service.
+ * @property name The name of the service.
+ */
+abstract class AbstractService<T : Any>(override val uid: UUID, override val name: String) : Service<T> {
+    override fun equals(other: Any?): Boolean = other is Service<*> && uid == other.uid
+    override fun hashCode(): Int = uid.hashCode()
+    override fun toString(): String = "Service[uid=$uid,name=$name]"
+}

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+package com.atlarge.opendc.model.services.workflows.stages.job
+
+import com.atlarge.opendc.model.services.workflows.StageWorkflowSchedulerLogic
+
+/**
+ * A policy interface for admitting [StageWorkflowSchedulerLogic.JobView]s to a scheduling cycle.
+ */
+interface JobAdmissionPolicy {
+    /**
+     * A method that is invoked at the start of each scheduling cycle.
+     *
+     * @param scheduler The scheduler that started the cycle.
+     */
+    fun startCycle(scheduler: StageWorkflowSchedulerLogic) {}
+
+    /**
+     * Determine whether the specified [StageWorkflowSchedulerLogic.JobView] should be admitted to the scheduling cycle.
+     *
+     * @param scheduler The scheduler that should admit or reject the job.
+     * @param job The workflow that has been submitted.
+     * @return `true` if the workflow may be admitted to the scheduling cycle, `false` otherwise.
+     */
+    fun shouldAdmit(scheduler: StageWorkflowSchedulerLogic, job: StageWorkflowSchedulerLogic.JobView): Boolean
+}

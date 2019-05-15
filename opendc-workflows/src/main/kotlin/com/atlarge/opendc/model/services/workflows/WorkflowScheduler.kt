@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+package com.atlarge.opendc.model.services.workflows
+
+import com.atlarge.odcsim.ActorContext
+import com.atlarge.odcsim.TimerScheduler
+import com.atlarge.opendc.model.services.provisioning.ProvisioningResponse
+
+/**
+ * A factory interface for constructing a [WorkflowSchedulerLogic].
+ */
+interface WorkflowScheduler {
+    /**
+     * Construct a [WorkflowSchedulerLogic] in the given [ActorContext].
+     *
+     * @param ctx The context in which the scheduler runs.
+     * @param timers The timer scheduler to use.
+     * @param lease The resource lease to use.
+     */
+    operator fun invoke(
+        ctx: ActorContext<WorkflowMessage>,
+        timers: TimerScheduler<WorkflowMessage>,
+        lease: ProvisioningResponse.Lease
+    ): WorkflowSchedulerLogic
+}

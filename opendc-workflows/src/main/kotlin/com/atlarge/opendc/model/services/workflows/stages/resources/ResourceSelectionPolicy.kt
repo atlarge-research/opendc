@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+package com.atlarge.opendc.model.services.workflows.stages.resources
+
+import com.atlarge.opendc.model.services.resources.HostView
+import com.atlarge.opendc.model.services.workflows.StageWorkflowSchedulerLogic
+
+/**
+ * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
+ * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
+ */
+interface ResourceSelectionPolicy {
+    /**
+     * Select a machine on which the task should be scheduled.
+     *
+     * @param scheduler The scheduler to select the machine.
+     * @param machines The list of machines in the system.
+     * @param task The task that is to be scheduled.
+     * @return The selected machine or `null` if no machine could be found.
+     */
+    fun select(
+        scheduler: StageWorkflowSchedulerLogic,
+        machines: List<HostView>,
+        task: StageWorkflowSchedulerLogic.TaskView
+    ): HostView?
+}

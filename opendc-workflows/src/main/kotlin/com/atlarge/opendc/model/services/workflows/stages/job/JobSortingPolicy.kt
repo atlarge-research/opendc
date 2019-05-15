@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+package com.atlarge.opendc.model.services.workflows.stages.job
+
+import com.atlarge.opendc.model.services.workflows.StageWorkflowSchedulerLogic
+
+/**
+ * A policy interface for ordering admitted workflows in the scheduling queue.
+ */
+interface JobSortingPolicy {
+    /**
+     * Sort the given collection of jobs on a given criterion.
+     *
+     * @param scheduler The scheduler that started the cycle.
+     * @param jobs The collection of tasks that should be sorted.
+     * @return The sorted list of jobs.
+     */
+    operator fun invoke(
+        scheduler: StageWorkflowSchedulerLogic,
+        jobs: Collection<StageWorkflowSchedulerLogic.JobView>
+    ): List<StageWorkflowSchedulerLogic.JobView>
+}
