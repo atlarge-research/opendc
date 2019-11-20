@@ -21,9 +21,8 @@ The documentation is located in the [docs/](docs/) directory and is divided as f
 * [Main Concepts](docs/concepts.md)
 * [Building a Model](docs/build.md)
 * [Running a Model](docs/run.md)
-* [Pre-built Models](docs/models.md)
 * [API Reference](https://atlarge-research.github.io/opendc-simulator)
-* [Contributing Guide](CONTRIBUTING.md)
+* [Contributing Guide](../CONTRIBUTING.md)
 
 ## Getting Started
 
@@ -35,13 +34,19 @@ The package `odcsim-core` is required to construct a simulation model.
 A `odcsim-engine-*` package is needed for running the simulation
 model.
 
-**Gradle**
+#### Gradle 
+Groovy
 ```groovy
-compile 'com.atlarge.odcsim:odcsim-core:2.0.0'
-compile 'com.atlarge.odcsim:odcsim-engine-omega:2.0.0'
+implementation 'com.atlarge.odcsim:odcsim-core:2.0.0'
+runtime 'com.atlarge.odcsim:odcsim-engine-omega:2.0.0'
+```
+Kotlin
+```groovy
+implementation("com.atlarge.odcsim:odcsim-core:2.0.0")
+runtime("com.atlarge.odcsim:odcsim-engine-omega:2.0.0")
 ```
 
-**Maven**
+#### Maven
 ```xml
 <dependency>
    <groupId>com.atlarge.odcsim</groupId>

@@ -29,10 +29,6 @@ plugins {
 allprojects {
     group = "com.atlarge.opendc"
     version = "2.0.0"
-
-    extra["junitJupiterVersion"] = "5.4.2"
-    extra["junitPlatformVersion"] = "1.4.2"
-    extra["githubUrl"] = "https://github.com/atlarge-research/${rootProject.name}"
 }
 
 tasks.wrapper {

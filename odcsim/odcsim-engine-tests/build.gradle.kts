@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+description = "Conformance suite for implementors of the odcsim API"
+
 /* Build configuration */
 plugins {
     `kotlin-library-convention`

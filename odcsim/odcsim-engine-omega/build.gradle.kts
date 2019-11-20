@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+description = "Single-threaded reference implementation for the odcsim API"
+
 /* Build configuration */
 plugins {
     `kotlin-library-convention`

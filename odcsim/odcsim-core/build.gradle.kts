@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+description = "Framework for discrete event simulation in Kotlin"
+
 /* Build configuration */
 plugins {
     `kotlin-library-convention`
