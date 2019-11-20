@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,24 @@
  */
 
 plugins {
-    `dokka-convention`
+    `kotlin-dsl`
 }
 
-allprojects {
-    group = "com.atlarge.opendc"
-    version = "2.0.0"
-
-    extra["junitJupiterVersion"] = "5.4.2"
-    extra["junitPlatformVersion"] = "1.4.2"
-    extra["githubUrl"] = "https://github.com/atlarge-research/${rootProject.name}"
+kotlinDslPluginOptions {
+    experimentalWarning.set(false)
 }
 
-tasks.wrapper {
-    gradleVersion = "6.0"
+
+/* Project configuration */
+repositories {
+    jcenter()
+    maven {
+        url = uri("https://plugins.gradle.org/m2/")
+    }
+}
+
+dependencies {
+    implementation(kotlin("gradle-plugin", "1.3.60"))
+    implementation("org.jlleitschuh.gradle:ktlint-gradle:9.1.1")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,29 @@
  * SOFTWARE.
  */
 
+
 plugins {
-    `dokka-convention`
+    jacoco
 }
 
-allprojects {
-    group = "com.atlarge.opendc"
-    version = "2.0.0"
-
-    extra["junitJupiterVersion"] = "5.4.2"
-    extra["junitPlatformVersion"] = "1.4.2"
-    extra["githubUrl"] = "https://github.com/atlarge-research/${rootProject.name}"
+repositories {
+    mavenLocal()
+    mavenCentral()
 }
 
-tasks.wrapper {
-    gradleVersion = "6.0"
+task<JacocoReport>("jacocoTestReport") {
+    group = "Coverage reports"
+    description = "Generates an aggregate report from all subprojects"
+
+    val jacocoReportTasks = subprojects.map { it.tasks.withType<JacocoReport>() }
+    dependsOn(jacocoReportTasks)
+    executionData(jacocoReportTasks)
+
+    subprojects.forEach { testedProject ->
+        val sourceSets = testedProject.convention.findPlugin(JavaPluginConvention::class)?.sourceSets ?: return@forEach
+
+        this@task.additionalSourceDirs.from(sourceSets["main"].allSource.srcDirs)
+        this@task.sourceDirectories.from(sourceSets["main"].allSource.srcDirs)
+        this@task.classDirectories.from(sourceSets["main"].output)
+    }
 }

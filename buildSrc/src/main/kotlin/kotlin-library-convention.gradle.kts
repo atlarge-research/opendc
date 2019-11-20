@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,36 @@
  * SOFTWARE.
  */
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-    `dokka-convention`
+    `java-library`
+    kotlin("jvm")
+    id("org.jlleitschuh.gradle.ktlint")
+    jacoco
 }
 
-allprojects {
-    group = "com.atlarge.opendc"
-    version = "2.0.0"
-
-    extra["junitJupiterVersion"] = "5.4.2"
-    extra["junitPlatformVersion"] = "1.4.2"
-    extra["githubUrl"] = "https://github.com/atlarge-research/${rootProject.name}"
+/* Project configuration */
+repositories {
+    jcenter()
 }
 
-tasks.wrapper {
-    gradleVersion = "6.0"
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.test {
+    useJUnitPlatform()
+    reports.html.isEnabled = true
+}
+
+
+tasks.jacocoTestReport {
+    reports {
+        html.isEnabled = true
+    }
 }

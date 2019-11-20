@@ -22,19 +22,17 @@
  * SOFTWARE.
  */
 
+/* Build configuration */
 plugins {
-    `dokka-convention`
+    `kotlin-library-convention`
 }
 
-allprojects {
-    group = "com.atlarge.opendc"
-    version = "2.0.0"
+dependencies {
+    implementation(kotlin("stdlib"))
+    api("org.slf4j:slf4j-api:${Library.SLF4J}")
 
-    extra["junitJupiterVersion"] = "5.4.2"
-    extra["junitPlatformVersion"] = "1.4.2"
-    extra["githubUrl"] = "https://github.com/atlarge-research/${rootProject.name}"
-}
-
-tasks.wrapper {
-    gradleVersion = "6.0"
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
+    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0")
 }

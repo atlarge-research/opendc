@@ -23,13 +23,6 @@
  */
 rootProject.name = "opendc-simulator"
 
-include(":odcsim-core")
-include(":odcsim-engine-tests")
-include(":odcsim-engine-omega")
-include(":odcsim-testkit")
-include(":opendc-core")
-include(":opendc-experiments-tpds")
-include(":opendc-format")
-include(":opendc-format-gwf")
-include(":opendc-format-sc18")
-include(":opendc-workflows")
+include(":odcsim:odcsim-core")
+include(":odcsim:odcsim-engine-tests")
+include(":odcsim:odcsim-engine-omega")
