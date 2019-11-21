@@ -7,12 +7,12 @@
 </h1>
 
 ## Introduction
-**odcsim** is a framework for discrete event simulation in Kotlin and Java, used
+**odcsim** is a framework for discrete event simulation in Kotlin, used
 by the [OpenDC](https://opendc.org) project.
 Simulations are defined in terms of a hierarchical grouping of actors
 and the interactions between these actors
 ([Actor model](https://en.wikipedia.org/wiki/Actor_model)), using
-an API very similar to [Akka Typed](https://doc.akka.io/docs/akka/current/typed/index.html).
+an API similar to [Akka](https://doc.akka.io/docs/akka/current/index.html).
 
 ## Documentation
 Check out the [Getting Started](#getting-started) section for a quick
@@ -37,12 +37,12 @@ model.
 #### Gradle 
 Groovy
 ```groovy
-implementation 'com.atlarge.odcsim:odcsim-core:2.0.0'
+implementation 'com.atlarge.odcsim:odcsim-api:2.0.0'
 runtime 'com.atlarge.odcsim:odcsim-engine-omega:2.0.0'
 ```
 Kotlin
 ```groovy
-implementation("com.atlarge.odcsim:odcsim-core:2.0.0")
+implementation("com.atlarge.odcsim:odcsim-api:2.0.0")
 runtime("com.atlarge.odcsim:odcsim-engine-omega:2.0.0")
 ```
 
@@ -50,7 +50,7 @@ runtime("com.atlarge.odcsim:odcsim-engine-omega:2.0.0")
 ```xml
 <dependency>
    <groupId>com.atlarge.odcsim</groupId>
-   <artifactId>odcsim-core</artifactId>
+   <artifactId>odcsim-api</artifactId>
    <version>2.0.0</version>
 </dependency>
 
@@ -59,47 +59,5 @@ runtime("com.atlarge.odcsim:odcsim-engine-omega:2.0.0")
    <artifactId>odcsim-engine-omega</artifactId>
    <version>2.0.0</version>
 </dependency>  
-```
-
-### Construction of Simulation Model
-Let's construct a simple simulation model of a single car actor.
-The car will alternately drive and park for a while. When it starts
-driving (or parking), it will print the current simulation time.
-
-
-```kotlin
-import com.atlarge.odcsim.Behavior
-import com.atlarge.odcsim.coroutines.suspending
-import com.atlarge.odcsim.coroutines.dsl.timeout
-
-fun car(): Behavior<Nothing> = 
-    suspending { ctx ->
-        while (true) {
-            println("Start parking at ${ctx.time}")
-            val parkingDuration = 5.0
-            timeout(parkingDuration)
-             
-            println("Start driving at ${ctx.time}")
-            val tripDuration = 2.0
-            timeout(tripDuration)
-        }
-        
-        stopped()
-    }
-```
-
-### Running Simulation
-Running the constructed simulation model requires an implementation
-of the `ActorSystem` interface provided by one of the `odcsim-engine-*`
-packages. The [ServiceLoader](https://docs.oracle.com/javase/9/docs/api/java/util/ServiceLoader.html)
-class found in the JDK can be used to locate the `ActorSystem` implementation on the classpath.
-```kotlin
-import com.atlarge.odcsim.ActorSystemFactory
-import java.util.ServiceLoader
-
-val factory = ServiceLoader.load(ActorSystemFactory::class.java).first()
-val system = factory(car(), name = "car")
-system.run(until = 10.0)
-system.terminate()
 ```
 
