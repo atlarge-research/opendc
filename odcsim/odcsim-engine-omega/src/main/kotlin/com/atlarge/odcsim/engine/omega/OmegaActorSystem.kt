@@ -39,13 +39,13 @@ import com.atlarge.odcsim.Terminated
 import com.atlarge.odcsim.empty
 import com.atlarge.odcsim.internal.BehaviorInterpreter
 import com.atlarge.odcsim.internal.logging.LoggerImpl
-import org.jetbrains.annotations.Async
-import org.slf4j.Logger
 import java.util.Collections
 import java.util.PriorityQueue
 import java.util.UUID
 import java.util.WeakHashMap
 import kotlin.math.max
+import org.jetbrains.annotations.Async
+import org.slf4j.Logger
 
 /**
  * The reference implementation of the [ActorSystem] instance for the OpenDC simulation core.

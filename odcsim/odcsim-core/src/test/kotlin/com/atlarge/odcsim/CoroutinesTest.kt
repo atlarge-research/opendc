@@ -29,10 +29,10 @@ import com.atlarge.odcsim.coroutines.suspending
 import com.atlarge.odcsim.internal.BehaviorInterpreter
 import com.atlarge.odcsim.internal.EmptyBehavior
 import com.nhaarman.mockitokotlin2.mock
+import kotlin.coroutines.suspendCoroutine
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Test suite for [SuspendingBehavior] using Kotlin Coroutines.

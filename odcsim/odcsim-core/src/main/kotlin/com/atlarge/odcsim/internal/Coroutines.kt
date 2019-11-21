@@ -38,11 +38,11 @@ import com.atlarge.odcsim.coroutines.suspendWithBehavior
 import com.atlarge.odcsim.empty
 import com.atlarge.odcsim.receiveMessage
 import com.atlarge.odcsim.receiveSignal
-import org.slf4j.Logger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
+import org.slf4j.Logger
 
 /**
  * This interface exposes internal functionality provided by [SuspendingBehaviorImpl] on [SuspendingActorContext] to
