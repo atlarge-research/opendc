@@ -40,7 +40,7 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("gradle-plugin", "1.3.60"))
+    implementation(kotlin("gradle-plugin", "1.3.61"))
     implementation("org.jlleitschuh.gradle:ktlint-gradle:9.1.1")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
 }

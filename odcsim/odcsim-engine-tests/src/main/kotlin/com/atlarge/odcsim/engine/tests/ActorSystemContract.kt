@@ -24,7 +24,6 @@
 
 package com.atlarge.odcsim.engine.tests
 
-import com.atlarge.odcsim.ActorPath
 import com.atlarge.odcsim.ActorRef
 import com.atlarge.odcsim.ActorSystemFactory
 import com.atlarge.odcsim.Behavior
@@ -63,17 +62,6 @@ abstract class ActorSystemContract {
         val system = factory(empty<Unit>(), name)
 
         assertEquals(name, system.name)
-        system.terminate()
-    }
-
-    /**
-     * Test whether the created [ActorSystem]  has a path.
-     */
-    @Test
-    fun `should have a path`() {
-        val system = factory(empty<Unit>(), "test")
-
-        assertTrue(system.path is ActorPath.Root)
         system.terminate()
     }
 
