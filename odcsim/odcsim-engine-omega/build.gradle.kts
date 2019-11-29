@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":odcsim:odcsim-core"))
+    api(project(":odcsim:odcsim-api"))
 
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains:annotations:17.0.0")

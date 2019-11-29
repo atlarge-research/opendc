@@ -23,6 +23,6 @@
  */
 rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-core")
+include(":odcsim:odcsim-api")
 include(":odcsim:odcsim-engine-tests")
 include(":odcsim:odcsim-engine-omega")
