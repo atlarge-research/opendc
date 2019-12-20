@@ -1,1 +1,4 @@
-# Building a Simulation Model
+# Building Your Own Model
+
+---
+[< Previous](run.md)

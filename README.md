@@ -24,6 +24,17 @@ This repository hosts the source code and development of the simulation componen
 - **[opendc](/opendc)**  
   A collection of models for simulating clouds, datacenters and their components using the **odcsim** framework.
 
+## Documentation
+Check out the [Getting Started](#getting-started) section for a quick
+overview.
+The documentation is located in the [docs/](docs/) directory and is divided as follows:
+1. [Toolchain Setup](docs/setup.md)
+2. [Architecture Overview](docs/architecture.md)
+3. [Pre-built Models](docs/models.md)
+4. [Running a Model](docs/run.md)
+5. [Building Your Own Model](docs/build.md)
+6. [API Reference](https://atlarge-research.github.io/opendc-simulator) **(TODO maybe remove this until we have created this - see #36)**
+
 ## Contributing
 ### Contributing Guide
 Read our [contributing guide](CONTRIBUTING.md) to learn about our
