@@ -24,6 +24,8 @@
 
 package com.atlarge.odcsim
 
+import kotlinx.coroutines.selects.SelectClause1
+
 /**
  * A communication endpoint of a specific logical process through which messages pass.
  *
@@ -48,6 +50,11 @@ public interface ReceivePort<out T : Any> : Port {
      * Receive a message send to this port or suspend the caller while no messages have been received at this port yet.
      */
     public suspend fun receive(): T
+
+    /**
+     * Clause for select expression for receiving a message from the channel.
+     */
+    val onReceive: SelectClause1<T>
 }
 
 /**
