@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
+package com.atlarge.odcsim.engine.omega
+
+import com.atlarge.odcsim.SimulationEngine
+import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.odcsim.Behavior
+import java.util.ServiceLoader
+
+/**
+ * An [SimulationEngineProvider] for the Omega engine, used by the [ServiceLoader] API to create
+ * [OmegaSimulationEngine] instances.
+ */
+class OmegaSimulationEngineProvider : SimulationEngineProvider {
+    override operator fun invoke(root: Behavior, name: String): SimulationEngine =
+        OmegaSimulationEngine(root, name)
+}
