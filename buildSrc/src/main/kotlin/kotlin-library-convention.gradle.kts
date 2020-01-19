@@ -55,3 +55,7 @@ tasks.jacocoTestReport {
         html.isEnabled = true
     }
 }
+
+dependencies {
+    implementation(kotlin("stdlib"))
+}

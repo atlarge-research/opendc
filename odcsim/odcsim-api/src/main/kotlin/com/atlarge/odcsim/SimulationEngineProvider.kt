@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,15 @@
 
 package com.atlarge.odcsim
 
-import java.io.Serializable
-
 /**
- * A timestamped wrapper for messages that will be delivered to an actor.
+ * A factory for [SimulationEngine] instances that allows users to dynamically load engine implementations.
  */
-interface Envelope<T : Any> : Comparable<Envelope<*>>, Serializable {
+public interface SimulationEngineProvider {
     /**
-     * The time at which this message should be delivered.
+     * Create an [SimulationEngine] with the given root [Behavior] and the given name.
+     *
+     * @param root The behavior of the root process.
+     * @param name The name of the engine instance.
      */
-    val time: Instant
-
-    /**
-     * The message contained in this envelope, of type [T]
-     */
-    val message: T
-
-    /**
-     * Extract the delivery time from the envelope.
-     */
-    operator fun component1(): Instant = time
-
-    /**
-     * Extract the message from this envelope.
-     */
-    operator fun component2(): T = message
-
-    /**
-     * Compare this envelope to the [other] envelope, ordered increasingly in time.
-     */
-    override fun compareTo(other: Envelope<*>): Int = time.compareTo(other.time)
+    public operator fun invoke(root: Behavior, name: String): SimulationEngine
 }

@@ -31,10 +31,9 @@ plugins {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    api("org.slf4j:slf4j-api:${Library.SLF4J}")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Library.KOTLINX_COROUTINES}")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
     testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
-    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0")
 }

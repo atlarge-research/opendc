@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,24 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim.coroutines.dsl
+package com.atlarge.odcsim
 
-import com.atlarge.odcsim.Duration
-import com.atlarge.odcsim.coroutines.suspendWithBehavior
-import com.atlarge.odcsim.withTimeout
-import kotlin.coroutines.resume
+import java.io.Serializable
 
 /**
- * Block execution for the specified duration.
- *
- * @param after The duration after which execution should continue.
+ * A reference to a logical process in simulation.
  */
-suspend fun timeout(after: Duration) = suspendWithBehavior<Any, Unit> { cont, next ->
-    withTimeout(after) {
-        cont.resume(Unit)
-        next()
-    }
+public interface ProcessRef : Comparable<ProcessRef>, Serializable {
+    /**
+     * The name of the process.
+     */
+    public val name: String
+
+    /**
+     * Compare [other] process ref with this process reference for order.
+     *
+     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater
+     * than the specified path.
+     */
+    override fun compareTo(other: ProcessRef): Int = name.compareTo(other.name)
 }

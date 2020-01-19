@@ -41,4 +41,9 @@ object Library {
      * Logging facade.
      */
     val SLF4J = "1.7.29"
+
+    /**
+     * Kotlin coroutines support
+     */
+    val KOTLINX_COROUTINES = "1.3.3"
 }

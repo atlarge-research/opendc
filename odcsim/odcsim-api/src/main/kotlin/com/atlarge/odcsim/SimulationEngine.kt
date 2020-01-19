@@ -24,27 +24,25 @@
 
 package com.atlarge.odcsim
 
-import java.io.Serializable
-
 /**
- * A reference to an entity in simulation that accepts messages of type [T].
+ * An engine for managing logical processes represented as [Behavior] during simulation.
+ *
+ * An implementation of this interface should be provided by an engine. See for example *odcsim-engine-omega*,
+ * which is the reference implementation of the *odcsim* API.
  */
-interface ActorRef<in T : Any> : Comparable<ActorRef<*>>, Serializable {
+public interface SimulationEngine {
     /**
-     * The path for this actor (from this actor up to the root actor).
+     * The name of this engine instance, used to distinguish between multiple engines running within the same JVM.
      */
-    val path: ActorPath
+    public val name: String
 
     /**
-     * Compare this reference to another actor reference.
+     * Run the simulation.
      */
-    override fun compareTo(other: ActorRef<*>): Int = path.compareTo(other.path)
-}
+    public suspend fun run()
 
-/**
- * Unsafe helper method for widening the type accepted by this [ActorRef].
- */
-fun <U : Any, T : U> ActorRef<T>.unsafeCast(): ActorRef<U> {
-    @Suppress("UNCHECKED_CAST")
-    return this as ActorRef<U>
+    /**
+     * Terminates this engine in an asynchronous fashion.
+     */
+    public suspend fun terminate()
 }
