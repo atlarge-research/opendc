@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+description = "Experiments for the TPDS paper"
+
+/* Build configuration */
+plugins {
+    `kotlin-library-convention`
+    application
+}
+
+application {
+    mainClassName = "com.atlarge.opendc.experiments.tpds.TestExperiment"
+}
+
+dependencies {
+    api(project(":opendc:opendc-core"))
+    implementation(project(":opendc:opendc-format"))
+    implementation(project(":opendc:opendc-workflows"))
+    implementation(kotlin("stdlib"))
+
+    runtimeOnly(project(":odcsim:odcsim-engine-omega"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
+    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+}

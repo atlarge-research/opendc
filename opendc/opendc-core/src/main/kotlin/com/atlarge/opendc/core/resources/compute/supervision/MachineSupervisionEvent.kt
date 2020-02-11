@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.core.resources.compute.supervision
+
+import com.atlarge.opendc.core.resources.compute.Machine
+import com.atlarge.opendc.core.resources.compute.MachineRef
+
+/**
+ * A supervision protocol for [Machine] instances.
+ */
+sealed class MachineSupervisionEvent {
+    /**
+     * Initialization message to introduce to the supervisor a new machine by specifying its static information and
+     * address.
+     *
+     * @property machine The machine that is being announced.
+     * @property ref The address to talk to the host.
+     */
+    data class Announce(val machine: Machine, val ref: MachineRef) : MachineSupervisionEvent()
+
+    /**
+     * Indicate that the specified machine has booted up.
+     *
+     * @property ref The address to talk to the machine.
+     */
+    data class Up(val ref: MachineRef) : MachineSupervisionEvent()
+}

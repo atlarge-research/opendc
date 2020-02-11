@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.format.trace
+
+import com.atlarge.opendc.core.workload.Workload
+
+/**
+ * An entry in a workload trace.
+ *
+ * @param T The shape of the workload in this entry.
+ */
+interface TraceEntry<T : Workload> {
+    /**
+     * The time of submission of the workload.
+     */
+    val submissionTime: Long
+
+    /**
+     * The workload in this trace entry.
+     */
+    val workload: T
+
+    /**
+     * Extract the submission time from this entry.
+     */
+    operator fun component1() = submissionTime
+
+    /**
+     * Extract the workload from this entry.
+     */
+    operator fun component2() = workload
+}

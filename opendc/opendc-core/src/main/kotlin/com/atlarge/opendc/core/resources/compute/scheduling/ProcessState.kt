@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.core.resources.compute.scheduling
+
+/**
+ * An enumeration of the distinct states of an application instance (process).
+ */
+enum class ProcessState {
+    /**
+     * Default state of a process, where the task is waiting to be assigned and installed on a machine.
+     */
+    CREATED,
+
+    /**
+     * State to indicate that the process is waiting to be ran.
+     */
+    READY,
+
+    /**
+     * State to indicate that the process is currently running.
+     */
+    RUNNING,
+
+    /**
+     * State to indicate that the process has been terminated, either successfully or due to failure.
+     */
+    TERMINATED,
+}
