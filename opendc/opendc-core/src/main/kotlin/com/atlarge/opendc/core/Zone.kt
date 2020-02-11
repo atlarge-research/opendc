@@ -44,7 +44,7 @@ import kotlinx.coroutines.isActive
  * This class models *only* the static information of a zone, with dynamic information being contained within the zone's
  * actor. During runtime, it's actor acts as a registry for all the cloud services provided by the zone.
  *
- * @property uid The unique identifier of this availability zone
+ * @property uid The unique identifier of this availability zone.
  * @property name The name of the zone within its platform.
  * @property services The initial set of services provided by the zone.
  * @property clusters The clusters of machines in this zone.
@@ -123,7 +123,7 @@ data class Zone(
 }
 
 /**
- * A message protocol for communicating with the service registry
+ * A message protocol for communicating with the service registry.
  */
 sealed class ZoneMessage {
     /**
