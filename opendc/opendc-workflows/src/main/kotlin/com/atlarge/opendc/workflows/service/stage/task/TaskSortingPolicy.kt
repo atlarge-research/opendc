@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.workflows.service.stage.task
+
+import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+
+/**
+ * This interface represents the **T2** stage of the Reference Architecture for Datacenter Schedulers and provides the
+ * scheduler with a sorted list of tasks to schedule.
+ */
+interface TaskSortingPolicy {
+    /**
+     * Sort the given list of tasks on a given criterion.
+     *
+     * @param scheduler The scheduler that is sorting the tasks.
+     * @param tasks The collection of tasks that should be sorted.
+     * @return The sorted list of tasks.
+     */
+    operator fun invoke(
+        scheduler: StageWorkflowSchedulerLogic,
+        tasks: Collection<StageWorkflowSchedulerLogic.TaskView>
+    ): List<StageWorkflowSchedulerLogic.TaskView>
+}

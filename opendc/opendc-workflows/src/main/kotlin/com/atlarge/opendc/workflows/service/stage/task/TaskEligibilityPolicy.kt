@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.workflows.service.stage.task
+
+import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+
+/**
+ * A policy interface for determining the eligibility of tasks in a scheduling cycle.
+ */
+interface TaskEligibilityPolicy {
+    /**
+     * A method that is invoked at the start of each scheduling cycle.
+     *
+     * @param scheduler The scheduler that started the cycle.
+     */
+    fun startCycle(scheduler: StageWorkflowSchedulerLogic) {}
+
+    /**
+     * Determine whether the specified [StageWorkflowSchedulerLogic.TaskView] is eligible to be scheduled.
+     *
+     * @param scheduler The scheduler that is determining whether the task is eligible.
+     * @param task The task instance to schedule.
+     * @return `true` if the task eligible to be scheduled, `false` otherwise.
+     */
+    fun isEligible(scheduler: StageWorkflowSchedulerLogic, task: StageWorkflowSchedulerLogic.TaskView): Boolean
+}

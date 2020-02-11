@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.odcsim
+
+suspend fun <T : Any, U : Any> SendRef<T>.ask(block: (SendRef<U>) -> T): U {
+    val ctx = processContext
+    val outlet = ctx.connect(this)
+    val channel = ctx.open<U>()
+    try {
+        outlet.send(block(channel.send))
+    } finally {
+        outlet.close()
+    }
+
+    val inlet = ctx.listen(channel.receive)
+    try {
+        return inlet.receive()
+    } finally {
+        inlet.close()
+    }
+}
+
+suspend fun <T : Any> SendRef<T>.sendOnce(msg: T) {
+    val outlet = processContext.connect(this)
+    try {
+        outlet.send(msg)
+    } finally {
+        outlet.close()
+    }
+}

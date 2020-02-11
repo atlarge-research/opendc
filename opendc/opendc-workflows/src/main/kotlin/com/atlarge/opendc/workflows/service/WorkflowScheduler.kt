@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.workflows.service
+
+import com.atlarge.odcsim.ProcessContext
+import com.atlarge.opendc.core.services.provisioning.ProvisioningResponse
+import kotlinx.coroutines.CoroutineScope
+
+/**
+ * A factory interface for constructing a [WorkflowSchedulerLogic].
+ */
+interface WorkflowScheduler {
+    /**
+     * Construct a [WorkflowSchedulerLogic] in the given [ActorContext].
+     *
+     * @param ctx The context in which the scheduler runs.
+     * @param timers The timer scheduler to use.
+     * @param lease The resource lease to use.
+     */
+    operator fun invoke(
+        ctx: ProcessContext,
+        self: WorkflowServiceRef,
+        coroutineScope: CoroutineScope,
+        lease: ProvisioningResponse.Lease
+    ): WorkflowSchedulerLogic
+}

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.format.trace
+
+import com.atlarge.opendc.core.workload.Workload
+import java.io.Closeable
+
+/**
+ * An interface for persisting workload traces (e.g. to disk).
+ *
+ * @param T The type of [Workload] supported by this writer.
+ */
+interface TraceWriter<T : Workload> : Closeable {
+    /**
+     * Write an entry to the trace.
+     *
+     * Entries must be written in order of submission time. Failing to do so results in a [IllegalArgumentException].
+     *
+     * @param submissionTime The time of submission of the workload.
+     * @param workload The workload to write to the trace.
+     */
+    fun write(submissionTime: Long, workload: T)
+}
