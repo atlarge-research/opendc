@@ -33,6 +33,7 @@ import com.atlarge.odcsim.ReceiveRef
 import com.atlarge.odcsim.SendPort
 import com.atlarge.odcsim.SendRef
 import com.atlarge.odcsim.SimulationEngine
+import com.atlarge.odcsim.engine.omega.logging.LoggerImpl
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -54,6 +55,7 @@ import kotlinx.coroutines.channels.Channel as KChannel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.SelectClause1
 import org.jetbrains.annotations.Async
+import org.slf4j.Logger
 
 /**
  * The reference implementation of the [SimulationEngine] instance for the OpenDC simulation core.
@@ -187,6 +189,8 @@ class OmegaSimulationEngine(rootBehavior: Behavior, override val name: String) :
 
         override val clock: Clock
             get() = this@OmegaSimulationEngine.clock
+
+        override val log: Logger by lazy(LazyThreadSafetyMode.NONE) { LoggerImpl.invoke(this) }
 
         override fun spawn(behavior: Behavior): ProcessRef {
             val name = "$" + UUID.randomUUID()

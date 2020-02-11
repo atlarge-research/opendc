@@ -27,6 +27,7 @@ package com.atlarge.odcsim
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import org.slf4j.Logger
 
 /**
  * Represents the execution context of a logical process in simulation.
@@ -46,6 +47,11 @@ public interface ProcessContext : CoroutineContext.Element {
      * The clock tracking the simulation time.
      */
     public val clock: Clock
+
+    /**
+     * A logger instance tied to the logical process.
+     */
+    public val log: Logger
 
     /**
      * Spawn an anonymous logical process in the simulation universe with the specified [behavior].
