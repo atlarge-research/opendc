@@ -24,7 +24,6 @@
 
 package com.atlarge.odcsim.engine.omega
 
-import com.atlarge.odcsim.SimulationEngine
 import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.Channel
 import com.atlarge.odcsim.ProcessContext
@@ -33,6 +32,16 @@ import com.atlarge.odcsim.ReceivePort
 import com.atlarge.odcsim.ReceiveRef
 import com.atlarge.odcsim.SendPort
 import com.atlarge.odcsim.SendRef
+import com.atlarge.odcsim.SimulationEngine
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
+import java.util.PriorityQueue
+import java.util.UUID
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.startCoroutine
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Delay
@@ -43,15 +52,6 @@ import kotlinx.coroutines.channels.Channel as KChannel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.SelectClause1
 import org.jetbrains.annotations.Async
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
-import java.util.PriorityQueue
-import java.util.UUID
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.coroutines.startCoroutine
 
 /**
  * The reference implementation of the [SimulationEngine] instance for the OpenDC simulation core.
@@ -277,7 +277,6 @@ class OmegaSimulationEngine(rootBehavior: Behavior, override val name: String) :
             check(!closed) { "Port is closed" }
             schedule(Event.Send(clock.time, channelImpl, message))
         }
-
     }
 
     private class ReceivePortImpl<T : Any>(private val channel: ChannelImpl<T>) : ReceivePort<T> {

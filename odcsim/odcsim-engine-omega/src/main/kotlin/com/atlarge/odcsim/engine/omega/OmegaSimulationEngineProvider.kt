@@ -24,9 +24,9 @@
 
 package com.atlarge.odcsim.engine.omega
 
+import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.SimulationEngine
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.odcsim.Behavior
 import java.util.ServiceLoader
 
 /**
