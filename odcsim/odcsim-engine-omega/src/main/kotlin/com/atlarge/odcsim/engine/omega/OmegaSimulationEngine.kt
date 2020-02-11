@@ -90,6 +90,11 @@ class OmegaSimulationEngine(rootBehavior: Behavior, override val name: String) :
      */
     private val channels: MutableSet<ChannelImpl<*>> = HashSet()
 
+    /**
+     * A unique increasing identifier assigned to each event, needed because otherwise two events occurring in sequence
+     * (but at the same time) may be differently ordered in the internal priority queue (queue) since it does not
+     * guarantee insertion order.
+     */
     private var nextId: Long = 0
 
     /**
