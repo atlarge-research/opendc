@@ -1,0 +1,34 @@
+image: gradle:6.1-jdk13
+
+variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+before_script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+
+stages:
+    - build
+    - test
+
+build:
+    stage: build
+    script:
+        - gradle --build-cache assemble
+    allow_failure: false
+    cache:
+        key: "$CI_COMMIT_REF_NAME"
+        policy: push
+        paths:
+            - build
+            - .gradle
+
+test:
+    stage: test
+    script:
+        - gradle check
+    cache:
+        key: "$CI_COMMIT_REF_NAME"
+        policy: pull
+        paths:
+            - build
+            - .gradle
