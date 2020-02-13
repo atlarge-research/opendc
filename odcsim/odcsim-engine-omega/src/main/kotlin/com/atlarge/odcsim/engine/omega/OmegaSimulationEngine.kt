@@ -233,6 +233,10 @@ class OmegaSimulationEngine(rootBehavior: Behavior, override val name: String) :
         override val key: CoroutineContext.Key<*> = ProcessContext.Key
 
         @InternalCoroutinesApi
+        override val coroutineContext: CoroutineContext
+            get() = context
+
+        @InternalCoroutinesApi
         override val context: CoroutineContext = this + dispatcher + job
     }
 
