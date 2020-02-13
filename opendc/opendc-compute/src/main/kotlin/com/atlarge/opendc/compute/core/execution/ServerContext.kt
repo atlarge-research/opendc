@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.compute.core.execution
+
+import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.image.Image
+
+/**
+ * Represents the execution context in which an bootable [Image] runs on a [Server].
+ */
+public interface ServerContext {
+    /**
+     * The server on which the image runs.
+     */
+    public val server: Server
+
+    /**
+     * Request for each core the specified amount of cpu time to run from the server and wait until all the threads have
+     * finished processing. If none of the cores are non-zero, the method will return immediately.
+     *
+     * @param req An array specifying for each core the amount of cpu time to request.
+     */
+    public suspend fun run(req: LongArray)
+}

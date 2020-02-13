@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.compute.metal
+
+import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.core.Identity
+import java.util.UUID
+
+/**
+ * A bare-metal compute node.
+ */
+data class Node(
+    /**
+     * The unique identifier of the node.
+     */
+    public override val uid: UUID,
+
+    /**
+     * The optional name of the node.
+     */
+    public override val name: String,
+
+    /**
+     * The power state of the node.
+     */
+    public val powerState: PowerState,
+
+    /**
+     * The boot image of the node.
+     */
+    public val image: Image,
+
+    /**
+     * The server instance that is running on the node or `null` if no server is running.
+     */
+    public val server: Server?
+) : Identity {
+    override fun hashCode(): Int = uid.hashCode()
+    override fun equals(other: Any?): Boolean = other is Node && uid == other.uid
+}

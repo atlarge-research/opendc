@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.compute.core
+
+/**
+ * (Virtual) hardware configuration of a server.
+ */
+public data class Flavor(
+    /**
+     * The processing units of this machine.
+     */
+    public val cpus: List<ProcessingUnit>,
+
+    /**
+     * Key and value pairs that can be used to describe the specification of the server which is more than just about
+     * CPU, disk and RAM. For example, it can be used to indicate that the server created by this flavor has PCI
+     * devices, etc.
+     */
+    public val details: Map<String, Any> = emptyMap()
+)

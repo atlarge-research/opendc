@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.compute.metal.driver
+
+import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.core.monitor.ServerMonitor
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.compute.metal.PowerState
+
+/**
+ * A driver interface for the management interface of a bare-metal compute node.
+ */
+public interface BareMetalDriver {
+    /**
+     * Initialize the driver.
+     */
+    public suspend fun init(monitor: ServerMonitor): Node
+
+    /**
+     * Update the power state of the compute node.
+     */
+    public suspend fun setPower(powerState: PowerState): Node
+
+    /**
+     * Update the boot disk image of the compute node.
+     *
+     * Changing the boot disk image of node does not affect it while the node is running. In order to start the new boot
+     * disk image, the compute node must be restarted.
+     */
+    public suspend fun setImage(image: Image): Node
+
+    /**
+     * Obtain the state of the compute node.
+     */
+    public suspend fun refresh(): Node
+}

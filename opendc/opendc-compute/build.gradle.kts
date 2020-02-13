@@ -21,12 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+description = "Cloud computing fabric simulation model"
+
+/* Build configuration */
+plugins {
+    `kotlin-library-convention`
+}
+
+dependencies {
+    implementation(kotlin("stdlib"))
+    api(project(":odcsim:odcsim-api"))
+    api(project(":opendc:opendc-core"))
+
+    testRuntimeOnly(project(":odcsim:odcsim-engine-omega"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
+    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+}

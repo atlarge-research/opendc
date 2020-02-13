@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.compute.core
+
+import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.core.Identity
+import java.util.UUID
+
+/**
+ * A server instance that is running on some physical or virtual machine.
+ */
+public data class Server(
+    /**
+     * The unique identifier of the server.
+     */
+    public override val uid: UUID,
+
+    /**
+     * The optional name of the server.
+     */
+    public override val name: String,
+
+    /**
+     * The hardware configuration of the server.
+     */
+    public val flavor: Flavor,
+
+    /**
+     * The image running on the server.
+     */
+    public val image: Image,
+
+    /**
+     * The last known state of the server.
+     */
+    public val state: ServerState
+
+) : Identity {
+    override fun hashCode(): Int = uid.hashCode()
+    override fun equals(other: Any?): Boolean = other is Node && uid == other.uid
+}

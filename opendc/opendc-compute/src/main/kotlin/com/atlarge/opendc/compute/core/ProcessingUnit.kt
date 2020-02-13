@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.compute.core
+
+/**
+ * A processing unit of a compute resource, either virtual or physical.
+ *
+ * @property vendor The vendor string of the cpu.
+ * @property modelName The name of the cpu model.
+ * @property arch The architecture of the CPU.
+ * @property clockRate The clock speed of the cpu in MHz.
+ * @property cores The number of logical cores in the cpu.
+ */
+public data class ProcessingUnit(
+    public val vendor: String,
+    public val modelName: String,
+    public val arch: String,
+    public val clockRate: Double,
+    public val cores: Int
+)

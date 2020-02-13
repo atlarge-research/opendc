@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.compute.metal.service
+
+import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.core.monitor.ServerMonitor
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
+
+/**
+ * A cloud platform service for provisioning bare-metal compute nodes on the platform.
+ */
+public interface ProvisioningService {
+    /**
+     * Create a new bare-metal compute node.
+     */
+    public suspend fun create(driver: BareMetalDriver): Node
+
+    /**
+     * Allocate the given number of nodes from the provisioner.
+     */
+    public suspend fun allocate(num: Int): Allocation
+
+    /**
+     * Refresh the state of a compute node.
+     */
+    public suspend fun refresh(node: Node): Node
+
+    /**
+     * Deploy the specified [Image] on a compute node.
+     */
+    public suspend fun deploy(node: Node, allocation: Allocation, image: Image, monitor: ServerMonitor): Node
+}

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-tpds")
+package com.atlarge.opendc.compute.virt.driver
+
+import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.core.monitor.ServerMonitor
+
+/**
+ * A driver interface for a hypervisor running on some host server and communicating with the central compute service to
+ * provide virtualization for that particular resource.
+ */
+public interface VirtDriver {
+    /**
+     * Spawn the given [Image] on the compute resource of this driver.
+     */
+    public suspend fun spawn(image: Image, monitor: ServerMonitor): Server
+}
