@@ -1,6 +1,6 @@
-# 4. Running a Model
+# 4. Running an Experiment
 
-**TODO: Not sure yet what's useful to include here. Maybe give an example of how to run one of the pre-builts?**
+**TODO: What did we do for SC18?**
 
 ---
-[< Previous](models.md) | [Next >](build.md)
+[< Previous](architecture.md)
