@@ -96,7 +96,7 @@ public class FakeBareMetalDriver(
      * Launch the server image on the machine.
      */
     private suspend fun launch() {
-        val serverCtx = this.serverCtx.serialize()
+        val serverCtx = this.serverCtx
 
         processContext.spawn {
             serverCtx.init()

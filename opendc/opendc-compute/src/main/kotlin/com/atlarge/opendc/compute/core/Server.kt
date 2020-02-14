@@ -60,5 +60,5 @@ public data class Server(
 
 ) : Identity {
     override fun hashCode(): Int = uid.hashCode()
-    override fun equals(other: Any?): Boolean = other is Node && uid == other.uid
+    override fun equals(other: Any?): Boolean = other is Server && uid == other.uid
 }

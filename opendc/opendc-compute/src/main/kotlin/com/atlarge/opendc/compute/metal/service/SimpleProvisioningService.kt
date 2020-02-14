@@ -24,32 +24,50 @@
 
 package com.atlarge.opendc.compute.metal.service
 
+import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.compute.metal.PowerState
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 
 /**
- * A cloud platform service for provisioning bare-metal compute nodes on the platform.
+ * A very basic implementation of the [ProvisioningService].
  */
-public interface ProvisioningService {
+public class SimpleProvisioningService : ProvisioningService, ServerMonitor {
     /**
-     * Create a new bare-metal compute node.
+     * The active nodes in this service.
      */
-    public suspend fun create(driver: BareMetalDriver): Node
+    private val nodes: MutableMap<Node, BareMetalDriver> = mutableMapOf()
 
     /**
-     * Obtain the available nodes.
+     * The installed monitors.
      */
-    public suspend fun nodes(): Set<Node>
+    private val monitors: MutableMap<Server, ServerMonitor> = mutableMapOf()
 
-    /**
-     * Refresh the state of a compute node.
-     */
-    public suspend fun refresh(node: Node): Node
+    override suspend fun create(driver: BareMetalDriver): Node {
+        val node = driver.init(this)
+        nodes[node] = driver
+        return node
+    }
 
-    /**
-     * Deploy the specified [Image] on a compute node.
-     */
-    public suspend fun deploy(node: Node, image: Image, monitor: ServerMonitor): Node
+    override suspend fun nodes(): Set<Node> = nodes.keys
+
+    override suspend fun refresh(node: Node): Node {
+        return nodes[node]!!.refresh()
+    }
+
+    override suspend fun deploy(node: Node, image: Image, monitor: ServerMonitor): Node {
+        val driver = nodes[node]!!
+
+        driver.setImage(image)
+        val newNode = driver.setPower(PowerState.POWER_ON)
+        monitors[newNode.server!!] = monitor
+        return newNode
+    }
+
+    override suspend fun onUpdate(server: Server, previousState: ServerState) {
+        monitors[server]?.onUpdate(server, previousState)
+    }
 }
