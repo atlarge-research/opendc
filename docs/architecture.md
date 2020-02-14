@@ -20,10 +20,13 @@ You might note that the simulation framework and the simulator itself makes exte
 The `opendc` package consists of a number of submodules, the most feature-rich being `opendc-compute`. Below, we will explain each in turn.
 
 ### 3.2.1 `opendc-core`
-**TODO**
+This module defines a base model for datacenter simulation, establishing core concepts and terminology of datacenters.
+The other `opendc` modules build on this model and extend it in various directions (e.g. virtual machines or workflows).
 
 ### 3.2.2 `opendc-compute`
-**TODO**
+This module models management and provisioning of compute instances such as virtual machines and bare-metal servers. We
+represent such compute instances as a `Server`. The hardware configuration of the server is represented as a `Flavor`.
+Servers run bootable disk images called `Image`s, which characterizes the runtime behavior of a server.
 
 ### 3.2.3 `opendc-workflows`
 This module contains all workflow-related models and logic of the simulator. The models for workflows can be found in the `workload` package: A `Job` and a `Task`. The logic concerning the scheduling of a workflow is contained in the `service` package. It follows the Reference Architecture for Datacenter Schedulers by [Andreadis et al.](https://dl.acm.org/doi/10.5555/3291656.3291706). For a good introduction into datacenter schedulers and to fully grasp the modeling approach taken, we highly recommend reading this publication (or its more extensive [technical report](https://arxiv.org/pdf/1808.04224.pdf)).
