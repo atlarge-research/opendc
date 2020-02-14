@@ -24,14 +24,14 @@
 
 package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * The [FifoJobSortingPolicy] sorts tasks based on the order of arrival in the queue.
  */
 class FifoJobSortingPolicy : JobSortingPolicy {
     override fun invoke(
-        scheduler: StageWorkflowSchedulerLogic,
-        jobs: Collection<StageWorkflowSchedulerLogic.JobView>
-    ): List<StageWorkflowSchedulerLogic.JobView> = jobs.toList()
+        scheduler: StageWorkflowService,
+        jobs: Collection<StageWorkflowService.JobView>
+    ): List<StageWorkflowService.JobView> = jobs.toList()
 }

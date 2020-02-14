@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * A [JobAdmissionPolicy] that admits all jobs.
@@ -34,7 +34,7 @@ object NullJobAdmissionPolicy : JobAdmissionPolicy {
      * Admit every submitted job.
      */
     override fun shouldAdmit(
-        scheduler: StageWorkflowSchedulerLogic,
-        job: StageWorkflowSchedulerLogic.JobView
+        scheduler: StageWorkflowService,
+        job: StageWorkflowService.JobView
     ): Boolean = true
 }

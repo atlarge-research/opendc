@@ -24,15 +24,15 @@
 
 package com.atlarge.opendc.workflows.service.stage.task
 
-import com.atlarge.opendc.core.resources.compute.scheduling.ProcessState
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.TaskState
 
 /**
  * A [TaskEligibilityPolicy] that marks tasks as eligible if they are tasks roots within the job.
  */
 class FunctionalTaskEligibilityPolicy : TaskEligibilityPolicy {
     override fun isEligible(
-        scheduler: StageWorkflowSchedulerLogic,
-        task: StageWorkflowSchedulerLogic.TaskView
-    ): Boolean = task.state == ProcessState.READY
+        scheduler: StageWorkflowService,
+        task: StageWorkflowService.TaskView
+    ): Boolean = task.state == TaskState.READY
 }

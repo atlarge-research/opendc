@@ -24,20 +24,22 @@
 
 package com.atlarge.opendc.format.environment.sc18
 
-import com.atlarge.opendc.core.Cluster
+import com.atlarge.opendc.compute.core.ProcessingUnit
+import com.atlarge.opendc.compute.core.ServerFlavor
+import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
+import com.atlarge.opendc.compute.metal.service.ProvisioningService
+import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
 import com.atlarge.opendc.core.Environment
 import com.atlarge.opendc.core.Platform
 import com.atlarge.opendc.core.Zone
-import com.atlarge.opendc.core.resources.compute.ProcessingElement
-import com.atlarge.opendc.core.resources.compute.ProcessingUnit
-import com.atlarge.opendc.core.resources.compute.host.Host
-import com.atlarge.opendc.core.resources.compute.scheduling.SpaceSharedMachineScheduler
+import com.atlarge.opendc.core.services.ServiceRegistryImpl
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.InputStream
 import java.util.UUID
+import kotlinx.coroutines.runBlocking
 
 /**
  * A parser for the JSON experiment setup files used for the SC18 paper: "A Reference Architecture for Datacenter
@@ -54,29 +56,39 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
 
     init {
         val setup = mapper.readValue<Setup>(input)
-        val clusters = setup.rooms.mapIndexed { i, room ->
-            var counter = 0
-            val hosts = room.objects.flatMap { roomObject ->
+        var counter = 0
+        val nodes = setup.rooms.flatMap { room ->
+            room.objects.flatMap { roomObject ->
                 when (roomObject) {
                     is RoomObject.Rack -> {
                         roomObject.machines.map { machine ->
-                            val cores = machine.cpus.flatMap { id ->
+                            val cores = machine.cpus.map { id ->
                                 when (id) {
-                                    1 -> List(4) { ProcessingElement(it, CPUS[0]) }
-                                    2 -> List(2) { ProcessingElement(it, CPUS[1]) }
+                                    1 -> ProcessingUnit("Intel", "Core(TM) i7-6920HQ", "amd64", 4100.0, 4)
+                                    2 -> ProcessingUnit("Intel", "Core(TM) I7-6920HQ", "amd64", 3500.0, 2)
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            Host(UUID.randomUUID(), "node-${counter++}", SpaceSharedMachineScheduler, cores)
+                            val flavor = ServerFlavor(cores)
+                            SimpleBareMetalDriver(UUID.randomUUID(), "node-${counter++}", flavor)
                         }
                     }
                 }
             }
-            Cluster(UUID.randomUUID(), "cluster-$i", hosts)
         }
 
+        val provisioningService = SimpleProvisioningService()
+        runBlocking {
+            for (node in nodes) {
+                provisioningService.create(node)
+            }
+        }
+
+        val serviceRegistry = ServiceRegistryImpl()
+        serviceRegistry[ProvisioningService.Key] = provisioningService
+
         val platform = Platform(UUID.randomUUID(), "sc18-platform", listOf(
-            Zone(UUID.randomUUID(), "zone", emptySet(), clusters)
+            Zone(UUID.randomUUID(), "zone", serviceRegistry)
         ))
 
         environment = Environment(setup.name, null, listOf(platform))
@@ -85,11 +97,4 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
     override fun read(): Environment = environment
 
     override fun close() {}
-
-    companion object {
-        val CPUS = arrayOf(
-            ProcessingUnit("Intel", 6, 6920, "Intel(R) Core(TM) i7-6920HQ CPU @ 4.10GHz", 4100.0, 1),
-            ProcessingUnit("Intel", 6, 6930, "Intel(R) Core(TM) i7-6920HQ CPU @ 3.50GHz", 3500.0, 1)
-        )
-    }
 }

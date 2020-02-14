@@ -24,10 +24,10 @@
 
 package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * A policy interface for admitting [StageWorkflowSchedulerLogic.JobView]s to a scheduling cycle.
+ * A policy interface for admitting [StageWorkflowService.JobView]s to a scheduling cycle.
  */
 interface JobAdmissionPolicy {
     /**
@@ -35,14 +35,14 @@ interface JobAdmissionPolicy {
      *
      * @param scheduler The scheduler that started the cycle.
      */
-    fun startCycle(scheduler: StageWorkflowSchedulerLogic) {}
+    fun startCycle(scheduler: StageWorkflowService) {}
 
     /**
-     * Determine whether the specified [StageWorkflowSchedulerLogic.JobView] should be admitted to the scheduling cycle.
+     * Determine whether the specified [StageWorkflowService.JobView] should be admitted to the scheduling cycle.
      *
      * @param scheduler The scheduler that should admit or reject the job.
      * @param job The workflow that has been submitted.
      * @return `true` if the workflow may be admitted to the scheduling cycle, `false` otherwise.
      */
-    fun shouldAdmit(scheduler: StageWorkflowSchedulerLogic, job: StageWorkflowSchedulerLogic.JobView): Boolean
+    fun shouldAdmit(scheduler: StageWorkflowService, job: StageWorkflowService.JobView): Boolean
 }

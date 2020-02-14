@@ -24,15 +24,7 @@
 
 package com.atlarge.opendc.core
 
-import com.atlarge.odcsim.Behavior
-import com.atlarge.odcsim.ProcessContext
-import com.atlarge.odcsim.ReceiveRef
-import com.atlarge.odcsim.SendRef
-import com.atlarge.odcsim.ask
-import com.atlarge.odcsim.sendOnce
 import java.util.UUID
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
 
 /**
  * A representation of a cloud platform such as Amazon Web Services (AWS), Microsoft Azure or Google Cloud.
@@ -41,63 +33,4 @@ import kotlinx.coroutines.isActive
  * @property name the name of the platform.
  * @property zones The availability zones available on this platform.
  */
-data class Platform(override val uid: UUID, override val name: String, val zones: List<Zone>) : Identity {
-    /**
-     * Build the runtime [Behavior] of this cloud platform.
-     */
-    suspend operator fun invoke(ctx: ProcessContext, main: ReceiveRef<PlatformMessage>) {
-        println("Starting cloud platform $name [$uid] with ${zones.size} zones")
-
-        // Launch all zones of the cloud platform
-        val zoneInstances = zones.associateWith { zone ->
-            val channel = ctx.open<ZoneMessage>()
-            ctx.spawn({ zone(it, channel) }, name = zone.name)
-            channel.send
-        }
-
-        val inlet = ctx.listen(main)
-        coroutineScope {
-            while (isActive) {
-                when (val msg = inlet.receive()) {
-                    is PlatformMessage.ListZones -> {
-                        msg.replyTo.sendOnce(PlatformResponse.Zones(this@Platform, zoneInstances.mapKeys { it.key.name }))
-                    }
-                }
-            }
-        }
-        inlet.close()
-    }
-}
-
-/**
- * A message protocol for communicating with a cloud platform.
- */
-sealed class PlatformMessage {
-    /**
-     * Request the available zones on this platform.
-     *
-     * @property replyTo The actor address to send the response to.
-     */
-    data class ListZones(val replyTo: SendRef<PlatformResponse.Zones>) : PlatformMessage()
-}
-
-/**
- * A message protocol used by platform actors to respond to [PlatformMessage]s.
- */
-sealed class PlatformResponse {
-    /**
-     * The zones available on this cloud platform.
-     *
-     * @property platform The reference to the cloud platform these are the zones of.
-     * @property zones The zones in this cloud platform.
-     */
-    data class Zones(val platform: Platform, val zones: Map<String, SendRef<ZoneMessage>>) : PlatformResponse()
-}
-
-/**
- * Retrieve the available zones of a platform.
- */
-suspend fun SendRef<PlatformMessage>.zones(): Map<String, SendRef<ZoneMessage>> {
-    val zones: PlatformResponse.Zones = ask { PlatformMessage.ListZones(it) }
-    return zones.zones
-}
+data class Platform(override val uid: UUID, override val name: String, val zones: List<Zone>) : Identity

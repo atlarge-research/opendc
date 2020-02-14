@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.workflows.service.stage.resource
 
-import com.atlarge.opendc.core.services.resources.HostView
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * A [ResourceDynamicFilterPolicy] based on the amount of cores available on the machine and the cores required for
@@ -33,11 +33,11 @@ import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
  */
 class FunctionalResourceDynamicFilterPolicy : ResourceDynamicFilterPolicy {
     override fun invoke(
-        scheduler: StageWorkflowSchedulerLogic,
-        machines: List<HostView>,
-        task: StageWorkflowSchedulerLogic.TaskView
-    ): List<HostView> {
+        scheduler: StageWorkflowService,
+        machines: List<Node>,
+        task: StageWorkflowService.TaskView
+    ): List<Node> {
         return machines
-            .filter { scheduler.machineCores[it] ?: 0 >= task.task.application.cores }
+            .filter { it in scheduler.available }
     }
 }

@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.format.trace.gwf
 
+import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.core.User
-import com.atlarge.opendc.core.workload.application.FlopsApplication
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
 import com.atlarge.opendc.workflows.workload.Job
@@ -120,7 +120,7 @@ class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
                     val workflow = entry.workload
                     val task = Task(
                         UUID(0L, taskId), "<unnamed>",
-                        FlopsApplication(UUID(0L, taskId), "<unnamed>", workflow.owner, cores, flops),
+                        FlopsApplicationImage(flops, cores),
                         HashSet()
                     )
                     entry.submissionTime = min(entry.submissionTime, submitTime)

@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.workflows.service.stage.resource
 
-import com.atlarge.opendc.core.services.resources.HostView
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * This interface represents the **R4** stage of the Reference Architecture for Schedulers and acts as a filter yielding
@@ -42,8 +42,8 @@ interface ResourceDynamicFilterPolicy {
      * @return The machines on which the task can be scheduled.
      */
     operator fun invoke(
-        scheduler: StageWorkflowSchedulerLogic,
-        machines: List<HostView>,
-        task: StageWorkflowSchedulerLogic.TaskView
-    ): List<HostView>
+        scheduler: StageWorkflowService,
+        machines: List<Node>,
+        task: StageWorkflowService.TaskView
+    ): List<Node>
 }
