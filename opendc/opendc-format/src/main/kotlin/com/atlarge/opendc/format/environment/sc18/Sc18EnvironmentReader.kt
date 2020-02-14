@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.format.environment.sc18
 
-import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.metal.driver.FakeBareMetalDriver
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
@@ -69,7 +69,7 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            val flavor = Flavor(cores)
+                            val flavor = ServerFlavor(cores)
                             FakeBareMetalDriver(UUID.randomUUID(), "node-${counter++}", flavor)
                         }
                     }

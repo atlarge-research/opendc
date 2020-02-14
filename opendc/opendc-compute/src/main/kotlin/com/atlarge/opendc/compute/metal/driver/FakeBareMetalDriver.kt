@@ -25,7 +25,7 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.processContext
-import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
@@ -49,7 +49,7 @@ import kotlinx.coroutines.delay
 public class FakeBareMetalDriver(
     uid: UUID,
     name: String,
-    private val flavor: Flavor
+    private val flavor: ServerFlavor
 ) : BareMetalDriver {
     /**
      * The monitor to use.

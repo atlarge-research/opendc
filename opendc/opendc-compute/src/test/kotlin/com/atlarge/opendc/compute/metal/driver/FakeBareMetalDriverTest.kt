@@ -25,7 +25,7 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
@@ -46,7 +46,7 @@ internal class FakeBareMetalDriverTest {
     fun smoke() {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider({ ctx ->
-            val flavor = Flavor(listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)))
+            val flavor = ServerFlavor(listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)))
             val image = FlopsApplicationImage(1000, 2)
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {

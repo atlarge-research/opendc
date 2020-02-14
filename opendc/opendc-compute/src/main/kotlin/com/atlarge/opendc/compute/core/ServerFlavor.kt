@@ -27,7 +27,7 @@ package com.atlarge.opendc.compute.core
 /**
  * (Virtual) hardware configuration of a server.
  */
-public data class Flavor(
+public data class ServerFlavor(
     /**
      * The processing units of this machine.
      */
