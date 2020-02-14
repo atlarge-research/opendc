@@ -31,6 +31,7 @@ plugins {
 
 dependencies {
     api(project(":opendc:opendc-core"))
+    api(project(":opendc:opendc-compute"))
     implementation(kotlin("stdlib"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")

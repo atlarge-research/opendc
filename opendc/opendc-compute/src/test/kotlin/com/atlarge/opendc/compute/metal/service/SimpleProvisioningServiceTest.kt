@@ -31,14 +31,12 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.metal.PowerState
 import com.atlarge.opendc.compute.metal.driver.FakeBareMetalDriver
+import java.util.ServiceLoader
+import java.util.UUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import java.util.ServiceLoader
-import java.util.UUID
-
 
 /**
  * Test suite for the [SimpleProvisioningService].
@@ -59,7 +57,6 @@ internal class SimpleProvisioningServiceTest {
                 }
             }
             val driver = FakeBareMetalDriver(UUID.randomUUID(), "test", flavor)
-
 
             val provisioner = SimpleProvisioningService()
             provisioner.create(driver)

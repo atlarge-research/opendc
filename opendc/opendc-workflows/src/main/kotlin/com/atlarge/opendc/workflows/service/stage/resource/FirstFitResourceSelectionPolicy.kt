@@ -24,17 +24,17 @@
 
 package com.atlarge.opendc.workflows.service.stage.resource
 
-import com.atlarge.opendc.core.services.resources.HostView
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * A [ResourceSelectionPolicy] that selects the first machine that is available.
  */
 class FirstFitResourceSelectionPolicy : ResourceSelectionPolicy {
     override fun select(
-        scheduler: StageWorkflowSchedulerLogic,
-        machines: List<HostView>,
-        task: StageWorkflowSchedulerLogic.TaskView
-    ): HostView? =
+        scheduler: StageWorkflowService,
+        machines: List<Node>,
+        task: StageWorkflowService.TaskView
+    ): Node? =
         machines.firstOrNull()
 }

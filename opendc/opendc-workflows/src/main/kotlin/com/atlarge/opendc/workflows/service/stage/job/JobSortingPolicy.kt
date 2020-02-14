@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * A policy interface for ordering admitted workflows in the scheduling queue.
@@ -38,7 +38,7 @@ interface JobSortingPolicy {
      * @return The sorted list of jobs.
      */
     operator fun invoke(
-        scheduler: StageWorkflowSchedulerLogic,
-        jobs: Collection<StageWorkflowSchedulerLogic.JobView>
-    ): List<StageWorkflowSchedulerLogic.JobView>
+        scheduler: StageWorkflowService,
+        jobs: Collection<StageWorkflowService.JobView>
+    ): List<StageWorkflowService.JobView>
 }

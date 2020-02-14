@@ -25,7 +25,6 @@
 package com.atlarge.opendc.compute.core
 
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.core.Identity
 import java.util.UUID
 

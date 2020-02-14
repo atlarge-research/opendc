@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.workflows.workload
 
+import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.Identity
-import com.atlarge.opendc.core.workload.application.Application
 import java.util.UUID
 
 /**
@@ -33,13 +33,13 @@ import java.util.UUID
  *
  * @property uid A unique identified of this task.
  * @property name The name of this task.
- * @property application The application to run as part of this workflow task.
+ * @property image The application image to run as part of this workflow task.
  * @property dependencies The dependencies of this task in order for it to execute.
  */
 data class Task(
     override val uid: UUID,
     override val name: String,
-    val application: Application,
+    val image: Image,
     val dependencies: Set<Task>
 ) : Identity {
     override fun equals(other: Any?): Boolean = other is Task && uid == other.uid

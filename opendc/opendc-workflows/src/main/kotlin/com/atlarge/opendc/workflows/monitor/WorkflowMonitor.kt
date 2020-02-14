@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,32 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.core.services
+package com.atlarge.opendc.workflows.monitor
 
-import com.atlarge.odcsim.SendRef
+import com.atlarge.opendc.workflows.workload.Job
+import com.atlarge.opendc.workflows.workload.Task
 
 /**
- * A map containing services.
+ * An interface for monitoring the progression of workflows.
  */
-interface ServiceMap {
+public interface WorkflowMonitor {
     /**
-     * Determine if this map contains the service with the specified [Service].
-     *
-     * @param key The key of the service to check for.
-     * @return `true` if the service is in the map, `false` otherwise.
+     * This method is invoked when a job has become active.
      */
-    operator fun contains(key: Service<*>): Boolean
+    public suspend fun onJobStart(job: Job, time: Long)
 
     /**
-     * Obtain the service with the specified [Service].
-     *
-     * @param key The key of the service to obtain.
-     * @return The references to the service.
-     * @throws IllegalArgumentException if the key does not exists in the map.
+     * This method is invoked when a job has finished processing.
      */
-    operator fun <T : Any> get(key: Service<T>): SendRef<T>
+    public suspend fun onJobFinish(job: Job, time: Long)
+
+    /**
+     * This method is invoked when a task of a job has started processing.
+     */
+    public suspend fun onTaskStart(job: Job, task: Task, time: Long)
+
+    /**
+     * This method is invoked when a task has finished processing.
+     */
+    public suspend fun onTaskFinish(job: Job, task: Task, status: Int, time: Long)
 }

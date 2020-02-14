@@ -28,6 +28,8 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
+import com.atlarge.opendc.core.services.AbstractServiceKey
+import java.util.UUID
 
 /**
  * A cloud platform service for provisioning bare-metal compute nodes on the platform.
@@ -52,4 +54,9 @@ public interface ProvisioningService {
      * Deploy the specified [Image] on a compute node.
      */
     public suspend fun deploy(node: Node, image: Image, monitor: ServerMonitor): Node
+
+    /**
+     * The service key of this service.
+     */
+    companion object Key : AbstractServiceKey<ProvisioningService>(UUID.randomUUID(), "provisioner")
 }

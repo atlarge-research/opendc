@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.workflows.service.stage.task
 
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * A policy interface for determining the eligibility of tasks in a scheduling cycle.
@@ -35,14 +35,14 @@ interface TaskEligibilityPolicy {
      *
      * @param scheduler The scheduler that started the cycle.
      */
-    fun startCycle(scheduler: StageWorkflowSchedulerLogic) {}
+    fun startCycle(scheduler: StageWorkflowService) {}
 
     /**
-     * Determine whether the specified [StageWorkflowSchedulerLogic.TaskView] is eligible to be scheduled.
+     * Determine whether the specified [StageWorkflowService.TaskView] is eligible to be scheduled.
      *
      * @param scheduler The scheduler that is determining whether the task is eligible.
      * @param task The task instance to schedule.
      * @return `true` if the task eligible to be scheduled, `false` otherwise.
      */
-    fun isEligible(scheduler: StageWorkflowSchedulerLogic, task: StageWorkflowSchedulerLogic.TaskView): Boolean
+    fun isEligible(scheduler: StageWorkflowService, task: StageWorkflowService.TaskView): Boolean
 }

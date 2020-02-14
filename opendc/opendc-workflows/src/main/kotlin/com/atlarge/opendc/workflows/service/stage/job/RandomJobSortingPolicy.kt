@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 import kotlin.random.Random
 
 /**
@@ -34,7 +34,7 @@ import kotlin.random.Random
  */
 class RandomJobSortingPolicy(private val random: Random = Random.Default) : JobSortingPolicy {
     override fun invoke(
-        scheduler: StageWorkflowSchedulerLogic,
-        jobs: Collection<StageWorkflowSchedulerLogic.JobView>
-    ): List<StageWorkflowSchedulerLogic.JobView> = jobs.shuffled(random)
+        scheduler: StageWorkflowService,
+        jobs: Collection<StageWorkflowService.JobView>
+    ): List<StageWorkflowService.JobView> = jobs.shuffled(random)
 }

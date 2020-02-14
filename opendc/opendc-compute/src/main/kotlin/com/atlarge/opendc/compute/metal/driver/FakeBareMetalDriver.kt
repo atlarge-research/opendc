@@ -29,7 +29,6 @@ import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
-import com.atlarge.opendc.compute.core.execution.serialize
 import com.atlarge.opendc.compute.core.image.EmptyImage
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
@@ -71,7 +70,7 @@ public class FakeBareMetalDriver(
         val previousPowerState = node.powerState
         val server = when (node.powerState to powerState) {
             PowerState.POWER_OFF to PowerState.POWER_OFF -> null
-            PowerState.POWER_OFF to PowerState.POWER_ON -> Server(node.uid, node.name, flavor, node.image, ServerState.BUILD)
+            PowerState.POWER_OFF to PowerState.POWER_ON -> Server(UUID.randomUUID(), node.name, flavor, node.image, ServerState.BUILD)
             PowerState.POWER_ON to PowerState.POWER_OFF -> null // TODO Terminate existing image
             PowerState.POWER_ON to PowerState.POWER_ON -> node.server
             else -> throw IllegalStateException()
@@ -110,6 +109,8 @@ public class FakeBareMetalDriver(
     }
 
     private val serverCtx = object : ServerManagementContext {
+        private var initialized: Boolean = false
+
         override var server: Server
             get() = node.server!!
             set(value) {
@@ -117,9 +118,15 @@ public class FakeBareMetalDriver(
             }
 
         override suspend fun init() {
+            if (initialized) {
+                throw IllegalStateException()
+            }
+
             val previousState = server.state
             server = server.copy(state = ServerState.ACTIVE)
             monitor.onUpdate(server, previousState)
+
+            initialized = true
         }
 
         override suspend fun exit(cause: Throwable?) {
@@ -127,6 +134,7 @@ public class FakeBareMetalDriver(
             val state = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
             server = server.copy(state = state)
             monitor.onUpdate(server, previousState)
+            initialized = false
         }
 
         override suspend fun run(req: LongArray) {

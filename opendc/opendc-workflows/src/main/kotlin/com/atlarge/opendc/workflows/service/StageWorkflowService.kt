@@ -25,18 +25,12 @@
 package com.atlarge.opendc.workflows.service
 
 import com.atlarge.odcsim.ProcessContext
-import com.atlarge.odcsim.SendPort
-import com.atlarge.odcsim.SendRef
-import com.atlarge.odcsim.sendOnce
-import com.atlarge.opendc.core.resources.compute.MachineEvent
-import com.atlarge.opendc.core.resources.compute.MachineMessage
-import com.atlarge.opendc.core.resources.compute.MachineRef
-import com.atlarge.opendc.core.resources.compute.scheduling.ProcessObserver
-import com.atlarge.opendc.core.resources.compute.scheduling.ProcessState
-import com.atlarge.opendc.core.services.provisioning.ProvisioningResponse
-import com.atlarge.opendc.core.services.resources.HostView
-import com.atlarge.opendc.core.workload.application.Application
-import com.atlarge.opendc.core.workload.application.Pid
+import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerState
+import com.atlarge.opendc.compute.core.monitor.ServerMonitor
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.compute.metal.service.ProvisioningService
+import com.atlarge.opendc.workflows.monitor.WorkflowMonitor
 import com.atlarge.opendc.workflows.service.stage.job.JobAdmissionPolicy
 import com.atlarge.opendc.workflows.service.stage.job.JobSortingPolicy
 import com.atlarge.opendc.workflows.service.stage.resource.ResourceDynamicFilterPolicy
@@ -45,18 +39,16 @@ import com.atlarge.opendc.workflows.service.stage.task.TaskEligibilityPolicy
 import com.atlarge.opendc.workflows.service.stage.task.TaskSortingPolicy
 import com.atlarge.opendc.workflows.workload.Job
 import com.atlarge.opendc.workflows.workload.Task
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Logic of the [StageWorkflowScheduler].
+ * A [WorkflowService] that distributes work through a multi-stage process based on the Reference Architecture for
+ * Datacenter Scheduling.
  */
-class StageWorkflowSchedulerLogic(
-    ctx: ProcessContext,
-    self: WorkflowServiceRef,
-    coroutineScope: CoroutineScope,
-    lease: ProvisioningResponse.Lease,
+class StageWorkflowService(
+    private val ctx: ProcessContext,
+    private val provisioningService: ProvisioningService,
     private val mode: WorkflowSchedulerMode,
     private val jobAdmissionPolicy: JobAdmissionPolicy,
     private val jobSortingPolicy: JobSortingPolicy,
@@ -64,7 +56,7 @@ class StageWorkflowSchedulerLogic(
     private val taskSortingPolicy: TaskSortingPolicy,
     private val resourceDynamicFilterPolicy: ResourceDynamicFilterPolicy,
     private val resourceSelectionPolicy: ResourceSelectionPolicy
-) : WorkflowSchedulerLogic(ctx, self, coroutineScope, lease) {
+) : WorkflowService, ServerMonitor {
 
     /**
      * The incoming jobs ready to be processed by the scheduler.
@@ -77,30 +69,30 @@ class StageWorkflowSchedulerLogic(
     internal val activeJobs: MutableSet<JobView> = mutableSetOf()
 
     /**
-     * The running tasks by [Pid].
+     * The running tasks by [Server].
      */
-    internal val taskByPid = mutableMapOf<Pid, TaskView>()
+    internal val taskByServer = mutableMapOf<Server, TaskView>()
 
     /**
-     * The available processor cores on the leased machines.
+     * The nodes that are controlled by the service.
      */
-    internal val machineCores: MutableMap<HostView, Int> = HashMap()
+    internal lateinit var nodes: List<Node>
 
-    private val brokers: MutableMap<SendRef<WorkflowEvent>, SendPort<WorkflowEvent>> = HashMap()
-    private val channel = ctx.open<MachineEvent>()
+    /**
+     * The available nodes.
+     */
+    internal val available: MutableSet<Node> = mutableSetOf()
 
     init {
-        lease.hosts.forEach { machineCores[it] = it.host.cores.count() }
-        coroutineScope.launch {
-            ProcessObserver(ctx, this@StageWorkflowSchedulerLogic, channel.receive)
+        ctx.launch {
+            nodes = provisioningService.nodes().toList()
+            available.addAll(nodes)
         }
     }
 
-    override suspend fun submit(job: Job, handler: SendRef<WorkflowEvent>) {
-        val broker = brokers.getOrPut(handler) { ctx.connect(handler) }
-
+    override suspend fun submit(job: Job, monitor: WorkflowMonitor) {
         // J1 Incoming Jobs
-        val jobInstance = JobView(job, handler)
+        val jobInstance = JobView(job, monitor)
         val instances = job.tasks.associateWith {
             TaskView(jobInstance, it)
         }
@@ -113,13 +105,12 @@ class StageWorkflowSchedulerLogic(
 
             // If the task has no dependency, it is a root task and can immediately be evaluated
             if (instance.isRoot) {
-                instance.state = ProcessState.READY
+                instance.state = TaskState.READY
             }
         }
 
         jobInstance.tasks = instances.values.toMutableSet()
         incomingJobs += jobInstance
-        broker.send(WorkflowEvent.JobSubmitted(self, job, ctx.clock.millis()))
         requestCycle()
     }
 
@@ -131,20 +122,18 @@ class StageWorkflowSchedulerLogic(
     private fun requestCycle() {
         when (mode) {
             is WorkflowSchedulerMode.Interactive -> {
-                coroutineScope.launch {
+                ctx.launch {
                     schedule()
                 }
             }
             is WorkflowSchedulerMode.Batch -> {
                 if (next == null) {
-                    val job = coroutineScope.launch {
+                    val job = ctx.launch {
                         delay(mode.quantum)
+                        next = null
                         schedule()
                     }
                     next = job
-                    job.invokeOnCompletion {
-                        next = null
-                    }
                 }
             }
         }
@@ -153,14 +142,15 @@ class StageWorkflowSchedulerLogic(
     /**
      * Perform a scheduling cycle immediately.
      */
-    override suspend fun schedule() {
+    private suspend fun schedule() {
         // J2 Create list of eligible jobs
         jobAdmissionPolicy.startCycle(this)
         val eligibleJobs = incomingJobs.filter { jobAdmissionPolicy.shouldAdmit(this, it) }
+
         for (jobInstance in eligibleJobs) {
             incomingJobs -= jobInstance
             activeJobs += jobInstance
-            brokers.getValue(jobInstance.broker).send(WorkflowEvent.JobStarted(self, jobInstance.job, ctx.clock.millis()))
+            jobInstance.monitor.onJobStart(jobInstance.job, ctx.clock.millis())
         }
 
         // J3 Sort jobs on criterion
@@ -177,15 +167,17 @@ class StageWorkflowSchedulerLogic(
 
             // T3 Per task
             for (instance in sortedTasks) {
-                val hosts = resourceDynamicFilterPolicy(this, lease.hosts, instance)
+                val hosts = resourceDynamicFilterPolicy(this, nodes, instance)
                 val host = resourceSelectionPolicy.select(this, hosts, instance)
 
                 if (host != null) {
                     // T4 Submit task to machine
-                    host.ref.sendOnce(MachineMessage.Submit(instance.task.application, instance, channel.send))
-                    instance.host = host
-                    instance.state = ProcessState.RUNNING // Assume the application starts running
-                    machineCores.merge(host, instance.task.application.cores, Int::minus)
+                    available -= host
+                    instance.state = TaskState.ACTIVE
+
+                    val newHost = provisioningService.deploy(host, instance.task.image, this)
+                    instance.host = newHost
+                    taskByServer[newHost.server!!] = instance
                 } else {
                     return
                 }
@@ -193,32 +185,32 @@ class StageWorkflowSchedulerLogic(
         }
     }
 
-    override fun onSubmission(instance: MachineRef, application: Application, key: Any, pid: Pid) {
-        val task = key as TaskView
-        task.pid = pid
-        taskByPid[pid] = task
+    override suspend fun onUpdate(server: Server, previousState: ServerState) {
+        when (server.state) {
+            ServerState.ACTIVE -> {
+                val task = taskByServer.getValue(server)
+                task.job.monitor.onTaskStart(task.job.job, task.task, ctx.clock.millis())
+            }
+            ServerState.SHUTOFF, ServerState.ERROR -> {
+                val task = taskByServer.remove(server) ?: throw IllegalStateException()
+                val job = task.job
+                task.state = TaskState.FINISHED
+                job.tasks.remove(task)
+                available += task.host!!
+                job.monitor.onTaskFinish(job.job, task.task, 0, ctx.clock.millis())
 
-        brokers.getValue(task.job.broker).send(WorkflowEvent.TaskStarted(self, task.job.job, task.task, ctx.clock.millis()))
-    }
+                if (job.isFinished) {
+                    activeJobs -= job
+                    job.monitor.onJobFinish(job.job, ctx.clock.millis())
+                }
 
-    override fun onTermination(instance: MachineRef, pid: Pid, status: Int) {
-        val task = taskByPid.remove(pid) ?: throw IllegalStateException()
-
-        val job = task.job
-        task.state = ProcessState.TERMINATED
-        job.tasks.remove(task)
-        machineCores.merge(task.host!!, task.task.application.cores, Int::plus)
-        brokers.getValue(job.broker).send(WorkflowEvent.TaskFinished(self, job.job, task.task, status, ctx.clock.millis()))
-
-        if (job.isFinished) {
-            activeJobs -= job
-            brokers.getValue(job.broker).send(WorkflowEvent.JobFinished(self, job.job, ctx.clock.millis()))
+                requestCycle()
+            }
+            else -> throw IllegalStateException()
         }
-
-        requestCycle()
     }
 
-    class JobView(val job: Job, val broker: SendRef<WorkflowEvent>) {
+    class JobView(val job: Job, val monitor: WorkflowMonitor) {
         /**
          * A flag to indicate whether this job is finished.
          */
@@ -245,19 +237,17 @@ class StageWorkflowSchedulerLogic(
         val isRoot: Boolean
             get() = dependencies.isEmpty()
 
-        var state: ProcessState = ProcessState.CREATED
+        var state: TaskState = TaskState.CREATED
             set(value) {
                 field = value
 
                 // Mark the process as terminated in the graph
-                if (value == ProcessState.TERMINATED) {
+                if (value == TaskState.FINISHED) {
                     markTerminated()
                 }
             }
 
-        var pid: Pid? = null
-
-        var host: HostView? = null
+        var host: Node? = null
 
         /**
          * Mark the specified [TaskView] as terminated.
@@ -267,7 +257,7 @@ class StageWorkflowSchedulerLogic(
                 dependent.dependencies.remove(this)
 
                 if (dependent.isRoot) {
-                    dependent.state = ProcessState.READY
+                    dependent.state = TaskState.READY
                 }
             }
         }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,25 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.core.resources.compute
+package com.atlarge.opendc.core.services
 
 /**
- * A logical core in a CPU.
- *
- * @property id The identifier of the core within the CPU.
- * @property unit The [ProcessingUnit] the core is part of.
+ * Default implementation of the [ServiceRegistry] interface.
  */
-data class ProcessingElement(val id: Int, val unit: ProcessingUnit)
+public class ServiceRegistryImpl : ServiceRegistry {
+    /**
+     * The map containing the registered services.
+     */
+    private val services: MutableMap<ServiceKey<*>, Any> = mutableMapOf()
+
+    override fun <T : Any> set(key: ServiceKey<T>, service: T) {
+        services[key] = service
+    }
+
+    override fun contains(key: ServiceKey<*>): Boolean = key in services
+
+    override fun <T : Any> get(key: ServiceKey<T>): T {
+        @Suppress("UNCHECKED_CAST")
+        return services[key] as T
+    }
+}

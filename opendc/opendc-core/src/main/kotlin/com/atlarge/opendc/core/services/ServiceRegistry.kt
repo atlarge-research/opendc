@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +22,31 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.core
-
-import com.atlarge.odcsim.ProcessContext
+package com.atlarge.opendc.core.services
 
 /**
- * A simulation model for large-scale simulation of datacenter infrastructure, built with the *odcsim* API.
- *
- * @property environment The environment in which brokers operate.
- * @property brokers The brokers acting on the cloud platforms.
+ * A service registry for a datacenter zone.
  */
-data class Model(val environment: Environment, val brokers: List<Broker>) {
+public interface ServiceRegistry {
     /**
-     * Build the runtime behavior of the universe.
+     * Determine if this map contains the service with the specified [ServiceKey].
+     *
+     * @param key The key of the service to check for.
+     * @return `true` if the service is in the map, `false` otherwise.
      */
-    suspend operator fun invoke(ctx: ProcessContext) {
-        // Setup the environment
-        val platforms = environment.platforms.map { platform ->
-            val channel = ctx.open<PlatformMessage>()
-            ctx.spawn({ platform(it, channel.receive) }, name = platform.name)
-            channel.send
-        }
+    public operator fun contains(key: ServiceKey<*>): Boolean
 
-        for (broker in brokers) {
-            ctx.spawn { broker(it, platforms) }
-        }
-    }
+    /**
+     * Obtain the service with the specified [ServiceKey].
+     *
+     * @param key The key of the service to obtain.
+     * @return The references to the service.
+     * @throws IllegalArgumentException if the key does not exists in the map.
+     */
+    public operator fun <T : Any> get(key: ServiceKey<T>): T
+
+    /**
+     * Register the specified [ServiceKey] in this registry.
+     */
+    public operator fun <T : Any> set(key: ServiceKey<T>, service: T)
 }

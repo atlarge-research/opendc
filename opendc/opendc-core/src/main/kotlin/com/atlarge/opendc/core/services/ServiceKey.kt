@@ -22,35 +22,26 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service
+package com.atlarge.opendc.core.services
 
-import com.atlarge.odcsim.ProcessContext
-import com.atlarge.odcsim.SendRef
-import com.atlarge.opendc.core.resources.compute.scheduling.ProcessObserver
-import com.atlarge.opendc.core.services.provisioning.ProvisioningResponse
-import com.atlarge.opendc.workflows.workload.Job
-import kotlinx.coroutines.CoroutineScope
+import com.atlarge.opendc.core.Identity
+import java.util.UUID
 
 /**
- * A workflow scheduler interface that schedules jobs across machines.
+ * An interface for identifying service implementations of the same type (providing the same service).
  *
- * @property ctx The context in which the scheduler runs.
- * @property timers The timer scheduler to use.
- * @property lease The resource lease to use.
+ * @param T The shape of the messages the service responds to.
  */
-abstract class WorkflowSchedulerLogic(
-    protected val ctx: ProcessContext,
-    protected val self: WorkflowServiceRef,
-    protected val coroutineScope: CoroutineScope,
-    protected val lease: ProvisioningResponse.Lease
-) : ProcessObserver {
-    /**
-     * Submit the specified workflow for scheduling.
-     */
-    abstract suspend fun submit(job: Job, handler: SendRef<WorkflowEvent>)
+interface ServiceKey<T : Any> : Identity
 
-    /**
-     * Trigger an immediate scheduling cycle.
-     */
-    abstract suspend fun schedule()
+/**
+ * Helper class for constructing a [ServiceKey].
+ *
+ * @property uid The unique identifier of the service.
+ * @property name The name of the service.
+ */
+abstract class AbstractServiceKey<T : Any>(override val uid: UUID, override val name: String) : ServiceKey<T> {
+    override fun equals(other: Any?): Boolean = other is ServiceKey<*> && uid == other.uid
+    override fun hashCode(): Int = uid.hashCode()
+    override fun toString(): String = "ServiceKey[uid=$uid, name=$name]"
 }

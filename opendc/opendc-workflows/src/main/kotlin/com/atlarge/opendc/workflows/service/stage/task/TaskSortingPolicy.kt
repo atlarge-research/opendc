@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.workflows.service.stage.task
 
-import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerLogic
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * This interface represents the **T2** stage of the Reference Architecture for Datacenter Schedulers and provides the
@@ -39,7 +39,7 @@ interface TaskSortingPolicy {
      * @return The sorted list of tasks.
      */
     operator fun invoke(
-        scheduler: StageWorkflowSchedulerLogic,
-        tasks: Collection<StageWorkflowSchedulerLogic.TaskView>
-    ): List<StageWorkflowSchedulerLogic.TaskView>
+        scheduler: StageWorkflowService,
+        tasks: Collection<StageWorkflowService.TaskView>
+    ): List<StageWorkflowService.TaskView>
 }

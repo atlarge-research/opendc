@@ -62,6 +62,7 @@ public class SimpleProvisioningService : ProvisioningService, ServerMonitor {
         val driver = nodes[node]!!
 
         driver.setImage(image)
+        driver.setPower(PowerState.POWER_OFF)
         val newNode = driver.setPower(PowerState.POWER_ON)
         monitors[newNode.server!!] = monitor
         return newNode
