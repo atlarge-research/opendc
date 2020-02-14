@@ -138,7 +138,7 @@ public class SimpleBareMetalDriver(
 
         override suspend fun run(req: LongArray) {
             // TODO Properly implement this for multiple CPUs
-            val time = max(0, req.max() ?: 0) * flavor.cpus[0].clockRate
+            val time = max(0, req.max() ?: 0) / (flavor.cpus[0].clockRate * 1000)
             delay(time.toLong())
         }
     }
