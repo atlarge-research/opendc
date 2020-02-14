@@ -25,9 +25,9 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor

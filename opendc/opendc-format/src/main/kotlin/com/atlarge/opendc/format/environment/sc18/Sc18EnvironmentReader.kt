@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.format.environment.sc18
 
-import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
+import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService

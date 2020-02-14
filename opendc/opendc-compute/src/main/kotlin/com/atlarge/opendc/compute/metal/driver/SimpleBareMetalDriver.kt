@@ -25,8 +25,8 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.processContext
-import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.image.EmptyImage
