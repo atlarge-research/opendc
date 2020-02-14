@@ -31,7 +31,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com.atlarge.opendc.experiments.tpds.TestExperiment"
+    mainClassName = "com.atlarge.opendc.experiments.sc18.TestExperiment"
 }
 
 dependencies {

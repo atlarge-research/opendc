@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.experiments.tpds
+package com.atlarge.opendc.experiments.sc18
 
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
@@ -65,8 +65,7 @@ fun main(args: Array<String>) {
 
     val monitor = object : WorkflowMonitor {
         override suspend fun onJobStart(job: Job, time: Long) {
-            println("Job ${job.uid} submitted")
-            total += 1
+            println("Job ${job.uid} started")
         }
 
         override suspend fun onJobFinish(job: Job, time: Long) {
@@ -79,16 +78,15 @@ fun main(args: Array<String>) {
         }
 
         override suspend fun onTaskStart(job: Job, task: Task, time: Long) {
-            println("Task started ${task.uid}")
         }
 
         override suspend fun onTaskFinish(job: Job, task: Task, status: Int, time: Long) {
-            println("Task finished ${task.uid}")
         }
     }
 
     val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
     val system = provider({ ctx ->
+        println(ctx.clock.instant())
         val scheduler = StageWorkflowService(
             ctx,
             environment.platforms[0].zones[0].services[ProvisioningService.Key],
@@ -105,11 +103,14 @@ fun main(args: Array<String>) {
 
         while (reader.hasNext()) {
             val (time, job) = reader.next()
-            delay(max(0, time - ctx.clock.millis()))
+            total += 1
+            delay(max(0, time * 1000 - ctx.clock.millis()))
             scheduler.submit(job, monitor)
         }
 
         token.receive()
+
+        println(ctx.clock.instant())
     }, name = "sim")
 
     runBlocking {
