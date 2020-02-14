@@ -11,8 +11,7 @@
 by the [OpenDC](https://opendc.org) project.
 Simulations are defined in terms of a hierarchical grouping of actors
 and the interactions between these actors
-([Actor model](https://en.wikipedia.org/wiki/Actor_model)), using
-an API similar to [Akka](https://doc.akka.io/docs/akka/current/index.html).
+([Actor model](https://en.wikipedia.org/wiki/Actor_model)).
 
 ## Getting Started
 
