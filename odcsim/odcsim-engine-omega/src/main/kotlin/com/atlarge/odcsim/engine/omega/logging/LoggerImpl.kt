@@ -33,7 +33,7 @@ import org.slf4j.spi.LocationAwareLogger
 /**
  * An actor-specific [Logger] implementation.
  *
- * @param ctx The owning [ActorContext] of this logger.
+ * @param ctx The owning [ProcessContext] of this logger.
  */
 internal abstract class LoggerImpl internal constructor(protected val ctx: ProcessContext) : Logger {
     /**
@@ -54,8 +54,8 @@ internal abstract class LoggerImpl internal constructor(protected val ctx: Proce
      * Mapped Diagnostic Context (MDC) attribute names.
      */
     companion object {
-        val MDC_PROCESS_TIME = "actor.time"
-        val MDC_PROCESS_REF = "actor.ref"
+        val MDC_PROCESS_TIME = "process.time"
+        val MDC_PROCESS_REF = "process.ref"
 
         /**
          * Create a [Logger] for the specified [ActorContext].
