@@ -31,7 +31,7 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.metal.driver.FakeBareMetalDriver
+import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import java.util.ServiceLoader
 import java.util.UUID
 import kotlinx.coroutines.delay
@@ -56,7 +56,7 @@ internal class SimpleProvisioningServiceTest {
                     println(server)
                 }
             }
-            val driver = FakeBareMetalDriver(UUID.randomUUID(), "test", flavor)
+            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", flavor)
 
             val provisioner = SimpleProvisioningService()
             provisioner.create(driver)

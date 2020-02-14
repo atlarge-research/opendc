@@ -39,14 +39,13 @@ import kotlin.math.max
 import kotlinx.coroutines.delay
 
 /**
- * A implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine, but performs
- * not actual computation.
+ * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
  *
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
  * @param flavor The hardware configuration of the machine.
  */
-public class FakeBareMetalDriver(
+public class SimpleBareMetalDriver(
     uid: UUID,
     name: String,
     private val flavor: ServerFlavor

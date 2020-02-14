@@ -38,7 +38,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
-internal class FakeBareMetalDriverTest {
+internal class SimpleBareMetalDriverTest {
     /**
      * A smoke test for the bare-metal driver.
      */
@@ -53,7 +53,7 @@ internal class FakeBareMetalDriverTest {
                     println(server)
                 }
             }
-            val driver = FakeBareMetalDriver(UUID.randomUUID(), "test", flavor)
+            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", flavor)
 
             driver.init(monitor)
             driver.setImage(image)

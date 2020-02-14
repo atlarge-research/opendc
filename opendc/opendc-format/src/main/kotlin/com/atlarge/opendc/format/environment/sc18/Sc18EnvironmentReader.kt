@@ -26,7 +26,7 @@ package com.atlarge.opendc.format.environment.sc18
 
 import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
-import com.atlarge.opendc.compute.metal.driver.FakeBareMetalDriver
+import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
 import com.atlarge.opendc.core.Environment
@@ -70,7 +70,7 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                 }
                             }
                             val flavor = ServerFlavor(cores)
-                            FakeBareMetalDriver(UUID.randomUUID(), "node-${counter++}", flavor)
+                            SimpleBareMetalDriver(UUID.randomUUID(), "node-${counter++}", flavor)
                         }
                     }
                 }
