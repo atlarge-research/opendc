@@ -25,14 +25,17 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.PowerState
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.ServiceLoader
 import java.util.UUID
@@ -43,26 +46,35 @@ internal class SimpleBareMetalDriverTest {
      */
     @Test
     fun smoke() {
+        var finalState: ServerState = ServerState.BUILD
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        val system = provider({ _ ->
-            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
+        val system = provider("sim")
+        val root = system.newDomain(name = "root")
+        root.launch {
+            val dom = root.newDomain(name = "driver")
+            val flavor = Flavor(4, 0)
+            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)), emptyList(), dom)
+
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
-                    println(server)
+                    finalState = server.state
                 }
             }
-            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)), emptyList())
+            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
 
-            driver.init(monitor)
-            driver.setImage(image)
-            driver.setPower(PowerState.POWER_ON)
-            delay(5)
-            println(driver.refresh())
-        }, name = "sim")
+            // Batch driver commands
+            withContext(dom.coroutineContext) {
+                driver.init(monitor)
+                driver.setImage(image)
+                driver.setPower(PowerState.POWER_ON)
+            }
+        }
 
         runBlocking {
             system.run()
             system.terminate()
         }
+
+        assertEquals(finalState, ServerState.SHUTOFF)
     }
 }

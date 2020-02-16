@@ -24,7 +24,7 @@
 
 package com.atlarge.odcsim.engine.omega.logging
 
-import com.atlarge.odcsim.ProcessContext
+import com.atlarge.odcsim.SimulationContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -33,14 +33,14 @@ import org.slf4j.spi.LocationAwareLogger
 /**
  * An actor-specific [Logger] implementation.
  *
- * @param ctx The owning [ProcessContext] of this logger.
+ * @param ctx The owning [SimulationContext] of this logger.
  */
-internal abstract class LoggerImpl internal constructor(protected val ctx: ProcessContext) : Logger {
+internal abstract class LoggerImpl internal constructor(protected val ctx: SimulationContext) : Logger {
     /**
      * Configure [MDC] with actor-specific information.
      */
     protected inline fun withMdc(block: () -> Unit) {
-        MDC.put(MDC_PROCESS_REF, ctx.self.name)
+        MDC.put(MDC_PROCESS_REF, ctx.domain.name)
         MDC.put(MDC_PROCESS_TIME, String.format("%d", ctx.clock.millis()))
         try {
             block()
@@ -62,7 +62,7 @@ internal abstract class LoggerImpl internal constructor(protected val ctx: Proce
          *
          * @param ctx The actor context to create the logger for.
          */
-        operator fun invoke(ctx: ProcessContext): Logger {
+        operator fun invoke(ctx: SimulationContext): Logger {
             val logger = LoggerFactory.getLogger(ctx.javaClass)
             return if (logger is LocationAwareLogger) {
                 LocationAwareLoggerImpl(ctx, logger)

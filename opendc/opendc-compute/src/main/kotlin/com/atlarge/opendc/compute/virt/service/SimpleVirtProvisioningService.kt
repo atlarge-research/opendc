@@ -1,6 +1,6 @@
 package com.atlarge.opendc.compute.virt.service
 
-import com.atlarge.odcsim.ProcessContext
+import com.atlarge.odcsim.SimulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
@@ -15,7 +15,7 @@ import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import kotlinx.coroutines.launch
 
 class SimpleVirtProvisioningService(
-    private val ctx: ProcessContext,
+    private val ctx: SimulationContext,
     private val provisioningService: ProvisioningService,
     private val hypervisorMonitor: HypervisorMonitor
 ) : VirtProvisioningService, ServerMonitor {
@@ -50,7 +50,7 @@ class SimpleVirtProvisioningService(
     internal val imagesByServer: MutableMap<Server, MutableSet<ImageView>> = mutableMapOf()
 
     init {
-        ctx.launch {
+        ctx.domain.launch {
             val provisionedNodes = provisioningService.nodes().toList()
             val deployedNodes = provisionedNodes.map { node ->
                 val hypervisorImage =
@@ -72,7 +72,7 @@ class SimpleVirtProvisioningService(
     }
 
     private fun requestCycle() {
-        ctx.launch {
+        ctx.domain.launch {
             schedule()
         }
     }

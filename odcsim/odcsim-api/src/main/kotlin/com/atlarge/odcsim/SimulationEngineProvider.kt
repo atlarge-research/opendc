@@ -29,10 +29,7 @@ package com.atlarge.odcsim
  */
 public interface SimulationEngineProvider {
     /**
-     * Create an [SimulationEngine] with the given root [Behavior] and the given name.
-     *
-     * @param root The behavior of the root process.
-     * @param name The name of the engine instance.
+     * Construct an [SimulationEngine] with the given [name].
      */
-    public operator fun invoke(root: Behavior, name: String): SimulationEngine
+    public operator fun invoke(name: String): SimulationEngine
 }

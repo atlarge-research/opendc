@@ -24,22 +24,31 @@
 
 package com.atlarge.odcsim
 
-import java.io.Serializable
+import kotlinx.coroutines.CoroutineScope
 
 /**
- * A reference to a logical process in simulation.
+ * An isolated execution unit that runs concurrently in simulation to the other simulation domains. A domain defines a
+ * logical boundary between processes in simulation.
  */
-public interface ProcessRef : Comparable<ProcessRef>, Serializable {
+public interface Domain : CoroutineScope {
     /**
-     * The name of the process.
+     * The name of this domain.
      */
     public val name: String
 
     /**
-     * Compare [other] process ref with this process reference for order.
-     *
-     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater
-     * than the specified path.
+     * The parent domain to which the lifecycle of this domain is bound. In case this is a root domain, this refers to
+     * itself.
      */
-    override fun compareTo(other: ProcessRef): Int = name.compareTo(other.name)
+    public val parent: Domain
+
+    /**
+     * Construct an anonymous simulation sub-domain that is bound to the lifecycle of this domain.
+     */
+    public fun newDomain(): Domain
+
+    /**
+     * Construct a new simulation sub-domain with the specified [name].
+     */
+    public fun newDomain(name: String): Domain
 }

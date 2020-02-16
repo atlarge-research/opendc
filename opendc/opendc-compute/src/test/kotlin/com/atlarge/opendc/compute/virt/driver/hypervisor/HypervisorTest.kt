@@ -25,7 +25,7 @@
 package com.atlarge.opendc.compute.virt.driver.hypervisor
 
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.odcsim.processContext
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
@@ -37,6 +37,7 @@ import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.ServiceLoader
@@ -52,7 +53,10 @@ internal class HypervisorTest {
     @Test
     fun smoke() {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        val system = provider({ _ ->
+        val system = provider("test")
+        val root = system.newDomain("root")
+
+        root.launch {
             val vmm = HypervisorImage(object : HypervisorMonitor {
                 override fun onSliceFinish(
                     time: Long,
@@ -68,10 +72,12 @@ internal class HypervisorTest {
             val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000_000, 1)
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
-                    println("[${processContext.clock.millis()}]: $server")
+                    println("[${simulationContext.clock.millis()}]: $server")
                 }
             }
-            val metalDriver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2000.0, 1)), emptyList())
+
+            val driverDom = root.newDomain("driver")
+            val metalDriver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2000.0, 1)), emptyList(), driverDom)
 
             metalDriver.init(monitor)
             metalDriver.setImage(vmm)
@@ -82,7 +88,7 @@ internal class HypervisorTest {
             val vmDriver = metalDriver.refresh().server!!.serviceRegistry[VirtDriver]
             vmDriver.spawn(workloadA, monitor, flavor)
             vmDriver.spawn(workloadB, monitor, flavor)
-        }, name = "sim")
+        }
 
         runBlocking {
             system.run()

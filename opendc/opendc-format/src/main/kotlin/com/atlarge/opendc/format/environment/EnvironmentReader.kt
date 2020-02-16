@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.format.environment
 
+import com.atlarge.odcsim.Domain
 import com.atlarge.opendc.core.Environment
 import java.io.Closeable
 
@@ -32,7 +33,7 @@ import java.io.Closeable
  */
 interface EnvironmentReader : Closeable {
     /**
-     * Read the description of the datacenter environment as [Environment].
+     * Construct an [Environment] in the specified domain.
      */
-    fun read(): Environment
+    suspend fun construct(dom: Domain): Environment
 }

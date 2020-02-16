@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.workflows.service
 
-import com.atlarge.odcsim.processContext
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.workflows.service.stage.StagePolicy
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -66,13 +66,13 @@ sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Logic> {
 
         override fun invoke(scheduler: StageWorkflowService): Logic = object : Logic {
             override suspend fun requestCycle() {
-                val ctx = processContext
+                val ctx = simulationContext
                 if (next == null) {
                     // In batch mode, we assume that the scheduler runs at a fixed slot every time
                     // quantum (e.g t=0, t=60, t=120). We calculate here the delay until the next scheduling slot.
                     val delay = quantum - (ctx.clock.millis() % quantum)
 
-                    val job = ctx.launch {
+                    val job = ctx.domain.launch {
                         delay(delay)
                         next = null
                         scheduler.schedule()
@@ -93,11 +93,11 @@ sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Logic> {
 
         override fun invoke(scheduler: StageWorkflowService): Logic = object : Logic {
             override suspend fun requestCycle() {
-                val ctx = processContext
+                val ctx = simulationContext
                 if (next == null) {
                     val delay = random.nextInt(200).toLong()
 
-                    val job = ctx.launch {
+                    val job = ctx.domain.launch {
                         delay(delay)
                         next = null
                         scheduler.schedule()

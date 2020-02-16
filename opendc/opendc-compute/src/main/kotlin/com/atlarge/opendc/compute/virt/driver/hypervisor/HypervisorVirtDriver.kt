@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.compute.virt.driver.hypervisor
 
-import com.atlarge.odcsim.ProcessContext
-import com.atlarge.odcsim.processContext
+import com.atlarge.odcsim.SimulationContext
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ServerState
@@ -65,7 +65,7 @@ class HypervisorVirtDriver(
 
         val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
         memoryAvailable -= requiredMemory
-        vms.add(VmServerContext(server, monitor, processContext))
+        vms.add(VmServerContext(server, monitor, simulationContext))
         return server
     }
 
@@ -76,11 +76,11 @@ class HypervisorVirtDriver(
     internal inner class VmServerContext(
         override var server: Server,
         val monitor: ServerMonitor,
-        ctx: ProcessContext
+        ctx: SimulationContext
     ) : ServerManagementContext {
         private var initialized: Boolean = false
 
-        internal val job: Job = ctx.launch {
+        internal val job: Job = ctx.domain.launch {
             init()
             try {
                 server.image(this@VmServerContext)

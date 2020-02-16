@@ -24,7 +24,7 @@
 
 package com.atlarge.odcsim.engine.omega.logging
 
-import com.atlarge.odcsim.ProcessContext
+import com.atlarge.odcsim.SimulationContext
 import org.slf4j.Logger
 import org.slf4j.Marker
 import org.slf4j.helpers.MessageFormatter
@@ -33,11 +33,11 @@ import org.slf4j.spi.LocationAwareLogger
 /**
  * An actor-specific [Logger] implementation that is aware of the calling location.
  *
- * @param ctx The owning [ProcessContext] of this logger.
+ * @param ctx The owning [SimulationContext] of this logger.
  * @param delegate The [LocationAwareLogger] to delegate the messages to.
  */
 internal class LocationAwareLoggerImpl(
-    ctx: ProcessContext,
+    ctx: SimulationContext,
     private val delegate: LocationAwareLogger
 ) : LoggerImpl(ctx), Logger by delegate {
     /**

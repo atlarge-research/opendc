@@ -24,7 +24,6 @@
 
 package com.atlarge.odcsim.engine.omega
 
-import com.atlarge.odcsim.Behavior
 import com.atlarge.odcsim.SimulationEngine
 import com.atlarge.odcsim.SimulationEngineProvider
 import java.util.ServiceLoader
@@ -33,7 +32,6 @@ import java.util.ServiceLoader
  * An [SimulationEngineProvider] for the Omega engine, used by the [ServiceLoader] API to create
  * [OmegaSimulationEngine] instances.
  */
-class OmegaSimulationEngineProvider : SimulationEngineProvider {
-    override operator fun invoke(root: Behavior, name: String): SimulationEngine =
-        OmegaSimulationEngine(root, name)
+public class OmegaSimulationEngineProvider : SimulationEngineProvider {
+    override operator fun invoke(name: String): SimulationEngine = OmegaSimulationEngine(name)
 }

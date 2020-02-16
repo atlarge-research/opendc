@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.compute.metal.service
 
+import com.atlarge.odcsim.Domain
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
@@ -31,11 +32,12 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
+import kotlinx.coroutines.withContext
 
 /**
  * A very basic implementation of the [ProvisioningService].
  */
-public class SimpleProvisioningService : ProvisioningService, ServerMonitor {
+public class SimpleProvisioningService(val domain: Domain) : ProvisioningService, ServerMonitor {
     /**
      * The active nodes in this service.
      */
@@ -46,29 +48,31 @@ public class SimpleProvisioningService : ProvisioningService, ServerMonitor {
      */
     private val monitors: MutableMap<Server, ServerMonitor> = mutableMapOf()
 
-    override suspend fun create(driver: BareMetalDriver): Node {
-        val node = driver.init(this)
+    override suspend fun create(driver: BareMetalDriver): Node = withContext(domain.coroutineContext) {
+        val node = driver.init(this@SimpleProvisioningService)
         nodes[node] = driver
-        return node
+        return@withContext node
     }
 
-    override suspend fun nodes(): Set<Node> = nodes.keys
+    override suspend fun nodes(): Set<Node> = withContext(domain.coroutineContext) { nodes.keys }
 
-    override suspend fun refresh(node: Node): Node {
-        return nodes[node]!!.refresh()
+    override suspend fun refresh(node: Node): Node = withContext(domain.coroutineContext) {
+        return@withContext nodes[node]!!.refresh()
     }
 
-    override suspend fun deploy(node: Node, image: Image, monitor: ServerMonitor): Node {
+    override suspend fun deploy(node: Node, image: Image, monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
         val driver = nodes[node]!!
 
         driver.setImage(image)
         driver.setPower(PowerState.POWER_OFF)
         val newNode = driver.setPower(PowerState.POWER_ON)
         monitors[newNode.server!!] = monitor
-        return newNode
+        return@withContext newNode
     }
 
     override suspend fun onUpdate(server: Server, previousState: ServerState) {
-        monitors[server]?.onUpdate(server, previousState)
+        withContext(domain.coroutineContext) {
+            monitors[server]?.onUpdate(server, previousState)
+        }
     }
 }
