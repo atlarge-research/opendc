@@ -33,7 +33,6 @@ import com.atlarge.opendc.compute.core.execution.ServerContext
  * images by default. You may also create custom images from cloud servers you have launched. These custom images are
  * useful for backup purposes or for producing “gold” server images if you plan to deploy a particular server
  * configuration frequently.
-
  */
 public interface Image {
     /**

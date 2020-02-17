@@ -26,6 +26,7 @@ package com.atlarge.opendc.compute.core.execution
 
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.core.services.AbstractServiceKey
 
 /**
  * Represents the execution context in which an bootable [Image] runs on a [Server].
@@ -41,6 +42,15 @@ public interface ServerContext {
      * finished processing. If none of the cores are non-zero, the method will return immediately.
      *
      * @param req An array specifying for each core the amount of cpu time to request.
+     * @param reqDuration A [Long] specifying the duration in which this request needs to be fulfilled.
+     * @return An array specifying for each core the amount of cpu time it actually received.
      */
-    public suspend fun run(req: LongArray)
+    public suspend fun run(req: LongArray, reqDuration: Long): LongArray
+
+    /**
+     * Publishes the given [service] with key [serviceKey] in the server's registry.
+     */
+    public suspend fun <T : Any> publishService(serviceKey: AbstractServiceKey<T>, service: T) {
+        server.serviceRegistry[serviceKey] = service
+    }
 }

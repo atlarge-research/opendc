@@ -22,36 +22,29 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.core.image
+package com.atlarge.opendc.compute.virt
 
+import com.atlarge.odcsim.processContext
 import com.atlarge.opendc.compute.core.execution.ServerContext
-import kotlin.math.min
+import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
+import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
- * An application [Image] that models applications performing a static number of floating point operations ([flops]) on
- * a compute resource.
- *
- * @property flops The number of floating point operations to perform for this task.
- * @property cores The number of cores that the image is able to utilize.
- * @property utilization A model of the CPU utilization of the application.
- * @property details The details of this image.
+ * A hypervisor managing the VMs of a node.
  */
-class FlopsApplicationImage(
-    public val flops: Long,
-    public val cores: Int,
-    public val utilization: Double = 0.8,
+class HypervisorImage(
+    private val hypervisorMonitor: HypervisorMonitor,
     public override val details: Map<String, Any> = emptyMap()
 ) : Image {
-    init {
-        require(flops >= 0) { "Negative number of flops" }
-    }
-
-    /**
-     * Execute the runtime behavior based on a number of floating point operations to execute.
-     */
     override suspend fun invoke(ctx: ServerContext) {
-        val cores = min(this.cores, ctx.server.flavor.cpus.sumBy { it.cores })
-        val req = (flops * (1 / utilization) / cores).toLong()
-        ctx.run(LongArray(cores) { req }, req)
+        val driver = SimpleVirtDriver(processContext, ctx, hypervisorMonitor)
+
+        ctx.publishService(VirtDriver.Key, driver)
+
+        // Suspend image until it is cancelled
+        suspendCancellableCoroutine<Unit> {}
     }
 }

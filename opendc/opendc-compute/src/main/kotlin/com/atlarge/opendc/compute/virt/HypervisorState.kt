@@ -22,48 +22,19 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.core
-
-import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.core.Identity
-import com.atlarge.opendc.core.services.ServiceRegistry
-import com.atlarge.opendc.core.services.ServiceRegistryImpl
-import java.util.UUID
+package com.atlarge.opendc.compute.virt
 
 /**
- * A server instance that is running on some physical or virtual machine.
+ * The power state of a compute node.
  */
-public data class Server(
+public enum class HypervisorState {
     /**
-     * The unique identifier of the server.
+     * Hypervisor is running.
      */
-    public override val uid: UUID,
+    RUNNING,
 
     /**
-     * The optional name of the server.
+     * Hypervisor is destroyed.
      */
-    public override val name: String,
-
-    /**
-     * The hardware configuration of the server.
-     */
-    public val flavor: ServerFlavor,
-
-    /**
-     * The image running on the server.
-     */
-    public val image: Image,
-
-    /**
-     * The last known state of the server.
-     */
-    public val state: ServerState,
-
-    /**
-     * The services published by this server.
-     */
-    public val serviceRegistry: ServiceRegistry = ServiceRegistryImpl()
-) : Identity {
-    override fun hashCode(): Int = uid.hashCode()
-    override fun equals(other: Any?): Boolean = other is Server && uid == other.uid
+    DESTROYED,
 }
