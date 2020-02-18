@@ -11,20 +11,11 @@
 by the [OpenDC](https://opendc.org) project.
 Simulations are defined in terms of a hierarchical grouping of actors
 and the interactions between these actors
-([Actor model](https://en.wikipedia.org/wiki/Actor_model)), using
-an API similar to [Akka](https://doc.akka.io/docs/akka/current/index.html).
-
-## Documentation
-Check out the [Getting Started](#getting-started) section for a quick
-overview.
-The documentation is located in the [docs/](docs/) directory and is divided as follows:
-* [Main Concepts](docs/concepts.md)
-* [Building a Model](docs/build.md)
-* [Running a Model](docs/run.md)
-* [API Reference](https://atlarge-research.github.io/opendc-simulator)
-* [Contributing Guide](../CONTRIBUTING.md)
+([Actor model](https://en.wikipedia.org/wiki/Actor_model)).
 
 ## Getting Started
+
+The instructions below are meant for when you would like to use `odcsim` separately from `opendc`. If you simply want to use the simulator, you do not need to follow them, please refer to the [main README](../README.md) for instructions.
 
 ### Installation
 Please add the required packages as dependency in your project.

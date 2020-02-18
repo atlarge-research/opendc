@@ -24,10 +24,22 @@ This repository hosts the source code and development of the simulation componen
 - **[opendc](/opendc)**  
   A collection of models for simulating clouds, datacenters and their components using the **odcsim** framework.
 
+## Documentation
+Check out the [Getting Started](#getting-started) section for a quick
+overview.
+The documentation is located in the [docs/](docs) directory and is divided as follows:
+1. [Introduction](docs/introduction.md)
+1. [Toolchain Setup](docs/setup.md)
+2. [Architecture Overview](docs/architecture.md)
+3. [Running an Experiment](docs/run.md)
+
+## Getting Started
+TODO
+
 ## Contributing
 ### Contributing Guide
 Read our [contributing guide](CONTRIBUTING.md) to learn about our
-development process, how  to propose bug fixes and improvements, and how
+development process, how to propose bug fixes and improvements, and how
 to build and test your changes to the project.
 
 ### License
