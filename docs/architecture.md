@@ -20,13 +20,22 @@ You might note that the simulation framework and the simulator itself makes exte
 The `opendc` package consists of a number of submodules, the most feature-rich being `opendc-compute`. Below, we will explain each in turn.
 
 ### 3.2.1 `opendc-core`
-This module defines a base model for datacenter simulation, establishing core concepts and terminology of datacenters.
-The other `opendc` modules build on this model and extend it in various directions (e.g. virtual machines or workflows).
+This module defines a base model for datacenter simulation, establishing core concepts and terminology of datacenters
+that we share across the various modules. Other `opendc` modules build on this model and extend it in various directions (e.g. virtual machines or workflows).
 
 ### 3.2.2 `opendc-compute`
-This module models management and provisioning of compute instances such as virtual machines and bare-metal servers. We
-represent such compute instances as a `Server`. The hardware configuration of the server is represented as a `Flavor`.
-Servers run bootable disk images called `Image`s, which characterizes the runtime behavior of a server.
+This module is concerned with modeling cloud computing services (such as [Amazon EC2](https://aws.amazon.com/ec2/) and [Google Compute Engine](https://cloud.google.com/compute)) and provides the following features:
+
+1. **Model for simulated workloads**  
+   We represent workloads as bootable disk images (called `Image`) which characterize the runtime behavior
+   of a running server in terms of the cpu time they require over time.
+2. **Bare-metal management & provisioning**  
+   We provide models for simulating management of bare-metal machines (`Node`) and deploying workloads on it (using `BareMetalDriver`). 
+   Furthermore, we also include functionality for simulating and experimenting with (custom) provisioning policies on a pool of bare-metal machies (using `ProvisioningService`)
+3. **Virtual machine management, scheduling and provisioning**  
+   We provide functionality for simulating deployment of multiple `Image`s on a single machine using a hypervisor, which
+   is concerned with scheduling/distributing the load of the running guest machines on the host machine. This may be used to experiment with overcommitting of virtual resources.
+   Moreover, we also model provisioning policies for virtual machine provisioning with a pool of host machines. 
 
 ### 3.2.3 `opendc-workflows`
 This module contains all workflow-related models and logic of the simulator. The models for workflows can be found in the `workload` package: A `Job` and a `Task`. The logic concerning the scheduling of a workflow is contained in the `service` package. It follows the Reference Architecture for Datacenter Schedulers by [Andreadis et al.](https://dl.acm.org/doi/10.5555/3291656.3291706). For a good introduction into datacenter schedulers and to fully grasp the modeling approach taken, we highly recommend reading this publication (or its more extensive [technical report](https://arxiv.org/pdf/1808.04224.pdf)).
