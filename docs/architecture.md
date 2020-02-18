@@ -31,7 +31,7 @@ This module is concerned with modeling cloud computing services (such as [Amazon
    of a running server in terms of the cpu time they require over time.
 2. **Bare-metal management & provisioning**  
    We provide models for simulating management of bare-metal machines (`Node`) and deploying workloads on it (using `BareMetalDriver`). 
-   Furthermore, we also include functionality for simulating and experimenting with (custom) provisioning policies on a pool of bare-metal machies (using `ProvisioningService`)
+   Furthermore, we also include functionality for simulating and experimenting with (custom) provisioning policies on a pool of bare-metal machies (using `ProvisioningService`).
 3. **Virtual machine management, scheduling and provisioning**  
    We provide functionality for simulating deployment of multiple `Image`s on a single machine using a hypervisor, which
    is concerned with scheduling/distributing the load of the running guest machines on the host machine. This may be used to experiment with overcommitting of virtual resources.
