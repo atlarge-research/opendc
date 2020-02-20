@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,19 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.resource
+package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.workflows.service.stage.StagePolicy
+import com.atlarge.opendc.workflows.service.JobState
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
- * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
+ * The [SizeJobOrderPolicy] sorts tasks based on the order of arrival in the queue.
  */
-interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>
+data class SizeJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService) =
+        compareBy<JobState> { it.tasks.size.let { if (ascending) it else -it } }
+
+    override fun toString(): String {
+        return "Job-Size(${if (ascending) "asc" else "desc"})"
+    }
+}

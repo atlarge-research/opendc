@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,24 @@
 
 package com.atlarge.opendc.workflows.service.stage.job
 
+import com.atlarge.opendc.workflows.service.JobState
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * A policy interface for ordering admitted workflows in the scheduling queue.
+ * A [JobAdmissionPolicy] that limits the amount of active jobs in the system.
+ *
+ * @property limit The maximum number of concurrent jobs in the system.
  */
-interface JobSortingPolicy {
-    /**
-     * Sort the given collection of jobs on a given criterion.
-     *
-     * @param scheduler The scheduler that started the cycle.
-     * @param jobs The collection of tasks that should be sorted.
-     * @return The sorted list of jobs.
-     */
-    operator fun invoke(
-        scheduler: StageWorkflowService,
-        jobs: Collection<StageWorkflowService.JobView>
-    ): List<StageWorkflowService.JobView>
+data class LimitJobAdmissionPolicy(val limit: Int) : JobAdmissionPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : JobAdmissionPolicy.Logic {
+        override fun invoke(
+            job: JobState
+        ): JobAdmissionPolicy.Advice =
+            if (scheduler.activeJobs.size < limit)
+                JobAdmissionPolicy.Advice.ADMIT
+            else
+                JobAdmissionPolicy.Advice.STOP
+    }
+
+    override fun toString(): String = "Limit-Active($limit)"
 }

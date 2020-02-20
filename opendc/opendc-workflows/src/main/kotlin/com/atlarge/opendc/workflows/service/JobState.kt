@@ -22,13 +22,21 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.resource
+package com.atlarge.opendc.workflows.service
 
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.workflows.service.stage.StagePolicy
+import com.atlarge.opendc.workflows.monitor.WorkflowMonitor
+import com.atlarge.opendc.workflows.workload.Job
 
-/**
- * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
- * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
- */
-interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>
+class JobState(val job: Job, val monitor: WorkflowMonitor, val submittedAt: Long) {
+    /**
+     * A flag to indicate whether this job is finished.
+     */
+    val isFinished: Boolean
+        get() = tasks.isEmpty()
+
+    val tasks: MutableSet<TaskState> = mutableSetOf()
+
+    override fun equals(other: Any?): Boolean = other is JobState && other.job == job
+
+    override fun hashCode(): Int = job.hashCode()
+}

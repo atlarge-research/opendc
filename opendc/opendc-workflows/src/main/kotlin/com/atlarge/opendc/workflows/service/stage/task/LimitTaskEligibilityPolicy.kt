@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +25,19 @@
 package com.atlarge.opendc.workflows.service.stage.task
 
 import com.atlarge.opendc.workflows.service.StageWorkflowService
-import kotlin.random.Random
+import com.atlarge.opendc.workflows.service.TaskState
 
-/**
- * The [RandomTaskSortingPolicy] sorts tasks randomly.
- *
- * @property random The [Random] instance to use when sorting the list of tasks.
- */
-class RandomTaskSortingPolicy(private val random: Random = Random.Default) : TaskSortingPolicy {
-    override fun invoke(
-        scheduler: StageWorkflowService,
-        tasks: Collection<StageWorkflowService.TaskView>
-    ): List<StageWorkflowService.TaskView> = tasks.shuffled(random)
+data class LimitTaskEligibilityPolicy(val limit: Int): TaskEligibilityPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
+        override fun invoke(
+            task: TaskState
+        ): TaskEligibilityPolicy.Advice =
+            if (scheduler.activeTasks.size < limit)
+                TaskEligibilityPolicy.Advice.ADMIT
+            else
+                TaskEligibilityPolicy.Advice.STOP
+    }
+
+
+    override fun toString(): String = "Limit-Active($limit)"
 }

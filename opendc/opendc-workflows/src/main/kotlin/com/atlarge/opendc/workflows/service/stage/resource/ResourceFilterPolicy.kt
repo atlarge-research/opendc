@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,26 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.task
+package com.atlarge.opendc.workflows.service.stage.resource
 
-import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.workflows.service.TaskState
+import com.atlarge.opendc.workflows.service.stage.StagePolicy
 
 /**
- * A [TaskEligibilityPolicy] that marks tasks as eligible if they are tasks roots within the job.
+ * This interface represents stages **R2**, **R3** and **R4** stage of the Reference Architecture for Schedulers and
+ * acts as a filter yielding a list of resources with sufficient resource-capacities, based on fixed or dynamic
+ * requirements, and on predicted or monitored information about processing unit availability, memory occupancy, etc.
  */
-class FunctionalTaskEligibilityPolicy : TaskEligibilityPolicy {
-    override fun isEligible(
-        scheduler: StageWorkflowService,
-        task: StageWorkflowService.TaskView
-    ): Boolean = task.state == TaskState.READY
+interface ResourceFilterPolicy : StagePolicy<ResourceFilterPolicy.Logic> {
+    interface Logic {
+        /**
+         * Filter the list of machines based on dynamic information.
+         *
+         * @param hosts The hosts to filter.
+         * @param task The task that is to be scheduled.
+         * @return The machines on which the task can be scheduled.
+         */
+        operator fun invoke(hosts: Sequence<Node>, task: TaskState): Sequence<Node>
+    }
 }

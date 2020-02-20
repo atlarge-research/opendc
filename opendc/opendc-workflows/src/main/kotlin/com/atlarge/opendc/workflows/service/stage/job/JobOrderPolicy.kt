@@ -24,17 +24,11 @@
 
 package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.workflows.service.StageWorkflowService
-import kotlin.random.Random
+import com.atlarge.opendc.workflows.service.JobState
+import com.atlarge.opendc.workflows.service.stage.StagePolicy
 
 /**
- * The [RandomJobSortingPolicy] sorts tasks randomly.
- *
- * @property random The [Random] instance to use when sorting the list of tasks.
+ * A policy interface for ordering admitted workflows in the scheduling queue.
  */
-class RandomJobSortingPolicy(private val random: Random = Random.Default) : JobSortingPolicy {
-    override fun invoke(
-        scheduler: StageWorkflowService,
-        jobs: Collection<StageWorkflowService.JobView>
-    ): List<StageWorkflowService.JobView> = jobs.shuffled(random)
-}
+interface JobOrderPolicy : StagePolicy<Comparator<JobState>>
+

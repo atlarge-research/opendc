@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,35 @@
 package com.atlarge.opendc.workflows.service.stage.job
 
 import com.atlarge.opendc.workflows.service.JobState
+import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.workload.Job
+import java.util.Random
 
-/**
- * A [JobAdmissionPolicy] that admits all jobs.
- */
-object NullJobAdmissionPolicy : JobAdmissionPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = object : JobAdmissionPolicy.Logic {
-        override fun invoke(job: JobState): JobAdmissionPolicy.Advice = JobAdmissionPolicy.Advice.ADMIT
+object RandomJobOrderPolicy : JobOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<JobState> =
+        object : Comparator<JobState>, StageWorkflowSchedulerListener {
+            private val random = Random(123)
+            private val ids = HashMap<Job, Int>()
+
+            init {
+                scheduler.addListener(this)
+            }
+
+            override fun jobSubmitted(job: JobState) {
+                ids[job.job] = random.nextInt()
+            }
+
+            override fun jobFinished(job: JobState) {
+                ids.remove(job.job)
+            }
+
+            override fun compare(o1: JobState, o2: JobState): Int {
+                return compareValuesBy(o1, o2) { ids.getValue(it.job) }
+            }
+        }
+
+    override fun toString(): String {
+        return "Random"
     }
-
-    override fun toString(): String = "Always"
 }

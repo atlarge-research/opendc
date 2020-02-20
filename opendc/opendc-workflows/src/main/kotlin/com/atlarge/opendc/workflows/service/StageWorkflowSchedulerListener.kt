@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,18 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.resource
+package com.atlarge.opendc.workflows.service
 
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.workflows.service.stage.StagePolicy
+interface StageWorkflowSchedulerListener {
+    fun cycleStarted(scheduler: StageWorkflowService) {}
+    fun cycleFinished(scheduler: StageWorkflowService) {}
 
-/**
- * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
- * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
- */
-interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>
+    fun jobSubmitted(job: JobState) {}
+    fun jobStarted(job: JobState) {}
+    fun jobFinished(job: JobState) {}
+
+    fun taskReady(task: TaskState) {}
+    fun taskAssigned(task: TaskState) {}
+    fun taskStarted(task: TaskState) {}
+    fun taskFinished(task: TaskState) {}
+}

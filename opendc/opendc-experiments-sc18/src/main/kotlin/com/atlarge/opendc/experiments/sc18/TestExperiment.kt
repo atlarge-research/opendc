@@ -31,7 +31,7 @@ import com.atlarge.opendc.format.trace.gwf.GwfTraceReader
 import com.atlarge.opendc.workflows.monitor.WorkflowMonitor
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.WorkflowSchedulerMode
-import com.atlarge.opendc.workflows.service.stage.job.FifoJobSortingPolicy
+import com.atlarge.opendc.workflows.service.stage.job.SubmissionTimeJobOrderPolicy
 import com.atlarge.opendc.workflows.service.stage.job.NullJobAdmissionPolicy
 import com.atlarge.opendc.workflows.service.stage.resource.FirstFitResourceSelectionPolicy
 import com.atlarge.opendc.workflows.service.stage.resource.FunctionalResourceDynamicFilterPolicy
@@ -92,7 +92,7 @@ fun main(args: Array<String>) {
             environment.platforms[0].zones[0].services[ProvisioningService.Key],
             mode = WorkflowSchedulerMode.Batch(100),
             jobAdmissionPolicy = NullJobAdmissionPolicy,
-            jobSortingPolicy = FifoJobSortingPolicy(),
+            jobSortingPolicy = SubmissionTimeJobOrderPolicy(),
             taskEligibilityPolicy = FunctionalTaskEligibilityPolicy(),
             taskSortingPolicy = FifoTaskSortingPolicy(),
             resourceDynamicFilterPolicy = FunctionalResourceDynamicFilterPolicy(),

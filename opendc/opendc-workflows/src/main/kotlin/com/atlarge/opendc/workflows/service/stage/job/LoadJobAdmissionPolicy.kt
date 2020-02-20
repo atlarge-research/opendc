@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,26 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.resource
+package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.workflows.service.stage.StagePolicy
+import com.atlarge.opendc.workflows.service.JobState
+import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
- * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
+ * A [JobAdmissionPolicy] that limits the amount of jobs based on the system load.
+ *
+ * @property limit The maximum load before stopping admission.
  */
-interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>
+data class LoadJobAdmissionPolicy(val limit: Double) : JobAdmissionPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : JobAdmissionPolicy.Logic {
+        override fun invoke(
+            job: JobState
+        ): JobAdmissionPolicy.Advice =
+            if (scheduler.load < limit)
+                JobAdmissionPolicy.Advice.ADMIT
+            else
+                JobAdmissionPolicy.Advice.STOP
+    }
+
+    override fun toString(): String = "Limit-Load($limit)"
+}

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.resource
+package com.atlarge.opendc.workflows.service.stage.task
 
-import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.workflows.service.TaskState
 import com.atlarge.opendc.workflows.service.stage.StagePolicy
 
 /**
- * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
- * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
+ * This interface represents the **T2** stage of the Reference Architecture for Datacenter Schedulers and provides the
+ * scheduler with a sorted list of tasks to schedule.
  */
-interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>
+interface TaskOrderPolicy : StagePolicy<Comparator<TaskState>>

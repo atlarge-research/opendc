@@ -26,18 +26,19 @@ package com.atlarge.opendc.workflows.service.stage.resource
 
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.TaskState
 
 /**
- * A [ResourceDynamicFilterPolicy] based on the amount of cores available on the machine and the cores required for
+ * A [ResourceFilterPolicy] based on the amount of cores available on the machine and the cores required for
  * the task.
  */
-class FunctionalResourceDynamicFilterPolicy : ResourceDynamicFilterPolicy {
-    override fun invoke(
-        scheduler: StageWorkflowService,
-        machines: List<Node>,
-        task: StageWorkflowService.TaskView
-    ): List<Node> {
-        return machines
-            .filter { it in scheduler.available }
-    }
+object FunctionalResourceFilterPolicy : ResourceFilterPolicy {
+    override fun invoke(scheduler: StageWorkflowService): ResourceFilterPolicy.Logic =
+        object : ResourceFilterPolicy.Logic {
+            override fun invoke(hosts: Sequence<Node>, task: TaskState): Sequence<Node> =
+                hosts.filter { it in scheduler.available }
+        }
+
+
+    override fun toString(): String = "functional"
 }

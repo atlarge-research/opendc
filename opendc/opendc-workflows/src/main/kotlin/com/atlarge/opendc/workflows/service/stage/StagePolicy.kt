@@ -22,13 +22,17 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.resource
+package com.atlarge.opendc.workflows.service.stage
 
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.workflows.service.stage.StagePolicy
+import com.atlarge.opendc.workflows.service.StageWorkflowService
+import java.io.Serializable
 
 /**
- * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
- * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
+ * A scheduling stage policy.
  */
-interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>
+interface StagePolicy<T : Any> : Serializable {
+    /**
+     * Build the logic of the stage policy.
+     */
+    operator fun invoke(scheduler: StageWorkflowService): T
+}

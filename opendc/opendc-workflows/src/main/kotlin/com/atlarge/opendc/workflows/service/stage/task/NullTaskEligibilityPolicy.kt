@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,22 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.job
+package com.atlarge.opendc.workflows.service.stage.task
 
 import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.TaskState
 
 /**
- * The [FifoJobSortingPolicy] sorts tasks based on the order of arrival in the queue.
+ * A [TaskEligibilityPolicy] that marks tasks as eligible if they are tasks roots within the job.
  */
-class FifoJobSortingPolicy : JobSortingPolicy {
-    override fun invoke(
-        scheduler: StageWorkflowService,
-        jobs: Collection<StageWorkflowService.JobView>
-    ): List<StageWorkflowService.JobView> = jobs.toList()
+object NullTaskEligibilityPolicy : TaskEligibilityPolicy {
+    override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic = Logic
+
+    private object Logic : TaskEligibilityPolicy.Logic {
+        override fun invoke(
+            task: TaskState
+        ): TaskEligibilityPolicy.Advice = TaskEligibilityPolicy.Advice.ADMIT
+    }
+
+    override fun toString(): String = "Always"
 }

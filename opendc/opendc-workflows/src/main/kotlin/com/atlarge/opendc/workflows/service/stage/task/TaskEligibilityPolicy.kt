@@ -24,25 +24,49 @@
 
 package com.atlarge.opendc.workflows.service.stage.task
 
-import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.TaskState
+import com.atlarge.opendc.workflows.service.stage.StagePolicy
 
 /**
  * A policy interface for determining the eligibility of tasks in a scheduling cycle.
  */
-interface TaskEligibilityPolicy {
-    /**
-     * A method that is invoked at the start of each scheduling cycle.
-     *
-     * @param scheduler The scheduler that started the cycle.
-     */
-    fun startCycle(scheduler: StageWorkflowService) {}
+interface TaskEligibilityPolicy : StagePolicy<TaskEligibilityPolicy.Logic> {
+    interface Logic {
+        /**
+         * Determine whether the specified [TaskState] is eligible to be scheduled.
+         *
+         * @param task The task instance to schedule.
+         * @return The advice for marking the task.
+         */
+        operator fun invoke(task: TaskState): Advice
+    }
 
     /**
-     * Determine whether the specified [StageWorkflowService.TaskView] is eligible to be scheduled.
+     * The advice given to the scheduler by an admission policy.
      *
-     * @param scheduler The scheduler that is determining whether the task is eligible.
-     * @param task The task instance to schedule.
-     * @return `true` if the task eligible to be scheduled, `false` otherwise.
+     * @property admit A flag to indicate to the scheduler that the job should be admitted.
+     * @property stop  A flag to indicate the scheduler should immediately stop admitting jobs to the scheduling queue and wait
+     * for the next scheduling cycle.
      */
-    fun isEligible(scheduler: StageWorkflowService, task: StageWorkflowService.TaskView): Boolean
+    enum class Advice(val admit: Boolean, val stop: Boolean) {
+        /**
+         * Admit the current job to the scheduling queue and continue admitting jobs.
+         */
+        ADMIT(true, false),
+
+        /**
+         * Admit the current job to the scheduling queue and stop admitting jobs.
+         */
+        ADMIT_LAST(true, true),
+
+        /**
+         * Deny the current job, but continue admitting jobs.
+         */
+        DENY(false, false),
+
+        /**
+         * Deny the current job and also stop admitting jobs.
+         */
+        STOP(false, true)
+    }
 }

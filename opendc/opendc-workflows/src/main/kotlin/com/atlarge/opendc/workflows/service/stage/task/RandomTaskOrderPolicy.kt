@@ -24,14 +24,41 @@
 
 package com.atlarge.opendc.workflows.service.stage.task
 
+import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.TaskState
+import com.atlarge.opendc.workflows.workload.Task
+import kotlin.random.Random
 
 /**
- * The [FifoTaskSortingPolicy] sorts tasks based on the order of arrival in the queue.
+ * The [RandomTaskOrderPolicy] sorts tasks randomly.
+ *
+ * @property random The [Random] instance to use when sorting the list of tasks.
  */
-class FifoTaskSortingPolicy : TaskSortingPolicy {
-    override fun invoke(
-        scheduler: StageWorkflowService,
-        tasks: Collection<StageWorkflowService.TaskView>
-    ): List<StageWorkflowService.TaskView> = tasks.toList()
+object RandomTaskOrderPolicy : TaskOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =
+        object : Comparator<TaskState>, StageWorkflowSchedulerListener {
+            private val random = Random(123)
+            private val ids = HashMap<Task, Int>()
+
+            init {
+                scheduler.addListener(this)
+            }
+
+            override fun taskReady(task: TaskState) {
+                ids[task.task] = random.nextInt()
+            }
+
+            override fun taskFinished(task: TaskState) {
+                ids.remove(task.task)
+            }
+
+            override fun compare(o1: TaskState, o2: TaskState): Int {
+                return compareValuesBy(o1, o2) { ids.getValue(it.task) }
+            }
+        }
+
+    override fun toString(): String {
+        return "Random"
+    }
 }

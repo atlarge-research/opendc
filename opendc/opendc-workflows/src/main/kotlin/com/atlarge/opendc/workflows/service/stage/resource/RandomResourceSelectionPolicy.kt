@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +22,23 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.task
+package com.atlarge.opendc.workflows.service.stage.resource
 
+import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.workflows.service.StageWorkflowService
+import java.util.Random
 
-/**
- * This interface represents the **T2** stage of the Reference Architecture for Datacenter Schedulers and provides the
- * scheduler with a sorted list of tasks to schedule.
- */
-interface TaskSortingPolicy {
-    /**
-     * Sort the given list of tasks on a given criterion.
-     *
-     * @param scheduler The scheduler that is sorting the tasks.
-     * @param tasks The collection of tasks that should be sorted.
-     * @return The sorted list of tasks.
-     */
-    operator fun invoke(
-        scheduler: StageWorkflowService,
-        tasks: Collection<StageWorkflowService.TaskView>
-    ): List<StageWorkflowService.TaskView>
+object RandomResourceSelectionPolicy : ResourceSelectionPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : Comparator<Node> {
+        private val ids: Map<Node, Long>
+
+        init {
+            val random = Random(123)
+            ids = scheduler.nodes.associateWith { random.nextLong() }
+        }
+
+        override fun compare(o1: Node, o2: Node): Int = compareValuesBy(o1, o2) { ids[it] }
+    }
+
+    override fun toString(): String = "Random"
 }
