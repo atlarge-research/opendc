@@ -34,9 +34,9 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
+import kotlinx.coroutines.delay
 import java.util.UUID
 import kotlin.math.max
-import kotlinx.coroutines.delay
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
@@ -69,7 +69,13 @@ public class SimpleBareMetalDriver(
         val previousPowerState = node.powerState
         val server = when (node.powerState to powerState) {
             PowerState.POWER_OFF to PowerState.POWER_OFF -> null
-            PowerState.POWER_OFF to PowerState.POWER_ON -> Server(UUID.randomUUID(), node.name, flavor, node.image, ServerState.BUILD)
+            PowerState.POWER_OFF to PowerState.POWER_ON -> Server(
+                UUID.randomUUID(),
+                node.name,
+                flavor,
+                node.image,
+                ServerState.BUILD
+            )
             PowerState.POWER_ON to PowerState.POWER_OFF -> null // TODO Terminate existing image
             PowerState.POWER_ON to PowerState.POWER_ON -> node.server
             else -> throw IllegalStateException()
@@ -136,10 +142,11 @@ public class SimpleBareMetalDriver(
             initialized = false
         }
 
-        override suspend fun run(req: LongArray) {
+        override suspend fun run(req: LongArray, reqDuration: Long): LongArray {
             // TODO Properly implement this for multiple CPUs
             val time = max(0, req.max() ?: 0) / (flavor.cpus[0].clockRate * 1000)
-            delay(time.toLong())
+            delay(max(time.toLong(), reqDuration))
+            return req
         }
     }
 }

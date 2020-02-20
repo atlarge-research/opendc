@@ -41,9 +41,9 @@ public sealed class ServerRequest {
     public object Initialize : ServerRequest()
 
     /**
-     * Request for each core the specified amount of cpu time to run from the server
+     * Request for each core the specified amount of cpu time to run from the server.
      */
-    public data class Run(public val req: LongArray) : ServerRequest()
+    public data class Run(public val req: LongArray, public val reqDuration: Long) : ServerRequest()
 
     /**
      * Terminate the execution of the server.
@@ -61,9 +61,17 @@ public sealed class ServerResponse {
     public abstract val server: Server
 
     /**
+     * The amount cpu time granted on this server.
+     */
+    public abstract val rec: LongArray?
+
+    /**
      * Indicate that this request was processed successfully.
      */
-    public data class Ok(public override val server: Server) : ServerResponse()
+    public data class Ok(
+        public override val server: Server,
+        public override val rec: LongArray? = null
+    ) : ServerResponse()
 }
 
 /**
@@ -86,8 +94,8 @@ public suspend fun ServerManagementContext.serialize(): ServerManagementContext 
                     outlet.send(ServerResponse.Ok(server))
                 }
                 is ServerRequest.Run -> {
-                    run(msg.req)
-                    outlet.send(ServerResponse.Ok(server))
+                    val rec = run(msg.req, msg.reqDuration)
+                    outlet.send(ServerResponse.Ok(server, rec))
                 }
                 is ServerRequest.Exit -> {
                     exit(msg.cause)
@@ -103,12 +111,13 @@ public suspend fun ServerManagementContext.serialize(): ServerManagementContext 
 
         override var server: Server = this@serialize.server
 
-        override suspend fun run(req: LongArray) {
-            outlet.send(ServerRequest.Run(req))
+        override suspend fun run(req: LongArray, reqDuration: Long): LongArray {
+            outlet.send(ServerRequest.Run(req, reqDuration))
 
             when (val res = inlet.receive()) {
                 is ServerResponse.Ok -> {
                     server = res.server
+                    return res.rec ?: error("Received should be defined in this type of request.")
                 }
             }
         }

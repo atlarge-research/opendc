@@ -32,11 +32,11 @@ import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.PowerState
-import java.util.ServiceLoader
-import java.util.UUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.util.ServiceLoader
+import java.util.UUID
 
 internal class SimpleBareMetalDriverTest {
     /**
@@ -45,7 +45,7 @@ internal class SimpleBareMetalDriverTest {
     @Test
     fun smoke() {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        val system = provider({ ctx ->
+        val system = provider({ _ ->
             val flavor = ServerFlavor(listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)))
             val image = FlopsApplicationImage(1000, 2)
             val monitor = object : ServerMonitor {

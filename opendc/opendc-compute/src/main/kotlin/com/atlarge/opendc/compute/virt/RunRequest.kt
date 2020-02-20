@@ -22,48 +22,8 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.core
+package com.atlarge.opendc.compute.virt
 
-import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.core.Identity
-import com.atlarge.opendc.core.services.ServiceRegistry
-import com.atlarge.opendc.core.services.ServiceRegistryImpl
-import java.util.UUID
+import kotlin.coroutines.Continuation
 
-/**
- * A server instance that is running on some physical or virtual machine.
- */
-public data class Server(
-    /**
-     * The unique identifier of the server.
-     */
-    public override val uid: UUID,
-
-    /**
-     * The optional name of the server.
-     */
-    public override val name: String,
-
-    /**
-     * The hardware configuration of the server.
-     */
-    public val flavor: ServerFlavor,
-
-    /**
-     * The image running on the server.
-     */
-    public val image: Image,
-
-    /**
-     * The last known state of the server.
-     */
-    public val state: ServerState,
-
-    /**
-     * The services published by this server.
-     */
-    public val serviceRegistry: ServiceRegistry = ServiceRegistryImpl()
-) : Identity {
-    override fun hashCode(): Int = uid.hashCode()
-    override fun equals(other: Any?): Boolean = other is Server && uid == other.uid
-}
+data class RunRequest(val req: LongArray, val reqDuration: Long, val continuation: Continuation<LongArray>)

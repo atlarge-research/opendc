@@ -25,8 +25,11 @@
 package com.atlarge.opendc.compute.virt.driver
 
 import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
+import com.atlarge.opendc.core.services.AbstractServiceKey
+import java.util.UUID
 
 /**
  * A driver interface for a hypervisor running on some host server and communicating with the central compute service to
@@ -35,6 +38,20 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 public interface VirtDriver {
     /**
      * Spawn the given [Image] on the compute resource of this driver.
+     *
+     * @param image The image to deploy.
+     * @param monitor The monitor to use for the deployment of this particular image.
+     * @param flavor The flavor of the server which this driver is controlling.
+     * @return The virtual server spawned by this method.
      */
-    public suspend fun spawn(image: Image, monitor: ServerMonitor): Server
+    public suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: ServerFlavor): Server
+
+    /**
+     * Returns the number of spawned images on the server managed by this driver.
+     *
+     * @return The number of spawned images.
+     */
+    public suspend fun getNumberOfSpawnedImages(): Int
+
+    companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")
 }

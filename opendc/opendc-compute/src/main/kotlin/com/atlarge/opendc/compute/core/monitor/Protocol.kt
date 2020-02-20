@@ -43,7 +43,10 @@ public sealed class ServerEvent {
     /**
      * A response sent when the bare metal driver has been initialized.
      */
-    public data class StateChanged(public override val server: Server, public val previousState: ServerState) : ServerEvent()
+    public data class StateChanged(
+        public override val server: Server,
+        public val previousState: ServerState
+    ) : ServerEvent()
 }
 
 /**

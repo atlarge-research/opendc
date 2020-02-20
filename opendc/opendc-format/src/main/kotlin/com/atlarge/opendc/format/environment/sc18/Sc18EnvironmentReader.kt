@@ -37,9 +37,9 @@ import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 import java.util.UUID
-import kotlinx.coroutines.runBlocking
 
 /**
  * A parser for the JSON experiment setup files used for the SC18 paper: "A Reference Architecture for Datacenter
@@ -87,9 +87,11 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
         val serviceRegistry = ServiceRegistryImpl()
         serviceRegistry[ProvisioningService.Key] = provisioningService
 
-        val platform = Platform(UUID.randomUUID(), "sc18-platform", listOf(
-            Zone(UUID.randomUUID(), "zone", serviceRegistry)
-        ))
+        val platform = Platform(
+            UUID.randomUUID(), "sc18-platform", listOf(
+                Zone(UUID.randomUUID(), "zone", serviceRegistry)
+            )
+        )
 
         environment = Environment(setup.name, null, listOf(platform))
     }

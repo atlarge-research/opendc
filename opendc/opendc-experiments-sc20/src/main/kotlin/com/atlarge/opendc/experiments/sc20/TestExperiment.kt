@@ -22,23 +22,16 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.experiments.sc18
+package com.atlarge.opendc.experiments.sc20
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerState
+import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
+import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.format.environment.sc18.Sc18EnvironmentReader
-import com.atlarge.opendc.format.trace.gwf.GwfTraceReader
-import com.atlarge.opendc.workflows.monitor.WorkflowMonitor
-import com.atlarge.opendc.workflows.service.StageWorkflowService
-import com.atlarge.opendc.workflows.service.WorkflowSchedulerMode
-import com.atlarge.opendc.workflows.service.stage.job.FifoJobSortingPolicy
-import com.atlarge.opendc.workflows.service.stage.job.NullJobAdmissionPolicy
-import com.atlarge.opendc.workflows.service.stage.resource.FirstFitResourceSelectionPolicy
-import com.atlarge.opendc.workflows.service.stage.resource.FunctionalResourceDynamicFilterPolicy
-import com.atlarge.opendc.workflows.service.stage.task.FifoTaskSortingPolicy
-import com.atlarge.opendc.workflows.service.stage.task.FunctionalTaskEligibilityPolicy
-import com.atlarge.opendc.workflows.workload.Job
-import com.atlarge.opendc.workflows.workload.Task
+import com.atlarge.opendc.format.trace.vm.VmTraceReader
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -51,61 +44,36 @@ import kotlin.math.max
  */
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
-        println("error: Please provide path to GWF trace")
+        println("error: Please provide path to directory containing VM trace files")
         return
     }
 
     val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-test.json"))
         .use { it.read() }
 
-    var total = 0
-    var finished = 0
-
     val token = Channel<Boolean>()
 
-    val monitor = object : WorkflowMonitor {
-        override suspend fun onJobStart(job: Job, time: Long) {
-            println("Job ${job.uid} started")
-        }
-
-        override suspend fun onJobFinish(job: Job, time: Long) {
-            finished += 1
-            println("Jobs $finished/$total finished (${job.tasks.size} tasks)")
-
-            if (finished == total) {
-                token.send(true)
-            }
-        }
-
-        override suspend fun onTaskStart(job: Job, task: Task, time: Long) {
-        }
-
-        override suspend fun onTaskFinish(job: Job, task: Task, status: Int, time: Long) {
+    val monitor = object : ServerMonitor {
+        override suspend fun onUpdate(server: Server, previousState: ServerState) {
+            println(server)
         }
     }
 
     val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
     val system = provider({ ctx ->
         println(ctx.clock.instant())
-        val scheduler = StageWorkflowService(
+        val scheduler = SimpleVirtProvisioningService(
             ctx,
             environment.platforms[0].zones[0].services[ProvisioningService.Key],
-            mode = WorkflowSchedulerMode.Batch(100),
-            jobAdmissionPolicy = NullJobAdmissionPolicy,
-            jobSortingPolicy = FifoJobSortingPolicy(),
-            taskEligibilityPolicy = FunctionalTaskEligibilityPolicy(),
-            taskSortingPolicy = FifoTaskSortingPolicy(),
-            resourceDynamicFilterPolicy = FunctionalResourceDynamicFilterPolicy(),
-            resourceSelectionPolicy = FirstFitResourceSelectionPolicy()
+            Sc20HypervisorMonitor()
         )
 
-        val reader = GwfTraceReader(File(args[0]))
-
+        val reader = VmTraceReader(File(args[0]))
+        delay(1376314846 * 1000L)
         while (reader.hasNext()) {
-            val (time, job) = reader.next()
-            total += 1
+            val (time, workload) = reader.next()
             delay(max(0, time * 1000 - ctx.clock.millis()))
-            scheduler.submit(job, monitor)
+            scheduler.deploy(workload.image, monitor)
         }
 
         token.receive()
