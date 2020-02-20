@@ -30,15 +30,21 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.core.resource.TagContainer
+import com.atlarge.opendc.core.resource.TagContainerImpl
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.UUID
 
 /**
  * A hypervisor managing the VMs of a node.
  */
 class HypervisorImage(
-    private val hypervisorMonitor: HypervisorMonitor,
-    public override val details: Map<String, Any> = emptyMap()
+    private val hypervisorMonitor: HypervisorMonitor
 ) : Image {
+    override val uid: UUID = UUID.randomUUID()
+    override val name: String = "esxi"
+    override val tags: TagContainer = TagContainerImpl()
+
     override suspend fun invoke(ctx: ServerContext) {
         val driver = SimpleVirtDriver(processContext, ctx, hypervisorMonitor)
 

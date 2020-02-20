@@ -22,25 +22,30 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.core.image
-
-import com.atlarge.opendc.compute.core.execution.ServerContext
-import com.atlarge.opendc.core.resource.Resource
+package com.atlarge.opendc.core.resource
 
 /**
- * An image containing a bootable operating system that can directly be executed by physical or virtual server.
+ * Default implementation of [TagContainer] interface.
  *
- * OpenStack: A collection of files used to create or rebuild a server. Operators provide a number of pre-built OS
- * images by default. You may also create custom images from cloud servers you have launched. These custom images are
- * useful for backup purposes or for producing “gold” server images if you plan to deploy a particular server
- * configuration frequently.
+ * @property map The internal map object to hold the tags.
  */
-public interface Image : Resource {
+public class TagContainerImpl private constructor(private val map: Map<TagKey<*>, Any>) : TagContainer {
     /**
-     * Launch the machine image in the specified [ServerContext].
-     *
-     * This method should encapsulate and characterize the runtime behavior of the instance resulting from launching
-     * the image on some machine, in terms of the resource consumption on the machine.
+     * Construct an empty [TagContainerImpl].
      */
-    public suspend operator fun invoke(ctx: ServerContext)
+    public constructor() : this(emptyMap())
+
+    override val keys: Collection<TagKey<*>>
+        get() = map.keys
+
+    override fun contains(key: TagKey<*>): Boolean = map.contains(key)
+
+    override fun <T : Any> get(key: TagKey<T>): T {
+        @Suppress("UNCHECKED_CAST")
+        return map.getValue(key) as T
+    }
+
+    override fun <T : Any> put(key: TagKey<T>, value: T): TagContainer = TagContainerImpl(map.plus(key to value))
+
+    override fun remove(key: TagKey<*>): TagContainer = TagContainerImpl(map.minus(key))
 }

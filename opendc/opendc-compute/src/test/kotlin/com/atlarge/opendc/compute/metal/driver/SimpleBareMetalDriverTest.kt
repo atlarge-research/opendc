@@ -32,6 +32,7 @@ import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.PowerState
+import com.atlarge.opendc.core.resource.TagContainerImpl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -47,7 +48,7 @@ internal class SimpleBareMetalDriverTest {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider({ _ ->
             val flavor = ServerFlavor(listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)))
-            val image = FlopsApplicationImage(1000, 2)
+            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", TagContainerImpl(), 1000, 2)
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
                     println(server)
