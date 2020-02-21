@@ -108,9 +108,10 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
                         }
                 }
 
+                val uuid = UUID(0L, vmId)
                 val vmWorkload = VmWorkload(
-                    UUID(0L, vmId), "<unnamed>", UnnamedUser,
-                    VmImage(flopsHistory, cores)
+                    uuid, "<unnamed>", UnnamedUser,
+                    VmImage(uuid, "<unnamed>", emptyMap(), flopsHistory, cores)
                 )
                 entries[vmId] = TraceEntryImpl(
                     flopsHistory.firstOrNull()?.tick ?: -1,

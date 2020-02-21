@@ -120,7 +120,7 @@ class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
                     val workflow = entry.workload
                     val task = Task(
                         UUID(0L, taskId), "<unnamed>",
-                        FlopsApplicationImage(flops, cores),
+                        FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), flops, cores),
                         HashSet()
                     )
                     entry.submissionTime = min(entry.submissionTime, submitTime)

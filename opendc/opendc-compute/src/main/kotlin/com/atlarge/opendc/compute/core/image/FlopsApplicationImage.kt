@@ -25,22 +25,28 @@
 package com.atlarge.opendc.compute.core.image
 
 import com.atlarge.opendc.compute.core.execution.ServerContext
+import com.atlarge.opendc.core.resource.TagContainer
+import java.util.UUID
 import kotlin.math.min
 
 /**
  * An application [Image] that models applications performing a static number of floating point operations ([flops]) on
  * a compute resource.
  *
+ * @property uid The unique identifier of this image.
+ * @property name The name of this image.
+ * @property tags The tags attached to the image.
  * @property flops The number of floating point operations to perform for this task.
  * @property cores The number of cores that the image is able to utilize.
  * @property utilization A model of the CPU utilization of the application.
- * @property details The details of this image.
  */
 class FlopsApplicationImage(
+    public override val uid: UUID,
+    public override val name: String,
+    public override val tags: TagContainer,
     public val flops: Long,
     public val cores: Int,
-    public val utilization: Double = 0.8,
-    public override val details: Map<String, Any> = emptyMap()
+    public val utilization: Double = 0.8
 ) : Image {
     init {
         require(flops >= 0) { "Negative number of flops" }

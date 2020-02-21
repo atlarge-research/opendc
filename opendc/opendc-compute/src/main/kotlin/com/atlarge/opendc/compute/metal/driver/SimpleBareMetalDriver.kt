@@ -72,6 +72,7 @@ public class SimpleBareMetalDriver(
             PowerState.POWER_OFF to PowerState.POWER_ON -> Server(
                 UUID.randomUUID(),
                 node.name,
+                emptyMap(),
                 flavor,
                 node.image,
                 ServerState.BUILD

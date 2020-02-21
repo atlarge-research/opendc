@@ -47,7 +47,7 @@ internal class SimpleBareMetalDriverTest {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider({ _ ->
             val flavor = ServerFlavor(listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)))
-            val image = FlopsApplicationImage(1000, 2)
+            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
                     println(server)

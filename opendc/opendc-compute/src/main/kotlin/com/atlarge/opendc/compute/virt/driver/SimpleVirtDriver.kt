@@ -73,7 +73,7 @@ class SimpleVirtDriver(
     }
 
     override suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: ServerFlavor): Server {
-        val server = Server(UUID.randomUUID(), "<unnamed>", flavor, image, ServerState.BUILD)
+        val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
         val context = VmServerContext(server, monitor, flavor, hostContext, Channel(Channel.CONFLATED))
         serverContexts.add(context)
         context.init()
