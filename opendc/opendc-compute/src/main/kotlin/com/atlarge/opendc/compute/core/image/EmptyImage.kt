@@ -26,7 +26,6 @@ package com.atlarge.opendc.compute.core.image
 
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
-import com.atlarge.opendc.core.resource.TagContainerImpl
 import java.util.UUID
 
 /**
@@ -35,7 +34,7 @@ import java.util.UUID
 object EmptyImage : Image {
     override val uid: UUID = UUID.randomUUID()
     override val name: String = "empty"
-    override val tags: TagContainer = TagContainerImpl()
+    override val tags: TagContainer = emptyMap()
 
     override suspend fun invoke(ctx: ServerContext) {}
 }

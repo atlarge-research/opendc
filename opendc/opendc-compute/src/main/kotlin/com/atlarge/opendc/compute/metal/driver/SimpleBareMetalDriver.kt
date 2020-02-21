@@ -34,7 +34,6 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
-import com.atlarge.opendc.core.resource.TagContainerImpl
 import kotlinx.coroutines.delay
 import java.util.UUID
 import kotlin.math.max
@@ -73,7 +72,7 @@ public class SimpleBareMetalDriver(
             PowerState.POWER_OFF to PowerState.POWER_ON -> Server(
                 UUID.randomUUID(),
                 node.name,
-                TagContainerImpl(),
+                emptyMap(),
                 flavor,
                 node.image,
                 ServerState.BUILD

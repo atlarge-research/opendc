@@ -27,36 +27,10 @@ package com.atlarge.opendc.core.resource
 /**
  * An immutable map containing the tags of some resource.
  */
-public interface TagContainer {
-    /**
-     * The keys in this container.
-     */
-    public val keys: Collection<TagKey<*>>
+typealias TagContainer = Map<String, Any>
 
-    /**
-     * Determine if this container contains a tag with the specified [TagKey].
-     *
-     * @param key The key of the tag to check for.
-     * @return `true` if the tag is in the container, `false` otherwise.
-     */
-    public operator fun contains(key: TagKey<*>): Boolean
-
-    /**
-     * Obtain the tag with the specified [TagKey].
-     *
-     * @param key The key of the tag to obtain.
-     * @return The value of the tag.
-     * @throws IllegalArgumentException if the tag does not exists in the container.
-     */
-    public operator fun <T : Any> get(key: TagKey<T>): T
-
-    /**
-     * Return the result of associating the specified [value] with the specified [key] in this container.
-     */
-    public fun <T : Any> put(key: TagKey<T>, value: T): TagContainer
-
-    /**
-     * Return the result of removing the specified [key] and its corresponding value from this container.
-     */
-    public fun remove(key: TagKey<*>): TagContainer
-}
+/**
+ * Obtain the value of the tag with the specified [key] of type [T]. If the tag does not exist or the tag is of
+ * different type, `null` is returned.
+ */
+inline fun <reified T : Any> TagContainer.typed(key: String): T? = this[key] as? T

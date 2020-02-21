@@ -12,7 +12,6 @@ import com.atlarge.opendc.compute.core.image.VM_SCHEDULING_SLICE_DURATION
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.virt.RunRequest
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
-import com.atlarge.opendc.core.resource.TagContainerImpl
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
@@ -74,7 +73,7 @@ class SimpleVirtDriver(
     }
 
     override suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: ServerFlavor): Server {
-        val server = Server(UUID.randomUUID(), "<unnamed>", TagContainerImpl(), flavor, image, ServerState.BUILD)
+        val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
         val context = VmServerContext(server, monitor, flavor, hostContext, Channel(Channel.CONFLATED))
         serverContexts.add(context)
         context.init()

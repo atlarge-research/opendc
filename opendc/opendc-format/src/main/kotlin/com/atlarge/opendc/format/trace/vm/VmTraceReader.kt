@@ -28,7 +28,6 @@ import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.core.User
-import com.atlarge.opendc.core.resource.TagContainerImpl
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
 import java.io.BufferedReader
@@ -112,7 +111,7 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
                 val uuid = UUID(0L, vmId)
                 val vmWorkload = VmWorkload(
                     uuid, "<unnamed>", UnnamedUser,
-                    VmImage(uuid, "<unnamed>", TagContainerImpl(), flopsHistory, cores)
+                    VmImage(uuid, "<unnamed>", emptyMap(), flopsHistory, cores)
                 )
                 entries[vmId] = TraceEntryImpl(
                     flopsHistory.firstOrNull()?.tick ?: -1,
