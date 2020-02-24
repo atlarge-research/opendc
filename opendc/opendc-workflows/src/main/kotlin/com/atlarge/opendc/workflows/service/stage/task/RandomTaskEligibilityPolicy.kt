@@ -28,7 +28,7 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 import java.util.Random
 
-data class RandomTaskEligibilityPolicy(val probability: Double = 0.5): TaskEligibilityPolicy {
+data class RandomTaskEligibilityPolicy(val probability: Double = 0.5) : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
         val random = Random(123)
 
@@ -39,7 +39,6 @@ data class RandomTaskEligibilityPolicy(val probability: Double = 0.5): TaskEligi
                 TaskEligibilityPolicy.Advice.DENY
             }
     }
-
 
     override fun toString(): String = "Random($probability)"
 }

@@ -25,7 +25,6 @@
 package com.atlarge.opendc.workflows.service
 
 import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.workflows.service.StageWorkflowService.TaskView
 import com.atlarge.opendc.workflows.workload.Task
 
 class TaskState(val job: JobState, val task: Task) {

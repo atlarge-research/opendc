@@ -29,6 +29,7 @@ import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.workload.Job
 import com.atlarge.opendc.workflows.workload.Task
+import com.atlarge.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
 
 /**
  * The [DurationJobOrderPolicy] sorts tasks based on the critical path length of the job.
@@ -36,7 +37,7 @@ import com.atlarge.opendc.workflows.workload.Task
 data class DurationJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<JobState> =
         object : Comparator<JobState>, StageWorkflowSchedulerListener {
-            private val results = HashMap<Job, Double>()
+            private val results = HashMap<Job, Long>()
 
             init {
                 scheduler.addListener(this)
@@ -46,10 +47,10 @@ data class DurationJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolic
                 get() = results[this]!!
 
             override fun jobSubmitted(job: JobState) {
-                results[job.job] = job.job.toposort().sumByDouble { task ->
-                    val estimable = task.application as? Estimable
-                    estimable?.estimate(resources) ?: Duration.POSITIVE_INFINITY
-                }
+                results[job.job] = job.job.toposort().map { task ->
+                    val estimable = task.metadata[WORKFLOW_TASK_DEADLINE] as? Long?
+                    estimable ?: Long.MAX_VALUE
+                }.sum()
             }
 
             override fun jobFinished(job: JobState) {
@@ -60,7 +61,6 @@ data class DurationJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolic
                 return compareValuesBy(o1, o2) { it.job.duration }.let { if (ascending) it else -it }
             }
         }
-
 
     override fun toString(): String {
         return "Job-Duration(${if (ascending) "asc" else "desc"})"

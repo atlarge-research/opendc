@@ -31,4 +31,3 @@ import com.atlarge.opendc.workflows.service.stage.StagePolicy
  * A policy interface for ordering admitted workflows in the scheduling queue.
  */
 interface JobOrderPolicy : StagePolicy<Comparator<JobState>>
-

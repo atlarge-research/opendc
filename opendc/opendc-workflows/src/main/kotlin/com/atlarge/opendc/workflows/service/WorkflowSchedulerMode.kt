@@ -55,7 +55,6 @@ sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Logic> {
             }
         }
 
-
         override fun toString(): String = "Interactive"
     }
 

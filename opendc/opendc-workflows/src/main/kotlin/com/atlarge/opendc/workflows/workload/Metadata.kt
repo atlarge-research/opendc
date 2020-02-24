@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +22,9 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.resource
-
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.workflows.service.StageWorkflowService
-import com.atlarge.opendc.workflows.service.TaskState
+package com.atlarge.opendc.workflows.workload
 
 /**
- * A [ResourceFilterPolicy] based on the amount of cores available on the machine and the cores required for
- * the task.
+ * Meta-data key for the deadline of a task.
  */
-object FunctionalResourceFilterPolicy : ResourceFilterPolicy {
-    override fun invoke(scheduler: StageWorkflowService): ResourceFilterPolicy.Logic =
-        object : ResourceFilterPolicy.Logic {
-            override fun invoke(hosts: Sequence<Node>, task: TaskState): Sequence<Node> =
-                hosts.filter { it in scheduler.available }
-        }
-
-    override fun toString(): String = "functional"
-}
+const val WORKFLOW_TASK_DEADLINE = "workflow:task:deadline"

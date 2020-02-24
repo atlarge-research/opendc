@@ -38,9 +38,9 @@ import com.atlarge.opendc.workflows.service.stage.resource.ResourceSelectionPoli
 import com.atlarge.opendc.workflows.service.stage.task.TaskEligibilityPolicy
 import com.atlarge.opendc.workflows.service.stage.task.TaskOrderPolicy
 import com.atlarge.opendc.workflows.workload.Job
-import kotlinx.coroutines.launch
 import java.util.PriorityQueue
 import java.util.Queue
+import kotlinx.coroutines.launch
 
 /**
  * A [WorkflowService] that distributes work through a multi-stage process based on the Reference Architecture for
@@ -88,7 +88,6 @@ class StageWorkflowService(
      */
     internal val activeTasks: MutableSet<TaskState> = mutableSetOf()
 
-
     /**
      * The running tasks by [Server].
      */
@@ -103,7 +102,6 @@ class StageWorkflowService(
      * The available nodes.
      */
     internal val available: MutableSet<Node> = mutableSetOf()
-
 
     /**
      * The maximum number of incoming jobs.
@@ -180,7 +178,7 @@ class StageWorkflowService(
         this.taskEligibilityPolicy = taskEligibilityPolicy(this)
         this.taskQueue = PriorityQueue(1000, taskOrderPolicy(this).thenBy { it.task.uid })
         this.resourceFilterPolicy = resourceFilterPolicy(this)
-        this.resourceSelectionPolicy =  resourceSelectionPolicy(this)
+        this.resourceSelectionPolicy = resourceSelectionPolicy(this)
     }
 
     override suspend fun submit(job: Job, monitor: WorkflowMonitor) {
@@ -208,7 +206,6 @@ class StageWorkflowService(
 
         requestCycle()
     }
-
 
     /**
      * Indicate to the scheduler that a scheduling cycle is needed.
@@ -255,6 +252,21 @@ class StageWorkflowService(
                 incomingTasks += task
                 rootListener.taskReady(task)
             }
+        }
+
+        // T1 Create list of eligible tasks
+        val taskIterator = incomingTasks.iterator()
+        while (taskIterator.hasNext()) {
+            val taskInstance = taskIterator.next()
+            val advice = taskEligibilityPolicy(taskInstance)
+            if (advice.stop) {
+                break
+            } else if (!advice.admit) {
+                continue
+            }
+
+            taskIterator.remove()
+            taskQueue.add(taskInstance)
         }
 
         // T3 Per task
@@ -324,7 +336,6 @@ class StageWorkflowService(
         job.monitor.onJobFinish(job.job, ctx.clock.millis())
         rootListener.jobFinished(job)
     }
-
 
     fun addListener(listener: StageWorkflowSchedulerListener) {
         rootListener.listeners += listener

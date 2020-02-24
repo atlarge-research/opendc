@@ -35,12 +35,14 @@ import java.util.UUID
  * @property name The name of this task.
  * @property image The application image to run as part of this workflow task.
  * @property dependencies The dependencies of this task in order for it to execute.
+ * @property metadata Additional metadata for this task.
  */
 data class Task(
     override val uid: UUID,
     override val name: String,
     val image: Image,
-    val dependencies: Set<Task>
+    val dependencies: Set<Task>,
+    val metadata: Map<String, Any> = emptyMap()
 ) : Identity {
     override fun equals(other: Any?): Boolean = other is Task && uid == other.uid
 

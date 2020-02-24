@@ -27,6 +27,7 @@ package com.atlarge.opendc.workflows.service.stage.task
 import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
+import com.atlarge.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
 import java.util.UUID
 
 /**
@@ -36,22 +37,22 @@ data class DurationTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPol
 
     override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =
         object : Comparator<TaskState>, StageWorkflowSchedulerListener {
-            private val results = HashMap<UUID, Double>()
+            private val results = HashMap<UUID, Long>()
 
             init {
                 scheduler.addListener(this)
             }
 
             override fun taskReady(task: TaskState) {
-                val estimable = task.task.application as? Estimable
-                results[task.task.uid] = estimable?.estimate(resources) ?: Duration.POSITIVE_INFINITY
+                val deadline = task.task.metadata[WORKFLOW_TASK_DEADLINE] as? Long?
+                results[task.task.uid] = deadline ?: Long.MAX_VALUE
             }
 
             override fun taskFinished(task: TaskState) {
                 results -= task.task.uid
             }
 
-            private val TaskState.duration: Double
+            private val TaskState.duration: Long
                 get() = results.getValue(task.uid)
 
             override fun compare(o1: TaskState, o2: TaskState): Int {

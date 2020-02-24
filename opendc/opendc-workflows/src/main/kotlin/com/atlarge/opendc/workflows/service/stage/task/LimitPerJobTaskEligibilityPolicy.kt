@@ -29,7 +29,7 @@ import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
-data class LimitPerJobTaskEligibilityPolicy(val limit: Int): TaskEligibilityPolicy {
+data class LimitPerJobTaskEligibilityPolicy(val limit: Int) : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic =
         object : TaskEligibilityPolicy.Logic, StageWorkflowSchedulerListener {
             private val active = mutableMapOf<JobState, Int>()

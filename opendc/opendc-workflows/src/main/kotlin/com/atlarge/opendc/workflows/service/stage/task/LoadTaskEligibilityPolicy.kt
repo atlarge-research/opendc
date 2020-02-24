@@ -27,7 +27,7 @@ package com.atlarge.opendc.workflows.service.stage.task
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
-data class LoadTaskEligibilityPolicy(val limit: Double): TaskEligibilityPolicy {
+data class LoadTaskEligibilityPolicy(val limit: Double) : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
         override fun invoke(
             task: TaskState
@@ -37,7 +37,6 @@ data class LoadTaskEligibilityPolicy(val limit: Double): TaskEligibilityPolicy {
             else
                 TaskEligibilityPolicy.Advice.STOP
     }
-
 
     override fun toString(): String = "Limit-Load($limit)"
 }
