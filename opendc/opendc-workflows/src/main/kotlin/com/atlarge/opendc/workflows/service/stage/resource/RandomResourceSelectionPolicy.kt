@@ -28,6 +28,9 @@ import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import java.util.Random
 
+/**
+ * A [ResourceSelectionPolicy] that randomly orders the machines.
+ */
 object RandomResourceSelectionPolicy : ResourceSelectionPolicy {
     override fun invoke(scheduler: StageWorkflowService) = object : Comparator<Node> {
         private val ids: Map<Node, Long>

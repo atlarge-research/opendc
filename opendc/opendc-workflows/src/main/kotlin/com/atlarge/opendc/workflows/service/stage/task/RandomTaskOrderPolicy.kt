@@ -31,9 +31,7 @@ import com.atlarge.opendc.workflows.workload.Task
 import kotlin.random.Random
 
 /**
- * The [RandomTaskOrderPolicy] sorts tasks randomly.
- *
- * @property random The [Random] instance to use when sorting the list of tasks.
+ * A [TaskOrderPolicy] that orders the tasks randomly.
  */
 object RandomTaskOrderPolicy : TaskOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =

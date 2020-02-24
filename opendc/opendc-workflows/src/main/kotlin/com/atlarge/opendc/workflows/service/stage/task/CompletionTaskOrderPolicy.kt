@@ -29,6 +29,9 @@ import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
+/**
+ * A [TaskOrderPolicy] that orders tasks based on the number of completed relative tasks.
+ */
 data class CompletionTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =
         object : Comparator<TaskState>, StageWorkflowSchedulerListener {

@@ -30,6 +30,13 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 import kotlin.math.max
 
+/**
+ * A [TaskEligibilityPolicy] that balances the tasks based on their job, e.g. do not allow a single job to claim all
+ * resources of the system.
+ *
+ * @property tolerance The maximum difference from the average number of tasks per job in the system as a fraction of
+ * the average.
+ */
 data class BalancingTaskEligibilityPolicy(val tolerance: Double = 1.5) : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic =
         object : TaskEligibilityPolicy.Logic, StageWorkflowSchedulerListener {

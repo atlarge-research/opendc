@@ -28,7 +28,7 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
 /**
- * A [TaskEligibilityPolicy] that marks tasks as eligible if they are tasks roots within the job.
+ * A [TaskEligibilityPolicy] that always allows new tasks to enter.
  */
 object NullTaskEligibilityPolicy : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic = Logic

@@ -32,7 +32,7 @@ import com.atlarge.opendc.workflows.workload.Task
 import com.atlarge.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
 
 /**
- * The [DurationJobOrderPolicy] sorts tasks based on the critical path length of the job.
+ * A [JobOrderPolicy] that orders jobs based on its critical path length.
  */
 data class DurationJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<JobState> =

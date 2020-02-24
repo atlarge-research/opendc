@@ -28,7 +28,7 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
 /**
- * The [DependenciesTaskOrderPolicy] sorts tasks based on the number of dependency tasks it has.
+ * A [TaskOrderPolicy] that orders tasks based on the number of dependency tasks it has.
  */
 data class DependenciesTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService) = compareBy<TaskState> {

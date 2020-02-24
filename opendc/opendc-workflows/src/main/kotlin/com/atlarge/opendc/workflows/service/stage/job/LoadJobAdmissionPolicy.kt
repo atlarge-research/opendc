@@ -28,7 +28,7 @@ import com.atlarge.opendc.workflows.service.JobState
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * A [JobAdmissionPolicy] that limits the amount of jobs based on the system load.
+ * A [JobAdmissionPolicy] that limits the amount of jobs based on the average system load.
  *
  * @property limit The maximum load before stopping admission.
  */

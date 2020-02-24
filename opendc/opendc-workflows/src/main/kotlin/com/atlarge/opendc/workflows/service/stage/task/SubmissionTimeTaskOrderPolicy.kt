@@ -28,7 +28,7 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
 /**
- * The [SubmissionTimeTaskOrderPolicy] sorts tasks based on the order of arrival in the queue.
+ * A [TaskOrderPolicy] that orders tasks based on the order of arrival in the queue.
  */
 data class SubmissionTimeTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService) = compareBy<TaskState> {

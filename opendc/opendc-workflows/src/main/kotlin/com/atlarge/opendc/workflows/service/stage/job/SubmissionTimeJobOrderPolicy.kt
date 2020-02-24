@@ -28,7 +28,7 @@ import com.atlarge.opendc.workflows.service.JobState
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * The [SubmissionTimeJobOrderPolicy] sorts tasks based on the order of arrival in the queue.
+ * A [JobOrderPolicy] orders jobs in FIFO order.
  */
 data class SubmissionTimeJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService) =

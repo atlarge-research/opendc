@@ -30,6 +30,9 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.workload.Job
 import java.util.Random
 
+/**
+ * A [JobOrderPolicy] that randomly orders jobs.
+ */
 object RandomJobOrderPolicy : JobOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<JobState> =
         object : Comparator<JobState>, StageWorkflowSchedulerListener {

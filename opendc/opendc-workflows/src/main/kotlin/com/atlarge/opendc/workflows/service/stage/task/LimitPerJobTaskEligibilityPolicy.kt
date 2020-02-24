@@ -29,6 +29,9 @@ import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
+/**
+ * A [TaskEligibilityPolicy] that limits the number of active tasks of a job in the system.
+ */
 data class LimitPerJobTaskEligibilityPolicy(val limit: Int) : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic =
         object : TaskEligibilityPolicy.Logic, StageWorkflowSchedulerListener {

@@ -27,6 +27,9 @@ package com.atlarge.opendc.workflows.service.stage.task
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
+/**
+ * A [TaskEligibilityPolicy] that limits the number of active tasks in the system based on the average system load.
+ */
 data class LoadTaskEligibilityPolicy(val limit: Double) : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
         override fun invoke(

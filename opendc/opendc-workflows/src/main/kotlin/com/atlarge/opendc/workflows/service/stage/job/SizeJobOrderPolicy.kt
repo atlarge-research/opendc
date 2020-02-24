@@ -28,7 +28,7 @@ import com.atlarge.opendc.workflows.service.JobState
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * The [SizeJobOrderPolicy] sorts tasks based on the order of arrival in the queue.
+ * A [SizeJobOrderPolicy] that orders jobs based on the number of tasks it has.
  */
 data class SizeJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService) =

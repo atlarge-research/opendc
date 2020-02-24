@@ -29,6 +29,9 @@ import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
+/**
+ * A [TaskOrderPolicy] that orders tasks based on the average duration of the preceding tasks in the job.
+ */
 data class DurationHistoryTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
 
     override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =

@@ -28,6 +28,9 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 import java.util.Random
 
+/**
+ * A [TaskEligibilityPolicy] that randomly accepts tasks in the system with some [probability].
+ */
 data class RandomTaskEligibilityPolicy(val probability: Double = 0.5) : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
         val random = Random(123)

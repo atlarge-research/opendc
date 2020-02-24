@@ -31,7 +31,7 @@ import com.atlarge.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
 import java.util.UUID
 
 /**
- * The [DurationTaskOrderPolicy] sorts tasks based on the duration of the task.
+ * A [TaskOrderPolicy] orders tasks based on the pre-specified (approximate) duration of the task.
  */
 data class DurationTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
 
