@@ -30,6 +30,7 @@ import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
 import com.atlarge.opendc.workflows.workload.Job
 import com.atlarge.opendc.workflows.workload.Task
+import com.atlarge.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -121,7 +122,8 @@ class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
                     val task = Task(
                         UUID(0L, taskId), "<unnamed>",
                         FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), flops, cores),
-                        HashSet()
+                        HashSet(),
+                        mapOf(WORKFLOW_TASK_DEADLINE to runtime)
                     )
                     entry.submissionTime = min(entry.submissionTime, submitTime)
                     (workflow.tasks as MutableSet<Task>).add(task)

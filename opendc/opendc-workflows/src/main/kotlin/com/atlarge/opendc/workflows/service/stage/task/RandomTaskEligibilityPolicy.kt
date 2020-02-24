@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,26 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.workload
+package com.atlarge.opendc.workflows.service.stage.task
 
-import com.atlarge.opendc.core.User
-import com.atlarge.opendc.core.workload.Workload
-import java.util.UUID
+import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.TaskState
+import java.util.Random
 
 /**
- * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.
- *
- * @property uid A unique identified of this workflow.
- * @property name The name of this workflow.
- * @property owner The owner of the workflow.
- * @property tasks The tasks that are part of this workflow.
- * @property metadata Additional metadata for the job.
+ * A [TaskEligibilityPolicy] that randomly accepts tasks in the system with some [probability].
  */
-data class Job(
-    override val uid: UUID,
-    override val name: String,
-    override val owner: User,
-    val tasks: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
-) : Workload {
-    override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
+data class RandomTaskEligibilityPolicy(val probability: Double = 0.5) : TaskEligibilityPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
+        val random = Random(123)
 
-    override fun hashCode(): Int = uid.hashCode()
+        override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice =
+            if (random.nextDouble() <= probability || scheduler.activeTasks.isEmpty())
+                TaskEligibilityPolicy.Advice.ADMIT
+            else {
+                TaskEligibilityPolicy.Advice.DENY
+            }
+    }
+
+    override fun toString(): String = "Random($probability)"
 }

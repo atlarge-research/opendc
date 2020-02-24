@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,26 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.task
+package com.atlarge.opendc.workflows.service.stage.job
 
+import com.atlarge.opendc.workflows.service.JobState
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * The [FifoTaskSortingPolicy] sorts tasks based on the order of arrival in the queue.
+ * A [JobAdmissionPolicy] that limits the amount of active jobs in the system.
+ *
+ * @property limit The maximum number of concurrent jobs in the system.
  */
-class FifoTaskSortingPolicy : TaskSortingPolicy {
-    override fun invoke(
-        scheduler: StageWorkflowService,
-        tasks: Collection<StageWorkflowService.TaskView>
-    ): List<StageWorkflowService.TaskView> = tasks.toList()
+data class LimitJobAdmissionPolicy(val limit: Int) : JobAdmissionPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : JobAdmissionPolicy.Logic {
+        override fun invoke(
+            job: JobState
+        ): JobAdmissionPolicy.Advice =
+            if (scheduler.activeJobs.size < limit)
+                JobAdmissionPolicy.Advice.ADMIT
+            else
+                JobAdmissionPolicy.Advice.STOP
+    }
+
+    override fun toString(): String = "Limit-Active($limit)"
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,26 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.workload
+package com.atlarge.opendc.workflows.service.stage.resource
 
-import com.atlarge.opendc.core.User
-import com.atlarge.opendc.core.workload.Workload
-import java.util.UUID
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.workflows.service.StageWorkflowService
+import java.util.Random
 
 /**
- * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.
- *
- * @property uid A unique identified of this workflow.
- * @property name The name of this workflow.
- * @property owner The owner of the workflow.
- * @property tasks The tasks that are part of this workflow.
- * @property metadata Additional metadata for the job.
+ * A [ResourceSelectionPolicy] that randomly orders the machines.
  */
-data class Job(
-    override val uid: UUID,
-    override val name: String,
-    override val owner: User,
-    val tasks: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
-) : Workload {
-    override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
+object RandomResourceSelectionPolicy : ResourceSelectionPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : Comparator<Node> {
+        private val ids: Map<Node, Long>
 
-    override fun hashCode(): Int = uid.hashCode()
+        init {
+            val random = Random(123)
+            ids = scheduler.nodes.associateWith { random.nextLong() }
+        }
+
+        override fun compare(o1: Node, o2: Node): Int = compareValuesBy(o1, o2) { ids[it] }
+    }
+
+    override fun toString(): String = "Random"
 }

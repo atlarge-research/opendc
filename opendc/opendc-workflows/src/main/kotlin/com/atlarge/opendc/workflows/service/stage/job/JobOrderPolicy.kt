@@ -22,29 +22,12 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.workload
+package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.core.User
-import com.atlarge.opendc.core.workload.Workload
-import java.util.UUID
+import com.atlarge.opendc.workflows.service.JobState
+import com.atlarge.opendc.workflows.service.stage.StagePolicy
 
 /**
- * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.
- *
- * @property uid A unique identified of this workflow.
- * @property name The name of this workflow.
- * @property owner The owner of the workflow.
- * @property tasks The tasks that are part of this workflow.
- * @property metadata Additional metadata for the job.
+ * A policy interface for ordering admitted workflows in the scheduling queue.
  */
-data class Job(
-    override val uid: UUID,
-    override val name: String,
-    override val owner: User,
-    val tasks: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
-) : Workload {
-    override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
-
-    override fun hashCode(): Int = uid.hashCode()
-}
+interface JobOrderPolicy : StagePolicy<Comparator<JobState>>

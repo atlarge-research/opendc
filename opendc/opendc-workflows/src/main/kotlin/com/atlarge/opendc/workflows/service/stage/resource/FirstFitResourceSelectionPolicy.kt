@@ -30,11 +30,10 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 /**
  * A [ResourceSelectionPolicy] that selects the first machine that is available.
  */
-class FirstFitResourceSelectionPolicy : ResourceSelectionPolicy {
-    override fun select(
-        scheduler: StageWorkflowService,
-        machines: List<Node>,
-        task: StageWorkflowService.TaskView
-    ): Node? =
-        machines.firstOrNull()
+object FirstFitResourceSelectionPolicy : ResourceSelectionPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : Comparator<Node> {
+        override fun compare(o1: Node, o2: Node): Int = 1
+    }
+
+    override fun toString(): String = "First-Fit"
 }

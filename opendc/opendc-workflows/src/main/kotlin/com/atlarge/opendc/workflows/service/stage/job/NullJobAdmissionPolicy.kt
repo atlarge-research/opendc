@@ -24,17 +24,16 @@
 
 package com.atlarge.opendc.workflows.service.stage.job
 
+import com.atlarge.opendc.workflows.service.JobState
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
  * A [JobAdmissionPolicy] that admits all jobs.
  */
 object NullJobAdmissionPolicy : JobAdmissionPolicy {
-    /**
-     * Admit every submitted job.
-     */
-    override fun shouldAdmit(
-        scheduler: StageWorkflowService,
-        job: StageWorkflowService.JobView
-    ): Boolean = true
+    override fun invoke(scheduler: StageWorkflowService) = object : JobAdmissionPolicy.Logic {
+        override fun invoke(job: JobState): JobAdmissionPolicy.Advice = JobAdmissionPolicy.Advice.ADMIT
+    }
+
+    override fun toString(): String = "Always"
 }

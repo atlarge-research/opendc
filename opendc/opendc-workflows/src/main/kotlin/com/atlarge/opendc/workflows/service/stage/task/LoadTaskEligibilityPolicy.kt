@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,18 @@ import com.atlarge.opendc.workflows.service.StageWorkflowService
 import com.atlarge.opendc.workflows.service.TaskState
 
 /**
- * A [TaskEligibilityPolicy] that marks tasks as eligible if they are tasks roots within the job.
+ * A [TaskEligibilityPolicy] that limits the number of active tasks in the system based on the average system load.
  */
-class FunctionalTaskEligibilityPolicy : TaskEligibilityPolicy {
-    override fun isEligible(
-        scheduler: StageWorkflowService,
-        task: StageWorkflowService.TaskView
-    ): Boolean = task.state == TaskState.READY
+data class LoadTaskEligibilityPolicy(val limit: Double) : TaskEligibilityPolicy {
+    override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
+        override fun invoke(
+            task: TaskState
+        ): TaskEligibilityPolicy.Advice =
+            if (scheduler.load < limit)
+                TaskEligibilityPolicy.Advice.ADMIT
+            else
+                TaskEligibilityPolicy.Advice.STOP
+    }
+
+    override fun toString(): String = "Limit-Load($limit)"
 }

@@ -24,22 +24,39 @@
 
 package com.atlarge.opendc.workflows.service.stage.task
 
+import com.atlarge.opendc.workflows.service.StageWorkflowSchedulerListener
 import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.TaskState
+import com.atlarge.opendc.workflows.workload.Task
+import kotlin.random.Random
 
 /**
- * This interface represents the **T2** stage of the Reference Architecture for Datacenter Schedulers and provides the
- * scheduler with a sorted list of tasks to schedule.
+ * A [TaskOrderPolicy] that orders the tasks randomly.
  */
-interface TaskSortingPolicy {
-    /**
-     * Sort the given list of tasks on a given criterion.
-     *
-     * @param scheduler The scheduler that is sorting the tasks.
-     * @param tasks The collection of tasks that should be sorted.
-     * @return The sorted list of tasks.
-     */
-    operator fun invoke(
-        scheduler: StageWorkflowService,
-        tasks: Collection<StageWorkflowService.TaskView>
-    ): List<StageWorkflowService.TaskView>
+object RandomTaskOrderPolicy : TaskOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =
+        object : Comparator<TaskState>, StageWorkflowSchedulerListener {
+            private val random = Random(123)
+            private val ids = HashMap<Task, Int>()
+
+            init {
+                scheduler.addListener(this)
+            }
+
+            override fun taskReady(task: TaskState) {
+                ids[task.task] = random.nextInt()
+            }
+
+            override fun taskFinished(task: TaskState) {
+                ids.remove(task.task)
+            }
+
+            override fun compare(o1: TaskState, o2: TaskState): Int {
+                return compareValuesBy(o1, o2) { ids.getValue(it.task) }
+            }
+        }
+
+    override fun toString(): String {
+        return "Random"
+    }
 }

@@ -22,29 +22,21 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.workload
+package com.atlarge.opendc.workflows.service
 
-import com.atlarge.opendc.core.User
-import com.atlarge.opendc.core.workload.Workload
-import java.util.UUID
+import com.atlarge.opendc.workflows.monitor.WorkflowMonitor
+import com.atlarge.opendc.workflows.workload.Job
 
-/**
- * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.
- *
- * @property uid A unique identified of this workflow.
- * @property name The name of this workflow.
- * @property owner The owner of the workflow.
- * @property tasks The tasks that are part of this workflow.
- * @property metadata Additional metadata for the job.
- */
-data class Job(
-    override val uid: UUID,
-    override val name: String,
-    override val owner: User,
-    val tasks: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
-) : Workload {
-    override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
+class JobState(val job: Job, val monitor: WorkflowMonitor, val submittedAt: Long) {
+    /**
+     * A flag to indicate whether this job is finished.
+     */
+    val isFinished: Boolean
+        get() = tasks.isEmpty()
 
-    override fun hashCode(): Int = uid.hashCode()
+    val tasks: MutableSet<TaskState> = mutableSetOf()
+
+    override fun equals(other: Any?): Boolean = other is JobState && other.job == job
+
+    override fun hashCode(): Int = job.hashCode()
 }

@@ -32,14 +32,14 @@ import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.workflows.monitor.WorkflowMonitor
 import com.atlarge.opendc.workflows.service.stage.job.JobAdmissionPolicy
-import com.atlarge.opendc.workflows.service.stage.job.JobSortingPolicy
-import com.atlarge.opendc.workflows.service.stage.resource.ResourceDynamicFilterPolicy
+import com.atlarge.opendc.workflows.service.stage.job.JobOrderPolicy
+import com.atlarge.opendc.workflows.service.stage.resource.ResourceFilterPolicy
 import com.atlarge.opendc.workflows.service.stage.resource.ResourceSelectionPolicy
 import com.atlarge.opendc.workflows.service.stage.task.TaskEligibilityPolicy
-import com.atlarge.opendc.workflows.service.stage.task.TaskSortingPolicy
+import com.atlarge.opendc.workflows.service.stage.task.TaskOrderPolicy
 import com.atlarge.opendc.workflows.workload.Job
-import com.atlarge.opendc.workflows.workload.Task
-import kotlinx.coroutines.delay
+import java.util.PriorityQueue
+import java.util.Queue
 import kotlinx.coroutines.launch
 
 /**
@@ -49,29 +49,49 @@ import kotlinx.coroutines.launch
 class StageWorkflowService(
     private val ctx: ProcessContext,
     private val provisioningService: ProvisioningService,
-    private val mode: WorkflowSchedulerMode,
-    private val jobAdmissionPolicy: JobAdmissionPolicy,
-    private val jobSortingPolicy: JobSortingPolicy,
-    private val taskEligibilityPolicy: TaskEligibilityPolicy,
-    private val taskSortingPolicy: TaskSortingPolicy,
-    private val resourceDynamicFilterPolicy: ResourceDynamicFilterPolicy,
-    private val resourceSelectionPolicy: ResourceSelectionPolicy
+    mode: WorkflowSchedulerMode,
+    jobAdmissionPolicy: JobAdmissionPolicy,
+    jobOrderPolicy: JobOrderPolicy,
+    taskEligibilityPolicy: TaskEligibilityPolicy,
+    taskOrderPolicy: TaskOrderPolicy,
+    resourceFilterPolicy: ResourceFilterPolicy,
+    resourceSelectionPolicy: ResourceSelectionPolicy
 ) : WorkflowService, ServerMonitor {
 
     /**
      * The incoming jobs ready to be processed by the scheduler.
      */
-    internal val incomingJobs: MutableSet<JobView> = mutableSetOf()
+    internal val incomingJobs: MutableSet<JobState> = linkedSetOf()
+
+    /**
+     * The incoming tasks ready to be processed by the scheduler.
+     */
+    internal val incomingTasks: MutableSet<TaskState> = linkedSetOf()
+
+    /**
+     * The job queue.
+     */
+    internal val jobQueue: Queue<JobState>
+
+    /**
+     * The task queue.
+     */
+    internal val taskQueue: Queue<TaskState>
 
     /**
      * The active jobs in the system.
      */
-    internal val activeJobs: MutableSet<JobView> = mutableSetOf()
+    internal val activeJobs: MutableSet<JobState> = mutableSetOf()
+
+    /**
+     * The active tasks in the system.
+     */
+    internal val activeTasks: MutableSet<TaskState> = mutableSetOf()
 
     /**
      * The running tasks by [Server].
      */
-    internal val taskByServer = mutableMapOf<Server, TaskView>()
+    internal val taskByServer = mutableMapOf<Server, TaskState>()
 
     /**
      * The nodes that are controlled by the service.
@@ -83,18 +103,89 @@ class StageWorkflowService(
      */
     internal val available: MutableSet<Node> = mutableSetOf()
 
+    /**
+     * The maximum number of incoming jobs.
+     */
+    private val throttleLimit: Int = 20000
+
+    /**
+     * The load of the system.
+     */
+    internal val load: Double
+        get() = (available.size / nodes.size.toDouble())
+
+    /**
+     * The root listener of this scheduler.
+     */
+    private val rootListener = object : StageWorkflowSchedulerListener {
+        /**
+         * The listeners to delegate to.
+         */
+        val listeners = mutableSetOf<StageWorkflowSchedulerListener>()
+
+        override fun cycleStarted(scheduler: StageWorkflowService) {
+            listeners.forEach { it.cycleStarted(scheduler) }
+        }
+
+        override fun cycleFinished(scheduler: StageWorkflowService) {
+            listeners.forEach { it.cycleFinished(scheduler) }
+        }
+
+        override fun jobSubmitted(job: JobState) {
+            listeners.forEach { it.jobSubmitted(job) }
+        }
+
+        override fun jobStarted(job: JobState) {
+            listeners.forEach { it.jobStarted(job) }
+        }
+
+        override fun jobFinished(job: JobState) {
+            listeners.forEach { it.jobFinished(job) }
+        }
+
+        override fun taskReady(task: TaskState) {
+            listeners.forEach { it.taskReady(task) }
+        }
+
+        override fun taskAssigned(task: TaskState) {
+            listeners.forEach { it.taskAssigned(task) }
+        }
+
+        override fun taskStarted(task: TaskState) {
+            listeners.forEach { it.taskStarted(task) }
+        }
+
+        override fun taskFinished(task: TaskState) {
+            listeners.forEach { it.taskFinished(task) }
+        }
+    }
+
+    private val mode: WorkflowSchedulerMode.Logic
+    private val jobAdmissionPolicy: JobAdmissionPolicy.Logic
+    private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic
+    private val resourceFilterPolicy: ResourceFilterPolicy.Logic
+    private val resourceSelectionPolicy: Comparator<Node>
+
     init {
         ctx.launch {
             nodes = provisioningService.nodes().toList()
             available.addAll(nodes)
         }
+
+        this.mode = mode(this)
+        this.jobAdmissionPolicy = jobAdmissionPolicy(this)
+        this.jobQueue = PriorityQueue(100, jobOrderPolicy(this).thenBy { it.job.uid })
+        this.taskEligibilityPolicy = taskEligibilityPolicy(this)
+        this.taskQueue = PriorityQueue(1000, taskOrderPolicy(this).thenBy { it.task.uid })
+        this.resourceFilterPolicy = resourceFilterPolicy(this)
+        this.resourceSelectionPolicy = resourceSelectionPolicy(this)
     }
 
     override suspend fun submit(job: Job, monitor: WorkflowMonitor) {
         // J1 Incoming Jobs
-        val jobInstance = JobView(job, monitor)
+        val jobInstance = JobState(job, monitor, ctx.clock.millis())
         val instances = job.tasks.associateWith {
-            TaskView(jobInstance, it)
+            TaskState(jobInstance, it)
         }
 
         for ((task, instance) in instances) {
@@ -105,82 +196,98 @@ class StageWorkflowService(
 
             // If the task has no dependency, it is a root task and can immediately be evaluated
             if (instance.isRoot) {
-                instance.state = TaskState.READY
+                instance.state = TaskStatus.READY
             }
         }
 
-        jobInstance.tasks = instances.values.toMutableSet()
+        instances.values.toCollection(jobInstance.tasks)
         incomingJobs += jobInstance
+        rootListener.jobSubmitted(jobInstance)
+
         requestCycle()
     }
-
-    private var next: kotlinx.coroutines.Job? = null
 
     /**
      * Indicate to the scheduler that a scheduling cycle is needed.
      */
-    private fun requestCycle() {
-        when (mode) {
-            is WorkflowSchedulerMode.Interactive -> {
-                ctx.launch {
-                    schedule()
-                }
-            }
-            is WorkflowSchedulerMode.Batch -> {
-                if (next == null) {
-                    val job = ctx.launch {
-                        delay(mode.quantum)
-                        next = null
-                        schedule()
-                    }
-                    next = job
-                }
-            }
-        }
-    }
+    private suspend fun requestCycle() = mode.requestCycle()
 
     /**
      * Perform a scheduling cycle immediately.
      */
-    private suspend fun schedule() {
+    internal suspend fun schedule() {
         // J2 Create list of eligible jobs
-        jobAdmissionPolicy.startCycle(this)
-        val eligibleJobs = incomingJobs.filter { jobAdmissionPolicy.shouldAdmit(this, it) }
+        val iterator = incomingJobs.iterator()
+        while (iterator.hasNext()) {
+            val jobInstance = iterator.next()
+            val advice = jobAdmissionPolicy(jobInstance)
+            if (advice.stop) {
+                break
+            } else if (!advice.admit) {
+                continue
+            }
 
-        for (jobInstance in eligibleJobs) {
-            incomingJobs -= jobInstance
+            iterator.remove()
+            jobQueue.add(jobInstance)
             activeJobs += jobInstance
             jobInstance.monitor.onJobStart(jobInstance.job, ctx.clock.millis())
+            rootListener.jobStarted(jobInstance)
         }
 
-        // J3 Sort jobs on criterion
-        val sortedJobs = jobSortingPolicy(this, activeJobs)
-
         // J4 Per job
-        for (jobInstance in sortedJobs) {
-            // T1 Create list of eligible tasks
-            taskEligibilityPolicy.startCycle(this)
-            val eligibleTasks = jobInstance.tasks.filter { taskEligibilityPolicy.isEligible(this, it) }
+        while (jobQueue.isNotEmpty()) {
+            val jobInstance = jobQueue.poll()
 
-            // T2 Sort tasks on criterion
-            val sortedTasks = taskSortingPolicy(this, eligibleTasks)
+            // Edge-case: job has no tasks
+            if (jobInstance.isFinished) {
+                finishJob(jobInstance)
+            }
 
-            // T3 Per task
-            for (instance in sortedTasks) {
-                val hosts = resourceDynamicFilterPolicy(this, nodes, instance)
-                val host = resourceSelectionPolicy.select(this, hosts, instance)
-
-                if (host != null) {
-                    // T4 Submit task to machine
-                    available -= host
-                    instance.state = TaskState.ACTIVE
-
-                    val newHost = provisioningService.deploy(host, instance.task.image, this)
-                    instance.host = newHost
-                    taskByServer[newHost.server!!] = instance
-                } else {
-                    return
+            // Add job roots to the scheduling queue
+            for (task in jobInstance.tasks) {
+                if (task.state != TaskStatus.READY) {
+                    continue
                 }
+
+                incomingTasks += task
+                rootListener.taskReady(task)
+            }
+        }
+
+        // T1 Create list of eligible tasks
+        val taskIterator = incomingTasks.iterator()
+        while (taskIterator.hasNext()) {
+            val taskInstance = taskIterator.next()
+            val advice = taskEligibilityPolicy(taskInstance)
+            if (advice.stop) {
+                break
+            } else if (!advice.admit) {
+                continue
+            }
+
+            taskIterator.remove()
+            taskQueue.add(taskInstance)
+        }
+
+        // T3 Per task
+        while (taskQueue.isNotEmpty()) {
+            val instance = taskQueue.peek()
+            val host: Node? = available.firstOrNull()
+
+            if (host != null) {
+                // T4 Submit task to machine
+                available -= host
+                instance.state = TaskStatus.ACTIVE
+
+                val newHost = provisioningService.deploy(host, instance.task.image, this)
+                instance.host = newHost
+                taskByServer[newHost.server!!] = instance
+
+                activeTasks += instance
+                taskQueue.poll()
+                rootListener.taskAssigned(instance)
+            } else {
+                break
             }
         }
     }
@@ -189,19 +296,33 @@ class StageWorkflowService(
         when (server.state) {
             ServerState.ACTIVE -> {
                 val task = taskByServer.getValue(server)
+                task.startedAt = ctx.clock.millis()
                 task.job.monitor.onTaskStart(task.job.job, task.task, ctx.clock.millis())
+                rootListener.taskStarted(task)
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
                 val task = taskByServer.remove(server) ?: throw IllegalStateException()
                 val job = task.job
-                task.state = TaskState.FINISHED
+                task.state = TaskStatus.FINISHED
+                task.finishedAt = ctx.clock.millis()
                 job.tasks.remove(task)
                 available += task.host!!
+                activeTasks -= task
                 job.monitor.onTaskFinish(job.job, task.task, 0, ctx.clock.millis())
+                rootListener.taskFinished(task)
+
+                // Add job roots to the scheduling queue
+                for (dependent in task.dependents) {
+                    if (dependent.state != TaskStatus.READY) {
+                        continue
+                    }
+
+                    incomingTasks += dependent
+                    rootListener.taskReady(dependent)
+                }
 
                 if (job.isFinished) {
-                    activeJobs -= job
-                    job.monitor.onJobFinish(job.job, ctx.clock.millis())
+                    finishJob(job)
                 }
 
                 requestCycle()
@@ -210,56 +331,17 @@ class StageWorkflowService(
         }
     }
 
-    class JobView(val job: Job, val monitor: WorkflowMonitor) {
-        /**
-         * A flag to indicate whether this job is finished.
-         */
-        val isFinished: Boolean
-            get() = tasks.isEmpty()
-
-        lateinit var tasks: MutableSet<TaskView>
+    private suspend fun finishJob(job: JobState) {
+        activeJobs -= job
+        job.monitor.onJobFinish(job.job, ctx.clock.millis())
+        rootListener.jobFinished(job)
     }
 
-    class TaskView(val job: JobView, val task: Task) {
-        /**
-         * The dependencies of this task.
-         */
-        val dependencies = HashSet<TaskView>()
+    fun addListener(listener: StageWorkflowSchedulerListener) {
+        rootListener.listeners += listener
+    }
 
-        /**
-         * The dependents of this task.
-         */
-        val dependents = HashSet<TaskView>()
-
-        /**
-         * A flag to indicate whether this workflow task instance is a workflow root.
-         */
-        val isRoot: Boolean
-            get() = dependencies.isEmpty()
-
-        var state: TaskState = TaskState.CREATED
-            set(value) {
-                field = value
-
-                // Mark the process as terminated in the graph
-                if (value == TaskState.FINISHED) {
-                    markTerminated()
-                }
-            }
-
-        var host: Node? = null
-
-        /**
-         * Mark the specified [TaskView] as terminated.
-         */
-        private fun markTerminated() {
-            for (dependent in dependents) {
-                dependent.dependencies.remove(this)
-
-                if (dependent.isRoot) {
-                    dependent.state = TaskState.READY
-                }
-            }
-        }
+    fun removeListener(listener: StageWorkflowSchedulerListener) {
+        rootListener.listeners -= listener
     }
 }

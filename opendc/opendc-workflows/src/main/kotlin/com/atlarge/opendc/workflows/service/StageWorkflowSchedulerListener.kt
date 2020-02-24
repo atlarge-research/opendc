@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,18 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.job
+package com.atlarge.opendc.workflows.service
 
-import com.atlarge.opendc.workflows.service.StageWorkflowService
+interface StageWorkflowSchedulerListener {
+    fun cycleStarted(scheduler: StageWorkflowService) {}
+    fun cycleFinished(scheduler: StageWorkflowService) {}
 
-/**
- * A policy interface for ordering admitted workflows in the scheduling queue.
- */
-interface JobSortingPolicy {
-    /**
-     * Sort the given collection of jobs on a given criterion.
-     *
-     * @param scheduler The scheduler that started the cycle.
-     * @param jobs The collection of tasks that should be sorted.
-     * @return The sorted list of jobs.
-     */
-    operator fun invoke(
-        scheduler: StageWorkflowService,
-        jobs: Collection<StageWorkflowService.JobView>
-    ): List<StageWorkflowService.JobView>
+    fun jobSubmitted(job: JobState) {}
+    fun jobStarted(job: JobState) {}
+    fun jobFinished(job: JobState) {}
+
+    fun taskReady(task: TaskState) {}
+    fun taskAssigned(task: TaskState) {}
+    fun taskStarted(task: TaskState) {}
+    fun taskFinished(task: TaskState) {}
 }

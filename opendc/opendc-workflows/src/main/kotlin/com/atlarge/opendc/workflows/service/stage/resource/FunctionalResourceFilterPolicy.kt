@@ -26,24 +26,18 @@ package com.atlarge.opendc.workflows.service.stage.resource
 
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.TaskState
 
 /**
- * This interface represents the **R4** stage of the Reference Architecture for Schedulers and acts as a filter yielding
- * a list of resources with sufficient resource-capacities, based on fixed or dynamic requirements, and on predicted or
- * monitored information about processing unit availability, memory occupancy, etc.
+ * A [ResourceFilterPolicy] based on the amount of cores available on the machine and the cores required for
+ * the task.
  */
-interface ResourceDynamicFilterPolicy {
-    /**
-     * Filter the list of machines based on dynamic information.
-     *
-     * @param scheduler The scheduler to filter the machines.
-     * @param machines The list of machines in the system.
-     * @param task The task that is to be scheduled.
-     * @return The machines on which the task can be scheduled.
-     */
-    operator fun invoke(
-        scheduler: StageWorkflowService,
-        machines: List<Node>,
-        task: StageWorkflowService.TaskView
-    ): List<Node>
+object FunctionalResourceFilterPolicy : ResourceFilterPolicy {
+    override fun invoke(scheduler: StageWorkflowService): ResourceFilterPolicy.Logic =
+        object : ResourceFilterPolicy.Logic {
+            override fun invoke(hosts: Sequence<Node>, task: TaskState): Sequence<Node> =
+                hosts.filter { it in scheduler.available }
+        }
+
+    override fun toString(): String = "functional"
 }

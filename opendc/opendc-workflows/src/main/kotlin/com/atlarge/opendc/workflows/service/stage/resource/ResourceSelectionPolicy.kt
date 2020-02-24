@@ -25,24 +25,10 @@
 package com.atlarge.opendc.workflows.service.stage.resource
 
 import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.workflows.service.StageWorkflowService
+import com.atlarge.opendc.workflows.service.stage.StagePolicy
 
 /**
  * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
  * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
  */
-interface ResourceSelectionPolicy {
-    /**
-     * Select a machine on which the task should be scheduled.
-     *
-     * @param scheduler The scheduler to select the machine.
-     * @param machines The list of machines in the system.
-     * @param task The task that is to be scheduled.
-     * @return The selected machine or `null` if no machine could be found.
-     */
-    fun select(
-        scheduler: StageWorkflowService,
-        machines: List<Node>,
-        task: StageWorkflowService.TaskView
-    ): Node?
-}
+interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>

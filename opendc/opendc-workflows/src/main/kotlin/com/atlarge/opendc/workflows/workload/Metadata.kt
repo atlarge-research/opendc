@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,9 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.task
-
-import com.atlarge.opendc.workflows.service.StageWorkflowService
-import kotlin.random.Random
+package com.atlarge.opendc.workflows.workload
 
 /**
- * The [RandomTaskSortingPolicy] sorts tasks randomly.
- *
- * @property random The [Random] instance to use when sorting the list of tasks.
+ * Meta-data key for the deadline of a task.
  */
-class RandomTaskSortingPolicy(private val random: Random = Random.Default) : TaskSortingPolicy {
-    override fun invoke(
-        scheduler: StageWorkflowService,
-        tasks: Collection<StageWorkflowService.TaskView>
-    ): List<StageWorkflowService.TaskView> = tasks.shuffled(random)
-}
+const val WORKFLOW_TASK_DEADLINE = "workflow:task:deadline"

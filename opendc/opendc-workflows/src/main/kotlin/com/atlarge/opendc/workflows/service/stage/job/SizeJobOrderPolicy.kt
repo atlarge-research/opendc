@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +22,19 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service.stage.resource
+package com.atlarge.opendc.workflows.service.stage.job
 
-import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.workflows.service.JobState
 import com.atlarge.opendc.workflows.service.StageWorkflowService
 
 /**
- * A [ResourceDynamicFilterPolicy] based on the amount of cores available on the machine and the cores required for
- * the task.
+ * A [SizeJobOrderPolicy] that orders jobs based on the number of tasks it has.
  */
-class FunctionalResourceDynamicFilterPolicy : ResourceDynamicFilterPolicy {
-    override fun invoke(
-        scheduler: StageWorkflowService,
-        machines: List<Node>,
-        task: StageWorkflowService.TaskView
-    ): List<Node> {
-        return machines
-            .filter { it in scheduler.available }
+data class SizeJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService) =
+        compareBy<JobState> { it.tasks.size.let { if (ascending) it else -it } }
+
+    override fun toString(): String {
+        return "Job-Size(${if (ascending) "asc" else "desc"})"
     }
 }
