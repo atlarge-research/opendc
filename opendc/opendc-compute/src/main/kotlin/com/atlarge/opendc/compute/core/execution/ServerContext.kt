@@ -38,14 +38,9 @@ public interface ServerContext {
     public val server: Server
 
     /**
-     * Request for each core the specified amount of cpu time to run from the server and wait until all the threads have
-     * finished processing. If none of the cores are non-zero, the method will return immediately.
-     *
-     * @param req An array specifying for each core the amount of cpu time to request.
-     * @param reqDuration A [Long] specifying the duration in which this request needs to be fulfilled.
-     * @return An array specifying for each core the amount of cpu time it actually received.
+     * A list of available processor context instances to use.
      */
-    public suspend fun run(req: LongArray, reqDuration: Long): LongArray
+    public val cpus: List<ProcessorContext>
 
     /**
      * Publishes the given [service] with key [serviceKey] in the server's registry.

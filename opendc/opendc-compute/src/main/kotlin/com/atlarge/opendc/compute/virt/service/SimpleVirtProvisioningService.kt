@@ -7,7 +7,7 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
-import com.atlarge.opendc.compute.virt.HypervisorImage
+import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import kotlinx.coroutines.launch
@@ -51,7 +51,10 @@ class SimpleVirtProvisioningService(
         ctx.launch {
             val provisionedNodes = provisioningService.nodes().toList()
             val deployedNodes = provisionedNodes.map { node ->
-                val hypervisorImage = HypervisorImage(hypervisorMonitor)
+                val hypervisorImage =
+                    HypervisorImage(
+                        hypervisorMonitor
+                    )
                 hypervisorByNode[node] = hypervisorImage
                 provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService)
             }

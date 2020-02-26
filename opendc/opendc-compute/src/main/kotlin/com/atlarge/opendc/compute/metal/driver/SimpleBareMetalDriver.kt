@@ -24,19 +24,25 @@
 
 package com.atlarge.opendc.compute.metal.driver
 
+import com.atlarge.odcsim.ProcessContext
 import com.atlarge.odcsim.processContext
+import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ServerState
+import com.atlarge.opendc.compute.core.execution.ProcessorContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.image.EmptyImage
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import java.util.UUID
+import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
@@ -114,8 +120,33 @@ public class SimpleBareMetalDriver(
         }
     }
 
+    private data class ProcessorContextImpl(override val info: ProcessingUnit) : ProcessorContext {
+        override suspend fun run(burst: Long, maxUsage: Double, deadline: Long): Long {
+            val start = processContext.clock.millis()
+            val usage = min(maxUsage, info.clockRate)
+
+            try {
+                val duration = min(max(0, deadline - start), ceil(burst / usage).toLong())
+                delay(duration)
+            } catch (_: CancellationException) {
+                // On cancellation, we compute and return the remaining burst
+            }
+            val end = processContext.clock.millis()
+            val granted = ceil((end - start) * usage * 1_000_000).toLong()
+            return max(0, burst - granted)
+        }
+    }
+
     private val serverCtx = object : ServerManagementContext {
         private var initialized: Boolean = false
+        private lateinit var ctx: ProcessContext
+
+        override val cpus: List<ProcessorContextImpl> = flavor.cpus
+            .asSequence()
+            .flatMap { cpu ->
+                generateSequence { ProcessorContextImpl(cpu) }.take(cpu.cores)
+            }
+            .toList()
 
         override var server: Server
             get() = node.server!!
@@ -131,7 +162,7 @@ public class SimpleBareMetalDriver(
             val previousState = server.state
             server = server.copy(state = ServerState.ACTIVE)
             monitor.onUpdate(server, previousState)
-
+            ctx = processContext
             initialized = true
         }
 
@@ -141,13 +172,6 @@ public class SimpleBareMetalDriver(
             server = server.copy(state = state)
             monitor.onUpdate(server, previousState)
             initialized = false
-        }
-
-        override suspend fun run(req: LongArray, reqDuration: Long): LongArray {
-            // TODO Properly implement this for multiple CPUs
-            val time = max(0, req.max() ?: 0) / (flavor.cpus[0].clockRate * 1000)
-            delay(max(time.toLong(), reqDuration))
-            return req
         }
     }
 }

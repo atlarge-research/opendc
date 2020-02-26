@@ -10,15 +10,15 @@ interface HypervisorMonitor {
      * Invoked after a scheduling slice has finished processed.
      *
      * @param time The current time (in ms).
-     * @param totalRequestedCpuTime The total requested CPU time (can be above capacity).
-     * @param totalCpuTimeCapacity The actual total capacity of the machine managed by this hypervisor.
+     * @param totalRequestedBurst The total requested CPU time (can be above capacity).
+     * @param totalGrantedBurst The actual total granted capacity.
      * @param numberOfDeployedImages The number of images deployed on this hypervisor.
      * @param hostServer The server hosting this hypervisor.
      */
     fun onSliceFinish(
         time: Long,
-        totalRequestedCpuTime: Long,
-        totalCpuTimeCapacity: Long,
+        totalRequestedBurst: Long,
+        totalGrantedBurst: Long,
         numberOfDeployedImages: Int,
         hostServer: Server
     )
