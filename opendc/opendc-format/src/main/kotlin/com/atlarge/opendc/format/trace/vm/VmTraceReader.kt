@@ -55,6 +55,7 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
         var timestampCol = 0
         var coreCol = 0
         var cpuUsageCol = 0
+        var provisionedMemoryCol = 0
         val traceInterval = 5 * 60 * 1000L
 
         traceDirectory.walk()
@@ -64,6 +65,8 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
                 val flopsHistory = mutableListOf<FlopsHistoryFragment>()
                 var vmId = -1L
                 var cores = -1
+                var requiredMemory = -1L
+
                 BufferedReader(FileReader(vmFile)).use { reader ->
                     reader.lineSequence()
                         .filter { line ->
@@ -79,6 +82,7 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
                                 timestampCol = header["Timestamp [ms]"]!!
                                 coreCol = header["CPU cores"]!!
                                 cpuUsageCol = header["CPU usage [MHZ]"]!!
+                                provisionedMemoryCol = header["Memory capacity provisioned [KB]"]!!
                                 return@forEachIndexed
                             }
 
@@ -86,6 +90,7 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
                             val timestamp = values[timestampCol].trim().toLong() - 5 * 60
                             cores = values[coreCol].trim().toInt()
                             val cpuUsage = values[cpuUsageCol].trim().toDouble()
+                            requiredMemory = (values[provisionedMemoryCol].trim().toDouble() / 1000).toLong()
 
                             val flops: Long = (cpuUsage * cores * 1_000_000L * 5 * 60).toLong()
 
@@ -110,8 +115,8 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
 
                 val uuid = UUID(0L, vmId)
                 val vmWorkload = VmWorkload(
-                    uuid, "<unnamed>", UnnamedUser,
-                    VmImage(uuid, "<unnamed>", emptyMap(), flopsHistory, cores)
+                    uuid, "VM Workload $vmId", UnnamedUser,
+                    VmImage(uuid, vmId.toString(), emptyMap(), flopsHistory, cores, requiredMemory)
                 )
                 entries[vmId] = TraceEntryImpl(
                     flopsHistory.firstOrNull()?.tick ?: -1,

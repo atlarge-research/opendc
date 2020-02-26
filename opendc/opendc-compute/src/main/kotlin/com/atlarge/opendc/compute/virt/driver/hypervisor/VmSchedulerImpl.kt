@@ -26,7 +26,7 @@ package com.atlarge.opendc.compute.virt.driver.hypervisor
 
 import com.atlarge.odcsim.processContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
-import com.atlarge.opendc.compute.core.ServerFlavor
+import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.execution.ProcessorContext
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
@@ -53,9 +53,10 @@ public class VmSchedulerImpl(
      */
     private val cpus = hostContext.cpus.map { HostProcessorContext(it, hostContext, hypervisorMonitor) }
 
-    override fun createVirtualCpus(flavor: ServerFlavor): List<ProcessorContext> {
+    override fun createVirtualCpus(flavor: Flavor): List<ProcessorContext> {
+        // TODO At the moment, the first N cores get filled the first. Distribute over all cores instead
         return cpus.asSequence()
-            .take(flavor.cpus.sumBy { it.cores })
+            .take(flavor.cpuCount)
             .map { VirtualProcessorContext(it) }
             .toList()
     }

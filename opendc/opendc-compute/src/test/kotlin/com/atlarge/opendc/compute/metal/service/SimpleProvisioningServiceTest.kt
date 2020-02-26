@@ -27,7 +27,6 @@ package com.atlarge.opendc.compute.metal.service
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerFlavor
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
@@ -49,14 +48,13 @@ internal class SimpleProvisioningServiceTest {
     fun smoke() {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider({ _ ->
-            val flavor = ServerFlavor(listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)))
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
                     println(server)
                 }
             }
-            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", flavor)
+            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)), emptyList())
 
             val provisioner = SimpleProvisioningService()
             provisioner.create(driver)

@@ -27,9 +27,10 @@ package com.atlarge.opendc.compute.virt.driver.hypervisor
 import com.atlarge.odcsim.ProcessContext
 import com.atlarge.odcsim.processContext
 import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerFlavor
+import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ProcessorContext
+import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
@@ -41,15 +42,29 @@ import java.util.UUID
 /**
  * A [VirtDriver] that is backed by a simple hypervisor implementation.
  */
-class HypervisorVirtDriver(private val scheduler: VmScheduler) : VirtDriver {
+class HypervisorVirtDriver(
+    private val hostContext: ServerContext,
+    private val scheduler: VmScheduler
+) : VirtDriver {
     /**
      * A set for tracking the VM context objects.
      */
     internal val vms: MutableSet<VmServerContext> = mutableSetOf()
 
-    override suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: ServerFlavor): Server {
+    /**
+     * Current total memory use of the images on this hypervisor.
+     */
+    private var memoryAvailable: Long = hostContext.server.flavor.memorySize
+
+    override suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: Flavor): Server {
+        val requiredMemory = flavor.memorySize
+        if (memoryAvailable - requiredMemory < 0) {
+            throw InsufficientMemoryOnServerException()
+        }
+
         val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
-        vms.add(VmServerContext(server, monitor, flavor, processContext))
+        memoryAvailable -= requiredMemory
+        vms.add(VmServerContext(server, monitor, processContext))
         return server
     }
 
@@ -60,7 +75,6 @@ class HypervisorVirtDriver(private val scheduler: VmScheduler) : VirtDriver {
     internal inner class VmServerContext(
         override var server: Server,
         val monitor: ServerMonitor,
-        flavor: ServerFlavor,
         ctx: ProcessContext
     ) : ServerManagementContext {
         private var initialized: Boolean = false
@@ -75,7 +89,7 @@ class HypervisorVirtDriver(private val scheduler: VmScheduler) : VirtDriver {
             }
         }
 
-        override val cpus: List<ProcessorContext> = scheduler.createVirtualCpus(flavor)
+        override val cpus: List<ProcessorContext> = scheduler.createVirtualCpus(server.flavor)
 
         override suspend fun init() {
             if (initialized) {
@@ -92,6 +106,7 @@ class HypervisorVirtDriver(private val scheduler: VmScheduler) : VirtDriver {
             val previousState = server.state
             val state = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
             server = server.copy(state = state)
+            memoryAvailable += server.flavor.memorySize
             monitor.onUpdate(server, previousState)
             initialized = false
         }

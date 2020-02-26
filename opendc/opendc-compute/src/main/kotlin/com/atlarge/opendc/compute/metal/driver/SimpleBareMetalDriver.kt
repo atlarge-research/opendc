@@ -28,7 +28,8 @@ import com.atlarge.odcsim.ProcessContext
 import com.atlarge.odcsim.processContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerFlavor
+import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ProcessorContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
@@ -49,12 +50,13 @@ import kotlin.math.min
  *
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
- * @param flavor The hardware configuration of the machine.
+ * @param cpuNodes The CPU nodes/packages available to the bare metal machine.
  */
 public class SimpleBareMetalDriver(
     uid: UUID,
     name: String,
-    private val flavor: ServerFlavor
+    val cpuNodes: List<ProcessingUnit>,
+    val memoryUnits: List<MemoryUnit>
 ) : BareMetalDriver {
     /**
      * The monitor to use.
@@ -65,6 +67,11 @@ public class SimpleBareMetalDriver(
      * The machine state.
      */
     private var node: Node = Node(uid, name, PowerState.POWER_OFF, EmptyImage, null)
+
+    /**
+     * The flavor that corresponds to this machine.
+     */
+    private val flavor = Flavor(cpuNodes.sumBy { it.cores }, memoryUnits.map { it.size }.sum())
 
     override suspend fun init(monitor: ServerMonitor): Node {
         this.monitor = monitor
@@ -141,7 +148,7 @@ public class SimpleBareMetalDriver(
         private var initialized: Boolean = false
         private lateinit var ctx: ProcessContext
 
-        override val cpus: List<ProcessorContextImpl> = flavor.cpus
+        override val cpus: List<ProcessorContextImpl> = cpuNodes
             .asSequence()
             .flatMap { cpu ->
                 generateSequence { ProcessorContextImpl(cpu) }.take(cpu.cores)

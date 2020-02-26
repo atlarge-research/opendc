@@ -13,7 +13,8 @@ class VmImage(
     public override val name: String,
     public override val tags: TagContainer,
     public val flopsHistory: List<FlopsHistoryFragment>,
-    public val cores: Int
+    public val cores: Int,
+    public val requiredMemory: Long
 ) : Image {
 
     override suspend fun invoke(ctx: ServerContext) {
@@ -21,7 +22,7 @@ class VmImage(
             if (fragment.flops == 0L) {
                 delay(fragment.duration)
             } else {
-                val cores = min(this.cores, ctx.server.flavor.cpus.sumBy { it.cores })
+                val cores = min(this.cores, ctx.server.flavor.cpuCount)
                 val req = fragment.flops / cores
 
                 coroutineScope {

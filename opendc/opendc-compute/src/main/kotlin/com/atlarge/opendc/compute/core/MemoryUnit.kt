@@ -25,18 +25,16 @@
 package com.atlarge.opendc.compute.core
 
 /**
- * (Virtual) hardware configuration of a server.
+ * A memory unit of a compute resource, either virtual or physical.
+ *
+ * @property vendor The vendor string of the memory.
+ * @property modelName The name of the memory model.
+ * @property speed The access speed of the memory in MHz.
+ * @property size The size of the memory unit in MBs.
  */
-public data class ServerFlavor(
-    /**
-     * The processing units of this machine.
-     */
-    public val cpus: List<ProcessingUnit>,
-
-    /**
-     * Key and value pairs that can be used to describe the specification of the server which is more than just about
-     * CPU, disk and RAM. For example, it can be used to indicate that the server created by this flavor has PCI
-     * devices, etc.
-     */
-    public val details: Map<String, Any> = emptyMap()
+public data class MemoryUnit(
+    public val vendor: String,
+    public val modelName: String,
+    public val speed: Double,
+    public val size: Long
 )
