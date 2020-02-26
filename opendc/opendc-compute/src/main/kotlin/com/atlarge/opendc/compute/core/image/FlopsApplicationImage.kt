@@ -26,6 +26,8 @@ package com.atlarge.opendc.compute.core.image
 
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.min
 
@@ -50,6 +52,8 @@ class FlopsApplicationImage(
 ) : Image {
     init {
         require(flops >= 0) { "Negative number of flops" }
+        require(cores > 0) { "Negative number of cores or no cores" }
+        require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
 
     /**
@@ -57,7 +61,12 @@ class FlopsApplicationImage(
      */
     override suspend fun invoke(ctx: ServerContext) {
         val cores = min(this.cores, ctx.server.flavor.cpus.sumBy { it.cores })
-        val req = (flops * (1 / utilization) / cores).toLong()
-        ctx.run(LongArray(cores) { req }, req)
+        val req = flops / cores
+
+        coroutineScope {
+            for (cpu in ctx.cpus.take(cores)) {
+                launch { cpu.run(req, cpu.info.clockRate * utilization, Long.MAX_VALUE) }
+            }
+        }
     }
 }

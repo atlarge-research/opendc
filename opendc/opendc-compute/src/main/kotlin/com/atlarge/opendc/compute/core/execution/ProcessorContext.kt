@@ -22,19 +22,27 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt
+package com.atlarge.opendc.compute.core.execution
+
+import com.atlarge.opendc.compute.core.ProcessingUnit
 
 /**
- * The power state of a compute node.
+ * An interface for managing a single processing core (CPU) of a (virtual) machine.
  */
-public enum class HypervisorState {
+public interface ProcessorContext {
     /**
-     * Hypervisor is running.
+     * The information about the processing unit.
      */
-    RUNNING,
+    public val info: ProcessingUnit
 
     /**
-     * Hypervisor is destroyed.
+     * Request the specified burst time from the processor and suspend execution until the processor finishes
+     * processing of the requested burst.
+     *
+     * @param burst The burst time to request from the processor.
+     * @param maxUsage The maximum usage in terms of MHz that the processing core may use while running the burst.
+     * @param deadline The instant at which this request needs to be fulfilled.
+     * @return The remaining burst time in case the method was cancelled or zero if the processor finished running.
      */
-    DESTROYED,
+    public suspend fun run(burst: Long, maxUsage: Double, deadline: Long): Long
 }

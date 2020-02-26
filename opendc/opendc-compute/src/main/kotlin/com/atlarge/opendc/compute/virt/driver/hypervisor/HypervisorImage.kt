@@ -22,8 +22,32 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt
+package com.atlarge.opendc.compute.virt.driver.hypervisor
 
-import kotlin.coroutines.Continuation
+import com.atlarge.opendc.compute.core.execution.ServerContext
+import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.core.resource.TagContainer
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.UUID
 
-data class RunRequest(val req: LongArray, val reqDuration: Long, val continuation: Continuation<LongArray>)
+/**
+ * A hypervisor managing the VMs of a node.
+ */
+class HypervisorImage(
+    private val hypervisorMonitor: HypervisorMonitor
+) : Image {
+    override val uid: UUID = UUID.randomUUID()
+    override val name: String = "vmm"
+    override val tags: TagContainer = emptyMap()
+
+    override suspend fun invoke(ctx: ServerContext) {
+        val driver = HypervisorVirtDriver(VmSchedulerImpl(ctx, hypervisorMonitor))
+
+        ctx.publishService(VirtDriver.Key, driver)
+
+        // Suspend image until it is cancelled
+        suspendCancellableCoroutine<Unit> {}
+    }
+}

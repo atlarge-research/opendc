@@ -8,16 +8,16 @@ class Sc20HypervisorMonitor : HypervisorMonitor {
     private val outputFile = File("sc20-experiment-results.csv")
 
     init {
-        outputFile.appendText("time,totalRequestedCpuTime,totalCpuTimeCapacity,numberOfDeployedImages,server\n")
+        outputFile.writeText("time,totalRequestedBurst,totalGrantedBurst,numberOfDeployedImages,server\n")
     }
 
     override fun onSliceFinish(
         time: Long,
-        totalRequestedCpuTime: Long,
-        totalCpuTimeCapacity: Long,
+        totalRequestedBurst: Long,
+        totalGrantedBurst: Long,
         numberOfDeployedImages: Int,
         hostServer: Server
     ) {
-        outputFile.appendText("$time,$totalRequestedCpuTime,$totalCpuTimeCapacity,$numberOfDeployedImages,$numberOfDeployedImages,${hostServer.uid}\n")
+        outputFile.appendText("$time,$totalRequestedBurst,$totalGrantedBurst,$numberOfDeployedImages,$numberOfDeployedImages,${hostServer.uid}\n")
     }
 }
