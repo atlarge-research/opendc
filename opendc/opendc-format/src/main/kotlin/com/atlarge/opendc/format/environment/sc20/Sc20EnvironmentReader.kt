@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.format.environment.sc18
+package com.atlarge.opendc.format.environment.sc20
 
-import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.MemoryUnit
+import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
@@ -42,13 +42,12 @@ import java.io.InputStream
 import java.util.UUID
 
 /**
- * A parser for the JSON experiment setup files used for the SC18 paper: "A Reference Architecture for Datacenter
- * Schedulers".
+ * A parser for the JSON experiment setup files used for the SC20 paper.
  *
  * @param input The input stream to read from.
  * @param mapper The Jackson object mapper to use.
  */
-class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) : EnvironmentReader {
+class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) : EnvironmentReader {
     /**
      * The environment that was read from the file.
      */
@@ -69,7 +68,13 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            SimpleBareMetalDriver(UUID.randomUUID(), "node-${counter++}", cores, listOf(MemoryUnit("", "", 2300.0, 16000)))
+                            val memories = machine.memories.map { id ->
+                                when (id) {
+                                    1 -> MemoryUnit("Samsung", "PC DRAM K4A4G045WD", 1600.0, 4_000L)
+                                    else -> throw IllegalArgumentException("The cpu id $id is not recognized")
+                                }
+                            }
+                            SimpleBareMetalDriver(UUID.randomUUID(), "node-${counter++}", cores, memories)
                         }
                     }
                 }
@@ -87,7 +92,7 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
         serviceRegistry[ProvisioningService.Key] = provisioningService
 
         val platform = Platform(
-            UUID.randomUUID(), "sc18-platform", listOf(
+            UUID.randomUUID(), "sc20-platform", listOf(
                 Zone(UUID.randomUUID(), "zone", serviceRegistry)
             )
         )

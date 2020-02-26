@@ -25,12 +25,13 @@
 package com.atlarge.opendc.experiments.sc20
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
-import com.atlarge.opendc.format.environment.sc18.Sc18EnvironmentReader
+import com.atlarge.opendc.format.environment.sc20.Sc20EnvironmentReader
 import com.atlarge.opendc.format.trace.vm.VmTraceReader
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -48,7 +49,7 @@ fun main(args: Array<String>) {
         return
     }
 
-    val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-test.json"))
+    val environment = Sc20EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-test.json"))
         .use { it.read() }
 
     val token = Channel<Boolean>()
@@ -73,7 +74,7 @@ fun main(args: Array<String>) {
         while (reader.hasNext()) {
             val (time, workload) = reader.next()
             delay(max(0, time * 1000 - ctx.clock.millis()))
-            scheduler.deploy(workload.image, monitor)
+            scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
         }
 
         token.receive()

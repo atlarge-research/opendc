@@ -22,17 +22,20 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt.driver.hypervisor
-
-import com.atlarge.opendc.compute.core.Flavor
-import com.atlarge.opendc.compute.core.execution.ProcessorContext
+package com.atlarge.opendc.compute.core
 
 /**
- * A scheduler that assigns virtual CPUs to virtual machines and maps them to physical CPUs.
+ * Flavors define the compute and memory capacity of [Server] instance. o put it simply, a flavor is an available
+ * hardware configuration for a server. It defines the size of a virtual server that can be launched.
  */
-public interface VmScheduler {
+public data class Flavor(
     /**
-     * Create the virtual CPUs for the specified [flavor].
+     * The number of (virtual) processing cores to use.
      */
-    fun createVirtualCpus(flavor: Flavor): List<ProcessorContext>
-}
+    public val cpuCount: Int,
+
+    /**
+     * The amount of RAM available to the server (in MB).
+     */
+    public val memorySize: Long
+)

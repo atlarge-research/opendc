@@ -25,7 +25,7 @@
 package com.atlarge.opendc.compute.virt.driver
 
 import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerFlavor
+import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.core.services.AbstractServiceKey
@@ -44,7 +44,7 @@ public interface VirtDriver {
      * @param flavor The flavor of the server which this driver is controlling.
      * @return The virtual server spawned by this method.
      */
-    public suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: ServerFlavor): Server
+    public suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: Flavor): Server
 
     /**
      * Returns the number of spawned images on the server managed by this driver.

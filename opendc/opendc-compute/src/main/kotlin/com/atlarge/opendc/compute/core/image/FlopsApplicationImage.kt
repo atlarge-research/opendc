@@ -60,7 +60,7 @@ class FlopsApplicationImage(
      * Execute the runtime behavior based on a number of floating point operations to execute.
      */
     override suspend fun invoke(ctx: ServerContext) {
-        val cores = min(this.cores, ctx.server.flavor.cpus.sumBy { it.cores })
+        val cores = min(this.cores, ctx.server.flavor.cpuCount)
         val req = flops / cores
 
         coroutineScope {

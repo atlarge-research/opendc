@@ -28,7 +28,7 @@ import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.processContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerFlavor
+import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
@@ -53,12 +53,11 @@ internal class HypervisorTest {
     fun smoke() {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider({ _ ->
-            val metalFlavor = ServerFlavor(listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2000.0, 1)))
             val vmm = HypervisorImage(object : HypervisorMonitor {
                 override fun onSliceFinish(
                     time: Long,
-                    totalRequestedBurst: Long,
-                    totalGrantedBurst: Long,
+                    requestedBurst: Long,
+                    grantedBurst: Long,
                     numberOfDeployedImages: Int,
                     hostServer: Server
                 ) {
@@ -72,16 +71,17 @@ internal class HypervisorTest {
                     println("[${processContext.clock.millis()}]: $server")
                 }
             }
-            val metalDriver = SimpleBareMetalDriver(UUID.randomUUID(), "test", metalFlavor)
+            val metalDriver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2000.0, 1)), emptyList())
 
             metalDriver.init(monitor)
             metalDriver.setImage(vmm)
             metalDriver.setPower(PowerState.POWER_ON)
             delay(5)
 
+            val flavor = Flavor(1, 0)
             val vmDriver = metalDriver.refresh().server!!.serviceRegistry[VirtDriver]
-            vmDriver.spawn(workloadA, monitor, metalFlavor)
-            vmDriver.spawn(workloadB, monitor, metalFlavor)
+            vmDriver.spawn(workloadA, monitor, flavor)
+            vmDriver.spawn(workloadB, monitor, flavor)
         }, name = "sim")
 
         runBlocking {

@@ -53,7 +53,7 @@ public data class Server(
     /**
      * The hardware configuration of the server.
      */
-    public val flavor: ServerFlavor,
+    public val flavor: Flavor,
 
     /**
      * The image running on the server.

@@ -1,14 +1,16 @@
 package com.atlarge.opendc.compute.virt.service
 
 import com.atlarge.odcsim.ProcessContext
+import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
-import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
+import com.atlarge.opendc.compute.virt.driver.hypervisor.InsufficientMemoryOnServerException
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import kotlinx.coroutines.launch
 
@@ -63,8 +65,8 @@ class SimpleVirtProvisioningService(
         }
     }
 
-    override suspend fun deploy(image: Image, monitor: ServerMonitor) {
-        val vmInstance = ImageView(image, monitor)
+    override suspend fun deploy(image: Image, monitor: ServerMonitor, flavor: Flavor) {
+        val vmInstance = ImageView(image, monitor, flavor)
         incomingImages += vmInstance
         requestCycle()
     }
@@ -85,16 +87,20 @@ class SimpleVirtProvisioningService(
                 it.server!!.serviceRegistry[VirtDriver.Key].getNumberOfSpawnedImages()
             }
 
-            imageInstance.server = selectedNode?.server!!.serviceRegistry[VirtDriver.Key].spawn(
-                imageInstance.image,
-                imageInstance.monitor,
-                nodes[0].server!!.flavor
-            )
+            try {
+                imageInstance.server = selectedNode?.server!!.serviceRegistry[VirtDriver.Key].spawn(
+                    imageInstance.image,
+                    imageInstance.monitor,
+                    imageInstance.flavor
+                )
+                activeImages += imageInstance
+                imagesByServer.putIfAbsent(imageInstance.server!!, mutableSetOf())
+                imagesByServer[imageInstance.server!!]!!.add(imageInstance)
+            } catch (e: InsufficientMemoryOnServerException) {
+                println("Unable to deploy image due to insufficient memory")
+            }
 
             incomingImages -= imageInstance
-            activeImages += imageInstance
-            imagesByServer.putIfAbsent(imageInstance.server!!, mutableSetOf())
-            imagesByServer[imageInstance.server!!]!!.add(imageInstance)
         }
     }
 
@@ -113,6 +119,7 @@ class SimpleVirtProvisioningService(
     class ImageView(
         val image: Image,
         val monitor: ServerMonitor,
+        val flavor: Flavor,
         var server: Server? = null
     )
 }
