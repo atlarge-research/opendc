@@ -32,6 +32,7 @@ import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
+import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
 import com.atlarge.opendc.format.environment.sc20.Sc20EnvironmentReader
 import com.atlarge.opendc.format.trace.vm.VmTraceReader
 import kotlinx.coroutines.channels.Channel
@@ -69,6 +70,7 @@ fun main(args: Array<String>) {
         println(simulationContext.clock.instant())
 
         val scheduler = SimpleVirtProvisioningService(
+            AvailableMemoryAllocationPolicy(),
             simulationContext,
             environment.platforms[0].zones[0].services[ProvisioningService.Key],
             Sc20HypervisorMonitor()

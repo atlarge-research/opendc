@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.compute.virt.driver
 
-import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.core.services.AbstractServiceKey
@@ -52,6 +52,13 @@ public interface VirtDriver {
      * @return The number of spawned images.
      */
     public suspend fun getNumberOfSpawnedImages(): Int
+
+    /**
+     * Returns the available memory on the server managed by this driver.
+     *
+     * @return The available memory, in MB.
+     */
+    public suspend fun getAvailableMemory(): Long
 
     companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")
 }

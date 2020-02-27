@@ -12,9 +12,11 @@ import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.hypervisor.InsufficientMemoryOnServerException
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 import kotlinx.coroutines.launch
 
 class SimpleVirtProvisioningService(
+    public override val allocationPolicy: AllocationPolicy,
     private val ctx: SimulationContext,
     private val provisioningService: ProvisioningService,
     private val hypervisorMonitor: HypervisorMonitor
@@ -83,9 +85,7 @@ class SimpleVirtProvisioningService(
         for (imageInstance in imagesToBeScheduled) {
             println("Spawning $imageInstance")
 
-            val selectedNode = availableNodes.minBy {
-                it.server!!.serviceRegistry[VirtDriver.Key].getNumberOfSpawnedImages()
-            }
+            val selectedNode = availableNodes.minWith(allocationPolicy().thenBy { it.uid })
 
             try {
                 imageInstance.server = selectedNode?.server!!.serviceRegistry[VirtDriver.Key].spawn(

@@ -69,10 +69,6 @@ class HypervisorVirtDriver(
         return server
     }
 
-    override suspend fun getNumberOfSpawnedImages(): Int {
-        return vms.size
-    }
-
     internal inner class VmServerContext(
         override var server: Server,
         val monitor: ServerMonitor,
