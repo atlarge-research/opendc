@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.format.environment.sc20
 
+import com.atlarge.odcsim.Domain
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
@@ -37,7 +38,6 @@ import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 import java.util.UUID
 
@@ -51,10 +51,9 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
     /**
      * The environment that was read from the file.
      */
-    private val environment: Environment
+    private val setup: Setup = mapper.readValue(input)
 
-    init {
-        val setup = mapper.readValue<Setup>(input)
+    override suspend fun construct(dom: Domain): Environment {
         var counter = 0
         val nodes = setup.rooms.flatMap { room ->
             room.objects.flatMap { roomObject ->
@@ -74,18 +73,16 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            SimpleBareMetalDriver(UUID.randomUUID(), "node-${counter++}", cores, memories)
+                            SimpleBareMetalDriver(UUID.randomUUID(), "node-${counter++}", cores, memories, dom.newDomain("node-$counter"))
                         }
                     }
                 }
             }
         }
 
-        val provisioningService = SimpleProvisioningService()
-        runBlocking {
-            for (node in nodes) {
-                provisioningService.create(node)
-            }
+        val provisioningService = SimpleProvisioningService(dom.newDomain("provisioner"))
+        for (node in nodes) {
+            provisioningService.create(node)
         }
 
         val serviceRegistry = ServiceRegistryImpl()
@@ -97,10 +94,8 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
             )
         )
 
-        environment = Environment(setup.name, null, listOf(platform))
+        return Environment(setup.name, null, listOf(platform))
     }
-
-    override fun read(): Environment = environment
 
     override fun close() {}
 }

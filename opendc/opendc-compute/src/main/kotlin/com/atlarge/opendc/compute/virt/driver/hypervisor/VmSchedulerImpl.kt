@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.compute.virt.driver.hypervisor
 
-import com.atlarge.odcsim.processContext
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.execution.ProcessorContext
@@ -91,7 +91,7 @@ public class VmSchedulerImpl(
             flush()
 
             val vcpus = HashSet(vcpus) // Create snapshot of the vCPUs that were scheduled at this moment
-            val call = processContext.launch {
+            val call = simulationContext.domain.launch {
                 var duration: Long = Long.MAX_VALUE
                 var deadline: Long = Long.MAX_VALUE
 
@@ -121,7 +121,7 @@ public class VmSchedulerImpl(
                 // We run the total burst on the host processor. Note that this call may be cancelled at any moment in
                 // time, so not all of the burst may be executed.
                 val remainder = run(burst, usage, deadline)
-                val time = processContext.clock.millis()
+                val time = simulationContext.clock.millis()
                 val totalGrantedBurst: Long = burst - remainder
 
                 // Compute for each vCPU the

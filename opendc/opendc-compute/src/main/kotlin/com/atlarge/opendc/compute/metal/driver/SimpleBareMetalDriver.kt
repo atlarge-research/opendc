@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.compute.metal.driver
 
-import com.atlarge.odcsim.ProcessContext
-import com.atlarge.odcsim.processContext
+import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
@@ -39,11 +39,14 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.coroutines.withContext
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
@@ -51,12 +54,15 @@ import kotlin.math.min
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
  * @param cpuNodes The CPU nodes/packages available to the bare metal machine.
+ * @param memoryUnits The memory units in this machine.
+ * @param domain The simulation domain the driver runs in.
  */
 public class SimpleBareMetalDriver(
     uid: UUID,
     name: String,
     val cpuNodes: List<ProcessingUnit>,
-    val memoryUnits: List<MemoryUnit>
+    val memoryUnits: List<MemoryUnit>,
+    private val domain: Domain
 ) : BareMetalDriver {
     /**
      * The monitor to use.
@@ -73,12 +79,17 @@ public class SimpleBareMetalDriver(
      */
     private val flavor = Flavor(cpuNodes.sumBy { it.cores }, memoryUnits.map { it.size }.sum())
 
-    override suspend fun init(monitor: ServerMonitor): Node {
-        this.monitor = monitor
-        return node
+    /**
+     * The job that is running the image.
+     */
+    private var job: Job? = null
+
+    override suspend fun init(monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
+        this@SimpleBareMetalDriver.monitor = monitor
+        return@withContext node
     }
 
-    override suspend fun setPower(powerState: PowerState): Node {
+    override suspend fun setPower(powerState: PowerState): Node = withContext(domain.coroutineContext) {
         val previousPowerState = node.powerState
         val server = when (node.powerState to powerState) {
             PowerState.POWER_OFF to PowerState.POWER_OFF -> null
@@ -100,36 +111,36 @@ public class SimpleBareMetalDriver(
             launch()
         }
 
-        return node
+        return@withContext node
     }
 
-    override suspend fun setImage(image: Image): Node {
+    override suspend fun setImage(image: Image): Node = withContext(domain.coroutineContext) {
         node = node.copy(image = image)
-        return node
+        return@withContext node
     }
 
-    override suspend fun refresh(): Node = node
+    override suspend fun refresh(): Node = withContext(domain.coroutineContext) { node }
 
     /**
      * Launch the server image on the machine.
      */
     private suspend fun launch() {
-        val serverCtx = this.serverCtx
+        val serverContext = serverCtx
 
-        processContext.spawn {
-            serverCtx.init()
+        job = domain.launch {
+            serverContext.init()
             try {
-                node.server!!.image(serverCtx)
-                serverCtx.exit()
+                node.server!!.image(serverContext)
+                serverContext.exit()
             } catch (cause: Throwable) {
-                serverCtx.exit(cause)
+                serverContext.exit(cause)
             }
         }
     }
 
     private data class ProcessorContextImpl(override val info: ProcessingUnit) : ProcessorContext {
         override suspend fun run(burst: Long, maxUsage: Double, deadline: Long): Long {
-            val start = processContext.clock.millis()
+            val start = simulationContext.clock.millis()
             val usage = min(maxUsage, info.clockRate) * 1_000_000 // Usage from MHz to Hz
 
             try {
@@ -141,7 +152,7 @@ public class SimpleBareMetalDriver(
             } catch (_: CancellationException) {
                 // On cancellation, we compute and return the remaining burst
             }
-            val end = processContext.clock.millis()
+            val end = simulationContext.clock.millis()
             val granted = ceil((end - start) / 1000.0 * usage).toLong()
             return max(0, burst - granted)
         }
@@ -149,7 +160,6 @@ public class SimpleBareMetalDriver(
 
     private val serverCtx = object : ServerManagementContext {
         private var initialized: Boolean = false
-        private lateinit var ctx: ProcessContext
 
         override val cpus: List<ProcessorContextImpl> = cpuNodes
             .asSequence()
@@ -172,7 +182,6 @@ public class SimpleBareMetalDriver(
             val previousState = server.state
             server = server.copy(state = ServerState.ACTIVE)
             monitor.onUpdate(server, previousState)
-            ctx = processContext
             initialized = true
         }
 

@@ -37,6 +37,16 @@ public interface SimulationEngine {
     public val name: String
 
     /**
+     * Construct an anonymous root simulation domain.
+     */
+    public fun newDomain(): Domain
+
+    /**
+     * Construct a new root simulation domain with the specified [name].
+     */
+    public fun newDomain(name: String): Domain
+
+    /**
      * Run the simulation.
      */
     public suspend fun run()

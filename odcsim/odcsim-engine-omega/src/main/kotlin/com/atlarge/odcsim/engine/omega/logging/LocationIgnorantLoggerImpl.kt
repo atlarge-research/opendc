@@ -24,18 +24,18 @@
 
 package com.atlarge.odcsim.engine.omega.logging
 
-import com.atlarge.odcsim.ProcessContext
+import com.atlarge.odcsim.SimulationContext
 import org.slf4j.Logger
 import org.slf4j.Marker
 
 /**
  * A [Logger] implementation that is not aware of the calling location.
  *
- * @param ctx The owning [ProcessContext] of this logger.
+ * @param ctx The owning [SimulationContext] of this logger.
  * @param delegate The [Logger] to delegate the messages to.
  */
 internal class LocationIgnorantLoggerImpl(
-    ctx: ProcessContext,
+    ctx: SimulationContext,
     private val delegate: Logger
 ) : LoggerImpl(ctx), Logger by delegate {
     override fun warn(marker: Marker?, format: String?, arg1: Any?, arg2: Any?) {

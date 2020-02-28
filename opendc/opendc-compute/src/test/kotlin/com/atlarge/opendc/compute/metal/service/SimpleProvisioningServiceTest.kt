@@ -32,6 +32,7 @@ import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.ServiceLoader
@@ -47,21 +48,25 @@ internal class SimpleProvisioningServiceTest {
     @Test
     fun smoke() {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        val system = provider({ _ ->
+        val system = provider("sim")
+        val root = system.newDomain(name = "root")
+        root.launch {
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
                     println(server)
                 }
             }
-            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)), emptyList())
 
-            val provisioner = SimpleProvisioningService()
+            val dom = root.newDomain("provisioner")
+            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)), emptyList(), dom)
+
+            val provisioner = SimpleProvisioningService(dom)
             provisioner.create(driver)
             delay(5)
             val nodes = provisioner.nodes()
             provisioner.deploy(nodes.first(), image, monitor)
-        }, name = "sim")
+        }
 
         runBlocking {
             system.run()

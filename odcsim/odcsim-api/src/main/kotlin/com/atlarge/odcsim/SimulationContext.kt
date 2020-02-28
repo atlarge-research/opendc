@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2018 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,40 @@
 
 package com.atlarge.odcsim
 
+import java.time.Clock
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import org.slf4j.Logger
+
 /**
- * The behavior of a logical process defines how the process operates within its environments, represented as coroutine.
+ * Represents the execution context of a simulation domain.
  */
-public typealias Behavior = suspend (ctx: ProcessContext) -> Unit
+public interface SimulationContext : CoroutineContext.Element {
+    /**
+     * Key for [SimulationContext] instance in the coroutine context.
+     */
+    companion object Key : CoroutineContext.Key<SimulationContext>
+
+    /**
+     * The reference to the current simulation domain.
+     */
+    public val domain: Domain
+
+    /**
+     * The clock tracking the simulation time.
+     */
+    public val clock: Clock
+
+    /**
+     * A logger instance tied to the logical process.
+     */
+    public val log: Logger
+}
+
+/**
+ * The simulation context of the current coroutine.
+ */
+@Suppress("WRONG_MODIFIER_TARGET")
+public suspend inline val simulationContext: SimulationContext
+    @Suppress("ILLEGAL_SUSPEND_PROPERTY_ACCESS")
+    get() = coroutineContext[SimulationContext] ?: throw IllegalStateException("No simulation context available")

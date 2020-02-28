@@ -25,6 +25,7 @@
 package com.atlarge.opendc.experiments.sc20
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
@@ -35,6 +36,7 @@ import com.atlarge.opendc.format.environment.sc20.Sc20EnvironmentReader
 import com.atlarge.opendc.format.trace.vm.VmTraceReader
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.util.ServiceLoader
@@ -48,10 +50,6 @@ fun main(args: Array<String>) {
         println("error: Please provide path to directory containing VM trace files")
         return
     }
-
-    val environment = Sc20EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-small.json"))
-        .use { it.read() }
-
     val token = Channel<Boolean>()
 
     val monitor = object : ServerMonitor {
@@ -61,10 +59,17 @@ fun main(args: Array<String>) {
     }
 
     val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-    val system = provider({ ctx ->
-        println(ctx.clock.instant())
+    val system = provider("test")
+    val root = system.newDomain("root")
+
+    root.launch {
+        val environment = Sc20EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-small.json"))
+            .use { it.construct(root) }
+
+        println(simulationContext.clock.instant())
+
         val scheduler = SimpleVirtProvisioningService(
-            ctx,
+            simulationContext,
             environment.platforms[0].zones[0].services[ProvisioningService.Key],
             Sc20HypervisorMonitor()
         )
@@ -73,14 +78,14 @@ fun main(args: Array<String>) {
         delay(1376314846 * 1000L)
         while (reader.hasNext()) {
             val (time, workload) = reader.next()
-            delay(max(0, time * 1000 - ctx.clock.millis()))
+            delay(max(0, time * 1000 - simulationContext.clock.millis()))
             scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
         }
 
         token.receive()
 
-        println(ctx.clock.instant())
-    }, name = "sim")
+        println(simulationContext.clock.instant())
+    }
 
     runBlocking {
         system.run()
