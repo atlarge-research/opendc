@@ -65,7 +65,7 @@ class FlopsApplicationImage(
 
         coroutineScope {
             for (cpu in ctx.cpus.take(cores)) {
-                launch { cpu.run(req, cpu.info.clockRate * utilization, Long.MAX_VALUE) }
+                launch { cpu.run(req, cpu.info.frequency * utilization, Long.MAX_VALUE) }
             }
         }
     }

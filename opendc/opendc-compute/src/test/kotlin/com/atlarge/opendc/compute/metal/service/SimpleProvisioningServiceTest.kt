@@ -25,6 +25,7 @@
 package com.atlarge.opendc.compute.metal.service
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
@@ -59,7 +60,10 @@ internal class SimpleProvisioningServiceTest {
             }
 
             val dom = root.newDomain("provisioner")
-            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)), emptyList(), dom)
+
+            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
+            val cpus = List(5) { ProcessingUnit(cpuNode, it, 2400.0) }
+            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", cpus, emptyList(), dom)
 
             val provisioner = SimpleProvisioningService(dom)
             provisioner.create(driver)

@@ -97,7 +97,7 @@ public class VmSchedulerImpl(
 
                 for (vcpu in vcpus) {
                     // Limit each vCPU to at most an equal share of the host CPU
-                    vcpu.actualUsage = min(vcpu.requestedUsage, info.clockRate / vcpus.size)
+                    vcpu.actualUsage = min(vcpu.requestedUsage, info.frequency / vcpus.size)
 
                     // The duration that we want to run is that of the shortest request from a vCPU
                     duration = min(duration, ceil(vcpu.requestedBurst / (vcpu.actualUsage * 1_000_000L)).toLong())

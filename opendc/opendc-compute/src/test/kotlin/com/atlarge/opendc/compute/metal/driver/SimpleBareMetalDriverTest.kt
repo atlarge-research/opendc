@@ -25,7 +25,7 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
@@ -52,8 +52,9 @@ internal class SimpleBareMetalDriverTest {
         val root = system.newDomain(name = "root")
         root.launch {
             val dom = root.newDomain(name = "driver")
-            val flavor = Flavor(4, 0)
-            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2300.0, 4)), emptyList(), dom)
+            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
+            val cpus = List(5) { ProcessingUnit(cpuNode, it, 2400.0) }
+            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", cpus, emptyList(), dom)
 
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {

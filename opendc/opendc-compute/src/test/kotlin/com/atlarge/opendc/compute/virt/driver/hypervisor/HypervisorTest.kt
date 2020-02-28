@@ -29,6 +29,7 @@ import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
@@ -77,7 +78,10 @@ internal class HypervisorTest {
             }
 
             val driverDom = root.newDomain("driver")
-            val metalDriver = SimpleBareMetalDriver(UUID.randomUUID(), "test", listOf(ProcessingUnit("Intel", "Xeon", "amd64", 2000.0, 1)), emptyList(), driverDom)
+
+            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
+            val cpus = List(5) { ProcessingUnit(cpuNode, it, 2000.0) }
+            val metalDriver = SimpleBareMetalDriver(UUID.randomUUID(), "test", cpus, emptyList(), driverDom)
 
             metalDriver.init(monitor)
             metalDriver.setImage(vmm)

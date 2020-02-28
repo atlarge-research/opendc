@@ -27,6 +27,7 @@ package com.atlarge.opendc.format.environment.sc18
 import com.atlarge.odcsim.Domain
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.MemoryUnit
+import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
@@ -63,10 +64,16 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                 when (roomObject) {
                     is RoomObject.Rack -> {
                         roomObject.machines.map { machine ->
-                            val cores = machine.cpus.map { id ->
+                            val cores = machine.cpus.flatMap { id ->
                                 when (id) {
-                                    1 -> ProcessingUnit("Intel", "Core(TM) i7-6920HQ", "amd64", 4100.0, 4)
-                                    2 -> ProcessingUnit("Intel", "Core(TM) I7-6920HQ", "amd64", 3500.0, 2)
+                                    1 -> {
+                                        val node = ProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 4)
+                                        List(node.coreCount) { ProcessingUnit(node, it, 4100.0) }
+                                    }
+                                    2 -> {
+                                        val node = ProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 2)
+                                        List(node.coreCount) { ProcessingUnit(node, it, 3500.0) }
+                                    }
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }

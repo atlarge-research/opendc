@@ -25,14 +25,16 @@
 package com.atlarge.opendc.compute.core
 
 /**
- * A single logical compute unit of processor node, either virtual or physical.
+ * A processing node/package/socket containing possibly several CPU cores.
  *
- * @property node The processing node containing the CPU core.
- * @property id The identifier of the CPU core within the processing node.
- * @property frequency The clock rate of the CPU.
+ * @property vendor The vendor string of the processor node.
+ * @property modelName The name of the processor node.
+ * @property arch The micro-architecture of the processor node.
+ * @property coreCount The number of logical CPUs in the processor node.
  */
-public data class ProcessingUnit(
-    public val node: ProcessingNode,
-    public val id: Int,
-    public val frequency: Double
+data class ProcessingNode(
+    val vendor: String,
+    val arch: String,
+    val modelName: String,
+    val coreCount: Int
 )

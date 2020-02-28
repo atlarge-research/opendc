@@ -53,14 +53,14 @@ import kotlinx.coroutines.withContext
  *
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
- * @param cpuNodes The CPU nodes/packages available to the bare metal machine.
+ * @param cpus The CPUs available to the bare metal machine.
  * @param memoryUnits The memory units in this machine.
  * @param domain The simulation domain the driver runs in.
  */
 public class SimpleBareMetalDriver(
     uid: UUID,
     name: String,
-    val cpuNodes: List<ProcessingUnit>,
+    val cpus: List<ProcessingUnit>,
     val memoryUnits: List<MemoryUnit>,
     private val domain: Domain
 ) : BareMetalDriver {
@@ -77,7 +77,7 @@ public class SimpleBareMetalDriver(
     /**
      * The flavor that corresponds to this machine.
      */
-    private val flavor = Flavor(cpuNodes.sumBy { it.cores }, memoryUnits.map { it.size }.sum())
+    private val flavor = Flavor(cpus.size, memoryUnits.map { it.size }.sum())
 
     /**
      * The job that is running the image.
@@ -141,7 +141,7 @@ public class SimpleBareMetalDriver(
     private data class ProcessorContextImpl(override val info: ProcessingUnit) : ProcessorContext {
         override suspend fun run(burst: Long, maxUsage: Double, deadline: Long): Long {
             val start = simulationContext.clock.millis()
-            val usage = min(maxUsage, info.clockRate) * 1_000_000 // Usage from MHz to Hz
+            val usage = min(maxUsage, info.frequency) * 1_000_000 // Usage from MHz to Hz
 
             try {
                 val duration = min(
@@ -161,11 +161,8 @@ public class SimpleBareMetalDriver(
     private val serverCtx = object : ServerManagementContext {
         private var initialized: Boolean = false
 
-        override val cpus: List<ProcessorContextImpl> = cpuNodes
-            .asSequence()
-            .flatMap { cpu ->
-                generateSequence { ProcessorContextImpl(cpu) }.take(cpu.cores)
-            }
+        override val cpus: List<ProcessorContextImpl> = this@SimpleBareMetalDriver.cpus
+            .map { ProcessorContextImpl(it) }
             .toList()
 
         override var server: Server
