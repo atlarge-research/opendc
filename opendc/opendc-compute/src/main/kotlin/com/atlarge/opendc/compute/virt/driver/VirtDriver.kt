@@ -47,18 +47,18 @@ public interface VirtDriver {
     public suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: Flavor): Server
 
     /**
-     * Returns the number of spawned images on the server managed by this driver.
+     * Adds the given [VirtDriverMonitor] to the list of monitors to keep informed on the state of this driver.
      *
-     * @return The number of spawned images.
+     * @param monitor The monitor to keep informed.
      */
-    public suspend fun getNumberOfSpawnedImages(): Int
+    public suspend fun addMonitor(monitor: VirtDriverMonitor)
 
     /**
-     * Returns the available memory on the server managed by this driver.
+     * Removes the given [VirtDriverMonitor] from the list of monitors.
      *
-     * @return The available memory, in MB.
+     * @param monitor The monitor to unsubscribe
      */
-    public suspend fun getAvailableMemory(): Long
+    public suspend fun removeMonitor(monitor: VirtDriverMonitor)
 
     companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")
 }

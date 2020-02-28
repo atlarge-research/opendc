@@ -35,6 +35,7 @@ import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -54,19 +55,33 @@ class HypervisorVirtDriver(
     /**
      * Current total memory use of the images on this hypervisor.
      */
-    private var memoryAvailable: Long = hostContext.server.flavor.memorySize
+    private var availableMemory: Long = hostContext.server.flavor.memorySize
+
+    /**
+     * Monitors to keep informed.
+     */
+    private val monitors: MutableSet<VirtDriverMonitor> = mutableSetOf()
 
     override suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: Flavor): Server {
         val requiredMemory = flavor.memorySize
-        if (memoryAvailable - requiredMemory < 0) {
+        if (availableMemory - requiredMemory < 0) {
             throw InsufficientMemoryOnServerException()
         }
         require(flavor.cpuCount <= hostContext.server.flavor.cpuCount) { "Machine does not fit" }
 
         val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
-        memoryAvailable -= requiredMemory
+        availableMemory -= requiredMemory
         vms.add(VmServerContext(server, monitor, simulationContext))
+        monitors.forEach { it.onUpdate(vms.size, availableMemory) }
         return server
+    }
+
+    override suspend fun addMonitor(monitor: VirtDriverMonitor) {
+        monitors.add(monitor)
+    }
+
+    override suspend fun removeMonitor(monitor: VirtDriverMonitor) {
+        monitors.remove(monitor)
     }
 
     internal inner class VmServerContext(
@@ -103,9 +118,11 @@ class HypervisorVirtDriver(
             val previousState = server.state
             val state = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
             server = server.copy(state = state)
-            memoryAvailable += server.flavor.memorySize
+            availableMemory += server.flavor.memorySize
             monitor.onUpdate(server, previousState)
             initialized = false
+            vms.remove(this)
+            monitors.forEach { it.onUpdate(vms.size, availableMemory) }
         }
     }
 }

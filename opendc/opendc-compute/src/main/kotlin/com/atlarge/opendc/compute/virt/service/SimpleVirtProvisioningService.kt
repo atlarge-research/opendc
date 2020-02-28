@@ -9,6 +9,7 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
 import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.hypervisor.InsufficientMemoryOnServerException
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
@@ -29,12 +30,7 @@ class SimpleVirtProvisioningService(
     /**
      * The available nodes.
      */
-    internal val availableNodes: MutableSet<Node> = mutableSetOf()
-
-    /**
-     * The available hypervisors.
-     */
-    internal val hypervisorByNode: MutableMap<Node, HypervisorImage> = mutableMapOf()
+    internal val availableNodes: MutableSet<NodeView> = mutableSetOf()
 
     /**
      * The incoming images to be processed by the provisioner.
@@ -55,14 +51,22 @@ class SimpleVirtProvisioningService(
         ctx.domain.launch {
             val provisionedNodes = provisioningService.nodes().toList()
             val deployedNodes = provisionedNodes.map { node ->
-                val hypervisorImage =
-                    HypervisorImage(
-                        hypervisorMonitor
-                    )
-                hypervisorByNode[node] = hypervisorImage
-                provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService)
+                val hypervisorImage = HypervisorImage(hypervisorMonitor)
+                val nodeView = NodeView(
+                    provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService),
+                    hypervisorImage,
+                    0,
+                    node.server!!.flavor.memorySize
+                )
+                node.server.serviceRegistry[VirtDriver.Key].addMonitor(object : VirtDriverMonitor {
+                    override suspend fun onUpdate(numberOfActiveServers: Int, availableMemory: Long) {
+                        nodeView.numberOfActiveServers = numberOfActiveServers
+                        nodeView.availableMemory = availableMemory
+                    }
+                })
+                nodeView
             }
-            nodes = deployedNodes
+            nodes = deployedNodes.map { it.node }
             availableNodes.addAll(deployedNodes)
         }
     }
@@ -85,10 +89,10 @@ class SimpleVirtProvisioningService(
         for (imageInstance in imagesToBeScheduled) {
             println("Spawning $imageInstance")
 
-            val selectedNode = availableNodes.minWith(allocationPolicy().thenBy { it.uid })
+            val selectedNode = availableNodes.minWith(allocationPolicy().thenBy { it.node.uid })
 
             try {
-                imageInstance.server = selectedNode?.server!!.serviceRegistry[VirtDriver.Key].spawn(
+                imageInstance.server = selectedNode?.node!!.server!!.serviceRegistry[VirtDriver.Key].spawn(
                     imageInstance.image,
                     imageInstance.monitor,
                     imageInstance.flavor
