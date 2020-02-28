@@ -22,7 +22,7 @@ class VmServerContext(
     override var server: Server,
     val monitor: ServerMonitor,
     val scheduler: VmScheduler,
-    val onExit: () -> Unit,
+    val onExit: suspend () -> Unit,
     ctx: SimulationContext
 ) : ServerManagementContext {
     private var initialized: Boolean = false
