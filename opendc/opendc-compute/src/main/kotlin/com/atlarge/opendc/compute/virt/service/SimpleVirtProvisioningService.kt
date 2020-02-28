@@ -15,6 +15,7 @@ import com.atlarge.opendc.compute.virt.driver.hypervisor.InsufficientMemoryOnSer
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 class SimpleVirtProvisioningService(
     public override val allocationPolicy: AllocationPolicy,
@@ -52,13 +53,15 @@ class SimpleVirtProvisioningService(
             val provisionedNodes = provisioningService.nodes().toList()
             val deployedNodes = provisionedNodes.map { node ->
                 val hypervisorImage = HypervisorImage(hypervisorMonitor)
+                val deployedNode = provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService)
                 val nodeView = NodeView(
-                    provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService),
+                    deployedNode,
                     hypervisorImage,
                     0,
-                    node.server!!.flavor.memorySize
+                    deployedNode.server!!.flavor.memorySize
                 )
-                node.server.serviceRegistry[VirtDriver.Key].addMonitor(object : VirtDriverMonitor {
+                yield()
+                deployedNode.server.serviceRegistry[VirtDriver.Key].addMonitor(object : VirtDriverMonitor {
                     override suspend fun onUpdate(numberOfActiveServers: Int, availableMemory: Long) {
                         nodeView.numberOfActiveServers = numberOfActiveServers
                         nodeView.availableMemory = availableMemory
