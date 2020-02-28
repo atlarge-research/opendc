@@ -61,6 +61,7 @@ class HypervisorVirtDriver(
         if (memoryAvailable - requiredMemory < 0) {
             throw InsufficientMemoryOnServerException()
         }
+        require(flavor.cpuCount <= hostContext.server.flavor.cpuCount) { "Machine does not fit" }
 
         val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
         memoryAvailable -= requiredMemory

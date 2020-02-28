@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
         return
     }
 
-    val environment = Sc20EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-test.json"))
+    val environment = Sc20EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-small.json"))
         .use { it.read() }
 
     val token = Channel<Boolean>()

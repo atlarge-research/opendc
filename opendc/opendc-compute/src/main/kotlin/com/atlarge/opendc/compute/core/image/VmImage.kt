@@ -1,5 +1,6 @@
 package com.atlarge.opendc.compute.core.image
 
+import com.atlarge.odcsim.processContext
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
 import kotlinx.coroutines.coroutineScope
@@ -24,11 +25,10 @@ class VmImage(
             } else {
                 val cores = min(this.cores, ctx.server.flavor.cpuCount)
                 val req = fragment.flops / cores
-
                 coroutineScope {
                     for (cpu in ctx.cpus.take(cores)) {
-                        val usage = req / (fragment.duration * 1_000_000L).toDouble()
-                        launch { cpu.run(req, usage, fragment.tick + fragment.duration) }
+                        val usage = req / (fragment.usage * 1_000_000L)
+                        launch { cpu.run(req, usage, processContext.clock.millis() + fragment.duration) }
                     }
                 }
             }

@@ -2,13 +2,15 @@ package com.atlarge.opendc.experiments.sc20
 
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
-import java.io.File
+import java.io.BufferedWriter
+import java.io.Closeable
+import java.io.FileWriter
 
-class Sc20HypervisorMonitor : HypervisorMonitor {
-    private val outputFile = File("sc20-experiment-results.csv")
+class Sc20HypervisorMonitor : HypervisorMonitor, Closeable {
+    private val outputFile = BufferedWriter(FileWriter("sc20-experiment-results.csv"))
 
     init {
-        outputFile.writeText("time,requestedBurst,grantedBurst,numberOfDeployedImages,server\n")
+        outputFile.write("time,requestedBurst,grantedBurst,numberOfDeployedImages,server\n")
     }
 
     override fun onSliceFinish(
@@ -18,6 +20,10 @@ class Sc20HypervisorMonitor : HypervisorMonitor {
         numberOfDeployedImages: Int,
         hostServer: Server
     ) {
-        outputFile.appendText("$time,$requestedBurst,$grantedBurst,$numberOfDeployedImages,$numberOfDeployedImages,${hostServer.uid}\n")
+        outputFile.write("$time,$requestedBurst,$grantedBurst,$numberOfDeployedImages,$numberOfDeployedImages,${hostServer.uid}\n")
+    }
+
+    override fun close() {
+        outputFile.close()
     }
 }

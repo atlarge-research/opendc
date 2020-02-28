@@ -130,16 +130,19 @@ public class SimpleBareMetalDriver(
     private data class ProcessorContextImpl(override val info: ProcessingUnit) : ProcessorContext {
         override suspend fun run(burst: Long, maxUsage: Double, deadline: Long): Long {
             val start = processContext.clock.millis()
-            val usage = min(maxUsage, info.clockRate)
+            val usage = min(maxUsage, info.clockRate) * 1_000_000 // Usage from MHz to Hz
 
             try {
-                val duration = min(max(0, deadline - start), ceil(burst / usage).toLong())
+                val duration = min(
+                    max(0, deadline - start), // Determine duration between now and deadline
+                    ceil(burst / usage * 1000).toLong() // Convert from seconds to milliseconds
+                )
                 delay(duration)
             } catch (_: CancellationException) {
                 // On cancellation, we compute and return the remaining burst
             }
             val end = processContext.clock.millis()
-            val granted = ceil((end - start) * usage * 1_000_000).toLong()
+            val granted = ceil((end - start) / 1000.0 * usage).toLong()
             return max(0, burst - granted)
         }
     }

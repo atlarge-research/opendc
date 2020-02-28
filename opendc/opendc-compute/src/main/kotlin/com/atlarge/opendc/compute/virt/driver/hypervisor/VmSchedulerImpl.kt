@@ -55,8 +55,12 @@ public class VmSchedulerImpl(
 
     override fun createVirtualCpus(flavor: Flavor): List<ProcessorContext> {
         // TODO At the moment, the first N cores get filled the first. Distribute over all cores instead
-        return cpus.asSequence()
+        require(flavor.cpuCount <= cpus.size) { "Flavor cannot fit on machine" }
+
+        return cpus
+            .asSequence()
             .take(flavor.cpuCount)
+            .sortedBy { it.vcpus.size }
             .map { VirtualProcessorContext(it) }
             .toList()
     }
@@ -96,7 +100,7 @@ public class VmSchedulerImpl(
                     vcpu.actualUsage = min(vcpu.requestedUsage, info.clockRate / vcpus.size)
 
                     // The duration that we want to run is that of the shortest request from a vCPU
-                    duration = min(duration, ceil(vcpu.requestedBurst / vcpu.actualUsage).toLong())
+                    duration = min(duration, ceil(vcpu.requestedBurst / (vcpu.actualUsage * 1_000_000L)).toLong())
                     deadline = min(deadline, vcpu.requestedDeadline)
                 }
 
@@ -104,16 +108,21 @@ public class VmSchedulerImpl(
                 var usage: Double = 0.0
 
                 for (vcpu in vcpus) {
-                    vcpu.actualBurst = (duration * vcpu.actualUsage).toLong()
+                    vcpu.actualBurst = (duration * vcpu.actualUsage * 1_000_000L).toLong()
                     burst += vcpu.actualBurst
                     usage += vcpu.actualUsage
+                }
+
+                // Ignore time slice if no work to request
+                if (burst <= 0L) {
+                    return@launch
                 }
 
                 // We run the total burst on the host processor. Note that this call may be cancelled at any moment in
                 // time, so not all of the burst may be executed.
                 val remainder = run(burst, usage, deadline)
                 val time = processContext.clock.millis()
-                var totalGrantedBurst: Long = 0
+                val totalGrantedBurst: Long = burst - remainder
 
                 // Compute for each vCPU the
                 for (vcpu in vcpus) {
@@ -121,7 +130,6 @@ public class VmSchedulerImpl(
                     val fraction = vcpu.actualUsage / usage
                     // Compute the burst time that the VM was actually granted
                     val grantedBurst = max(0, vcpu.actualBurst - ceil(remainder * fraction).toLong())
-                    totalGrantedBurst += grantedBurst
                     // Compute remaining burst time to be executed for the request
                     vcpu.requestedBurst = max(0, vcpu.requestedBurst - grantedBurst)
 
