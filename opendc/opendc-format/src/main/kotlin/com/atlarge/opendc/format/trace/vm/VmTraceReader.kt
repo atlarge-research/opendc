@@ -89,23 +89,24 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
                             vmId = vmFile.nameWithoutExtension.trim().toLong()
                             val timestamp = values[timestampCol].trim().toLong() - 5 * 60
                             cores = values[coreCol].trim().toInt()
-                            val cpuUsage = values[cpuUsageCol].trim().toDouble()
+                            val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
                             requiredMemory = (values[provisionedMemoryCol].trim().toDouble() / 1000).toLong()
 
-                            val flops: Long = (cpuUsage * cores * 1_000_000L * 5 * 60).toLong()
+                            val flops: Long = (cpuUsage * 1_000_000L * 5 * 60 * cores).toLong()
 
                             if (flopsHistory.isEmpty()) {
-                                flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval))
+                                flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage))
                             } else {
                                 if (flopsHistory.last().flops != flops) {
-                                    flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval))
+                                    flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage))
                                 } else {
                                     val oldFragment = flopsHistory.removeAt(flopsHistory.size - 1)
                                     flopsHistory.add(
                                         FlopsHistoryFragment(
                                             oldFragment.tick,
                                             oldFragment.flops + flops,
-                                            oldFragment.duration + traceInterval
+                                            oldFragment.duration + traceInterval,
+                                            cpuUsage
                                         )
                                     )
                                 }
