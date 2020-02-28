@@ -9,7 +9,8 @@ The `odcsim` framework has an API module (`odcsim-api`) and an module implementi
 ### 3.1.1 `odcsim-api`
 The API defines the behavior of any implementation adhering to the `odcsim` framework. It centers around a `SimulationEngine`, which can be created through a `SimulationEngineProvider`.
 
-A simulation has a root process with certain `Behavior` (a coroutine). Processes have a `ProcessContext` which allow them to spawn other processes and open communication `Channel`s with other processes. Each of these `Channel`s has a `SendPort` and a `ReceivePort`.
+A simulation consists of a number of simulation domains (logical processes) which itself consist of several coroutines
+whose execution is serialized. That is, we guarantee that no two coroutines run at the same time.
 
 ### 3.1.2 `odcsim-engine-omega`
 The implementation is an executable interpretation of this API. The main class is `OmegaSimulationEngine` and takes care of transmitting timestamped events between processes. It ensures that message delivery order is the same as sent order. 
