@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.compute.virt.driver
 
-import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.core.services.AbstractServiceKey
@@ -47,11 +47,18 @@ public interface VirtDriver {
     public suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: Flavor): Server
 
     /**
-     * Returns the number of spawned images on the server managed by this driver.
+     * Adds the given [VirtDriverMonitor] to the list of monitors to keep informed on the state of this driver.
      *
-     * @return The number of spawned images.
+     * @param monitor The monitor to keep informed.
      */
-    public suspend fun getNumberOfSpawnedImages(): Int
+    public suspend fun addMonitor(monitor: VirtDriverMonitor)
+
+    /**
+     * Removes the given [VirtDriverMonitor] from the list of monitors.
+     *
+     * @param monitor The monitor to unsubscribe
+     */
+    public suspend fun removeMonitor(monitor: VirtDriverMonitor)
 
     companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")
 }
