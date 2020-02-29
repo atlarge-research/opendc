@@ -31,7 +31,6 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ServerState
-import com.atlarge.opendc.compute.core.execution.ProcessorContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.image.EmptyImage
 import com.atlarge.opendc.compute.core.image.Image
@@ -138,32 +137,10 @@ public class SimpleBareMetalDriver(
         }
     }
 
-    private data class ProcessorContextImpl(override val info: ProcessingUnit) : ProcessorContext {
-        override suspend fun run(burst: Long, maxUsage: Double, deadline: Long): Long {
-            val start = simulationContext.clock.millis()
-            val usage = min(maxUsage, info.frequency) * 1_000_000 // Usage from MHz to Hz
-
-            try {
-                val duration = min(
-                    max(0, deadline - start), // Determine duration between now and deadline
-                    ceil(burst / usage * 1000).toLong() // Convert from seconds to milliseconds
-                )
-                delay(duration)
-            } catch (_: CancellationException) {
-                // On cancellation, we compute and return the remaining burst
-            }
-            val end = simulationContext.clock.millis()
-            val granted = ceil((end - start) / 1000.0 * usage).toLong()
-            return max(0, burst - granted)
-        }
-    }
-
     private val serverCtx = object : ServerManagementContext {
         private var initialized: Boolean = false
 
-        override val cpus: List<ProcessorContextImpl> = this@SimpleBareMetalDriver.cpus
-            .map { ProcessorContextImpl(it) }
-            .toList()
+        override val cpus: List<ProcessingUnit> = this@SimpleBareMetalDriver.cpus
 
         override var server: Server
             get() = node.server!!
@@ -186,8 +163,44 @@ public class SimpleBareMetalDriver(
             val previousState = server.state
             val state = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
             server = server.copy(state = state)
-            monitor.onUpdate(server, previousState)
             initialized = false
+            domain.launch { monitor.onUpdate(server, previousState) }
+        }
+
+        override suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long): LongArray {
+            val start = simulationContext.clock.millis()
+            var duration = max(0, deadline - start)
+
+            for (i in 0..cpus.size) {
+                if (i >= burst.size || i >= maxUsage.size) {
+                    continue
+                }
+
+                val cpu = cpus[i]
+                val usage = min(maxUsage[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
+                val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
+
+                if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
+                    duration = min(duration, cpuDuration)
+                }
+            }
+
+            try {
+                delay(duration)
+            } catch (_: CancellationException) {
+                // On cancellation, we compute and return the remaining burst
+            }
+
+            val end = simulationContext.clock.millis()
+            return LongArray(cpus.size) { i ->
+                if (i < burst.size && i < maxUsage.size) {
+                    val usage = min(maxUsage[i], cpus[i].frequency) * 1_000_000
+                    val granted = ceil((end - start) / 1000.0 * usage).toLong()
+                    max(0, burst[i] - granted)
+                } else {
+                    0
+                }
+            }
         }
     }
 }

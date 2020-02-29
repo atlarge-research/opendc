@@ -43,7 +43,7 @@ class HypervisorImage(
     override val tags: TagContainer = emptyMap()
 
     override suspend fun invoke(ctx: ServerContext) {
-        val driver = HypervisorVirtDriver(ctx, VmSchedulerImpl(ctx, hypervisorMonitor))
+        val driver = HypervisorVirtDriver(ctx, hypervisorMonitor)
 
         ctx.publishService(VirtDriver.Key, driver)
 

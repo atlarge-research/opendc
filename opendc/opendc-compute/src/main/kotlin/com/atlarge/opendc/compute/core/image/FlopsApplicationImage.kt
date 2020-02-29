@@ -26,9 +26,9 @@ package com.atlarge.opendc.compute.core.image
 
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 import java.util.UUID
+import kotlin.coroutines.coroutineContext
 import kotlin.math.min
 
 /**
@@ -61,12 +61,15 @@ class FlopsApplicationImage(
      */
     override suspend fun invoke(ctx: ServerContext) {
         val cores = min(this.cores, ctx.server.flavor.cpuCount)
-        val req = flops / cores
+        var burst = LongArray(cores) { flops / cores }
+        val maxUsage = DoubleArray(cores) { i -> ctx.cpus[i].frequency * utilization }
 
-        coroutineScope {
-            for (cpu in ctx.cpus.take(cores)) {
-                launch { cpu.run(req, cpu.info.frequency * utilization, Long.MAX_VALUE) }
+        while (coroutineContext.isActive) {
+            if (burst.all { it == 0L }) {
+                break
             }
+
+            burst = ctx.run(burst, maxUsage, Long.MAX_VALUE)
         }
     }
 }

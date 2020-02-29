@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.compute.core.execution
 
+import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.services.AbstractServiceKey
@@ -38,9 +39,9 @@ public interface ServerContext {
     public val server: Server
 
     /**
-     * A list of available processor context instances to use.
+     * A list of processing units available to use.
      */
-    public val cpus: List<ProcessorContext>
+    public val cpus: List<ProcessingUnit>
 
     /**
      * Publishes the given [service] with key [serviceKey] in the server's registry.
@@ -48,4 +49,15 @@ public interface ServerContext {
     public suspend fun <T : Any> publishService(serviceKey: AbstractServiceKey<T>, service: T) {
         server.serviceRegistry[serviceKey] = service
     }
+
+    /**
+     * Request the specified burst time from the processor cores and suspend execution until a processor core finishes
+     * processing a **non-zero** burst or until the deadline is reached.
+     *
+     * @param burst The burst time to request from each of the processor cores.
+     * @param maxUsage The maximum usage in terms of MHz that the processing core may use while running the burst.
+     * @param deadline The instant at which this request needs to be fulfilled.
+     * @return The remaining burst time of the processor cores.
+     */
+    public suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long): LongArray
 }

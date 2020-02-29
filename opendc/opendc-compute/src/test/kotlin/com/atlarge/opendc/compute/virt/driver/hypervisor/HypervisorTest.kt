@@ -69,8 +69,8 @@ internal class HypervisorTest {
                     println("Hello World!")
                 }
             })
-            val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000_000, 1)
-            val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000_000, 1)
+            val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000_000_000, 1)
+            val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000_000_000, 1)
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
                     println("[${simulationContext.clock.millis()}]: $server")
@@ -80,12 +80,13 @@ internal class HypervisorTest {
             val driverDom = root.newDomain("driver")
 
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
-            val cpus = List(5) { ProcessingUnit(cpuNode, it, 2000.0) }
+            val cpus = List(4) { ProcessingUnit(cpuNode, it, 2000.0) }
             val metalDriver = SimpleBareMetalDriver(UUID.randomUUID(), "test", cpus, emptyList(), driverDom)
 
             metalDriver.init(monitor)
             metalDriver.setImage(vmm)
             metalDriver.setPower(PowerState.POWER_ON)
+
             delay(5)
 
             val flavor = Flavor(1, 0)

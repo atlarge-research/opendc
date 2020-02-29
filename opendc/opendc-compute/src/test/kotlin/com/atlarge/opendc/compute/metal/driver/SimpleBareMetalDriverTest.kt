@@ -25,6 +25,7 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
@@ -53,15 +54,16 @@ internal class SimpleBareMetalDriverTest {
         root.launch {
             val dom = root.newDomain(name = "driver")
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
-            val cpus = List(5) { ProcessingUnit(cpuNode, it, 2400.0) }
+            val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
             val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", cpus, emptyList(), dom)
 
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
+                    println("[${simulationContext.clock.millis()}] $server")
                     finalState = server.state
                 }
             }
-            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
+            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000_000_000, 2)
 
             // Batch driver commands
             withContext(dom.coroutineContext) {
