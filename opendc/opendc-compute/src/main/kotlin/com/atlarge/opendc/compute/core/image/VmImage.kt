@@ -33,4 +33,6 @@ class VmImage(
             }
         }
     }
+
+    override fun toString(): String = "VmImage(uid=$uid, name=$name, cores=$cores, requiredMemory=$requiredMemory)"
 }

@@ -167,15 +167,14 @@ public class SimpleBareMetalDriver(
             domain.launch { monitor.onUpdate(server, previousState) }
         }
 
-        override suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long): LongArray {
+        override suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long) {
+            require(burst.size == maxUsage.size) { "Array dimensions do not match" }
+
             val start = simulationContext.clock.millis()
             var duration = max(0, deadline - start)
 
-            for (i in 0..cpus.size) {
-                if (i >= burst.size || i >= maxUsage.size) {
-                    continue
-                }
-
+            // Determine the duration of the first CPU to finish
+            for (i in 0 until min(cpus.size, burst.size)) {
                 val cpu = cpus[i]
                 val usage = min(maxUsage[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
                 val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
@@ -192,14 +191,12 @@ public class SimpleBareMetalDriver(
             }
 
             val end = simulationContext.clock.millis()
-            return LongArray(cpus.size) { i ->
-                if (i < burst.size && i < maxUsage.size) {
-                    val usage = min(maxUsage[i], cpus[i].frequency) * 1_000_000
-                    val granted = ceil((end - start) / 1000.0 * usage).toLong()
-                    max(0, burst[i] - granted)
-                } else {
-                    0
-                }
+
+            // Write back the remaining burst time
+            for (i in 0 until min(cpus.size, burst.size)) {
+                val usage = min(maxUsage[i], cpus[i].frequency) * 1_000_000
+                val granted = ceil((end - start) / 1000.0 * usage).toLong()
+                burst[i] = max(0, burst[i] - granted)
             }
         }
     }

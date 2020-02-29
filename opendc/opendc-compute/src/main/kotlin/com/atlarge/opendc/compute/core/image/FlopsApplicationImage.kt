@@ -42,7 +42,7 @@ import kotlin.math.min
  * @property cores The number of cores that the image is able to utilize.
  * @property utilization A model of the CPU utilization of the application.
  */
-class FlopsApplicationImage(
+data class FlopsApplicationImage(
     public override val uid: UUID,
     public override val name: String,
     public override val tags: TagContainer,
@@ -61,7 +61,7 @@ class FlopsApplicationImage(
      */
     override suspend fun invoke(ctx: ServerContext) {
         val cores = min(this.cores, ctx.server.flavor.cpuCount)
-        var burst = LongArray(cores) { flops / cores }
+        val burst = LongArray(cores) { flops / cores }
         val maxUsage = DoubleArray(cores) { i -> ctx.cpus[i].frequency * utilization }
 
         while (coroutineContext.isActive) {
@@ -69,7 +69,7 @@ class FlopsApplicationImage(
                 break
             }
 
-            burst = ctx.run(burst, maxUsage, Long.MAX_VALUE)
+            ctx.run(burst, maxUsage, Long.MAX_VALUE)
         }
     }
 }

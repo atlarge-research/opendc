@@ -105,6 +105,12 @@ class HypervisorVirtDriver(
      */
     private suspend fun reschedule() {
         flush()
+
+        // Do not schedule a call if there is no work to schedule
+        if (activeVms.isEmpty()) {
+            return
+        }
+
         val call = simulationContext.domain.launch {
             val start = simulationContext.clock.millis()
             val vms = activeVms.toSet()
@@ -114,7 +120,7 @@ class HypervisorVirtDriver(
             val usage = DoubleArray(hostContext.cpus.size)
 
             for (vm in vms) {
-                for (i in vm.cpus.indices) {
+                for (i in 0 until min(vm.cpus.size, vm.requestedBurst.size)) {
                     val cpu = vm.cpus[i]
 
                     // Limit each vCPU to at most an equal share of the host CPU
@@ -130,7 +136,7 @@ class HypervisorVirtDriver(
             val burst = LongArray(hostContext.cpus.size)
 
             for (vm in vms) {
-                for (i in vm.cpus.indices) {
+                for (i in 0 until min(vm.cpus.size, vm.requestedBurst.size)) {
                     val cpu = vm.cpus[i]
 
                     // Limit each vCPU to at most an equal share of the host CPU
@@ -143,7 +149,7 @@ class HypervisorVirtDriver(
 
             // We run the total burst on the host processor. Note that this call may be cancelled at any moment in
             // time, so not all of the burst may be executed.
-            val remainder = hostContext.run(burst, usage, deadline)
+            hostContext.run(burst, usage, deadline)
             val end = simulationContext.clock.millis()
 
             // No work was performed
@@ -152,17 +158,18 @@ class HypervisorVirtDriver(
             }
 
             for (vm in vms) {
-                for (i in vm.cpus.indices) {
+                for (i in 0 until min(vm.cpus.size, vm.requestedBurst.size)) {
                     val cpu = vm.cpus[i]
 
                     // Limit each vCPU to at most an equal share of the host CPU
                     val actualUsage = min(vm.requestedUsage[i], cpu.frequency / vms.size)
+                    val actualBurst = (duration * actualUsage * 1_000_000L).toLong()
 
                     // Compute the fraction of compute time allocated to the VM
                     val fraction = actualUsage / usage[i]
 
                     // Compute the burst time that the VM was actually granted
-                    val grantedBurst = max(0, burst[i] - ceil(remainder[i] * fraction).toLong())
+                    val grantedBurst = max(0, actualBurst - ceil(burst[i] * fraction).toLong())
 
                     // Compute remaining burst time to be executed for the request
                     vm.requestedBurst[i] = max(0, vm.requestedBurst[i] - grantedBurst)
@@ -174,7 +181,6 @@ class HypervisorVirtDriver(
                 }
             }
         }
-
         this.call = call
         call.invokeOnCompletion { this.call = null }
     }
@@ -194,8 +200,8 @@ class HypervisorVirtDriver(
         val monitor: ServerMonitor,
         ctx: SimulationContext
     ) : ServerManagementContext {
-        val requestedBurst: LongArray = LongArray(server.flavor.cpuCount)
-        val requestedUsage: DoubleArray = DoubleArray(server.flavor.cpuCount)
+        lateinit var requestedBurst: LongArray
+        lateinit var requestedUsage: DoubleArray
         var requestedDeadline: Long = 0L
         var chan = Channel<Unit>(Channel.RENDEZVOUS)
         private var initialized: Boolean = false
@@ -234,11 +240,11 @@ class HypervisorVirtDriver(
             monitors.forEach { it.onUpdate(vms.size, availableMemory) }
         }
 
-        override suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long): LongArray {
-            for (i in cpus.indices) {
-                requestedBurst[i] = if (i < burst.size) burst[i] else 0
-                requestedUsage[i] = if (i < maxUsage.size) maxUsage[i] else 0.0
-            }
+        override suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long) {
+            require(burst.size == maxUsage.size) { "Array dimensions do not match" }
+
+            requestedBurst = burst
+            requestedUsage = maxUsage
             requestedDeadline = deadline
 
             // Wait until the burst has been run or the coroutine is cancelled
@@ -251,7 +257,6 @@ class HypervisorVirtDriver(
             }
             activeVms -= this
             reschedule()
-            return requestedBurst
         }
     }
 }
