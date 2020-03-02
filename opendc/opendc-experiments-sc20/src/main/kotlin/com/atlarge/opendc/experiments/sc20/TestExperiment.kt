@@ -81,7 +81,7 @@ fun main(args: Array<String>) {
             Sc20HypervisorMonitor()
         )
 
-        val reader = VmTraceReader(File(args[0]))
+        val reader = VmTraceReader(File(args[0]), performanceInterferenceModel)
         delay(1376314846 * 1000L)
         while (reader.hasNext()) {
             val (time, workload) = reader.next()

@@ -1,5 +1,6 @@
 package com.atlarge.opendc.core.workload
 
+import com.atlarge.opendc.core.resource.Resource
 import java.util.UUID
 
 /**
@@ -10,9 +11,10 @@ import java.util.UUID
 data class PerformanceInterferenceModel(
     val items: Set<PerformanceInterferenceModelItem>
 ) {
-    fun apply(colocatedWorkloads: Set<Workload>): Double {
+    fun apply(colocatedWorkloads: Set<Resource>): Double {
+        val colocatedWorkloadIds = colocatedWorkloads.map { it.uid }
         val intersectingItems = items.filter { item ->
-            colocatedWorkloads.map { it.uid }.intersect(item.workloadIds).size > 1
+            colocatedWorkloadIds.intersect(item.workloadIds).size > 1
         }
 
         if (intersectingItems.isEmpty()) {
