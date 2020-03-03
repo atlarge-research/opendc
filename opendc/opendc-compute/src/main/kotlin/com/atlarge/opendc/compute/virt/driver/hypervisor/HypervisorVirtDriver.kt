@@ -147,9 +147,10 @@ class HypervisorVirtDriver(
                 }
             }
 
+            val granted = burst.clone()
             // We run the total burst on the host processor. Note that this call may be cancelled at any moment in
             // time, so not all of the burst may be executed.
-            hostContext.run(burst, usage, deadline)
+            hostContext.run(granted, usage, deadline)
             val end = simulationContext.clock.millis()
 
             // No work was performed
@@ -179,6 +180,16 @@ class HypervisorVirtDriver(
                     // Return vCPU `run` call: the requested burst was completed or deadline was exceeded
                     vm.chan.send(Unit)
                 }
+            }
+
+            for (i in burst.indices) {
+                monitor.onSliceFinish(
+                    end,
+                    burst[i],
+                    granted[i],
+                    vms.size,
+                    hostContext.server
+                )
             }
         }
         this.call = call
