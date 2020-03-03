@@ -167,8 +167,8 @@ public class SimpleBareMetalDriver(
             domain.launch { monitor.onUpdate(server, previousState) }
         }
 
-        override suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long) {
-            require(burst.size == maxUsage.size) { "Array dimensions do not match" }
+        override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
+            require(burst.size == limit.size) { "Array dimensions do not match" }
 
             val start = simulationContext.clock.millis()
             var duration = max(0, deadline - start)
@@ -176,7 +176,7 @@ public class SimpleBareMetalDriver(
             // Determine the duration of the first CPU to finish
             for (i in 0 until min(cpus.size, burst.size)) {
                 val cpu = cpus[i]
-                val usage = min(maxUsage[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
+                val usage = min(limit[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
                 val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
 
                 if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
@@ -194,7 +194,7 @@ public class SimpleBareMetalDriver(
 
             // Write back the remaining burst time
             for (i in 0 until min(cpus.size, burst.size)) {
-                val usage = min(maxUsage[i], cpus[i].frequency) * 1_000_000
+                val usage = min(limit[i], cpus[i].frequency) * 1_000_000
                 val granted = ceil((end - start) / 1000.0 * usage).toLong()
                 burst[i] = max(0, burst[i] - granted)
             }

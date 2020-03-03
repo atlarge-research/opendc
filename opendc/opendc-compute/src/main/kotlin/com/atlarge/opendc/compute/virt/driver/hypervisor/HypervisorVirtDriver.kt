@@ -124,11 +124,11 @@ class HypervisorVirtDriver(
                     val cpu = vm.cpus[i]
 
                     // Limit each vCPU to at most an equal share of the host CPU
-                    val actualUsage = min(vm.requestedUsage[i], cpu.frequency / vms.size)
+                    val actualUsage = min(vm.limit[i], cpu.frequency / vms.size)
 
                     // The duration that we want to run is that of the shortest request from a vCPU
                     duration = min(duration, ceil(vm.requestedBurst[i] / (actualUsage * 1_000_000L)).toLong())
-                    deadline = min(deadline, vm.requestedDeadline)
+                    deadline = min(deadline, vm.deadline)
                     usage[i] += actualUsage
                 }
             }
@@ -140,7 +140,7 @@ class HypervisorVirtDriver(
                     val cpu = vm.cpus[i]
 
                     // Limit each vCPU to at most an equal share of the host CPU
-                    val actualUsage = min(vm.requestedUsage[i], cpu.frequency / vms.size)
+                    val actualUsage = min(vm.limit[i], cpu.frequency / vms.size)
                     val actualBurst = (duration * actualUsage * 1_000_000L).toLong()
 
                     burst[i] += actualBurst
@@ -163,7 +163,7 @@ class HypervisorVirtDriver(
                     val cpu = vm.cpus[i]
 
                     // Limit each vCPU to at most an equal share of the host CPU
-                    val actualUsage = min(vm.requestedUsage[i], cpu.frequency / vms.size)
+                    val actualUsage = min(vm.limit[i], cpu.frequency / vms.size)
                     val actualBurst = (duration * actualUsage * 1_000_000L).toLong()
 
                     // Compute the fraction of compute time allocated to the VM
@@ -176,7 +176,7 @@ class HypervisorVirtDriver(
                     vm.requestedBurst[i] = max(0, vm.requestedBurst[i] - grantedBurst)
                 }
 
-                if (vm.requestedBurst.any { it == 0L } || vm.requestedDeadline <= end) {
+                if (vm.requestedBurst.any { it == 0L } || vm.deadline <= end) {
                     // Return vCPU `run` call: the requested burst was completed or deadline was exceeded
                     vm.chan.send(Unit)
                 }
@@ -212,8 +212,8 @@ class HypervisorVirtDriver(
         ctx: SimulationContext
     ) : ServerManagementContext {
         lateinit var requestedBurst: LongArray
-        lateinit var requestedUsage: DoubleArray
-        var requestedDeadline: Long = 0L
+        lateinit var limit: DoubleArray
+        var deadline: Long = 0L
         var chan = Channel<Unit>(Channel.RENDEZVOUS)
         private var initialized: Boolean = false
 
@@ -251,12 +251,12 @@ class HypervisorVirtDriver(
             monitors.forEach { it.onUpdate(vms.size, availableMemory) }
         }
 
-        override suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long) {
-            require(burst.size == maxUsage.size) { "Array dimensions do not match" }
+        override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
+            require(burst.size == limit.size) { "Array dimensions do not match" }
 
             requestedBurst = burst
-            requestedUsage = maxUsage
-            requestedDeadline = deadline
+            this.limit = limit
+            this.deadline = deadline
 
             // Wait until the burst has been run or the coroutine is cancelled
             try {

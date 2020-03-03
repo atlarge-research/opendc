@@ -57,12 +57,12 @@ public interface ServerContext {
      * After the method returns, [burst] will contain the remaining burst length for each of the cores (which may be
      * zero).
      *
-     * Both [burst] and [maxUsage] must be of the same size and in any other case the method will throw an
+     * Both [burst] and [limit] must be of the same size and in any other case the method will throw an
      * [IllegalArgumentException].
      *
      * @param burst The burst time to request from each of the processor cores.
-     * @param maxUsage The maximum usage in terms of MHz that the processing core may use while running the burst.
+     * @param limit The maximum usage in terms of MHz that the processing core may use while running the burst.
      * @param deadline The instant at which this request needs to be fulfilled.
      */
-    public suspend fun run(burst: LongArray, maxUsage: DoubleArray, deadline: Long)
+    public suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long)
 }
