@@ -31,7 +31,6 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ServerState
-import com.atlarge.opendc.compute.core.execution.ProcessorContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.image.EmptyImage
 import com.atlarge.opendc.compute.core.image.Image
@@ -53,14 +52,14 @@ import kotlinx.coroutines.withContext
  *
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
- * @param cpuNodes The CPU nodes/packages available to the bare metal machine.
+ * @param cpus The CPUs available to the bare metal machine.
  * @param memoryUnits The memory units in this machine.
  * @param domain The simulation domain the driver runs in.
  */
 public class SimpleBareMetalDriver(
     uid: UUID,
     name: String,
-    val cpuNodes: List<ProcessingUnit>,
+    val cpus: List<ProcessingUnit>,
     val memoryUnits: List<MemoryUnit>,
     private val domain: Domain
 ) : BareMetalDriver {
@@ -77,7 +76,7 @@ public class SimpleBareMetalDriver(
     /**
      * The flavor that corresponds to this machine.
      */
-    private val flavor = Flavor(cpuNodes.sumBy { it.cores }, memoryUnits.map { it.size }.sum())
+    private val flavor = Flavor(cpus.size, memoryUnits.map { it.size }.sum())
 
     /**
      * The job that is running the image.
@@ -138,35 +137,10 @@ public class SimpleBareMetalDriver(
         }
     }
 
-    private data class ProcessorContextImpl(override val info: ProcessingUnit) : ProcessorContext {
-        override suspend fun run(burst: Long, maxUsage: Double, deadline: Long): Long {
-            val start = simulationContext.clock.millis()
-            val usage = min(maxUsage, info.clockRate) * 1_000_000 // Usage from MHz to Hz
-
-            try {
-                val duration = min(
-                    max(0, deadline - start), // Determine duration between now and deadline
-                    ceil(burst / usage * 1000).toLong() // Convert from seconds to milliseconds
-                )
-                delay(duration)
-            } catch (_: CancellationException) {
-                // On cancellation, we compute and return the remaining burst
-            }
-            val end = simulationContext.clock.millis()
-            val granted = ceil((end - start) / 1000.0 * usage).toLong()
-            return max(0, burst - granted)
-        }
-    }
-
     private val serverCtx = object : ServerManagementContext {
         private var initialized: Boolean = false
 
-        override val cpus: List<ProcessorContextImpl> = cpuNodes
-            .asSequence()
-            .flatMap { cpu ->
-                generateSequence { ProcessorContextImpl(cpu) }.take(cpu.cores)
-            }
-            .toList()
+        override val cpus: List<ProcessingUnit> = this@SimpleBareMetalDriver.cpus
 
         override var server: Server
             get() = node.server!!
@@ -189,8 +163,41 @@ public class SimpleBareMetalDriver(
             val previousState = server.state
             val state = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
             server = server.copy(state = state)
-            monitor.onUpdate(server, previousState)
             initialized = false
+            domain.launch { monitor.onUpdate(server, previousState) }
+        }
+
+        override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
+            require(burst.size == limit.size) { "Array dimensions do not match" }
+
+            val start = simulationContext.clock.millis()
+            var duration = max(0, deadline - start)
+
+            // Determine the duration of the first CPU to finish
+            for (i in 0 until min(cpus.size, burst.size)) {
+                val cpu = cpus[i]
+                val usage = min(limit[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
+                val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
+
+                if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
+                    duration = min(duration, cpuDuration)
+                }
+            }
+
+            try {
+                delay(duration)
+            } catch (_: CancellationException) {
+                // On cancellation, we compute and return the remaining burst
+            }
+
+            val end = simulationContext.clock.millis()
+
+            // Write back the remaining burst time
+            for (i in 0 until min(cpus.size, burst.size)) {
+                val usage = min(limit[i], cpus[i].frequency) * 1_000_000
+                val granted = ceil((end - start) / 1000.0 * usage).toLong()
+                burst[i] = max(0, burst[i] - granted)
+            }
         }
     }
 }

@@ -34,6 +34,8 @@ dependencies {
     api(project(":opendc:opendc-compute"))
     implementation(kotlin("stdlib"))
 
+    testRuntimeOnly(project(":odcsim:odcsim-engine-omega"))
+    testImplementation(project(":opendc:opendc-format"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
     testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")

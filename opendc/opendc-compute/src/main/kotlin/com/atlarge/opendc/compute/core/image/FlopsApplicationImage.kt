@@ -26,9 +26,9 @@ package com.atlarge.opendc.compute.core.image
 
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 import java.util.UUID
+import kotlin.coroutines.coroutineContext
 import kotlin.math.min
 
 /**
@@ -42,7 +42,7 @@ import kotlin.math.min
  * @property cores The number of cores that the image is able to utilize.
  * @property utilization A model of the CPU utilization of the application.
  */
-class FlopsApplicationImage(
+data class FlopsApplicationImage(
     public override val uid: UUID,
     public override val name: String,
     public override val tags: TagContainer,
@@ -61,12 +61,15 @@ class FlopsApplicationImage(
      */
     override suspend fun invoke(ctx: ServerContext) {
         val cores = min(this.cores, ctx.server.flavor.cpuCount)
-        val req = flops / cores
+        val burst = LongArray(cores) { flops / cores }
+        val maxUsage = DoubleArray(cores) { i -> ctx.cpus[i].frequency * utilization }
 
-        coroutineScope {
-            for (cpu in ctx.cpus.take(cores)) {
-                launch { cpu.run(req, cpu.info.clockRate * utilization, Long.MAX_VALUE) }
+        while (coroutineContext.isActive) {
+            if (burst.all { it == 0L }) {
+                break
             }
+
+            ctx.run(burst, maxUsage, Long.MAX_VALUE)
         }
     }
 }

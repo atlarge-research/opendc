@@ -22,17 +22,19 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt.driver.hypervisor
-
-import com.atlarge.opendc.compute.core.Flavor
-import com.atlarge.opendc.compute.core.execution.ProcessorContext
+package com.atlarge.opendc.compute.core
 
 /**
- * A scheduler that assigns virtual CPUs to virtual machines and maps them to physical CPUs.
+ * A processing node/package/socket containing possibly several CPU cores.
+ *
+ * @property vendor The vendor string of the processor node.
+ * @property modelName The name of the processor node.
+ * @property arch The micro-architecture of the processor node.
+ * @property coreCount The number of logical CPUs in the processor node.
  */
-public interface VmScheduler {
-    /**
-     * Create the virtual CPUs for the specified [flavor].
-     */
-    fun createVirtualCpus(flavor: Flavor): List<ProcessorContext>
-}
+data class ProcessingNode(
+    val vendor: String,
+    val arch: String,
+    val modelName: String,
+    val coreCount: Int
+)
