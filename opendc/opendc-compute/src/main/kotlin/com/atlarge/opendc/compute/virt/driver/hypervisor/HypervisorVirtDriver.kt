@@ -37,6 +37,7 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -139,13 +140,9 @@ class HypervisorVirtDriver(
             val imagesRunning = vms.map { it.server.image }.toSet()
 
             for (vm in vms) {
-                var performanceScore = 1.0
-
                 // Apply performance interference model
-                if (vm.server.image.tags.containsKey("performance-interference")) {
-                    performanceScore = (vm.server.image.tags["performance-interference"]
-                        as PerformanceInterferenceModel).apply(imagesRunning)
-                }
+                val performanceModel = vm.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+                val performanceScore = performanceModel?.apply(imagesRunning) ?: 1.0
 
                 for (i in 0 until min(vm.cpus.size, vm.requestedBurst.size)) {
                     val cpu = vm.cpus[i]

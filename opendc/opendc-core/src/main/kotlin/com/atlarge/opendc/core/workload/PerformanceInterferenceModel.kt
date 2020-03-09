@@ -4,6 +4,11 @@ import com.atlarge.opendc.core.resource.Resource
 import java.util.UUID
 
 /**
+ * Meta-data key for the [PerformanceInterferenceModel] of an image.
+ */
+const val IMAGE_PERF_INTERFERENCE_MODEL = "image:performance-interference"
+
+/**
  * Performance Interference Model describing the variability incurred by different sets of workloads if colocated.
  *
  * @param items The [PerformanceInterferenceModelItem]s that make up this model.

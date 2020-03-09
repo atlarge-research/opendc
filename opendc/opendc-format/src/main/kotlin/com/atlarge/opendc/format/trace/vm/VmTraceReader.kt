@@ -28,6 +28,7 @@ import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.core.User
+import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
@@ -130,7 +131,7 @@ class VmTraceReader(
                     VmImage(
                         uuid,
                         vmId.toString(),
-                        mapOf("performance-interference" to relevantPerformanceInterferenceModelItems),
+                        mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
                         flopsHistory,
                         cores,
                         requiredMemory
