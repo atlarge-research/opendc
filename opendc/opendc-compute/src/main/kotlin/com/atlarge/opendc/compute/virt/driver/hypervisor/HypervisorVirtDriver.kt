@@ -26,9 +26,9 @@ package com.atlarge.opendc.compute.virt.driver.hypervisor
 
 import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.simulationContext
-import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
+import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
@@ -37,6 +37,8 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
+import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -135,7 +137,13 @@ class HypervisorVirtDriver(
 
             val burst = LongArray(hostContext.cpus.size)
 
+            val imagesRunning = vms.map { it.server.image }.toSet()
+
             for (vm in vms) {
+                // Apply performance interference model
+                val performanceModel = vm.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+                val performanceScore = performanceModel?.apply(imagesRunning) ?: 1.0
+
                 for (i in 0 until min(vm.cpus.size, vm.requestedBurst.size)) {
                     val cpu = vm.cpus[i]
 
@@ -143,7 +151,7 @@ class HypervisorVirtDriver(
                     val actualUsage = min(vm.limit[i], cpu.frequency / vms.size)
                     val actualBurst = (duration * actualUsage * 1_000_000L).toLong()
 
-                    burst[i] += actualBurst
+                    burst[i] += (performanceScore * actualBurst).toLong()
                 }
             }
 

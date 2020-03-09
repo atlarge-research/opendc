@@ -34,6 +34,7 @@ import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
 import com.atlarge.opendc.format.environment.sc20.Sc20EnvironmentReader
+import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.vm.VmTraceReader
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -67,6 +68,10 @@ fun main(args: Array<String>) {
         val environment = Sc20EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-small.json"))
             .use { it.construct(root) }
 
+        val performanceInterferenceModel = Sc20PerformanceInterferenceReader(
+            object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
+        ).construct()
+
         println(simulationContext.clock.instant())
 
         val scheduler = SimpleVirtProvisioningService(
@@ -76,7 +81,7 @@ fun main(args: Array<String>) {
             Sc20HypervisorMonitor()
         )
 
-        val reader = VmTraceReader(File(args[0]))
+        val reader = VmTraceReader(File(args[0]), performanceInterferenceModel)
         delay(1376314846 * 1000L)
         while (reader.hasNext()) {
             val (time, workload) = reader.next()

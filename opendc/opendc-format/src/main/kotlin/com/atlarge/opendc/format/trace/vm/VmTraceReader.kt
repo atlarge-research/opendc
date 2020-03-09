@@ -28,6 +28,8 @@ import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.core.User
+import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
+import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
 import java.io.BufferedReader
@@ -39,8 +41,12 @@ import java.util.UUID
  * A [TraceReader] for the VM workload trace format.
  *
  * @param traceDirectory The directory of the traces.
+ * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
-class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
+class VmTraceReader(
+    traceDirectory: File,
+    performanceInterferenceModel: PerformanceInterferenceModel
+) : TraceReader<VmWorkload> {
     /**
      * The internal iterator to use for this reader.
      */
@@ -115,9 +121,21 @@ class VmTraceReader(traceDirectory: File) : TraceReader<VmWorkload> {
                 }
 
                 val uuid = UUID(0L, vmId)
+
+                val relevantPerformanceInterferenceModelItems = PerformanceInterferenceModel(
+                    performanceInterferenceModel.items.filter { it.workloadIds.contains(uuid) }.toSet()
+                )
+
                 val vmWorkload = VmWorkload(
                     uuid, "VM Workload $vmId", UnnamedUser,
-                    VmImage(uuid, vmId.toString(), emptyMap(), flopsHistory, cores, requiredMemory)
+                    VmImage(
+                        uuid,
+                        vmId.toString(),
+                        mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
+                        flopsHistory,
+                        cores,
+                        requiredMemory
+                    )
                 )
                 entries[vmId] = TraceEntryImpl(
                     flopsHistory.firstOrNull()?.tick ?: -1,
