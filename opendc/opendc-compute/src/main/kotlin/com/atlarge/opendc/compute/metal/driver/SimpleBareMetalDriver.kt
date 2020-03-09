@@ -115,7 +115,12 @@ public class SimpleBareMetalDriver(
                 node.image,
                 ServerState.BUILD
             )
-            PowerState.POWER_ON to PowerState.POWER_OFF -> null // TODO Terminate existing image
+            PowerState.POWER_ON to PowerState.POWER_OFF -> {
+                // We terminate the image running on the machine
+                job?.cancel()
+                job = null
+                null
+            }
             PowerState.POWER_ON to PowerState.POWER_ON -> node.server
             else -> throw IllegalStateException()
         }
