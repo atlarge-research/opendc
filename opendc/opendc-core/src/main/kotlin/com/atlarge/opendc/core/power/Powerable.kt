@@ -22,44 +22,16 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.metal.driver
+package com.atlarge.opendc.core.power
 
-import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.compute.metal.PowerState
-import com.atlarge.opendc.core.power.Powerable
 import kotlinx.coroutines.flow.Flow
 
 /**
- * A driver interface for the management interface of a bare-metal compute node.
+ * An entity that is uses power from some power source.
  */
-public interface BareMetalDriver : Powerable {
+public interface Powerable {
     /**
-     * The load of the machine.
+     * The power draw of the device.
      */
-    public val load: Flow<Double>
-
-    /**
-     * Initialize the driver.
-     */
-    public suspend fun init(monitor: ServerMonitor): Node
-
-    /**
-     * Update the power state of the compute node.
-     */
-    public suspend fun setPower(powerState: PowerState): Node
-
-    /**
-     * Update the boot disk image of the compute node.
-     *
-     * Changing the boot disk image of node does not affect it while the node is running. In order to start the new boot
-     * disk image, the compute node must be restarted.
-     */
-    public suspend fun setImage(image: Image): Node
-
-    /**
-     * Obtain the state of the compute node.
-     */
-    public suspend fun refresh(): Node
+    val powerDraw: Flow<Double>
 }

@@ -81,7 +81,7 @@ internal class HypervisorTest {
 
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2000.0) }
-            val metalDriver = SimpleBareMetalDriver(UUID.randomUUID(), "test", cpus, emptyList(), driverDom)
+            val metalDriver = SimpleBareMetalDriver(driverDom, UUID.randomUUID(), "test", cpus, emptyList())
 
             metalDriver.init(monitor)
             metalDriver.setImage(vmm)

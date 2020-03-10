@@ -77,8 +77,7 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            SimpleBareMetalDriver(UUID.randomUUID(), "node-${counter++}", cores, listOf(MemoryUnit("", "", 2300.0, 16000)),
-                                dom.newDomain("node-$counter"))
+                            SimpleBareMetalDriver(dom.newDomain("node-$counter"), UUID.randomUUID(), "node-${counter++}", cores, listOf(MemoryUnit("", "", 2300.0, 16000)))
                         }
                     }
                 }

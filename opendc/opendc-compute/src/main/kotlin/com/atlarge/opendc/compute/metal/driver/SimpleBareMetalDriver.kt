@@ -37,6 +37,8 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
+import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
+import com.atlarge.opendc.core.power.PowerModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -56,18 +58,20 @@ import kotlinx.coroutines.withContext
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
  *
+ * @param domain The simulation domain the driver runs in.
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
  * @param cpus The CPUs available to the bare metal machine.
  * @param memoryUnits The memory units in this machine.
- * @param domain The simulation domain the driver runs in.
+ * @param powerModel The power model of this machine.
  */
 public class SimpleBareMetalDriver(
+    private val domain: Domain,
     uid: UUID,
     name: String,
     val cpus: List<ProcessingUnit>,
     val memoryUnits: List<MemoryUnit>,
-    private val domain: Domain
+    powerModel: PowerModel<SimpleBareMetalDriver> = ConstantPowerModel(0.0)
 ) : BareMetalDriver {
     /**
      * The monitor to use.
@@ -98,8 +102,11 @@ public class SimpleBareMetalDriver(
     @UseExperimental(FlowPreview::class)
     override val load: Flow<Double> = loadChannel.asFlow()
 
+    override val powerDraw: Flow<Double>
+
     init {
         loadChannel.offer(0.0)
+        powerDraw = powerModel(this)
     }
 
     override suspend fun init(monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
