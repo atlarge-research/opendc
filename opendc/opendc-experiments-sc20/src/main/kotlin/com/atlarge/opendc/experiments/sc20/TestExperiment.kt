@@ -33,9 +33,9 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
-import com.atlarge.opendc.format.environment.sc20.Sc20EnvironmentReader
+import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
-import com.atlarge.opendc.format.trace.vm.VmTraceReader
+import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -47,8 +47,8 @@ import kotlin.math.max
  * Main entry point of the experiment.
  */
 fun main(args: Array<String>) {
-    if (args.isEmpty()) {
-        println("error: Please provide path to directory containing VM trace files")
+    if (args.size < 2) {
+        println("error: Please provide path to directory containing VM trace files and the path to the environment file")
         return
     }
 
@@ -64,7 +64,7 @@ fun main(args: Array<String>) {
     val root = system.newDomain("root")
 
     root.launch {
-        val environment = Sc20EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-small.json"))
+        val environment = Sc20ClusterEnvironmentReader(File(args[1]))
             .use { it.construct(root) }
 
         val performanceInterferenceModel = Sc20PerformanceInterferenceReader(
@@ -80,8 +80,8 @@ fun main(args: Array<String>) {
             hypervisorMonitor
         )
 
-        val reader = VmTraceReader(File(args[0]), performanceInterferenceModel)
-        delay(1376314846 * 1000L)
+        val reader = Sc20TraceReader(File(args[0]), performanceInterferenceModel)
+//        delay(1376314846 * 1000L)
         while (reader.hasNext()) {
             val (time, workload) = reader.next()
             delay(max(0, time * 1000 - simulationContext.clock.millis()))
