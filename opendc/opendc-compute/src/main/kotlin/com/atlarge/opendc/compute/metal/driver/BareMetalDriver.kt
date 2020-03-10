@@ -28,11 +28,17 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
+import kotlinx.coroutines.flow.Flow
 
 /**
  * A driver interface for the management interface of a bare-metal compute node.
  */
 public interface BareMetalDriver {
+    /**
+     * The load of the machine.
+     */
+    public val load: Flow<Double>
+
     /**
      * Initialize the driver.
      */
