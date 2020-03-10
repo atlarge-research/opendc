@@ -190,15 +190,13 @@ class HypervisorVirtDriver(
                 }
             }
 
-            for (i in burst.indices) {
-                monitor.onSliceFinish(
-                    end,
-                    burst[i],
-                    remainder[i],
-                    vms.size,
-                    hostContext.server
-                )
-            }
+            monitor.onSliceFinish(
+                end,
+                burst.sum(),
+                remainder.sum(),
+                vms.size,
+                hostContext.server
+            )
         }
         this.call = call
         call.invokeOnCompletion { this.call = null }
