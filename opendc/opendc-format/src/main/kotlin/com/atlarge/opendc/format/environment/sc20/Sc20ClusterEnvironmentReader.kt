@@ -97,12 +97,12 @@ class Sc20ClusterEnvironmentReader(
                         nodes.add(
                             SimpleBareMetalDriver(
                                 UUID.randomUUID(),
-                                "node-${clusterId}-${it}",
+                                "node-$clusterId-$it",
                                 List(coresPerHost) { coreId ->
                                     ProcessingUnit(unknownProcessingNode, coreId, speed)
                                 },
                                 listOf(unknownMemoryUnit),
-                                dom.newDomain("node-${clusterId}-${it}")
+                                dom.newDomain("node-$clusterId-$it")
                             )
                         )
                     }
