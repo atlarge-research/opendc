@@ -53,7 +53,7 @@ class ExperimentParameters(parser: ArgParser) {
     val outputFile by parser.storing("path to where the output should be stored")
         .default { "sc20-experiment-results.csv" }
     val selectedVms by parser.storing("the VMs to run") {
-            val vms: List<String> = jacksonObjectMapper().readValue(this)
+            val vms: List<String> = jacksonObjectMapper().readValue(this.replace('\'', '"'))
             vms
         }
         .default {
