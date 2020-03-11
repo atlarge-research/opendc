@@ -45,7 +45,8 @@ import java.util.UUID
  */
 class Sc20TraceReader(
     traceDirectory: File,
-    performanceInterferenceModel: PerformanceInterferenceModel
+    performanceInterferenceModel: PerformanceInterferenceModel,
+    selectedVms: List<String>
 ) : TraceReader<VmWorkload> {
     /**
      * The internal iterator to use for this reader.
@@ -65,9 +66,18 @@ class Sc20TraceReader(
         val provisionedMemoryCol = 20
         val traceInterval = 5 * 60 * 1000L
 
-        traceDirectory.walk()
-            .filterNot { it.isDirectory }
-            .filter { it.extension == "csv" || it.extension == "txt" }
+        val vms = if (selectedVms.isEmpty()) {
+            traceDirectory.walk()
+                .filterNot { it.isDirectory }
+                .filter { it.extension == "csv" || it.extension == "txt" }
+                .toList()
+        } else {
+            selectedVms.map {
+                File(traceDirectory, it)
+            }
+        }
+
+        vms
             .forEach { vmFile ->
                 println(vmFile)
                 val flopsHistory = mutableListOf<FlopsHistoryFragment>()

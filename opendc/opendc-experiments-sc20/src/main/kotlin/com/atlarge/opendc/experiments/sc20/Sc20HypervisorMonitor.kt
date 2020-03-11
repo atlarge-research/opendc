@@ -8,8 +8,10 @@ import java.io.BufferedWriter
 import java.io.Closeable
 import java.io.FileWriter
 
-class Sc20HypervisorMonitor : HypervisorMonitor, Closeable {
-    private val outputFile = BufferedWriter(FileWriter("sc20-experiment-results.csv"))
+class Sc20HypervisorMonitor(
+    destination: String
+) : HypervisorMonitor, Closeable {
+    private val outputFile = BufferedWriter(FileWriter(destination))
 
     init {
         outputFile.write("time,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostUsage,powerDraw\n")
