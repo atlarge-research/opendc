@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.Flow
  */
 public interface Powerable {
     /**
-     * The power draw of the device.
+     * The power draw at the device's power supply in watts (W).w
      */
     val powerDraw: Flow<Double>
 }
