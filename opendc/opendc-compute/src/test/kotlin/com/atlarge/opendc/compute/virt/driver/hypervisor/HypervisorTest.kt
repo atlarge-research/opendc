@@ -59,7 +59,7 @@ internal class HypervisorTest {
 
         root.launch {
             val vmm = HypervisorImage(object : HypervisorMonitor {
-                override fun onSliceFinish(
+                override suspend fun onSliceFinish(
                     time: Long,
                     requestedBurst: Long,
                     grantedBurst: Long,

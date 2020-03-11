@@ -36,7 +36,6 @@ import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocat
 import com.atlarge.opendc.format.environment.sc20.Sc20EnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.vm.VmTraceReader
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -52,7 +51,6 @@ fun main(args: Array<String>) {
         println("error: Please provide path to directory containing VM trace files")
         return
     }
-    val token = Channel<Boolean>()
 
     val monitor = object : ServerMonitor {
         override suspend fun onUpdate(server: Server, previousState: ServerState) {
@@ -88,8 +86,6 @@ fun main(args: Array<String>) {
             delay(max(0, time * 1000 - simulationContext.clock.millis()))
             scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
         }
-
-        token.receive()
 
         println(simulationContext.clock.instant())
     }

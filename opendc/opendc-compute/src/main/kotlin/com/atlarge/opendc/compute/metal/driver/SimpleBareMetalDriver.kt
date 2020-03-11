@@ -213,7 +213,7 @@ public class SimpleBareMetalDriver(
                 val usage = min(limit[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
                 val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
 
-                load += usage / cpu.frequency
+                load += usage / (cpu.frequency * 1_000_000)
 
                 if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
                     duration = min(duration, cpuDuration)
