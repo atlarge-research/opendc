@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.format.trace.vm
+package com.atlarge.opendc.format.trace.sc20
 
 import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
@@ -38,12 +38,12 @@ import java.io.FileReader
 import java.util.UUID
 
 /**
- * A [TraceReader] for the public VM workload trace format.
+ * A [TraceReader] for the internal VM workload trace format.
  *
  * @param traceDirectory The directory of the traces.
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
-class VmTraceReader(
+class Sc20TraceReader(
     traceDirectory: File,
     performanceInterferenceModel: PerformanceInterferenceModel
 ) : TraceReader<VmWorkload> {
@@ -56,20 +56,22 @@ class VmTraceReader(
      * Initialize the reader.
      */
     init {
-        val entries = mutableMapOf<Long, TraceEntry<VmWorkload>>()
+        val entries = mutableMapOf<String, TraceEntry<VmWorkload>>()
 
-        var timestampCol = 0
-        var coreCol = 0
-        var cpuUsageCol = 0
-        var provisionedMemoryCol = 0
+        val timestampCol = 0
+        val cpuUsageCol = 1
+        val coreCol = 12
+        val vmIdCol = 19
+        val provisionedMemoryCol = 20
         val traceInterval = 5 * 60 * 1000L
 
         traceDirectory.walk()
             .filterNot { it.isDirectory }
+            .filter { it.extension == "csv" || it.extension == "txt" }
             .forEach { vmFile ->
                 println(vmFile)
                 val flopsHistory = mutableListOf<FlopsHistoryFragment>()
-                var vmId = -1L
+                var vmId = ""
                 var cores = -1
                 var requiredMemory = -1L
 
@@ -79,21 +81,11 @@ class VmTraceReader(
                             // Ignore comments in the trace
                             !line.startsWith("#") && line.isNotBlank()
                         }
-                        .forEachIndexed { idx, line ->
-                            val values = line.split(";\t")
+                        .forEach { line ->
+                            val values = line.split("    ")
 
-                            // Parse GWF header
-                            if (idx == 0) {
-                                val header = values.mapIndexed { col, name -> Pair(name.trim(), col) }.toMap()
-                                timestampCol = header["Timestamp [ms]"]!!
-                                coreCol = header["CPU cores"]!!
-                                cpuUsageCol = header["CPU usage [MHZ]"]!!
-                                provisionedMemoryCol = header["Memory capacity provisioned [KB]"]!!
-                                return@forEachIndexed
-                            }
-
-                            vmId = vmFile.nameWithoutExtension.trim().toLong()
-                            val timestamp = values[timestampCol].trim().toLong() - 5 * 60
+                            vmId = values[vmIdCol].trim()
+                            val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
                             cores = values[coreCol].trim().toInt()
                             val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
                             requiredMemory = (values[provisionedMemoryCol].trim().toDouble() / 1000).toLong()
@@ -120,7 +112,7 @@ class VmTraceReader(
                         }
                 }
 
-                val uuid = UUID(0L, vmId)
+                val uuid = UUID(0L, vmId.hashCode().toLong())
 
                 val relevantPerformanceInterferenceModelItems = PerformanceInterferenceModel(
                     performanceInterferenceModel.items.filter { it.workloadIds.contains(uuid) }.toSet()
@@ -130,7 +122,7 @@ class VmTraceReader(
                     uuid, "VM Workload $vmId", UnnamedUser,
                     VmImage(
                         uuid,
-                        vmId.toString(),
+                        vmId,
                         mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
                         flopsHistory,
                         cores,
