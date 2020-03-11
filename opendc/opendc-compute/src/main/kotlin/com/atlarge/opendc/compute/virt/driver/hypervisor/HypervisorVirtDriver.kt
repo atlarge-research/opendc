@@ -190,10 +190,11 @@ class HypervisorVirtDriver(
                 }
             }
 
+            val totalBurst = burst.sum()
             monitor.onSliceFinish(
                 end,
-                burst.sum(),
-                burst.sum() - remainder.sum(),
+                totalBurst,
+                totalBurst - remainder.sum(),
                 vms.size,
                 hostContext.server
             )
