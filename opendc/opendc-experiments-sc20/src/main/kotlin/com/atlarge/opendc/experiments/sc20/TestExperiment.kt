@@ -36,7 +36,6 @@ import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocat
 import com.atlarge.opendc.format.environment.sc20.Sc20EnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.vm.VmTraceReader
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -52,8 +51,8 @@ fun main(args: Array<String>) {
         println("error: Please provide path to directory containing VM trace files")
         return
     }
-    val token = Channel<Boolean>()
 
+    val hypervisorMonitor = Sc20HypervisorMonitor()
     val monitor = object : ServerMonitor {
         override suspend fun onUpdate(server: Server, previousState: ServerState) {
             println(server)
@@ -78,7 +77,7 @@ fun main(args: Array<String>) {
             AvailableMemoryAllocationPolicy(),
             simulationContext,
             environment.platforms[0].zones[0].services[ProvisioningService.Key],
-            Sc20HypervisorMonitor()
+            hypervisorMonitor
         )
 
         val reader = VmTraceReader(File(args[0]), performanceInterferenceModel)
@@ -89,8 +88,6 @@ fun main(args: Array<String>) {
             scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
         }
 
-        token.receive()
-
         println(simulationContext.clock.instant())
     }
 
@@ -98,4 +95,7 @@ fun main(args: Array<String>) {
         system.run()
         system.terminate()
     }
+
+    // Explicitly close the monitor to flush its buffer
+    hypervisorMonitor.close()
 }

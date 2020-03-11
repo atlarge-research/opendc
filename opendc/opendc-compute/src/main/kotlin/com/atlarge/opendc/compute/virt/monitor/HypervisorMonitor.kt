@@ -15,7 +15,7 @@ interface HypervisorMonitor {
      * @param numberOfDeployedImages The number of images deployed on this hypervisor.
      * @param hostServer The server hosting this hypervisor.
      */
-    fun onSliceFinish(
+    suspend fun onSliceFinish(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,

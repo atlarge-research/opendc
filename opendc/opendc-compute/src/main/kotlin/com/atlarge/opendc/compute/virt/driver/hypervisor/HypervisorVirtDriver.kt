@@ -155,10 +155,10 @@ class HypervisorVirtDriver(
                 }
             }
 
-            val granted = burst.clone()
+            val remainder = burst.clone()
             // We run the total burst on the host processor. Note that this call may be cancelled at any moment in
             // time, so not all of the burst may be executed.
-            hostContext.run(granted, usage, deadline)
+            hostContext.run(remainder, usage, deadline)
             val end = simulationContext.clock.millis()
 
             // No work was performed
@@ -178,7 +178,7 @@ class HypervisorVirtDriver(
                     val fraction = actualUsage / usage[i]
 
                     // Compute the burst time that the VM was actually granted
-                    val grantedBurst = max(0, actualBurst - ceil(burst[i] * fraction).toLong())
+                    val grantedBurst = max(0, actualBurst - ceil(remainder[i] * fraction).toLong())
 
                     // Compute remaining burst time to be executed for the request
                     vm.requestedBurst[i] = max(0, vm.requestedBurst[i] - grantedBurst)
@@ -194,7 +194,7 @@ class HypervisorVirtDriver(
                 monitor.onSliceFinish(
                     end,
                     burst[i],
-                    granted[i],
+                    remainder[i],
                     vms.size,
                     hostContext.server
                 )

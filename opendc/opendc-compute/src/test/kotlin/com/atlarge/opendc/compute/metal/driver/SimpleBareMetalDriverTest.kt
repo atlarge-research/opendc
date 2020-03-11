@@ -55,7 +55,7 @@ internal class SimpleBareMetalDriverTest {
             val dom = root.newDomain(name = "driver")
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
-            val driver = SimpleBareMetalDriver(UUID.randomUUID(), "test", cpus, emptyList(), dom)
+            val driver = SimpleBareMetalDriver(dom, UUID.randomUUID(), "test", cpus, emptyList())
 
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {

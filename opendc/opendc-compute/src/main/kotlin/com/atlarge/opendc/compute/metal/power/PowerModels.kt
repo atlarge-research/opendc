@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,24 @@
  * SOFTWARE.
  */
 
+package com.atlarge.opendc.compute.metal.power
+
+import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
+import com.atlarge.opendc.core.power.PowerModel
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+
 /**
- * This object contains the versions of the dependencies shared by the different
- * subprojects.
+ * A power model which emits a single value.
  */
-object Library {
-    /**
-     * The library for testing the projects.
-     */
-    val JUNIT_JUPITER = "5.6.0"
+public fun ConstantPowerModel(value: Double): PowerModel<BareMetalDriver> = { _ -> flowOf(value) }
 
-    /**
-     * The library for hosting the tests.
-     */
-    val JUNIT_PLATFORM = "1.6.0"
-
-    /**
-     * Logging facade.
-     */
-    val SLF4J = "1.7.30"
-
-    /**
-     * Kotlin coroutines support
-     */
-    val KOTLINX_COROUTINES = "1.3.4"
+/**
+ * A power model that assumes a naive linear relation between power usage and host CPU utilization.
+ *
+ * @param idle The power draw in Watts on idle.
+ * @param max The maximum power draw in Watts of the server.
+ */
+public fun LinearLoadPowerModel(idle: Double, max: Double): PowerModel<BareMetalDriver> = { driver ->
+    driver.usage.map { load -> (max - idle) * load + idle }
 }

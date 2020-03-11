@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,11 @@
  * SOFTWARE.
  */
 
+package com.atlarge.opendc.core.power
+
+import kotlinx.coroutines.flow.Flow
+
 /**
- * This object contains the versions of the dependencies shared by the different
- * subprojects.
+ * A model for computing the power draw based on some value.
  */
-object Library {
-    /**
-     * The library for testing the projects.
-     */
-    val JUNIT_JUPITER = "5.6.0"
-
-    /**
-     * The library for hosting the tests.
-     */
-    val JUNIT_PLATFORM = "1.6.0"
-
-    /**
-     * Logging facade.
-     */
-    val SLF4J = "1.7.30"
-
-    /**
-     * Kotlin coroutines support
-     */
-    val KOTLINX_COROUTINES = "1.3.4"
-}
+public typealias PowerModel<T> = (T) -> Flow<Double>

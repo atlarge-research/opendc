@@ -25,6 +25,7 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.signal.Signal
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
@@ -37,9 +38,12 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
+import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
+import com.atlarge.opendc.core.power.PowerModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.ceil
@@ -50,18 +54,20 @@ import kotlinx.coroutines.withContext
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
  *
+ * @param domain The simulation domain the driver runs in.
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
  * @param cpus The CPUs available to the bare metal machine.
  * @param memoryUnits The memory units in this machine.
- * @param domain The simulation domain the driver runs in.
+ * @param powerModel The power model of this machine.
  */
 public class SimpleBareMetalDriver(
+    private val domain: Domain,
     uid: UUID,
     name: String,
     val cpus: List<ProcessingUnit>,
     val memoryUnits: List<MemoryUnit>,
-    private val domain: Domain
+    powerModel: PowerModel<SimpleBareMetalDriver> = ConstantPowerModel(0.0)
 ) : BareMetalDriver {
     /**
      * The monitor to use.
@@ -82,6 +88,15 @@ public class SimpleBareMetalDriver(
      * The job that is running the image.
      */
     private var job: Job? = null
+
+    /**
+     * The signal containing the load of the server.
+     */
+    private val usageSignal = Signal(0.0)
+
+    override val usage: Flow<Double> = usageSignal
+
+    override val powerDraw: Flow<Double> = powerModel(this)
 
     override suspend fun init(monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
         this@SimpleBareMetalDriver.monitor = monitor
@@ -104,6 +119,7 @@ public class SimpleBareMetalDriver(
             PowerState.POWER_ON to PowerState.POWER_ON -> node.server
             else -> throw IllegalStateException()
         }
+        server?.serviceRegistry?.set(BareMetalDriver.Key, this@SimpleBareMetalDriver)
         node = node.copy(powerState = powerState, server = server)
 
         if (powerState != previousPowerState && server != null) {
@@ -167,11 +183,18 @@ public class SimpleBareMetalDriver(
             domain.launch { monitor.onUpdate(server, previousState) }
         }
 
+        private var flush: Job? = null
+
         override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
             require(burst.size == limit.size) { "Array dimensions do not match" }
 
+            // If run is called in at the same timestamp as the previous call, cancel the load flush
+            flush?.cancel()
+            flush = null
+
             val start = simulationContext.clock.millis()
             var duration = max(0, deadline - start)
+            var totalUsage = 0.0
 
             // Determine the duration of the first CPU to finish
             for (i in 0 until min(cpus.size, burst.size)) {
@@ -179,18 +202,30 @@ public class SimpleBareMetalDriver(
                 val usage = min(limit[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
                 val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
 
+                totalUsage += usage / (cpu.frequency * 1_000_000)
+
                 if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
                     duration = min(duration, cpuDuration)
                 }
             }
+
+            usageSignal.value = totalUsage / cpus.size
 
             try {
                 delay(duration)
             } catch (_: CancellationException) {
                 // On cancellation, we compute and return the remaining burst
             }
-
             val end = simulationContext.clock.millis()
+
+            // Flush the load if the do not receive a new run call for the same timestamp
+            flush = domain.launch {
+                delay(1)
+                usageSignal.value = 0.0
+            }
+            flush!!.invokeOnCompletion {
+                flush = null
+            }
 
             // Write back the remaining burst time
             for (i in 0 until min(cpus.size, burst.size)) {
