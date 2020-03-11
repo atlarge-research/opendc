@@ -193,7 +193,7 @@ class HypervisorVirtDriver(
             monitor.onSliceFinish(
                 end,
                 burst.sum(),
-                remainder.sum(),
+                burst.sum() - remainder.sum(),
                 vms.size,
                 hostContext.server
             )
