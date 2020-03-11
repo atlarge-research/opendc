@@ -38,5 +38,5 @@ public fun ConstantPowerModel(value: Double): PowerModel<BareMetalDriver> = { _ 
  * A power model that assumes a naive linear relation between power usage and host CPU utilization.
  */
 public fun LinearLoadPowerModel(base: Double, multiplier: Double): PowerModel<BareMetalDriver> = { driver ->
-    driver.load.map { load -> base + multiplier * load }
+    driver.usage.map { load -> base + multiplier * load }
 }

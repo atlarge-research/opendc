@@ -100,7 +100,7 @@ public class SimpleBareMetalDriver(
     private val loadChannel = BroadcastChannel<Double>(Channel.CONFLATED)
 
     @UseExperimental(FlowPreview::class)
-    override val load: Flow<Double> = loadChannel.asFlow()
+    override val usage: Flow<Double> = loadChannel.asFlow()
 
     override val powerDraw: Flow<Double>
 
@@ -130,6 +130,7 @@ public class SimpleBareMetalDriver(
             PowerState.POWER_ON to PowerState.POWER_ON -> node.server
             else -> throw IllegalStateException()
         }
+        server?.serviceRegistry?.set(BareMetalDriver.Key, this@SimpleBareMetalDriver)
         node = node.copy(powerState = powerState, server = server)
 
         if (powerState != previousPowerState && server != null) {

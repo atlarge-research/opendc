@@ -24,21 +24,25 @@
 
 package com.atlarge.opendc.compute.metal.driver
 
+import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.PowerState
 import com.atlarge.opendc.core.power.Powerable
+import com.atlarge.opendc.core.services.AbstractServiceKey
 import kotlinx.coroutines.flow.Flow
+import java.util.UUID
 
 /**
  * A driver interface for the management interface of a bare-metal compute node.
  */
 public interface BareMetalDriver : Powerable {
     /**
-     * The load of the machine.
+     * The amount of work done by the machine in percentage with respect to the total amount of processing power
+     * available.
      */
-    public val load: Flow<Double>
+    public val usage: Flow<Double>
 
     /**
      * Initialize the driver.
@@ -62,4 +66,9 @@ public interface BareMetalDriver : Powerable {
      * Obtain the state of the compute node.
      */
     public suspend fun refresh(): Node
+
+    /**
+     * A key that allows access to the [BareMetalDriver] instance from a [Server] that runs on the bare-metal machine.
+     */
+    companion object Key : AbstractServiceKey<BareMetalDriver>(UUID.randomUUID(), "bare-metal:driver")
 }
