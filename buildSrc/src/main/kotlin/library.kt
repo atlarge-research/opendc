@@ -30,20 +30,20 @@ object Library {
     /**
      * The library for testing the projects.
      */
-    val JUNIT_JUPITER = "5.5.2"
+    val JUNIT_JUPITER = "5.6.0"
 
     /**
      * The library for hosting the tests.
      */
-    val JUNIT_PLATFORM = "1.5.2"
+    val JUNIT_PLATFORM = "1.6.0"
 
     /**
      * Logging facade.
      */
-    val SLF4J = "1.7.29"
+    val SLF4J = "1.7.30"
 
     /**
      * Kotlin coroutines support
      */
-    val KOTLINX_COROUTINES = "1.3.3"
+    val KOTLINX_COROUTINES = "1.3.4"
 }
