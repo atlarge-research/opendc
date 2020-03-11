@@ -17,7 +17,7 @@ data class PerformanceInterferenceModel(
     val items: Set<PerformanceInterferenceModelItem>
 ) {
     fun apply(colocatedWorkloads: Set<Resource>): Double {
-        val colocatedWorkloadIds = colocatedWorkloads.map { it.uid }
+        val colocatedWorkloadIds = colocatedWorkloads.map { it.name }
         val intersectingItems = items.filter { item ->
             colocatedWorkloadIds.intersect(item.workloadIds).size > 1
         }

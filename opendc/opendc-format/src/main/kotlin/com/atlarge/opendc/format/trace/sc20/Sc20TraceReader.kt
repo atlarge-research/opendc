@@ -45,7 +45,8 @@ import java.util.UUID
  */
 class Sc20TraceReader(
     traceDirectory: File,
-    performanceInterferenceModel: PerformanceInterferenceModel
+    performanceInterferenceModel: PerformanceInterferenceModel,
+    selectedVms: List<String>
 ) : TraceReader<VmWorkload> {
     /**
      * The internal iterator to use for this reader.
@@ -56,7 +57,7 @@ class Sc20TraceReader(
      * Initialize the reader.
      */
     init {
-        val entries = mutableMapOf<String, TraceEntry<VmWorkload>>()
+        val entries = mutableMapOf<UUID, TraceEntry<VmWorkload>>()
 
         val timestampCol = 0
         val cpuUsageCol = 1
@@ -65,9 +66,18 @@ class Sc20TraceReader(
         val provisionedMemoryCol = 20
         val traceInterval = 5 * 60 * 1000L
 
-        traceDirectory.walk()
-            .filterNot { it.isDirectory }
-            .filter { it.extension == "csv" || it.extension == "txt" }
+        val vms = if (selectedVms.isEmpty()) {
+            traceDirectory.walk()
+                .filterNot { it.isDirectory }
+                .filter { it.extension == "csv" || it.extension == "txt" }
+                .toList()
+        } else {
+            selectedVms.map {
+                File(traceDirectory, it)
+            }
+        }
+
+        vms
             .forEach { vmFile ->
                 println(vmFile)
                 val flopsHistory = mutableListOf<FlopsHistoryFragment>()
@@ -112,7 +122,7 @@ class Sc20TraceReader(
                         }
                 }
 
-                val uuid = UUID(0L, vmId.hashCode().toLong())
+                val uuid = UUID.randomUUID()
 
                 val relevantPerformanceInterferenceModelItems = PerformanceInterferenceModel(
                     performanceInterferenceModel.items.filter { it.workloadIds.contains(uuid) }.toSet()
@@ -129,7 +139,7 @@ class Sc20TraceReader(
                         requiredMemory
                     )
                 )
-                entries[vmId] = TraceEntryImpl(
+                entries[uuid] = TraceEntryImpl(
                     flopsHistory.firstOrNull()?.tick ?: -1,
                     vmWorkload
                 )

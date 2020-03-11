@@ -31,13 +31,15 @@ plugins {
 }
 
 application {
-    mainClassName = "com.atlarge.opendc.experiments.sc20.TestExperiment"
+    mainClassName = "com.atlarge.opendc.experiments.sc20.TestExperimentKt"
 }
 
 dependencies {
     api(project(":opendc:opendc-core"))
     implementation(project(":opendc:opendc-format"))
     implementation(kotlin("stdlib"))
+    implementation("com.xenomachina:kotlin-argparser:2.0.7")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8")
 
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")

@@ -36,6 +36,10 @@ import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocat
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.default
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -43,59 +47,69 @@ import java.io.File
 import java.util.ServiceLoader
 import kotlin.math.max
 
+class ExperimentParameters(parser: ArgParser) {
+    val traceDirectory by parser.storing("path to the trace directory")
+    val environmentFile by parser.storing("path to the environment file")
+    val outputFile by parser.storing("path to where the output should be stored")
+        .default { "sc20-experiment-results.csv" }
+    val selectedVms by parser.storing("the VMs to run") {
+            val vms: List<String> = jacksonObjectMapper().readValue(this.replace('\'', '"'))
+            vms
+        }
+        .default {
+            emptyList()
+        }
+}
+
 /**
  * Main entry point of the experiment.
  */
 fun main(args: Array<String>) {
-    if (args.size < 2) {
-        println("error: Please provide path to directory containing VM trace files and the path to the environment file")
-        return
-    }
-
-    val hypervisorMonitor = Sc20HypervisorMonitor()
-    val monitor = object : ServerMonitor {
-        override suspend fun onUpdate(server: Server, previousState: ServerState) {
-            println(server)
-        }
-    }
-
-    val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-    val system = provider("test")
-    val root = system.newDomain("root")
-
-    root.launch {
-        val environment = Sc20ClusterEnvironmentReader(File(args[1]))
-            .use { it.construct(root) }
-
-        val performanceInterferenceModel = Sc20PerformanceInterferenceReader(
-            object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
-        ).construct()
-
-        println(simulationContext.clock.instant())
-
-        val scheduler = SimpleVirtProvisioningService(
-            AvailableMemoryAllocationPolicy(),
-            simulationContext,
-            environment.platforms[0].zones[0].services[ProvisioningService.Key],
-            hypervisorMonitor
-        )
-
-        val reader = Sc20TraceReader(File(args[0]), performanceInterferenceModel)
-//        delay(1376314846 * 1000L)
-        while (reader.hasNext()) {
-            val (time, workload) = reader.next()
-            delay(max(0, time * 1000 - simulationContext.clock.millis()))
-            scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
+    ArgParser(args).parseInto(::ExperimentParameters).run {
+        val hypervisorMonitor = Sc20HypervisorMonitor(outputFile)
+        val monitor = object : ServerMonitor {
+            override suspend fun onUpdate(server: Server, previousState: ServerState) {
+                println(server)
+            }
         }
 
-        println(simulationContext.clock.instant())
-    }
+        val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
+        val system = provider("test")
+        val root = system.newDomain("root")
 
-    runBlocking {
-        system.run()
-        system.terminate()
-    }
+        root.launch {
+            val environment = Sc20ClusterEnvironmentReader(File(environmentFile))
+                .use { it.construct(root) }
 
-    // Explicitly close the monitor to flush its buffer
-    hypervisorMonitor.close()
+            val performanceInterferenceModel = Sc20PerformanceInterferenceReader(
+                object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
+            ).construct()
+
+            println(simulationContext.clock.instant())
+
+            val scheduler = SimpleVirtProvisioningService(
+                AvailableMemoryAllocationPolicy(),
+                simulationContext,
+                environment.platforms[0].zones[0].services[ProvisioningService.Key],
+                hypervisorMonitor
+            )
+
+            val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, selectedVms)
+            while (reader.hasNext()) {
+                val (time, workload) = reader.next()
+                delay(max(0, time * 1000 - simulationContext.clock.millis()))
+                scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
+            }
+
+            println(simulationContext.clock.instant())
+        }
+
+        runBlocking {
+            system.run()
+            system.terminate()
+        }
+
+        // Explicitly close the monitor to flush its buffer
+        hypervisorMonitor.close()
+    }
 }
