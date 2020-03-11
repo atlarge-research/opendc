@@ -25,6 +25,7 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.signal.Signal
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
@@ -40,14 +41,9 @@ import com.atlarge.opendc.compute.metal.PowerState
 import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
 import com.atlarge.opendc.core.power.PowerModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.ceil
@@ -94,20 +90,13 @@ public class SimpleBareMetalDriver(
     private var job: Job? = null
 
     /**
-     * The channel containing the load of the server.
+     * The signal containing the load of the server.
      */
-    @UseExperimental(ExperimentalCoroutinesApi::class)
-    private val loadChannel = BroadcastChannel<Double>(Channel.CONFLATED)
+    private val usageSignal = Signal(0.0)
 
-    @UseExperimental(FlowPreview::class)
-    override val usage: Flow<Double> = loadChannel.asFlow()
+    override val usage: Flow<Double> = usageSignal
 
-    override val powerDraw: Flow<Double>
-
-    init {
-        loadChannel.offer(0.0)
-        powerDraw = powerModel(this)
-    }
+    override val powerDraw: Flow<Double> = powerModel(this)
 
     override suspend fun init(monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
         this@SimpleBareMetalDriver.monitor = monitor
@@ -205,7 +194,7 @@ public class SimpleBareMetalDriver(
 
             val start = simulationContext.clock.millis()
             var duration = max(0, deadline - start)
-            var load = 0.0
+            var totalUsage = 0.0
 
             // Determine the duration of the first CPU to finish
             for (i in 0 until min(cpus.size, burst.size)) {
@@ -213,14 +202,14 @@ public class SimpleBareMetalDriver(
                 val usage = min(limit[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
                 val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
 
-                load += usage / (cpu.frequency * 1_000_000)
+                totalUsage += usage / (cpu.frequency * 1_000_000)
 
                 if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
                     duration = min(duration, cpuDuration)
                 }
             }
 
-            loadChannel.offer(load)
+            usageSignal.value = totalUsage
 
             try {
                 delay(duration)
@@ -232,7 +221,7 @@ public class SimpleBareMetalDriver(
             // Flush the load if the do not receive a new run call for the same timestamp
             flush = domain.launch {
                 delay(1)
-                loadChannel.offer(0.0)
+                usageSignal.value = 0.0
             }
             flush!!.invokeOnCompletion {
                 flush = null
