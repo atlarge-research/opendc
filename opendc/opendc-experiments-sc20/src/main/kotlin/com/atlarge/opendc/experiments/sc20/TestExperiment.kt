@@ -52,6 +52,7 @@ fun main(args: Array<String>) {
         return
     }
 
+    val hypervisorMonitor = Sc20HypervisorMonitor()
     val monitor = object : ServerMonitor {
         override suspend fun onUpdate(server: Server, previousState: ServerState) {
             println(server)
@@ -76,7 +77,7 @@ fun main(args: Array<String>) {
             AvailableMemoryAllocationPolicy(),
             simulationContext,
             environment.platforms[0].zones[0].services[ProvisioningService.Key],
-            Sc20HypervisorMonitor()
+            hypervisorMonitor
         )
 
         val reader = VmTraceReader(File(args[0]), performanceInterferenceModel)
@@ -94,4 +95,7 @@ fun main(args: Array<String>) {
         system.run()
         system.terminate()
     }
+
+    // Explicitly close the monitor to flush its buffer
+    hypervisorMonitor.close()
 }

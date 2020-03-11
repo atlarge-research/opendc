@@ -29,6 +29,7 @@ import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
+import com.atlarge.opendc.compute.metal.power.LinearLoadPowerModel
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
 import com.atlarge.opendc.core.Environment
@@ -80,7 +81,17 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            SimpleBareMetalDriver(dom.newDomain("node-$counter"), UUID.randomUUID(), "node-${counter++}", cores, memories)
+                            SimpleBareMetalDriver(
+                                dom.newDomain("node-$counter"),
+                                UUID.randomUUID(),
+                                "node-${counter++}",
+                                cores,
+                                memories,
+                                // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
+                                // power draw of 350W.
+                                // Source: https://stackoverflow.com/questions/6128960
+                                LinearLoadPowerModel(200.0, 350.0)
+                            )
                         }
                     }
                 }

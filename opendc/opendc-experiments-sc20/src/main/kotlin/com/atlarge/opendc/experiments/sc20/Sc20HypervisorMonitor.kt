@@ -27,10 +27,12 @@ class Sc20HypervisorMonitor : HypervisorMonitor, Closeable {
         val usage = driver.usage.first()
         val powerDraw = driver.powerDraw.first()
 
-        outputFile.write("$time,$requestedBurst,$grantedBurst,$numberOfDeployedImages,$numberOfDeployedImages,${hostServer.uid},$usage,$powerDraw\n")
+        outputFile.write("$time,$requestedBurst,$grantedBurst,$numberOfDeployedImages,$numberOfDeployedImages,${hostServer.uid},$usage,$powerDraw")
+        outputFile.newLine()
     }
 
     override fun close() {
+        outputFile.flush()
         outputFile.close()
     }
 }

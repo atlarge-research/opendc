@@ -36,7 +36,10 @@ public fun ConstantPowerModel(value: Double): PowerModel<BareMetalDriver> = { _ 
 
 /**
  * A power model that assumes a naive linear relation between power usage and host CPU utilization.
+ *
+ * @param idle The power draw in Watts on idle.
+ * @param max The maximum power draw in Watts of the server.
  */
-public fun LinearLoadPowerModel(base: Double, multiplier: Double): PowerModel<BareMetalDriver> = { driver ->
-    driver.usage.map { load -> base + multiplier * load }
+public fun LinearLoadPowerModel(idle: Double, max: Double): PowerModel<BareMetalDriver> = { driver ->
+    driver.usage.map { load -> (max - idle) * load + idle }
 }

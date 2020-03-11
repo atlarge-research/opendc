@@ -209,7 +209,7 @@ public class SimpleBareMetalDriver(
                 }
             }
 
-            usageSignal.value = totalUsage
+            usageSignal.value = totalUsage / cpus.size
 
             try {
                 delay(duration)
