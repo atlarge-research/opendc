@@ -57,7 +57,7 @@ class Sc20TraceReader(
      * Initialize the reader.
      */
     init {
-        val entries = mutableMapOf<String, TraceEntry<VmWorkload>>()
+        val entries = mutableMapOf<UUID, TraceEntry<VmWorkload>>()
 
         val timestampCol = 0
         val cpuUsageCol = 1
@@ -122,7 +122,7 @@ class Sc20TraceReader(
                         }
                 }
 
-                val uuid = UUID(0L, vmId.hashCode().toLong())
+                val uuid = UUID.randomUUID()
 
                 val relevantPerformanceInterferenceModelItems = PerformanceInterferenceModel(
                     performanceInterferenceModel.items.filter { it.workloadIds.contains(uuid) }.toSet()
@@ -139,7 +139,7 @@ class Sc20TraceReader(
                         requiredMemory
                     )
                 )
-                entries[vmId] = TraceEntryImpl(
+                entries[uuid] = TraceEntryImpl(
                     flopsHistory.firstOrNull()?.tick ?: -1,
                     vmWorkload
                 )
