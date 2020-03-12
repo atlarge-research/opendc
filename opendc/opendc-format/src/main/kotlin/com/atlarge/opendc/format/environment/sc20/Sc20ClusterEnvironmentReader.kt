@@ -29,6 +29,7 @@ import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
+import com.atlarge.opendc.compute.metal.power.LinearLoadPowerModel
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
 import com.atlarge.opendc.core.Environment
@@ -102,7 +103,11 @@ class Sc20ClusterEnvironmentReader(
                                 List(coresPerHost) { coreId ->
                                     ProcessingUnit(unknownProcessingNode, coreId, speed)
                                 },
-                                listOf(unknownMemoryUnit)
+                                listOf(unknownMemoryUnit),
+                                // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
+                                // power draw of 350W.
+                                // Source: https://stackoverflow.com/questions/6128960
+                                LinearLoadPowerModel(200.0, 350.0)
                             )
                         )
                     }
