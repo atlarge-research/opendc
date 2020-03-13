@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.compute.virt.driver.hypervisor
 
-import com.atlarge.odcsim.SimulationContext
+import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -32,6 +32,7 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
+import com.atlarge.opendc.compute.core.execution.ShutdownException
 import com.atlarge.opendc.compute.core.execution.assertFailure
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
@@ -41,7 +42,9 @@ import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -54,7 +57,8 @@ import kotlin.math.min
  */
 class HypervisorVirtDriver(
     private val hostContext: ServerContext,
-    private val monitor: HypervisorMonitor
+    private val monitor: HypervisorMonitor,
+    private val coroutineScope: CoroutineScope
 ) : VirtDriver {
     /**
      * A set for tracking the VM context objects.
@@ -80,7 +84,7 @@ class HypervisorVirtDriver(
 
         val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
         availableMemory -= requiredMemory
-        vms.add(VmServerContext(server, monitor, simulationContext))
+        vms.add(VmServerContext(server, monitor, simulationContext.domain))
         monitors.forEach { it.onUpdate(vms.size, availableMemory) }
         return server
     }
@@ -92,6 +96,11 @@ class HypervisorVirtDriver(
     override suspend fun removeMonitor(monitor: VirtDriverMonitor) {
         monitors.remove(monitor)
     }
+
+    /**
+     * A flag to indicate the driver is stopped.
+     */
+    private var stopped: Boolean = false
 
     /**
      * The set of [VmServerContext] instances that is being scheduled at the moment.
@@ -109,12 +118,12 @@ class HypervisorVirtDriver(
     private suspend fun reschedule() {
         flush()
 
-        // Do not schedule a call if there is no work to schedule
-        if (activeVms.isEmpty()) {
+        // Do not schedule a call if there is no work to schedule or the driver stopped.
+        if (stopped || activeVms.isEmpty()) {
             return
         }
 
-        val call = simulationContext.domain.launch {
+        val call = coroutineScope.launch {
             val start = simulationContext.clock.millis()
             val vms = activeVms.toSet()
 
@@ -210,17 +219,17 @@ class HypervisorVirtDriver(
             )
         }
         this.call = call
-        call.invokeOnCompletion { this.call = null }
     }
 
     /**
      * Flush the progress of the current active VMs.
      */
-    private fun flush() {
+    private suspend fun flush() {
         val call = call ?: return // If there is no active call, there is nothing to flush
-        // The progress is actually flushed in the coroutine when it notices we cancel it and wait for its
+        // The progress is actually flushed in the coroutine when it notices: we cancel it and wait for its
         // completion.
-        call.cancel()
+        call.cancelAndJoin()
+        this.call = null
     }
 
     /**
@@ -241,15 +250,16 @@ class HypervisorVirtDriver(
     internal inner class VmServerContext(
         override var server: Server,
         val monitor: ServerMonitor,
-        ctx: SimulationContext
+        val domain: Domain
     ) : ServerManagementContext {
+        private var finalized: Boolean = false
         lateinit var requests: List<CpuRequest>
         lateinit var burst: LongArray
         var deadline: Long = 0L
         var chan = Channel<Unit>(Channel.RENDEZVOUS)
         private var initialized: Boolean = false
 
-        internal val job: Job = ctx.domain.launch {
+        internal val job: Job = coroutineScope.launch {
             init()
             try {
                 server.image(this@VmServerContext)
@@ -259,27 +269,36 @@ class HypervisorVirtDriver(
             }
         }
 
+        private suspend fun setServer(value: Server) {
+            val field = server
+            if (field.state != value.state) {
+                monitor.onUpdate(value, field.state)
+            }
+
+            server = value
+        }
+
         override val cpus: List<ProcessingUnit> = hostContext.cpus.take(server.flavor.cpuCount)
 
         override suspend fun init() {
-            if (initialized) {
-                throw IllegalStateException()
-            }
+            assert(!finalized) { "VM is already finalized" }
 
-            val previousState = server.state
-            server = server.copy(state = ServerState.ACTIVE)
-            monitor.onUpdate(server, previousState)
+            setServer(server.copy(state = ServerState.ACTIVE))
             initialized = true
         }
 
         override suspend fun exit(cause: Throwable?) {
-            val previousState = server.state
-            val state = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
-            server = server.copy(state = state)
+            finalized = true
+
+            val serverState =
+                if (cause == null || (cause is ShutdownException && cause.cause == null))
+                    ServerState.SHUTOFF
+                else
+                    ServerState.ERROR
+            setServer(server.copy(state = serverState))
             availableMemory += server.flavor.memorySize
-            monitor.onUpdate(server, previousState)
-            initialized = false
             vms.remove(this)
+
             monitors.forEach { it.onUpdate(vms.size, availableMemory) }
         }
 

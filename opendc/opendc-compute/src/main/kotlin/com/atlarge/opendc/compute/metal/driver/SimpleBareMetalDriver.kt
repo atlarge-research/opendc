@@ -168,7 +168,6 @@ public class SimpleBareMetalDriver(
     override suspend fun refresh(): Node = withContext(domain.coroutineContext) { node }
 
     private inner class BareMetalServerContext : ServerManagementContext {
-        private val job: Job
         private var finalized: Boolean = false
 
         override val cpus: List<ProcessingUnit> = this@SimpleBareMetalDriver.cpus
@@ -176,15 +175,13 @@ public class SimpleBareMetalDriver(
         override val server: Server
             get() = node.server!!
 
-        init {
-            job = domain.launch {
-                init()
-                try {
-                    server.image(this@BareMetalServerContext)
-                    exit()
-                } catch (cause: Throwable) {
-                    exit(cause)
-                }
+        private val job = domain.launch {
+            init()
+            try {
+                server.image(this@BareMetalServerContext)
+                exit()
+            } catch (cause: Throwable) {
+                exit(cause)
             }
         }
 
@@ -200,6 +197,8 @@ public class SimpleBareMetalDriver(
         }
 
         override suspend fun init() {
+            assert(!finalized) { "Machine is already finalized" }
+
             val server = server.copy(state = ServerState.ACTIVE)
             node = node.copy(state = NodeState.ACTIVE, server = server)
         }
@@ -259,7 +258,7 @@ public class SimpleBareMetalDriver(
             val end = simulationContext.clock.millis()
 
             // Flush the load if the do not receive a new run call for the same timestamp
-            flush = domain.launch {
+            flush = domain.launch(job) {
                 delay(1)
                 usageSignal.value = 0.0
             }
