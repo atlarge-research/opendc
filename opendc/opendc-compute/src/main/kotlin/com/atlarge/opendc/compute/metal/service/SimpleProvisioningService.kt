@@ -30,14 +30,14 @@ import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.compute.metal.PowerState
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
+import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import kotlinx.coroutines.withContext
 
 /**
  * A very basic implementation of the [ProvisioningService].
  */
-public class SimpleProvisioningService(val domain: Domain) : ProvisioningService, ServerMonitor {
+public class SimpleProvisioningService(val domain: Domain) : ProvisioningService, NodeMonitor {
     /**
      * The active nodes in this service.
      */
@@ -64,8 +64,7 @@ public class SimpleProvisioningService(val domain: Domain) : ProvisioningService
         val driver = nodes[node]!!
 
         driver.setImage(image)
-        driver.setPower(PowerState.POWER_OFF)
-        val newNode = driver.setPower(PowerState.POWER_ON)
+        val newNode = driver.reboot()
         monitors[newNode.server!!] = monitor
         return@withContext newNode
     }

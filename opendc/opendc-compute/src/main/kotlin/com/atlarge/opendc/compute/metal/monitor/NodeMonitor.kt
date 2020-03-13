@@ -22,20 +22,21 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.core.monitor
+package com.atlarge.opendc.compute.metal.monitor
 
-import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerState
+import com.atlarge.opendc.compute.core.monitor.ServerMonitor
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.compute.metal.NodeState
 
 /**
- * An interface for monitoring the state of a machine.
+ * An interface for monitoring bare-metal nodes.
  */
-public interface ServerMonitor {
+public interface NodeMonitor : ServerMonitor {
     /**
-     * This method is invoked when the state of a machine updates.
+     * This method is invoked when the state of a bare metal machine updates.
      *
-     * @param server The server which state was updated.
-     * @param previousState The previous state of the server.
+     * @param node The node for which state was updated.
+     * @param previousState The previous state of the node.
      */
-    public suspend fun onUpdate(server: Server, previousState: ServerState) {}
+    public suspend fun onUpdate(node: Node, previousState: NodeState) {}
 }

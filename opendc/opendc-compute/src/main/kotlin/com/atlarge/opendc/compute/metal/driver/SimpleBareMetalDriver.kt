@@ -35,9 +35,9 @@ import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.image.EmptyImage
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.compute.metal.PowerState
+import com.atlarge.opendc.compute.metal.NodeState
+import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
 import com.atlarge.opendc.core.power.PowerModel
 import kotlinx.coroutines.CancellationException
@@ -72,12 +72,27 @@ public class SimpleBareMetalDriver(
     /**
      * The monitor to use.
      */
-    private lateinit var monitor: ServerMonitor
+    private lateinit var monitor: NodeMonitor
 
     /**
      * The machine state.
      */
-    private var node: Node = Node(uid, name, PowerState.POWER_OFF, EmptyImage, null)
+    private var node: Node = Node(uid, name, NodeState.SHUTOFF, EmptyImage, null)
+        set(value) {
+            if (field.state != value.state) {
+                domain.launch {
+                    monitor.onUpdate(value, field.state)
+                }
+            }
+
+            if (field.server != null && value.server != null && field.server!!.state != value.server.state) {
+                domain.launch {
+                    monitor.onUpdate(value.server, field.server!!.state)
+                }
+            }
+
+            field = value
+        }
 
     /**
      * The flavor that corresponds to this machine.
@@ -98,40 +113,47 @@ public class SimpleBareMetalDriver(
 
     override val powerDraw: Flow<Double> = powerModel(this)
 
-    override suspend fun init(monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
+    override suspend fun init(monitor: NodeMonitor): Node = withContext(domain.coroutineContext) {
         this@SimpleBareMetalDriver.monitor = monitor
         return@withContext node
     }
 
-    override suspend fun setPower(powerState: PowerState): Node = withContext(domain.coroutineContext) {
-        val previousPowerState = node.powerState
-        val server = when (node.powerState to powerState) {
-            PowerState.POWER_OFF to PowerState.POWER_OFF -> null
-            PowerState.POWER_OFF to PowerState.POWER_ON -> Server(
-                UUID.randomUUID(),
-                node.name,
-                emptyMap(),
-                flavor,
-                node.image,
-                ServerState.BUILD
-            )
-            PowerState.POWER_ON to PowerState.POWER_OFF -> {
-                // We terminate the image running on the machine
-                job?.cancel()
-                job = null
-                null
-            }
-            PowerState.POWER_ON to PowerState.POWER_ON -> node.server
-            else -> throw IllegalStateException()
-        }
-        server?.serviceRegistry?.set(BareMetalDriver.Key, this@SimpleBareMetalDriver)
-        node = node.copy(powerState = powerState, server = server)
-
-        if (powerState != previousPowerState && server != null) {
-            launch()
+    override suspend fun start(): Node = withContext(domain.coroutineContext) {
+        if (node.state != NodeState.SHUTOFF) {
+            return@withContext node
         }
 
+        val server = Server(
+            UUID.randomUUID(),
+            node.name,
+            emptyMap(),
+            flavor,
+            node.image,
+            ServerState.BUILD
+        )
+
+        server.serviceRegistry[BareMetalDriver.Key] = this@SimpleBareMetalDriver
+        node = node.copy(state = NodeState.BOOT, server = server)
+        launch()
         return@withContext node
+    }
+
+    override suspend fun stop(): Node = withContext(domain.coroutineContext) {
+        if (node.state == NodeState.SHUTOFF) {
+            return@withContext node
+        }
+
+        // We terminate the image running on the machine
+        job?.cancel()
+        job = null
+
+        node = node.copy(state = NodeState.SHUTOFF, server = null)
+        return@withContext node
+    }
+
+    override suspend fun reboot(): Node = withContext(domain.coroutineContext) {
+        stop()
+        start()
     }
 
     override suspend fun setImage(image: Image): Node = withContext(domain.coroutineContext) {
@@ -163,29 +185,26 @@ public class SimpleBareMetalDriver(
 
         override val cpus: List<ProcessingUnit> = this@SimpleBareMetalDriver.cpus
 
-        override var server: Server
+        override val server: Server
             get() = node.server!!
-            set(value) {
-                node = node.copy(server = value)
-            }
 
         override suspend fun init() {
             if (initialized) {
                 throw IllegalStateException()
             }
-
-            val previousState = server.state
-            server = server.copy(state = ServerState.ACTIVE)
-            monitor.onUpdate(server, previousState)
             initialized = true
+
+            val server = server.copy(state = ServerState.ACTIVE)
+            node = node.copy(state = NodeState.ACTIVE, server = server)
         }
 
         override suspend fun exit(cause: Throwable?) {
-            val previousState = server.state
-            val state = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
-            server = server.copy(state = state)
             initialized = false
-            domain.launch { monitor.onUpdate(server, previousState) }
+
+            val serverState = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
+            val nodeState = if (cause == null) node.state else NodeState.ERROR
+            val server = server.copy(state = serverState)
+            node = node.copy(state = nodeState, server = server)
         }
 
         private var flush: Job? = null

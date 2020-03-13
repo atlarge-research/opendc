@@ -44,9 +44,9 @@ data class Node(
     public override val name: String,
 
     /**
-     * The power state of the node.
+     * The last known state of the compute node.
      */
-    public val powerState: PowerState,
+    public val state: NodeState,
 
     /**
      * The boot image of the node.

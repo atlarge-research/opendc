@@ -32,9 +32,8 @@ import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.metal.PowerState
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
+import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import kotlinx.coroutines.delay
@@ -71,7 +70,7 @@ internal class HypervisorTest {
             })
             val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 1)
             val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000, 1)
-            val monitor = object : ServerMonitor {
+            val monitor = object : NodeMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
                     println("[${simulationContext.clock.millis()}]: $server")
                 }
@@ -85,7 +84,7 @@ internal class HypervisorTest {
 
             metalDriver.init(monitor)
             metalDriver.setImage(vmm)
-            metalDriver.setPower(PowerState.POWER_ON)
+            metalDriver.start()
 
             delay(5)
 

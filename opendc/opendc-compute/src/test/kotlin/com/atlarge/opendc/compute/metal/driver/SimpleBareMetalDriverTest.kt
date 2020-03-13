@@ -31,8 +31,9 @@ import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.metal.PowerState
+import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.compute.metal.NodeState
+import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -57,7 +58,11 @@ internal class SimpleBareMetalDriverTest {
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
             val driver = SimpleBareMetalDriver(dom, UUID.randomUUID(), "test", cpus, emptyList())
 
-            val monitor = object : ServerMonitor {
+            val monitor = object : NodeMonitor {
+                override suspend fun onUpdate(node: Node, previousState: NodeState) {
+                    println(node)
+                }
+
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
                     println("[${simulationContext.clock.millis()}] $server")
                     finalState = server.state
@@ -69,7 +74,7 @@ internal class SimpleBareMetalDriverTest {
             withContext(dom.coroutineContext) {
                 driver.init(monitor)
                 driver.setImage(image)
-                driver.setPower(PowerState.POWER_ON)
+                driver.start()
             }
         }
 

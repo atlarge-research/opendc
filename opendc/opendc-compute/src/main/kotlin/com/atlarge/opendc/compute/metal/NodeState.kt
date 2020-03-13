@@ -25,16 +25,31 @@
 package com.atlarge.opendc.compute.metal
 
 /**
- * The power state of a compute node.
+ * An enumeration describing the possible states of a bare-metal compute node.
  */
-public enum class PowerState {
+public enum class NodeState {
     /**
-     * Node is powered on.
+     * The node is booting.
      */
-    POWER_ON,
+    BOOT,
 
     /**
-     * Node is powered off.
+     * The node is powered off.
      */
-    POWER_OFF,
+    SHUTOFF,
+
+    /**
+     * The node is active and running.
+     */
+    ACTIVE,
+
+    /**
+     * The node is in error.
+     */
+    ERROR,
+
+    /**
+     * The state of the node is unknown.
+     */
+    UNKNOWN,
 }
