@@ -199,10 +199,10 @@ public class SimpleBareMetalDriver(
             // Determine the duration of the first CPU to finish
             for (i in 0 until min(cpus.size, burst.size)) {
                 val cpu = cpus[i]
-                val usage = min(limit[i], cpu.frequency) * 1_000_000 // Usage from MHz to Hz
+                val usage = min(limit[i], cpu.frequency)
                 val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
 
-                totalUsage += usage / (cpu.frequency * 1_000_000)
+                totalUsage += usage / cpu.frequency
 
                 if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
                     duration = min(duration, cpuDuration)
@@ -229,7 +229,7 @@ public class SimpleBareMetalDriver(
 
             // Write back the remaining burst time
             for (i in 0 until min(cpus.size, burst.size)) {
-                val usage = min(limit[i], cpus[i].frequency) * 1_000_000
+                val usage = min(limit[i], cpus[i].frequency)
                 val granted = ceil((end - start) / 1000.0 * usage).toLong()
                 burst[i] = max(0, burst[i] - granted)
             }

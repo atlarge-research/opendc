@@ -29,7 +29,7 @@ package com.atlarge.opendc.compute.core
  *
  * @property node The processing node containing the CPU core.
  * @property id The identifier of the CPU core within the processing node.
- * @property frequency The clock rate of the CPU.
+ * @property frequency The clock rate of the CPU in MHz.
  */
 public data class ProcessingUnit(
     public val node: ProcessingNode,

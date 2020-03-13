@@ -137,7 +137,7 @@ class HypervisorVirtDriver(
                 availableUsage -= grantedUsage
 
                 // The duration that we want to run is that of the shortest request from a vCPU
-                duration = min(duration, req.burst / (req.allocatedUsage * 1_000_000L))
+                duration = min(duration, req.burst / req.allocatedUsage)
                 deadline = min(deadline, req.vm.deadline)
             }
 
@@ -153,7 +153,7 @@ class HypervisorVirtDriver(
                 val grantedUsage = min(hostContext.cpus[i].frequency, availableShare)
 
                 usage[i] = grantedUsage
-                burst[i] = (duration * grantedUsage * 1_000_000L).toLong()
+                burst[i] = (duration * grantedUsage).toLong()
                 availableUsage -= grantedUsage
             }
 
@@ -182,7 +182,7 @@ class HypervisorVirtDriver(
                     val fraction = req.allocatedUsage / totalUsage
 
                     // Derive the burst that was allocated to this vCPU
-                    val allocatedBurst = ceil(duration * req.allocatedUsage * 1_000_000L).toLong()
+                    val allocatedBurst = ceil(duration * req.allocatedUsage).toLong()
 
                     // Compute the burst time that the VM was actually granted
                     val grantedBurst = (performanceScore * (allocatedBurst - ceil(totalRemainder * fraction))).toLong()

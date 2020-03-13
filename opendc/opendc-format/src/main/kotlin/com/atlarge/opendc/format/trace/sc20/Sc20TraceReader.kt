@@ -98,9 +98,9 @@ class Sc20TraceReader(
                             val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
                             cores = values[coreCol].trim().toInt()
                             val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
-                            requiredMemory = (values[provisionedMemoryCol].trim().toDouble() / 1000).toLong()
+                            requiredMemory = values[provisionedMemoryCol].trim().toLong()
 
-                            val flops: Long = (cpuUsage * 1_000_000L * 5 * 60 * cores).toLong()
+                            val flops: Long = (cpuUsage * 5 * 60 * cores).toLong()
 
                             if (flopsHistory.isEmpty()) {
                                 flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage))

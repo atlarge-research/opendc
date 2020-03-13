@@ -43,11 +43,6 @@ class SimpleVirtProvisioningService(
      */
     internal val activeImages: MutableSet<ImageView> = mutableSetOf()
 
-    /**
-     * The images hosted on each server.
-     */
-    internal val imagesByServer: MutableMap<Server, MutableSet<ImageView>> = mutableMapOf()
-
     init {
         ctx.domain.launch {
             val provisionedNodes = provisioningService.nodes().toList()
@@ -101,8 +96,6 @@ class SimpleVirtProvisioningService(
                     imageInstance.flavor
                 )
                 activeImages += imageInstance
-                imagesByServer.putIfAbsent(imageInstance.server!!, mutableSetOf())
-                imagesByServer[imageInstance.server!!]!!.add(imageInstance)
             } catch (e: InsufficientMemoryOnServerException) {
                 println("Unable to deploy image due to insufficient memory")
             }

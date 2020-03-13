@@ -69,8 +69,8 @@ internal class HypervisorTest {
                     println("Hello World!")
                 }
             })
-            val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000_000_000, 1)
-            val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000_000_000, 1)
+            val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 1)
+            val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000, 1)
             val monitor = object : ServerMonitor {
                 override suspend fun onUpdate(server: Server, previousState: ServerState) {
                     println("[${simulationContext.clock.millis()}]: $server")
