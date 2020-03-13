@@ -27,9 +27,9 @@ class VmImage(
             } else {
                 val cores = min(this.cores, ctx.server.flavor.cpuCount)
                 val burst = LongArray(cores) { fragment.flops / cores }
-                val maxUsage = DoubleArray(cores) { i -> burst[i] / (fragment.usage * 1_000_000L) }
+                val usage = DoubleArray(cores) { fragment.usage }
 
-                ctx.run(burst, maxUsage, simulationContext.clock.millis() + fragment.duration)
+                ctx.run(burst, usage, simulationContext.clock.millis() + fragment.duration)
             }
         }
     }
