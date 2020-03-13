@@ -34,6 +34,7 @@ import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.NodeState
 import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -83,6 +84,6 @@ internal class SimpleBareMetalDriverTest {
             system.terminate()
         }
 
-        assertEquals(finalState, ServerState.SHUTOFF)
+        assertEquals(ServerState.SHUTOFF, finalState)
     }
 }

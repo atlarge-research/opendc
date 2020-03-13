@@ -32,6 +32,7 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
+import com.atlarge.opendc.compute.core.execution.assertFailure
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
@@ -297,11 +298,13 @@ class HypervisorVirtDriver(
                 activeVms += this
                 reschedule()
                 chan.receive()
-            } catch (_: CancellationException) {
+            } catch (e: CancellationException) {
                 // On cancellation, we compute and return the remaining burst
+                e.assertFailure()
+            } finally {
+                activeVms -= this
+                reschedule()
             }
-            activeVms -= this
-            reschedule()
         }
     }
 }

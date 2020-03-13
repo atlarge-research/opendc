@@ -28,6 +28,7 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
+import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.power.Powerable
 import com.atlarge.opendc.core.services.AbstractServiceKey
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +37,7 @@ import java.util.UUID
 /**
  * A driver interface for the management interface of a bare-metal compute node.
  */
-public interface BareMetalDriver : Powerable {
+public interface BareMetalDriver : Powerable, FailureDomain {
     /**
      * The amount of work done by the machine in percentage with respect to the total amount of processing power
      * available.

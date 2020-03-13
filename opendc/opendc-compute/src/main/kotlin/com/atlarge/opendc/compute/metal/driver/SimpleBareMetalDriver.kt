@@ -33,6 +33,8 @@ import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
+import com.atlarge.opendc.compute.core.execution.ShutdownException
+import com.atlarge.opendc.compute.core.execution.assertFailure
 import com.atlarge.opendc.compute.core.image.EmptyImage
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.metal.Node
@@ -42,6 +44,7 @@ import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
 import com.atlarge.opendc.core.power.PowerModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -50,6 +53,7 @@ import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.withContext
+import java.lang.Exception
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
@@ -100,9 +104,9 @@ public class SimpleBareMetalDriver(
     private val flavor = Flavor(cpus.size, memoryUnits.map { it.size }.sum())
 
     /**
-     * The job that is running the image.
+     * The current active server context.
      */
-    private var job: Job? = null
+    private var serverContext: BareMetalServerContext? = null
 
     /**
      * The signal containing the load of the server.
@@ -134,7 +138,7 @@ public class SimpleBareMetalDriver(
 
         server.serviceRegistry[BareMetalDriver.Key] = this@SimpleBareMetalDriver
         node = node.copy(state = NodeState.BOOT, server = server)
-        launch()
+        serverContext = BareMetalServerContext()
         return@withContext node
     }
 
@@ -144,8 +148,8 @@ public class SimpleBareMetalDriver(
         }
 
         // We terminate the image running on the machine
-        job?.cancel()
-        job = null
+        serverContext!!.cancel(fail = false)
+        serverContext = null
 
         node = node.copy(state = NodeState.SHUTOFF, server = null)
         return@withContext node
@@ -163,46 +167,56 @@ public class SimpleBareMetalDriver(
 
     override suspend fun refresh(): Node = withContext(domain.coroutineContext) { node }
 
-    /**
-     * Launch the server image on the machine.
-     */
-    private suspend fun launch() {
-        val serverContext = serverCtx
-
-        job = domain.launch {
-            serverContext.init()
-            try {
-                node.server!!.image(serverContext)
-                serverContext.exit()
-            } catch (cause: Throwable) {
-                serverContext.exit(cause)
-            }
-        }
-    }
-
-    private val serverCtx = object : ServerManagementContext {
-        private var initialized: Boolean = false
+    private inner class BareMetalServerContext : ServerManagementContext {
+        private val job: Job
+        private var finalized: Boolean = false
 
         override val cpus: List<ProcessingUnit> = this@SimpleBareMetalDriver.cpus
 
         override val server: Server
             get() = node.server!!
 
-        override suspend fun init() {
-            if (initialized) {
-                throw IllegalStateException()
+        init {
+            job = domain.launch {
+                init()
+                try {
+                    server.image(this@BareMetalServerContext)
+                    exit()
+                } catch (cause: Throwable) {
+                    exit(cause)
+                }
             }
-            initialized = true
+        }
 
+        /**
+         * Cancel the image running on the machine.
+         */
+        suspend fun cancel(fail: Boolean) {
+            if (fail)
+                job.cancel(ShutdownException(cause = Exception("Random failure")))
+            else
+                job.cancel(ShutdownException())
+            job.join()
+        }
+
+        override suspend fun init() {
             val server = server.copy(state = ServerState.ACTIVE)
             node = node.copy(state = NodeState.ACTIVE, server = server)
         }
 
         override suspend fun exit(cause: Throwable?) {
-            initialized = false
+            finalized = true
 
-            val serverState = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
-            val nodeState = if (cause == null) node.state else NodeState.ERROR
+            val serverState =
+                if (cause == null || (cause is ShutdownException && cause.cause == null))
+                    ServerState.SHUTOFF
+                else
+                    ServerState.ERROR
+            val nodeState =
+                if (cause == null || (cause is ShutdownException && cause.cause != null))
+                    node.state
+                else
+                    NodeState.ERROR
             val server = server.copy(state = serverState)
             node = node.copy(state = nodeState, server = server)
         }
@@ -211,6 +225,7 @@ public class SimpleBareMetalDriver(
 
         override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
             require(burst.size == limit.size) { "Array dimensions do not match" }
+            assert(!finalized) { "Server instance is already finalized" }
 
             // If run is called in at the same timestamp as the previous call, cancel the load flush
             flush?.cancel()
@@ -237,8 +252,9 @@ public class SimpleBareMetalDriver(
 
             try {
                 delay(duration)
-            } catch (_: CancellationException) {
-                // On cancellation, we compute and return the remaining burst
+            } catch (e: CancellationException) {
+                // On non-failure cancellation, we compute and return the remaining burst
+                e.assertFailure()
             }
             val end = simulationContext.clock.millis()
 
@@ -257,6 +273,12 @@ public class SimpleBareMetalDriver(
                 val granted = ceil((end - start) / 1000.0 * usage).toLong()
                 burst[i] = max(0, burst[i] - granted)
             }
+        }
+    }
+
+    override suspend fun fail() {
+        withContext(domain.coroutineContext) {
+            serverContext?.cancel(fail = true)
         }
     }
 }
