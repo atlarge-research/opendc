@@ -29,7 +29,7 @@ class Sc20HypervisorMonitor(
         val usage = driver.usage.first()
         val powerDraw = driver.powerDraw.first()
 
-        outputFile.write("$time,$requestedBurst,$grantedBurst,$numberOfDeployedImages,$numberOfDeployedImages,${hostServer.uid},$usage,$powerDraw")
+        outputFile.write("$time,$requestedBurst,$grantedBurst,$numberOfDeployedImages,${hostServer.uid},$usage,$powerDraw")
         outputFile.newLine()
     }
 
