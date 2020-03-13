@@ -101,7 +101,7 @@ fun main(args: Array<String>) {
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, selectedVms)
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
-                delay(max(0, time * 1000 - simulationContext.clock.millis()))
+                delay(max(0, time - simulationContext.clock.millis()))
                 scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
             }
 

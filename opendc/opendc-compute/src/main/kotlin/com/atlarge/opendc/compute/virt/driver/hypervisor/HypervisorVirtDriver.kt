@@ -119,15 +119,15 @@ class HypervisorVirtDriver(
 
             var duration: Double = Double.POSITIVE_INFINITY
             var deadline: Long = Long.MAX_VALUE
-            val usage = DoubleArray(hostContext.cpus.size)
 
-            var availableUsage = hostContext.cpus.sumByDouble { it.frequency }
+            val maxUsage = hostContext.cpus.sumByDouble { it.frequency }
+            var availableUsage = maxUsage
             val requests = vms.asSequence()
                 .flatMap { it.requests.asSequence() }
                 .sortedBy { it.limit }
                 .toList()
-            var cpuId = 0
 
+            // Divide the available host capacity fairly across the vCPUs using max-min fair sharing
             for ((i, req) in requests.withIndex()) {
                 val remaining = requests.size - i
                 val availableShare = availableUsage / remaining
@@ -139,31 +139,22 @@ class HypervisorVirtDriver(
                 // The duration that we want to run is that of the shortest request from a vCPU
                 duration = min(duration, req.burst / (req.allocatedUsage * 1_000_000L))
                 deadline = min(deadline, req.vm.deadline)
-
-                // Move to next CPU if the current CPU is full
-                if (usage[cpuId] + grantedUsage > hostContext.cpus[cpuId].frequency) {
-                    cpuId++
-
-                    // TODO This might possibly break where the last request might not be satisfied
-                    assert(cpuId < hostContext.cpus.size) { "Request cannot be satisfied" }
-                }
-
-                req.allocatedCpu = cpuId
-                usage[cpuId] += grantedUsage
             }
 
+            val usage = DoubleArray(hostContext.cpus.size)
             val burst = LongArray(hostContext.cpus.size)
-            val imagesRunning = vms.map { it.server.image }.toSet()
+            val totalUsage = maxUsage - availableUsage
+            availableUsage = totalUsage
 
-            for (req in requests) {
-                // Apply performance interference model
-                val performanceModel = req.vm.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
-                val performanceScore = performanceModel?.apply(imagesRunning) ?: 1.0
+            // Divide the requests over the available capacity of the pCPUs fairly
+            for (i in hostContext.cpus.indices.sortedBy { hostContext.cpus[it].frequency }) {
+                val remaining = hostContext.cpus.size - i
+                val availableShare = availableUsage / remaining
+                val grantedUsage = min(hostContext.cpus[i].frequency, availableShare)
 
-                // Limit each vCPU to at most an equal share of the host CPU
-                val actualBurst = (performanceScore * duration * req.allocatedUsage * 1_000_000L).toLong()
-                req.allocatedBurst = actualBurst
-                burst[req.allocatedCpu] += actualBurst
+                usage[i] = grantedUsage
+                burst[i] = (duration * grantedUsage * 1_000_000L).toLong()
+                availableUsage -= grantedUsage
             }
 
             val remainder = burst.clone()
@@ -177,13 +168,24 @@ class HypervisorVirtDriver(
                 return@launch
             }
 
+            val totalRemainder = remainder.sum()
+            val totalBurst = burst.sum()
+            val imagesRunning = vms.map { it.server.image }.toSet()
+
             for (vm in vms) {
+                // Apply performance interference model
+                val performanceModel = vm.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+                val performanceScore = performanceModel?.apply(imagesRunning) ?: 1.0
+
                 for ((i, req) in vm.requests.withIndex()) {
                     // Compute the fraction of compute time allocated to the VM
-                    val fraction = req.allocatedUsage / usage[req.allocatedCpu]
+                    val fraction = req.allocatedUsage / totalUsage
+
+                    // Derive the burst that was allocated to this vCPU
+                    val allocatedBurst = ceil(duration * req.allocatedUsage * 1_000_000L).toLong()
 
                     // Compute the burst time that the VM was actually granted
-                    val grantedBurst = max(0, req.allocatedBurst - ceil(remainder[req.allocatedCpu] * fraction).toLong())
+                    val grantedBurst = (performanceScore * (allocatedBurst - ceil(totalRemainder * fraction))).toLong()
 
                     // Compute remaining burst time to be executed for the request
                     req.burst = max(0, vm.burst[i] - grantedBurst)
@@ -196,11 +198,10 @@ class HypervisorVirtDriver(
                 }
             }
 
-            val totalBurst = burst.sum()
             monitor.onSliceFinish(
                 end,
                 totalBurst,
-                totalBurst - remainder.sum(),
+                totalBurst - totalRemainder,
                 vms.size,
                 hostContext.server
             )
@@ -232,10 +233,7 @@ class HypervisorVirtDriver(
          * The usage that was actually granted.
          */
         var allocatedUsage: Double = 0.0
-        var allocatedCpu: Int = 0
-        var allocatedBurst: Long = 0
     }
-
 
     internal inner class VmServerContext(
         override var server: Server,
