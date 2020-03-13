@@ -38,7 +38,7 @@ import kotlin.math.min
  * @property uid The unique identifier of this image.
  * @property name The name of this image.
  * @property tags The tags attached to the image.
- * @property flops The number of floating point operations to perform for this task.
+ * @property flops The number of floating point operations to perform for this task in MFLOPs.
  * @property cores The number of cores that the image is able to utilize.
  * @property utilization A model of the CPU utilization of the application.
  */

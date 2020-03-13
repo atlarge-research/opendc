@@ -63,7 +63,7 @@ internal class SimpleBareMetalDriverTest {
                     finalState = server.state
                 }
             }
-            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000_000_000, 2)
+            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 2)
 
             // Batch driver commands
             withContext(dom.coroutineContext) {
