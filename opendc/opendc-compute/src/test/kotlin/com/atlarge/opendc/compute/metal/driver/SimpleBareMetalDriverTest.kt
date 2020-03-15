@@ -35,6 +35,7 @@ import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.NodeState
 import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import com.atlarge.opendc.core.failure.FaultInjector
+import com.atlarge.opendc.core.failure.UncorrelatedFaultInjector
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -78,8 +79,7 @@ internal class SimpleBareMetalDriverTest {
                 driver.start()
             }
 
-
-            val injector = FaultInjector()
+            val injector = UncorrelatedFaultInjector()
             injector.enqueue(driver)
         }
 

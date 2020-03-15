@@ -62,7 +62,6 @@ public class SimpleProvisioningService(val domain: Domain) : ProvisioningService
 
     override suspend fun deploy(node: Node, image: Image, monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
         val driver = nodes[node]!!
-
         driver.setImage(image)
         val newNode = driver.reboot()
         monitors[newNode.server!!] = monitor
