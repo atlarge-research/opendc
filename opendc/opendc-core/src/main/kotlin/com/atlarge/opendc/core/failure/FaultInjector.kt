@@ -24,19 +24,12 @@
 
 package com.atlarge.opendc.core.failure
 
-import kotlinx.coroutines.CoroutineScope
-
 /**
- * A logical or physical component in a computing environment which may fail.
+ * An interface for stochastically injecting faults into a running system.
  */
-public interface FailureDomain {
+public interface FaultInjector {
     /**
-     * The lifecycle of the failure domain to which a [FaultInjector] will attach.
+     * Enqueue the specified [FailureDomain] into the queue as candidate for failure injection in the future.
      */
-    public val scope: CoroutineScope
-
-    /**
-     * Fail the domain externally.
-     */
-    public suspend fun fail()
+    public fun enqueue(domain: FailureDomain)
 }

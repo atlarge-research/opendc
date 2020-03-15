@@ -25,34 +25,22 @@
 package com.atlarge.opendc.core.failure
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import java.util.Random
-import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.launch
 import kotlin.math.ln
-import kotlin.random.asKotlinRandom
+import kotlin.random.Random
 
 /**
- * An entity that injects failures into a system.
- *
- * @param failureDomains The failure domains to be included.
+ * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are
+ * independent.
  */
-public class FailureInjector(private val failureDomains: List<FailureDomain>) {
+public class UncorrelatedFaultInjector(private val mu: Double = 256.0, private val random: Random = Random.Default) : FaultInjector {
     /**
-     * The [Random] instance to generate the failures.
+     * Enqueue the specified [FailureDomain] to fail some time in the future.
      */
-    private val random = Random()
-
-    /**
-     * Start the failure injector process.
-     */
-    public suspend operator fun invoke() {
-        val targets = HashSet(failureDomains)
-        val mu = 20.0
-        while (targets.isNotEmpty() && coroutineContext.isActive) {
+    override fun enqueue(domain: FailureDomain) {
+        domain.scope.launch {
             delay(random.expovariate(mu))
-            val target = targets.random(random.asKotlinRandom())
-            targets -= target
-            target.fail()
+            domain.fail()
         }
     }
 

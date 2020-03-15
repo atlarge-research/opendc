@@ -43,8 +43,8 @@ import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
 import com.atlarge.opendc.core.power.PowerModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -274,6 +274,9 @@ public class SimpleBareMetalDriver(
             }
         }
     }
+
+    override val scope: CoroutineScope
+        get() = domain
 
     override suspend fun fail() {
         withContext(domain.coroutineContext) {
