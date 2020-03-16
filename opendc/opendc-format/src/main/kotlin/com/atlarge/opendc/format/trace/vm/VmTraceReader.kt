@@ -123,7 +123,7 @@ class VmTraceReader(
                 val uuid = UUID(0L, vmId)
 
                 val relevantPerformanceInterferenceModelItems = PerformanceInterferenceModel(
-                    performanceInterferenceModel.items.filter { it.workloadIds.contains(uuid) }.toSet()
+                    performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId.toString()) }.toSet()
                 )
 
                 val vmWorkload = VmWorkload(

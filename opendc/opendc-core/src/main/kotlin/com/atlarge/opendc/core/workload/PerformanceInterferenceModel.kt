@@ -1,7 +1,6 @@
 package com.atlarge.opendc.core.workload
 
 import com.atlarge.opendc.core.resource.Resource
-import java.util.UUID
 
 /**
  * Meta-data key for the [PerformanceInterferenceModel] of an image.
@@ -16,28 +15,33 @@ const val IMAGE_PERF_INTERFERENCE_MODEL = "image:performance-interference"
 data class PerformanceInterferenceModel(
     val items: Set<PerformanceInterferenceModelItem>
 ) {
-    fun apply(colocatedWorkloads: Set<Resource>): Double {
+    fun apply(colocatedWorkloads: Set<Resource>, currentServerLoad: Double): Double {
         val colocatedWorkloadIds = colocatedWorkloads.map { it.name }
         val intersectingItems = items.filter { item ->
-            colocatedWorkloadIds.intersect(item.workloadIds).size > 1
+            colocatedWorkloadIds.intersect(item.workloadNames).size > 1
         }
 
         if (intersectingItems.isEmpty()) {
             return 1.0
         }
-        return intersectingItems.map { it.performanceScore }.min() ?: error("Minimum score must exist.")
+        return intersectingItems
+            .filter { it.minServerLoad <= currentServerLoad }
+            .map { it.performanceScore }
+            .min() ?: 1.0
     }
 }
 
 /**
  * Model describing how a specific set of workloads causes performance variability for each workload.
  *
- * @param workloadIds The IDs of the workloads that together cause performance variability for each workload in the set.
+ * @param workloadNames The names of the workloads that together cause performance variability for each workload in the set.
+ * @param minServerLoad The minimum total server load at which this interference is activated and noticeable.
  * @param performanceScore The performance score that should be applied to each workload's performance. 1 means no
  * influence, <1 means that performance degrades, and >1 means that performance improves.
  */
 data class PerformanceInterferenceModelItem(
-    val workloadIds: Set<UUID>,
+    val workloadNames: Set<String>,
+    val minServerLoad: Double,
     val performanceScore: Double
 ) {
     override fun equals(other: Any?): Boolean {
@@ -46,12 +50,12 @@ data class PerformanceInterferenceModelItem(
 
         other as PerformanceInterferenceModelItem
 
-        if (workloadIds != other.workloadIds) return false
+        if (workloadNames != other.workloadNames) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return workloadIds.hashCode()
+        return workloadNames.hashCode()
     }
 }

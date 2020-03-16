@@ -145,6 +145,7 @@ class HypervisorVirtDriver(
             val burst = LongArray(hostContext.cpus.size)
             val totalUsage = maxUsage - availableUsage
             availableUsage = totalUsage
+            val serverLoad = totalUsage / maxUsage
 
             // Divide the requests over the available capacity of the pCPUs fairly
             for (i in hostContext.cpus.indices.sortedBy { hostContext.cpus[it].frequency }) {
@@ -174,8 +175,9 @@ class HypervisorVirtDriver(
 
             for (vm in vms) {
                 // Apply performance interference model
-                val performanceModel = vm.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
-                val performanceScore = performanceModel?.apply(imagesRunning) ?: 1.0
+                val performanceModel =
+                    vm.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+                val performanceScore = performanceModel?.apply(imagesRunning, serverLoad) ?: 1.0
 
                 for ((i, req) in vm.requests.withIndex()) {
                     // Compute the fraction of compute time allocated to the VM

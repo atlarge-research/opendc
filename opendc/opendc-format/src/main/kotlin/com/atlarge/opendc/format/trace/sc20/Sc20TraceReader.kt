@@ -125,7 +125,7 @@ class Sc20TraceReader(
                 val uuid = UUID.randomUUID()
 
                 val relevantPerformanceInterferenceModelItems = PerformanceInterferenceModel(
-                    performanceInterferenceModel.items.filter { it.workloadIds.contains(uuid) }.toSet()
+                    performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId) }.toSet()
                 )
 
                 val vmWorkload = VmWorkload(
