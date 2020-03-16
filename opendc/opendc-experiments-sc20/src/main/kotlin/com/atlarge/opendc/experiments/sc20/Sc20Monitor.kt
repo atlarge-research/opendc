@@ -1,6 +1,8 @@
 package com.atlarge.opendc.experiments.sc20
 
 import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerState
+import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import kotlinx.coroutines.flow.first
@@ -8,13 +10,20 @@ import java.io.BufferedWriter
 import java.io.Closeable
 import java.io.FileWriter
 
-class Sc20HypervisorMonitor(
+class Sc20Monitor(
     destination: String
-) : HypervisorMonitor, Closeable {
+) : HypervisorMonitor, ServerMonitor, Closeable {
     private val outputFile = BufferedWriter(FileWriter(destination))
+    private var failed: Int = 0
 
     init {
         outputFile.write("time,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostUsage,powerDraw\n")
+    }
+
+    override suspend fun onUpdate(server: Server, previousState: ServerState) {
+        if (server.state == ServerState.ERROR) {
+            failed++
+        }
     }
 
     override suspend fun onSliceFinish(
@@ -29,7 +38,7 @@ class Sc20HypervisorMonitor(
         val usage = driver.usage.first()
         val powerDraw = driver.powerDraw.first()
 
-        outputFile.write("$time,$requestedBurst,$grantedBurst,$numberOfDeployedImages,${hostServer.uid},$usage,$powerDraw")
+        outputFile.write("$time,$requestedBurst,$grantedBurst,$numberOfDeployedImages,${hostServer.uid},$usage,$powerDraw,$failed")
         outputFile.newLine()
     }
 

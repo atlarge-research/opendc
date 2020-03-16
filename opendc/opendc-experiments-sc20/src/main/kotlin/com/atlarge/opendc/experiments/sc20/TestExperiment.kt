@@ -27,9 +27,6 @@ package com.atlarge.opendc.experiments.sc20
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
-import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerState
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
@@ -85,12 +82,7 @@ class ExperimentParameters(parser: ArgParser) {
  */
 fun main(args: Array<String>) {
     ArgParser(args).parseInto(::ExperimentParameters).run {
-        val hypervisorMonitor = Sc20HypervisorMonitor(outputFile)
-        val monitor = object : ServerMonitor {
-            override suspend fun onUpdate(server: Server, previousState: ServerState) {
-                println(server)
-            }
-        }
+        val monitor = Sc20Monitor(outputFile)
 
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider("test")
@@ -115,7 +107,7 @@ fun main(args: Array<String>) {
                 AvailableMemoryAllocationPolicy(),
                 simulationContext,
                 environment.platforms[0].zones[0].services[ProvisioningService.Key],
-                hypervisorMonitor
+                monitor
             )
 
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
@@ -134,6 +126,6 @@ fun main(args: Array<String>) {
         }
 
         // Explicitly close the monitor to flush its buffer
-        hypervisorMonitor.close()
+        monitor.close()
     }
 }
