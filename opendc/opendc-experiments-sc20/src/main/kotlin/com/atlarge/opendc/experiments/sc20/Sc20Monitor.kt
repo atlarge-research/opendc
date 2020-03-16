@@ -1,5 +1,6 @@
 package com.atlarge.opendc.experiments.sc20
 
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor

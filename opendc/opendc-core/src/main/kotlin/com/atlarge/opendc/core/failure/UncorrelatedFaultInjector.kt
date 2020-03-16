@@ -33,13 +33,14 @@ import kotlin.random.Random
  * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are
  * independent.
  */
-public class UncorrelatedFaultInjector(private val mu: Double = 256.0, private val random: Random = Random.Default) : FaultInjector {
+public class UncorrelatedFaultInjector(private val mu: Double = 1024.0, private val random: Random = Random.Default) : FaultInjector {
     /**
      * Enqueue the specified [FailureDomain] to fail some time in the future.
      */
     override fun enqueue(domain: FailureDomain) {
         domain.scope.launch {
-            delay(random.expovariate(mu))
+            val d = random.expovariate(mu)
+            delay(d)
             domain.fail()
         }
     }

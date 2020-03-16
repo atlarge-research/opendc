@@ -30,6 +30,8 @@ import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
+import com.atlarge.opendc.core.failure.FailureDomain
+import com.atlarge.opendc.core.failure.UncorrelatedFaultInjector
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
@@ -37,11 +39,11 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileReader
 import java.util.ServiceLoader
 import kotlin.math.max
@@ -88,12 +90,14 @@ fun main(args: Array<String>) {
         val system = provider("test")
         val root = system.newDomain("root")
 
+        val chan = Channel<Unit>(Channel.CONFLATED)
+
         root.launch {
             val environment = Sc20ClusterEnvironmentReader(File(environmentFile))
                 .use { it.construct(root) }
 
             val performanceInterferenceStream = if (performanceInterferenceFile != null) {
-                FileInputStream(File(performanceInterferenceFile!!))
+                File(performanceInterferenceFile!!).inputStream().buffered()
             } else {
                 object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
             }
@@ -103,17 +107,28 @@ fun main(args: Array<String>) {
 
             println(simulationContext.clock.instant())
 
+            val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService.Key]
+
             val scheduler = SimpleVirtProvisioningService(
                 AvailableMemoryAllocationPolicy(),
                 simulationContext,
-                environment.platforms[0].zones[0].services[ProvisioningService.Key],
+                bareMetalProvisioner,
                 monitor
             )
+
+            root.launch {
+                chan.receive()
+                val faultInjector = UncorrelatedFaultInjector(mu = 2e7)
+                for (node in bareMetalProvisioner.nodes()) {
+                    faultInjector.enqueue(node.metadata["driver"] as FailureDomain)
+                }
+            }
 
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
                 delay(max(0, time - simulationContext.clock.millis()))
+                chan.send(Unit)
                 scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
             }
 

@@ -44,6 +44,11 @@ data class Node(
     public override val name: String,
 
     /**
+     * Meta data of the node.
+     */
+    public val metadata: Map<String, Any> = emptyMap(),
+
+    /**
      * The last known state of the compute node.
      */
     public val state: NodeState,

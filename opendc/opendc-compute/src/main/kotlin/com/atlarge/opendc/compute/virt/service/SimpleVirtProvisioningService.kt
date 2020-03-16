@@ -44,8 +44,8 @@ class SimpleVirtProvisioningService(
 
     init {
         ctx.domain.launch {
-            val provisionedNodes = provisioningService.nodes().toList()
-            val deployedNodes = provisionedNodes.map { node ->
+            val provisionedNodes = provisioningService.nodes()
+            provisionedNodes.forEach { node ->
                 val hypervisorImage = HypervisorImage(hypervisorMonitor)
                 val deployedNode = provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService)
                 val server = deployedNode.server!!
@@ -55,6 +55,7 @@ class SimpleVirtProvisioningService(
                     0,
                     server.flavor.memorySize
                 )
+                hypervisors[server] = hvView
                 yield()
                 server.serviceRegistry[VirtDriver.Key].addMonitor(object : VirtDriverMonitor {
                     override suspend fun onUpdate(numberOfActiveServers: Int, availableMemory: Long) {
@@ -62,9 +63,7 @@ class SimpleVirtProvisioningService(
                         hvView.availableMemory = availableMemory
                     }
                 })
-                server to hvView
             }
-            hypervisors.putAll(deployedNodes)
         }
     }
 
@@ -84,9 +83,10 @@ class SimpleVirtProvisioningService(
         val imagesToBeScheduled = incomingImages.toSet()
 
         for (imageInstance in imagesToBeScheduled) {
-            println("Spawning $imageInstance")
             val selectedNode = availableHypervisors.minWith(allocationPolicy().thenBy { it.server.uid }) ?: break
             try {
+                println("Spawning ${imageInstance.image}")
+                incomingImages -= imageInstance
                 imageInstance.server = selectedNode.server.serviceRegistry[VirtDriver.Key].spawn(
                     imageInstance.image,
                     imageInstance.monitor,
@@ -97,7 +97,6 @@ class SimpleVirtProvisioningService(
                 println("Unable to deploy image due to insufficient memory")
             }
 
-            incomingImages -= imageInstance
         }
     }
 
@@ -117,7 +116,7 @@ class SimpleVirtProvisioningService(
         }
     }
 
-    class ImageView(
+    data class ImageView(
         val image: Image,
         val monitor: ServerMonitor,
         val flavor: Flavor,

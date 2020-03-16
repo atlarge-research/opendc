@@ -81,7 +81,7 @@ public class SimpleBareMetalDriver(
     /**
      * The machine state.
      */
-    private var node: Node = Node(uid, name, NodeState.SHUTOFF, EmptyImage, null)
+    private var node: Node = Node(uid, name, mapOf("driver" to this), NodeState.SHUTOFF, EmptyImage, null)
         set(value) {
             if (field.state != value.state) {
                 domain.launch {
