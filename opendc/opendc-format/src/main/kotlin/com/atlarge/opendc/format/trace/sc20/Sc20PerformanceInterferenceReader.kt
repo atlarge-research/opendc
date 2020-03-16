@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.InputStream
-import java.util.UUID
 
 /**
  * A parser for the JSON performance interference setup files used for the SC20 paper.
@@ -50,7 +49,8 @@ class Sc20PerformanceInterferenceReader(input: InputStream, mapper: ObjectMapper
         return PerformanceInterferenceModel(
             performanceInterferenceModel.map { item ->
                 PerformanceInterferenceModelItem(
-                    item.vms.map { name -> UUID(0L, name.toLong()) }.toSet(),
+                    item.vms.toSet(),
+                    item.minServerLoad,
                     item.performanceScore
                 )
             }.toSet()
