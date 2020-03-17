@@ -18,10 +18,11 @@ class Sc20Monitor(
     private var failed: Int = 0
 
     init {
-        outputFile.write("time,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostUsage,powerDraw\n")
+        outputFile.write("time,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostUsage,powerDraw,failedVms\n")
     }
 
     override suspend fun onUpdate(server: Server, previousState: ServerState) {
+        println("${simulationContext.clock.instant()} ${server.uid} ${server.state}")
         if (server.state == ServerState.ERROR) {
             failed++
         }

@@ -89,7 +89,6 @@ fun main(args: Array<String>) {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider("test")
         val root = system.newDomain("root")
-
         val chan = Channel<Unit>(Channel.CONFLATED)
 
         root.launch {
@@ -118,7 +117,8 @@ fun main(args: Array<String>) {
 
             root.launch {
                 chan.receive()
-                val faultInjector = UncorrelatedFaultInjector(mu = 2e7)
+                // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
+                val faultInjector = UncorrelatedFaultInjector(alpha = 9.66772, beta = 12.23796)
                 for (node in bareMetalProvisioner.nodes()) {
                     faultInjector.enqueue(node.metadata["driver"] as FailureDomain)
                 }

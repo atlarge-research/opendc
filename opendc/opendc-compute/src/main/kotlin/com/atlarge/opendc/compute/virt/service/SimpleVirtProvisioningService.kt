@@ -96,7 +96,6 @@ class SimpleVirtProvisioningService(
             } catch (e: InsufficientMemoryOnServerException) {
                 println("Unable to deploy image due to insufficient memory")
             }
-
         }
     }
 
