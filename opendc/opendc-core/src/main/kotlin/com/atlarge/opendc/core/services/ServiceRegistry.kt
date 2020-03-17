@@ -48,5 +48,5 @@ public interface ServiceRegistry {
     /**
      * Register the specified [ServiceKey] in this registry.
      */
-    public operator fun <T : Any> set(key: ServiceKey<T>, service: T)
+    public operator fun <T : Any> set(key: ServiceKey<T>, service: T): ServiceRegistry
 }

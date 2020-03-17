@@ -43,4 +43,6 @@ public class ServiceRegistryImpl : ServiceRegistry {
         @Suppress("UNCHECKED_CAST")
         return services[key] as T
     }
+
+    override fun toString(): String = services.toString()
 }

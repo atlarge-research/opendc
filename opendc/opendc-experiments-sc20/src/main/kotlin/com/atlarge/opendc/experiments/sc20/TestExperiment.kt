@@ -30,8 +30,8 @@ import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
+import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
 import com.atlarge.opendc.core.failure.FailureDomain
-import com.atlarge.opendc.core.failure.UncorrelatedFaultInjector
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
@@ -39,6 +39,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -115,10 +116,14 @@ fun main(args: Array<String>) {
                 monitor
             )
 
-            root.launch {
+            val faultInjectorDomain = root.newDomain(name = "failures")
+            faultInjectorDomain.launch {
                 chan.receive()
                 // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
-                val faultInjector = UncorrelatedFaultInjector(alpha = 9.66772, beta = 12.23796)
+                val faultInjector = CorrelatedFaultInjector(faultInjectorDomain,
+                    iatScale = -1.39, iatShape = 1.03,
+                    sizeScale = 1.88, sizeShape = 1.25
+                )
                 for (node in bareMetalProvisioner.nodes()) {
                     faultInjector.enqueue(node.metadata["driver"] as FailureDomain)
                 }

@@ -42,7 +42,7 @@ public class UncorrelatedFaultInjector(private val alpha: Double, private val be
     override fun enqueue(domain: FailureDomain) {
         domain.scope.launch {
             val d = random.weibull(alpha, beta) * 1e3 // Make sure to convert delay to milliseconds
-            
+
             // Handle long overflow
             if (simulationContext.clock.millis() + d <= 0) {
                 return@launch

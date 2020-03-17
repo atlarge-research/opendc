@@ -45,6 +45,7 @@ import com.atlarge.opendc.core.power.PowerModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -82,21 +83,19 @@ public class SimpleBareMetalDriver(
      * The machine state.
      */
     private var node: Node = Node(uid, name, mapOf("driver" to this), NodeState.SHUTOFF, EmptyImage, null)
-        set(value) {
-            if (field.state != value.state) {
-                domain.launch {
-                    monitor.onUpdate(value, field.state)
-                }
-            }
 
-            if (field.server != null && value.server != null && field.server!!.state != value.server.state) {
-                domain.launch {
-                    monitor.onUpdate(value.server, field.server!!.state)
-                }
-            }
-
-            field = value
+    private suspend fun setNode(value: Node) {
+        val field = node
+        if (field.state != value.state) {
+            monitor.onUpdate(value, field.state)
         }
+
+        if (field.server != null && value.server != null && field.server.state != value.server.state) {
+            monitor.onUpdate(value.server, field.server.state)
+        }
+
+        node = value
+    }
 
     /**
      * The flavor that corresponds to this machine.
@@ -137,7 +136,7 @@ public class SimpleBareMetalDriver(
         )
 
         server.serviceRegistry[BareMetalDriver.Key] = this@SimpleBareMetalDriver
-        node = node.copy(state = NodeState.BOOT, server = server)
+        setNode(node.copy(state = NodeState.BOOT, server = server))
         serverContext = BareMetalServerContext()
         return@withContext node
     }
@@ -151,7 +150,7 @@ public class SimpleBareMetalDriver(
         serverContext!!.cancel(fail = false)
         serverContext = null
 
-        node = node.copy(state = NodeState.SHUTOFF, server = null)
+        setNode(node.copy(state = NodeState.SHUTOFF, server = null))
         return@withContext node
     }
 
@@ -161,7 +160,7 @@ public class SimpleBareMetalDriver(
     }
 
     override suspend fun setImage(image: Image): Node = withContext(domain.coroutineContext) {
-        node = node.copy(image = image)
+        setNode(node.copy(image = image))
         return@withContext node
     }
 
@@ -190,9 +189,9 @@ public class SimpleBareMetalDriver(
          */
         suspend fun cancel(fail: Boolean) {
             if (fail)
-                job.cancel(ShutdownException(cause = Exception("Random failure")))
+                domain.cancel(ShutdownException(cause = Exception("Random failure")))
             else
-                job.cancel(ShutdownException())
+                domain.cancel(ShutdownException())
             job.join()
         }
 
@@ -200,7 +199,7 @@ public class SimpleBareMetalDriver(
             assert(!finalized) { "Machine is already finalized" }
 
             val server = server.copy(state = ServerState.ACTIVE)
-            node = node.copy(state = NodeState.ACTIVE, server = server)
+            setNode(node.copy(state = NodeState.ACTIVE, server = server))
         }
 
         override suspend fun exit(cause: Throwable?) {
@@ -217,7 +216,7 @@ public class SimpleBareMetalDriver(
                 else
                     NodeState.ERROR
             val server = server.copy(state = serverState)
-            node = node.copy(state = nodeState, server = server)
+            setNode(node.copy(state = nodeState, server = server))
         }
 
         private var flush: Job? = null
