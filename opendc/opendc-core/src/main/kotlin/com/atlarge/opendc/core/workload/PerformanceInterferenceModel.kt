@@ -1,6 +1,7 @@
 package com.atlarge.opendc.core.workload
 
 import com.atlarge.opendc.core.resource.Resource
+import kotlin.random.Random
 
 /**
  * Meta-data key for the [PerformanceInterferenceModel] of an image.
@@ -24,10 +25,17 @@ data class PerformanceInterferenceModel(
         if (intersectingItems.isEmpty()) {
             return 1.0
         }
-        return intersectingItems
+        val score = intersectingItems
             .filter { it.minServerLoad <= currentServerLoad }
             .map { it.performanceScore }
-            .min() ?: 1.0
+            .min()
+
+        // Apply performance penalty to (on average) only one of the VMs
+        return if (score != null && Random.nextInt(items.size) == 0) {
+            score
+        } else {
+            1.0
+        }
     }
 }
 
