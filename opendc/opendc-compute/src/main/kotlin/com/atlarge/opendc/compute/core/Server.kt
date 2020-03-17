@@ -28,6 +28,7 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.resource.Resource
 import com.atlarge.opendc.core.resource.TagContainer
 import com.atlarge.opendc.core.services.ServiceRegistry
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 /**
@@ -67,7 +68,12 @@ public data class Server(
     /**
      * The services published by this server.
      */
-    public val services: ServiceRegistry = ServiceRegistry()
+    public val services: ServiceRegistry,
+
+    /**
+     * The events that are emitted by the server.
+     */
+    public val events: Flow<ServerEvent>
 ) : Resource {
     override fun hashCode(): Int = uid.hashCode()
     override fun equals(other: Any?): Boolean = other is Server && uid == other.uid

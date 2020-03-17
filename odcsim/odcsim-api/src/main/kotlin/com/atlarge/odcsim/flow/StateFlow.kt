@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.odcsim.signal
+package com.atlarge.odcsim.flow
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -40,9 +40,9 @@ import kotlinx.coroutines.flow.asFlow
  * in the future, but is not available yet.
  * See: https://github.com/Kotlin/kotlinx.coroutines/pull/1354
  */
-public interface Signal<T> : Flow<T> {
+public interface StateFlow<T> : Flow<T> {
     /**
-     * The current value of this signal.
+     * The current value of this flow.
      *
      * Setting a value that is [equal][Any.equals] to the previous one does nothing.
      */
@@ -50,23 +50,23 @@ public interface Signal<T> : Flow<T> {
 }
 
 /**
- * Creates a [Signal] with a given initial [value].
+ * Creates a [StateFlow] with a given initial [value].
  */
 @Suppress("FunctionName")
-public fun <T> Signal(value: T): Signal<T> = SignalImpl(value)
+public fun <T> StateFlow(value: T): StateFlow<T> = StateFlowImpl(value)
 
 /**
- * Internal implementation of the [Signal] interface.
+ * Internal implementation of the [StateFlow] interface.
  */
-private class SignalImpl<T>(initialValue: T) : Signal<T> {
+private class StateFlowImpl<T>(initialValue: T) : StateFlow<T> {
     /**
-     * The [BroadcastChannel] to back this signal.
+     * The [BroadcastChannel] to back this flow.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private val chan = BroadcastChannel<T>(Channel.CONFLATED)
 
     /**
-     * The internal [Flow] backing this signal.
+     * The internal [Flow] backing this flow.
      */
     @OptIn(FlowPreview::class)
     private val flow = chan.asFlow()

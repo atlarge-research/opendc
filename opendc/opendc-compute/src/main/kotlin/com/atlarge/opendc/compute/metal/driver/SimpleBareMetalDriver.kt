@@ -25,12 +25,14 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.Domain
-import com.atlarge.odcsim.signal.Signal
+import com.atlarge.odcsim.flow.EventFlow
+import com.atlarge.odcsim.flow.StateFlow
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.MemoryUnit
+import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.execution.ShutdownException
@@ -38,8 +40,8 @@ import com.atlarge.opendc.compute.core.execution.assertFailure
 import com.atlarge.opendc.compute.core.image.EmptyImage
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.compute.metal.NodeEvent
 import com.atlarge.opendc.compute.metal.NodeState
-import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
 import com.atlarge.opendc.core.power.PowerModel
 import com.atlarge.opendc.core.services.ServiceKey
@@ -77,27 +79,6 @@ public class SimpleBareMetalDriver(
     powerModel: PowerModel<SimpleBareMetalDriver> = ConstantPowerModel(0.0)
 ) : BareMetalDriver {
     /**
-     * The monitor to use.
-     */
-    private lateinit var monitor: NodeMonitor
-
-    /**
-     * The machine state.
-     */
-    private var node: Node = Node(uid, name, mapOf("driver" to this), NodeState.SHUTOFF, EmptyImage, null)
-        set(value) {
-            if (field.state != value.state) {
-                monitor.stateChanged(value, field.state)
-            }
-
-            if (field.server != null && value.server != null && field.server!!.state != value.server.state) {
-                monitor.stateChanged(value.server, field.server!!.state)
-            }
-
-            field = value
-        }
-
-    /**
      * The flavor that corresponds to this machine.
      */
     private val flavor = Flavor(cpus.size, memoryUnits.map { it.size }.sum())
@@ -108,17 +89,37 @@ public class SimpleBareMetalDriver(
     private var serverContext: BareMetalServerContext? = null
 
     /**
-     * The signal containing the load of the server.
+     * The events of the machine.
      */
-    private val usageSignal = Signal(0.0)
+    private val events = EventFlow<NodeEvent>()
+
+    /**
+     * The flow containing the load of the server.
+     */
+    private val usageSignal = StateFlow(0.0)
+
+    /**
+     * The machine state.
+     */
+    private var node: Node = Node(uid, name, mapOf("driver" to this), NodeState.SHUTOFF, EmptyImage, null, events)
+        set(value) {
+            if (field.state != value.state) {
+                events.emit(NodeEvent.StateChanged(value, field.state))
+            }
+
+            if (field.server != null && value.server != null && field.server!!.state != value.server.state) {
+                serverContext!!.events.emit(ServerEvent.StateChanged(value.server, field.server!!.state))
+            }
+
+            field = value
+        }
 
     override val usage: Flow<Double> = usageSignal
 
     override val powerDraw: Flow<Double> = powerModel(this)
 
-    override suspend fun init(monitor: NodeMonitor): Node = withContext(domain.coroutineContext) {
-        this@SimpleBareMetalDriver.monitor = monitor
-        return@withContext node
+    override suspend fun init(): Node = withContext(domain.coroutineContext) {
+        node
     }
 
     override suspend fun start(): Node = withContext(domain.coroutineContext) {
@@ -126,6 +127,7 @@ public class SimpleBareMetalDriver(
             return@withContext node
         }
 
+        val events = EventFlow<ServerEvent>()
         val server = Server(
             UUID.randomUUID(),
             node.name,
@@ -133,11 +135,12 @@ public class SimpleBareMetalDriver(
             flavor,
             node.image,
             ServerState.BUILD,
-            ServiceRegistry().put(BareMetalDriver, this@SimpleBareMetalDriver)
+            ServiceRegistry().put(BareMetalDriver, this@SimpleBareMetalDriver),
+            events
         )
 
         node = node.copy(state = NodeState.BOOT, server = server)
-        serverContext = BareMetalServerContext()
+        serverContext = BareMetalServerContext(events)
         return@withContext node
     }
 
@@ -166,7 +169,7 @@ public class SimpleBareMetalDriver(
 
     override suspend fun refresh(): Node = withContext(domain.coroutineContext) { node }
 
-    private inner class BareMetalServerContext : ServerManagementContext {
+    private inner class BareMetalServerContext(val events: EventFlow<ServerEvent>) : ServerManagementContext {
         private var finalized: Boolean = false
 
         override val cpus: List<ProcessingUnit> = this@SimpleBareMetalDriver.cpus
@@ -175,6 +178,7 @@ public class SimpleBareMetalDriver(
             get() = node.server!!
 
         private val job = domain.launch {
+            delay(1) // TODO Introduce boot time
             init()
             try {
                 server.image(this@BareMetalServerContext)
@@ -198,7 +202,7 @@ public class SimpleBareMetalDriver(
         override suspend fun <T : Any> publishService(key: ServiceKey<T>, service: T) {
             val server = server.copy(services = server.services.put(key, service))
             node = node.copy(server = server)
-            monitor.servicePublished(server, key)
+            events.emit(ServerEvent.ServicePublished(server, key))
         }
 
         override suspend fun init() {

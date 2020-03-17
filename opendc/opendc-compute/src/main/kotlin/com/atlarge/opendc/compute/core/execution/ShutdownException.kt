@@ -27,7 +27,7 @@ package com.atlarge.opendc.compute.core.execution
 import kotlinx.coroutines.CancellationException
 
 /**
- * This exception is thrown by the underlying [ServerContext] to indicate that a shutdown signal
+ * This exception is thrown by the underlying [ServerContext] to indicate that a shutdown flow
  * has been sent to the server.
  */
 public class ShutdownException(message: String? = null, override val cause: Throwable? = null) : CancellationException(message)

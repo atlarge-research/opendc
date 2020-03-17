@@ -25,28 +25,33 @@
 package com.atlarge.opendc.compute.virt.driver.hypervisor
 
 import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.execution.ShutdownException
 import com.atlarge.opendc.compute.core.execution.assertFailure
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
-import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.compute.virt.driver.VirtDriverEvent
 import com.atlarge.opendc.core.services.ServiceKey
+import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.ceil
@@ -56,11 +61,17 @@ import kotlin.math.min
 /**
  * A [VirtDriver] that is backed by a simple hypervisor implementation.
  */
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class HypervisorVirtDriver(
     private val hostContext: ServerContext,
-    private val monitor: HypervisorMonitor,
     private val coroutineScope: CoroutineScope
 ) : VirtDriver {
+    /**
+     * The [Server] on which this hypervisor runs.
+     */
+    public val server: Server
+        get() = hostContext.server
+
     /**
      * A set for tracking the VM context objects.
      */
@@ -72,30 +83,31 @@ class HypervisorVirtDriver(
     private var availableMemory: Long = hostContext.server.flavor.memorySize
 
     /**
-     * Monitors to keep informed.
+     * The [EventFlow] to emit the events.
      */
-    private val monitors: MutableSet<VirtDriverMonitor> = mutableSetOf()
+    internal val eventFlow = EventFlow<VirtDriverEvent>()
 
-    override suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: Flavor): Server {
+    override val events: Flow<VirtDriverEvent> = eventFlow
+
+    override suspend fun spawn(
+        image: Image,
+        flavor: Flavor
+    ): Server {
         val requiredMemory = flavor.memorySize
         if (availableMemory - requiredMemory < 0) {
             throw InsufficientMemoryOnServerException()
         }
         require(flavor.cpuCount <= hostContext.server.flavor.cpuCount) { "Machine does not fit" }
 
-        val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
+        val events = EventFlow<ServerEvent>()
+        val server = Server(
+            UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD,
+            ServiceRegistry(), events
+        )
         availableMemory -= requiredMemory
-        vms.add(VmServerContext(server, monitor, simulationContext.domain))
-        monitors.forEach { it.onUpdate(vms.size, availableMemory) }
+        vms.add(VmServerContext(server, events, simulationContext.domain))
+        eventFlow.emit(VirtDriverEvent.VmsUpdated(this, vms.size, availableMemory))
         return server
-    }
-
-    override suspend fun addMonitor(monitor: VirtDriverMonitor) {
-        monitors.add(monitor)
-    }
-
-    override suspend fun removeMonitor(monitor: VirtDriverMonitor) {
-        monitors.remove(monitor)
     }
 
     /**
@@ -211,13 +223,7 @@ class HypervisorVirtDriver(
                 }
             }
 
-            monitor.onSliceFinish(
-                end,
-                totalBurst,
-                totalBurst - totalRemainder,
-                vms.size,
-                hostContext.server
-            )
+            eventFlow.emit(VirtDriverEvent.SliceFinished(this@HypervisorVirtDriver, totalBurst, totalBurst - totalRemainder, vms.size))
         }
         this.call = call
     }
@@ -250,7 +256,7 @@ class HypervisorVirtDriver(
 
     internal inner class VmServerContext(
         server: Server,
-        val monitor: ServerMonitor,
+        val events: EventFlow<ServerEvent>,
         val domain: Domain
     ) : ServerManagementContext {
         private var finalized: Boolean = false
@@ -261,6 +267,7 @@ class HypervisorVirtDriver(
         private var initialized: Boolean = false
 
         internal val job: Job = coroutineScope.launch {
+            delay(1) // TODO Introduce boot time
             init()
             try {
                 server.image(this@VmServerContext)
@@ -273,7 +280,7 @@ class HypervisorVirtDriver(
         override var server: Server = server
             set(value) {
                 if (field.state != value.state) {
-                    monitor.stateChanged(value, field.state)
+                    events.emit(ServerEvent.StateChanged(value, field.state))
                 }
 
                 field = value
@@ -283,7 +290,7 @@ class HypervisorVirtDriver(
 
         override suspend fun <T : Any> publishService(key: ServiceKey<T>, service: T) {
             server = server.copy(services = server.services.put(key, service))
-            monitor.servicePublished(server, key)
+            events.emit(ServerEvent.ServicePublished(server, key))
         }
 
         override suspend fun init() {
@@ -304,8 +311,8 @@ class HypervisorVirtDriver(
             server = server.copy(state = serverState)
             availableMemory += server.flavor.memorySize
             vms.remove(this)
-
-            monitors.forEach { it.onUpdate(vms.size, availableMemory) }
+            events.close()
+            eventFlow.emit(VirtDriverEvent.VmsUpdated(this@HypervisorVirtDriver, vms.size, availableMemory))
         }
 
         override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {

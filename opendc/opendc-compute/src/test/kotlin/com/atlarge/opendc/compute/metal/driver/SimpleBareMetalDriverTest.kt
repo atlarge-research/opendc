@@ -25,15 +25,12 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
-import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.compute.metal.NodeState
-import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -57,24 +54,18 @@ internal class SimpleBareMetalDriverTest {
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
             val driver = SimpleBareMetalDriver(dom, UUID.randomUUID(), "test", cpus, emptyList())
-
-            val monitor = object : NodeMonitor {
-                override fun stateChanged(node: Node, previousState: NodeState) {
-                    println(node)
-                }
-
-                override fun stateChanged(server: Server, previousState: ServerState) {
-                    println("$server")
-                    finalState = server.state
-                }
-            }
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 2)
 
             // Batch driver commands
             withContext(dom.coroutineContext) {
-                driver.init(monitor)
+                driver.init()
                 driver.setImage(image)
-                driver.start()
+                val server = driver.start().server!!
+                server.events.collect { event ->
+                    when (event) {
+                        is ServerEvent.StateChanged -> finalState = event.server.state
+                    }
+                }
             }
         }
 

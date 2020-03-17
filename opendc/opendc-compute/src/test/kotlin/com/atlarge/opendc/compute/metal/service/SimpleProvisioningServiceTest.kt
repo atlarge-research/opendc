@@ -27,12 +27,10 @@ package com.atlarge.opendc.compute.metal.service
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
-import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -53,12 +51,6 @@ internal class SimpleProvisioningServiceTest {
         val root = system.newDomain(name = "root")
         root.launch {
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
-            val monitor = object : ServerMonitor {
-                override fun stateChanged(server: Server, previousState: ServerState) {
-                    println(server)
-                }
-            }
-
             val dom = root.newDomain("provisioner")
 
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
@@ -69,7 +61,8 @@ internal class SimpleProvisioningServiceTest {
             provisioner.create(driver)
             delay(5)
             val nodes = provisioner.nodes()
-            provisioner.deploy(nodes.first(), image, monitor)
+            val node = provisioner.deploy(nodes.first(), image)
+            node.server!!.events.collect { println(it) }
         }
 
         runBlocking {

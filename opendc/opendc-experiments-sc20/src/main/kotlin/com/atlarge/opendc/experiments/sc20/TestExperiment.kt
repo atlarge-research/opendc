@@ -112,7 +112,6 @@ fun main(args: Array<String>) {
                 AvailableMemoryAllocationPolicy(),
                 simulationContext,
                 bareMetalProvisioner,
-                monitor
             )
 
             val faultInjectorDomain = root.newDomain(name = "failures")
@@ -133,7 +132,7 @@ fun main(args: Array<String>) {
                 val (time, workload) = reader.next()
                 delay(max(0, time - simulationContext.clock.millis()))
                 chan.send(Unit)
-                scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
+                scheduler.deploy(workload.image, Flavor(workload.image.cores, workload.image.requiredMemory))
             }
 
             println(simulationContext.clock.instant())

@@ -3,25 +3,27 @@ package com.atlarge.opendc.compute.virt.service
 import com.atlarge.odcsim.SimulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.hypervisor.InsufficientMemoryOnServerException
-import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 import com.atlarge.opendc.core.services.ServiceKey
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SimpleVirtProvisioningService(
     public override val allocationPolicy: AllocationPolicy,
     private val ctx: SimulationContext,
-    private val provisioningService: ProvisioningService,
-    private val hypervisorMonitor: HypervisorMonitor
-) : VirtProvisioningService, ServerMonitor {
+    private val provisioningService: ProvisioningService
+) : VirtProvisioningService {
     /**
      * The hypervisors that have been launched by the service.
      */
@@ -46,14 +48,24 @@ class SimpleVirtProvisioningService(
         ctx.domain.launch {
             val provisionedNodes = provisioningService.nodes()
             provisionedNodes.forEach { node ->
-                val hypervisorImage = HypervisorImage(hypervisorMonitor)
-                provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService)
+                val hypervisorImage = HypervisorImage
+                val node = provisioningService.deploy(node, hypervisorImage)
+                node.server!!.events.onEach { event ->
+                        when (event) {
+                            is ServerEvent.StateChanged -> stateChanged(event.server, event.previousState)
+                            is ServerEvent.ServicePublished -> servicePublished(event.server, event.key)
+                        }
+                    }
+                    .launchIn(ctx.domain)
             }
         }
     }
 
-    override suspend fun deploy(image: Image, monitor: ServerMonitor, flavor: Flavor) {
-        val vmInstance = ImageView(image, monitor, flavor)
+    override suspend fun deploy(
+        image: Image,
+        flavor: Flavor
+    ) {
+        val vmInstance = ImageView(image, flavor)
         incomingImages += vmInstance
         requestCycle()
     }
@@ -82,7 +94,6 @@ class SimpleVirtProvisioningService(
                 incomingImages -= imageInstance
                 imageInstance.server = selectedHv.driver.spawn(
                     imageInstance.image,
-                    imageInstance.monitor,
                     imageInstance.flavor
                 )
                 activeImages += imageInstance
@@ -92,7 +103,7 @@ class SimpleVirtProvisioningService(
         }
     }
 
-    override fun stateChanged(server: Server, previousState: ServerState) {
+    private fun stateChanged(server: Server, previousState: ServerState) {
         when (server.state) {
             ServerState.ACTIVE -> {
                 val hvView = HypervisorView(
@@ -111,7 +122,7 @@ class SimpleVirtProvisioningService(
         }
     }
 
-    override fun servicePublished(server: Server, key: ServiceKey<*>) {
+    private fun servicePublished(server: Server, key: ServiceKey<*>) {
         if (key == VirtDriver.Key) {
             val hv = hypervisors[server] ?: return
             hv.driver = server.services[VirtDriver]
@@ -122,7 +133,6 @@ class SimpleVirtProvisioningService(
 
     data class ImageView(
         val image: Image,
-        val monitor: ServerMonitor,
         val flavor: Flavor,
         var server: Server? = null
     )

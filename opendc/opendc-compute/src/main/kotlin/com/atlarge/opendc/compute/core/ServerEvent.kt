@@ -22,21 +22,32 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.metal.monitor
+package com.atlarge.opendc.compute.core
 
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.compute.metal.NodeState
+import com.atlarge.opendc.core.services.ServiceKey
 
 /**
- * An interface for monitoring bare-metal nodes.
+ * An event that is emitted by a [Server].
  */
-public interface NodeMonitor : ServerMonitor {
+public sealed class ServerEvent {
     /**
-     * This method is synchronously invoked when the state of a bare metal machine updates.
-     *
-     * @param node The node for which state was updated.
-     * @param previousState The previous state of the node.
+     * The server that emitted the event.
      */
-    public fun stateChanged(node: Node, previousState: NodeState) {}
+    public abstract val server: Server
+
+    /**
+     * This event is emitted when the state of [server] changes.
+     *
+     * @property server The server of which the state changed.
+     * @property previousState The previous state of the server.
+     */
+    public data class StateChanged(override val server: Server, val previousState: ServerState) : ServerEvent()
+
+    /**
+     * This event is emitted when a server publishes a service.
+     *
+     * @property server The server that published the service.
+     * @property key The service key of the service that was published.
+     */
+    public data class ServicePublished(override val server: Server, val key: ServiceKey<*>) : ServerEvent()
 }

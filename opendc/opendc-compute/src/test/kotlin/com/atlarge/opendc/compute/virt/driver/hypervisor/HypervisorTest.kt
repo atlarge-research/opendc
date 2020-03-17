@@ -26,16 +26,15 @@ package com.atlarge.opendc.compute.virt.driver.hypervisor
 
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.opendc.compute.core.ProcessingUnit
-import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingNode
-import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
-import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -49,6 +48,7 @@ internal class HypervisorTest {
     /**
      * A smoke test for the bare-metal driver.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun smoke() {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
@@ -56,24 +56,9 @@ internal class HypervisorTest {
         val root = system.newDomain("root")
 
         root.launch {
-            val vmm = HypervisorImage(object : HypervisorMonitor {
-                override suspend fun onSliceFinish(
-                    time: Long,
-                    requestedBurst: Long,
-                    grantedBurst: Long,
-                    numberOfDeployedImages: Int,
-                    hostServer: Server
-                ) {
-                    println("Hello World!")
-                }
-            })
+            val vmm = HypervisorImage
             val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 1)
             val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000, 1)
-            val monitor = object : NodeMonitor {
-                override fun stateChanged(server: Server, previousState: ServerState) {
-                    println("$server")
-                }
-            }
 
             val driverDom = root.newDomain("driver")
 
@@ -81,16 +66,17 @@ internal class HypervisorTest {
             val cpus = List(2) { ProcessingUnit(cpuNode, it, 2000.0) }
             val metalDriver = SimpleBareMetalDriver(driverDom, UUID.randomUUID(), "test", cpus, emptyList())
 
-            metalDriver.init(monitor)
+            metalDriver.init()
             metalDriver.setImage(vmm)
-            metalDriver.start()
+            val node = metalDriver.start()
+            node.server?.events?.onEach { println(it) }?.launchIn(this)
 
             delay(5)
 
             val flavor = Flavor(1, 0)
             val vmDriver = metalDriver.refresh().server!!.services[VirtDriver]
-            vmDriver.spawn(workloadA, monitor, flavor)
-            vmDriver.spawn(workloadB, monitor, flavor)
+            vmDriver.spawn(workloadA, flavor).events.onEach { println(it) }.launchIn(this)
+            vmDriver.spawn(workloadB, flavor)
         }
 
         runBlocking {

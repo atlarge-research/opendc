@@ -27,7 +27,6 @@ package com.atlarge.opendc.compute.virt.driver.hypervisor
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import com.atlarge.opendc.core.resource.TagContainer
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -36,20 +35,22 @@ import java.util.UUID
 /**
  * A hypervisor managing the VMs of a node.
  */
-class HypervisorImage(
-    private val hypervisorMonitor: HypervisorMonitor
-) : Image {
+object HypervisorImage : Image {
     override val uid: UUID = UUID.randomUUID()
     override val name: String = "vmm"
     override val tags: TagContainer = emptyMap()
 
     override suspend fun invoke(ctx: ServerContext) {
         coroutineScope {
-            val driver = HypervisorVirtDriver(ctx, hypervisorMonitor, this)
+            val driver = HypervisorVirtDriver(ctx, this)
             ctx.publishService(VirtDriver.Key, driver)
 
             // Suspend image until it is cancelled
-            suspendCancellableCoroutine<Unit> {}
+            try {
+                suspendCancellableCoroutine<Unit> {}
+            } finally {
+                driver.eventFlow.close()
+            }
         }
     }
 }

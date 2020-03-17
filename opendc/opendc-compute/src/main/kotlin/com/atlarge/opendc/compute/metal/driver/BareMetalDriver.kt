@@ -27,7 +27,6 @@ package com.atlarge.opendc.compute.metal.driver
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
 import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.power.Powerable
 import com.atlarge.opendc.core.services.AbstractServiceKey
@@ -47,7 +46,7 @@ public interface BareMetalDriver : Powerable, FailureDomain {
     /**
      * Initialize the driver.
      */
-    public suspend fun init(monitor: NodeMonitor): Node
+    public suspend fun init(): Node
 
     /**
      * Start the bare metal node with the specified boot disk image.

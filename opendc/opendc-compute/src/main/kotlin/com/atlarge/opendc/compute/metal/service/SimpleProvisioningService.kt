@@ -25,33 +25,22 @@
 package com.atlarge.opendc.compute.metal.service
 
 import com.atlarge.odcsim.Domain
-import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
-import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
-import com.atlarge.opendc.core.services.ServiceKey
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
  * A very basic implementation of the [ProvisioningService].
  */
-public class SimpleProvisioningService(val domain: Domain) : ProvisioningService, NodeMonitor {
+public class SimpleProvisioningService(val domain: Domain) : ProvisioningService {
     /**
      * The active nodes in this service.
      */
     private val nodes: MutableMap<Node, BareMetalDriver> = mutableMapOf()
 
-    /**
-     * The installed monitors.
-     */
-    private val monitors: MutableMap<Server, ServerMonitor> = mutableMapOf()
-
     override suspend fun create(driver: BareMetalDriver): Node = withContext(domain.coroutineContext) {
-        val node = driver.init(this@SimpleProvisioningService)
+        val node = driver.init()
         nodes[node] = driver
         return@withContext node
     }
@@ -62,23 +51,10 @@ public class SimpleProvisioningService(val domain: Domain) : ProvisioningService
         return@withContext nodes[node]!!.refresh()
     }
 
-    override suspend fun deploy(node: Node, image: Image, monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
+    override suspend fun deploy(node: Node, image: Image): Node = withContext(domain.coroutineContext) {
         val driver = nodes[node]!!
         driver.setImage(image)
         val newNode = driver.reboot()
-        monitors[newNode.server!!] = monitor
         return@withContext newNode
-    }
-
-    override fun stateChanged(server: Server, previousState: ServerState) {
-        domain.launch {
-            monitors[server]?.stateChanged(server, previousState)
-        }
-    }
-
-    override fun servicePublished(server: Server, key: ServiceKey<*>) {
-        domain.launch {
-            monitors[server]?.servicePublished(server, key)
-        }
     }
 }
