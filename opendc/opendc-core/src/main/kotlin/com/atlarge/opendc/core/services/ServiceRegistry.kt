@@ -25,9 +25,14 @@
 package com.atlarge.opendc.core.services
 
 /**
- * A service registry for a datacenter zone.
+ * An immutable service registry interface.
  */
 public interface ServiceRegistry {
+    /**
+     * The keys in this registry.
+     */
+    public val keys: Collection<ServiceKey<*>>
+
     /**
      * Determine if this map contains the service with the specified [ServiceKey].
      *
@@ -41,12 +46,18 @@ public interface ServiceRegistry {
      *
      * @param key The key of the service to obtain.
      * @return The references to the service.
-     * @throws IllegalArgumentException if the key does not exists in the map.
+     * @throws IllegalArgumentException if the key does not exist in the map.
      */
     public operator fun <T : Any> get(key: ServiceKey<T>): T
 
     /**
-     * Register the specified [ServiceKey] in this registry.
+     * Return the result of associating the specified [service] with the given [key] in this registry.
      */
-    public operator fun <T : Any> set(key: ServiceKey<T>, service: T): ServiceRegistry
+    public fun <T : Any> put(key: ServiceKey<T>, service: T): ServiceRegistry
 }
+
+/**
+ * Construct an empty [ServiceRegistry].
+ */
+@Suppress("FunctionName")
+public fun ServiceRegistry(): ServiceRegistry = ServiceRegistryImpl(emptyMap())

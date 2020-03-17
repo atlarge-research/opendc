@@ -59,12 +59,12 @@ internal class SimpleBareMetalDriverTest {
             val driver = SimpleBareMetalDriver(dom, UUID.randomUUID(), "test", cpus, emptyList())
 
             val monitor = object : NodeMonitor {
-                override suspend fun onUpdate(node: Node, previousState: NodeState) {
+                override fun stateChanged(node: Node, previousState: NodeState) {
                     println(node)
                 }
 
-                override suspend fun onUpdate(server: Server, previousState: ServerState) {
-                    println("[${simulationContext.clock.millis()}] $server")
+                override fun stateChanged(server: Server, previousState: ServerState) {
+                    println("$server")
                     finalState = server.state
                 }
             }

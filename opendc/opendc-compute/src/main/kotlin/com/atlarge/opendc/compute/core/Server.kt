@@ -28,7 +28,6 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.resource.Resource
 import com.atlarge.opendc.core.resource.TagContainer
 import com.atlarge.opendc.core.services.ServiceRegistry
-import com.atlarge.opendc.core.services.ServiceRegistryImpl
 import java.util.UUID
 
 /**
@@ -68,7 +67,7 @@ public data class Server(
     /**
      * The services published by this server.
      */
-    public val serviceRegistry: ServiceRegistry = ServiceRegistryImpl()
+    public val services: ServiceRegistry = ServiceRegistry()
 ) : Resource {
     override fun hashCode(): Int = uid.hashCode()
     override fun equals(other: Any?): Boolean = other is Server && uid == other.uid

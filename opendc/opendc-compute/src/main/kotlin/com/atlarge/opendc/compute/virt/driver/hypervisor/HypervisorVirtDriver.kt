@@ -39,6 +39,7 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
 import kotlinx.coroutines.CancellationException
@@ -248,7 +249,7 @@ class HypervisorVirtDriver(
     }
 
     internal inner class VmServerContext(
-        override var server: Server,
+        server: Server,
         val monitor: ServerMonitor,
         val domain: Domain
     ) : ServerManagementContext {
@@ -269,21 +270,26 @@ class HypervisorVirtDriver(
             }
         }
 
-        private suspend fun setServer(value: Server) {
-            val field = server
-            if (field.state != value.state) {
-                monitor.onUpdate(value, field.state)
+        override var server: Server = server
+            set(value) {
+                if (field.state != value.state) {
+                    monitor.stateChanged(value, field.state)
+                }
+
+                field = value
             }
 
-            server = value
-        }
-
         override val cpus: List<ProcessingUnit> = hostContext.cpus.take(server.flavor.cpuCount)
+
+        override suspend fun <T : Any> publishService(key: ServiceKey<T>, service: T) {
+            server = server.copy(services = server.services.put(key, service))
+            monitor.servicePublished(server, key)
+        }
 
         override suspend fun init() {
             assert(!finalized) { "VM is already finalized" }
 
-            setServer(server.copy(state = ServerState.ACTIVE))
+            server = server.copy(state = ServerState.ACTIVE)
             initialized = true
         }
 
@@ -295,7 +301,7 @@ class HypervisorVirtDriver(
                     ServerState.SHUTOFF
                 else
                     ServerState.ERROR
-            setServer(server.copy(state = serverState))
+            server = server.copy(state = serverState)
             availableMemory += server.flavor.memorySize
             vms.remove(this)
 

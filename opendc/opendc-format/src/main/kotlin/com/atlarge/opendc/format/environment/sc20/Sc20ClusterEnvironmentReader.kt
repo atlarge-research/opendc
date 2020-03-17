@@ -35,7 +35,7 @@ import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
 import com.atlarge.opendc.core.Environment
 import com.atlarge.opendc.core.Platform
 import com.atlarge.opendc.core.Zone
-import com.atlarge.opendc.core.services.ServiceRegistryImpl
+import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import java.io.BufferedReader
 import java.io.File
@@ -119,8 +119,7 @@ class Sc20ClusterEnvironmentReader(
             provisioningService.create(node)
         }
 
-        val serviceRegistry = ServiceRegistryImpl()
-        serviceRegistry[ProvisioningService.Key] = provisioningService
+        val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
 
         val platform = Platform(
             UUID.randomUUID(), "sc20-platform", listOf(

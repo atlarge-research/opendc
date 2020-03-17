@@ -25,7 +25,6 @@
 package com.atlarge.opendc.compute.virt.driver.hypervisor
 
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
@@ -71,8 +70,8 @@ internal class HypervisorTest {
             val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 1)
             val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000, 1)
             val monitor = object : NodeMonitor {
-                override suspend fun onUpdate(server: Server, previousState: ServerState) {
-                    println("[${simulationContext.clock.millis()}]: $server")
+                override fun stateChanged(server: Server, previousState: ServerState) {
+                    println("$server")
                 }
             }
 
@@ -89,7 +88,7 @@ internal class HypervisorTest {
             delay(5)
 
             val flavor = Flavor(1, 0)
-            val vmDriver = metalDriver.refresh().server!!.serviceRegistry[VirtDriver]
+            val vmDriver = metalDriver.refresh().server!!.services[VirtDriver]
             vmDriver.spawn(workloadA, monitor, flavor)
             vmDriver.spawn(workloadB, monitor, flavor)
         }

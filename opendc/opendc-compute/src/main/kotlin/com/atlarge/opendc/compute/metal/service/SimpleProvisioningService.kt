@@ -32,6 +32,8 @@ import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.metal.monitor.NodeMonitor
+import com.atlarge.opendc.core.services.ServiceKey
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -68,9 +70,15 @@ public class SimpleProvisioningService(val domain: Domain) : ProvisioningService
         return@withContext newNode
     }
 
-    override suspend fun onUpdate(server: Server, previousState: ServerState) {
-        withContext(domain.coroutineContext) {
-            monitors[server]?.onUpdate(server, previousState)
+    override fun stateChanged(server: Server, previousState: ServerState) {
+        domain.launch {
+            monitors[server]?.stateChanged(server, previousState)
+        }
+    }
+
+    override fun servicePublished(server: Server, key: ServiceKey<*>) {
+        domain.launch {
+            monitors[server]?.servicePublished(server, key)
         }
     }
 }

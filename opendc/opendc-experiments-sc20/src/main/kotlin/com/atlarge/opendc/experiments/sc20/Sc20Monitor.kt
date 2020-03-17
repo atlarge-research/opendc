@@ -1,6 +1,5 @@
 package com.atlarge.opendc.experiments.sc20
 
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
@@ -21,8 +20,8 @@ class Sc20Monitor(
         outputFile.write("time,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostUsage,powerDraw,failedVms\n")
     }
 
-    override suspend fun onUpdate(server: Server, previousState: ServerState) {
-        println("${simulationContext.clock.instant()} ${server.uid} ${server.state}")
+    override fun stateChanged(server: Server, previousState: ServerState) {
+        println("${server.uid} ${server.state}")
         if (server.state == ServerState.ERROR) {
             failed++
         }
@@ -36,7 +35,7 @@ class Sc20Monitor(
         hostServer: Server
     ) {
         // Assume for now that the host is not virtualized and measure the current power draw
-        val driver = hostServer.serviceRegistry[BareMetalDriver.Key]
+        val driver = hostServer.services[BareMetalDriver.Key]
         val usage = driver.usage.first()
         val powerDraw = driver.powerDraw.first()
 

@@ -26,16 +26,25 @@ package com.atlarge.opendc.compute.core.monitor
 
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
+import com.atlarge.opendc.core.services.ServiceKey
 
 /**
  * An interface for monitoring the state of a machine.
  */
 public interface ServerMonitor {
     /**
-     * This method is invoked when the state of a machine updates.
+     * This method is synchronously invoked when the state of a machine updates.
      *
      * @param server The server which state was updated.
      * @param previousState The previous state of the server.
      */
-    public suspend fun onUpdate(server: Server, previousState: ServerState) {}
+    public fun stateChanged(server: Server, previousState: ServerState) {}
+
+    /**
+     * This method is synchronously invoked when the server publishes a service.
+     *
+     * @param server The server that published the service.
+     * @param key The key of the service that was published.
+     */
+    public fun servicePublished(server: Server, key: ServiceKey<*>) {}
 }

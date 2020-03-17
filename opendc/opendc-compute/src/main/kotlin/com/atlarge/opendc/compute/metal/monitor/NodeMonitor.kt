@@ -33,10 +33,10 @@ import com.atlarge.opendc.compute.metal.NodeState
  */
 public interface NodeMonitor : ServerMonitor {
     /**
-     * This method is invoked when the state of a bare metal machine updates.
+     * This method is synchronously invoked when the state of a bare metal machine updates.
      *
      * @param node The node for which state was updated.
      * @param previousState The previous state of the node.
      */
-    public suspend fun onUpdate(node: Node, previousState: NodeState) {}
+    public fun stateChanged(node: Node, previousState: NodeState) {}
 }

@@ -8,11 +8,12 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
 import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.hypervisor.InsufficientMemoryOnServerException
 import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
+import com.atlarge.opendc.core.services.ServiceKey
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class SimpleVirtProvisioningService(
@@ -46,15 +47,7 @@ class SimpleVirtProvisioningService(
             val provisionedNodes = provisioningService.nodes()
             provisionedNodes.forEach { node ->
                 val hypervisorImage = HypervisorImage(hypervisorMonitor)
-                val deployedNode = provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService)
-                val server = deployedNode.server!!
-                val hvView = HypervisorView(
-                    server,
-                    hypervisorImage,
-                    0,
-                    server.flavor.memorySize
-                )
-                hypervisors[server] = hvView
+                provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService)
             }
         }
     }
@@ -65,21 +58,29 @@ class SimpleVirtProvisioningService(
         requestCycle()
     }
 
+    private var call: Job? = null
+
     private fun requestCycle() {
-        ctx.domain.launch {
+        if (call != null) {
+            return
+        }
+
+        val call = ctx.domain.launch {
             schedule()
         }
+        call.invokeOnCompletion { this.call = null }
+        this.call = call
     }
 
     private suspend fun schedule() {
         val imagesToBeScheduled = incomingImages.toSet()
 
         for (imageInstance in imagesToBeScheduled) {
-            val selectedNode = availableHypervisors.minWith(allocationPolicy().thenBy { it.server.uid }) ?: break
+            val selectedHv = availableHypervisors.minWith(allocationPolicy().thenBy { it.server.uid }) ?: break
             try {
                 println("Spawning ${imageInstance.image}")
                 incomingImages -= imageInstance
-                imageInstance.server = selectedNode.server.serviceRegistry[VirtDriver.Key].spawn(
+                imageInstance.server = selectedHv.driver.spawn(
                     imageInstance.image,
                     imageInstance.monitor,
                     imageInstance.flavor
@@ -91,21 +92,15 @@ class SimpleVirtProvisioningService(
         }
     }
 
-    override suspend fun onUpdate(server: Server, previousState: ServerState) {
-        println("${server.uid} ${server.state} ${hypervisors[server]}")
+    override fun stateChanged(server: Server, previousState: ServerState) {
         when (server.state) {
             ServerState.ACTIVE -> {
-                val hv = hypervisors[server] ?: return
-                availableHypervisors += hv
-
-                server.serviceRegistry[VirtDriver.Key].addMonitor(object : VirtDriverMonitor {
-                    override suspend fun onUpdate(numberOfActiveServers: Int, availableMemory: Long) {
-                        hv.numberOfActiveServers = numberOfActiveServers
-                        hv.availableMemory = availableMemory
-                    }
-                })
-
-                requestCycle()
+                val hvView = HypervisorView(
+                    server,
+                    0,
+                    server.flavor.memorySize
+                )
+                hypervisors[server] = hvView
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
                 val hv = hypervisors[server] ?: return
@@ -113,6 +108,15 @@ class SimpleVirtProvisioningService(
                 requestCycle()
             }
             else -> throw IllegalStateException()
+        }
+    }
+
+    override fun servicePublished(server: Server, key: ServiceKey<*>) {
+        if (key == VirtDriver.Key) {
+            val hv = hypervisors[server] ?: return
+            hv.driver = server.services[VirtDriver]
+            availableHypervisors += hv
+            requestCycle()
         }
     }
 

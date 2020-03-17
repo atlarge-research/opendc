@@ -54,7 +54,7 @@ internal class SimpleProvisioningServiceTest {
         root.launch {
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
             val monitor = object : ServerMonitor {
-                override suspend fun onUpdate(server: Server, previousState: ServerState) {
+                override fun stateChanged(server: Server, previousState: ServerState) {
                     println(server)
                 }
             }
