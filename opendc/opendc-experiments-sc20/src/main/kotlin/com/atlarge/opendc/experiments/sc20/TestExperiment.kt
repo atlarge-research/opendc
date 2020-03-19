@@ -44,6 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.io.FileReader
 import java.util.ServiceLoader
 import kotlin.math.max
 
@@ -52,17 +53,29 @@ class ExperimentParameters(parser: ArgParser) {
     val environmentFile by parser.storing("path to the environment file")
     val outputFile by parser.storing("path to where the output should be stored")
         .default { "sc20-experiment-results.csv" }
-    val selectedVms by parser.storing("the VMs to run") {
-            // Handle case where VM list contains a VM name with an (escaped) single-quote in it
-            val string = this.replace("\\'", "\\\\[")
-                .replace("'", "\"")
-                .replace("\\\\[", "'")
-            val vms: List<String> = jacksonObjectMapper().readValue(string)
-            vms
+    val selectedVms by parser.storing("the VMs to run") { parseVMs(this) }
+        .default { emptyList() }
+    val selectedVmsFile by parser.storing("path to a file containing the VMs to run") {
+        parseVMs(FileReader(File(this)).readText())
+    }
+        .default { emptyList() }
+
+    fun getSelectedVmList(): List<String> {
+        return if (selectedVms.isEmpty()) {
+            selectedVmsFile
+        } else {
+            selectedVms
         }
-        .default {
-            emptyList()
-        }
+    }
+
+    private fun parseVMs(string: String): List<String> {
+        // Handle case where VM list contains a VM name with an (escaped) single-quote in it
+        val sanitizedString = string.replace("\\'", "\\\\[")
+            .replace("'", "\"")
+            .replace("\\\\[", "'")
+        val vms: List<String> = jacksonObjectMapper().readValue(sanitizedString)
+        return vms
+    }
 }
 
 /**
@@ -98,7 +111,7 @@ fun main(args: Array<String>) {
                 hypervisorMonitor
             )
 
-            val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, selectedVms)
+            val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
                 delay(max(0, time - simulationContext.clock.millis()))
