@@ -44,6 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileReader
 import java.util.ServiceLoader
 import kotlin.math.max
@@ -51,6 +52,7 @@ import kotlin.math.max
 class ExperimentParameters(parser: ArgParser) {
     val traceDirectory by parser.storing("path to the trace directory")
     val environmentFile by parser.storing("path to the environment file")
+    val performanceInterferenceFile by parser.storing("path to the performance interference file").default { null }
     val outputFile by parser.storing("path to where the output should be stored")
         .default { "sc20-experiment-results.csv" }
     val selectedVms by parser.storing("the VMs to run") { parseVMs(this) }
@@ -98,9 +100,14 @@ fun main(args: Array<String>) {
             val environment = Sc20ClusterEnvironmentReader(File(environmentFile))
                 .use { it.construct(root) }
 
-            val performanceInterferenceModel = Sc20PerformanceInterferenceReader(
+            val performanceInterferenceStream = if (performanceInterferenceFile != null) {
+                FileInputStream(File(performanceInterferenceFile!!))
+            } else {
                 object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
-            ).construct()
+            }
+
+            val performanceInterferenceModel = Sc20PerformanceInterferenceReader(performanceInterferenceStream)
+                .construct()
 
             println(simulationContext.clock.instant())
 
