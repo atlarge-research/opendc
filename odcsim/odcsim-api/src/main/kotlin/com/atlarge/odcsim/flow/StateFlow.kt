@@ -28,7 +28,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.asFlow
@@ -58,31 +58,22 @@ public fun <T> StateFlow(value: T): StateFlow<T> = StateFlowImpl(value)
 /**
  * Internal implementation of the [StateFlow] interface.
  */
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 private class StateFlowImpl<T>(initialValue: T) : StateFlow<T> {
     /**
      * The [BroadcastChannel] to back this flow.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val chan = BroadcastChannel<T>(Channel.CONFLATED)
+    private val chan = ConflatedBroadcastChannel(initialValue)
 
     /**
      * The internal [Flow] backing this flow.
      */
-    @OptIn(FlowPreview::class)
     private val flow = chan.asFlow()
 
-    init {
-        @OptIn(ExperimentalCoroutinesApi::class)
-        chan.offer(initialValue)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    public override var value: T = initialValue
+    public override var value: T
+        get() = chan.value
         set(value) {
-            if (field != value) {
-                chan.offer(value)
-                field = value
-            }
+            chan.offer(value)
         }
 
     @InternalCoroutinesApi

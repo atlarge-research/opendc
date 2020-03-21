@@ -22,12 +22,14 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt.driver
+package com.atlarge.opendc.compute.virt
+
+import com.atlarge.opendc.compute.virt.driver.VirtDriver
 
 /**
  * An event that is emitted by a [VirtDriver].
  */
-public sealed class VirtDriverEvent {
+public sealed class HypervisorEvent {
     /**
      * The driver that emitted the event.
      */
@@ -40,7 +42,11 @@ public sealed class VirtDriverEvent {
      * @property numberOfActiveServers The number of active servers.
      * @property availableMemory The available memory, in MB.
      */
-    public data class VmsUpdated(override val driver: VirtDriver, public val numberOfActiveServers: Int, public val availableMemory: Long) : VirtDriverEvent()
+    public data class VmsUpdated(
+        override val driver: VirtDriver,
+        public val numberOfActiveServers: Int,
+        public val availableMemory: Long
+    ) : HypervisorEvent()
 
     /**
      * This event is emitted when a slice is finished.
@@ -55,5 +61,5 @@ public sealed class VirtDriverEvent {
         public val requestedBurst: Long,
         public val grantedBurst: Long,
         public val numberOfDeployedImages: Int
-    ) : VirtDriverEvent()
+    ) : HypervisorEvent()
 }

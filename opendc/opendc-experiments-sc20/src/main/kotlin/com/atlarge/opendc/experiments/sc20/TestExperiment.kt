@@ -27,6 +27,7 @@ package com.atlarge.opendc.experiments.sc20
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
@@ -41,6 +42,8 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -107,11 +110,10 @@ fun main(args: Array<String>) {
             println(simulationContext.clock.instant())
 
             val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService.Key]
-
             val scheduler = SimpleVirtProvisioningService(
                 AvailableMemoryAllocationPolicy(),
                 simulationContext,
-                bareMetalProvisioner,
+                bareMetalProvisioner
             )
 
             val faultInjectorDomain = root.newDomain(name = "failures")
@@ -131,8 +133,11 @@ fun main(args: Array<String>) {
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
                 delay(max(0, time - simulationContext.clock.millis()))
-                chan.send(Unit)
-                scheduler.deploy(workload.image, Flavor(workload.image.cores, workload.image.requiredMemory))
+                launch {
+                    chan.send(Unit)
+                    val server = scheduler.deploy(workload.image, Flavor(workload.image.cores, workload.image.requiredMemory))
+                    server.events.onEach { if (it is ServerEvent.StateChanged) monitor.stateChanged(it.server) }.collect()
+                }
             }
 
             println(simulationContext.clock.instant())

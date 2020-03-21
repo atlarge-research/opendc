@@ -38,6 +38,11 @@ import java.util.UUID
  */
 public interface BareMetalDriver : Powerable, FailureDomain {
     /**
+     * The [Node] that is controlled by this driver.
+     */
+    public val node: Flow<Node>
+
+    /**
      * The amount of work done by the machine in percentage with respect to the total amount of processing power
      * available.
      */

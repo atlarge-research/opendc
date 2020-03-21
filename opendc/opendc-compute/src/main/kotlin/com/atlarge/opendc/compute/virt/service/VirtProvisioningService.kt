@@ -1,6 +1,7 @@
 package com.atlarge.opendc.compute.virt.service
 
 import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 
@@ -16,5 +17,5 @@ interface VirtProvisioningService {
      * @param image The image to be deployed.
      * @param flavor The flavor of the machine instance to run this [image] on.
      */
-    public suspend fun deploy(image: Image, flavor: Flavor)
+    public suspend fun deploy(image: Image, flavor: Flavor): Server
 }

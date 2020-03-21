@@ -48,10 +48,13 @@ import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.scanReduce
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.ceil
@@ -96,33 +99,40 @@ public class SimpleBareMetalDriver(
     /**
      * The flow containing the load of the server.
      */
-    private val usageSignal = StateFlow(0.0)
+    private val usageState = StateFlow(0.0)
 
     /**
      * The machine state.
      */
-    private var node: Node = Node(uid, name, mapOf("driver" to this), NodeState.SHUTOFF, EmptyImage, null, events)
-        set(value) {
+    private val nodeState = StateFlow(Node(uid, name, mapOf("driver" to this), NodeState.SHUTOFF, EmptyImage, null, events))
+
+    override val node: Flow<Node> = nodeState
+
+    override val usage: Flow<Double> = usageState
+
+    override val powerDraw: Flow<Double> = powerModel(this)
+
+    init {
+        @OptIn(ExperimentalCoroutinesApi::class)
+        nodeState.scanReduce { field, value ->
             if (field.state != value.state) {
                 events.emit(NodeEvent.StateChanged(value, field.state))
             }
 
-            if (field.server != null && value.server != null && field.server!!.state != value.server.state) {
-                serverContext!!.events.emit(ServerEvent.StateChanged(value.server, field.server!!.state))
+            if (field.server != null && value.server != null && field.server.state != value.server.state) {
+                serverContext!!.events.emit(ServerEvent.StateChanged(value.server, field.server.state))
             }
 
-            field = value
-        }
-
-    override val usage: Flow<Double> = usageSignal
-
-    override val powerDraw: Flow<Double> = powerModel(this)
+            value
+        }.launchIn(domain)
+    }
 
     override suspend fun init(): Node = withContext(domain.coroutineContext) {
-        node
+        nodeState.value
     }
 
     override suspend fun start(): Node = withContext(domain.coroutineContext) {
+        val node = nodeState.value
         if (node.state != NodeState.SHUTOFF) {
             return@withContext node
         }
@@ -139,12 +149,13 @@ public class SimpleBareMetalDriver(
             events
         )
 
-        node = node.copy(state = NodeState.BOOT, server = server)
+        nodeState.value = node.copy(state = NodeState.BOOT, server = server)
         serverContext = BareMetalServerContext(events)
-        return@withContext node
+        return@withContext nodeState.value
     }
 
     override suspend fun stop(): Node = withContext(domain.coroutineContext) {
+        val node = nodeState.value
         if (node.state == NodeState.SHUTOFF) {
             return@withContext node
         }
@@ -153,7 +164,7 @@ public class SimpleBareMetalDriver(
         serverContext!!.cancel(fail = false)
         serverContext = null
 
-        node = node.copy(state = NodeState.SHUTOFF, server = null)
+        nodeState.value = node.copy(state = NodeState.SHUTOFF, server = null)
         return@withContext node
     }
 
@@ -163,11 +174,11 @@ public class SimpleBareMetalDriver(
     }
 
     override suspend fun setImage(image: Image): Node = withContext(domain.coroutineContext) {
-        node = node.copy(image = image)
-        return@withContext node
+        nodeState.value = nodeState.value.copy(image = image)
+        return@withContext nodeState.value
     }
 
-    override suspend fun refresh(): Node = withContext(domain.coroutineContext) { node }
+    override suspend fun refresh(): Node = withContext(domain.coroutineContext) { nodeState.value }
 
     private inner class BareMetalServerContext(val events: EventFlow<ServerEvent>) : ServerManagementContext {
         private var finalized: Boolean = false
@@ -175,7 +186,7 @@ public class SimpleBareMetalDriver(
         override val cpus: List<ProcessingUnit> = this@SimpleBareMetalDriver.cpus
 
         override val server: Server
-            get() = node.server!!
+            get() = nodeState.value.server!!
 
         private val job = domain.launch {
             delay(1) // TODO Introduce boot time
@@ -193,15 +204,15 @@ public class SimpleBareMetalDriver(
          */
         suspend fun cancel(fail: Boolean) {
             if (fail)
-                domain.cancel(ShutdownException(cause = Exception("Random failure")))
+                job.cancel(ShutdownException(cause = Exception("Random failure")))
             else
-                domain.cancel(ShutdownException())
+                job.cancel(ShutdownException())
             job.join()
         }
 
         override suspend fun <T : Any> publishService(key: ServiceKey<T>, service: T) {
             val server = server.copy(services = server.services.put(key, service))
-            node = node.copy(server = server)
+            nodeState.value = nodeState.value.copy(server = server)
             events.emit(ServerEvent.ServicePublished(server, key))
         }
 
@@ -209,24 +220,24 @@ public class SimpleBareMetalDriver(
             assert(!finalized) { "Machine is already finalized" }
 
             val server = server.copy(state = ServerState.ACTIVE)
-            node = node.copy(state = NodeState.ACTIVE, server = server)
+            nodeState.value = nodeState.value.copy(state = NodeState.ACTIVE, server = server)
         }
 
         override suspend fun exit(cause: Throwable?) {
             finalized = true
 
-            val serverState =
+            val newServerState =
                 if (cause == null || (cause is ShutdownException && cause.cause == null))
                     ServerState.SHUTOFF
                 else
                     ServerState.ERROR
-            val nodeState =
+            val newNodeState =
                 if (cause == null || (cause is ShutdownException && cause.cause != null))
-                    node.state
+                    nodeState.value.state
                 else
                     NodeState.ERROR
-            val server = server.copy(state = serverState)
-            node = node.copy(state = nodeState, server = server)
+            val server = server.copy(state = newServerState)
+            nodeState.value = nodeState.value.copy(state = newNodeState, server = server)
         }
 
         private var flush: Job? = null
@@ -256,7 +267,7 @@ public class SimpleBareMetalDriver(
                 }
             }
 
-            usageSignal.value = totalUsage / cpus.size
+            usageState.value = totalUsage / cpus.size
 
             try {
                 delay(duration)
@@ -269,7 +280,7 @@ public class SimpleBareMetalDriver(
             // Flush the load if the do not receive a new run call for the same timestamp
             flush = domain.launch(job) {
                 delay(1)
-                usageSignal.value = 0.0
+                usageState.value = 0.0
             }
             flush!!.invokeOnCompletion {
                 flush = null
@@ -289,5 +300,6 @@ public class SimpleBareMetalDriver(
 
     override suspend fun fail() {
         serverContext?.cancel(fail = true)
+        domain.cancel()
     }
 }

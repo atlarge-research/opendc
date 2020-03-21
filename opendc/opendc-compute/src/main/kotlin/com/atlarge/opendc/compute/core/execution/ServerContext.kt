@@ -30,7 +30,7 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.services.ServiceKey
 
 /**
- * Represents the execution context in which an bootable [Image] runs on a [Server].
+ * Represents the execution context in which a bootable [Image] runs on a [Server].
  */
 public interface ServerContext {
     /**

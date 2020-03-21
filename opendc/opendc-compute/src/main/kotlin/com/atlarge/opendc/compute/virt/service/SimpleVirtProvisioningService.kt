@@ -8,22 +8,26 @@ import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
-import com.atlarge.opendc.compute.virt.driver.hypervisor.InsufficientMemoryOnServerException
+import com.atlarge.opendc.compute.virt.HypervisorImage
+import com.atlarge.opendc.compute.virt.driver.InsufficientMemoryOnServerException
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 import com.atlarge.opendc.core.services.ServiceKey
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimpleVirtProvisioningService(
     public override val allocationPolicy: AllocationPolicy,
     private val ctx: SimulationContext,
     private val provisioningService: ProvisioningService
-) : VirtProvisioningService {
+) : VirtProvisioningService, CoroutineScope by ctx.domain {
     /**
      * The hypervisors that have been launched by the service.
      */
@@ -45,18 +49,17 @@ class SimpleVirtProvisioningService(
     private val activeImages: MutableSet<ImageView> = mutableSetOf()
 
     init {
-        ctx.domain.launch {
+        launch {
             val provisionedNodes = provisioningService.nodes()
             provisionedNodes.forEach { node ->
                 val hypervisorImage = HypervisorImage
                 val node = provisioningService.deploy(node, hypervisorImage)
                 node.server!!.events.onEach { event ->
-                        when (event) {
-                            is ServerEvent.StateChanged -> stateChanged(event.server, event.previousState)
-                            is ServerEvent.ServicePublished -> servicePublished(event.server, event.key)
-                        }
+                    when (event) {
+                        is ServerEvent.StateChanged -> stateChanged(event.server)
+                        is ServerEvent.ServicePublished -> servicePublished(event.server, event.key)
                     }
-                    .launchIn(ctx.domain)
+                }.collect()
             }
         }
     }
@@ -64,8 +67,8 @@ class SimpleVirtProvisioningService(
     override suspend fun deploy(
         image: Image,
         flavor: Flavor
-    ) {
-        val vmInstance = ImageView(image, flavor)
+    ): Server = suspendCancellableCoroutine { cont ->
+        val vmInstance = ImageView(image, flavor, cont)
         incomingImages += vmInstance
         requestCycle()
     }
@@ -77,7 +80,7 @@ class SimpleVirtProvisioningService(
             return
         }
 
-        val call = ctx.domain.launch {
+        val call = launch {
             schedule()
         }
         call.invokeOnCompletion { this.call = null }
@@ -92,10 +95,12 @@ class SimpleVirtProvisioningService(
             try {
                 println("Spawning ${imageInstance.image}")
                 incomingImages -= imageInstance
-                imageInstance.server = selectedHv.driver.spawn(
+                val server = selectedHv.driver.spawn(
                     imageInstance.image,
                     imageInstance.flavor
                 )
+                imageInstance.server = server
+                imageInstance.continuation.resume(server)
                 activeImages += imageInstance
             } catch (e: InsufficientMemoryOnServerException) {
                 println("Unable to deploy image due to insufficient memory")
@@ -103,7 +108,7 @@ class SimpleVirtProvisioningService(
         }
     }
 
-    private fun stateChanged(server: Server, previousState: ServerState) {
+    private fun stateChanged(server: Server) {
         when (server.state) {
             ServerState.ACTIVE -> {
                 val hvView = HypervisorView(
@@ -134,6 +139,7 @@ class SimpleVirtProvisioningService(
     data class ImageView(
         val image: Image,
         val flavor: Flavor,
+        val continuation: Continuation<Server>,
         var server: Server? = null
     )
 }

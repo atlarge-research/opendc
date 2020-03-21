@@ -27,6 +27,7 @@ package com.atlarge.opendc.compute.virt.driver
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.core.services.AbstractServiceKey
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
@@ -39,7 +40,7 @@ public interface VirtDriver {
     /**
      * The events emitted by the driver.
      */
-    public val events: Flow<VirtDriverEvent>
+    public val events: Flow<HypervisorEvent>
 
     /**
      * Spawn the given [Image] on the compute resource of this driver.

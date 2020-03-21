@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt.driver.hypervisor
+package com.atlarge.opendc.compute.virt.driver
 
 import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.flow.EventFlow
@@ -37,8 +37,7 @@ import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.execution.ShutdownException
 import com.atlarge.opendc.compute.core.execution.assertFailure
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.driver.VirtDriverEvent
+import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
@@ -62,7 +61,7 @@ import kotlin.math.min
  * A [VirtDriver] that is backed by a simple hypervisor implementation.
  */
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class HypervisorVirtDriver(
+class SimpleVirtDriver(
     private val hostContext: ServerContext,
     private val coroutineScope: CoroutineScope
 ) : VirtDriver {
@@ -85,9 +84,9 @@ class HypervisorVirtDriver(
     /**
      * The [EventFlow] to emit the events.
      */
-    internal val eventFlow = EventFlow<VirtDriverEvent>()
+    internal val eventFlow = EventFlow<HypervisorEvent>()
 
-    override val events: Flow<VirtDriverEvent> = eventFlow
+    override val events: Flow<HypervisorEvent> = eventFlow
 
     override suspend fun spawn(
         image: Image,
@@ -106,7 +105,7 @@ class HypervisorVirtDriver(
         )
         availableMemory -= requiredMemory
         vms.add(VmServerContext(server, events, simulationContext.domain))
-        eventFlow.emit(VirtDriverEvent.VmsUpdated(this, vms.size, availableMemory))
+        eventFlow.emit(HypervisorEvent.VmsUpdated(this, vms.size, availableMemory))
         return server
     }
 
@@ -223,7 +222,7 @@ class HypervisorVirtDriver(
                 }
             }
 
-            eventFlow.emit(VirtDriverEvent.SliceFinished(this@HypervisorVirtDriver, totalBurst, totalBurst - totalRemainder, vms.size))
+            eventFlow.emit(HypervisorEvent.SliceFinished(this@SimpleVirtDriver, totalBurst, totalBurst - totalRemainder, vms.size))
         }
         this.call = call
     }
@@ -312,7 +311,7 @@ class HypervisorVirtDriver(
             availableMemory += server.flavor.memorySize
             vms.remove(this)
             events.close()
-            eventFlow.emit(VirtDriverEvent.VmsUpdated(this@HypervisorVirtDriver, vms.size, availableMemory))
+            eventFlow.emit(HypervisorEvent.VmsUpdated(this@SimpleVirtDriver, vms.size, availableMemory))
         }
 
         override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
@@ -322,7 +321,14 @@ class HypervisorVirtDriver(
             this.burst = burst
             requests = cpus.asSequence()
                 .take(burst.size)
-                .mapIndexed { i, cpu -> CpuRequest(this, cpu, burst[i], limit[i]) }
+                .mapIndexed { i, cpu ->
+                    CpuRequest(
+                        this,
+                        cpu,
+                        burst[i],
+                        limit[i]
+                    )
+                }
                 .toList()
 
             // Wait until the burst has been run or the coroutine is cancelled

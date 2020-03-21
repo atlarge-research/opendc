@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +22,36 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.service
+package com.atlarge.opendc.compute.virt
 
-import com.atlarge.opendc.workflows.workload.Job
+import com.atlarge.opendc.compute.core.execution.ServerContext
+import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
+import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.core.resource.TagContainer
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.UUID
 
-class JobState(val job: Job, val submittedAt: Long) {
-    /**
-     * A flag to indicate whether this job is finished.
-     */
-    val isFinished: Boolean
-        get() = tasks.isEmpty()
+/**
+ * A hypervisor managing the VMs of a node.
+ */
+object HypervisorImage : Image {
+    override val uid: UUID = UUID.randomUUID()
+    override val name: String = "vmm"
+    override val tags: TagContainer = emptyMap()
 
-    val tasks: MutableSet<TaskState> = mutableSetOf()
+    override suspend fun invoke(ctx: ServerContext) {
+        coroutineScope {
+            val driver = SimpleVirtDriver(ctx, this)
+            ctx.publishService(VirtDriver.Key, driver)
 
-    override fun equals(other: Any?): Boolean = other is JobState && other.job == job
-
-    override fun hashCode(): Int = job.hashCode()
+            // Suspend image until it is cancelled
+            try {
+                suspendCancellableCoroutine<Unit> {}
+            } finally {
+                driver.eventFlow.close()
+            }
+        }
+    }
 }

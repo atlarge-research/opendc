@@ -2,9 +2,7 @@ package com.atlarge.opendc.experiments.sc20
 
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
-import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
 import kotlinx.coroutines.flow.first
 import java.io.BufferedWriter
 import java.io.Closeable
@@ -12,7 +10,7 @@ import java.io.FileWriter
 
 class Sc20Monitor(
     destination: String
-) : HypervisorMonitor, ServerMonitor, Closeable {
+) : Closeable {
     private val outputFile = BufferedWriter(FileWriter(destination))
     private var failed: Int = 0
 
@@ -20,14 +18,14 @@ class Sc20Monitor(
         outputFile.write("time,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostUsage,powerDraw,failedVms\n")
     }
 
-    override fun stateChanged(server: Server, previousState: ServerState) {
+    fun stateChanged(server: Server) {
         println("${server.uid} ${server.state}")
         if (server.state == ServerState.ERROR) {
             failed++
         }
     }
 
-    override suspend fun onSliceFinish(
+    suspend fun onSliceFinish(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,

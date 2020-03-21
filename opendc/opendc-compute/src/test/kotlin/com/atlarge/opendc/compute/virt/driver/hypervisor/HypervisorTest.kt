@@ -30,6 +30,7 @@ import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
+import com.atlarge.opendc.compute.virt.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -75,8 +76,10 @@ internal class HypervisorTest {
 
             val flavor = Flavor(1, 0)
             val vmDriver = metalDriver.refresh().server!!.services[VirtDriver]
-            vmDriver.spawn(workloadA, flavor).events.onEach { println(it) }.launchIn(this)
-            vmDriver.spawn(workloadB, flavor)
+            val vmA = vmDriver.spawn(workloadA, flavor)
+            vmA.events.onEach { println(it) }.launchIn(this)
+            val vmB = vmDriver.spawn(workloadB, flavor)
+            vmB.events.onEach { println(it) }.launchIn(this)
         }
 
         runBlocking {

@@ -22,32 +22,55 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.monitor
+package com.atlarge.opendc.workflows.service
 
 import com.atlarge.opendc.workflows.workload.Job
 import com.atlarge.opendc.workflows.workload.Task
 
 /**
- * An interface for monitoring the progression of workflows.
+ * An event emitted by the [WorkflowService].
  */
-public interface WorkflowMonitor {
+public sealed class WorkflowEvent {
     /**
-     * This method is invoked when a job has become active.
+     * The [WorkflowService] that emitted the event.
      */
-    public suspend fun onJobStart(job: Job, time: Long)
+    public abstract val service: WorkflowService
 
     /**
-     * This method is invoked when a job has finished processing.
+     * This event is emitted when a job has become active.
      */
-    public suspend fun onJobFinish(job: Job, time: Long)
+    public data class JobStarted(
+        override val service: WorkflowService,
+        public val job: Job,
+        public val time: Long
+    ) : WorkflowEvent()
 
     /**
-     * This method is invoked when a task of a job has started processing.
+     * This event is emitted when a job has finished processing.
      */
-    public suspend fun onTaskStart(job: Job, task: Task, time: Long)
+    public data class JobFinished(
+        override val service: WorkflowService,
+        public val job: Job,
+        public val time: Long
+    ) : WorkflowEvent()
 
     /**
-     * This method is invoked when a task has finished processing.
+     * This event is emitted when a task of a job has started processing.
      */
-    public suspend fun onTaskFinish(job: Job, task: Task, status: Int, time: Long)
+    public data class TaskStarted(
+        override val service: WorkflowService,
+        public val job: Job,
+        public val task: Task,
+        public val time: Long
+    ) : WorkflowEvent()
+
+    /**
+     * This event is emitted when a task of a job has started processing.
+     */
+    public data class TaskFinished(
+        override val service: WorkflowService,
+        public val job: Job,
+        public val task: Task,
+        public val time: Long
+    ) : WorkflowEvent()
 }

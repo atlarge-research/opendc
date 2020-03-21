@@ -33,7 +33,7 @@ import java.util.UUID
 /**
  * A bare-metal compute node.
  */
-data class Node(
+public data class Node(
     /**
      * The unique identifier of the node.
      */
@@ -45,7 +45,7 @@ data class Node(
     public override val name: String,
 
     /**
-     * Meta data of the node.
+     * Metadata of the node.
      */
     public val metadata: Map<String, Any>,
 
