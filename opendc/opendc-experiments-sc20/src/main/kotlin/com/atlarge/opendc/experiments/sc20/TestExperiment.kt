@@ -40,6 +40,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
@@ -86,6 +87,7 @@ class ExperimentParameters(parser: ArgParser) {
 /**
  * Main entry point of the experiment.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 fun main(args: Array<String>) {
     ArgParser(args).parseInto(::ExperimentParameters).run {
         val monitor = Sc20Monitor(outputFile)
@@ -111,6 +113,10 @@ fun main(args: Array<String>) {
             println(simulationContext.clock.instant())
 
             val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService.Key]
+
+            // Wait for the bare metal nodes to be spawned
+            delay(10)
+
             val scheduler = SimpleVirtProvisioningService(
                 AvailableMemoryAllocationPolicy(),
                 simulationContext,
@@ -140,9 +146,9 @@ fun main(args: Array<String>) {
                     iatScale = -1.39, iatShape = 1.03,
                     sizeScale = 1.88, sizeShape = 1.25
                 )
-                for (node in bareMetalProvisioner.nodes()) {
+                // for (node in bareMetalProvisioner.nodes()) {
                     // faultInjector.enqueue(node.metadata["driver"] as FailureDomain)
-                }
+                // }
             }
 
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())

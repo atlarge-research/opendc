@@ -6,7 +6,9 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
+import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.InsufficientMemoryOnServerException
@@ -15,7 +17,8 @@ import com.atlarge.opendc.core.services.ServiceKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -60,7 +63,7 @@ class SimpleVirtProvisioningService(
                         is ServerEvent.StateChanged -> stateChanged(event.server)
                         is ServerEvent.ServicePublished -> servicePublished(event.server, event.key)
                     }
-                }.collect()
+                }.launchIn(this)
             }
         }
     }
@@ -89,6 +92,7 @@ class SimpleVirtProvisioningService(
         }
 
         val call = launch {
+            delay(1)
             this@SimpleVirtProvisioningService.call = null
             schedule()
         }
@@ -103,6 +107,12 @@ class SimpleVirtProvisioningService(
             try {
                 println("Spawning ${imageInstance.image}")
                 incomingImages -= imageInstance
+
+                // Speculatively update the hypervisor view information to prevent other images in the queue from
+                // deciding on stale values.
+                selectedHv.numberOfActiveServers++
+                selectedHv.availableMemory -= (imageInstance.image as VmImage).requiredMemory // XXX Temporary hack
+
                 val server = selectedHv.driver.spawn(
                     imageInstance.name,
                     imageInstance.image,
@@ -113,6 +123,9 @@ class SimpleVirtProvisioningService(
                 activeImages += imageInstance
             } catch (e: InsufficientMemoryOnServerException) {
                 println("Unable to deploy image due to insufficient memory")
+
+                selectedHv.numberOfActiveServers--
+                selectedHv.availableMemory += (imageInstance.image as VmImage).requiredMemory
             }
         }
     }
@@ -141,6 +154,15 @@ class SimpleVirtProvisioningService(
             val hv = hypervisors[server] ?: return
             hv.driver = server.services[VirtDriver]
             availableHypervisors += hv
+
+            hv.driver.events
+                .onEach { event ->
+                    if (event is HypervisorEvent.VmsUpdated) {
+                        hv.numberOfActiveServers = event.numberOfActiveServers
+                        hv.availableMemory = event.availableMemory
+                    }
+                }.launchIn(this)
+
             requestCycle()
         }
     }
