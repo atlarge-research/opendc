@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 
@@ -64,14 +65,20 @@ class SimpleVirtProvisioningService(
         }
     }
 
+    override suspend fun drivers(): Set<VirtDriver> = withContext(coroutineContext) {
+        availableHypervisors.map { it.driver }.toSet()
+    }
+
     override suspend fun deploy(
         name: String,
         image: Image,
         flavor: Flavor
-    ): Server = suspendCancellableCoroutine { cont ->
-        val vmInstance = ImageView(name, image, flavor, cont)
-        incomingImages += vmInstance
-        requestCycle()
+    ): Server = withContext(coroutineContext) {
+        suspendCancellableCoroutine<Server> { cont ->
+            val vmInstance = ImageView(name, image, flavor, cont)
+            incomingImages += vmInstance
+            requestCycle()
+        }
     }
 
     private var call: Job? = null
@@ -82,9 +89,9 @@ class SimpleVirtProvisioningService(
         }
 
         val call = launch {
+            this@SimpleVirtProvisioningService.call = null
             schedule()
         }
-        call.invokeOnCompletion { this.call = null }
         this.call = call
     }
 

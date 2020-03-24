@@ -48,13 +48,10 @@ import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.scanReduce
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.ceil
@@ -112,21 +109,6 @@ public class SimpleBareMetalDriver(
 
     override val powerDraw: Flow<Double> = powerModel(this)
 
-    init {
-        @OptIn(ExperimentalCoroutinesApi::class)
-        nodeState.scanReduce { field, value ->
-            if (field.state != value.state) {
-                events.emit(NodeEvent.StateChanged(value, field.state))
-            }
-
-            if (field.server != null && value.server != null && field.server.state != value.server.state) {
-                serverContext!!.events.emit(ServerEvent.StateChanged(value.server, field.server.state))
-            }
-
-            value
-        }.launchIn(domain)
-    }
-
     override suspend fun init(): Node = withContext(domain.coroutineContext) {
         nodeState.value
     }
@@ -149,7 +131,7 @@ public class SimpleBareMetalDriver(
             events
         )
 
-        nodeState.value = node.copy(state = NodeState.BOOT, server = server)
+        setNode(node.copy(state = NodeState.BOOT, server = server))
         serverContext = BareMetalServerContext(events)
         return@withContext nodeState.value
     }
@@ -164,7 +146,7 @@ public class SimpleBareMetalDriver(
         serverContext!!.cancel(fail = false)
         serverContext = null
 
-        nodeState.value = node.copy(state = NodeState.SHUTOFF, server = null)
+        setNode(node.copy(state = NodeState.SHUTOFF, server = null))
         return@withContext node
     }
 
@@ -174,11 +156,24 @@ public class SimpleBareMetalDriver(
     }
 
     override suspend fun setImage(image: Image): Node = withContext(domain.coroutineContext) {
-        nodeState.value = nodeState.value.copy(image = image)
+        setNode(nodeState.value.copy(image = image))
         return@withContext nodeState.value
     }
 
     override suspend fun refresh(): Node = withContext(domain.coroutineContext) { nodeState.value }
+
+    private fun setNode(value: Node) {
+        val field = nodeState.value
+        if (field.state != value.state) {
+            events.emit(NodeEvent.StateChanged(value, field.state))
+        }
+
+        if (field.server != null && value.server != null && field.server.state != value.server.state) {
+            serverContext!!.events.emit(ServerEvent.StateChanged(value.server, field.server.state))
+        }
+
+        nodeState.value = value
+    }
 
     private inner class BareMetalServerContext(val events: EventFlow<ServerEvent>) : ServerManagementContext {
         private var finalized: Boolean = false
@@ -212,7 +207,7 @@ public class SimpleBareMetalDriver(
 
         override suspend fun <T : Any> publishService(key: ServiceKey<T>, service: T) {
             val server = server.copy(services = server.services.put(key, service))
-            nodeState.value = nodeState.value.copy(server = server)
+            setNode(nodeState.value.copy(server = server))
             events.emit(ServerEvent.ServicePublished(server, key))
         }
 
@@ -220,7 +215,7 @@ public class SimpleBareMetalDriver(
             assert(!finalized) { "Machine is already finalized" }
 
             val server = server.copy(state = ServerState.ACTIVE)
-            nodeState.value = nodeState.value.copy(state = NodeState.ACTIVE, server = server)
+            setNode(nodeState.value.copy(state = NodeState.ACTIVE, server = server))
         }
 
         override suspend fun exit(cause: Throwable?) {
@@ -237,7 +232,7 @@ public class SimpleBareMetalDriver(
                 else
                     NodeState.ERROR
             val server = server.copy(state = newServerState)
-            nodeState.value = nodeState.value.copy(state = newNodeState, server = server)
+            setNode(nodeState.value.copy(state = newNodeState, server = server))
         }
 
         private var flush: Job? = null

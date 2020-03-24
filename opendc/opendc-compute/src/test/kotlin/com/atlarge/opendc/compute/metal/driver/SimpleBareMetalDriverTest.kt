@@ -63,7 +63,7 @@ internal class SimpleBareMetalDriverTest {
                 val server = driver.start().server!!
                 server.events.collect { event ->
                     when (event) {
-                        is ServerEvent.StateChanged -> finalState = event.server.state
+                        is ServerEvent.StateChanged -> { println(event); finalState = event.server.state }
                     }
                 }
             }

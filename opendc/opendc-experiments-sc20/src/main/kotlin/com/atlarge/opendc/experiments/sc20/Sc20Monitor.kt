@@ -1,5 +1,6 @@
 package com.atlarge.opendc.experiments.sc20
 
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
@@ -18,8 +19,8 @@ class Sc20Monitor(
         outputFile.write("time,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostUsage,powerDraw,failedVms\n")
     }
 
-    fun stateChanged(server: Server) {
-        println("${server.uid} ${server.state}")
+    suspend fun stateChanged(server: Server) {
+        println("[${simulationContext.clock.millis()}] ${server.uid} ${server.state}")
         if (server.state == ServerState.ERROR) {
             failed++
         }

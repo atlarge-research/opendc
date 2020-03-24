@@ -70,10 +70,10 @@ private class StateFlowImpl<T>(initialValue: T) : StateFlow<T> {
      */
     private val flow = chan.asFlow()
 
-    public override var value: T
-        get() = chan.value
+    public override var value: T = initialValue
         set(value) {
             chan.offer(value)
+            field = value
         }
 
     @InternalCoroutinesApi

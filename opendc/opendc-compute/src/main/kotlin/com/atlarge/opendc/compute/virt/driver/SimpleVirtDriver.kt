@@ -47,7 +47,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -68,7 +67,7 @@ class SimpleVirtDriver(
     /**
      * The [Server] on which this hypervisor runs.
      */
-    public val server: Server
+    private val server: Server
         get() = hostContext.server
 
     /**
@@ -223,7 +222,7 @@ class SimpleVirtDriver(
                 }
             }
 
-            eventFlow.emit(HypervisorEvent.SliceFinished(this@SimpleVirtDriver, totalBurst, totalBurst - totalRemainder, vms.size))
+            eventFlow.emit(HypervisorEvent.SliceFinished(this@SimpleVirtDriver, totalBurst, totalBurst - totalRemainder, vms.size, server))
         }
         this.call = call
     }
@@ -231,11 +230,11 @@ class SimpleVirtDriver(
     /**
      * Flush the progress of the current active VMs.
      */
-    private suspend fun flush() {
+    private fun flush() {
         val call = call ?: return // If there is no active call, there is nothing to flush
         // The progress is actually flushed in the coroutine when it notices: we cancel it and wait for its
         // completion.
-        call.cancelAndJoin()
+        call.cancel()
         this.call = null
     }
 

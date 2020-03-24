@@ -29,10 +29,10 @@ import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
+import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
-import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
@@ -43,6 +43,7 @@ import com.xenomachina.argparser.default
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -116,6 +117,21 @@ fun main(args: Array<String>) {
                 bareMetalProvisioner
             )
 
+            // Wait for the hypervisors to be spawned
+            delay(10)
+
+            // Monitor hypervisor events
+            for (hypervisor in scheduler.drivers()) {
+                hypervisor.events
+                    .onEach { event ->
+                        when (event) {
+                            is HypervisorEvent.SliceFinished -> monitor.onSliceFinish(simulationContext.clock.millis(), event.requestedBurst, event.grantedBurst, event.numberOfDeployedImages, event.hostServer)
+                            else -> println(event)
+                        }
+                    }
+                    .launchIn(this)
+            }
+
             val faultInjectorDomain = root.newDomain(name = "failures")
             faultInjectorDomain.launch {
                 chan.receive()
@@ -125,7 +141,7 @@ fun main(args: Array<String>) {
                     sizeScale = 1.88, sizeShape = 1.25
                 )
                 for (node in bareMetalProvisioner.nodes()) {
-                    faultInjector.enqueue(node.metadata["driver"] as FailureDomain)
+                    // faultInjector.enqueue(node.metadata["driver"] as FailureDomain)
                 }
             }
 
@@ -139,6 +155,7 @@ fun main(args: Array<String>) {
                         workload.image.name, workload.image,
                         Flavor(workload.image.cores, workload.image.requiredMemory)
                     )
+                    // Monitor server events
                     server.events.onEach { if (it is ServerEvent.StateChanged) monitor.stateChanged(it.server) }.collect()
                 }
             }

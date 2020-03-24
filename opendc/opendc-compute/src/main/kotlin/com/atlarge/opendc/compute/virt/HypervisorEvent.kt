@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.compute.virt
 
+import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 
 /**
@@ -60,6 +61,7 @@ public sealed class HypervisorEvent {
         override val driver: VirtDriver,
         public val requestedBurst: Long,
         public val grantedBurst: Long,
-        public val numberOfDeployedImages: Int
+        public val numberOfDeployedImages: Int,
+        public val hostServer: Server
     ) : HypervisorEvent()
 }

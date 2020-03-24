@@ -47,4 +47,6 @@ data class Job(
     override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
 
     override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "Job(uid=$uid, name=$name, tasks=${tasks.size}, metadata=$metadata)"
 }

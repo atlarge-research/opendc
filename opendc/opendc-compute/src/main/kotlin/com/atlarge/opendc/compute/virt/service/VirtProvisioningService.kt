@@ -3,6 +3,7 @@ package com.atlarge.opendc.compute.virt.service
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 
 /**
@@ -10,6 +11,11 @@ import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
  */
 interface VirtProvisioningService {
     val allocationPolicy: AllocationPolicy
+
+    /**
+     * Obtain the active hypervisors for this provisioner.
+     */
+    public suspend fun drivers(): Set<VirtDriver>
 
     /**
      * Submit the specified [Image] to the provisioning service.
