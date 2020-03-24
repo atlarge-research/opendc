@@ -45,11 +45,12 @@ public interface VirtDriver {
     /**
      * Spawn the given [Image] on the compute resource of this driver.
      *
+     * @param name The name of the server to spawn.
      * @param image The image to deploy.
      * @param flavor The flavor of the server which this driver is controlling.
      * @return The virtual server spawned by this method.
      */
-    public suspend fun spawn(image: Image, flavor: Flavor): Server
+    public suspend fun spawn(name: String, image: Image, flavor: Flavor): Server
 
     companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")
 }

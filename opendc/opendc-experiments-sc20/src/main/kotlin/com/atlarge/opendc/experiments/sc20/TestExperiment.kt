@@ -135,7 +135,10 @@ fun main(args: Array<String>) {
                 delay(max(0, time - simulationContext.clock.millis()))
                 launch {
                     chan.send(Unit)
-                    val server = scheduler.deploy(workload.image, Flavor(workload.image.cores, workload.image.requiredMemory))
+                    val server = scheduler.deploy(
+                        workload.image.name, workload.image,
+                        Flavor(workload.image.cores, workload.image.requiredMemory)
+                    )
                     server.events.onEach { if (it is ServerEvent.StateChanged) monitor.stateChanged(it.server) }.collect()
                 }
             }

@@ -89,6 +89,7 @@ class SimpleVirtDriver(
     override val events: Flow<HypervisorEvent> = eventFlow
 
     override suspend fun spawn(
+        name: String,
         image: Image,
         flavor: Flavor
     ): Server {
@@ -100,7 +101,7 @@ class SimpleVirtDriver(
 
         val events = EventFlow<ServerEvent>()
         val server = Server(
-            UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD,
+            UUID.randomUUID(), name, emptyMap(), flavor, image, ServerState.BUILD,
             ServiceRegistry(), events
         )
         availableMemory -= requiredMemory

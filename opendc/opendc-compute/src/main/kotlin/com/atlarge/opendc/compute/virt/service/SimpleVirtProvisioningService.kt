@@ -65,10 +65,11 @@ class SimpleVirtProvisioningService(
     }
 
     override suspend fun deploy(
+        name: String,
         image: Image,
         flavor: Flavor
     ): Server = suspendCancellableCoroutine { cont ->
-        val vmInstance = ImageView(image, flavor, cont)
+        val vmInstance = ImageView(name, image, flavor, cont)
         incomingImages += vmInstance
         requestCycle()
     }
@@ -96,6 +97,7 @@ class SimpleVirtProvisioningService(
                 println("Spawning ${imageInstance.image}")
                 incomingImages -= imageInstance
                 val server = selectedHv.driver.spawn(
+                    imageInstance.name,
                     imageInstance.image,
                     imageInstance.flavor
                 )
@@ -137,6 +139,7 @@ class SimpleVirtProvisioningService(
     }
 
     data class ImageView(
+        val name: String,
         val image: Image,
         val flavor: Flavor,
         val continuation: Continuation<Server>,
