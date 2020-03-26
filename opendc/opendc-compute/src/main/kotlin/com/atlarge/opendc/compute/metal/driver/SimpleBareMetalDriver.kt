@@ -301,4 +301,6 @@ public class SimpleBareMetalDriver(
         serverContext?.cancel(fail = true)
         domain.cancel()
     }
+
+    override fun toString(): String = "SimpleBareMetalDriver(node = ${nodeState.value.uid})"
 }

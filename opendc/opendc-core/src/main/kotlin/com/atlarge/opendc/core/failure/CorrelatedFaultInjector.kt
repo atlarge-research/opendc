@@ -70,7 +70,6 @@ public class CorrelatedFaultInjector(
         // Clean up the domain if it finishes
         domain.scope.coroutineContext[Job]!!.invokeOnCompletion {
             this@CorrelatedFaultInjector.domain.launch {
-                println("CANCELLED")
                 active -= domain
 
                 if (active.isEmpty()) {
@@ -88,7 +87,8 @@ public class CorrelatedFaultInjector(
             while (true) {
                 ensureActive()
 
-                val d = lognvariate(iatScale, iatShape) * 1e3 // Make sure to convert delay to milliseconds
+                // Make sure to convert delay from hours to milliseconds
+                val d = lognvariate(iatScale, iatShape) * 3600 * 1e6
 
                 // Handle long overflow
                 if (simulationContext.clock.millis() + d <= 0) {
@@ -98,7 +98,6 @@ public class CorrelatedFaultInjector(
                 delay(d.toLong())
 
                 val n = lognvariate(sizeScale, sizeShape).toInt()
-
                 for (failureDomain in active.shuffled(random).take(n)) {
                     failureDomain.fail()
                 }

@@ -24,15 +24,19 @@
 
 package com.atlarge.opendc.experiments.sc20
 
+import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ServerEvent
+import com.atlarge.opendc.compute.metal.NODE_CLUSTER
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
+import com.atlarge.opendc.core.failure.FailureDomain
+import com.atlarge.opendc.core.failure.FaultInjector
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
@@ -82,6 +86,17 @@ class ExperimentParameters(parser: ArgParser) {
         val vms: List<String> = jacksonObjectMapper().readValue(sanitizedString)
         return vms
     }
+}
+
+/**
+ * Obtain the [FaultInjector] to use for the experiments.
+ */
+fun createFaultInjector(domain: Domain): FaultInjector {
+    // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
+    return CorrelatedFaultInjector(domain,
+        iatScale = -1.39, iatShape = 1.03,
+        sizeScale = 1.88, sizeShape = 1.25
+    )
 }
 
 /**
@@ -138,17 +153,15 @@ fun main(args: Array<String>) {
                     .launchIn(this)
             }
 
-            val faultInjectorDomain = root.newDomain(name = "failures")
-            faultInjectorDomain.launch {
+            root.newDomain(name = "failures").launch {
                 chan.receive()
-                // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
-                val faultInjector = CorrelatedFaultInjector(faultInjectorDomain,
-                    iatScale = -1.39, iatShape = 1.03,
-                    sizeScale = 1.88, sizeShape = 1.25
-                )
-                // for (node in bareMetalProvisioner.nodes()) {
-                    // faultInjector.enqueue(node.metadata["driver"] as FailureDomain)
-                // }
+                val injectors = mutableMapOf<String, FaultInjector>()
+
+                for (node in bareMetalProvisioner.nodes()) {
+                    val cluster = node.metadata[NODE_CLUSTER] as String
+                    val injector = injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain) }
+                    injector.enqueue(node.metadata["driver"] as FailureDomain)
+                }
             }
 
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
