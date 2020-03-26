@@ -25,14 +25,12 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
-import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.metal.PowerState
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -55,21 +53,19 @@ internal class SimpleBareMetalDriverTest {
             val dom = root.newDomain(name = "driver")
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
-            val driver = SimpleBareMetalDriver(dom, UUID.randomUUID(), "test", cpus, emptyList())
-
-            val monitor = object : ServerMonitor {
-                override suspend fun onUpdate(server: Server, previousState: ServerState) {
-                    println("[${simulationContext.clock.millis()}] $server")
-                    finalState = server.state
-                }
-            }
+            val driver = SimpleBareMetalDriver(dom, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 2)
 
             // Batch driver commands
             withContext(dom.coroutineContext) {
-                driver.init(monitor)
+                driver.init()
                 driver.setImage(image)
-                driver.setPower(PowerState.POWER_ON)
+                val server = driver.start().server!!
+                server.events.collect { event ->
+                    when (event) {
+                        is ServerEvent.StateChanged -> { println(event); finalState = event.server.state }
+                    }
+                }
             }
         }
 
@@ -78,6 +74,6 @@ internal class SimpleBareMetalDriverTest {
             system.terminate()
         }
 
-        assertEquals(finalState, ServerState.SHUTOFF)
+        assertEquals(ServerState.SHUTOFF, finalState)
     }
 }

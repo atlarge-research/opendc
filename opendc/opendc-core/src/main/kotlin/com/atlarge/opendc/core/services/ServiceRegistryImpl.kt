@@ -27,20 +27,18 @@ package com.atlarge.opendc.core.services
 /**
  * Default implementation of the [ServiceRegistry] interface.
  */
-public class ServiceRegistryImpl : ServiceRegistry {
-    /**
-     * The map containing the registered services.
-     */
-    private val services: MutableMap<ServiceKey<*>, Any> = mutableMapOf()
+internal class ServiceRegistryImpl(private val map: Map<ServiceKey<*>, Any>) : ServiceRegistry {
+    override val keys: Collection<ServiceKey<*>>
+        get() = map.keys
 
-    override fun <T : Any> set(key: ServiceKey<T>, service: T) {
-        services[key] = service
-    }
-
-    override fun contains(key: ServiceKey<*>): Boolean = key in services
+    override fun contains(key: ServiceKey<*>): Boolean = key in map
 
     override fun <T : Any> get(key: ServiceKey<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return services[key] as T
+        return map[key] as T
     }
+
+    override fun <T : Any> put(key: ServiceKey<T>, service: T): ServiceRegistry = ServiceRegistryImpl(map.plus(key to service))
+
+    override fun toString(): String = map.toString()
 }

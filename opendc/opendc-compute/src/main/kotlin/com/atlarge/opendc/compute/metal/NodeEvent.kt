@@ -22,20 +22,22 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.core.monitor
-
-import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerState
+package com.atlarge.opendc.compute.metal
 
 /**
- * An interface for monitoring the state of a machine.
+ * An event that is emitted by a [Node].
  */
-public interface ServerMonitor {
+public sealed class NodeEvent {
     /**
-     * This method is invoked when the state of a machine updates.
-     *
-     * @param server The server which state was updated.
-     * @param previousState The previous state of the server.
+     * The node that emitted the event.
      */
-    public suspend fun onUpdate(server: Server, previousState: ServerState)
+    public abstract val node: Node
+
+    /**
+     * This event is emitted when the state of [node] changes.
+     *
+     * @property node The node of which the state changed.
+     * @property previousState The previous state of the node.
+     */
+    public data class StateChanged(override val node: Node, val previousState: NodeState) : NodeEvent()
 }

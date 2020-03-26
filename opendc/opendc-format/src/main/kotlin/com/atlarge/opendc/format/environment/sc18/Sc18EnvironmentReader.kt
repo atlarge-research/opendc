@@ -34,7 +34,7 @@ import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
 import com.atlarge.opendc.core.Environment
 import com.atlarge.opendc.core.Platform
 import com.atlarge.opendc.core.Zone
-import com.atlarge.opendc.core.services.ServiceRegistryImpl
+import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -77,7 +77,14 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            SimpleBareMetalDriver(dom.newDomain("node-$counter"), UUID.randomUUID(), "node-${counter++}", cores, listOf(MemoryUnit("", "", 2300.0, 16000)))
+                            SimpleBareMetalDriver(
+                                dom.newDomain("node-$counter"),
+                                UUID.randomUUID(),
+                                "node-${counter++}",
+                                emptyMap(),
+                                cores,
+                                listOf(MemoryUnit("", "", 2300.0, 16000))
+                            )
                         }
                     }
                 }
@@ -89,9 +96,7 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
             provisioningService.create(node)
         }
 
-        val serviceRegistry = ServiceRegistryImpl()
-        serviceRegistry[ProvisioningService.Key] = provisioningService
-
+        val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
         val platform = Platform(
             UUID.randomUUID(), "sc18-platform", listOf(
                 Zone(UUID.randomUUID(), "zone", serviceRegistry)

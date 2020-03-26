@@ -22,32 +22,32 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.monitor
+package com.atlarge.opendc.compute.core
 
-import com.atlarge.opendc.workflows.workload.Job
-import com.atlarge.opendc.workflows.workload.Task
+import com.atlarge.opendc.core.services.ServiceKey
 
 /**
- * An interface for monitoring the progression of workflows.
+ * An event that is emitted by a [Server].
  */
-public interface WorkflowMonitor {
+public sealed class ServerEvent {
     /**
-     * This method is invoked when a job has become active.
+     * The server that emitted the event.
      */
-    public suspend fun onJobStart(job: Job, time: Long)
+    public abstract val server: Server
 
     /**
-     * This method is invoked when a job has finished processing.
+     * This event is emitted when the state of [server] changes.
+     *
+     * @property server The server of which the state changed.
+     * @property previousState The previous state of the server.
      */
-    public suspend fun onJobFinish(job: Job, time: Long)
+    public data class StateChanged(override val server: Server, val previousState: ServerState) : ServerEvent()
 
     /**
-     * This method is invoked when a task of a job has started processing.
+     * This event is emitted when a server publishes a service.
+     *
+     * @property server The server that published the service.
+     * @property key The service key of the service that was published.
      */
-    public suspend fun onTaskStart(job: Job, task: Task, time: Long)
-
-    /**
-     * This method is invoked when a task has finished processing.
-     */
-    public suspend fun onTaskFinish(job: Job, task: Task, status: Int, time: Long)
+    public data class ServicePublished(override val server: Server, val key: ServiceKey<*>) : ServerEvent()
 }

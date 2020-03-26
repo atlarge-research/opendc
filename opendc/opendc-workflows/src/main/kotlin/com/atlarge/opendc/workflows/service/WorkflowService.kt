@@ -25,8 +25,8 @@
 package com.atlarge.opendc.workflows.service
 
 import com.atlarge.opendc.core.services.AbstractServiceKey
-import com.atlarge.opendc.workflows.monitor.WorkflowMonitor
 import com.atlarge.opendc.workflows.workload.Job
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 /**
@@ -36,9 +36,14 @@ import java.util.UUID
  */
 public interface WorkflowService {
     /**
+     * Thie events emitted by the workflow scheduler.
+     */
+    public val events: Flow<WorkflowEvent>
+
+    /**
      * Submit the specified [Job] to the workflow service for scheduling.
      */
-    public suspend fun submit(job: Job, monitor: WorkflowMonitor)
+    public suspend fun submit(job: Job)
 
     /**
      * The service key for the workflow scheduler.

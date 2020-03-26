@@ -22,59 +22,36 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.core
+package com.atlarge.opendc.compute.virt
 
+import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.core.resource.Resource
+import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
+import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.core.resource.TagContainer
-import com.atlarge.opendc.core.services.ServiceRegistry
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.UUID
 
 /**
- * A server instance that is running on some physical or virtual machine.
+ * A hypervisor managing the VMs of a node.
  */
-public data class Server(
-    /**
-     * The unique identifier of the server.
-     */
-    public override val uid: UUID,
+object HypervisorImage : Image {
+    override val uid: UUID = UUID.randomUUID()
+    override val name: String = "vmm"
+    override val tags: TagContainer = emptyMap()
 
-    /**
-     * The optional name of the server.
-     */
-    public override val name: String,
+    override suspend fun invoke(ctx: ServerContext) {
+        coroutineScope {
+            val driver = SimpleVirtDriver(ctx, this)
+            ctx.publishService(VirtDriver.Key, driver)
 
-    /**
-     * The tags of this server.
-     */
-    public override val tags: TagContainer,
-
-    /**
-     * The hardware configuration of the server.
-     */
-    public val flavor: Flavor,
-
-    /**
-     * The image running on the server.
-     */
-    public val image: Image,
-
-    /**
-     * The last known state of the server.
-     */
-    public val state: ServerState,
-
-    /**
-     * The services published by this server.
-     */
-    public val services: ServiceRegistry,
-
-    /**
-     * The events that are emitted by the server.
-     */
-    public val events: Flow<ServerEvent>
-) : Resource {
-    override fun hashCode(): Int = uid.hashCode()
-    override fun equals(other: Any?): Boolean = other is Server && uid == other.uid
+            // Suspend image until it is cancelled
+            try {
+                suspendCancellableCoroutine<Unit> {}
+            } finally {
+                driver.eventFlow.close()
+            }
+        }
+    }
 }

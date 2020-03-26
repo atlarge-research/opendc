@@ -27,8 +27,9 @@ package com.atlarge.opendc.compute.virt.driver
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
+import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.core.services.AbstractServiceKey
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 /**
@@ -37,28 +38,19 @@ import java.util.UUID
  */
 public interface VirtDriver {
     /**
+     * The events emitted by the driver.
+     */
+    public val events: Flow<HypervisorEvent>
+
+    /**
      * Spawn the given [Image] on the compute resource of this driver.
      *
+     * @param name The name of the server to spawn.
      * @param image The image to deploy.
-     * @param monitor The monitor to use for the deployment of this particular image.
      * @param flavor The flavor of the server which this driver is controlling.
      * @return The virtual server spawned by this method.
      */
-    public suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: Flavor): Server
-
-    /**
-     * Adds the given [VirtDriverMonitor] to the list of monitors to keep informed on the state of this driver.
-     *
-     * @param monitor The monitor to keep informed.
-     */
-    public suspend fun addMonitor(monitor: VirtDriverMonitor)
-
-    /**
-     * Removes the given [VirtDriverMonitor] from the list of monitors.
-     *
-     * @param monitor The monitor to unsubscribe
-     */
-    public suspend fun removeMonitor(monitor: VirtDriverMonitor)
+    public suspend fun spawn(name: String, image: Image, flavor: Flavor): Server
 
     companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")
 }

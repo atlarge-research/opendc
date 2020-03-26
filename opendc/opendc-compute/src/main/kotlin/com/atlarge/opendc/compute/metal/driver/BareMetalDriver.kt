@@ -26,9 +26,8 @@ package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.compute.metal.PowerState
+import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.power.Powerable
 import com.atlarge.opendc.core.services.AbstractServiceKey
 import kotlinx.coroutines.flow.Flow
@@ -37,7 +36,12 @@ import java.util.UUID
 /**
  * A driver interface for the management interface of a bare-metal compute node.
  */
-public interface BareMetalDriver : Powerable {
+public interface BareMetalDriver : Powerable, FailureDomain {
+    /**
+     * The [Node] that is controlled by this driver.
+     */
+    public val node: Flow<Node>
+
     /**
      * The amount of work done by the machine in percentage with respect to the total amount of processing power
      * available.
@@ -47,12 +51,22 @@ public interface BareMetalDriver : Powerable {
     /**
      * Initialize the driver.
      */
-    public suspend fun init(monitor: ServerMonitor): Node
+    public suspend fun init(): Node
 
     /**
-     * Update the power state of the compute node.
+     * Start the bare metal node with the specified boot disk image.
      */
-    public suspend fun setPower(powerState: PowerState): Node
+    public suspend fun start(): Node
+
+    /**
+     * Stop the bare metal node if it is running.
+     */
+    public suspend fun stop(): Node
+
+    /**
+     * Reboot the bare metal node.
+     */
+    public suspend fun reboot(): Node
 
     /**
      * Update the boot disk image of the compute node.

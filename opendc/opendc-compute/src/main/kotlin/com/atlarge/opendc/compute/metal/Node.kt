@@ -27,12 +27,13 @@ package com.atlarge.opendc.compute.metal
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.Identity
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 /**
  * A bare-metal compute node.
  */
-data class Node(
+public data class Node(
     /**
      * The unique identifier of the node.
      */
@@ -44,9 +45,14 @@ data class Node(
     public override val name: String,
 
     /**
-     * The power state of the node.
+     * Metadata of the node.
      */
-    public val powerState: PowerState,
+    public val metadata: Map<String, Any>,
+
+    /**
+     * The last known state of the compute node.
+     */
+    public val state: NodeState,
 
     /**
      * The boot image of the node.
@@ -56,7 +62,12 @@ data class Node(
     /**
      * The server instance that is running on the node or `null` if no server is running.
      */
-    public val server: Server?
+    public val server: Server?,
+
+    /**
+     * The events that are emitted by the node.
+     */
+    public val events: Flow<NodeEvent>
 ) : Identity {
     override fun hashCode(): Int = uid.hashCode()
     override fun equals(other: Any?): Boolean = other is Node && uid == other.uid

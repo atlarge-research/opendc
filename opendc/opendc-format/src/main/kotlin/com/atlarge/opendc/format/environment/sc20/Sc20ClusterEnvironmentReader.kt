@@ -28,6 +28,7 @@ import com.atlarge.odcsim.Domain
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
+import com.atlarge.opendc.compute.metal.NODE_CLUSTER
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.metal.power.LinearLoadPowerModel
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
@@ -35,7 +36,7 @@ import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService
 import com.atlarge.opendc.core.Environment
 import com.atlarge.opendc.core.Platform
 import com.atlarge.opendc.core.Zone
-import com.atlarge.opendc.core.services.ServiceRegistryImpl
+import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import java.io.BufferedReader
 import java.io.File
@@ -100,13 +101,14 @@ class Sc20ClusterEnvironmentReader(
                                 dom.newDomain("node-$clusterId-$it"),
                                 UUID.randomUUID(),
                                 "node-$clusterId-$it",
+                                mapOf(NODE_CLUSTER to clusterId),
                                 List(coresPerHost) { coreId ->
                                     ProcessingUnit(unknownProcessingNode, coreId, speed)
                                 },
-                                listOf(unknownMemoryUnit),
                                 // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
                                 // power draw of 350W.
                                 // Source: https://stackoverflow.com/questions/6128960
+                                listOf(unknownMemoryUnit),
                                 LinearLoadPowerModel(200.0, 350.0)
                             )
                         )
@@ -119,8 +121,7 @@ class Sc20ClusterEnvironmentReader(
             provisioningService.create(node)
         }
 
-        val serviceRegistry = ServiceRegistryImpl()
-        serviceRegistry[ProvisioningService.Key] = provisioningService
+        val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
 
         val platform = Platform(
             UUID.randomUUID(), "sc20-platform", listOf(

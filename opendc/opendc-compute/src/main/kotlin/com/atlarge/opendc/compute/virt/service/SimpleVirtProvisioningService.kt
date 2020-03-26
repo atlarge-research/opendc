@@ -3,123 +3,175 @@ package com.atlarge.opendc.compute.virt.service
 import com.atlarge.odcsim.SimulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.metal.Node
+import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
+import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
-import com.atlarge.opendc.compute.virt.driver.hypervisor.HypervisorImage
-import com.atlarge.opendc.compute.virt.driver.hypervisor.InsufficientMemoryOnServerException
-import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.compute.virt.HypervisorImage
+import com.atlarge.opendc.compute.virt.driver.InsufficientMemoryOnServerException
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
+import com.atlarge.opendc.core.services.ServiceKey
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SimpleVirtProvisioningService(
     public override val allocationPolicy: AllocationPolicy,
     private val ctx: SimulationContext,
-    private val provisioningService: ProvisioningService,
-    private val hypervisorMonitor: HypervisorMonitor
-) : VirtProvisioningService, ServerMonitor {
+    private val provisioningService: ProvisioningService
+) : VirtProvisioningService, CoroutineScope by ctx.domain {
     /**
-     * The nodes that are controlled by the service.
+     * The hypervisors that have been launched by the service.
      */
-    internal lateinit var nodes: List<Node>
+    private val hypervisors: MutableMap<Server, HypervisorView> = mutableMapOf()
 
     /**
-     * The available nodes.
+     * The available hypervisors.
      */
-    internal val availableNodes: MutableSet<NodeView> = mutableSetOf()
+    private val availableHypervisors: MutableSet<HypervisorView> = mutableSetOf()
 
     /**
      * The incoming images to be processed by the provisioner.
      */
-    internal val incomingImages: MutableSet<ImageView> = mutableSetOf()
+    private val incomingImages: MutableSet<ImageView> = mutableSetOf()
 
     /**
      * The active images in the system.
      */
-    internal val activeImages: MutableSet<ImageView> = mutableSetOf()
+    private val activeImages: MutableSet<ImageView> = mutableSetOf()
 
     init {
-        ctx.domain.launch {
-            val provisionedNodes = provisioningService.nodes().toList()
-            val deployedNodes = provisionedNodes.map { node ->
-                val hypervisorImage = HypervisorImage(hypervisorMonitor)
-                val deployedNode = provisioningService.deploy(node, hypervisorImage, this@SimpleVirtProvisioningService)
-                val nodeView = NodeView(
-                    deployedNode,
-                    hypervisorImage,
-                    0,
-                    deployedNode.server!!.flavor.memorySize
-                )
-                yield()
-                deployedNode.server.serviceRegistry[VirtDriver.Key].addMonitor(object : VirtDriverMonitor {
-                    override suspend fun onUpdate(numberOfActiveServers: Int, availableMemory: Long) {
-                        nodeView.numberOfActiveServers = numberOfActiveServers
-                        nodeView.availableMemory = availableMemory
+        launch {
+            val provisionedNodes = provisioningService.nodes()
+            provisionedNodes.forEach { node ->
+                val hypervisorImage = HypervisorImage
+                val node = provisioningService.deploy(node, hypervisorImage)
+                node.server!!.events.onEach { event ->
+                    when (event) {
+                        is ServerEvent.StateChanged -> stateChanged(event.server)
+                        is ServerEvent.ServicePublished -> servicePublished(event.server, event.key)
                     }
-                })
-                nodeView
+                }.launchIn(this)
             }
-            nodes = deployedNodes.map { it.node }
-            availableNodes.addAll(deployedNodes)
         }
     }
 
-    override suspend fun deploy(image: Image, monitor: ServerMonitor, flavor: Flavor) {
-        val vmInstance = ImageView(image, monitor, flavor)
-        incomingImages += vmInstance
-        requestCycle()
+    override suspend fun drivers(): Set<VirtDriver> = withContext(coroutineContext) {
+        availableHypervisors.map { it.driver }.toSet()
     }
+
+    override suspend fun deploy(
+        name: String,
+        image: Image,
+        flavor: Flavor
+    ): Server = withContext(coroutineContext) {
+        suspendCancellableCoroutine<Server> { cont ->
+            val vmInstance = ImageView(name, image, flavor, cont)
+            incomingImages += vmInstance
+            requestCycle()
+        }
+    }
+
+    private var call: Job? = null
 
     private fun requestCycle() {
-        ctx.domain.launch {
+        if (call != null) {
+            return
+        }
+
+        val call = launch {
+            delay(1)
+            this@SimpleVirtProvisioningService.call = null
             schedule()
         }
+        this.call = call
     }
 
     private suspend fun schedule() {
         val imagesToBeScheduled = incomingImages.toSet()
 
         for (imageInstance in imagesToBeScheduled) {
-            println("Spawning $imageInstance")
-
-            val selectedNode = availableNodes.minWith(allocationPolicy().thenBy { it.node.uid })
-
+            val selectedHv = availableHypervisors.minWith(allocationPolicy().thenBy { it.server.uid }) ?: break
             try {
-                imageInstance.server = selectedNode?.node!!.server!!.serviceRegistry[VirtDriver.Key].spawn(
+                println("Spawning ${imageInstance.image}")
+                incomingImages -= imageInstance
+
+                // Speculatively update the hypervisor view information to prevent other images in the queue from
+                // deciding on stale values.
+                selectedHv.numberOfActiveServers++
+                selectedHv.availableMemory -= (imageInstance.image as VmImage).requiredMemory // XXX Temporary hack
+
+                val server = selectedHv.driver.spawn(
+                    imageInstance.name,
                     imageInstance.image,
-                    imageInstance.monitor,
                     imageInstance.flavor
                 )
+                imageInstance.server = server
+                imageInstance.continuation.resume(server)
                 activeImages += imageInstance
             } catch (e: InsufficientMemoryOnServerException) {
                 println("Unable to deploy image due to insufficient memory")
-            }
 
-            incomingImages -= imageInstance
+                selectedHv.numberOfActiveServers--
+                selectedHv.availableMemory += (imageInstance.image as VmImage).requiredMemory
+            }
         }
     }
 
-    override suspend fun onUpdate(server: Server, previousState: ServerState) {
+    private fun stateChanged(server: Server) {
         when (server.state) {
             ServerState.ACTIVE -> {
-                // TODO handle hypervisor server becoming active
+                val hvView = HypervisorView(
+                    server,
+                    0,
+                    server.flavor.memorySize
+                )
+                hypervisors[server] = hvView
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
-                // TODO handle hypervisor server shutting down or failing
+                val hv = hypervisors[server] ?: return
+                availableHypervisors -= hv
+                requestCycle()
             }
             else -> throw IllegalStateException()
         }
     }
 
-    class ImageView(
+    private fun servicePublished(server: Server, key: ServiceKey<*>) {
+        if (key == VirtDriver.Key) {
+            val hv = hypervisors[server] ?: return
+            hv.driver = server.services[VirtDriver]
+            availableHypervisors += hv
+
+            hv.driver.events
+                .onEach { event ->
+                    if (event is HypervisorEvent.VmsUpdated) {
+                        hv.numberOfActiveServers = event.numberOfActiveServers
+                        hv.availableMemory = event.availableMemory
+                    }
+                }.launchIn(this)
+
+            requestCycle()
+        }
+    }
+
+    data class ImageView(
+        val name: String,
         val image: Image,
-        val monitor: ServerMonitor,
         val flavor: Flavor,
+        val continuation: Continuation<Server>,
         var server: Server? = null
     )
 }

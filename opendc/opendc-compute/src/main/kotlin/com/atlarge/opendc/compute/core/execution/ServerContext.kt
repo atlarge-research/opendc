@@ -27,10 +27,10 @@ package com.atlarge.opendc.compute.core.execution
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.core.services.AbstractServiceKey
+import com.atlarge.opendc.core.services.ServiceKey
 
 /**
- * Represents the execution context in which an bootable [Image] runs on a [Server].
+ * Represents the execution context in which a bootable [Image] runs on a [Server].
  */
 public interface ServerContext {
     /**
@@ -44,11 +44,9 @@ public interface ServerContext {
     public val cpus: List<ProcessingUnit>
 
     /**
-     * Publishes the given [service] with key [serviceKey] in the server's registry.
+     * Publish the specified [service] at the given [ServiceKey].
      */
-    public suspend fun <T : Any> publishService(serviceKey: AbstractServiceKey<T>, service: T) {
-        server.serviceRegistry[serviceKey] = service
-    }
+    public suspend fun <T : Any> publishService(key: ServiceKey<T>, service: T)
 
     /**
      * Request the specified burst time from the processor cores and suspend execution until a processor core finishes

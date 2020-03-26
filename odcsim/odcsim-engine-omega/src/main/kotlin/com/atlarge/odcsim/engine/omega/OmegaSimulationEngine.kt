@@ -37,6 +37,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DisposableHandle
@@ -174,6 +175,10 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
             }
         }
 
+        private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
+            log.error("Uncaught exception", exception)
+        }
+
         // SimulationContext
         override val key: CoroutineContext.Key<*> = SimulationContext.Key
 
@@ -192,7 +197,7 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
         override val parent: Domain = parent ?: this
 
         @InternalCoroutinesApi
-        override val coroutineContext: CoroutineContext = this + CoroutineName(name) + dispatcher + job
+        override val coroutineContext: CoroutineContext = this + CoroutineName(name) + dispatcher + job + exceptionHandler
 
         override fun toString(): String = path
     }

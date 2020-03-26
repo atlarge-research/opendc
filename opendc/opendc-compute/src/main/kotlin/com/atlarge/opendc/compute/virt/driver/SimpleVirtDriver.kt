@@ -22,26 +22,34 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt.driver.hypervisor
+package com.atlarge.opendc.compute.virt.driver
 
-import com.atlarge.odcsim.SimulationContext
+import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
+import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
+import com.atlarge.opendc.compute.core.execution.ShutdownException
+import com.atlarge.opendc.compute.core.execution.assertFailure
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
-import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.driver.VirtDriverMonitor
-import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
+import com.atlarge.opendc.compute.virt.HypervisorEvent
+import com.atlarge.opendc.core.services.ServiceKey
+import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.ceil
@@ -51,10 +59,17 @@ import kotlin.math.min
 /**
  * A [VirtDriver] that is backed by a simple hypervisor implementation.
  */
-class HypervisorVirtDriver(
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+class SimpleVirtDriver(
     private val hostContext: ServerContext,
-    private val monitor: HypervisorMonitor
+    private val coroutineScope: CoroutineScope
 ) : VirtDriver {
+    /**
+     * The [Server] on which this hypervisor runs.
+     */
+    private val server: Server
+        get() = hostContext.server
+
     /**
      * A set for tracking the VM context objects.
      */
@@ -66,31 +81,38 @@ class HypervisorVirtDriver(
     private var availableMemory: Long = hostContext.server.flavor.memorySize
 
     /**
-     * Monitors to keep informed.
+     * The [EventFlow] to emit the events.
      */
-    private val monitors: MutableSet<VirtDriverMonitor> = mutableSetOf()
+    internal val eventFlow = EventFlow<HypervisorEvent>()
 
-    override suspend fun spawn(image: Image, monitor: ServerMonitor, flavor: Flavor): Server {
+    override val events: Flow<HypervisorEvent> = eventFlow
+
+    override suspend fun spawn(
+        name: String,
+        image: Image,
+        flavor: Flavor
+    ): Server {
         val requiredMemory = flavor.memorySize
         if (availableMemory - requiredMemory < 0) {
             throw InsufficientMemoryOnServerException()
         }
         require(flavor.cpuCount <= hostContext.server.flavor.cpuCount) { "Machine does not fit" }
 
-        val server = Server(UUID.randomUUID(), "<unnamed>", emptyMap(), flavor, image, ServerState.BUILD)
+        val events = EventFlow<ServerEvent>()
+        val server = Server(
+            UUID.randomUUID(), name, emptyMap(), flavor, image, ServerState.BUILD,
+            ServiceRegistry(), events
+        )
         availableMemory -= requiredMemory
-        vms.add(VmServerContext(server, monitor, simulationContext))
-        monitors.forEach { it.onUpdate(vms.size, availableMemory) }
+        vms.add(VmServerContext(server, events, simulationContext.domain))
+        eventFlow.emit(HypervisorEvent.VmsUpdated(this, vms.size, availableMemory))
         return server
     }
 
-    override suspend fun addMonitor(monitor: VirtDriverMonitor) {
-        monitors.add(monitor)
-    }
-
-    override suspend fun removeMonitor(monitor: VirtDriverMonitor) {
-        monitors.remove(monitor)
-    }
+    /**
+     * A flag to indicate the driver is stopped.
+     */
+    private var stopped: Boolean = false
 
     /**
      * The set of [VmServerContext] instances that is being scheduled at the moment.
@@ -108,12 +130,12 @@ class HypervisorVirtDriver(
     private suspend fun reschedule() {
         flush()
 
-        // Do not schedule a call if there is no work to schedule
-        if (activeVms.isEmpty()) {
+        // Do not schedule a call if there is no work to schedule or the driver stopped.
+        if (stopped || activeVms.isEmpty()) {
             return
         }
 
-        val call = simulationContext.domain.launch {
+        val call = coroutineScope.launch {
             val start = simulationContext.clock.millis()
             val vms = activeVms.toSet()
 
@@ -200,16 +222,9 @@ class HypervisorVirtDriver(
                 }
             }
 
-            monitor.onSliceFinish(
-                end,
-                totalBurst,
-                totalBurst - totalRemainder,
-                vms.size,
-                hostContext.server
-            )
+            eventFlow.emit(HypervisorEvent.SliceFinished(this@SimpleVirtDriver, totalBurst, totalBurst - totalRemainder, vms.size, server))
         }
         this.call = call
-        call.invokeOnCompletion { this.call = null }
     }
 
     /**
@@ -217,9 +232,10 @@ class HypervisorVirtDriver(
      */
     private fun flush() {
         val call = call ?: return // If there is no active call, there is nothing to flush
-        // The progress is actually flushed in the coroutine when it notices we cancel it and wait for its
+        // The progress is actually flushed in the coroutine when it notices: we cancel it and wait for its
         // completion.
         call.cancel()
+        this.call = null
     }
 
     /**
@@ -238,17 +254,19 @@ class HypervisorVirtDriver(
     }
 
     internal inner class VmServerContext(
-        override var server: Server,
-        val monitor: ServerMonitor,
-        ctx: SimulationContext
+        server: Server,
+        val events: EventFlow<ServerEvent>,
+        val domain: Domain
     ) : ServerManagementContext {
+        private var finalized: Boolean = false
         lateinit var requests: List<CpuRequest>
         lateinit var burst: LongArray
         var deadline: Long = 0L
         var chan = Channel<Unit>(Channel.RENDEZVOUS)
         private var initialized: Boolean = false
 
-        internal val job: Job = ctx.domain.launch {
+        internal val job: Job = coroutineScope.launch {
+            delay(1) // TODO Introduce boot time
             init()
             try {
                 server.image(this@VmServerContext)
@@ -258,28 +276,42 @@ class HypervisorVirtDriver(
             }
         }
 
-        override val cpus: List<ProcessingUnit> = hostContext.cpus.take(server.flavor.cpuCount)
+        override var server: Server = server
+            set(value) {
+                if (field.state != value.state) {
+                    events.emit(ServerEvent.StateChanged(value, field.state))
+                }
 
-        override suspend fun init() {
-            if (initialized) {
-                throw IllegalStateException()
+                field = value
             }
 
-            val previousState = server.state
+        override val cpus: List<ProcessingUnit> = hostContext.cpus.take(server.flavor.cpuCount)
+
+        override suspend fun <T : Any> publishService(key: ServiceKey<T>, service: T) {
+            server = server.copy(services = server.services.put(key, service))
+            events.emit(ServerEvent.ServicePublished(server, key))
+        }
+
+        override suspend fun init() {
+            assert(!finalized) { "VM is already finalized" }
+
             server = server.copy(state = ServerState.ACTIVE)
-            monitor.onUpdate(server, previousState)
             initialized = true
         }
 
         override suspend fun exit(cause: Throwable?) {
-            val previousState = server.state
-            val state = if (cause == null) ServerState.SHUTOFF else ServerState.ERROR
-            server = server.copy(state = state)
+            finalized = true
+
+            val serverState =
+                if (cause == null || (cause is ShutdownException && cause.cause == null))
+                    ServerState.SHUTOFF
+                else
+                    ServerState.ERROR
+            server = server.copy(state = serverState)
             availableMemory += server.flavor.memorySize
-            monitor.onUpdate(server, previousState)
-            initialized = false
             vms.remove(this)
-            monitors.forEach { it.onUpdate(vms.size, availableMemory) }
+            events.close()
+            eventFlow.emit(HypervisorEvent.VmsUpdated(this@SimpleVirtDriver, vms.size, availableMemory))
         }
 
         override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
@@ -289,7 +321,14 @@ class HypervisorVirtDriver(
             this.burst = burst
             requests = cpus.asSequence()
                 .take(burst.size)
-                .mapIndexed { i, cpu -> CpuRequest(this, cpu, burst[i], limit[i]) }
+                .mapIndexed { i, cpu ->
+                    CpuRequest(
+                        this,
+                        cpu,
+                        burst[i],
+                        limit[i]
+                    )
+                }
                 .toList()
 
             // Wait until the burst has been run or the coroutine is cancelled
@@ -297,11 +336,13 @@ class HypervisorVirtDriver(
                 activeVms += this
                 reschedule()
                 chan.receive()
-            } catch (_: CancellationException) {
+            } catch (e: CancellationException) {
                 // On cancellation, we compute and return the remaining burst
+                e.assertFailure()
+            } finally {
+                activeVms -= this
+                reschedule()
             }
-            activeVms -= this
-            reschedule()
         }
     }
 }

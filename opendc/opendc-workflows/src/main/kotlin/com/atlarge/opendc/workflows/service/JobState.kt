@@ -24,10 +24,9 @@
 
 package com.atlarge.opendc.workflows.service
 
-import com.atlarge.opendc.workflows.monitor.WorkflowMonitor
 import com.atlarge.opendc.workflows.workload.Job
 
-class JobState(val job: Job, val monitor: WorkflowMonitor, val submittedAt: Long) {
+class JobState(val job: Job, val submittedAt: Long) {
     /**
      * A flag to indicate whether this job is finished.
      */

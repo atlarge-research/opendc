@@ -22,32 +22,37 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt.driver.hypervisor
+package com.atlarge.opendc.compute.virt
 
-import com.atlarge.opendc.compute.core.execution.ServerContext
-import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import com.atlarge.opendc.compute.virt.monitor.HypervisorMonitor
-import com.atlarge.opendc.core.resource.TagContainer
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.atlarge.opendc.core.Identity
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 /**
- * A hypervisor managing the VMs of a node.
+ * A hypervisor (or virtual machine monitor) is software or firmware that virtualizes the host compute environment
+ * into several virtual guest machines.
  */
-class HypervisorImage(
-    private val hypervisorMonitor: HypervisorMonitor
-) : Image {
-    override val uid: UUID = UUID.randomUUID()
-    override val name: String = "vmm"
-    override val tags: TagContainer = emptyMap()
+public class Hypervisor(
+    /**
+     * The unique identifier of the hypervisor.
+     */
+    override val uid: UUID,
 
-    override suspend fun invoke(ctx: ServerContext) {
-        val driver = HypervisorVirtDriver(ctx, hypervisorMonitor)
+    /**
+     * The optional name of the hypervisor.
+     */
+    override val name: String,
 
-        ctx.publishService(VirtDriver.Key, driver)
+    /**
+     * Metadata of the hypervisor.
+     */
+    public val metadata: Map<String, Any>,
 
-        // Suspend image until it is cancelled
-        suspendCancellableCoroutine<Unit> {}
-    }
+    /**
+     * The events that are emitted by the hypervisor.
+     */
+    public val events: Flow<HypervisorEvent>
+) : Identity {
+    override fun hashCode(): Int = uid.hashCode()
+    override fun equals(other: Any?): Boolean = other is Hypervisor && uid == other.uid
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,32 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.workload
+package com.atlarge.opendc.compute.core.execution
 
-import com.atlarge.opendc.core.User
-import com.atlarge.opendc.core.workload.Workload
-import java.util.UUID
+import kotlinx.coroutines.CancellationException
 
 /**
- * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.
- *
- * @property uid A unique identified of this workflow.
- * @property name The name of this workflow.
- * @property owner The owner of the workflow.
- * @property tasks The tasks that are part of this workflow.
- * @property metadata Additional metadata for the job.
+ * This exception is thrown by the underlying [ServerContext] to indicate that a shutdown flow
+ * has been sent to the server.
  */
-data class Job(
-    override val uid: UUID,
-    override val name: String,
-    override val owner: User,
-    val tasks: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
-) : Workload {
-    override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
+public class ShutdownException(message: String? = null, override val cause: Throwable? = null) : CancellationException(message)
 
-    override fun hashCode(): Int = uid.hashCode()
+/**
+ * This method terminates the current active coroutine if the specified [CancellationException] is caused
+ * by a shutdown.
+ */
+public fun CancellationException.assertShutdown() {
+    if (this is ShutdownException) {
+        throw this
+    }
+}
 
-    override fun toString(): String = "Job(uid=$uid, name=$name, tasks=${tasks.size}, metadata=$metadata)"
+/**
+ * This method terminates the current active coroutine if the specified [CancellationException] is caused
+ * by a failure.
+ */
+public fun CancellationException.assertFailure() {
+    if (this is ShutdownException && cause != null) {
+        throw this
+    }
 }

@@ -41,7 +41,9 @@ dependencies {
     implementation("com.xenomachina:kotlin-argparser:2.0.7")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8")
 
+    runtimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
     testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")

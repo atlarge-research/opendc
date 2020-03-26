@@ -24,15 +24,19 @@
 
 package com.atlarge.opendc.experiments.sc20
 
+import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
-import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerState
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
+import com.atlarge.opendc.compute.core.ServerEvent
+import com.atlarge.opendc.compute.metal.NODE_CLUSTER
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
+import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
+import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
+import com.atlarge.opendc.core.failure.FailureDomain
+import com.atlarge.opendc.core.failure.FaultInjector
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
@@ -40,11 +44,15 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileReader
 import java.util.ServiceLoader
 import kotlin.math.max
@@ -81,27 +89,35 @@ class ExperimentParameters(parser: ArgParser) {
 }
 
 /**
+ * Obtain the [FaultInjector] to use for the experiments.
+ */
+fun createFaultInjector(domain: Domain): FaultInjector {
+    // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
+    return CorrelatedFaultInjector(domain,
+        iatScale = -1.39, iatShape = 1.03,
+        sizeScale = 1.88, sizeShape = 1.25
+    )
+}
+
+/**
  * Main entry point of the experiment.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 fun main(args: Array<String>) {
     ArgParser(args).parseInto(::ExperimentParameters).run {
-        val hypervisorMonitor = Sc20HypervisorMonitor(outputFile)
-        val monitor = object : ServerMonitor {
-            override suspend fun onUpdate(server: Server, previousState: ServerState) {
-                println(server)
-            }
-        }
+        val monitor = Sc20Monitor(outputFile)
 
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider("test")
         val root = system.newDomain("root")
+        val chan = Channel<Unit>(Channel.CONFLATED)
 
         root.launch {
             val environment = Sc20ClusterEnvironmentReader(File(environmentFile))
                 .use { it.construct(root) }
 
             val performanceInterferenceStream = if (performanceInterferenceFile != null) {
-                FileInputStream(File(performanceInterferenceFile!!))
+                File(performanceInterferenceFile!!).inputStream().buffered()
             } else {
                 object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
             }
@@ -111,18 +127,56 @@ fun main(args: Array<String>) {
 
             println(simulationContext.clock.instant())
 
+            val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService.Key]
+
+            // Wait for the bare metal nodes to be spawned
+            delay(10)
+
             val scheduler = SimpleVirtProvisioningService(
                 AvailableMemoryAllocationPolicy(),
                 simulationContext,
-                environment.platforms[0].zones[0].services[ProvisioningService.Key],
-                hypervisorMonitor
+                bareMetalProvisioner
             )
+
+            // Wait for the hypervisors to be spawned
+            delay(10)
+
+            // Monitor hypervisor events
+            for (hypervisor in scheduler.drivers()) {
+                hypervisor.events
+                    .onEach { event ->
+                        when (event) {
+                            is HypervisorEvent.SliceFinished -> monitor.onSliceFinish(simulationContext.clock.millis(), event.requestedBurst, event.grantedBurst, event.numberOfDeployedImages, event.hostServer)
+                            else -> println(event)
+                        }
+                    }
+                    .launchIn(this)
+            }
+
+            root.newDomain(name = "failures").launch {
+                chan.receive()
+                val injectors = mutableMapOf<String, FaultInjector>()
+
+                for (node in bareMetalProvisioner.nodes()) {
+                    val cluster = node.metadata[NODE_CLUSTER] as String
+                    val injector = injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain) }
+                    injector.enqueue(node.metadata["driver"] as FailureDomain)
+                }
+            }
 
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
                 delay(max(0, time - simulationContext.clock.millis()))
-                scheduler.deploy(workload.image, monitor, Flavor(workload.image.cores, workload.image.requiredMemory))
+                launch {
+                    chan.send(Unit)
+                    val server = scheduler.deploy(
+                        workload.image.name, workload.image,
+                        Flavor(workload.image.cores, workload.image.requiredMemory)
+                    )
+                    // Monitor server events
+                    server.events.onEach { if (it is ServerEvent.StateChanged) monitor.stateChanged(it.server) }.collect()
+                }
             }
 
             println(simulationContext.clock.instant())
@@ -134,6 +188,6 @@ fun main(args: Array<String>) {
         }
 
         // Explicitly close the monitor to flush its buffer
-        hypervisorMonitor.close()
+        monitor.close()
     }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,34 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.workflows.workload
-
-import com.atlarge.opendc.core.User
-import com.atlarge.opendc.core.workload.Workload
-import java.util.UUID
+package com.atlarge.opendc.compute.metal
 
 /**
- * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.
- *
- * @property uid A unique identified of this workflow.
- * @property name The name of this workflow.
- * @property owner The owner of the workflow.
- * @property tasks The tasks that are part of this workflow.
- * @property metadata Additional metadata for the job.
+ * An enumeration describing the possible states of a bare-metal compute node.
  */
-data class Job(
-    override val uid: UUID,
-    override val name: String,
-    override val owner: User,
-    val tasks: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
-) : Workload {
-    override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
+public enum class NodeState {
+    /**
+     * The node is booting.
+     */
+    BOOT,
 
-    override fun hashCode(): Int = uid.hashCode()
+    /**
+     * The node is powered off.
+     */
+    SHUTOFF,
 
-    override fun toString(): String = "Job(uid=$uid, name=$name, tasks=${tasks.size}, metadata=$metadata)"
+    /**
+     * The node is active and running.
+     */
+    ACTIVE,
+
+    /**
+     * The node is in error.
+     */
+    ERROR,
+
+    /**
+     * The state of the node is unknown.
+     */
+    UNKNOWN,
 }

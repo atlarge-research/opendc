@@ -25,31 +25,22 @@
 package com.atlarge.opendc.compute.metal.service
 
 import com.atlarge.odcsim.Domain
-import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.core.monitor.ServerMonitor
 import com.atlarge.opendc.compute.metal.Node
-import com.atlarge.opendc.compute.metal.PowerState
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import kotlinx.coroutines.withContext
 
 /**
  * A very basic implementation of the [ProvisioningService].
  */
-public class SimpleProvisioningService(val domain: Domain) : ProvisioningService, ServerMonitor {
+public class SimpleProvisioningService(val domain: Domain) : ProvisioningService {
     /**
      * The active nodes in this service.
      */
     private val nodes: MutableMap<Node, BareMetalDriver> = mutableMapOf()
 
-    /**
-     * The installed monitors.
-     */
-    private val monitors: MutableMap<Server, ServerMonitor> = mutableMapOf()
-
     override suspend fun create(driver: BareMetalDriver): Node = withContext(domain.coroutineContext) {
-        val node = driver.init(this@SimpleProvisioningService)
+        val node = driver.init()
         nodes[node] = driver
         return@withContext node
     }
@@ -60,19 +51,10 @@ public class SimpleProvisioningService(val domain: Domain) : ProvisioningService
         return@withContext nodes[node]!!.refresh()
     }
 
-    override suspend fun deploy(node: Node, image: Image, monitor: ServerMonitor): Node = withContext(domain.coroutineContext) {
+    override suspend fun deploy(node: Node, image: Image): Node = withContext(domain.coroutineContext) {
         val driver = nodes[node]!!
-
         driver.setImage(image)
-        driver.setPower(PowerState.POWER_OFF)
-        val newNode = driver.setPower(PowerState.POWER_ON)
-        monitors[newNode.server!!] = monitor
+        val newNode = driver.reboot()
         return@withContext newNode
-    }
-
-    override suspend fun onUpdate(server: Server, previousState: ServerState) {
-        withContext(domain.coroutineContext) {
-            monitors[server]?.onUpdate(server, previousState)
-        }
     }
 }
