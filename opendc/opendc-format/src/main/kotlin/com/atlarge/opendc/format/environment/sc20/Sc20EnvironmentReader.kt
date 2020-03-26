@@ -85,11 +85,12 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                 dom.newDomain("node-$counter"),
                                 UUID.randomUUID(),
                                 "node-${counter++}",
+                                emptyMap(),
                                 cores,
-                                memories,
                                 // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
                                 // power draw of 350W.
                                 // Source: https://stackoverflow.com/questions/6128960
+                                memories,
                                 LinearLoadPowerModel(200.0, 350.0)
                             )
                         }

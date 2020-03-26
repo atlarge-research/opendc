@@ -66,6 +66,7 @@ import java.lang.Exception
  * @param domain The simulation domain the driver runs in.
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
+ * @param metadata The initial metadata of the node.
  * @param cpus The CPUs available to the bare metal machine.
  * @param memoryUnits The memory units in this machine.
  * @param powerModel The power model of this machine.
@@ -74,9 +75,12 @@ public class SimpleBareMetalDriver(
     private val domain: Domain,
     uid: UUID,
     name: String,
+    metadata: Map<String, Any>,
     val cpus: List<ProcessingUnit>,
     val memoryUnits: List<MemoryUnit>,
-    powerModel: PowerModel<SimpleBareMetalDriver> = ConstantPowerModel(0.0)
+    powerModel: PowerModel<SimpleBareMetalDriver> = ConstantPowerModel(
+        0.0
+    )
 ) : BareMetalDriver {
     /**
      * The flavor that corresponds to this machine.
@@ -101,7 +105,7 @@ public class SimpleBareMetalDriver(
     /**
      * The machine state.
      */
-    private val nodeState = StateFlow(Node(uid, name, mapOf("driver" to this), NodeState.SHUTOFF, EmptyImage, null, events))
+    private val nodeState = StateFlow(Node(uid, name, metadata + ("driver" to this), NodeState.SHUTOFF, EmptyImage, null, events))
 
     override val node: Flow<Node> = nodeState
 

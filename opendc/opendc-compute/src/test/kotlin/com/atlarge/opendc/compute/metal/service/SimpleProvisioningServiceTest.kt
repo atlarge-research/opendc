@@ -55,7 +55,7 @@ internal class SimpleProvisioningServiceTest {
 
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
-            val driver = SimpleBareMetalDriver(dom.newDomain(), UUID.randomUUID(), "test", cpus, emptyList())
+            val driver = SimpleBareMetalDriver(dom.newDomain(), UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
 
             val provisioner = SimpleProvisioningService(dom)
             provisioner.create(driver)
