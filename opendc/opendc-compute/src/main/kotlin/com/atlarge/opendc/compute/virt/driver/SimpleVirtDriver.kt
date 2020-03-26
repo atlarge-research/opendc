@@ -87,6 +87,10 @@ class SimpleVirtDriver(
 
     override val events: Flow<HypervisorEvent> = eventFlow
 
+    init {
+        eventFlow.emit(HypervisorEvent.StateChanged(this, server))
+    }
+
     override suspend fun spawn(
         name: String,
         image: Image,
@@ -236,6 +240,13 @@ class SimpleVirtDriver(
         // completion.
         call.cancel()
         this.call = null
+    }
+
+    /**
+     * To be called on shut-off of the hypervisor.
+     */
+    public fun onShutOff() {
+        eventFlow.emit(HypervisorEvent.StateChanged(this, server))
     }
 
     /**

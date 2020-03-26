@@ -146,7 +146,14 @@ fun main(args: Array<String>) {
                 hypervisor.events
                     .onEach { event ->
                         when (event) {
-                            is HypervisorEvent.SliceFinished -> monitor.onSliceFinish(simulationContext.clock.millis(), event.requestedBurst, event.grantedBurst, event.numberOfDeployedImages, event.hostServer)
+                            is HypervisorEvent.StateChanged -> monitor.serverStateChanged(event.driver, event.server)
+                            is HypervisorEvent.SliceFinished -> monitor.onSliceFinish(
+                                simulationContext.clock.millis(),
+                                event.requestedBurst,
+                                event.grantedBurst,
+                                event.numberOfDeployedImages,
+                                event.hostServer
+                            )
                             else -> println(event)
                         }
                     }
@@ -175,7 +182,8 @@ fun main(args: Array<String>) {
                         Flavor(workload.image.cores, workload.image.requiredMemory)
                     )
                     // Monitor server events
-                    server.events.onEach { if (it is ServerEvent.StateChanged) monitor.stateChanged(it.server) }.collect()
+                    server.events.onEach { if (it is ServerEvent.StateChanged) monitor.onVmStateChanged(it.server) }
+                        .collect()
                 }
             }
 
