@@ -67,7 +67,7 @@ class SimpleVirtDriver(
     /**
      * The [Server] on which this hypervisor runs.
      */
-    private val server: Server
+    val server: Server
         get() = hostContext.server
 
     /**

@@ -28,10 +28,13 @@ import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
+import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
+import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.metal.NODE_CLUSTER
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
+import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
@@ -141,12 +144,35 @@ fun main(args: Array<String>) {
             // Wait for the hypervisors to be spawned
             delay(10)
 
+            val hypervisors = scheduler.drivers()
+            var availableHypervisors = hypervisors.size
+
             // Monitor hypervisor events
-            for (hypervisor in scheduler.drivers()) {
+            for (hypervisor in hypervisors) {
+                // TODO Do not expose VirtDriver directly but use Hypervisor class.
+                monitor.serverStateChanged(hypervisor, (hypervisor as SimpleVirtDriver).server)
+                hypervisor.server.events
+                    .onEach { event ->
+                        when (event) {
+                            is ServerEvent.StateChanged -> {
+                                monitor.serverStateChanged(hypervisor, event.server)
+
+                                if (event.server.state == ServerState.ERROR)
+                                    availableHypervisors -= 1
+                            }
+                        }
+                    }
+                    .launchIn(this)
                 hypervisor.events
                     .onEach { event ->
                         when (event) {
-                            is HypervisorEvent.SliceFinished -> monitor.onSliceFinish(simulationContext.clock.millis(), event.requestedBurst, event.grantedBurst, event.numberOfDeployedImages, event.hostServer)
+                            is HypervisorEvent.SliceFinished -> monitor.onSliceFinish(
+                                simulationContext.clock.millis(),
+                                event.requestedBurst,
+                                event.grantedBurst,
+                                event.numberOfDeployedImages,
+                                event.hostServer
+                            )
                             else -> println(event)
                         }
                     }
@@ -164,6 +190,9 @@ fun main(args: Array<String>) {
                 }
             }
 
+            val running = mutableSetOf<Server>()
+            val finish = Channel<Unit>(Channel.RENDEZVOUS)
+
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
@@ -174,11 +203,27 @@ fun main(args: Array<String>) {
                         workload.image.name, workload.image,
                         Flavor(workload.image.cores, workload.image.requiredMemory)
                     )
+                    running += server
                     // Monitor server events
-                    server.events.onEach { if (it is ServerEvent.StateChanged) monitor.stateChanged(it.server) }.collect()
+                    server.events
+                        .onEach {
+                            if (it is ServerEvent.StateChanged)
+                                monitor.onVmStateChanged(it.server)
+
+                            // Detect whether the VM has finished running
+                            if (it.server.state == ServerState.ERROR || it.server.state == ServerState.SHUTOFF) {
+                                running -= server
+
+                                if (running.isEmpty() && (!reader.hasNext() || availableHypervisors == 0))
+                                    finish.send(Unit)
+                            }
+                        }
+                        .collect()
                 }
             }
 
+            finish.receive()
+            scheduler.terminate()
             println(simulationContext.clock.instant())
         }
 

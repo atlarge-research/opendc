@@ -1,6 +1,7 @@
 package com.atlarge.opendc.compute.virt.service
 
 import com.atlarge.odcsim.SimulationContext
+import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
@@ -18,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -52,6 +54,8 @@ class SimpleVirtProvisioningService(
      */
     private val activeImages: MutableSet<ImageView> = mutableSetOf()
 
+    override val hypervisorEvents: Flow<HypervisorEvent> = EventFlow()
+
     init {
         launch {
             val provisionedNodes = provisioningService.nodes()
@@ -82,6 +86,11 @@ class SimpleVirtProvisioningService(
             incomingImages += vmInstance
             requestCycle()
         }
+    }
+
+    override suspend fun terminate() {
+        val provisionedNodes = provisioningService.nodes()
+        provisionedNodes.forEach { node -> provisioningService.stop(node) }
     }
 
     private var call: Job? = null
