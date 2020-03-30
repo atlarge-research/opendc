@@ -56,6 +56,16 @@ class SimpleVirtProvisioningService(
 
     override val hypervisorEvents: Flow<HypervisorEvent> = EventFlow()
 
+    /**
+     * The internal event flow to emit to.
+     */
+    private val internalEventFlow = EventFlow<VirtProvisioningServiceEvent>()
+
+    /**
+     * The allocation comparator to use.
+     */
+    private val allocationComparator = allocationPolicy(CoroutineScope(coroutineContext), internalEventFlow)
+
     init {
         launch {
             val provisionedNodes = provisioningService.nodes()
@@ -112,7 +122,7 @@ class SimpleVirtProvisioningService(
         val imagesToBeScheduled = incomingImages.toSet()
 
         for (imageInstance in imagesToBeScheduled) {
-            val selectedHv = availableHypervisors.minWith(allocationPolicy().thenBy { it.server.uid }) ?: break
+            val selectedHv = availableHypervisors.minWith(allocationComparator.thenBy { it.server.uid }) ?: break
             try {
                 println("Spawning ${imageInstance.image}")
                 incomingImages -= imageInstance
@@ -120,6 +130,7 @@ class SimpleVirtProvisioningService(
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
                 // deciding on stale values.
                 selectedHv.numberOfActiveServers++
+                selectedHv.provisionedCores += imageInstance.flavor.cpuCount
                 selectedHv.availableMemory -= (imageInstance.image as VmImage).requiredMemory // XXX Temporary hack
 
                 val server = selectedHv.driver.spawn(
@@ -134,6 +145,7 @@ class SimpleVirtProvisioningService(
                 println("Unable to deploy image due to insufficient memory")
 
                 selectedHv.numberOfActiveServers--
+                selectedHv.provisionedCores -= imageInstance.flavor.cpuCount
                 selectedHv.availableMemory += (imageInstance.image as VmImage).requiredMemory
             }
         }
@@ -142,16 +154,21 @@ class SimpleVirtProvisioningService(
     private fun stateChanged(server: Server) {
         when (server.state) {
             ServerState.ACTIVE -> {
-                val hvView = HypervisorView(
+                val hv = HypervisorView(
+                    server.uid,
                     server,
                     0,
-                    server.flavor.memorySize
+                    server.flavor.memorySize,
+                    0
                 )
-                hypervisors[server] = hvView
+                hypervisors[server] = hv
+                internalEventFlow.emit(VirtProvisioningServiceEvent.HypervisorAdded(hv.uid))
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
                 val hv = hypervisors[server] ?: return
+                hv.provisionedCores -= server.flavor.cpuCount
                 availableHypervisors -= hv
+                internalEventFlow.emit(VirtProvisioningServiceEvent.HypervisorRemoved(hv.uid))
                 requestCycle()
             }
             else -> throw IllegalStateException()

@@ -22,37 +22,22 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.core.failure
+package com.atlarge.opendc.compute.virt.service
 
-import com.atlarge.odcsim.simulationContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlin.math.ln1p
-import kotlin.math.pow
-import kotlin.random.Random
+import java.util.UUID
 
 /**
- * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are
- * independent.
+ * An internal event emitted by the [VirtProvisioningService] for the allocation policies to keep track of the
+ * available hypervisors.
  */
-public class UncorrelatedFaultInjector(private val alpha: Double, private val beta: Double, private val random: Random = Random(0)) : FaultInjector {
+public sealed class VirtProvisioningServiceEvent {
     /**
-     * Enqueue the specified [FailureDomain] to fail some time in the future.
+     * This event is emitted when a hypervisor is added to the pool of schedulable hypervisors.
      */
-    override fun enqueue(domain: FailureDomain) {
-        domain.scope.launch {
-            val d = random.weibull(alpha, beta) * 1e3 // Make sure to convert delay to milliseconds
+    public data class HypervisorAdded(val uid: UUID) : VirtProvisioningServiceEvent()
 
-            // Handle long overflow
-            if (simulationContext.clock.millis() + d <= 0) {
-                return@launch
-            }
-
-            delay(d.toLong())
-            domain.fail()
-        }
-    }
-
-    // XXX We should extract this in some common package later on.
-    private fun Random.weibull(alpha: Double, beta: Double) = (beta * (-ln1p(-nextDouble())).pow(1.0 / alpha))
+    /**
+     * This event is emitted when a hypervisor is removed from the pool of schedulable hypervisors.
+     */
+    public data class HypervisorRemoved(val uid: UUID) : VirtProvisioningServiceEvent()
 }

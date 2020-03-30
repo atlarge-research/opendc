@@ -44,7 +44,7 @@ public class CorrelatedFaultInjector(
     private val iatShape: Double,
     private val sizeScale: Double,
     private val sizeShape: Double,
-    random: Random = Random
+    random: Random = Random(0)
 ) : FaultInjector {
     /**
      * The active failure domains that have been registered.
