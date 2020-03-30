@@ -55,6 +55,11 @@ public interface ProvisioningService {
     public suspend fun deploy(node: Node, image: Image): Node
 
     /**
+     * Stop the specified [Node] .
+     */
+    public suspend fun stop(node: Node): Node
+
+    /**
      * The service key of this service.
      */
     companion object Key : AbstractServiceKey<ProvisioningService>(UUID.randomUUID(), "provisioner")

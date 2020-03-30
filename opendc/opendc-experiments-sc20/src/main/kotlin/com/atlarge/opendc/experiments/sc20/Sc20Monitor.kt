@@ -22,8 +22,6 @@ class Sc20Monitor(
     }
 
     suspend fun onVmStateChanged(server: Server) {
-        println("[${simulationContext.clock.millis()}] ${server.uid} ${server.state}")
-
         if (server.state == ServerState.ERROR) {
             failedInSlice++
         }
@@ -43,6 +41,8 @@ class Sc20Monitor(
                 duration
             )
         }
+
+        println("[${simulationContext.clock.millis()}] HOST ${server.uid} ${server.state}")
 
         lastServerStates[server] = Pair(server.state, simulationContext.clock.millis())
     }

@@ -28,6 +28,7 @@ import com.atlarge.odcsim.Domain
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 
 /**
@@ -56,5 +57,14 @@ public class SimpleProvisioningService(val domain: Domain) : ProvisioningService
         driver.setImage(image)
         val newNode = driver.reboot()
         return@withContext newNode
+    }
+
+    override suspend fun stop(node: Node): Node = withContext(domain.coroutineContext) {
+        val driver = nodes[node]!!
+        try {
+            driver.stop()
+        } catch (e: CancellationException) {
+            node
+        }
     }
 }

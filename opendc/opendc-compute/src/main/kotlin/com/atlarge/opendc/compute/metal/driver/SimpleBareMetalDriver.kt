@@ -142,7 +142,7 @@ public class SimpleBareMetalDriver(
 
     override suspend fun stop(): Node = withContext(domain.coroutineContext) {
         val node = nodeState.value
-        if (node.state == NodeState.SHUTOFF) {
+        if (node.state == NodeState.SHUTOFF || node.state == NodeState.ERROR) {
             return@withContext node
         }
 
@@ -298,8 +298,12 @@ public class SimpleBareMetalDriver(
         get() = domain
 
     override suspend fun fail() {
-        serverContext?.cancel(fail = true)
-        domain.cancel()
+        try {
+            serverContext?.cancel(fail = true)
+            domain.cancel()
+        } catch (_: CancellationException) {
+            // Ignore if the machine has already failed.
+        }
     }
 
     override fun toString(): String = "SimpleBareMetalDriver(node = ${nodeState.value.uid})"

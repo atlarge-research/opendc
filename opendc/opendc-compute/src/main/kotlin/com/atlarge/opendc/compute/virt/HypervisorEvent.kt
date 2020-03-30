@@ -64,15 +64,4 @@ public sealed class HypervisorEvent {
         public val numberOfDeployedImages: Int,
         public val hostServer: Server
     ) : HypervisorEvent()
-
-    /**
-     * This event is emitted when the hypervisor state changes.
-     *
-     * @property driver The driver that emitted the event.
-     * @property server The current server instance.
-     */
-    public data class StateChanged(
-        override val driver: VirtDriver,
-        public val server: Server
-    ) : HypervisorEvent()
 }
