@@ -72,6 +72,7 @@ class ExperimentParameters(parser: ArgParser) {
         parseVMs(FileReader(File(this)).readText())
     }
         .default { emptyList() }
+    val failures by parser.flagging("-x", "--failures", help = "enable (correlated) machine failures")
 
     fun getSelectedVmList(): List<String> {
         return if (selectedVms.isEmpty()) {
@@ -179,14 +180,17 @@ fun main(args: Array<String>) {
                     .launchIn(this)
             }
 
-            root.newDomain(name = "failures").launch {
-                chan.receive()
-                val injectors = mutableMapOf<String, FaultInjector>()
+            if (failures) {
+                println("ENABLE Failures")
+                root.newDomain(name = "failures").launch {
+                    chan.receive()
+                    val injectors = mutableMapOf<String, FaultInjector>()
 
-                for (node in bareMetalProvisioner.nodes()) {
-                    val cluster = node.metadata[NODE_CLUSTER] as String
-                    val injector = injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain) }
-                    injector.enqueue(node.metadata["driver"] as FailureDomain)
+                    for (node in bareMetalProvisioner.nodes()) {
+                        val cluster = node.metadata[NODE_CLUSTER] as String
+                        val injector = injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain) }
+                        injector.enqueue(node.metadata["driver"] as FailureDomain)
+                    }
                 }
             }
 
