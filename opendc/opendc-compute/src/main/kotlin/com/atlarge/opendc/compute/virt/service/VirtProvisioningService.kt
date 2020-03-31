@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.Flow
  * A service for VM provisioning on a cloud.
  */
 interface VirtProvisioningService {
+    /**
+     * The policy used for allocating a VM on the available hypervisors.
+     */
     val allocationPolicy: AllocationPolicy
 
     /**

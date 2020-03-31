@@ -2,6 +2,7 @@ package com.atlarge.opendc.compute.virt.service
 
 import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.flow.EventFlow
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
@@ -56,6 +57,11 @@ class SimpleVirtProvisioningService(
 
     override val hypervisorEvents: Flow<HypervisorEvent> = EventFlow()
 
+    /**
+     * The allocation logic to use.
+     */
+    private val allocationLogic = allocationPolicy()
+
     init {
         launch {
             val provisionedNodes = provisioningService.nodes()
@@ -109,18 +115,21 @@ class SimpleVirtProvisioningService(
     }
 
     private suspend fun schedule() {
+        val log = simulationContext.log
         val imagesToBeScheduled = incomingImages.toSet()
 
         for (imageInstance in imagesToBeScheduled) {
-            val selectedHv = availableHypervisors.minWith(allocationPolicy().thenBy { it.server.uid }) ?: break
+            val requiredMemory = (imageInstance.image as VmImage).requiredMemory
+            val selectedHv = allocationLogic.select(availableHypervisors, imageInstance) ?: break
             try {
-                println("Spawning ${imageInstance.image}")
+                log.info("Spawning ${imageInstance.image} on ${selectedHv.server}")
                 incomingImages -= imageInstance
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
                 // deciding on stale values.
                 selectedHv.numberOfActiveServers++
-                selectedHv.availableMemory -= (imageInstance.image as VmImage).requiredMemory // XXX Temporary hack
+                selectedHv.provisionedCores += imageInstance.flavor.cpuCount
+                selectedHv.availableMemory -= requiredMemory // XXX Temporary hack
 
                 val server = selectedHv.driver.spawn(
                     imageInstance.name,
@@ -134,7 +143,8 @@ class SimpleVirtProvisioningService(
                 println("Unable to deploy image due to insufficient memory")
 
                 selectedHv.numberOfActiveServers--
-                selectedHv.availableMemory += (imageInstance.image as VmImage).requiredMemory
+                selectedHv.provisionedCores -= imageInstance.flavor.cpuCount
+                selectedHv.availableMemory += requiredMemory
             }
         }
     }
@@ -142,15 +152,18 @@ class SimpleVirtProvisioningService(
     private fun stateChanged(server: Server) {
         when (server.state) {
             ServerState.ACTIVE -> {
-                val hvView = HypervisorView(
+                val hv = HypervisorView(
+                    server.uid,
                     server,
                     0,
-                    server.flavor.memorySize
+                    server.flavor.memorySize,
+                    0
                 )
-                hypervisors[server] = hvView
+                hypervisors[server] = hv
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
                 val hv = hypervisors[server] ?: return
+                hv.provisionedCores -= server.flavor.cpuCount
                 availableHypervisors -= hv
                 requestCycle()
             }

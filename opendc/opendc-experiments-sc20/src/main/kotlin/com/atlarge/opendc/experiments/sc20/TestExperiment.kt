@@ -36,7 +36,11 @@ import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
+import com.atlarge.opendc.compute.virt.service.allocation.AvailableCoreMemoryAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
+import com.atlarge.opendc.compute.virt.service.allocation.NumberOfActiveServersAllocationPolicy
+import com.atlarge.opendc.compute.virt.service.allocation.ProvisionedCoresAllocationPolicy
+import com.atlarge.opendc.compute.virt.service.allocation.RandomAllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
 import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.failure.FaultInjector
@@ -73,6 +77,7 @@ class ExperimentParameters(parser: ArgParser) {
     }
         .default { emptyList() }
     val failures by parser.flagging("-x", "--failures", help = "enable (correlated) machine failures")
+    val allocationPolicy by parser.storing("name of VM allocation policy to use").default("core-mem")
 
     fun getSelectedVmList(): List<String> {
         return if (selectedVms.isEmpty()) {
@@ -116,6 +121,24 @@ fun main(args: Array<String>) {
         val root = system.newDomain("root")
         val chan = Channel<Unit>(Channel.CONFLATED)
 
+        val allocationPolicies = mapOf(
+            "mem" to AvailableMemoryAllocationPolicy(),
+            "mem-inv" to AvailableMemoryAllocationPolicy(true),
+            "core-mem" to AvailableCoreMemoryAllocationPolicy(),
+            "core-mem-inv" to AvailableCoreMemoryAllocationPolicy(true),
+            "active-servers" to NumberOfActiveServersAllocationPolicy(),
+            "active-servers-inv" to NumberOfActiveServersAllocationPolicy(true),
+            "provisioned-cores" to ProvisionedCoresAllocationPolicy(),
+            "provisioned-cores-inv" to ProvisionedCoresAllocationPolicy(true),
+            "random" to RandomAllocationPolicy()
+        )
+
+        if (allocationPolicy !in allocationPolicies) {
+            println("error: unknown allocation policy $allocationPolicy")
+            println("Available:")
+            allocationPolicies.keys.forEach { key -> println(key) }
+        }
+
         root.launch {
             val environment = Sc20ClusterEnvironmentReader(File(environmentFile))
                 .use { it.construct(root) }
@@ -137,7 +160,7 @@ fun main(args: Array<String>) {
             delay(10)
 
             val scheduler = SimpleVirtProvisioningService(
-                AvailableMemoryAllocationPolicy(),
+                allocationPolicies.getValue(allocationPolicy),
                 simulationContext,
                 bareMetalProvisioner
             )
@@ -174,7 +197,6 @@ fun main(args: Array<String>) {
                                 event.numberOfDeployedImages,
                                 event.hostServer
                             )
-                            else -> println(event)
                         }
                     }
                     .launchIn(this)

@@ -22,37 +22,26 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.core.failure
+package com.atlarge.opendc.compute.virt.service.allocation
 
-import com.atlarge.odcsim.simulationContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlin.math.ln1p
-import kotlin.math.pow
+import com.atlarge.opendc.compute.core.image.VmImage
+import com.atlarge.opendc.compute.virt.service.HypervisorView
+import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import kotlin.random.Random
 
 /**
- * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are
- * independent.
+ * An [AllocationPolicy] that select a random node on which the server fits.
  */
-public class UncorrelatedFaultInjector(private val alpha: Double, private val beta: Double, private val random: Random = Random(0)) : FaultInjector {
-    /**
-     * Enqueue the specified [FailureDomain] to fail some time in the future.
-     */
-    override fun enqueue(domain: FailureDomain) {
-        domain.scope.launch {
-            val d = random.weibull(alpha, beta) * 1e3 // Make sure to convert delay to milliseconds
-
-            // Handle long overflow
-            if (simulationContext.clock.millis() + d <= 0) {
-                return@launch
-            }
-
-            delay(d.toLong())
-            domain.fail()
+public class RandomAllocationPolicy(val random: Random = Random(0)) : AllocationPolicy {
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
+        override fun select(
+            hypervisors: Set<HypervisorView>,
+            image: SimpleVirtProvisioningService.ImageView
+        ): HypervisorView? {
+            return hypervisors.asIterable()
+                .filter { it.availableMemory >= (image.image as VmImage).requiredMemory }
+                .randomOrNull(random)
         }
     }
-
-    // XXX We should extract this in some common package later on.
-    private fun Random.weibull(alpha: Double, beta: Double) = (beta * (-ln1p(-nextDouble())).pow(1.0 / alpha))
 }
