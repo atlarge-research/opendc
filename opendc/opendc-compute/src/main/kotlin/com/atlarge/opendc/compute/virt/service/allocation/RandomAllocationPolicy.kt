@@ -22,22 +22,26 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.compute.virt.service
+package com.atlarge.opendc.compute.virt.service.allocation
 
-import java.util.UUID
+import com.atlarge.opendc.compute.core.image.VmImage
+import com.atlarge.opendc.compute.virt.service.HypervisorView
+import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
+import kotlin.random.Random
 
 /**
- * An internal event emitted by the [VirtProvisioningService] for the allocation policies to keep track of the
- * available hypervisors.
+ * An [AllocationPolicy] that select a random node on which the server fits.
  */
-public sealed class VirtProvisioningServiceEvent {
-    /**
-     * This event is emitted when a hypervisor is added to the pool of schedulable hypervisors.
-     */
-    public data class HypervisorAdded(val uid: UUID) : VirtProvisioningServiceEvent()
-
-    /**
-     * This event is emitted when a hypervisor is removed from the pool of schedulable hypervisors.
-     */
-    public data class HypervisorRemoved(val uid: UUID) : VirtProvisioningServiceEvent()
+public class RandomAllocationPolicy(val random: Random = Random(0)) : AllocationPolicy {
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
+        override fun select(
+            hypervisors: Set<HypervisorView>,
+            image: SimpleVirtProvisioningService.ImageView
+        ): HypervisorView? {
+            return hypervisors.asIterable()
+                .filter { it.availableMemory >= (image.image as VmImage).requiredMemory }
+                .randomOrNull(random)
+        }
+    }
 }

@@ -25,15 +25,18 @@
 package com.atlarge.opendc.compute.virt.service.allocation
 
 import com.atlarge.opendc.compute.virt.service.HypervisorView
-import com.atlarge.opendc.compute.virt.service.VirtProvisioningServiceEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 
 /**
  * An [AllocationPolicy] that takes into account the number of vCPUs that have been provisioned on this machine
  * relative to its core count.
+ *
+ * @param reversed A flag to reverse the order of the policy, such that the machine with the most provisioned cores
+ * is selected.
  */
-class ProvisionedCoresAllocationPolicy : AllocationPolicy {
-    override fun invoke(scope: CoroutineScope, events: Flow<VirtProvisioningServiceEvent>): Comparator<HypervisorView> =
-        compareBy { it.provisionedCores / it.server.flavor.cpuCount }
+class ProvisionedCoresAllocationPolicy(val reversed: Boolean = false) : AllocationPolicy {
+    override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
+        override val comparator: Comparator<HypervisorView> =
+            compareBy<HypervisorView> { it.provisionedCores / it.server.flavor.cpuCount }
+                .run { if (reversed) reversed() else this }
+    }
 }

@@ -24,17 +24,25 @@
 
 package com.atlarge.opendc.compute.virt.service.allocation
 
+import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.virt.service.HypervisorView
+import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 
 /**
- * An [AllocationPolicy] that selects the machine with the highest/lowest amount of memory per core.
- *
- * @param reversed An option to reverse the order of the machines (lower amount of memory scores better).
+ * The logic for an [AllocationPolicy] that uses a [Comparator] to select the appropriate node.
  */
-public class AvailableCoreMemoryAllocationPolicy(val reversed: Boolean = false) : AllocationPolicy {
-    override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
-        override val comparator: Comparator<HypervisorView> =
-            compareBy<HypervisorView> { -it.availableMemory / it.server.flavor.cpuCount }
-                .run { if (reversed) reversed() else this }
+interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
+    /**
+     * The comparator to use.
+     */
+    public val comparator: Comparator<HypervisorView>
+
+    override fun select(
+        hypervisors: Set<HypervisorView>,
+        image: SimpleVirtProvisioningService.ImageView
+    ): HypervisorView? {
+        return hypervisors.asSequence()
+            .filter { it.availableMemory >= (image.image as VmImage).requiredMemory }
+            .minWith(comparator.thenBy { it.server.uid })
     }
 }

@@ -40,6 +40,7 @@ import com.atlarge.opendc.compute.virt.service.allocation.AvailableCoreMemoryAll
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.NumberOfActiveServersAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.ProvisionedCoresAllocationPolicy
+import com.atlarge.opendc.compute.virt.service.allocation.RandomAllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
 import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.failure.FaultInjector
@@ -76,7 +77,7 @@ class ExperimentParameters(parser: ArgParser) {
     }
         .default { emptyList() }
     val failures by parser.flagging("-x", "--failures", help = "enable (correlated) machine failures")
-    val allocationPolicy by parser.storing("name of VM allocation policy to use").default("mem")
+    val allocationPolicy by parser.storing("name of VM allocation policy to use").default("core-mem")
 
     fun getSelectedVmList(): List<String> {
         return if (selectedVms.isEmpty()) {
@@ -122,9 +123,14 @@ fun main(args: Array<String>) {
 
         val allocationPolicies = mapOf(
             "mem" to AvailableMemoryAllocationPolicy(),
+            "mem-inv" to AvailableMemoryAllocationPolicy(true),
             "core-mem" to AvailableCoreMemoryAllocationPolicy(),
+            "core-mem-inv" to AvailableCoreMemoryAllocationPolicy(true),
             "active-servers" to NumberOfActiveServersAllocationPolicy(),
-            "provisioned-cores" to ProvisionedCoresAllocationPolicy()
+            "active-servers-inv" to NumberOfActiveServersAllocationPolicy(true),
+            "provisioned-cores" to ProvisionedCoresAllocationPolicy(),
+            "provisioned-cores-inv" to ProvisionedCoresAllocationPolicy(true),
+            "random" to RandomAllocationPolicy()
         )
 
         if (allocationPolicy !in allocationPolicies) {
@@ -191,7 +197,6 @@ fun main(args: Array<String>) {
                                 event.numberOfDeployedImages,
                                 event.hostServer
                             )
-                            else -> println(event)
                         }
                     }
                     .launchIn(this)
