@@ -16,12 +16,16 @@ const val IMAGE_PERF_INTERFERENCE_MODEL = "image:performance-interference"
 data class PerformanceInterferenceModel(
     val items: Set<PerformanceInterferenceModelItem>
 ) {
-    fun apply(colocatedWorkloads: Set<Resource>, currentServerLoad: Double): Double {
+    private var intersectingItems: List<PerformanceInterferenceModelItem> = emptyList()
+
+    fun computeIntersectingItems(colocatedWorkloads: Set<Resource>) {
         val colocatedWorkloadIds = colocatedWorkloads.map { it.name }
-        val intersectingItems = items.filter { item ->
+        intersectingItems = items.filter { item ->
             colocatedWorkloadIds.intersect(item.workloadNames).size > 1
         }
+    }
 
+    fun apply(currentServerLoad: Double): Double {
         if (intersectingItems.isEmpty()) {
             return 1.0
         }

@@ -50,6 +50,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.ceil
@@ -86,6 +87,17 @@ class SimpleVirtDriver(
     internal val eventFlow = EventFlow<HypervisorEvent>()
 
     override val events: Flow<HypervisorEvent> = eventFlow
+
+    init {
+        events.onEach {
+            val imagesRunning = vms.map { it.server.image }.toSet()
+            vms.forEach {
+                val performanceModel =
+                    it.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+                performanceModel?.computeIntersectingItems(imagesRunning)
+            }
+        }
+    }
 
     override suspend fun spawn(
         name: String,
@@ -193,13 +205,12 @@ class SimpleVirtDriver(
 
             val totalRemainder = remainder.sum()
             val totalBurst = burst.sum()
-            val imagesRunning = vms.map { it.server.image }.toSet()
 
             for (vm in vms) {
                 // Apply performance interference model
                 val performanceModel =
                     vm.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
-                val performanceScore = performanceModel?.apply(imagesRunning, serverLoad) ?: 1.0
+                val performanceScore = performanceModel?.apply(serverLoad) ?: 1.0
 
                 for ((i, req) in vm.requests.withIndex()) {
                     // Compute the fraction of compute time allocated to the VM
