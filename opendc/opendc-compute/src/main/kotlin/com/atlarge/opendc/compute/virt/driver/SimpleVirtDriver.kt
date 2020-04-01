@@ -50,6 +50,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -96,7 +97,7 @@ class SimpleVirtDriver(
                     it.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
                 performanceModel?.computeIntersectingItems(imagesRunning)
             }
-        }
+        }.launchIn(coroutineScope)
     }
 
     override suspend fun spawn(
@@ -233,7 +234,15 @@ class SimpleVirtDriver(
                 }
             }
 
-            eventFlow.emit(HypervisorEvent.SliceFinished(this@SimpleVirtDriver, totalBurst, totalBurst - totalRemainder, vms.size, server))
+            eventFlow.emit(
+                HypervisorEvent.SliceFinished(
+                    this@SimpleVirtDriver,
+                    totalBurst,
+                    totalBurst - totalRemainder,
+                    vms.size,
+                    server
+                )
+            )
         }
         this.call = call
     }
