@@ -307,11 +307,11 @@ public class SimpleBareMetalDriver(
         get() = domain
 
     override suspend fun fail() {
-        // serverContext?.unavailable = true
+        serverContext?.unavailable = true
     }
 
     override suspend fun recover() {
-        // serverContext?.unavailable = false
+        serverContext?.unavailable = false
     }
 
     override fun toString(): String = "SimpleBareMetalDriver(node = ${nodeState.value.uid})"

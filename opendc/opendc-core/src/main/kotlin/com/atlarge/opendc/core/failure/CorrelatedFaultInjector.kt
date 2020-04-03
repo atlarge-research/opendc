@@ -90,7 +90,7 @@ public class CorrelatedFaultInjector(
                 ensureActive()
 
                 // Make sure to convert delay from hours to milliseconds
-                val d = lognvariate(iatScale, iatShape) * 3600 * 1e6
+                val d = lognvariate(iatScale, iatShape) * 3.6e6
 
                 // Handle long overflow
                 if (simulationContext.clock.millis() + d <= 0) {
@@ -99,14 +99,19 @@ public class CorrelatedFaultInjector(
 
                 delay(d.toLong())
 
+
                 val n = lognvariate(sizeScale, sizeShape).toInt()
                 val targets = active.shuffled(random).take(n)
+
+                println("[${simulationContext.clock.instant()}] FAIL $targets")
+
+
                 for (failureDomain in targets) {
                     active -= failureDomain
                     failureDomain.fail()
                 }
 
-                val df = lognvariate(dScale, dShape) * 3600 * 1e6
+                val df = lognvariate(dScale, dShape) * 6e4
 
                 // Handle long overflow
                 if (simulationContext.clock.millis() + df <= 0) {
@@ -115,8 +120,12 @@ public class CorrelatedFaultInjector(
 
                 delay(df.toLong())
 
+                println("[${simulationContext.clock.instant()}] RECOVER $targets")
+
                 for (failureDomain in targets) {
                     failureDomain.recover()
+
+                    // Re-enqueue machine to be failed
                     enqueue(failureDomain)
                 }
             }

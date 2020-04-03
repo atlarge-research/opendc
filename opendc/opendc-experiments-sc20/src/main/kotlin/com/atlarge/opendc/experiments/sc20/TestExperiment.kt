@@ -104,10 +104,11 @@ class ExperimentParameters(parser: ArgParser) {
  */
 fun createFaultInjector(domain: Domain, random: Random): FaultInjector {
     // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
+    // GRID'5000
     return CorrelatedFaultInjector(domain,
-        iatScale = -1.39, iatShape = 1.03,
+        iatScale = -1.39, iatShape = 1.03, // Hours
         sizeScale = 1.88, sizeShape = 1.25,
-        dScale = 1.88, dShape = 1.25,
+        dScale = 9.51, dShape = 3.21, // Minutes
         random = random
     )
 }
@@ -245,11 +246,12 @@ fun main(args: Array<String>) {
                                 monitor.onVmStateChanged(it.server)
 
                             // Detect whether the VM has finished running
-                            if (it.server.state == ServerState.ERROR || it.server.state == ServerState.SHUTOFF) {
+                            if (it.server.state == ServerState.SHUTOFF) {
                                 running -= server
+                            }
 
-                                if (running.isEmpty() && (!reader.hasNext() || availableHypervisors == 0))
-                                    finish.send(Unit)
+                            if (running.isEmpty() && !reader.hasNext()) {
+                                finish.send(Unit)
                             }
                         }
                         .collect()
