@@ -50,6 +50,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -90,7 +91,7 @@ class SimpleVirtDriver(
     override val events: Flow<HypervisorEvent> = eventFlow
 
     init {
-        events.onEach {
+        events.filter { it is HypervisorEvent.VmsUpdated }.onEach {
             val imagesRunning = vms.map { it.server.image }.toSet()
             vms.forEach {
                 val performanceModel =
