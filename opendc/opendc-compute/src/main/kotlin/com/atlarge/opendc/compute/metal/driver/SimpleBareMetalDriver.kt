@@ -308,10 +308,16 @@ public class SimpleBareMetalDriver(
 
     override suspend fun fail() {
         serverContext?.unavailable = true
+
+        val server = nodeState.value.server?.copy(state = ServerState.ERROR)
+        setNode(nodeState.value.copy(state = NodeState.ERROR, server = server))
     }
 
     override suspend fun recover() {
         serverContext?.unavailable = false
+
+        val server = nodeState.value.server?.copy(state = ServerState.ACTIVE)
+        setNode(nodeState.value.copy(state = NodeState.ACTIVE, server = server))
     }
 
     override fun toString(): String = "SimpleBareMetalDriver(node = ${nodeState.value.uid})"

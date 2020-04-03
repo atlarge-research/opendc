@@ -99,12 +99,8 @@ public class CorrelatedFaultInjector(
 
                 delay(d.toLong())
 
-
                 val n = lognvariate(sizeScale, sizeShape).toInt()
                 val targets = active.shuffled(random).take(n)
-
-                println("[${simulationContext.clock.instant()}] FAIL $targets")
-
 
                 for (failureDomain in targets) {
                     active -= failureDomain
@@ -119,8 +115,6 @@ public class CorrelatedFaultInjector(
                 }
 
                 delay(df.toLong())
-
-                println("[${simulationContext.clock.instant()}] RECOVER $targets")
 
                 for (failureDomain in targets) {
                     failureDomain.recover()
