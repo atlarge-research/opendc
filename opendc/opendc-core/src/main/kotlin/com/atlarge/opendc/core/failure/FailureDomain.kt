@@ -39,4 +39,9 @@ public interface FailureDomain {
      * Fail the domain externally.
      */
     public suspend fun fail()
+
+    /**
+     * Resume the failure domain.
+     */
+    public suspend fun recover()
 }

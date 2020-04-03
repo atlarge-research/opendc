@@ -52,6 +52,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
@@ -63,6 +64,7 @@ import java.io.File
 import java.io.FileReader
 import java.util.ServiceLoader
 import kotlin.math.max
+import kotlin.random.Random
 
 class ExperimentParameters(parser: ArgParser) {
     val traceDirectory by parser.storing("path to the trace directory")
@@ -100,11 +102,13 @@ class ExperimentParameters(parser: ArgParser) {
 /**
  * Obtain the [FaultInjector] to use for the experiments.
  */
-fun createFaultInjector(domain: Domain): FaultInjector {
+fun createFaultInjector(domain: Domain, random: Random): FaultInjector {
     // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
     return CorrelatedFaultInjector(domain,
         iatScale = -1.39, iatShape = 1.03,
-        sizeScale = 1.88, sizeShape = 1.25
+        sizeScale = 1.88, sizeShape = 1.25,
+        dScale = 1.88, dShape = 1.25,
+        random = random
     )
 }
 
@@ -202,18 +206,22 @@ fun main(args: Array<String>) {
                     .launchIn(this)
             }
 
-            if (failures) {
-                println("ENABLE Failures")
-                root.newDomain(name = "failures").launch {
+            val failureDomain = if (failures) {
+                println("ENABLING failures")
+                val domain = root.newDomain(name = "failures")
+                domain.launch {
                     chan.receive()
+                    val random = Random(0)
                     val injectors = mutableMapOf<String, FaultInjector>()
-
                     for (node in bareMetalProvisioner.nodes()) {
                         val cluster = node.metadata[NODE_CLUSTER] as String
-                        val injector = injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain) }
+                        val injector = injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain, random) }
                         injector.enqueue(node.metadata["driver"] as FailureDomain)
                     }
                 }
+                domain
+            } else {
+                null
             }
 
             val running = mutableSetOf<Server>()
@@ -250,6 +258,7 @@ fun main(args: Array<String>) {
 
             finish.receive()
             scheduler.terminate()
+            failureDomain?.cancel()
             println(simulationContext.clock.instant())
         }
 

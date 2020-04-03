@@ -44,6 +44,8 @@ public class CorrelatedFaultInjector(
     private val iatShape: Double,
     private val sizeScale: Double,
     private val sizeShape: Double,
+    private val dScale: Double,
+    private val dShape: Double,
     random: Random = Random(0)
 ) : FaultInjector {
     /**
@@ -84,7 +86,7 @@ public class CorrelatedFaultInjector(
         }
 
         job = this.domain.launch {
-            while (true) {
+            while (active.isNotEmpty()) {
                 ensureActive()
 
                 // Make sure to convert delay from hours to milliseconds
@@ -98,10 +100,28 @@ public class CorrelatedFaultInjector(
                 delay(d.toLong())
 
                 val n = lognvariate(sizeScale, sizeShape).toInt()
-                for (failureDomain in active.shuffled(random).take(n)) {
+                val targets = active.shuffled(random).take(n)
+                for (failureDomain in targets) {
+                    active -= failureDomain
                     failureDomain.fail()
                 }
+
+                val df = lognvariate(dScale, dShape) * 3600 * 1e6
+
+                // Handle long overflow
+                if (simulationContext.clock.millis() + df <= 0) {
+                    return@launch
+                }
+
+                delay(df.toLong())
+
+                for (failureDomain in targets) {
+                    failureDomain.recover()
+                    enqueue(failureDomain)
+                }
             }
+
+            job = null
         }
     }
 
