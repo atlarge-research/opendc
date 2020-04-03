@@ -14,18 +14,13 @@ class Sc20Monitor(
     destination: String
 ) : Closeable {
     private val outputFile = BufferedWriter(FileWriter(destination))
-    private var failedInSlice: Int = 0
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
 
     init {
-        outputFile.write("time,duration,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostUsage,powerDraw,failedVms\n")
+        outputFile.write("time,duration,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostState,hostUsage,powerDraw,failedVms\n")
     }
 
-    suspend fun onVmStateChanged(server: Server) {
-        if (server.state == ServerState.ERROR) {
-            failedInSlice++
-        }
-    }
+    suspend fun onVmStateChanged(server: Server) {}
 
     suspend fun serverStateChanged(driver: VirtDriver, server: Server) {
         if ((server.state == ServerState.SHUTOFF || server.state == ServerState.ERROR) &&
@@ -61,12 +56,8 @@ class Sc20Monitor(
         val driver = hostServer.services[BareMetalDriver.Key]
         val usage = driver.usage.first()
         val powerDraw = driver.powerDraw.first()
-        val failed = if (failedInSlice > 0) {
-            failedInSlice.also { failedInSlice = 0 }
-        } else {
-            0
-        }
-        outputFile.write("$time,$duration,$requestedBurst,$grantedBurst,$numberOfDeployedImages,${hostServer.uid},$usage,$powerDraw,$failed")
+
+        outputFile.write("$time,$duration,$requestedBurst,$grantedBurst,$numberOfDeployedImages,${hostServer.uid},${hostServer.state},$usage,$powerDraw")
         outputFile.newLine()
     }
 

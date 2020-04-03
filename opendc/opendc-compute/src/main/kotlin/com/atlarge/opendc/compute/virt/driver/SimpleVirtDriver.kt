@@ -65,8 +65,8 @@ import kotlin.math.min
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class SimpleVirtDriver(
     private val hostContext: ServerContext,
-    private val coroutineScope: CoroutineScope
-) : VirtDriver {
+    scope: CoroutineScope
+) : VirtDriver, CoroutineScope by scope {
     /**
      * The [Server] on which this hypervisor runs.
      */
@@ -98,7 +98,7 @@ class SimpleVirtDriver(
                     it.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
                 performanceModel?.computeIntersectingItems(imagesRunning)
             }
-        }.launchIn(coroutineScope)
+        }.launchIn(this)
     }
 
     override suspend fun spawn(
@@ -123,6 +123,10 @@ class SimpleVirtDriver(
         return server
     }
 
+    internal fun cancel() {
+        eventFlow.close()
+    }
+
     /**
      * A flag to indicate the driver is stopped.
      */
@@ -141,7 +145,7 @@ class SimpleVirtDriver(
     /**
      * Schedule the vCPUs on the physical CPUs.
      */
-    private suspend fun reschedule() {
+    private fun reschedule() {
         flush()
 
         // Do not schedule a call if there is no work to schedule or the driver stopped.
@@ -149,7 +153,7 @@ class SimpleVirtDriver(
             return
         }
 
-        val call = coroutineScope.launch {
+        val call = launch {
             val start = simulationContext.clock.millis()
             val vms = activeVms.toSet()
 
@@ -219,7 +223,7 @@ class SimpleVirtDriver(
                     val fraction = req.allocatedUsage / totalUsage
 
                     // Derive the burst that was allocated to this vCPU
-                    val allocatedBurst = ceil(duration * req.allocatedUsage).toLong()
+                    val allocatedBurst = ceil(totalBurst * fraction).toLong()
 
                     // Compute the burst time that the VM was actually granted
                     val grantedBurst = (performanceScore * (allocatedBurst - ceil(totalRemainder * fraction))).toLong()
@@ -244,6 +248,9 @@ class SimpleVirtDriver(
                     server
                 )
             )
+
+            // Make sure we reschedule the remaining amount of work (if we did not obtain the entire request)
+            reschedule()
         }
         this.call = call
     }
@@ -286,7 +293,7 @@ class SimpleVirtDriver(
         var chan = Channel<Unit>(Channel.RENDEZVOUS)
         private var initialized: Boolean = false
 
-        internal val job: Job = coroutineScope.launch {
+        internal val job: Job = launch {
             delay(1) // TODO Introduce boot time
             init()
             try {
@@ -331,8 +338,8 @@ class SimpleVirtDriver(
             server = server.copy(state = serverState)
             availableMemory += server.flavor.memorySize
             vms.remove(this)
-            events.close()
             eventFlow.emit(HypervisorEvent.VmsUpdated(this@SimpleVirtDriver, vms.size, availableMemory))
+            events.close()
         }
 
         override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {

@@ -49,7 +49,6 @@ import com.atlarge.opendc.core.services.ServiceRegistry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -182,6 +181,10 @@ public class SimpleBareMetalDriver(
     private inner class BareMetalServerContext(val events: EventFlow<ServerEvent>) : ServerManagementContext {
         private var finalized: Boolean = false
 
+        // A state in which the machine is still available, but does not run any of the work requested by the
+        // image
+        var unavailable = false
+
         override val cpus: List<ProcessingUnit> = this@SimpleBareMetalDriver.cpus
 
         override val server: Server
@@ -266,7 +269,9 @@ public class SimpleBareMetalDriver(
                 }
             }
 
-            usageState.value = totalUsage / cpus.size
+            if (!unavailable) {
+                usageState.value = totalUsage / cpus.size
+            }
 
             try {
                 delay(duration)
@@ -276,13 +281,17 @@ public class SimpleBareMetalDriver(
             }
             val end = simulationContext.clock.millis()
 
-            // Flush the load if the do not receive a new run call for the same timestamp
+            // Flush the load if they do not receive a new run call for the same timestamp
             flush = domain.launch(job) {
                 delay(1)
                 usageState.value = 0.0
             }
             flush!!.invokeOnCompletion {
                 flush = null
+            }
+
+            if (unavailable) {
+                return
             }
 
             // Write back the remaining burst time
@@ -298,12 +307,17 @@ public class SimpleBareMetalDriver(
         get() = domain
 
     override suspend fun fail() {
-        try {
-            serverContext?.cancel(fail = true)
-            domain.cancel()
-        } catch (_: CancellationException) {
-            // Ignore if the machine has already failed.
-        }
+        serverContext?.unavailable = true
+
+        val server = nodeState.value.server?.copy(state = ServerState.ERROR)
+        setNode(nodeState.value.copy(state = NodeState.ERROR, server = server))
+    }
+
+    override suspend fun recover() {
+        serverContext?.unavailable = false
+
+        val server = nodeState.value.server?.copy(state = ServerState.ACTIVE)
+        setNode(nodeState.value.copy(state = NodeState.ACTIVE, server = server))
     }
 
     override fun toString(): String = "SimpleBareMetalDriver(node = ${nodeState.value.uid})"

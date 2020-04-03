@@ -122,7 +122,7 @@ class SimpleVirtProvisioningService(
             val requiredMemory = (imageInstance.image as VmImage).requiredMemory
             val selectedHv = allocationLogic.select(availableHypervisors, imageInstance) ?: break
             try {
-                log.info("Spawning ${imageInstance.image} on ${selectedHv.server}")
+                log.info("Spawning ${imageInstance.image} on ${selectedHv.server} ${availableHypervisors.size}")
                 incomingImages -= imageInstance
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
@@ -139,6 +139,19 @@ class SimpleVirtProvisioningService(
                 imageInstance.server = server
                 imageInstance.continuation.resume(server)
                 activeImages += imageInstance
+
+                server.events
+                    .onEach { event ->
+                        when (event) {
+                            is ServerEvent.StateChanged -> {
+                                if (event.server.state == ServerState.SHUTOFF) {
+                                    activeImages -= imageInstance
+                                    selectedHv.provisionedCores -= server.flavor.cpuCount
+                                }
+                            }
+                        }
+                    }
+                    .launchIn(this)
             } catch (e: InsufficientMemoryOnServerException) {
                 println("Unable to deploy image due to insufficient memory")
 
@@ -152,18 +165,22 @@ class SimpleVirtProvisioningService(
     private fun stateChanged(server: Server) {
         when (server.state) {
             ServerState.ACTIVE -> {
-                val hv = HypervisorView(
-                    server.uid,
-                    server,
-                    0,
-                    server.flavor.memorySize,
-                    0
-                )
-                hypervisors[server] = hv
+                if (server in hypervisors) {
+                    // Corner case for when the hypervisor already exists
+                    availableHypervisors += hypervisors.getValue(server)
+                } else {
+                    val hv = HypervisorView(
+                        server.uid,
+                        server,
+                        0,
+                        server.flavor.memorySize,
+                        0
+                    )
+                    hypervisors[server] = hv
+                }
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
                 val hv = hypervisors[server] ?: return
-                hv.provisionedCores -= server.flavor.cpuCount
                 availableHypervisors -= hv
                 requestCycle()
             }

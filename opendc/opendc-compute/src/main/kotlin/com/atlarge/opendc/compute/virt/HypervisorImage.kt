@@ -50,7 +50,7 @@ object HypervisorImage : Image {
             try {
                 suspendCancellableCoroutine<Unit> {}
             } finally {
-                driver.eventFlow.close()
+                driver.cancel()
             }
         }
     }
