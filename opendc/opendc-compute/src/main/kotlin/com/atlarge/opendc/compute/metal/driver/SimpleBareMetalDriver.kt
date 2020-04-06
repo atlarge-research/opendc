@@ -25,9 +25,9 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.flow.StateFlow
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
@@ -36,7 +36,6 @@ import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.execution.ShutdownException
-import com.atlarge.opendc.compute.core.execution.assertFailure
 import com.atlarge.opendc.compute.core.image.EmptyImage
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.metal.Node
@@ -46,18 +45,23 @@ import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
 import com.atlarge.opendc.core.power.PowerModel
 import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.DisposableHandle
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.SelectClause0
+import kotlinx.coroutines.selects.SelectInstance
 import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.withContext
 import java.lang.Exception
+import kotlin.coroutines.ContinuationInterceptor
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
@@ -242,63 +246,77 @@ public class SimpleBareMetalDriver(
             setNode(nodeState.value.copy(state = newNodeState, server = server))
         }
 
-        private var flush: Job? = null
+        private var flush: DisposableHandle? = null
 
-        override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
+        @OptIn(InternalCoroutinesApi::class)
+        override fun onRun(burst: LongArray, limit: DoubleArray, deadline: Long): SelectClause0 {
             require(burst.size == limit.size) { "Array dimensions do not match" }
             assert(!finalized) { "Server instance is already finalized" }
 
-            // If run is called in at the same timestamp as the previous call, cancel the load flush
-            flush?.cancel()
-            flush = null
+            return object : SelectClause0 {
+                @InternalCoroutinesApi
+                override fun <R> registerSelectClause0(select: SelectInstance<R>, block: suspend () -> R) {
+                    // If run is called in at the same timestamp as the previous call, cancel the load flush
+                    flush?.dispose()
+                    flush = null
 
-            val start = simulationContext.clock.millis()
-            var duration = max(0, deadline - start)
-            var totalUsage = 0.0
+                    val context = select.completion.context
+                    val simulationContext = context[SimulationContext]!!
+                    val delay = context[ContinuationInterceptor] as Delay
 
-            // Determine the duration of the first CPU to finish
-            for (i in 0 until min(cpus.size, burst.size)) {
-                val cpu = cpus[i]
-                val usage = min(limit[i], cpu.frequency)
-                val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
+                    val start = simulationContext.clock.millis()
+                    var duration = max(0, deadline - start)
+                    var totalUsage = 0.0
 
-                totalUsage += usage / cpu.frequency
+                    // Determine the duration of the first CPU to finish
+                    for (i in 0 until min(cpus.size, burst.size)) {
+                        val cpu = cpus[i]
+                        val usage = min(limit[i], cpu.frequency)
+                        val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
 
-                if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
-                    duration = min(duration, cpuDuration)
+                        totalUsage += usage / cpu.frequency
+
+                        if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
+                            duration = min(duration, cpuDuration)
+                        }
+                    }
+
+                    if (!unavailable) {
+                        usageState.value = totalUsage / cpus.size
+                    }
+
+                    val action = Runnable {
+                        // todo: we could have replaced startCoroutine with startCoroutineUndispatched
+                        // But we need a way to know that Delay.invokeOnTimeout had used the right thread
+                        if (select.trySelect()) {
+                            block.startCoroutineCancellable(select.completion) // shall be cancellable while waits for dispatch
+                        }
+                    }
+
+                    val disposable = delay.invokeOnTimeout(duration, action)
+                    val flush = DisposableHandle {
+                        val end = simulationContext.clock.millis()
+
+                        // Flush the load if they do not receive a new run call for the same timestamp
+                        flush = delay.invokeOnTimeout(1, Runnable {
+                            usageState.value = 0.0
+                            flush = null
+                        })
+
+                        if (!unavailable) {
+                            // Write back the remaining burst time
+                            for (i in 0 until min(cpus.size, burst.size)) {
+                                val usage = min(limit[i], cpus[i].frequency)
+                                val granted = ceil((end - start) / 1000.0 * usage).toLong()
+                                burst[i] = max(0, burst[i] - granted)
+                            }
+                        }
+
+                        disposable.dispose()
+                    }
+
+                    select.disposeOnSelect(flush)
                 }
-            }
-
-            if (!unavailable) {
-                usageState.value = totalUsage / cpus.size
-            }
-
-            try {
-                delay(duration)
-            } catch (e: CancellationException) {
-                // On non-failure cancellation, we compute and return the remaining burst
-                e.assertFailure()
-            }
-            val end = simulationContext.clock.millis()
-
-            // Flush the load if they do not receive a new run call for the same timestamp
-            flush = domain.launch(job) {
-                delay(1)
-                usageState.value = 0.0
-            }
-            flush!!.invokeOnCompletion {
-                flush = null
-            }
-
-            if (unavailable) {
-                return
-            }
-
-            // Write back the remaining burst time
-            for (i in 0 until min(cpus.size, burst.size)) {
-                val usage = min(limit[i], cpus[i].frequency)
-                val granted = ceil((end - start) / 1000.0 * usage).toLong()
-                burst[i] = max(0, burst[i] - granted)
             }
         }
     }

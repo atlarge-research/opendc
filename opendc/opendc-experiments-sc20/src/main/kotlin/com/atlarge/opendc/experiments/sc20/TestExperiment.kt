@@ -119,6 +119,7 @@ fun createFaultInjector(domain: Domain, random: Random): FaultInjector {
 @OptIn(ExperimentalCoroutinesApi::class)
 fun main(args: Array<String>) {
     ArgParser(args).parseInto(::ExperimentParameters).run {
+        val start = System.currentTimeMillis()
         val monitor = Sc20Monitor(outputFile)
 
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
@@ -262,6 +263,7 @@ fun main(args: Array<String>) {
             scheduler.terminate()
             failureDomain?.cancel()
             println(simulationContext.clock.instant())
+            println("${System.currentTimeMillis() - start} milliseconds")
         }
 
         runBlocking {

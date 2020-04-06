@@ -28,6 +28,8 @@ import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.services.ServiceKey
+import kotlinx.coroutines.selects.SelectClause0
+import kotlinx.coroutines.selects.select
 
 /**
  * Represents the execution context in which a bootable [Image] runs on a [Server].
@@ -62,5 +64,23 @@ public interface ServerContext {
      * @param limit The maximum usage in terms of MHz that the processing core may use while running the burst.
      * @param deadline The instant at which this request needs to be fulfilled.
      */
-    public suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long)
+    public suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
+        select<Unit> { onRun(burst, limit, deadline).invoke {} }
+    }
+
+    /**
+     * Request the specified burst time from the processor cores and suspend execution until a processor core finishes
+     * processing a **non-zero** burst or until the deadline is reached.
+     *
+     * After the method returns, [burst] will contain the remaining burst length for each of the cores (which may be
+     * zero).
+     *
+     * Both [burst] and [limit] must be of the same size and in any other case the method will throw an
+     * [IllegalArgumentException].
+     *
+     * @param burst The burst time to request from each of the processor cores.
+     * @param limit The maximum usage in terms of MHz that the processing core may use while running the burst.
+     * @param deadline The instant at which this request needs to be fulfilled.
+     */
+    public fun onRun(burst: LongArray, limit: DoubleArray, deadline: Long): SelectClause0
 }
