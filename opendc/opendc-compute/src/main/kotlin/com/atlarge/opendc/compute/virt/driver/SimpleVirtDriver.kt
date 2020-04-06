@@ -46,7 +46,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +56,12 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.SelectClause0
+import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.withContext
+import java.lang.Exception
+import java.util.Objects
+import java.util.TreeSet
 import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.max
@@ -99,6 +107,17 @@ class SimpleVirtDriver(
                 performanceModel?.computeIntersectingItems(imagesRunning)
             }
         }.launchIn(this)
+
+        launch {
+            try {
+                scheduler()
+            } catch (e: Exception) {
+                if (e !is CancellationException) {
+                    simulationContext.log.error("Hypervisor scheduler failed", e)
+                }
+                throw e
+            }
+        }
     }
 
     override suspend fun spawn(
@@ -128,44 +147,75 @@ class SimpleVirtDriver(
     }
 
     /**
+     * A scheduling command processed by the scheduler.
+     */
+    private sealed class SchedulerCommand {
+        /**
+         * Schedule the specified vCPUs of a single VM.
+         */
+        data class Schedule(val vm: VmServerContext, val requests: Collection<CpuRequest>) : SchedulerCommand()
+
+        /**
+         * Interrupt the scheduler.
+         */
+        object Interrupt : SchedulerCommand()
+    }
+
+    /**
      * A flag to indicate the driver is stopped.
      */
     private var stopped: Boolean = false
 
     /**
-     * The set of [VmServerContext] instances that is being scheduled at the moment.
+     * The channel for scheduling new CPU requests.
      */
-    private val activeVms = mutableSetOf<VmServerContext>()
+    private val schedulingQueue = Channel<SchedulerCommand>(Channel.UNLIMITED)
 
     /**
-     * The deferred run call.
+     * The scheduling process of the hypervisor.
      */
-    private var call: Job? = null
+    private suspend fun scheduler() {
+        val clock = simulationContext.clock
+        val maxUsage = hostContext.cpus.sumByDouble { it.frequency }
+        val pCPUs = hostContext.cpus.indices.sortedBy { hostContext.cpus[it].frequency }
 
-    /**
-     * Schedule the vCPUs on the physical CPUs.
-     */
-    private fun reschedule() {
-        flush()
+        val vms = mutableMapOf<VmServerContext, Collection<CpuRequest>>()
+        val requests = TreeSet<CpuRequest>()
 
-        // Do not schedule a call if there is no work to schedule or the driver stopped.
-        if (stopped || activeVms.isEmpty()) {
-            return
+        val usage = DoubleArray(hostContext.cpus.size)
+        val burst = LongArray(hostContext.cpus.size)
+
+        fun process(command: SchedulerCommand) {
+            when (command) {
+                is SchedulerCommand.Schedule -> {
+                    vms[command.vm] = command.requests
+                    requests.removeAll(command.requests)
+                    requests.addAll(command.requests)
+                }
+            }
         }
 
-        val call = launch {
-            val start = simulationContext.clock.millis()
-            val vms = activeVms.toSet()
+        fun processRemaining() {
+            var command = schedulingQueue.poll()
+            while (command != null) {
+                process(command)
+                command = schedulingQueue.poll()
+            }
+        }
+
+        while (!stopped) {
+            // Wait for a request to be submitted if we have no work yet.
+            if (requests.isEmpty()) {
+                process(schedulingQueue.receive())
+            }
+
+            processRemaining()
+
+            val start = clock.millis()
 
             var duration: Double = Double.POSITIVE_INFINITY
             var deadline: Long = Long.MAX_VALUE
-
-            val maxUsage = hostContext.cpus.sumByDouble { it.frequency }
             var availableUsage = maxUsage
-            val requests = vms.asSequence()
-                .flatMap { it.requests.asSequence() }
-                .sortedBy { it.limit }
-                .toList()
 
             // Divide the available host capacity fairly across the vCPUs using max-min fair sharing
             for ((i, req) in requests.withIndex()) {
@@ -177,48 +227,55 @@ class SimpleVirtDriver(
                 availableUsage -= grantedUsage
 
                 // The duration that we want to run is that of the shortest request from a vCPU
-                duration = min(duration, req.burst / req.allocatedUsage)
+                duration = min(duration, req.burst / grantedUsage)
                 deadline = min(deadline, req.vm.deadline)
             }
 
-            val usage = DoubleArray(hostContext.cpus.size)
-            val burst = LongArray(hostContext.cpus.size)
             val totalUsage = maxUsage - availableUsage
+            var totalBurst = 0L
             availableUsage = totalUsage
             val serverLoad = totalUsage / maxUsage
 
             // Divide the requests over the available capacity of the pCPUs fairly
-            for (i in hostContext.cpus.indices.sortedBy { hostContext.cpus[it].frequency }) {
+            for (i in pCPUs) {
                 val remaining = hostContext.cpus.size - i
                 val availableShare = availableUsage / remaining
                 val grantedUsage = min(hostContext.cpus[i].frequency, availableShare)
+                val pBurst = (duration * grantedUsage).toLong()
 
                 usage[i] = grantedUsage
-                burst[i] = (duration * grantedUsage).toLong()
+                burst[i] = pBurst
+                totalBurst += pBurst
                 availableUsage -= grantedUsage
             }
 
-            val remainder = burst.clone()
             // We run the total burst on the host processor. Note that this call may be cancelled at any moment in
             // time, so not all of the burst may be executed.
-            hostContext.run(remainder, usage, deadline)
-            val end = simulationContext.clock.millis()
+            val interrupted = select<Boolean> {
+                schedulingQueue.onReceive { schedulingQueue.offer(it); true }
+                hostContext.onRun(burst, usage, deadline).invoke { false }
+            }
+
+            val end = clock.millis()
 
             // No work was performed
             if ((end - start) <= 0) {
-                return@launch
+                continue
             }
 
-            val totalRemainder = remainder.sum()
-            val totalBurst = burst.sum()
+            val totalRemainder = burst.sum()
 
-            for (vm in vms) {
+            val entryIterator = vms.entries.iterator()
+            while (entryIterator.hasNext()) {
+                val (vm, vmRequests) = entryIterator.next()
+
                 // Apply performance interference model
                 val performanceModel =
                     vm.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
                 val performanceScore = performanceModel?.apply(serverLoad) ?: 1.0
+                var hasFinished = false
 
-                for ((i, req) in vm.requests.withIndex()) {
+                for ((i, req) in vmRequests.withIndex()) {
                     // Compute the fraction of compute time allocated to the VM
                     val fraction = req.allocatedUsage / totalUsage
 
@@ -231,9 +288,17 @@ class SimpleVirtDriver(
                     // Compute remaining burst time to be executed for the request
                     req.burst = max(0, vm.burst[i] - grantedBurst)
                     vm.burst[i] = req.burst
+
+                    if (req.burst <= 0L || req.isCancelled) {
+                        hasFinished = true
+                    }
                 }
 
-                if (vm.burst.any { it == 0L } || vm.deadline <= end) {
+                if (hasFinished || vm.deadline <= end) {
+                    // Deschedule all requests from this VM
+                    entryIterator.remove()
+                    requests.removeAll(vmRequests)
+
                     // Return vCPU `run` call: the requested burst was completed or deadline was exceeded
                     vm.chan.send(Unit)
                 }
@@ -248,22 +313,7 @@ class SimpleVirtDriver(
                     server
                 )
             )
-
-            // Make sure we reschedule the remaining amount of work (if we did not obtain the entire request)
-            reschedule()
         }
-        this.call = call
-    }
-
-    /**
-     * Flush the progress of the current active VMs.
-     */
-    private fun flush() {
-        val call = call ?: return // If there is no active call, there is nothing to flush
-        // The progress is actually flushed in the coroutine when it notices: we cancel it and wait for its
-        // completion.
-        call.cancel()
-        this.call = null
     }
 
     /**
@@ -274,11 +324,35 @@ class SimpleVirtDriver(
         val vcpu: ProcessingUnit,
         var burst: Long,
         val limit: Double
-    ) {
+    ) : Comparable<CpuRequest> {
         /**
          * The usage that was actually granted.
          */
         var allocatedUsage: Double = 0.0
+
+        /**
+         * A flag to indicate the request was cancelled.
+         */
+        var isCancelled: Boolean = false
+
+        override fun equals(other: Any?): Boolean = other is CpuRequest && vm == other.vm && vcpu == other.vcpu
+        override fun hashCode(): Int = Objects.hash(vm, vcpu)
+
+        override fun compareTo(other: CpuRequest): Int {
+            var cmp = limit.compareTo(other.limit)
+
+            if (cmp != 0) {
+                return cmp
+            }
+
+            cmp = vm.server.uid.compareTo(other.vm.server.uid)
+
+            if (cmp != 0) {
+                return cmp
+            }
+
+            return vcpu.id.compareTo(other.vcpu.id)
+        }
     }
 
     internal inner class VmServerContext(
@@ -287,7 +361,6 @@ class SimpleVirtDriver(
         val domain: Domain
     ) : ServerManagementContext {
         private var finalized: Boolean = false
-        lateinit var requests: List<CpuRequest>
         lateinit var burst: LongArray
         var deadline: Long = 0L
         var chan = Channel<Unit>(Channel.RENDEZVOUS)
@@ -347,7 +420,7 @@ class SimpleVirtDriver(
 
             this.deadline = deadline
             this.burst = burst
-            requests = cpus.asSequence()
+            val requests = cpus.asSequence()
                 .take(burst.size)
                 .mapIndexed { i, cpu ->
                     CpuRequest(
@@ -361,16 +434,21 @@ class SimpleVirtDriver(
 
             // Wait until the burst has been run or the coroutine is cancelled
             try {
-                activeVms += this
-                reschedule()
+                schedulingQueue.send(SchedulerCommand.Schedule(this, requests))
                 chan.receive()
             } catch (e: CancellationException) {
-                // On cancellation, we compute and return the remaining burst
+                // Deschedule the VM
+                withContext(NonCancellable) {
+                    requests.forEach { it.isCancelled = true }
+                    schedulingQueue.send(SchedulerCommand.Interrupt)
+                    chan.receive()
+                }
+
                 e.assertFailure()
-            } finally {
-                activeVms -= this
-                reschedule()
             }
         }
+
+        @OptIn(InternalCoroutinesApi::class)
+        override fun onRun(burst: LongArray, limit: DoubleArray, deadline: Long): SelectClause0 = TODO()
     }
 }
