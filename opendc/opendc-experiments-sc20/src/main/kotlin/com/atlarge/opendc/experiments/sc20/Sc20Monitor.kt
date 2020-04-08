@@ -17,7 +17,7 @@ class Sc20Monitor(
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
 
     init {
-        outputFile.write("time,duration,requestedBurst,grantedBurst,numberOfDeployedImages,server,hostState,hostUsage,powerDraw,failedVms\n")
+        outputFile.write("time,duration,requestedBurst,grantedBurst,overcommissionedBurst,interferredBurst,numberOfDeployedImages,server,hostState,hostUsage,powerDraw,failedVms\n")
     }
 
     suspend fun onVmStateChanged(server: Server) {}
@@ -29,6 +29,8 @@ class Sc20Monitor(
             val duration = simulationContext.clock.millis() - lastServerStates[server]!!.second
             onSliceFinish(
                 simulationContext.clock.millis(),
+                0,
+                0,
                 0,
                 0,
                 0,
@@ -46,6 +48,8 @@ class Sc20Monitor(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,
+        overcommissionedBurst: Long,
+        interferredBurst: Long,
         numberOfDeployedImages: Int,
         hostServer: Server,
         duration: Long = 5 * 60 * 1000L
@@ -57,7 +61,7 @@ class Sc20Monitor(
         val usage = driver.usage.first()
         val powerDraw = driver.powerDraw.first()
 
-        outputFile.write("$time,$duration,$requestedBurst,$grantedBurst,$numberOfDeployedImages,${hostServer.uid},${hostServer.state},$usage,$powerDraw")
+        outputFile.write("$time,$duration,$requestedBurst,$grantedBurst,$overcommissionedBurst,$interferredBurst,$numberOfDeployedImages,${hostServer.uid},${hostServer.state},$usage,$powerDraw")
         outputFile.newLine()
     }
 

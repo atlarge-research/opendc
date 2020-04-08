@@ -200,6 +200,8 @@ fun main(args: Array<String>) {
                                 simulationContext.clock.millis(),
                                 event.requestedBurst,
                                 event.grantedBurst,
+                                event.overcommissionedBurst,
+                                event.interferredBurst,
                                 event.numberOfDeployedImages,
                                 event.hostServer
                             )
@@ -237,7 +239,7 @@ fun main(args: Array<String>) {
                     chan.send(Unit)
                     val server = scheduler.deploy(
                         workload.image.name, workload.image,
-                        Flavor(workload.image.cores, workload.image.requiredMemory)
+                        Flavor(workload.image.maxCores, workload.image.requiredMemory)
                     )
                     running += server
                     // Monitor server events

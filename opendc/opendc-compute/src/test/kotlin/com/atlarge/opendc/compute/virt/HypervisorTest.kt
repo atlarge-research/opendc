@@ -62,8 +62,8 @@ internal class HypervisorTest {
 
             val driverDom = root.newDomain("driver")
 
-            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-            val cpus = List(2) { ProcessingUnit(cpuNode, it, 2000.0) }
+            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
+            val cpus = List(1) { ProcessingUnit(cpuNode, it, 2000.0) }
             val metalDriver = SimpleBareMetalDriver(driverDom, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
 
             metalDriver.init()
@@ -75,6 +75,7 @@ internal class HypervisorTest {
 
             val flavor = Flavor(1, 0)
             val vmDriver = metalDriver.refresh().server!!.services[VirtDriver]
+            vmDriver.events.onEach { println(it) }.launchIn(this)
             val vmA = vmDriver.spawn("a", workloadA, flavor)
             vmA.events.onEach { println(it) }.launchIn(this)
             val vmB = vmDriver.spawn("b", workloadB, flavor)
