@@ -28,6 +28,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
+import kotlin.math.max
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimpleVirtProvisioningService(
@@ -121,8 +122,9 @@ class SimpleVirtProvisioningService(
         for (imageInstance in imagesToBeScheduled) {
             val requiredMemory = (imageInstance.image as VmImage).requiredMemory
             val selectedHv = allocationLogic.select(availableHypervisors, imageInstance) ?: break
+
             try {
-                log.info("Spawning ${imageInstance.image} on ${selectedHv.server} ${availableHypervisors.size}")
+                log.info("Spawning ${imageInstance.image} on ${selectedHv.server}")
                 incomingImages -= imageInstance
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from

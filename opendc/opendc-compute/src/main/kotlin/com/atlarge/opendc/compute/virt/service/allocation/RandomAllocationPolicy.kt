@@ -40,7 +40,11 @@ public class RandomAllocationPolicy(val random: Random = Random(0)) : Allocation
             image: SimpleVirtProvisioningService.ImageView
         ): HypervisorView? {
             return hypervisors.asIterable()
-                .filter { it.availableMemory >= (image.image as VmImage).requiredMemory }
+                .filter { hv ->
+                    val fitsMemory = hv.availableMemory >= (image.image as VmImage).requiredMemory
+                    val fitsCpu = hv.server.flavor.cpuCount >= image.flavor.cpuCount
+                    fitsMemory && fitsCpu
+                }
                 .randomOrNull(random)
         }
     }
