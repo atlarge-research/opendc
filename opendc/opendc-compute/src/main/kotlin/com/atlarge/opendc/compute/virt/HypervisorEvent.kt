@@ -58,7 +58,7 @@ public sealed class HypervisorEvent {
      * the hypervisor being interrupted during a slice.
      * @property overcommissionedBurst The CPU time that the hypervisor could not grant to the virtual machine since
      * it did not have the capacity.
-     * @property interferredBurst The sum of CPU time that virtual machines could not utilize due to performance
+     * @property interferedBurst The sum of CPU time that virtual machines could not utilize due to performance
      * interference.
      * @property numberOfDeployedImages The number of images deployed on this hypervisor.
      */
@@ -67,7 +67,7 @@ public sealed class HypervisorEvent {
         public val requestedBurst: Long,
         public val grantedBurst: Long,
         public val overcommissionedBurst: Long,
-        public val interferredBurst: Long,
+        public val interferedBurst: Long,
         public val numberOfDeployedImages: Int,
         public val hostServer: Server
     ) : HypervisorEvent()

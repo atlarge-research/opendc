@@ -201,7 +201,7 @@ fun main(args: Array<String>) {
                                 event.requestedBurst,
                                 event.grantedBurst,
                                 event.overcommissionedBurst,
-                                event.interferredBurst,
+                                event.interferedBurst,
                                 event.numberOfDeployedImages,
                                 event.hostServer
                             )
