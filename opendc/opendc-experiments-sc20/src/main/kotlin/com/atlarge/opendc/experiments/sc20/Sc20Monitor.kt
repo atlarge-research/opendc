@@ -23,10 +23,9 @@ class Sc20Monitor(
     suspend fun onVmStateChanged(server: Server) {}
 
     suspend fun serverStateChanged(driver: VirtDriver, server: Server) {
-        if ((server.state == ServerState.SHUTOFF || server.state == ServerState.ERROR) &&
-            lastServerStates.containsKey(server)
-        ) {
-            val duration = simulationContext.clock.millis() - lastServerStates[server]!!.second
+        val lastServerState = lastServerStates[server]
+        if (server.state == ServerState.SHUTOFF && lastServerState != null) {
+            val duration = simulationContext.clock.millis() - lastServerState.second
             onSliceFinish(
                 simulationContext.clock.millis(),
                 0,
