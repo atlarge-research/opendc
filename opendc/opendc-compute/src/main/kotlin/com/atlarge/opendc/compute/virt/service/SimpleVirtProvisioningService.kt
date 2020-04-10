@@ -28,7 +28,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
-import kotlin.math.max
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimpleVirtProvisioningService(

@@ -64,7 +64,6 @@ import java.util.Objects
 import java.util.TreeSet
 import java.util.UUID
 import kotlin.math.ceil
-import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
@@ -225,7 +224,7 @@ class SimpleVirtDriver(
             for ((i, req) in requests.withIndex()) {
                 val remaining = requests.size - i
                 val availableShare = availableUsage / remaining
-                val grantedUsage = floor(min(req.limit, availableShare))
+                val grantedUsage = min(req.limit, availableShare)
 
                 totalRequestedUsage += req.limit
                 totalRequestedBurst += req.burst
@@ -273,21 +272,13 @@ class SimpleVirtDriver(
             }
 
             // The total burst that the VMs wanted to run in the time-frame that we ran.
-            val totalRequestedSubBurst =
-                if (interrupted && deadline - end > 0)
-                    min(totalRequestedBurst, requests.sumByDouble { ceil((end - start) / 1000.0 * it.limit) }.toLong()) // Replicate behavior of SimpleBareMetalDriver
-                else
-                    totalRequestedBurst
-            // The total burst that the host ran in the time-frame we ran.
-            val totalAllocatedSubBurst =
-                if (interrupted && deadline - end > 0)
-                    min(totalRequestedBurst, usage.sumByDouble { ceil((end - start) / 1000.0 * it) }.toLong()) // Replicate behavior of SimpleBareMetalDriver
-                else
-                    totalAllocatedBurst
             val totalRemainder = burst.sum()
-            val totalGrantedBurst = min(totalRequestedBurst, totalAllocatedBurst - totalRemainder)
-            // The burst that was actually utilized by the VMs (this may be affected by interference)
-            var totalUsedBurst = 0L
+            val totalGrantedBurst = totalAllocatedBurst - totalRemainder
+
+            // The burst that was lost due to overcommissioning of CPU resources
+            var totalOvercommissionedBurst = 0L
+            // The burst that was lost due to interference.
+            var totalInterferedBurst = 0L
 
             val entryIterator = vms.entries.iterator()
             while (entryIterator.hasNext()) {
@@ -303,13 +294,13 @@ class SimpleVirtDriver(
                     // Compute the fraction of compute time allocated to the VM
                     val fraction = req.allocatedUsage / totalAllocatedUsage
 
-                    // Derive the burst that was allocated to this vCPU
-                    val allocatedBurst = ceil(totalAllocatedBurst * fraction).toLong()
-
                     // Compute the burst time that the VM was actually granted
-                    val grantedBurst = (performanceScore * (allocatedBurst - ceil(totalRemainder * fraction))).toLong()
+                    val grantedBurst = ceil(totalGrantedBurst * fraction).toLong()
 
-                    totalUsedBurst += grantedBurst
+                    // The burst that was actually used by the VM
+                    val usedBurst = ceil(grantedBurst * performanceScore).toLong()
+
+                    totalInterferedBurst += grantedBurst - usedBurst
 
                     // Compute remaining burst time to be executed for the request
                     req.burst = max(0, vm.burst[i] - grantedBurst)
@@ -317,6 +308,11 @@ class SimpleVirtDriver(
 
                     if (req.burst <= 0L || req.isCancelled) {
                         hasFinished = true
+                    }
+
+                    if (vm.deadline <= end) {
+                        // Request must have its entire burst consumed or otherwise we have overcommission
+                        totalOvercommissionedBurst += req.burst
                     }
                 }
 
@@ -334,9 +330,9 @@ class SimpleVirtDriver(
                 HypervisorEvent.SliceFinished(
                     this@SimpleVirtDriver,
                     totalRequestedBurst,
-                    totalGrantedBurst,
-                    totalRequestedSubBurst - totalGrantedBurst,
-                    max(0, totalAllocatedSubBurst - totalUsedBurst), // Might be smaller than zero due to FP rounding errors
+                    min(totalRequestedBurst, totalGrantedBurst), // We can run more than requested due to timing
+                    totalOvercommissionedBurst,
+                    totalInterferedBurst, // Might be smaller than zero due to FP rounding errors
                     vmCount, // Some of the VMs might already have finished, so keep initial VM count
                     server
                 )
