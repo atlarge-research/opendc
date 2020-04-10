@@ -14,7 +14,7 @@ class VmImage(
     public override val name: String,
     public override val tags: TagContainer,
     public val flopsHistory: List<FlopsHistoryFragment>,
-    public val cores: Int,
+    public val maxCores: Int,
     public val requiredMemory: Long
 ) : Image {
 
@@ -25,7 +25,7 @@ class VmImage(
             if (fragment.flops == 0L) {
                 delay(fragment.duration)
             } else {
-                val cores = min(this.cores, ctx.server.flavor.cpuCount)
+                val cores = min(fragment.cores, ctx.server.flavor.cpuCount)
                 val burst = LongArray(cores) { fragment.flops / cores }
                 val usage = DoubleArray(cores) { fragment.usage }
 
@@ -34,5 +34,5 @@ class VmImage(
         }
     }
 
-    override fun toString(): String = "VmImage(uid=$uid, name=$name, cores=$cores, requiredMemory=$requiredMemory)"
+    override fun toString(): String = "VmImage(uid=$uid, name=$name, cores=$maxCores, requiredMemory=$requiredMemory)"
 }

@@ -42,7 +42,11 @@ interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
         image: SimpleVirtProvisioningService.ImageView
     ): HypervisorView? {
         return hypervisors.asSequence()
-            .filter { it.availableMemory >= (image.image as VmImage).requiredMemory }
+            .filter { hv ->
+                val fitsMemory = hv.availableMemory >= (image.image as VmImage).requiredMemory
+                val fitsCpu = hv.server.flavor.cpuCount >= image.flavor.cpuCount
+                fitsMemory && fitsCpu
+            }
             .minWith(comparator.thenBy { it.server.uid })
     }
 }

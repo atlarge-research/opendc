@@ -213,15 +213,21 @@ class SimpleVirtDriver(
 
             val start = clock.millis()
 
+            val vmCount = vms.size
             var duration: Double = Double.POSITIVE_INFINITY
             var deadline: Long = Long.MAX_VALUE
             var availableUsage = maxUsage
+            var totalRequestedUsage = 0.0
+            var totalRequestedBurst = 0L
 
             // Divide the available host capacity fairly across the vCPUs using max-min fair sharing
             for ((i, req) in requests.withIndex()) {
                 val remaining = requests.size - i
                 val availableShare = availableUsage / remaining
                 val grantedUsage = min(req.limit, availableShare)
+
+                totalRequestedUsage += req.limit
+                totalRequestedBurst += req.burst
 
                 req.allocatedUsage = grantedUsage
                 availableUsage -= grantedUsage
@@ -231,21 +237,23 @@ class SimpleVirtDriver(
                 deadline = min(deadline, req.vm.deadline)
             }
 
-            val totalUsage = maxUsage - availableUsage
-            var totalBurst = 0L
-            availableUsage = totalUsage
-            val serverLoad = totalUsage / maxUsage
+            duration = ceil(duration)
+
+            val totalAllocatedUsage = maxUsage - availableUsage
+            var totalAllocatedBurst = 0L
+            availableUsage = totalAllocatedUsage
+            val serverLoad = totalAllocatedUsage / maxUsage
 
             // Divide the requests over the available capacity of the pCPUs fairly
             for (i in pCPUs) {
                 val remaining = hostContext.cpus.size - i
                 val availableShare = availableUsage / remaining
                 val grantedUsage = min(hostContext.cpus[i].frequency, availableShare)
-                val pBurst = (duration * grantedUsage).toLong()
+                val pBurst = ceil(duration * grantedUsage).toLong()
 
                 usage[i] = grantedUsage
                 burst[i] = pBurst
-                totalBurst += pBurst
+                totalAllocatedBurst += pBurst
                 availableUsage -= grantedUsage
             }
 
@@ -263,7 +271,14 @@ class SimpleVirtDriver(
                 continue
             }
 
+            // The total burst that the VMs wanted to run in the time-frame that we ran.
             val totalRemainder = burst.sum()
+            val totalGrantedBurst = totalAllocatedBurst - totalRemainder
+
+            // The burst that was lost due to overcommissioning of CPU resources
+            var totalOvercommissionedBurst = 0L
+            // The burst that was lost due to interference.
+            var totalInterferedBurst = 0L
 
             val entryIterator = vms.entries.iterator()
             while (entryIterator.hasNext()) {
@@ -277,13 +292,15 @@ class SimpleVirtDriver(
 
                 for ((i, req) in vmRequests.withIndex()) {
                     // Compute the fraction of compute time allocated to the VM
-                    val fraction = req.allocatedUsage / totalUsage
-
-                    // Derive the burst that was allocated to this vCPU
-                    val allocatedBurst = ceil(totalBurst * fraction).toLong()
+                    val fraction = req.allocatedUsage / totalAllocatedUsage
 
                     // Compute the burst time that the VM was actually granted
-                    val grantedBurst = (performanceScore * (allocatedBurst - ceil(totalRemainder * fraction))).toLong()
+                    val grantedBurst = ceil(totalGrantedBurst * fraction).toLong()
+
+                    // The burst that was actually used by the VM
+                    val usedBurst = ceil(grantedBurst * performanceScore).toLong()
+
+                    totalInterferedBurst += grantedBurst - usedBurst
 
                     // Compute remaining burst time to be executed for the request
                     req.burst = max(0, vm.burst[i] - grantedBurst)
@@ -291,6 +308,11 @@ class SimpleVirtDriver(
 
                     if (req.burst <= 0L || req.isCancelled) {
                         hasFinished = true
+                    }
+
+                    if (vm.deadline <= end) {
+                        // Request must have its entire burst consumed or otherwise we have overcommission
+                        totalOvercommissionedBurst += req.burst
                     }
                 }
 
@@ -307,9 +329,11 @@ class SimpleVirtDriver(
             eventFlow.emit(
                 HypervisorEvent.SliceFinished(
                     this@SimpleVirtDriver,
-                    totalBurst,
-                    totalBurst - totalRemainder,
-                    vms.size,
+                    totalRequestedBurst,
+                    min(totalRequestedBurst, totalGrantedBurst), // We can run more than requested due to timing
+                    totalOvercommissionedBurst,
+                    totalInterferedBurst, // Might be smaller than zero due to FP rounding errors
+                    vmCount, // Some of the VMs might already have finished, so keep initial VM count
                     server
                 )
             )

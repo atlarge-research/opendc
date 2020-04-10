@@ -282,7 +282,9 @@ public class SimpleBareMetalDriver(
                     }
 
                     if (!unavailable) {
-                        usageState.value = totalUsage / cpus.size
+                        delay.invokeOnTimeout(1, Runnable {
+                            usageState.value = totalUsage / cpus.size
+                        })
                     }
 
                     val action = Runnable {

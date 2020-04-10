@@ -28,7 +28,6 @@ import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
-import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.metal.NODE_CLUSTER
@@ -200,6 +199,8 @@ fun main(args: Array<String>) {
                                 simulationContext.clock.millis(),
                                 event.requestedBurst,
                                 event.grantedBurst,
+                                event.overcommissionedBurst,
+                                event.interferedBurst,
                                 event.numberOfDeployedImages,
                                 event.hostServer
                             )
@@ -226,20 +227,21 @@ fun main(args: Array<String>) {
                 null
             }
 
-            val running = mutableSetOf<Server>()
             val finish = Channel<Unit>(Channel.RENDEZVOUS)
 
+            var submitted = 0
+            var finished = 0
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
                 delay(max(0, time - simulationContext.clock.millis()))
+                submitted++
                 launch {
                     chan.send(Unit)
                     val server = scheduler.deploy(
                         workload.image.name, workload.image,
-                        Flavor(workload.image.cores, workload.image.requiredMemory)
+                        Flavor(workload.image.maxCores, workload.image.requiredMemory)
                     )
-                    running += server
                     // Monitor server events
                     server.events
                         .onEach {
@@ -248,10 +250,10 @@ fun main(args: Array<String>) {
 
                             // Detect whether the VM has finished running
                             if (it.server.state == ServerState.SHUTOFF) {
-                                running -= server
+                                finished++
                             }
 
-                            if (running.isEmpty() && !reader.hasNext()) {
+                            if (finished == submitted && !reader.hasNext()) {
                                 finish.send(Unit)
                             }
                         }
