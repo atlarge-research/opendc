@@ -94,7 +94,7 @@ class Sc20TraceReader(
                         .forEach { line ->
                             val values = line.split("    ")
 
-                            vmId = values[vmIdCol].trim()
+                            vmId = vmFile.name
                             val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
                             cores = values[coreCol].trim().toInt()
                             val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
