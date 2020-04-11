@@ -31,12 +31,11 @@ data class PerformanceInterferenceModel(
         }
         val score = intersectingItems
             .filter { it.minServerLoad <= currentServerLoad }
-            .map { it.performanceScore }
-            .min()
+            .minBy { it.performanceScore }
 
         // Apply performance penalty to (on average) only one of the VMs
-        return if (score != null && Random.nextInt(items.size) == 0) {
-            score
+        return if (score != null && Random.nextInt(score.workloadNames.size) == 0) {
+            score.performanceScore
         } else {
             1.0
         }
