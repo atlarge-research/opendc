@@ -310,8 +310,9 @@ class SimpleVirtDriver(
                         hasFinished = true
                     }
 
-                    if (vm.deadline <= end) {
+                    if (vm.deadline <= end && hostContext.server.state != ServerState.ERROR) {
                         // Request must have its entire burst consumed or otherwise we have overcommission
+                        // Note that we count the overcommissioned burst if the hypervisor has failed.
                         totalOvercommissionedBurst += req.burst
                     }
                 }
@@ -329,11 +330,13 @@ class SimpleVirtDriver(
             eventFlow.emit(
                 HypervisorEvent.SliceFinished(
                     this@SimpleVirtDriver,
-                    totalRequestedBurst,
+                    // Only consider the burst that we could allocate in the time-frame that we ran, not the entire
+                    // requested burst, since we some requests may be run in multiple slices
+                    min(totalRequestedBurst, totalAllocatedBurst),
                     min(totalRequestedBurst, totalGrantedBurst), // We can run more than requested due to timing
                     totalOvercommissionedBurst,
                     totalInterferedBurst, // Might be smaller than zero due to FP rounding errors
-                    vmCount, // Some of the VMs might already have finished, so keep initial VM count
+                    vmCount, // Some VMs might already have finished, so keep initial VM count
                     server
                 )
             )
