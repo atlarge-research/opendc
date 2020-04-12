@@ -182,7 +182,7 @@ class SimpleVirtDriver(
         val pCPUs = hostContext.cpus.indices.sortedBy { hostContext.cpus[it].frequency }
 
         val vms = mutableMapOf<VmServerContext, Collection<CpuRequest>>()
-        val requests = TreeSet<CpuRequest>(cpuRequestComparator)
+        val requests = TreeSet(cpuRequestComparator)
 
         val usage = DoubleArray(hostContext.cpus.size)
         val burst = LongArray(hostContext.cpus.size)
@@ -239,7 +239,8 @@ class SimpleVirtDriver(
                 deadline = min(deadline, req.vm.deadline)
             }
 
-            duration = ceil(duration)
+            // XXX We set the minimum duration to 5 minutes here to prevent the rounding issues that are occurring with the FLOPs.
+            duration = max(300.0, ceil(duration))
 
             val totalAllocatedUsage = maxUsage - availableUsage
             var totalAllocatedBurst = 0L
