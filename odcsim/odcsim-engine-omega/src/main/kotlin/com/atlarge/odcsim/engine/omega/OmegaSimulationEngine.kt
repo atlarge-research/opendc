@@ -46,7 +46,6 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.isActive
 import org.jetbrains.annotations.Async
 import org.slf4j.Logger
 
@@ -72,7 +71,12 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
     /**
      * The event queue to process
      */
-    private val queue: PriorityQueue<Event> = PriorityQueue()
+    private val queue: PriorityQueue<Event> = PriorityQueue(Comparator<Event> { lhs, rhs ->
+        // Note that Comparator gives better performance than Comparable according to
+        // profiling
+        val cmp = lhs.time.compareTo(rhs.time)
+        if (cmp == 0) lhs.id.compareTo(rhs.id) else cmp
+    })
 
     /**
      * The active processes in the simulation engine.
@@ -97,7 +101,9 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
             state = SimulationEngineState.STARTED
         }
 
-        while (coroutineContext.isActive) {
+        val job = coroutineContext[Job]
+
+        while (job?.isActive == true) {
             val event = queue.peek() ?: break
             val delivery = event.time
 
@@ -126,8 +132,18 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
     /**
      * Process the delivery of an event.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun process(@Async.Execute event: Event) {
-        event.run()
+        // This has been inlined into this method for performance
+        when (event) {
+            is Event.Dispatch ->
+                event.block.run()
+            is Event.Resume ->
+                with(event.continuation) { event.dispatcher.resumeUndispatched(Unit) }
+            is Event.Timeout ->
+                if (!event.isCancelled)
+                    event.block.run()
+        }
     }
 
     /**
@@ -142,7 +158,7 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
 
     private fun newDomain(parent: DomainImpl?): Domain {
         val name = "$" + UUID.randomUUID()
-        return newDomainImpl(name, null)
+        return newDomainImpl(name, parent)
     }
 
     private fun newDomain(name: String, parent: DomainImpl?): Domain {
@@ -214,36 +230,18 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
      *
      * @property time The point in time to deliver the message.
      */
-    private sealed class Event(val time: Long, val id: Long) : Comparable<Event>, Runnable {
-        override fun compareTo(other: Event): Int {
-            val cmp = time.compareTo(other.time)
-            return if (cmp == 0) id.compareTo(other.id) else cmp
-        }
-
+    private sealed class Event(val time: Long, val id: Long) {
         class Dispatch(time: Long, id: Long, val block: Runnable) : Event(time, id) {
-            override fun run() = block.run()
-
             override fun toString(): String = "Dispatch[$time]"
         }
 
         class Resume(time: Long, id: Long, val dispatcher: CoroutineDispatcher, val continuation: CancellableContinuation<Unit>) : Event(time, id) {
-            @ExperimentalCoroutinesApi
-            override fun run() {
-                with(continuation) { dispatcher.resumeUndispatched(Unit) }
-            }
-
             override fun toString(): String = "Resume[$time]"
         }
 
-        class Timeout(time: Long, id: Long, val block: Runnable, var cancelled: Boolean = false) : Event(time, id), DisposableHandle {
-            override fun run() {
-                if (!cancelled) {
-                    block.run()
-                }
-            }
-
+        class Timeout(time: Long, id: Long, val block: Runnable, var isCancelled: Boolean = false) : Event(time, id), DisposableHandle {
             override fun dispose() {
-                cancelled = true
+                isCancelled = true
             }
 
             override fun toString(): String = "Timeout[$time]"
