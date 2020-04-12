@@ -274,7 +274,8 @@ class SimpleVirtDriver(
                 continue
             }
 
-            // The total burst that the VMs wanted to run in the time-frame that we ran.
+            // The total requested burst that the VMs wanted to run in the time-frame that we ran.
+            val totalRequestedSubBurst = min(totalRequestedBurst, ceil(totalRequestedUsage * duration).toLong())
             val totalRemainder = burst.sum()
             val totalGrantedBurst = totalAllocatedBurst - totalRemainder
 
@@ -331,8 +332,8 @@ class SimpleVirtDriver(
             eventFlow.emit(
                 HypervisorEvent.SliceFinished(
                     this@SimpleVirtDriver,
-                    totalRequestedBurst,
-                    min(totalRequestedBurst, totalGrantedBurst), // We can run more than requested due to timing
+                    totalRequestedSubBurst,
+                    min(totalRequestedSubBurst, totalGrantedBurst), // We can run more than requested due to timing
                     totalOvercommissionedBurst,
                     totalInterferedBurst, // Might be smaller than zero due to FP rounding errors,
                     totalAllocatedUsage,
