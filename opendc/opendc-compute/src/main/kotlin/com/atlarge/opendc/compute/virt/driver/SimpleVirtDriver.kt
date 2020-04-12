@@ -331,9 +331,7 @@ class SimpleVirtDriver(
             eventFlow.emit(
                 HypervisorEvent.SliceFinished(
                     this@SimpleVirtDriver,
-                    // Only consider the burst that we could allocate in the time-frame that we ran, not the entire
-                    // requested burst, since we some requests may be run in multiple slices
-                    min(totalRequestedBurst, totalAllocatedBurst),
+                    totalRequestedBurst,
                     min(totalRequestedBurst, totalGrantedBurst), // We can run more than requested due to timing
                     totalOvercommissionedBurst,
                     totalInterferedBurst, // Might be smaller than zero due to FP rounding errors,
