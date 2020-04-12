@@ -104,7 +104,6 @@ class Sc20TraceReader(
 
                             val flops: Long = (cpuUsage * 5 * 60).toLong()
 
-
                             if (flopsHistory.isEmpty()) {
                                 flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage, cores))
                             } else {
