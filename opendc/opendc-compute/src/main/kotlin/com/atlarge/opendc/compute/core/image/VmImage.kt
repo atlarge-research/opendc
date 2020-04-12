@@ -3,6 +3,7 @@ package com.atlarge.opendc.compute.core.image
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import java.util.UUID
@@ -19,8 +20,11 @@ class VmImage(
 ) : Image {
 
     override suspend fun invoke(ctx: ServerContext) {
+        val clock = simulationContext.clock
+        val job = coroutineContext[Job]!!
+
         for (fragment in flopsHistory) {
-            coroutineContext.ensureActive()
+            job.ensureActive()
 
             if (fragment.flops == 0L) {
                 delay(fragment.duration)
@@ -29,7 +33,7 @@ class VmImage(
                 val burst = LongArray(cores) { fragment.flops / cores }
                 val usage = DoubleArray(cores) { fragment.usage / cores }
 
-                ctx.run(burst, usage, simulationContext.clock.millis() + fragment.duration)
+                ctx.run(burst, usage, clock.millis() + fragment.duration)
             }
         }
     }
