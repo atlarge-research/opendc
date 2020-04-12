@@ -14,15 +14,29 @@ const val IMAGE_PERF_INTERFERENCE_MODEL = "image:performance-interference"
  * @param items The [PerformanceInterferenceModelItem]s that make up this model.
  */
 data class PerformanceInterferenceModel(
-    val items: Set<PerformanceInterferenceModelItem>
+    val items: Set<PerformanceInterferenceModelItem>,
+    val random: Random = Random(0)
 ) {
     private var intersectingItems: List<PerformanceInterferenceModelItem> = emptyList()
+    private var comparator = Comparator<PerformanceInterferenceModelItem> { lhs, rhs ->
+        var cmp = lhs.performanceScore.compareTo(rhs.performanceScore)
+        if (cmp != 0) {
+            return@Comparator cmp
+        }
+
+        cmp = lhs.minServerLoad.compareTo(rhs.minServerLoad)
+        if (cmp != 0) {
+            return@Comparator cmp
+        }
+
+        0
+    }
 
     fun computeIntersectingItems(colocatedWorkloads: Set<Resource>) {
         val colocatedWorkloadIds = colocatedWorkloads.map { it.name }
         intersectingItems = items.filter { item ->
             colocatedWorkloadIds.intersect(item.workloadNames).size > 1
-        }
+        }.sortedWith(comparator)
     }
 
     fun apply(currentServerLoad: Double): Double {
@@ -30,11 +44,10 @@ data class PerformanceInterferenceModel(
             return 1.0
         }
         val score = intersectingItems
-            .filter { it.minServerLoad <= currentServerLoad }
-            .minBy { it.performanceScore }
+            .firstOrNull { it.minServerLoad <= currentServerLoad }
 
         // Apply performance penalty to (on average) only one of the VMs
-        return if (score != null && Random.nextInt(score.workloadNames.size) == 0) {
+        return if (score != null && random.nextInt(score.workloadNames.size) == 0) {
             score.performanceScore
         } else {
             1.0
@@ -66,7 +79,5 @@ data class PerformanceInterferenceModelItem(
         return true
     }
 
-    override fun hashCode(): Int {
-        return workloadNames.hashCode()
-    }
+    override fun hashCode(): Int = workloadNames.hashCode()
 }

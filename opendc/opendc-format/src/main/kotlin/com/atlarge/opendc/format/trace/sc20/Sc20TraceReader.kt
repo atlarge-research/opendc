@@ -36,6 +36,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.util.UUID
+import kotlin.math.max
 
 /**
  * A [TraceReader] for the internal VM workload trace format.
@@ -82,7 +83,7 @@ class Sc20TraceReader(
                 println(vmFile)
                 val flopsHistory = mutableListOf<FlopsHistoryFragment>()
                 var vmId = ""
-                var cores = -1
+                var maxCores = -1
                 var requiredMemory = -1L
 
                 BufferedReader(FileReader(vmFile)).use { reader ->
@@ -96,11 +97,12 @@ class Sc20TraceReader(
 
                             vmId = vmFile.name
                             val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
-                            cores = values[coreCol].trim().toInt()
+                            val cores = values[coreCol].trim().toInt()
                             val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
-                            requiredMemory = values[provisionedMemoryCol].trim().toLong()
+                            requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
+                            maxCores = max(maxCores, cores)
 
-                            val flops: Long = (cpuUsage * 5 * 60 * cores).toLong()
+                            val flops: Long = (cpuUsage * 5 * 60).toLong()
 
                             if (flopsHistory.isEmpty()) {
                                 flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage, cores))
@@ -115,8 +117,7 @@ class Sc20TraceReader(
                                             oldFragment.flops + flops,
                                             oldFragment.duration + traceInterval,
                                             cpuUsage,
-                                            cores
-                                        )
+                                            cores)
                                     )
                                 }
                             }
@@ -136,7 +137,7 @@ class Sc20TraceReader(
                         vmId,
                         mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
                         flopsHistory,
-                        cores,
+                        maxCores,
                         requiredMemory
                     )
                 )

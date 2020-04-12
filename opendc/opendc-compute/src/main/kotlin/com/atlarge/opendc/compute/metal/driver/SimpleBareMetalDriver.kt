@@ -62,6 +62,7 @@ import kotlin.math.min
 import kotlinx.coroutines.withContext
 import java.lang.Exception
 import kotlin.coroutines.ContinuationInterceptor
+import kotlin.random.Random
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
@@ -116,6 +117,11 @@ public class SimpleBareMetalDriver(
 
     override val powerDraw: Flow<Double> = powerModel(this)
 
+    /**
+     * The internal random instance.
+     */
+    private val random = Random(0)
+
     override suspend fun init(): Node = withContext(domain.coroutineContext) {
         nodeState.value
     }
@@ -128,7 +134,7 @@ public class SimpleBareMetalDriver(
 
         val events = EventFlow<ServerEvent>()
         val server = Server(
-            UUID.randomUUID(),
+            UUID(node.uid.leastSignificantBits xor node.uid.mostSignificantBits, random.nextLong()),
             node.name,
             emptyMap(),
             flavor,

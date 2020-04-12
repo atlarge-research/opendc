@@ -42,6 +42,7 @@ import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -58,11 +59,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import java.lang.Exception
 import java.util.Objects
 import java.util.TreeSet
 import java.util.UUID
+import kotlin.coroutines.resume
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -180,7 +182,7 @@ class SimpleVirtDriver(
         val pCPUs = hostContext.cpus.indices.sortedBy { hostContext.cpus[it].frequency }
 
         val vms = mutableMapOf<VmServerContext, Collection<CpuRequest>>()
-        val requests = TreeSet<CpuRequest>()
+        val requests = TreeSet(cpuRequestComparator)
 
         val usage = DoubleArray(hostContext.cpus.size)
         val burst = LongArray(hostContext.cpus.size)
@@ -237,7 +239,8 @@ class SimpleVirtDriver(
                 deadline = min(deadline, req.vm.deadline)
             }
 
-            duration = ceil(duration)
+            // XXX We set the minimum duration to 5 minutes here to prevent the rounding issues that are occurring with the FLOPs.
+            duration = max(300.0, ceil(duration))
 
             val totalAllocatedUsage = maxUsage - availableUsage
             var totalAllocatedBurst = 0L
@@ -246,14 +249,14 @@ class SimpleVirtDriver(
 
             // Divide the requests over the available capacity of the pCPUs fairly
             for (i in pCPUs) {
-                val remaining = hostContext.cpus.size - i
-                val availableShare = availableUsage / remaining
-                val grantedUsage = min(hostContext.cpus[i].frequency, availableShare)
-                val pBurst = ceil(duration * grantedUsage).toLong()
+                val maxCpuUsage = hostContext.cpus[i].frequency
+                val fraction = maxCpuUsage / maxUsage
+                val grantedUsage = min(maxCpuUsage, totalAllocatedUsage * fraction)
+                val grantedBurst = ceil(duration * grantedUsage).toLong()
 
                 usage[i] = grantedUsage
-                burst[i] = pBurst
-                totalAllocatedBurst += pBurst
+                burst[i] = grantedBurst
+                totalAllocatedBurst += grantedBurst
                 availableUsage -= grantedUsage
             }
 
@@ -308,9 +311,7 @@ class SimpleVirtDriver(
 
                     if (req.burst <= 0L || req.isCancelled) {
                         hasFinished = true
-                    }
-
-                    if (vm.deadline <= end && hostContext.server.state != ServerState.ERROR) {
+                    } else if (vm.deadline <= end && hostContext.server.state != ServerState.ERROR) {
                         // Request must have its entire burst consumed or otherwise we have overcommission
                         // Note that we count the overcommissioned burst if the hypervisor has failed.
                         totalOvercommissionedBurst += req.burst
@@ -323,7 +324,7 @@ class SimpleVirtDriver(
                     requests.removeAll(vmRequests)
 
                     // Return vCPU `run` call: the requested burst was completed or deadline was exceeded
-                    vm.chan.send(Unit)
+                    vm.cont?.resume(Unit)
                 }
             }
 
@@ -335,12 +336,33 @@ class SimpleVirtDriver(
                     min(totalRequestedBurst, totalAllocatedBurst),
                     min(totalRequestedBurst, totalGrantedBurst), // We can run more than requested due to timing
                     totalOvercommissionedBurst,
-                    totalInterferedBurst, // Might be smaller than zero due to FP rounding errors
+                    totalInterferedBurst, // Might be smaller than zero due to FP rounding errors,
+                    totalAllocatedUsage,
+                    totalRequestedUsage,
                     vmCount, // Some VMs might already have finished, so keep initial VM count
                     server
                 )
             )
         }
+    }
+
+    /**
+     * The [Comparator] for [CpuRequest].
+     */
+    private val cpuRequestComparator: Comparator<CpuRequest> = Comparator { lhs, rhs ->
+        var cmp = lhs.limit.compareTo(rhs.limit)
+
+        if (cmp != 0) {
+            return@Comparator cmp
+        }
+
+        cmp = lhs.vm.server.uid.compareTo(rhs.vm.server.uid)
+
+        if (cmp != 0) {
+            return@Comparator cmp
+        }
+
+        lhs.vcpu.id.compareTo(rhs.vcpu.id)
     }
 
     /**
@@ -351,7 +373,7 @@ class SimpleVirtDriver(
         val vcpu: ProcessingUnit,
         var burst: Long,
         val limit: Double
-    ) : Comparable<CpuRequest> {
+    ) {
         /**
          * The usage that was actually granted.
          */
@@ -364,22 +386,6 @@ class SimpleVirtDriver(
 
         override fun equals(other: Any?): Boolean = other is CpuRequest && vm == other.vm && vcpu == other.vcpu
         override fun hashCode(): Int = Objects.hash(vm, vcpu)
-
-        override fun compareTo(other: CpuRequest): Int {
-            var cmp = limit.compareTo(other.limit)
-
-            if (cmp != 0) {
-                return cmp
-            }
-
-            cmp = vm.server.uid.compareTo(other.vm.server.uid)
-
-            if (cmp != 0) {
-                return cmp
-            }
-
-            return vcpu.id.compareTo(other.vcpu.id)
-        }
     }
 
     internal inner class VmServerContext(
@@ -390,7 +396,7 @@ class SimpleVirtDriver(
         private var finalized: Boolean = false
         lateinit var burst: LongArray
         var deadline: Long = 0L
-        var chan = Channel<Unit>(Channel.RENDEZVOUS)
+        var cont: CancellableContinuation<Unit>? = null
         private var initialized: Boolean = false
 
         internal val job: Job = launch {
@@ -462,13 +468,13 @@ class SimpleVirtDriver(
             // Wait until the burst has been run or the coroutine is cancelled
             try {
                 schedulingQueue.send(SchedulerCommand.Schedule(this, requests))
-                chan.receive()
+                suspendCancellableCoroutine<Unit> { cont = it }
             } catch (e: CancellationException) {
                 // Deschedule the VM
                 withContext(NonCancellable) {
                     requests.forEach { it.isCancelled = true }
                     schedulingQueue.send(SchedulerCommand.Interrupt)
-                    chan.receive()
+                    suspendCancellableCoroutine<Unit> { cont = it }
                 }
 
                 e.assertFailure()
