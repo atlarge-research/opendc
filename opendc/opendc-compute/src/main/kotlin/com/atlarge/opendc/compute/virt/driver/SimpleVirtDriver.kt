@@ -246,14 +246,14 @@ class SimpleVirtDriver(
 
             // Divide the requests over the available capacity of the pCPUs fairly
             for (i in pCPUs) {
-                val remaining = hostContext.cpus.size - i
-                val availableShare = availableUsage / remaining
-                val grantedUsage = min(hostContext.cpus[i].frequency, availableShare)
-                val pBurst = ceil(duration * grantedUsage).toLong()
+                val maxCpuUsage = hostContext.cpus[i].frequency
+                val fraction = maxCpuUsage / maxUsage
+                val grantedUsage = min(maxCpuUsage, totalAllocatedUsage * fraction)
+                val grantedBurst = ceil(duration * grantedUsage).toLong()
 
                 usage[i] = grantedUsage
-                burst[i] = pBurst
-                totalAllocatedBurst += pBurst
+                burst[i] = grantedBurst
+                totalAllocatedBurst += grantedBurst
                 availableUsage -= grantedUsage
             }
 
@@ -308,9 +308,7 @@ class SimpleVirtDriver(
 
                     if (req.burst <= 0L || req.isCancelled) {
                         hasFinished = true
-                    }
-
-                    if (vm.deadline <= end && hostContext.server.state != ServerState.ERROR) {
+                    } else if (vm.deadline <= end && hostContext.server.state != ServerState.ERROR) {
                         // Request must have its entire burst consumed or otherwise we have overcommission
                         // Note that we count the overcommissioned burst if the hypervisor has failed.
                         totalOvercommissionedBurst += req.burst
@@ -335,7 +333,9 @@ class SimpleVirtDriver(
                     min(totalRequestedBurst, totalAllocatedBurst),
                     min(totalRequestedBurst, totalGrantedBurst), // We can run more than requested due to timing
                     totalOvercommissionedBurst,
-                    totalInterferedBurst, // Might be smaller than zero due to FP rounding errors
+                    totalInterferedBurst, // Might be smaller than zero due to FP rounding errors,
+                    totalAllocatedUsage,
+                    totalRequestedUsage,
                     vmCount, // Some VMs might already have finished, so keep initial VM count
                     server
                 )

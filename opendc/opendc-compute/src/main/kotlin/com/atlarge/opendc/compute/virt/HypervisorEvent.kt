@@ -60,6 +60,8 @@ public sealed class HypervisorEvent {
      * it did not have the capacity.
      * @property interferedBurst The sum of CPU time that virtual machines could not utilize due to performance
      * interference.
+     * @property cpuUsage CPU use in megahertz.
+     * @property cpuDemand CPU demand in megahertz.
      * @property numberOfDeployedImages The number of images deployed on this hypervisor.
      */
     public data class SliceFinished(
@@ -68,6 +70,8 @@ public sealed class HypervisorEvent {
         public val grantedBurst: Long,
         public val overcommissionedBurst: Long,
         public val interferedBurst: Long,
+        public val cpuUsage: Double,
+        public val cpuDemand: Double,
         public val numberOfDeployedImages: Int,
         public val hostServer: Server
     ) : HypervisorEvent()

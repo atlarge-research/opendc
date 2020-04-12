@@ -201,6 +201,8 @@ fun main(args: Array<String>) {
                                 event.grantedBurst,
                                 event.overcommissionedBurst,
                                 event.interferedBurst,
+                                event.cpuUsage,
+                                event.cpuDemand,
                                 event.numberOfDeployedImages,
                                 event.hostServer
                             )
