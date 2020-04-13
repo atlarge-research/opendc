@@ -17,7 +17,7 @@ class Sc20Monitor(
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
 
     init {
-        outputFile.write("time,duration,requestedBurst,grantedBurst,overcommissionedBurst,interferedBurst,cpuUsage,cpuDemand,numberOfDeployedImages,server,hostState,hostUsage,powerDraw,failedVms\n")
+        outputFile.write("time,duration,requestedBurst,grantedBurst,overcommissionedBurst,interferedBurst,cpuUsage,cpuDemand,numberOfDeployedImages,server,hostState,hostUsage,powerDraw\n")
     }
 
     suspend fun onVmStateChanged(server: Server) {}
