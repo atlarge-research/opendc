@@ -275,7 +275,7 @@ class SimpleVirtDriver(
             }
 
             // The total requested burst that the VMs wanted to run in the time-frame that we ran.
-            val totalRequestedSubBurst = min(totalRequestedBurst, ceil(totalRequestedUsage * duration).toLong())
+            val totalRequestedSubBurst = requests.map { ceil((duration * 1000) / (it.vm.deadline - start) * it.burst).toLong() }.sum()
             val totalRemainder = burst.sum()
             val totalGrantedBurst = totalAllocatedBurst - totalRemainder
 
@@ -307,7 +307,7 @@ class SimpleVirtDriver(
                     totalInterferedBurst += grantedBurst - usedBurst
 
                     // Compute remaining burst time to be executed for the request
-                    req.burst = max(0, vm.burst[i] - grantedBurst)
+                    req.burst = max(0, vm.burst[i] - usedBurst)
                     vm.burst[i] = req.burst
 
                     if (req.burst <= 0L || req.isCancelled) {
@@ -449,7 +449,6 @@ class SimpleVirtDriver(
 
         override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
             require(burst.size == limit.size) { "Array dimensions do not match" }
-
             this.deadline = deadline
             this.burst = burst
             val requests = cpus.asSequence()
