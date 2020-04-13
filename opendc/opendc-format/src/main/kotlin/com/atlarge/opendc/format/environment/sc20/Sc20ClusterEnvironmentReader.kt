@@ -59,6 +59,7 @@ class Sc20ClusterEnvironmentReader(
         var memoryPerHostCol = 0
         var coresPerHostCol = 0
 
+        var clusterIdx: Int = 0
         var clusterId: String
         var speed: Double
         var numberOfHosts: Int
@@ -99,7 +100,7 @@ class Sc20ClusterEnvironmentReader(
                         nodes.add(
                             SimpleBareMetalDriver(
                                 dom.newDomain("node-$clusterId-$it"),
-                                UUID.randomUUID(),
+                                UUID((clusterIdx++).toLong(), it.toLong()),
                                 "node-$clusterId-$it",
                                 mapOf(NODE_CLUSTER to clusterId),
                                 List(coresPerHost) { coreId ->

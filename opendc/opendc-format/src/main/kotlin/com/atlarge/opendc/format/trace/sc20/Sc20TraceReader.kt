@@ -79,7 +79,7 @@ class Sc20TraceReader(
         }
 
         vms
-            .forEach { vmFile ->
+            .forEachIndexed { idx, vmFile ->
                 println(vmFile)
                 val flopsHistory = mutableListOf<FlopsHistoryFragment>()
                 var vmId = ""
@@ -107,9 +107,8 @@ class Sc20TraceReader(
                             if (flopsHistory.isEmpty()) {
                                 flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage, cores))
                             } else {
-                                if (flopsHistory.last().flops != flops) {
-                                    flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage, cores))
-                                } else {
+                                // Restrict merging to empty fragments for now
+                                if (flopsHistory.last().flops == 0L && flops == 0L) {
                                     val oldFragment = flopsHistory.removeAt(flopsHistory.size - 1)
                                     flopsHistory.add(
                                         FlopsHistoryFragment(
@@ -119,12 +118,14 @@ class Sc20TraceReader(
                                             cpuUsage,
                                             cores)
                                     )
+                                } else {
+                                    flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage, cores))
                                 }
                             }
                         }
                 }
 
-                val uuid = UUID.randomUUID()
+                val uuid = UUID(0, idx.toLong())
 
                 val relevantPerformanceInterferenceModelItems = PerformanceInterferenceModel(
                     performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId) }.toSet()
