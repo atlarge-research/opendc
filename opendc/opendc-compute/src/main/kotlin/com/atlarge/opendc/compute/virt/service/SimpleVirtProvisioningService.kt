@@ -106,8 +106,14 @@ class SimpleVirtProvisioningService(
             return
         }
 
+        val quantum = 300000 // 5 minutes in milliseconds
+        // We assume that the provisioner runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
+        // This is important because the slices of the VMs need to be aligned.
+        // We calculate here the delay until the next scheduling slot.
+        val delay = quantum - (ctx.clock.millis() % quantum)
+
         val call = launch {
-            delay(1)
+            delay(delay)
             this@SimpleVirtProvisioningService.call = null
             schedule()
         }
@@ -148,6 +154,11 @@ class SimpleVirtProvisioningService(
                                 if (event.server.state == ServerState.SHUTOFF) {
                                     activeImages -= imageInstance
                                     selectedHv.provisionedCores -= server.flavor.cpuCount
+
+                                    // Try to reschedule if needed
+                                    if (incomingImages.isNotEmpty()) {
+                                        requestCycle()
+                                    }
                                 }
                             }
                         }
