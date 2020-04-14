@@ -22,6 +22,7 @@ class Sc20Monitor(
 
     suspend fun onVmStateChanged(server: Server) {}
 
+
     suspend fun serverStateChanged(driver: VirtDriver, server: Server) {
         val lastServerState = lastServerStates[server]
         if (server.state == ServerState.SHUTOFF && lastServerState != null) {
@@ -57,8 +58,6 @@ class Sc20Monitor(
         hostServer: Server,
         duration: Long = 5 * 60 * 1000L
     ) {
-        lastServerStates.remove(hostServer)
-
         // Assume for now that the host is not virtualized and measure the current power draw
         val driver = hostServer.services[BareMetalDriver.Key]
         val usage = driver.usage.first()
