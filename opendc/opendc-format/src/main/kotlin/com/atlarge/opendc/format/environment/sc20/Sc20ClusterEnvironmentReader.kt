@@ -41,6 +41,7 @@ import com.atlarge.opendc.format.environment.EnvironmentReader
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
+import java.util.Random
 import java.util.UUID
 
 /**
@@ -67,6 +68,7 @@ class Sc20ClusterEnvironmentReader(
         var coresPerHost: Int
 
         val nodes = mutableListOf<SimpleBareMetalDriver>()
+        val random = Random(0)
 
         BufferedReader(FileReader(environmentFile)).use { reader ->
             reader.lineSequence()
@@ -87,6 +89,7 @@ class Sc20ClusterEnvironmentReader(
                         return@forEachIndexed
                     }
 
+                    clusterIdx++
                     clusterId = values[clusterIdCol].trim()
                     speed = values[speedCol].trim().toDouble() * 1000.0
                     numberOfHosts = values[numberOfHostsCol].trim().toInt()
@@ -100,7 +103,7 @@ class Sc20ClusterEnvironmentReader(
                         nodes.add(
                             SimpleBareMetalDriver(
                                 dom.newDomain("node-$clusterId-$it"),
-                                UUID((clusterIdx++).toLong(), it.toLong()),
+                                UUID(random.nextLong(), random.nextLong()),
                                 "node-$clusterId-$it",
                                 mapOf(NODE_CLUSTER to clusterId),
                                 List(coresPerHost) { coreId ->
