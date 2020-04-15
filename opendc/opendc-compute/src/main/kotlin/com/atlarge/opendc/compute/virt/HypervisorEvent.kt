@@ -26,6 +26,7 @@ package com.atlarge.opendc.compute.virt
 
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.service.VirtProvisioningService
 
 /**
  * An event that is emitted by a [VirtDriver].

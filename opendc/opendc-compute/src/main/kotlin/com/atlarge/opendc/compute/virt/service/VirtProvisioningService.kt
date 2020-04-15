@@ -18,11 +18,6 @@ interface VirtProvisioningService {
     val allocationPolicy: AllocationPolicy
 
     /**
-     * The events emitted by the hypervisors.
-     */
-    public val hypervisorEvents: Flow<HypervisorEvent>
-
-    /**
      * Obtain the active hypervisors for this provisioner.
      */
     public suspend fun drivers(): Set<VirtDriver>

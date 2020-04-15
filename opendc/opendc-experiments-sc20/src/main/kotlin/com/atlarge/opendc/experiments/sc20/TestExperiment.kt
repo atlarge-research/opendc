@@ -204,7 +204,11 @@ fun main(args: Array<String>) {
                                 event.cpuUsage,
                                 event.cpuDemand,
                                 event.numberOfDeployedImages,
-                                event.hostServer
+                                event.hostServer,
+                                scheduler.submittedVms,
+                                scheduler.queuedVms,
+                                scheduler.runningVms,
+                                scheduler.finishedVms
                             )
                         }
                     }
@@ -229,15 +233,14 @@ fun main(args: Array<String>) {
                 null
             }
 
+            var submitted = 0L
             val finish = Channel<Unit>(Channel.RENDEZVOUS)
 
-            var submitted = 0
-            var finished = 0
             val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
-                delay(max(0, time - simulationContext.clock.millis()))
                 submitted++
+                delay(max(0, time - simulationContext.clock.millis()))
                 launch {
                     chan.send(Unit)
                     val server = scheduler.deploy(
@@ -250,12 +253,7 @@ fun main(args: Array<String>) {
                             if (it is ServerEvent.StateChanged)
                                 monitor.onVmStateChanged(it.server)
 
-                            // Detect whether the VM has finished running
-                            if (it.server.state == ServerState.SHUTOFF) {
-                                finished++
-                            }
-
-                            if (finished == submitted && !reader.hasNext()) {
+                            if (scheduler.submittedVms == submitted && scheduler.runningVms <= 1 && !reader.hasNext()) {
                                 finish.send(Unit)
                             }
                         }

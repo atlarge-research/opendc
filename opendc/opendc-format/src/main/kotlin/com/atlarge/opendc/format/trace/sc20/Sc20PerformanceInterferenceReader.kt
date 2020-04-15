@@ -24,13 +24,14 @@
 
 package com.atlarge.opendc.format.trace.sc20
 
-import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
-import com.atlarge.opendc.core.workload.PerformanceInterferenceModelItem
+import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
+import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModelItem
 import com.atlarge.opendc.format.trace.PerformanceInterferenceModelReader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.InputStream
+import java.util.TreeSet
 
 /**
  * A parser for the JSON performance interference setup files used for the SC20 paper.
@@ -49,7 +50,7 @@ class Sc20PerformanceInterferenceReader(input: InputStream, mapper: ObjectMapper
         return PerformanceInterferenceModel(
             performanceInterferenceModel.map { item ->
                 PerformanceInterferenceModelItem(
-                    item.vms.toSet(),
+                    TreeSet(item.vms),
                     item.minServerLoad,
                     item.performanceScore
                 )

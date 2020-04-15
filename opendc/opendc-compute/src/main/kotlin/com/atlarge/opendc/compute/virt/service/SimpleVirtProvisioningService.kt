@@ -55,7 +55,10 @@ class SimpleVirtProvisioningService(
      */
     private val activeImages: MutableSet<ImageView> = mutableSetOf()
 
-    override val hypervisorEvents: Flow<HypervisorEvent> = EventFlow()
+    public var submittedVms = 0L
+    public var queuedVms = 0L
+    public var runningVms = 0L
+    public var finishedVms = 0L
 
     /**
      * The allocation logic to use.
@@ -87,6 +90,8 @@ class SimpleVirtProvisioningService(
         image: Image,
         flavor: Flavor
     ): Server = withContext(coroutineContext) {
+        submittedVms++
+        queuedVms++
         suspendCancellableCoroutine<Server> { cont ->
             val vmInstance = ImageView(name, image, flavor, cont)
             incomingImages += vmInstance
@@ -145,6 +150,8 @@ class SimpleVirtProvisioningService(
                 )
                 imageInstance.server = server
                 imageInstance.continuation.resume(server)
+                queuedVms--
+                runningVms++
                 activeImages += imageInstance
 
                 server.events
@@ -152,6 +159,9 @@ class SimpleVirtProvisioningService(
                         when (event) {
                             is ServerEvent.StateChanged -> {
                                 if (event.server.state == ServerState.SHUTOFF) {
+                                    runningVms--
+                                    finishedVms++
+
                                     activeImages -= imageInstance
                                     selectedHv.provisionedCores -= server.flavor.cpuCount
 

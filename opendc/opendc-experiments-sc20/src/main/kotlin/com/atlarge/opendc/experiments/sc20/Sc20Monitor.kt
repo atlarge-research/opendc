@@ -34,6 +34,10 @@ class Sc20Monitor(
         .name("hostState").type().stringType().noDefault()
         .name("hostUsage").type().doubleType().noDefault()
         .name("powerDraw").type().doubleType().noDefault()
+        .name("totalSubmittedVms").type().longType().noDefault()
+        .name("totalQueuedVms").type().longType().noDefault()
+        .name("totalRunningVms").type().longType().noDefault()
+        .name("totalFinishedVms").type().longType().noDefault()
         .endRecord()
     private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(destination))
         .withSchema(schema)
@@ -58,6 +62,10 @@ class Sc20Monitor(
                 0.0,
                 0,
                 server,
+                0,
+                0,
+                0,
+                0,
                 duration
             )
         }
@@ -77,6 +85,10 @@ class Sc20Monitor(
         cpuDemand: Double,
         numberOfDeployedImages: Int,
         hostServer: Server,
+        submittedVms: Long,
+        queuedVms: Long,
+        runningVms: Long,
+        finishedVms: Long,
         duration: Long = 5 * 60 * 1000L
     ) {
         // Assume for now that the host is not virtualized and measure the current power draw
@@ -98,6 +110,10 @@ class Sc20Monitor(
         record.put("hostState", hostServer.state)
         record.put("hostUsage", usage)
         record.put("powerDraw", powerDraw)
+        record.put("totalSubmittedVms", submittedVms)
+        record.put("totalQueuedVms", queuedVms)
+        record.put("totalRunningVms", runningVms)
+        record.put("totalFinishedVms", finishedVms)
 
         writer.write(record)
     }
