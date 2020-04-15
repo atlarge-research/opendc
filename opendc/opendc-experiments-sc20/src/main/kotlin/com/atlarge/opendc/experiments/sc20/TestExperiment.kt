@@ -119,6 +119,14 @@ fun createFaultInjector(domain: Domain, random: Random): FaultInjector {
 @OptIn(ExperimentalCoroutinesApi::class)
 fun main(args: Array<String>) {
     ArgParser(args).parseInto(::ExperimentParameters).run {
+        println("trace-directory: $traceDirectory")
+        println("environment-file: $environmentFile")
+        println("performance-interference-file: $performanceInterferenceFile")
+        println("selected-vms-file: $selectedVmsFile")
+        println("seed: $seed")
+        println("failures: $failures")
+        println("allocation-policy: $allocationPolicy")
+
         val start = System.currentTimeMillis()
         val monitor = Sc20Monitor(outputFile)
 
