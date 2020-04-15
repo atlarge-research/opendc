@@ -115,9 +115,9 @@ class Sc20TraceReader(
 
                     BufferedReader(FileReader(vmFile)).use { reader ->
                         reader.lineSequence()
-                            .chunked(1024)
+                            .chunked(128)
                             .forEach { lines ->
-                                val res = ArrayList<FlopsHistoryFragment>(lines.size)
+                                // val res = ArrayList<FlopsHistoryFragment>(lines.size)
                                 for (line in lines) {
                                     // Ignore comments in the trace
                                     if (line.startsWith("#") || line.isBlank()) {
@@ -144,13 +144,12 @@ class Sc20TraceReader(
                                         val fragment =
                                             FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage, cores)
                                         if (last != null) {
-                                            res.add(last!!)
+                                            yield(last!!)
                                         }
                                         fragment
                                     }
                                 }
-
-                                yieldAll(res)
+                                // yieldAll(res)
                             }
 
                         if (last != null) {
@@ -172,7 +171,7 @@ class Sc20TraceReader(
                         uuid,
                         vmId,
                         mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
-                        flopsFragments,
+                        flopsFragments.asSequence(),
                         maxCores,
                         requiredMemory
                     )

@@ -44,7 +44,6 @@ import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.failure.FaultInjector
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
-import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.xenomachina.argparser.ArgParser
@@ -241,7 +240,7 @@ fun main(args: Array<String>) {
             var submitted = 0L
             val finish = Channel<Unit>(Channel.RENDEZVOUS)
 
-            val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList(), Random(seed))
+            val reader = Sc20ParquetTraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList(), Random(seed))
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
                 submitted++
@@ -267,8 +266,10 @@ fun main(args: Array<String>) {
             }
 
             finish.receive()
-            scheduler.terminate()
             failureDomain?.cancel()
+            launch {
+                scheduler.terminate()
+            }
             println(simulationContext.clock.instant())
             println("${System.currentTimeMillis() - start} milliseconds")
         }

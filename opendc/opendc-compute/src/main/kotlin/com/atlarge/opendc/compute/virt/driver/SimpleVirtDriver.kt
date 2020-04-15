@@ -57,6 +57,9 @@ import kotlinx.coroutines.selects.select
 import java.util.Objects
 import java.util.TreeSet
 import java.util.UUID
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -325,7 +328,7 @@ class SimpleVirtDriver(
                     requests.removeAll(vmRequests)
 
                     // Return vCPU `run` call: the requested burst was completed or deadline was exceeded
-                    vm.chan.send(Unit)
+                    vm.chan?.resume(Unit)
                 }
             }
 
@@ -371,7 +374,7 @@ class SimpleVirtDriver(
         val vm: VmServerContext,
         val vcpu: ProcessingUnit,
         var burst: Long,
-        val limit: Double
+        var limit: Double
     ) {
         /**
          * The usage that was actually granted.
@@ -395,7 +398,7 @@ class SimpleVirtDriver(
         private var finalized: Boolean = false
         lateinit var burst: LongArray
         var deadline: Long = 0L
-        val chan: Channel<Unit> = Channel(Channel.CONFLATED)
+        var chan: Continuation<Unit>? = null
         private var initialized: Boolean = false
 
         internal val job: Job = launch {
@@ -452,6 +455,7 @@ class SimpleVirtDriver(
             require(burst.size == limit.size) { "Array dimensions do not match" }
             this.deadline = deadline
             this.burst = burst
+
             val requests = cpus.asSequence()
                 .take(burst.size)
                 .mapIndexed { i, cpu ->
@@ -466,13 +470,13 @@ class SimpleVirtDriver(
 
             // Wait until the burst has been run or the coroutine is cancelled
             try {
-                schedulingQueue.send(SchedulerCommand.Schedule(this, requests))
-                chan.receive()
+                schedulingQueue.offer(SchedulerCommand.Schedule(this, requests))
+                suspendCoroutine<Unit> { chan = it }
             } catch (e: CancellationException) {
                 // Deschedule the VM
                 requests.forEach { it.isCancelled = true }
-                schedulingQueue.send(SchedulerCommand.Interrupt)
-                chan.receive()
+                schedulingQueue.offer(SchedulerCommand.Interrupt)
+                suspendCoroutine<Unit> { chan = it }
                 e.assertFailure()
             }
         }

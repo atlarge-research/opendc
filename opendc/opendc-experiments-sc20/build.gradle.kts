@@ -32,7 +32,7 @@ plugins {
 
 application {
     mainClassName = "com.atlarge.opendc.experiments.sc20.TestExperimentKt"
-    applicationDefaultJvmArgs = listOf("-Xmx3096M")
+    applicationDefaultJvmArgs = listOf("-Xmx2200M", "-Xms1800M")
 }
 
 dependencies {

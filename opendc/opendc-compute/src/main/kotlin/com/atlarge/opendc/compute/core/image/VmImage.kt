@@ -23,7 +23,7 @@ class VmImage(
         val clock = simulationContext.clock
         val job = coroutineContext[Job]!!
 
-        for (fragments in flopsHistory.chunked(1024)) {
+        for (fragments in flopsHistory.chunked(128)) {
             for (fragment in fragments) {
                 job.ensureActive()
 
