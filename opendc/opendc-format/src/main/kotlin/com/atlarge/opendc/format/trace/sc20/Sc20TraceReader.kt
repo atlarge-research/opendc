@@ -38,6 +38,7 @@ import java.io.FileReader
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.random.Random
 
 /**
  * A [TraceReader] for the internal VM workload trace format.
@@ -48,7 +49,8 @@ import kotlin.math.min
 class Sc20TraceReader(
     traceDirectory: File,
     performanceInterferenceModel: PerformanceInterferenceModel,
-    selectedVms: List<String>
+    selectedVms: List<String>,
+    random: Random
 ) : TraceReader<VmWorkload> {
     /**
      * The internal iterator to use for this reader.
@@ -161,7 +163,8 @@ class Sc20TraceReader(
 
                 val relevantPerformanceInterferenceModelItems =
                     PerformanceInterferenceModel(
-                        performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId) }.toSet()
+                        performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId) }.toSet(),
+                        Random(random.nextInt())
                     )
                 val vmWorkload = VmWorkload(
                     uuid, "VM Workload $vmId", UnnamedUser,

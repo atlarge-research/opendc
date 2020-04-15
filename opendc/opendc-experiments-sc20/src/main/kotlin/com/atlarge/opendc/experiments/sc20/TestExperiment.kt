@@ -76,6 +76,8 @@ class ExperimentParameters(parser: ArgParser) {
         parseVMs(FileReader(File(this)).readText())
     }
         .default { emptyList() }
+    val seed by parser.storing("the random seed") { toInt() }
+        .default(0)
     val failures by parser.flagging("-x", "--failures", help = "enable (correlated) machine failures")
     val allocationPolicy by parser.storing("name of VM allocation policy to use").default("core-mem")
 
@@ -134,7 +136,7 @@ fun main(args: Array<String>) {
             "active-servers-inv" to NumberOfActiveServersAllocationPolicy(true),
             "provisioned-cores" to ProvisionedCoresAllocationPolicy(),
             "provisioned-cores-inv" to ProvisionedCoresAllocationPolicy(true),
-            "random" to RandomAllocationPolicy()
+            "random" to RandomAllocationPolicy(Random(seed))
         )
 
         if (allocationPolicy !in allocationPolicies) {
@@ -215,7 +217,7 @@ fun main(args: Array<String>) {
                 val domain = root.newDomain(name = "failures")
                 domain.launch {
                     chan.receive()
-                    val random = Random(0)
+                    val random = Random(seed)
                     val injectors = mutableMapOf<String, FaultInjector>()
                     for (node in bareMetalProvisioner.nodes()) {
                         val cluster = node.metadata[NODE_CLUSTER] as String
@@ -231,7 +233,7 @@ fun main(args: Array<String>) {
             var submitted = 0L
             val finish = Channel<Unit>(Channel.RENDEZVOUS)
 
-            val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
+            val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList(), Random(seed))
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
                 submitted++
