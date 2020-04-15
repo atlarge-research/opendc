@@ -70,7 +70,7 @@ class ExperimentParameters(parser: ArgParser) {
     val environmentFile by parser.storing("path to the environment file")
     val performanceInterferenceFile by parser.storing("path to the performance interference file").default { null }
     val outputFile by parser.storing("path to where the output should be stored")
-        .default { "sc20-experiment-results.csv" }
+        .default { "data/results-${System.currentTimeMillis()}.parquet" }
     val selectedVms by parser.storing("the VMs to run") { parseVMs(this) }
         .default { emptyList() }
     val selectedVmsFile by parser.storing("path to a file containing the VMs to run") {
