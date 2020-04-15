@@ -25,7 +25,7 @@ class Sc20Monitor(
         .name("duration").type().longType().noDefault()
         .name("requestedBurst").type().longType().noDefault()
         .name("grantedBurst").type().longType().noDefault()
-        .name("overcommisionedBurst").type().longType().noDefault()
+        .name("overcommissionedBurst").type().longType().noDefault()
         .name("interferedBurst").type().longType().noDefault()
         .name("cpuUsage").type().doubleType().noDefault()
         .name("cpuDemand").type().doubleType().noDefault()
@@ -48,7 +48,14 @@ class Sc20Monitor(
 
     suspend fun onVmStateChanged(server: Server) {}
 
-    suspend fun serverStateChanged(driver: VirtDriver, server: Server) {
+    suspend fun serverStateChanged(
+        driver: VirtDriver,
+        server: Server,
+        submittedVms: Long,
+        queuedVms: Long,
+        runningVms: Long,
+        finishedVms: Long
+    ) {
         val lastServerState = lastServerStates[server]
         if (server.state == ServerState.SHUTOFF && lastServerState != null) {
             val duration = simulationContext.clock.millis() - lastServerState.second
@@ -62,10 +69,10 @@ class Sc20Monitor(
                 0.0,
                 0,
                 server,
-                0,
-                0,
-                0,
-                0,
+                submittedVms,
+                queuedVms,
+                runningVms,
+                finishedVms,
                 duration
             )
         }
@@ -101,7 +108,7 @@ class Sc20Monitor(
         record.put("duration", duration)
         record.put("requestedBurst", requestedBurst)
         record.put("grantedBurst", grantedBurst)
-        record.put("overcommisionedBurst", overcommissionedBurst)
+        record.put("overcommissionedBurst", overcommissionedBurst)
         record.put("interferedBurst", interferedBurst)
         record.put("cpuUsage", cpuUsage)
         record.put("cpuDemand", cpuDemand)

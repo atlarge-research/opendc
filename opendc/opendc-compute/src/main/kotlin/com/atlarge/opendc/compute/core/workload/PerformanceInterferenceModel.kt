@@ -64,7 +64,7 @@ class PerformanceInterferenceModel(
         this.items.addAll(items)
     }
 
-    fun vmStarted(server: Server)  {
+    fun vmStarted(server: Server) {
         colocatedWorkloads.add(server.image.name)
         intersectingItems = items.filter { item -> doesMatch(item) }
     }

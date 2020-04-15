@@ -14,7 +14,7 @@ class VmImage(
     public override val uid: UUID,
     public override val name: String,
     public override val tags: TagContainer,
-    public val flopsHistory: List<FlopsHistoryFragment>,
+    public val flopsHistory: Sequence<FlopsHistoryFragment>,
     public val maxCores: Int,
     public val requiredMemory: Long
 ) : Image {
@@ -23,17 +23,19 @@ class VmImage(
         val clock = simulationContext.clock
         val job = coroutineContext[Job]!!
 
-        for (fragment in flopsHistory) {
-            job.ensureActive()
+        for (fragments in flopsHistory.chunked(1024)) {
+            for (fragment in fragments) {
+                job.ensureActive()
 
-            if (fragment.flops == 0L) {
-                delay(fragment.duration)
-            } else {
-                val cores = min(fragment.cores, ctx.server.flavor.cpuCount)
-                val burst = LongArray(cores) { fragment.flops / cores }
-                val usage = DoubleArray(cores) { fragment.usage / cores }
+                if (fragment.flops == 0L) {
+                    delay(fragment.duration)
+                } else {
+                    val cores = min(fragment.cores, ctx.server.flavor.cpuCount)
+                    val burst = LongArray(cores) { fragment.flops / cores }
+                    val usage = DoubleArray(cores) { fragment.usage / cores }
 
-                ctx.run(burst, usage, clock.millis() + fragment.duration)
+                    ctx.run(burst, usage, clock.millis() + fragment.duration)
+                }
             }
         }
     }

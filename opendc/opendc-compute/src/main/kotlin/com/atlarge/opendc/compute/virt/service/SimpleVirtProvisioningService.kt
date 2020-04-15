@@ -1,7 +1,6 @@
 package com.atlarge.opendc.compute.virt.service
 
 import com.atlarge.odcsim.SimulationContext
-import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
@@ -20,7 +19,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch

@@ -134,7 +134,7 @@ class VmTraceReader(
                         uuid,
                         vmId.toString(),
                         mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
-                        flopsHistory,
+                        flopsHistory.asSequence(),
                         cores,
                         requiredMemory
                     )

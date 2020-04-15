@@ -3,10 +3,8 @@ package com.atlarge.opendc.compute.virt.service
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
-import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
-import kotlinx.coroutines.flow.Flow
 
 /**
  * A service for VM provisioning on a cloud.

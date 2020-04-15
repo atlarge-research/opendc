@@ -29,7 +29,6 @@ import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ServerEvent
-import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.metal.NODE_CLUSTER
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
@@ -174,20 +173,16 @@ fun main(args: Array<String>) {
             delay(10)
 
             val hypervisors = scheduler.drivers()
-            var availableHypervisors = hypervisors.size
 
             // Monitor hypervisor events
             for (hypervisor in hypervisors) {
                 // TODO Do not expose VirtDriver directly but use Hypervisor class.
-                monitor.serverStateChanged(hypervisor, (hypervisor as SimpleVirtDriver).server)
+                monitor.serverStateChanged(hypervisor, (hypervisor as SimpleVirtDriver).server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
                 hypervisor.server.events
                     .onEach { event ->
                         when (event) {
                             is ServerEvent.StateChanged -> {
-                                monitor.serverStateChanged(hypervisor, event.server)
-
-                                if (event.server.state == ServerState.ERROR)
-                                    availableHypervisors -= 1
+                                monitor.serverStateChanged(hypervisor, event.server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
                             }
                         }
                     }
