@@ -23,19 +23,17 @@ class VmImage(
         val clock = simulationContext.clock
         val job = coroutineContext[Job]!!
 
-        for (fragments in flopsHistory.chunked(128)) {
-            for (fragment in fragments) {
-                job.ensureActive()
+        for (fragment in flopsHistory) {
+            job.ensureActive()
 
-                if (fragment.flops == 0L) {
-                    delay(fragment.duration)
-                } else {
-                    val cores = min(fragment.cores, ctx.server.flavor.cpuCount)
-                    val burst = LongArray(cores) { fragment.flops / cores }
-                    val usage = DoubleArray(cores) { fragment.usage / cores }
+            if (fragment.flops == 0L) {
+                delay(fragment.duration)
+            } else {
+                val cores = min(fragment.cores, ctx.server.flavor.cpuCount)
+                val burst = LongArray(cores) { fragment.flops / cores }
+                val usage = DoubleArray(cores) { fragment.usage / cores }
 
-                    ctx.run(burst, usage, clock.millis() + fragment.duration)
-                }
+                ctx.run(burst, usage, clock.millis() + fragment.duration)
             }
         }
     }

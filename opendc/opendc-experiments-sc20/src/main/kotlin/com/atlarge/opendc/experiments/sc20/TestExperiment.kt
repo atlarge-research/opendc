@@ -237,13 +237,10 @@ fun main(args: Array<String>) {
                 null
             }
 
-            var submitted = 0L
-            val finish = Channel<Unit>(Channel.RENDEZVOUS)
-
+            val finished = Channel<Unit>(Channel.RENDEZVOUS)
             val reader = Sc20ParquetTraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList(), Random(seed))
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
-                submitted++
                 delay(max(0, time - simulationContext.clock.millis()))
                 launch {
                     chan.send(Unit)
@@ -254,24 +251,26 @@ fun main(args: Array<String>) {
                     // Monitor server events
                     server.events
                         .onEach {
-                            if (it is ServerEvent.StateChanged)
+                            if (it is ServerEvent.StateChanged) {
                                 monitor.onVmStateChanged(it.server)
-
-                            if (scheduler.submittedVms == submitted && scheduler.runningVms <= 1 && !reader.hasNext()) {
-                                finish.send(Unit)
                             }
+
+                            finished.send(Unit)
                         }
                         .collect()
                 }
             }
 
-            finish.receive()
-            failureDomain?.cancel()
-            launch {
-                scheduler.terminate()
+            while (scheduler.finishedVms + scheduler.unscheduledVms != scheduler.submittedVms || reader.hasNext()) {
+                finished.receive()
             }
-            println(simulationContext.clock.instant())
-            println("${System.currentTimeMillis() - start} milliseconds")
+
+            println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
+
+            failureDomain?.cancel()
+            scheduler.terminate()
+            reader.close()
+            println("[${simulationContext.clock.millis()}] DONE ${System.currentTimeMillis() - start} milliseconds")
         }
 
         runBlocking {

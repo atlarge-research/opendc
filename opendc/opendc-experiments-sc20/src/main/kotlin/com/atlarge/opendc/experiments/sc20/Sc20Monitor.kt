@@ -12,6 +12,8 @@ import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import java.io.Closeable
+import java.util.concurrent.ArrayBlockingQueue
+import kotlin.concurrent.thread
 
 class Sc20Monitor(
     destination: String
@@ -45,6 +47,19 @@ class Sc20Monitor(
         .withPageSize(4 * 1024 * 1024) // For compression
         .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
         .build()
+    private val queue = ArrayBlockingQueue<GenericData.Record>(2048)
+    private val writerThread = thread(start = true, name = "sc20-writer") {
+        try {
+            while (true) {
+                val record = queue.take()
+                writer.write(record)
+            }
+        } catch (e: InterruptedException) {
+            // Do not rethrow this
+        } finally {
+            writer.close()
+        }
+    }
 
     suspend fun onVmStateChanged(server: Server) {}
 
@@ -122,10 +137,14 @@ class Sc20Monitor(
         record.put("totalRunningVms", runningVms)
         record.put("totalFinishedVms", finishedVms)
 
-        writer.write(record)
+        queue.put(record)
     }
 
     override fun close() {
-        writer.close()
+        // Busy loop to wait for writer thread to finish
+        while (queue.isNotEmpty()) {
+            Thread.sleep(500)
+        }
+        writerThread.interrupt()
     }
 }

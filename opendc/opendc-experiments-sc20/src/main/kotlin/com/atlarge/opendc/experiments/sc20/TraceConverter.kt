@@ -46,6 +46,7 @@ fun main() {
         .fields()
         .name("id").type().stringType().noDefault()
         .name("submissionTime").type().longType().noDefault()
+        .name("endTime").type().longType().noDefault()
         .name("maxCores").type().intType().noDefault()
         .name("requiredMemory").type().longType().noDefault()
         .endRecord()
@@ -92,7 +93,6 @@ fun main() {
             var vmId = ""
             var maxCores = -1
             var requiredMemory = -1L
-            var timestamp = -1L
             var cores = -1
             var minTime = Long.MAX_VALUE
 
@@ -112,7 +112,7 @@ fun main() {
                                 val values = line.split("    ")
 
                                 vmId = vmFile.name
-                                timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
+                                val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
                                 cores = values[coreCol].trim().toInt()
                                 requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
                                 maxCores = max(maxCores, cores)
@@ -150,13 +150,16 @@ fun main() {
                 }
             }
 
+            var maxTime = Long.MIN_VALUE
             flopsFragments.forEach { fragment ->
                 allFragments.add(fragment)
+                maxTime = max(maxTime, fragment.tick)
             }
 
             val metaRecord = GenericData.Record(metaSchema)
             metaRecord.put("id", vmId)
             metaRecord.put("submissionTime", minTime)
+            metaRecord.put("endTime", maxTime)
             metaRecord.put("maxCores", maxCores)
             metaRecord.put("requiredMemory", requiredMemory)
             metaWriter.write(metaRecord)

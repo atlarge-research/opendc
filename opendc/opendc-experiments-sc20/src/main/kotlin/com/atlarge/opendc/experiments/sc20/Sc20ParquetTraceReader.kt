@@ -39,7 +39,6 @@ import org.apache.parquet.filter2.compat.FilterCompat
 import org.apache.parquet.filter2.predicate.FilterApi
 import org.apache.parquet.filter2.predicate.Statistics
 import org.apache.parquet.filter2.predicate.UserDefinedPredicate
-import org.apache.parquet.hadoop.ParquetReader
 import org.apache.parquet.io.api.Binary
 import java.io.File
 import java.io.Serializable
@@ -47,7 +46,9 @@ import java.util.Deque
 import java.util.SortedSet
 import java.util.TreeSet
 import java.util.UUID
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.LinkedBlockingDeque
+import kotlin.concurrent.thread
 import kotlin.random.Random
 
 /**
@@ -69,36 +70,81 @@ class Sc20ParquetTraceReader(
     private val iterator: Iterator<TraceEntry<VmWorkload>>
 
     /**
-     * Fill the buffers of the VMs
+     * The intermediate buffer to store the read records in.
      */
-    private fun pull(reader: ParquetReader<GenericData.Record>, buffers: Map<String, Deque<FlopsHistoryFragment>>) {
+    private val queue = ArrayBlockingQueue<Pair<String, FlopsHistoryFragment>>(128)
+
+    /**
+     * An optional filter for filtering the selected VMs
+     */
+    private val filter =
+        if (selectedVms.isEmpty())
+            null
+        else
+            FilterCompat.get(FilterApi.userDefined(FilterApi.binaryColumn("id"), SelectedVmFilter(TreeSet(selectedVms))))
+
+    /**
+     * A poisonous fragment.
+     */
+    private val poison = Pair("\u0000", FlopsHistoryFragment(0, 0, 0, 0.0, 0))
+
+    /**
+     * The thread to read the records in.
+     */
+    private val readerThread = thread(start = true, name = "sc20-reader") {
+        val reader = AvroParquetReader.builder<GenericData.Record>(Path(traceFile.absolutePath, "trace.parquet"))
+            .disableCompatibility()
+            .run { if (filter != null) withFilter(filter) else this }
+            .build()
+
+        try {
+            while (true) {
+                val record = reader.read()
+
+                if (record == null) {
+                    queue.put(poison)
+                    break
+                }
+
+                val id = record["id"].toString()
+                val tick = record["time"] as Long
+                val duration = record["duration"] as Long
+                val cores = record["cores"] as Int
+                val cpuUsage = record["cpuUsage"] as Double
+                val flops = record["flops"] as Long
+
+                val fragment = FlopsHistoryFragment(
+                    tick,
+                    flops,
+                    duration,
+                    cpuUsage,
+                    cores
+                )
+
+                queue.put(id to fragment)
+            }
+        } catch (e: InterruptedException) {
+            // Do not rethrow this
+        } finally {
+            reader.close()
+        }
+    }
+
+    /**
+     * Fill the buffers with the VMs
+     */
+    private fun pull(buffers: Map<String, Deque<FlopsHistoryFragment>>) {
         if (!hasNext) {
             return
         }
 
-        repeat(buffers.size) {
-            val record = reader.read()
+        repeat(16) {
+            val (id, fragment) = queue.take()
 
-            if (record == null) {
+            if (id == poison.first) {
                 hasNext = false
-                reader.close()
                 return
             }
-
-            val id = record["id"].toString()
-            val tick = record["time"] as Long
-            val duration = record["duration"] as Long
-            val cores = record["cores"] as Int
-            val cpuUsage = record["cpuUsage"] as Double
-            val flops = record["flops"] as Long
-
-            val fragment = FlopsHistoryFragment(
-                tick,
-                flops,
-                duration,
-                cpuUsage,
-                cores
-            )
 
             buffers[id]?.add(fragment)
         }
@@ -116,18 +162,7 @@ class Sc20ParquetTraceReader(
         val entries = mutableMapOf<UUID, TraceEntry<VmWorkload>>()
         val buffers = mutableMapOf<String, Deque<FlopsHistoryFragment>>()
 
-        val filter =
-            if (selectedVms.isEmpty())
-                null
-            else
-                FilterCompat.get(FilterApi.userDefined(FilterApi.binaryColumn("id"), SelectedVmFilter(TreeSet(selectedVms))))
-
         val metaReader = AvroParquetReader.builder<GenericData.Record>(Path(traceFile.absolutePath, "meta.parquet"))
-            .disableCompatibility()
-            .run { if (filter != null) withFilter(filter) else this }
-            .build()
-
-        val reader = AvroParquetReader.builder<GenericData.Record>(Path(traceFile.absolutePath, "trace.parquet"))
             .disableCompatibility()
             .run { if (filter != null) withFilter(filter) else this }
             .build()
@@ -137,9 +172,10 @@ class Sc20ParquetTraceReader(
             val record = metaReader.read() ?: break
             val id = record["id"].toString()
             val submissionTime = record["submissionTime"] as Long
+            val endTime = record["endTime"] as Long
             val maxCores = record["maxCores"] as Int
             val requiredMemory = record["requiredMemory"] as Long
-
+            val uuid = UUID(0, (idx++).toLong())
             println(id)
 
             val buffer = LinkedBlockingDeque<FlopsHistoryFragment>()
@@ -148,16 +184,23 @@ class Sc20ParquetTraceReader(
                 while (true) {
                     if (buffer.isEmpty()) {
                         if (hasNext) {
-                            pull(reader, buffers)
+                            pull(buffers)
                             continue
                         } else {
                             break
                         }
                     }
-                    yield(buffer.poll())
+
+                    val fragment = buffer.poll()
+                    yield(fragment)
+
+                    if (fragment.tick >= endTime) {
+                        break
+                    }
                 }
+
+                buffers.remove(id)
             }
-            val uuid = UUID(0, (idx++).toLong())
             val relevantPerformanceInterferenceModelItems =
                 PerformanceInterferenceModel(
                     performanceInterferenceModel.items.filter { it.workloadNames.contains(id) }.toSet(),
@@ -191,7 +234,9 @@ class Sc20ParquetTraceReader(
 
     override fun next(): TraceEntry<VmWorkload> = iterator.next()
 
-    override fun close() {}
+    override fun close() {
+        readerThread.interrupt()
+    }
 
     private class SelectedVmFilter(val selectedVms: SortedSet<String>) : UserDefinedPredicate<Binary>(), Serializable {
         override fun keep(value: Binary?): Boolean = value != null && selectedVms.contains(value.toStringUsingUTF8())

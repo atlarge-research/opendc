@@ -243,7 +243,7 @@ class SimpleVirtDriver(
             }
 
             // XXX We set the minimum duration to 5 minutes here to prevent the rounding issues that are occurring with the FLOPs.
-            duration = max(300.0, ceil(duration))
+            duration = 300.0
 
             val totalAllocatedUsage = maxUsage - availableUsage
             var totalAllocatedBurst = 0L
@@ -335,7 +335,7 @@ class SimpleVirtDriver(
             eventFlow.emit(
                 HypervisorEvent.SliceFinished(
                     this@SimpleVirtDriver,
-                    totalRequestedSubBurst,
+                    totalRequestedBurst,
                     min(totalRequestedSubBurst, totalGrantedBurst), // We can run more than requested due to timing
                     totalOvercommissionedBurst,
                     totalInterferedBurst, // Might be smaller than zero due to FP rounding errors,
