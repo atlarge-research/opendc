@@ -120,7 +120,7 @@ public class SimpleBareMetalDriver(
     /**
      * The internal random instance.
      */
-    private val random = Random(0)
+    private val random = Random(uid.leastSignificantBits xor uid.mostSignificantBits)
 
     override suspend fun init(): Node = withContext(domain.coroutineContext) {
         nodeState.value
@@ -134,7 +134,7 @@ public class SimpleBareMetalDriver(
 
         val events = EventFlow<ServerEvent>()
         val server = Server(
-            UUID(node.uid.leastSignificantBits xor node.uid.mostSignificantBits, random.nextLong()),
+            UUID(random.nextLong(), random.nextLong()),
             node.name,
             emptyMap(),
             flavor,
@@ -151,7 +151,7 @@ public class SimpleBareMetalDriver(
 
     override suspend fun stop(): Node = withContext(domain.coroutineContext) {
         val node = nodeState.value
-        if (node.state == NodeState.SHUTOFF || node.state == NodeState.ERROR) {
+        if (node.state == NodeState.SHUTOFF) {
             return@withContext node
         }
 

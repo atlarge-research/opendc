@@ -29,7 +29,6 @@ import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ServerEvent
-import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.metal.NODE_CLUSTER
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
@@ -45,7 +44,6 @@ import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.failure.FaultInjector
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
-import com.atlarge.opendc.format.trace.sc20.Sc20TraceReader
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.xenomachina.argparser.ArgParser
@@ -70,13 +68,15 @@ class ExperimentParameters(parser: ArgParser) {
     val environmentFile by parser.storing("path to the environment file")
     val performanceInterferenceFile by parser.storing("path to the performance interference file").default { null }
     val outputFile by parser.storing("path to where the output should be stored")
-        .default { "sc20-experiment-results.csv" }
+        .default { "data/results-${System.currentTimeMillis()}.parquet" }
     val selectedVms by parser.storing("the VMs to run") { parseVMs(this) }
         .default { emptyList() }
     val selectedVmsFile by parser.storing("path to a file containing the VMs to run") {
         parseVMs(FileReader(File(this)).readText())
     }
         .default { emptyList() }
+    val seed by parser.storing("the random seed") { toInt() }
+        .default(0)
     val failures by parser.flagging("-x", "--failures", help = "enable (correlated) machine failures")
     val allocationPolicy by parser.storing("name of VM allocation policy to use").default("core-mem")
 
@@ -118,6 +118,14 @@ fun createFaultInjector(domain: Domain, random: Random): FaultInjector {
 @OptIn(ExperimentalCoroutinesApi::class)
 fun main(args: Array<String>) {
     ArgParser(args).parseInto(::ExperimentParameters).run {
+        println("trace-directory: $traceDirectory")
+        println("environment-file: $environmentFile")
+        println("performance-interference-file: $performanceInterferenceFile")
+        println("selected-vms-file: $selectedVmsFile")
+        println("seed: $seed")
+        println("failures: $failures")
+        println("allocation-policy: $allocationPolicy")
+
         val start = System.currentTimeMillis()
         val monitor = Sc20Monitor(outputFile)
 
@@ -135,7 +143,7 @@ fun main(args: Array<String>) {
             "active-servers-inv" to NumberOfActiveServersAllocationPolicy(true),
             "provisioned-cores" to ProvisionedCoresAllocationPolicy(),
             "provisioned-cores-inv" to ProvisionedCoresAllocationPolicy(true),
-            "random" to RandomAllocationPolicy()
+            "random" to RandomAllocationPolicy(Random(seed))
         )
 
         if (allocationPolicy !in allocationPolicies) {
@@ -174,20 +182,16 @@ fun main(args: Array<String>) {
             delay(10)
 
             val hypervisors = scheduler.drivers()
-            var availableHypervisors = hypervisors.size
 
             // Monitor hypervisor events
             for (hypervisor in hypervisors) {
                 // TODO Do not expose VirtDriver directly but use Hypervisor class.
-                monitor.serverStateChanged(hypervisor, (hypervisor as SimpleVirtDriver).server)
+                monitor.serverStateChanged(hypervisor, (hypervisor as SimpleVirtDriver).server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
                 hypervisor.server.events
                     .onEach { event ->
                         when (event) {
                             is ServerEvent.StateChanged -> {
-                                monitor.serverStateChanged(hypervisor, event.server)
-
-                                if (event.server.state == ServerState.ERROR)
-                                    availableHypervisors -= 1
+                                monitor.serverStateChanged(hypervisor, event.server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
                             }
                         }
                     }
@@ -204,7 +208,11 @@ fun main(args: Array<String>) {
                                 event.cpuUsage,
                                 event.cpuDemand,
                                 event.numberOfDeployedImages,
-                                event.hostServer
+                                event.hostServer,
+                                scheduler.submittedVms,
+                                scheduler.queuedVms,
+                                scheduler.runningVms,
+                                scheduler.finishedVms
                             )
                         }
                     }
@@ -216,7 +224,7 @@ fun main(args: Array<String>) {
                 val domain = root.newDomain(name = "failures")
                 domain.launch {
                     chan.receive()
-                    val random = Random(0)
+                    val random = Random(seed)
                     val injectors = mutableMapOf<String, FaultInjector>()
                     for (node in bareMetalProvisioner.nodes()) {
                         val cluster = node.metadata[NODE_CLUSTER] as String
@@ -229,15 +237,13 @@ fun main(args: Array<String>) {
                 null
             }
 
-            val finish = Channel<Unit>(Channel.RENDEZVOUS)
-
-            var submitted = 0
-            var finished = 0
-            val reader = Sc20TraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList())
+            var submitted = 0L
+            val finished = Channel<Unit>(Channel.RENDEZVOUS)
+            val reader = Sc20ParquetTraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList(), Random(seed))
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
-                delay(max(0, time - simulationContext.clock.millis()))
                 submitted++
+                delay(max(0, time - simulationContext.clock.millis()))
                 launch {
                     chan.send(Unit)
                     val server = scheduler.deploy(
@@ -247,27 +253,26 @@ fun main(args: Array<String>) {
                     // Monitor server events
                     server.events
                         .onEach {
-                            if (it is ServerEvent.StateChanged)
+                            if (it is ServerEvent.StateChanged) {
                                 monitor.onVmStateChanged(it.server)
-
-                            // Detect whether the VM has finished running
-                            if (it.server.state == ServerState.SHUTOFF) {
-                                finished++
                             }
 
-                            if (finished == submitted && !reader.hasNext()) {
-                                finish.send(Unit)
-                            }
+                            finished.send(Unit)
                         }
                         .collect()
                 }
             }
 
-            finish.receive()
-            scheduler.terminate()
+            while (scheduler.finishedVms + scheduler.unscheduledVms != submitted || reader.hasNext()) {
+                finished.receive()
+            }
+
+            println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
+
             failureDomain?.cancel()
-            println(simulationContext.clock.instant())
-            println("${System.currentTimeMillis() - start} milliseconds")
+            scheduler.terminate()
+            reader.close()
+            println("[${simulationContext.clock.millis()}] DONE ${System.currentTimeMillis() - start} milliseconds")
         }
 
         runBlocking {

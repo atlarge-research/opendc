@@ -14,7 +14,7 @@ class VmImage(
     public override val uid: UUID,
     public override val name: String,
     public override val tags: TagContainer,
-    public val flopsHistory: List<FlopsHistoryFragment>,
+    public val flopsHistory: Sequence<FlopsHistoryFragment>,
     public val maxCores: Int,
     public val requiredMemory: Long
 ) : Image {

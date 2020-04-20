@@ -1,7 +1,6 @@
 package com.atlarge.opendc.compute.virt.service
 
 import com.atlarge.odcsim.SimulationContext
-import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
@@ -20,7 +19,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -28,6 +26,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
+import kotlin.math.max
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimpleVirtProvisioningService(
@@ -55,7 +54,14 @@ class SimpleVirtProvisioningService(
      */
     private val activeImages: MutableSet<ImageView> = mutableSetOf()
 
-    override val hypervisorEvents: Flow<HypervisorEvent> = EventFlow()
+    public var submittedVms = 0L
+    public var queuedVms = 0L
+    public var runningVms = 0L
+    public var finishedVms = 0L
+    public var unscheduledVms = 0L
+
+    private var maxCores = 0
+    private var maxMemory = 0L
 
     /**
      * The allocation logic to use.
@@ -87,6 +93,8 @@ class SimpleVirtProvisioningService(
         image: Image,
         flavor: Flavor
     ): Server = withContext(coroutineContext) {
+        submittedVms++
+        queuedVms++
         suspendCancellableCoroutine<Server> { cont ->
             val vmInstance = ImageView(name, image, flavor, cont)
             incomingImages += vmInstance
@@ -121,15 +129,24 @@ class SimpleVirtProvisioningService(
     }
 
     private suspend fun schedule() {
-        val log = simulationContext.log
+        val clock = simulationContext.clock
         val imagesToBeScheduled = incomingImages.toSet()
 
         for (imageInstance in imagesToBeScheduled) {
             val requiredMemory = (imageInstance.image as VmImage).requiredMemory
-            val selectedHv = allocationLogic.select(availableHypervisors, imageInstance) ?: break
+            val selectedHv = allocationLogic.select(availableHypervisors, imageInstance)
+
+            if (selectedHv == null) {
+                if (requiredMemory > maxMemory || imageInstance.flavor.cpuCount > maxCores) {
+                    unscheduledVms++
+                    println("[${clock.millis()}] CANNOT SPAWN ${imageInstance.image}")
+                }
+
+                break
+            }
 
             try {
-                log.info("Spawning ${imageInstance.image} on ${selectedHv.server}")
+                println("[${clock.millis()}] SPAWN ${imageInstance.image} on ${selectedHv.server.uid} ${selectedHv.server.name} ${selectedHv.server.flavor}")
                 incomingImages -= imageInstance
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
@@ -145,6 +162,8 @@ class SimpleVirtProvisioningService(
                 )
                 imageInstance.server = server
                 imageInstance.continuation.resume(server)
+                queuedVms--
+                runningVms++
                 activeImages += imageInstance
 
                 server.events
@@ -152,6 +171,10 @@ class SimpleVirtProvisioningService(
                         when (event) {
                             is ServerEvent.StateChanged -> {
                                 if (event.server.state == ServerState.SHUTOFF) {
+                                    println("[${clock.millis()}] FINISH ${event.server.uid} ${event.server.name} ${event.server.flavor}")
+                                    runningVms--
+                                    finishedVms++
+
                                     activeImages -= imageInstance
                                     selectedHv.provisionedCores -= server.flavor.cpuCount
 
@@ -170,6 +193,8 @@ class SimpleVirtProvisioningService(
                 selectedHv.numberOfActiveServers--
                 selectedHv.provisionedCores -= imageInstance.flavor.cpuCount
                 selectedHv.availableMemory += requiredMemory
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
         }
     }
@@ -188,13 +213,18 @@ class SimpleVirtProvisioningService(
                         server.flavor.memorySize,
                         0
                     )
+                    maxCores = max(maxCores, server.flavor.cpuCount)
+                    maxMemory = max(maxMemory, server.flavor.memorySize)
                     hypervisors[server] = hv
                 }
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
                 val hv = hypervisors[server] ?: return
                 availableHypervisors -= hv
-                requestCycle()
+
+                if (incomingImages.isNotEmpty()) {
+                    requestCycle()
+                }
             }
             else -> throw IllegalStateException()
         }

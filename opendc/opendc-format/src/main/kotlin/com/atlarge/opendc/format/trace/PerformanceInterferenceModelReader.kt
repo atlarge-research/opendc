@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.format.trace
 
-import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
+import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import java.io.Closeable
 
 /**

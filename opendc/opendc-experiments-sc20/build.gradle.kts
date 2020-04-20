@@ -32,6 +32,7 @@ plugins {
 
 application {
     mainClassName = "com.atlarge.opendc.experiments.sc20.TestExperimentKt"
+    applicationDefaultJvmArgs = listOf("-Xmx2500M", "-Xms1800M")
 }
 
 dependencies {
@@ -40,7 +41,10 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation("com.xenomachina:kotlin-argparser:2.0.7")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8")
-
+    implementation("org.apache.parquet:parquet-avro:1.11.0")
+    implementation("org.apache.hadoop:hadoop-client:3.2.1") {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+    }
     runtimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))
 

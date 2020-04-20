@@ -40,31 +40,26 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
-import com.atlarge.opendc.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
-import com.atlarge.opendc.core.workload.PerformanceInterferenceModel
-import kotlinx.coroutines.CancellableContinuation
+import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
+import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.select
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 import java.util.Objects
 import java.util.TreeSet
 import java.util.UUID
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -101,15 +96,6 @@ class SimpleVirtDriver(
     override val events: Flow<HypervisorEvent> = eventFlow
 
     init {
-        events.filter { it is HypervisorEvent.VmsUpdated }.onEach {
-            val imagesRunning = vms.map { it.server.image }.toSet()
-            vms.forEach {
-                val performanceModel =
-                    it.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
-                performanceModel?.computeIntersectingItems(imagesRunning)
-            }
-        }.launchIn(this)
-
         launch {
             try {
                 scheduler()
@@ -140,12 +126,29 @@ class SimpleVirtDriver(
         )
         availableMemory -= requiredMemory
         vms.add(VmServerContext(server, events, simulationContext.domain))
+        vmStarted(server)
         eventFlow.emit(HypervisorEvent.VmsUpdated(this, vms.size, availableMemory))
         return server
     }
 
     internal fun cancel() {
         eventFlow.close()
+    }
+
+    private fun vmStarted(server: Server) {
+        vms.forEach {
+            val performanceModel =
+                it.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+            performanceModel?.vmStarted(server)
+        }
+    }
+
+    private fun vmStopped(server: Server) {
+        vms.forEach {
+            val performanceModel =
+                it.server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+            performanceModel?.vmStopped(server)
+        }
     }
 
     /**
@@ -240,7 +243,7 @@ class SimpleVirtDriver(
             }
 
             // XXX We set the minimum duration to 5 minutes here to prevent the rounding issues that are occurring with the FLOPs.
-            duration = max(300.0, ceil(duration))
+            duration = 300.0
 
             val totalAllocatedUsage = maxUsage - availableUsage
             var totalAllocatedBurst = 0L
@@ -325,14 +328,14 @@ class SimpleVirtDriver(
                     requests.removeAll(vmRequests)
 
                     // Return vCPU `run` call: the requested burst was completed or deadline was exceeded
-                    vm.cont?.resume(Unit)
+                    vm.chan?.resume(Unit)
                 }
             }
 
             eventFlow.emit(
                 HypervisorEvent.SliceFinished(
                     this@SimpleVirtDriver,
-                    totalRequestedSubBurst,
+                    totalRequestedBurst,
                     min(totalRequestedSubBurst, totalGrantedBurst), // We can run more than requested due to timing
                     totalOvercommissionedBurst,
                     totalInterferedBurst, // Might be smaller than zero due to FP rounding errors,
@@ -371,7 +374,7 @@ class SimpleVirtDriver(
         val vm: VmServerContext,
         val vcpu: ProcessingUnit,
         var burst: Long,
-        val limit: Double
+        var limit: Double
     ) {
         /**
          * The usage that was actually granted.
@@ -395,7 +398,7 @@ class SimpleVirtDriver(
         private var finalized: Boolean = false
         lateinit var burst: LongArray
         var deadline: Long = 0L
-        var cont: CancellableContinuation<Unit>? = null
+        var chan: Continuation<Unit>? = null
         private var initialized: Boolean = false
 
         internal val job: Job = launch {
@@ -443,6 +446,7 @@ class SimpleVirtDriver(
             server = server.copy(state = serverState)
             availableMemory += server.flavor.memorySize
             vms.remove(this)
+            vmStopped(server)
             eventFlow.emit(HypervisorEvent.VmsUpdated(this@SimpleVirtDriver, vms.size, availableMemory))
             events.close()
         }
@@ -451,6 +455,7 @@ class SimpleVirtDriver(
             require(burst.size == limit.size) { "Array dimensions do not match" }
             this.deadline = deadline
             this.burst = burst
+
             val requests = cpus.asSequence()
                 .take(burst.size)
                 .mapIndexed { i, cpu ->
@@ -465,16 +470,13 @@ class SimpleVirtDriver(
 
             // Wait until the burst has been run or the coroutine is cancelled
             try {
-                schedulingQueue.send(SchedulerCommand.Schedule(this, requests))
-                suspendCancellableCoroutine<Unit> { cont = it }
+                schedulingQueue.offer(SchedulerCommand.Schedule(this, requests))
+                suspendCoroutine<Unit> { chan = it }
             } catch (e: CancellationException) {
                 // Deschedule the VM
-                withContext(NonCancellable) {
-                    requests.forEach { it.isCancelled = true }
-                    schedulingQueue.send(SchedulerCommand.Interrupt)
-                    suspendCancellableCoroutine<Unit> { cont = it }
-                }
-
+                requests.forEach { it.isCancelled = true }
+                schedulingQueue.offer(SchedulerCommand.Interrupt)
+                suspendCoroutine<Unit> { chan = it }
                 e.assertFailure()
             }
         }
