@@ -237,10 +237,12 @@ fun main(args: Array<String>) {
                 null
             }
 
+            var submitted = 0L
             val finished = Channel<Unit>(Channel.RENDEZVOUS)
             val reader = Sc20ParquetTraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList(), Random(seed))
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
+                submitted++
                 delay(max(0, time - simulationContext.clock.millis()))
                 launch {
                     chan.send(Unit)
@@ -261,7 +263,7 @@ fun main(args: Array<String>) {
                 }
             }
 
-            while (scheduler.finishedVms + scheduler.unscheduledVms != scheduler.submittedVms || reader.hasNext()) {
+            while (scheduler.finishedVms + scheduler.unscheduledVms != submitted || reader.hasNext()) {
                 finished.receive()
             }
 
