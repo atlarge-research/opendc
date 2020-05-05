@@ -36,10 +36,14 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- *
- * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ * A script to convert a trace in text format into a Parquet trace.
  */
-fun main() {
+fun main(args: Array<String>) {
+    if (args.size < 2) {
+        println("error: expected <INPUT> <OUTPUT>")
+        return
+    }
+
     val metaSchema = SchemaBuilder
         .record("meta")
         .namespace("com.atlarge.opendc.format.sc20")
@@ -69,8 +73,8 @@ fun main() {
     val provisionedMemoryCol = 20
     val traceInterval = 5 * 60 * 1000L
 
-    val dest = File("../traces/solvinity/small-parquet")
-    val traceDirectory = File("../traces/solvinity/small")
+    val dest = File(args[0])
+    val traceDirectory = File(args[1])
     val vms =
         traceDirectory.walk()
             .filterNot { it.isDirectory }
