@@ -3,6 +3,12 @@ package com.atlarge.opendc.compute.virt.service.allocation
 import com.atlarge.opendc.compute.virt.service.HypervisorView
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 
+/**
+ * Policy replaying VM-cluster assignnment.
+ *
+ * Within each cluster, the active servers on each node determine which node gets
+ * assigned the VM image.
+ */
 class ReplayAllocationPolicy(val vmPlacements: Map<String, String>) : AllocationPolicy {
     override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
         override fun select(
