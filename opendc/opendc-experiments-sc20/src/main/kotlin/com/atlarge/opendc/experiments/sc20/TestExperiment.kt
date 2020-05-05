@@ -253,6 +253,23 @@ fun main(args: Array<String>) {
             val reader = Sc20ParquetTraceReader(File(traceDirectory), performanceInterferenceModel, getSelectedVmList(), Random(seed))
             while (reader.hasNext()) {
                 val (time, workload) = reader.next()
+
+                if (vmPlacements.isNotEmpty()) {
+                    val vmId = workload.name.replace("VM Workload ", "")
+                    // Check if VM in topology
+                    val clusterName = vmPlacements[vmId]
+                    if (clusterName == null) {
+                        println("Could not find placement data in VM placement file for VM ${vmId}")
+                        continue
+                    }
+                    val machinesInCluster =
+                        hypervisors.filter { (it as SimpleVirtDriver).server.name.contains(clusterName) }
+                    if (machinesInCluster.isEmpty()) {
+                        println("Ignored VM")
+                        continue
+                    }
+                }
+
                 submitted++
                 delay(max(0, time - simulationContext.clock.millis()))
                 launch {

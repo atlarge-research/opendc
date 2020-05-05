@@ -18,7 +18,7 @@ class ReplayAllocationPolicy(val vmPlacements: Map<String, String>) : Allocation
             val clusterName = vmPlacements[image.name]
                 ?: throw RuntimeException("Could not find placement data in VM placement file for VM ${image.name}")
             val machinesInCluster = hypervisors.filter { it.server.name.contains(clusterName) }
-            return machinesInCluster.minBy { it.numberOfActiveServers }
+            return machinesInCluster.maxBy { it.availableMemory }
                 ?: throw RuntimeException("Cloud not find any machines belonging to cluster $clusterName for image ${image.name}")
         }
     }
