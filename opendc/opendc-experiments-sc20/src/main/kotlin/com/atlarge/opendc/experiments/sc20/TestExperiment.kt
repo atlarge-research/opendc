@@ -259,7 +259,7 @@ fun main(args: Array<String>) {
                     // Check if VM in topology
                     val clusterName = vmPlacements[vmId]
                     if (clusterName == null) {
-                        println("Could not find placement data in VM placement file for VM ${vmId}")
+                        println("Could not find placement data in VM placement file for VM $vmId")
                         continue
                     }
                     val machinesInCluster =
