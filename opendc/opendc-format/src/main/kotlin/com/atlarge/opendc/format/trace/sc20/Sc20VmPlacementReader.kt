@@ -44,7 +44,9 @@ class Sc20VmPlacementReader(input: InputStream, mapper: ObjectMapper = jacksonOb
     private val placements = mapper.readValue<Map<String, String>>(input)
 
     override fun construct(): Map<String, String> {
-        return placements.mapKeys { "vm__workload__${it.key}.txt" }
+        return placements
+            .mapKeys { "vm__workload__${it.key}.txt" }
+            .mapValues { it.value.split("/")[1] } // Clusters have format XX0 / X00
     }
 
     override fun close() {}
