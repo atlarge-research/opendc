@@ -58,7 +58,6 @@ import com.xenomachina.argparser.default
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
@@ -220,55 +219,56 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, monitor: Sc2
 /**
  * Process the trace.
  */
-suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtProvisioningService, chan: Channel<Unit>, vmPlacements: Map<String, String>, monitor: Sc20Monitor) {
+suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtProvisioningService, chan: Channel<Unit>, monitor: Sc20Monitor, vmPlacements: Map<String, String> = emptyMap()) {
+    val domain = simulationContext.domain
+
     try {
-        coroutineScope {
-            var submitted = 0L
-            val finished = Channel<Unit>(Channel.CONFLATED)
-            val hypervisors = TreeSet(scheduler.drivers().map { (it as SimpleVirtDriver).server.name })
+        var submitted = 0L
+        val finished = Channel<Unit>(Channel.CONFLATED)
+        val hypervisors = TreeSet(scheduler.drivers().map { (it as SimpleVirtDriver).server.name })
 
-            while (reader.hasNext()) {
-                val (time, workload) = reader.next()
+        while (reader.hasNext()) {
+            val (time, workload) = reader.next()
 
-                if (vmPlacements.isNotEmpty()) {
-                    val vmId = workload.name.replace("VM Workload ", "")
-                    // Check if VM in topology
-                    val clusterName = vmPlacements[vmId]
-                    if (clusterName == null) {
-                        println("Could not find placement data in VM placement file for VM $vmId")
-                        continue
-                    }
-                    val machineInCluster = hypervisors.ceiling(clusterName)?.let { it.contains(clusterName) } ?: false
-                    if (machineInCluster) {
-                        println("Ignored VM")
-                        continue
-                    }
+            if (vmPlacements.isNotEmpty()) {
+                val vmId = workload.name.replace("VM Workload ", "")
+                // Check if VM in topology
+                val clusterName = vmPlacements[vmId]
+                if (clusterName == null) {
+                    println("Could not find placement data in VM placement file for VM $vmId")
+                    continue
                 }
+                val machineInCluster = hypervisors.ceiling(clusterName)?.contains(clusterName) ?: false
+                if (machineInCluster) {
+                    println("Ignored VM")
+                    continue
+                }
+            }
 
-                submitted++
-                delay(max(0, time - simulationContext.clock.millis()))
-                launch {
-                    chan.send(Unit)
-                    val server = scheduler.deploy(
-                        workload.image.name, workload.image,
-                        Flavor(workload.image.maxCores, workload.image.requiredMemory)
-                    )
-                    // Monitor server events
-                    server.events
-                        .onEach {
-                            if (it is ServerEvent.StateChanged) {
-                                monitor.onVmStateChanged(it.server)
-                            }
-
-                            finished.send(Unit)
+            submitted++
+            delay(max(0, time - simulationContext.clock.millis()))
+            domain.launch {
+                chan.send(Unit)
+                val server = scheduler.deploy(
+                    workload.image.name, workload.image,
+                    Flavor(workload.image.maxCores, workload.image.requiredMemory)
+                )
+                // Monitor server events
+                server.events
+                    .onEach {
+                        if (it is ServerEvent.StateChanged) {
+                            monitor.onVmStateChanged(it.server)
                         }
-                        .collect()
-                }
-            }
 
-            while (scheduler.finishedVms + scheduler.unscheduledVms != submitted || reader.hasNext()) {
-                finished.receive()
+                        delay(1)
+                        finished.send(Unit)
+                    }
+                    .collect()
             }
+        }
+
+        while (scheduler.finishedVms + scheduler.unscheduledVms != submitted) {
+            finished.receive()
         }
     } finally {
         reader.close()
@@ -347,7 +347,7 @@ fun main(args: Array<String>) {
         }
 
         attachMonitor(scheduler, monitor)
-        processTrace(traceReader, scheduler, chan, vmPlacements, monitor)
+        processTrace(traceReader, scheduler, chan, monitor, vmPlacements)
 
         println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
