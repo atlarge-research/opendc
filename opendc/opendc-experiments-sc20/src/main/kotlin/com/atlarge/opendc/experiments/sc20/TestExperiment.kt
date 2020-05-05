@@ -39,11 +39,13 @@ import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocat
 import com.atlarge.opendc.compute.virt.service.allocation.NumberOfActiveServersAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.ProvisionedCoresAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.RandomAllocationPolicy
+import com.atlarge.opendc.compute.virt.service.allocation.ReplayAllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
 import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.failure.FaultInjector
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
+import com.atlarge.opendc.format.trace.sc20.Sc20VmPlacementReader
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.xenomachina.argparser.ArgParser
@@ -67,6 +69,7 @@ class ExperimentParameters(parser: ArgParser) {
     val traceDirectory by parser.storing("path to the trace directory")
     val environmentFile by parser.storing("path to the environment file")
     val performanceInterferenceFile by parser.storing("path to the performance interference file").default { null }
+    val vmPlacementFile by parser.storing("path to the VM placement file").default { null }
     val outputFile by parser.storing("path to where the output should be stored")
         .default { "data/results-${System.currentTimeMillis()}.parquet" }
     val selectedVms by parser.storing("the VMs to run") { parseVMs(this) }
@@ -121,6 +124,7 @@ fun main(args: Array<String>) {
         println("trace-directory: $traceDirectory")
         println("environment-file: $environmentFile")
         println("performance-interference-file: $performanceInterferenceFile")
+        println("vm-placement-file: $vmPlacementFile")
         println("selected-vms-file: $selectedVmsFile")
         println("seed: $seed")
         println("failures: $failures")
@@ -134,6 +138,12 @@ fun main(args: Array<String>) {
         val root = system.newDomain("root")
         val chan = Channel<Unit>(Channel.CONFLATED)
 
+        val vmPlacements = if (vmPlacementFile == null) {
+            emptyMap()
+        } else {
+            Sc20VmPlacementReader(File(vmPlacementFile!!).inputStream().buffered()).construct()
+        }
+
         val allocationPolicies = mapOf(
             "mem" to AvailableMemoryAllocationPolicy(),
             "mem-inv" to AvailableMemoryAllocationPolicy(true),
@@ -143,6 +153,7 @@ fun main(args: Array<String>) {
             "active-servers-inv" to NumberOfActiveServersAllocationPolicy(true),
             "provisioned-cores" to ProvisionedCoresAllocationPolicy(),
             "provisioned-cores-inv" to ProvisionedCoresAllocationPolicy(true),
+            "replay" to ReplayAllocationPolicy(vmPlacements),
             "random" to RandomAllocationPolicy(Random(seed))
         )
 
