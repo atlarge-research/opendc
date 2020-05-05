@@ -139,10 +139,13 @@ class SimpleVirtProvisioningService(
             if (selectedHv == null) {
                 if (requiredMemory > maxMemory || imageInstance.flavor.cpuCount > maxCores) {
                     unscheduledVms++
-                    println("[${clock.millis()}] CANNOT SPAWN ${imageInstance.image}")
-                }
+                    incomingImages -= imageInstance
 
-                break
+                    println("[${clock.millis()}] CANNOT SPAWN ${imageInstance.image}")
+                    continue
+                } else {
+                    break
+                }
             }
 
             try {
