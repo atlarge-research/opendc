@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.format.trace.vm
+package com.atlarge.opendc.format.trace.bitbrains
 
 import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
@@ -43,7 +43,7 @@ import java.util.UUID
  * @param traceDirectory The directory of the traces.
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
-class VmTraceReader(
+class BitbrainsTraceReader(
     traceDirectory: File,
     performanceInterferenceModel: PerformanceInterferenceModel
 ) : TraceReader<VmWorkload> {

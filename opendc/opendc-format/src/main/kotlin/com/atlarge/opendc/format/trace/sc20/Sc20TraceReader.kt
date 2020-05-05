@@ -117,7 +117,6 @@ class Sc20TraceReader(
                         reader.lineSequence()
                             .chunked(128)
                             .forEach { lines ->
-                                // val res = ArrayList<FlopsHistoryFragment>(lines.size)
                                 for (line in lines) {
                                     // Ignore comments in the trace
                                     if (line.startsWith("#") || line.isBlank()) {
@@ -149,7 +148,6 @@ class Sc20TraceReader(
                                         fragment
                                     }
                                 }
-                                // yieldAll(res)
                             }
 
                         if (last != null) {
