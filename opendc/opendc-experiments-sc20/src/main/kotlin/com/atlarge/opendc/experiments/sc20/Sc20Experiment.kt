@@ -69,6 +69,7 @@ import java.io.File
 import java.io.FileReader
 import java.util.ServiceLoader
 import java.util.TreeSet
+import kotlin.math.ln
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -143,7 +144,7 @@ fun createFaultInjector(domain: Domain, random: Random, failureInterval: Int): F
     // GRID'5000
     return CorrelatedFaultInjector(
         domain,
-        iatScale = -1.39, iatShape = failureInterval.toDouble(), // Hours
+        iatScale = ln(failureInterval.toDouble()), iatShape = 1.03, // Hours
         sizeScale = 1.88, sizeShape = 1.25,
         dScale = 9.51, dShape = 3.21, // Minutes
         random = random
