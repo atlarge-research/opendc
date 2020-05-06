@@ -38,9 +38,9 @@ import com.atlarge.opendc.core.Platform
 import com.atlarge.opendc.core.Zone
 import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.format.environment.EnvironmentReader
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileReader
+import java.io.FileInputStream
+import java.io.InputStream
 import java.util.Random
 import java.util.UUID
 
@@ -50,8 +50,11 @@ import java.util.UUID
  * @param environmentFile The file describing the physical cluster.
  */
 class Sc20ClusterEnvironmentReader(
-    private val environmentFile: File
+    private val input: InputStream
 ) : EnvironmentReader {
+
+    constructor(file: File) : this(FileInputStream(file))
+
     @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun construct(dom: Domain): Environment {
         var clusterIdCol = 0
@@ -70,7 +73,7 @@ class Sc20ClusterEnvironmentReader(
         val nodes = mutableListOf<SimpleBareMetalDriver>()
         val random = Random(0)
 
-        BufferedReader(FileReader(environmentFile)).use { reader ->
+        input.bufferedReader().use { reader ->
             reader.lineSequence()
                 .filter { line ->
                     // Ignore comments in the file
