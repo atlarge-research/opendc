@@ -67,7 +67,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileReader
-import java.lang.IllegalArgumentException
 import java.util.ServiceLoader
 import java.util.TreeSet
 import kotlin.math.max
@@ -89,6 +88,8 @@ class ExperimentParameters(parser: ArgParser) {
     val seed by parser.storing("the random seed") { toInt() }
         .default(0)
     val failures by parser.flagging("-x", "--failures", help = "enable (correlated) machine failures")
+    val failureInterval by parser.storing("expected number of hours between failures") { toInt() }
+        .default(24 * 7) // one week
     val allocationPolicy by parser.storing("name of VM allocation policy to use").default("core-mem")
 
     fun getSelectedVmList(): List<String> {
@@ -112,7 +113,12 @@ class ExperimentParameters(parser: ArgParser) {
 /**
  * Construct the failure domain for the experiments.
  */
-suspend fun createFailureDomain(seed: Int, bareMetalProvisioner: ProvisioningService, chan: Channel<Unit>): Domain {
+suspend fun createFailureDomain(
+    seed: Int,
+    failureInterval: Int,
+    bareMetalProvisioner: ProvisioningService,
+    chan: Channel<Unit>
+): Domain {
     val root = simulationContext.domain
     val domain = root.newDomain(name = "failures")
     domain.launch {
@@ -121,7 +127,8 @@ suspend fun createFailureDomain(seed: Int, bareMetalProvisioner: ProvisioningSer
         val injectors = mutableMapOf<String, FaultInjector>()
         for (node in bareMetalProvisioner.nodes()) {
             val cluster = node.metadata[NODE_CLUSTER] as String
-            val injector = injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain, random) }
+            val injector =
+                injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain, random, failureInterval) }
             injector.enqueue(node.metadata["driver"] as FailureDomain)
         }
     }
@@ -131,11 +138,12 @@ suspend fun createFailureDomain(seed: Int, bareMetalProvisioner: ProvisioningSer
 /**
  * Obtain the [FaultInjector] to use for the experiments.
  */
-fun createFaultInjector(domain: Domain, random: Random): FaultInjector {
+fun createFaultInjector(domain: Domain, random: Random, failureInterval: Int): FaultInjector {
     // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
     // GRID'5000
-    return CorrelatedFaultInjector(domain,
-        iatScale = -1.39, iatShape = 1.03, // Hours
+    return CorrelatedFaultInjector(
+        domain,
+        iatScale = -1.39, iatShape = failureInterval.toDouble(), // Hours
         sizeScale = 1.88, sizeShape = 1.25,
         dScale = 9.51, dShape = 3.21, // Minutes
         random = random
@@ -341,7 +349,7 @@ fun main(args: Array<String>) {
 
         val failureDomain = if (cli.failures) {
             println("ENABLING failures")
-            createFailureDomain(cli.seed, bareMetalProvisioner, chan)
+            createFailureDomain(cli.seed, cli.failureInterval, bareMetalProvisioner, chan)
         } else {
             null
         }
