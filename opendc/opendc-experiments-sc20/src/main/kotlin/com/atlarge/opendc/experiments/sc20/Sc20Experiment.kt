@@ -51,6 +51,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.long
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -59,6 +60,7 @@ import mu.KotlinLogging
 import java.io.File
 import java.io.FileReader
 import java.io.InputStream
+import java.sql.DriverManager
 import java.util.ServiceLoader
 import kotlin.random.Random
 
@@ -114,7 +116,8 @@ class ExperimentCommand : CliktCommand(name = "sc20-experiment") {
         .required()
 
     private val reporter by option().groupChoice(
-        "parquet" to Parquet()
+        "parquet" to Parquet(),
+        "postgres" to Postgres()
     ).required()
 
     private fun parseVMs(string: String): List<String> {
@@ -214,6 +217,16 @@ class Parquet : Reporter("Options for reporting using Parquet") {
         .defaultLazy { File("data/results-${System.currentTimeMillis()}.parquet") }
 
     override fun createReporter(): Sc20Reporter = Sc20ParquetReporter(path)
+}
+
+class Postgres : Reporter("Options for reporting using PostgreSQL") {
+    private val url by option(help = "JDBC connection url").required()
+    private val experimentId by option(help = "Experiment ID").long().required()
+
+    override fun createReporter(): Sc20Reporter {
+        val conn = DriverManager.getConnection(url)
+        return Sc20PostgresReporter(conn, experimentId)
+    }
 }
 
 /**
