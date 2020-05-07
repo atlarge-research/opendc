@@ -40,12 +40,14 @@ dependencies {
     implementation(project(":opendc:opendc-format"))
     implementation(kotlin("stdlib"))
     implementation("com.xenomachina:kotlin-argparser:2.0.7")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8")
+    implementation("org.slf4j:slf4j-api:${Library.SLF4J}")
+    implementation("io.github.microutils:kotlin-logging:1.7.9")
     implementation("org.apache.parquet:parquet-avro:1.11.0")
     implementation("org.apache.hadoop:hadoop-client:3.2.1") {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "log4j")
     }
-    runtimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")

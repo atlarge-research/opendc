@@ -6,6 +6,7 @@ import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import kotlinx.coroutines.flow.first
+import mu.KotlinLogging
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
@@ -13,6 +14,8 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.thread
+
+private val logger = KotlinLogging.logger {}
 
 class Sc20ParquetReporter(
     destination: String
@@ -91,7 +94,7 @@ class Sc20ParquetReporter(
             )
         }
 
-        println("[${simulationContext.clock.millis()}] HOST ${server.uid} ${server.state}")
+        logger.info("Host ${server.uid} changed state ${server.state} [${simulationContext.clock.millis()}]")
 
         lastServerStates[server] = Pair(server.state, simulationContext.clock.millis())
     }

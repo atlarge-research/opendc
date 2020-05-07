@@ -65,6 +65,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import mu.KotlinLogging
 import java.io.File
 import java.io.FileReader
 import java.util.ServiceLoader
@@ -72,6 +73,8 @@ import java.util.TreeSet
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.random.Random
+
+private val logger = KotlinLogging.logger {}
 
 class ExperimentParameters(parser: ArgParser) {
     val traceDirectory by parser.storing("path to the trace directory")
@@ -244,12 +247,12 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
                 // Check if VM in topology
                 val clusterName = vmPlacements[vmId]
                 if (clusterName == null) {
-                    println("Could not find placement data in VM placement file for VM $vmId")
+                    logger.warn { "Could not find placement data in VM placement file for VM $vmId" }
                     continue
                 }
                 val machineInCluster = hypervisors.ceiling(clusterName)?.contains(clusterName) ?: false
                 if (machineInCluster) {
-                    println("Ignored VM")
+                    logger.info { "Ignored VM $vmId" }
                     continue
                 }
             }
@@ -290,13 +293,13 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
 @OptIn(ExperimentalCoroutinesApi::class)
 fun main(args: Array<String>) {
     val cli = ArgParser(args).parseInto(::ExperimentParameters)
-    println("trace-directory: ${cli.traceDirectory}")
-    println("environment-file: ${cli.environmentFile}")
-    println("performance-interference-file: ${cli.performanceInterferenceFile}")
-    println("selected-vms-file: ${cli.selectedVmsFile}")
-    println("seed: ${cli.seed}")
-    println("failures: ${cli.failures}")
-    println("allocation-policy: ${cli.allocationPolicy}")
+    logger.info("trace-directory: ${cli.traceDirectory}")
+    logger.info("environment-file: ${cli.environmentFile}")
+    logger.info("performance-interference-file: ${cli.performanceInterferenceFile}")
+    logger.info("selected-vms-file: ${cli.selectedVmsFile}")
+    logger.info("seed: ${cli.seed}")
+    logger.info("failures: ${cli.failures}")
+    logger.info("allocation-policy: ${cli.allocationPolicy}")
 
     val start = System.currentTimeMillis()
     val reporter: Sc20Reporter = Sc20ParquetReporter(cli.outputFile)
@@ -349,7 +352,7 @@ fun main(args: Array<String>) {
         val (bareMetalProvisioner, scheduler) = createProvisioner(root, environmentReader, allocationPolicy)
 
         val failureDomain = if (cli.failures) {
-            println("ENABLING failures")
+            logger.info("ENABLING failures")
             createFailureDomain(cli.seed, cli.failureInterval, bareMetalProvisioner, chan)
         } else {
             null
@@ -358,11 +361,15 @@ fun main(args: Array<String>) {
         attachMonitor(scheduler, reporter)
         processTrace(traceReader, scheduler, chan, reporter, vmPlacements)
 
-        println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
+        logger.debug("SUBMIT=${scheduler.submittedVms}")
+        logger.debug("FAIL=${scheduler.unscheduledVms}")
+        logger.debug("QUEUED=${scheduler.queuedVms}")
+        logger.debug("RUNNING=${scheduler.runningVms}")
+        logger.debug("FINISHED=${scheduler.finishedVms}")
 
         failureDomain?.cancel()
         scheduler.terminate()
-        println("[${simulationContext.clock.millis()}] DONE ${System.currentTimeMillis() - start} milliseconds")
+        logger.info("Simulation took ${System.currentTimeMillis() - start} milliseconds")
     }
 
     runBlocking {

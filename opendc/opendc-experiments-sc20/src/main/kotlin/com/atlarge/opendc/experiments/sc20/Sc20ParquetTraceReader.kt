@@ -32,6 +32,7 @@ import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.core.User
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
+import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
@@ -48,6 +49,8 @@ import java.util.UUID
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.thread
 import kotlin.random.Random
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * A [TraceReader] for the internal VM workload trace format.
@@ -190,7 +193,7 @@ class Sc20ParquetTraceReader(
                 assert(uid !in takenIds)
                 takenIds += uid
 
-                println(id)
+                logger.info("Processing VM $id")
 
                 val internalBuffer = mutableListOf<FlopsHistoryFragment>()
                 val externalBuffer = mutableListOf<FlopsHistoryFragment>()

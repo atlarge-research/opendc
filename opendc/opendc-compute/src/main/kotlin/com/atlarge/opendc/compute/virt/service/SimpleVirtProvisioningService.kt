@@ -24,9 +24,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import mu.KotlinLogging
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.math.max
+
+private val logger = KotlinLogging.logger {}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimpleVirtProvisioningService(
@@ -141,7 +144,7 @@ class SimpleVirtProvisioningService(
                     unscheduledVms++
                     incomingImages -= imageInstance
 
-                    println("[${clock.millis()}] CANNOT SPAWN ${imageInstance.image}")
+                    logger.warn("Failed to spawn ${imageInstance.image}: does not fit [${clock.millis()}]")
                     continue
                 } else {
                     break
@@ -149,7 +152,7 @@ class SimpleVirtProvisioningService(
             }
 
             try {
-                println("[${clock.millis()}] SPAWN ${imageInstance.image} on ${selectedHv.server.uid} ${selectedHv.server.name} ${selectedHv.server.flavor}")
+                logger.info { "Spawning ${imageInstance.image} on ${selectedHv.server.uid} ${selectedHv.server.name} ${selectedHv.server.flavor}" }
                 incomingImages -= imageInstance
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
@@ -174,7 +177,7 @@ class SimpleVirtProvisioningService(
                         when (event) {
                             is ServerEvent.StateChanged -> {
                                 if (event.server.state == ServerState.SHUTOFF) {
-                                    println("[${clock.millis()}] FINISH ${event.server.uid} ${event.server.name} ${event.server.flavor}")
+                                    logger.info { "Server ${event.server.uid} ${event.server.name} ${event.server.flavor} finished." }
                                     runningVms--
                                     finishedVms++
 
@@ -191,13 +194,13 @@ class SimpleVirtProvisioningService(
                     }
                     .launchIn(this)
             } catch (e: InsufficientMemoryOnServerException) {
-                println("Unable to deploy image due to insufficient memory")
+                logger.error("Failed to deploy VM", e)
 
                 selectedHv.numberOfActiveServers--
                 selectedHv.provisionedCores -= imageInstance.flavor.cpuCount
                 selectedHv.availableMemory += requiredMemory
             } catch (e: Throwable) {
-                e.printStackTrace()
+                logger.error("Failed to deploy VM", e)
             }
         }
     }
