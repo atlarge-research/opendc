@@ -184,19 +184,19 @@ suspend fun createProvisioner(
  * Attach the specified monitor to the VM provisioner.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, monitor: Sc20Monitor) {
+suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Sc20Reporter) {
     val domain = simulationContext.domain
     val hypervisors = scheduler.drivers()
 
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
         // TODO Do not expose VirtDriver directly but use Hypervisor class.
-        monitor.serverStateChanged(hypervisor, (hypervisor as SimpleVirtDriver).server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
+        reporter.reportHostStateChange(hypervisor, (hypervisor as SimpleVirtDriver).server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
         hypervisor.server.events
             .onEach { event ->
                 when (event) {
                     is ServerEvent.StateChanged -> {
-                        monitor.serverStateChanged(hypervisor, event.server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
+                        reporter.reportHostStateChange(hypervisor, event.server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
                     }
                 }
             }
@@ -204,7 +204,7 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, monitor: Sc2
         hypervisor.events
             .onEach { event ->
                 when (event) {
-                    is HypervisorEvent.SliceFinished -> monitor.onSliceFinish(
+                    is HypervisorEvent.SliceFinished -> reporter.reportHostSlice(
                         simulationContext.clock.millis(),
                         event.requestedBurst,
                         event.grantedBurst,
@@ -228,7 +228,7 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, monitor: Sc2
 /**
  * Process the trace.
  */
-suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtProvisioningService, chan: Channel<Unit>, monitor: Sc20Monitor, vmPlacements: Map<String, String> = emptyMap()) {
+suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtProvisioningService, chan: Channel<Unit>, reporter: Sc20Reporter, vmPlacements: Map<String, String> = emptyMap()) {
     val domain = simulationContext.domain
 
     try {
@@ -266,7 +266,7 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
                 server.events
                     .onEach {
                         if (it is ServerEvent.StateChanged) {
-                            monitor.onVmStateChanged(it.server)
+                            reporter.reportVmStateChange(it.server)
                         }
 
                         delay(1)
@@ -299,7 +299,7 @@ fun main(args: Array<String>) {
     println("allocation-policy: ${cli.allocationPolicy}")
 
     val start = System.currentTimeMillis()
-    val monitor: Sc20Monitor = Sc20ParquetMonitor(cli.outputFile)
+    val reporter: Sc20Reporter = Sc20ParquetReporter(cli.outputFile)
 
     val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
     val system = provider("test")
@@ -316,7 +316,7 @@ fun main(args: Array<String>) {
         Sc20PerformanceInterferenceReader(performanceInterferenceStream)
             .construct()
     } catch (e: Throwable) {
-        monitor.close()
+        reporter.close()
         throw e
     }
     val vmPlacements = if (cli.vmPlacementFile == null) {
@@ -328,7 +328,7 @@ fun main(args: Array<String>) {
     val traceReader = try {
         createTraceReader(File(cli.traceDirectory), performanceInterferenceModel, cli.getSelectedVmList(), cli.seed)
     } catch (e: Throwable) {
-        monitor.close()
+        reporter.close()
         throw e
     }
     val allocationPolicy = when (cli.allocationPolicy) {
@@ -355,8 +355,8 @@ fun main(args: Array<String>) {
             null
         }
 
-        attachMonitor(scheduler, monitor)
-        processTrace(traceReader, scheduler, chan, monitor, vmPlacements)
+        attachMonitor(scheduler, reporter)
+        processTrace(traceReader, scheduler, chan, reporter, vmPlacements)
 
         println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
@@ -371,5 +371,5 @@ fun main(args: Array<String>) {
     }
 
     // Explicitly close the monitor to flush its buffer
-    monitor.close()
+    reporter.close()
 }

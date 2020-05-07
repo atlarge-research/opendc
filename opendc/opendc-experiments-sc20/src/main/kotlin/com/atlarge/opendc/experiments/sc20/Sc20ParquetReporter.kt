@@ -14,9 +14,9 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.thread
 
-class Sc20ParquetMonitor(
+class Sc20ParquetReporter(
     destination: String
-) : Sc20Monitor {
+) : Sc20Reporter {
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
     private val schema = SchemaBuilder
         .record("slice")
@@ -60,9 +60,9 @@ class Sc20ParquetMonitor(
         }
     }
 
-    override suspend fun onVmStateChanged(server: Server) {}
+    override suspend fun reportVmStateChange(server: Server) {}
 
-    override suspend fun serverStateChanged(
+    override suspend fun reportHostStateChange(
         driver: VirtDriver,
         server: Server,
         submittedVms: Long,
@@ -73,7 +73,7 @@ class Sc20ParquetMonitor(
         val lastServerState = lastServerStates[server]
         if (server.state == ServerState.SHUTOFF && lastServerState != null) {
             val duration = simulationContext.clock.millis() - lastServerState.second
-            onSliceFinish(
+            reportHostSlice(
                 simulationContext.clock.millis(),
                 0,
                 0,
@@ -96,7 +96,7 @@ class Sc20ParquetMonitor(
         lastServerStates[server] = Pair(server.state, simulationContext.clock.millis())
     }
 
-    override suspend fun onSliceFinish(
+    override suspend fun reportHostSlice(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,

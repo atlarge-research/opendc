@@ -28,10 +28,16 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import java.io.Closeable
 
-interface Sc20Monitor : Closeable {
-    suspend fun onVmStateChanged(server: Server) {}
+interface Sc20Reporter : Closeable {
+    /**
+     * This method is invoked when the state of a VM changes.
+     */
+    suspend fun reportVmStateChange(server: Server) {}
 
-    suspend fun serverStateChanged(
+    /**
+     * This method is invoked when the state of a host changes.
+     */
+    suspend fun reportHostStateChange(
         driver: VirtDriver,
         server: Server,
         submittedVms: Long,
@@ -40,7 +46,10 @@ interface Sc20Monitor : Closeable {
         finishedVms: Long
     ) {}
 
-    suspend fun onSliceFinish(
+    /**
+     * This method is invoked for a host for each slice that is finishes.
+     */
+    suspend fun reportHostSlice(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,
