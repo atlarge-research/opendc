@@ -39,8 +39,7 @@ dependencies {
     api(project(":opendc:opendc-core"))
     implementation(project(":opendc:opendc-format"))
     implementation(kotlin("stdlib"))
-    implementation("com.xenomachina:kotlin-argparser:2.0.7")
-    implementation("org.slf4j:slf4j-api:${Library.SLF4J}")
+    implementation("com.github.ajalt:clikt:2.6.0")
     implementation("io.github.microutils:kotlin-logging:1.7.9")
     implementation("org.apache.parquet:parquet-avro:1.11.0")
     implementation("org.apache.hadoop:hadoop-client:3.2.1") {

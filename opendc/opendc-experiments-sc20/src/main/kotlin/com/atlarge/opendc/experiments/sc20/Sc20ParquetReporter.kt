@@ -12,14 +12,13 @@ import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
-class Sc20ParquetReporter(
-    destination: String
-) : Sc20Reporter {
+class Sc20ParquetReporter(destination: File) : Sc20Reporter {
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
     private val schema = SchemaBuilder
         .record("slice")
@@ -43,7 +42,7 @@ class Sc20ParquetReporter(
         .name("totalRunningVms").type().longType().noDefault()
         .name("totalFinishedVms").type().longType().noDefault()
         .endRecord()
-    private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(destination))
+    private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(destination.absolutePath))
         .withSchema(schema)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .withPageSize(4 * 1024 * 1024) // For compression
