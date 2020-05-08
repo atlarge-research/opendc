@@ -6,17 +6,19 @@ import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import kotlinx.coroutines.flow.first
+import mu.KotlinLogging
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.thread
 
-class Sc20ParquetMonitor(
-    destination: String
-) : Sc20Monitor {
+private val logger = KotlinLogging.logger {}
+
+class Sc20ParquetReporter(destination: File) : Sc20Reporter {
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
     private val schema = SchemaBuilder
         .record("slice")
@@ -24,23 +26,23 @@ class Sc20ParquetMonitor(
         .fields()
         .name("time").type().longType().noDefault()
         .name("duration").type().longType().noDefault()
-        .name("requestedBurst").type().longType().noDefault()
-        .name("grantedBurst").type().longType().noDefault()
-        .name("overcommissionedBurst").type().longType().noDefault()
-        .name("interferedBurst").type().longType().noDefault()
-        .name("cpuUsage").type().doubleType().noDefault()
-        .name("cpuDemand").type().doubleType().noDefault()
-        .name("numberOfDeployedImages").type().intType().noDefault()
+        .name("requested_burst").type().longType().noDefault()
+        .name("granted_burst").type().longType().noDefault()
+        .name("overcommissioned_burst").type().longType().noDefault()
+        .name("interfered_burst").type().longType().noDefault()
+        .name("cpu_usage").type().doubleType().noDefault()
+        .name("cpu_demand").type().doubleType().noDefault()
+        .name("image_count").type().intType().noDefault()
         .name("server").type().stringType().noDefault()
-        .name("hostState").type().stringType().noDefault()
-        .name("hostUsage").type().doubleType().noDefault()
-        .name("powerDraw").type().doubleType().noDefault()
-        .name("totalSubmittedVms").type().longType().noDefault()
-        .name("totalQueuedVms").type().longType().noDefault()
-        .name("totalRunningVms").type().longType().noDefault()
-        .name("totalFinishedVms").type().longType().noDefault()
+        .name("host_state").type().stringType().noDefault()
+        .name("host_usage").type().doubleType().noDefault()
+        .name("power_draw").type().doubleType().noDefault()
+        .name("total_submitted_vms").type().longType().noDefault()
+        .name("total_queued_vms").type().longType().noDefault()
+        .name("total_running_vms").type().longType().noDefault()
+        .name("total_finished_vms").type().longType().noDefault()
         .endRecord()
-    private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(destination))
+    private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(destination.absolutePath))
         .withSchema(schema)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .withPageSize(4 * 1024 * 1024) // For compression
@@ -60,9 +62,9 @@ class Sc20ParquetMonitor(
         }
     }
 
-    override suspend fun onVmStateChanged(server: Server) {}
+    override suspend fun reportVmStateChange(server: Server) {}
 
-    override suspend fun serverStateChanged(
+    override suspend fun reportHostStateChange(
         driver: VirtDriver,
         server: Server,
         submittedVms: Long,
@@ -73,7 +75,7 @@ class Sc20ParquetMonitor(
         val lastServerState = lastServerStates[server]
         if (server.state == ServerState.SHUTOFF && lastServerState != null) {
             val duration = simulationContext.clock.millis() - lastServerState.second
-            onSliceFinish(
+            reportHostSlice(
                 simulationContext.clock.millis(),
                 0,
                 0,
@@ -91,12 +93,12 @@ class Sc20ParquetMonitor(
             )
         }
 
-        println("[${simulationContext.clock.millis()}] HOST ${server.uid} ${server.state}")
+        logger.info("Host ${server.uid} changed state ${server.state} [${simulationContext.clock.millis()}]")
 
         lastServerStates[server] = Pair(server.state, simulationContext.clock.millis())
     }
 
-    override suspend fun onSliceFinish(
+    override suspend fun reportHostSlice(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,
@@ -120,21 +122,21 @@ class Sc20ParquetMonitor(
         val record = GenericData.Record(schema)
         record.put("time", time)
         record.put("duration", duration)
-        record.put("requestedBurst", requestedBurst)
-        record.put("grantedBurst", grantedBurst)
-        record.put("overcommissionedBurst", overcommissionedBurst)
-        record.put("interferedBurst", interferedBurst)
-        record.put("cpuUsage", cpuUsage)
-        record.put("cpuDemand", cpuDemand)
-        record.put("numberOfDeployedImages", numberOfDeployedImages)
+        record.put("requested_burst", requestedBurst)
+        record.put("granted_burst", grantedBurst)
+        record.put("overcommissioned_burst", overcommissionedBurst)
+        record.put("interfered_burst", interferedBurst)
+        record.put("cpu_usage", cpuUsage)
+        record.put("cpu_demand", cpuDemand)
+        record.put("image_count", numberOfDeployedImages)
         record.put("server", hostServer.uid)
-        record.put("hostState", hostServer.state)
-        record.put("hostUsage", usage)
-        record.put("powerDraw", powerDraw)
-        record.put("totalSubmittedVms", submittedVms)
-        record.put("totalQueuedVms", queuedVms)
-        record.put("totalRunningVms", runningVms)
-        record.put("totalFinishedVms", finishedVms)
+        record.put("host_state", hostServer.state)
+        record.put("host_usage", usage)
+        record.put("power_draw", powerDraw)
+        record.put("total_submitted_vms", submittedVms)
+        record.put("total_queued_vms", queuedVms)
+        record.put("total_running_vms", runningVms)
+        record.put("total_finished_vms", finishedVms)
 
         queue.put(record)
     }

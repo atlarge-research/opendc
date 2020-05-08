@@ -63,7 +63,7 @@ class Sc20IntegrationTest {
     /**
      * The monitor used to keep track of the metrics.
      */
-    private lateinit var monitor: TestSc20Monitor
+    private lateinit var monitor: TestSc20Reporter
 
     /**
      * Setup the experimental environment.
@@ -73,7 +73,7 @@ class Sc20IntegrationTest {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         simulationEngine = provider("test")
         root = simulationEngine.newDomain("root")
-        monitor = TestSc20Monitor()
+        monitor = TestSc20Reporter()
     }
 
     /**
@@ -151,13 +151,13 @@ class Sc20IntegrationTest {
         return Sc20ClusterEnvironmentReader(stream)
     }
 
-    class TestSc20Monitor : Sc20Monitor {
+    class TestSc20Reporter : Sc20Reporter {
         var totalRequestedBurst = 0L
         var totalGrantedBurst = 0L
         var totalOvercommissionedBurst = 0L
         var totalInterferedBurst = 0L
 
-        override suspend fun onSliceFinish(
+        override suspend fun reportHostSlice(
             time: Long,
             requestedBurst: Long,
             grantedBurst: Long,
