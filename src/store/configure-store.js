@@ -24,12 +24,15 @@ const middlewares = [
   viewportAdjustmentMiddleware
 ];
 
+export let store = undefined;
+
 export default function configureStore() {
-  const store = createStore(
+  const configuredStore = createStore(
     rootReducer,
     compose(persistState("auth"), applyMiddleware(...middlewares))
   );
   sagaMiddleware.run(rootSaga);
+  store = configuredStore;
 
-  return store;
+  return configuredStore;
 }

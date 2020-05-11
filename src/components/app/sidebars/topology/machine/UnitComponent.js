@@ -49,18 +49,16 @@ class UnitComponent extends React.Component {
             this.props.unit.generation}
         </span>
         <span>
-          <a
+          <span
             tabIndex="0"
-            className="unit-info-popover btn btn-outline-info mr-1"
+            className="unit-info-popover btn btn-outline-info mr-1 fa fa-info-circle"
             role="button"
             data-toggle="popover"
             data-trigger="focus"
             title="Unit information"
             data-content={unitInfo}
             data-html="true"
-          >
-            <span className="fa fa-info-circle" />
-          </a>
+          />
           {this.props.inSimulation ? (
             undefined
           ) : (

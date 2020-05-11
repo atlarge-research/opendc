@@ -1,5 +1,4 @@
-import { delay } from "redux-saga";
-import { call, put, select } from "redux-saga/effects";
+import { call, put, select, delay } from "redux-saga/effects";
 import { addPropToStoreObject, addToStore } from "../actions/objects";
 import { setLastSimulatedTick } from "../actions/simulation/tick";
 import { addBatchToStates } from "../actions/states";
