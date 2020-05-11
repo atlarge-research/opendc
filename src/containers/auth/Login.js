@@ -31,11 +31,12 @@ class LoginContainer extends React.Component {
         clientId={process.env.REACT_APP_OAUTH_CLIENT_ID}
         onSuccess={this.onAuthResponse.bind(this)}
         onFailure={this.onAuthResponse.bind(this)}
-        className="login btn btn-primary"
+        render={renderProps => (
+          <span onClick={renderProps.onClick} className="login btn btn-primary">
+            <span className="fa fa-google" /> Login with Google
+          </span>
+        )}
       >
-        <span>
-          <span className="fa fa-google" /> Login with Google
-        </span>
       </GoogleLogin>
     );
   }
