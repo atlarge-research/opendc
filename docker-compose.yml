@@ -56,6 +56,8 @@ services:
       OPENDC_DB_PASSWORD: opendcpassword
     ports:
       - 27017:27017
+    #volumes:
+    #  - mongo-volume:/data/db
 
   mongo-express:
     image: mongo-express
@@ -65,3 +67,7 @@ services:
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: rootpassword
+
+volumes:
+    mongo-volume:
+        external: false
