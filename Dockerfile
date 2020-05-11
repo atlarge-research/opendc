@@ -1,4 +1,4 @@
-FROM node:7.4
+FROM node:14.2.0
 MAINTAINER Sacheendra Talluri <sacheendra.t@gmail.com>
 
 # Installing python and web-server dependencies
