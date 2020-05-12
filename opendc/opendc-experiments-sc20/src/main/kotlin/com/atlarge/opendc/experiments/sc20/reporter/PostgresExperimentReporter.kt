@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.experiments.sc20
+package com.atlarge.opendc.experiments.sc20.reporter
 
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
@@ -37,7 +37,7 @@ import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
-class Sc20PostgresReporter(val conn: Connection, val experimentId: Long) : Sc20Reporter {
+class ExperimentPostgresReporter(val conn: Connection, val experimentId: Long) : ExperimentReporter {
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
     private val queue = ArrayBlockingQueue<Action>(2048)
     private val writerThread = thread(start = true, name = "sc20-writer") {

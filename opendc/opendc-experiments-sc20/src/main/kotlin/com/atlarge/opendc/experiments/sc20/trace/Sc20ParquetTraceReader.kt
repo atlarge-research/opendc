@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.experiments.sc20
+package com.atlarge.opendc.experiments.sc20.trace
 
 import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
@@ -82,7 +82,11 @@ class Sc20ParquetTraceReader(
         if (selectedVms.isEmpty())
             null
         else
-            FilterCompat.get(FilterApi.userDefined(FilterApi.binaryColumn("id"), SelectedVmFilter(TreeSet(selectedVms))))
+            FilterCompat.get(FilterApi.userDefined(FilterApi.binaryColumn("id"),
+                SelectedVmFilter(
+                    TreeSet(selectedVms)
+                )
+            ))
 
     /**
      * A poisonous fragment.
@@ -231,7 +235,8 @@ class Sc20ParquetTraceReader(
                         Random(random.nextInt())
                     )
                 val vmWorkload = VmWorkload(
-                    uid, "VM Workload $id", UnnamedUser,
+                    uid, "VM Workload $id",
+                    UnnamedUser,
                     VmImage(
                         uid,
                         id,
@@ -242,7 +247,10 @@ class Sc20ParquetTraceReader(
                     )
                 )
 
-                TraceEntryImpl(submissionTime, vmWorkload)
+                TraceEntryImpl(
+                    submissionTime,
+                    vmWorkload
+                )
             }
             .sortedBy { it.submissionTime }
             .toList()

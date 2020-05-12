@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,20 @@
 package com.atlarge.opendc.experiments.sc20
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
+import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableCoreMemoryAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.NumberOfActiveServersAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.ProvisionedCoresAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.RandomAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.ReplayAllocationPolicy
+import com.atlarge.opendc.experiments.sc20.reporter.ExperimentParquetReporter
+import com.atlarge.opendc.experiments.sc20.reporter.ExperimentPostgresReporter
+import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporter
+import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
+import com.atlarge.opendc.format.trace.TraceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20VmPlacementReader
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -72,14 +79,14 @@ private val logger = KotlinLogging.logger {}
 /**
  * Represents the command for running the experiment.
  */
-class ExperimentCommand : CliktCommand(name = "sc20-experiment") {
+class ExperimentCli : CliktCommand(name = "sc20-experiment") {
     private val environment by option("--environment-file", help = "path to the environment file")
         .file()
         .required()
     private val performanceInterferenceStream by option("--performance-interference-file", help = "path to the performance interference file")
         .file()
         .convert { it.inputStream() as InputStream }
-        .defaultLazy { ExperimentCommand::class.java.getResourceAsStream("/env/performance-interference.json") }
+        .defaultLazy { ExperimentCli::class.java.getResourceAsStream("/env/performance-interference.json") }
 
     private val vmPlacements by option("--vm-placements-file", help = "path to the VM placement file")
         .file()
@@ -111,13 +118,13 @@ class ExperimentCommand : CliktCommand(name = "sc20-experiment") {
         )
         .default("core-mem")
 
-    private val trace by option("--trace-directory", help = "path to the trace directory")
-        .file(canBeFile = false)
-        .required()
+    private val trace by option().groupChoice(
+        "sc20-parquet" to Trace.Sc20Parquet()
+    ).required()
 
     private val reporter by option().groupChoice(
-        "parquet" to Parquet(),
-        "postgres" to Postgres()
+        "parquet" to Reporter.Parquet(),
+        "postgres" to Reporter.Postgres()
     ).required()
 
     private fun parseVMs(string: String): List<String> {
@@ -135,7 +142,7 @@ class ExperimentCommand : CliktCommand(name = "sc20-experiment") {
         logger.info("allocation-policy: $allocationPolicy")
 
         val start = System.currentTimeMillis()
-        val reporter: Sc20Reporter = reporter.createReporter()
+        val reporter: ExperimentReporter = reporter.createReporter()
 
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider("test")
@@ -164,7 +171,7 @@ class ExperimentCommand : CliktCommand(name = "sc20-experiment") {
         }
         val environmentReader = Sc20ClusterEnvironmentReader(environment)
         val traceReader = try {
-            createTraceReader(trace, performanceInterferenceModel, selectedVms, seed)
+            trace.createTraceReader(performanceInterferenceModel, selectedVms, seed)
         } catch (e: Throwable) {
             reporter.close()
             throw e
@@ -204,32 +211,68 @@ class ExperimentCommand : CliktCommand(name = "sc20-experiment") {
     }
 }
 
-sealed class Reporter(name: String) : OptionGroup(name) {
+/**
+ * An option for specifying the type of reporter to use.
+ */
+internal sealed class Reporter(name: String) : OptionGroup(name) {
     /**
-     * Create the [Sc20Reporter] for this option.
+     * Create the [ExperimentReporter] for this option.
      */
-    abstract fun createReporter(): Sc20Reporter
+    abstract fun createReporter(): ExperimentReporter
+
+    class Parquet : Reporter("Options for reporting using Parquet") {
+        private val path by option("--parquet-path", help = "path to where the output should be stored")
+            .file()
+            .defaultLazy { File("data/results-${System.currentTimeMillis()}.parquet") }
+
+        override fun createReporter(): ExperimentReporter =
+            ExperimentParquetReporter(path)
+    }
+
+    class Postgres : Reporter("Options for reporting using PostgreSQL") {
+        private val url by option("--postgres-url", help = "JDBC connection url").required()
+        private val experimentId by option(help = "Experiment ID").long().required()
+
+        override fun createReporter(): ExperimentReporter {
+            val conn = DriverManager.getConnection(url)
+            return ExperimentPostgresReporter(conn, experimentId)
+        }
+    }
 }
 
-class Parquet : Reporter("Options for reporting using Parquet") {
-    private val path by option(help = "path to where the output should be stored")
-        .file()
-        .defaultLazy { File("data/results-${System.currentTimeMillis()}.parquet") }
+/**
+ * An option for specifying the type of trace to use.
+ */
+internal sealed class Trace(type: String) : OptionGroup(type) {
+    /**
+     * Create a [TraceReader] for this type of trace.
+     */
+    abstract fun createTraceReader(performanceInterferenceModel: PerformanceInterferenceModel, vms: List<String>, seed: Int): TraceReader<VmWorkload>
 
-    override fun createReporter(): Sc20Reporter = Sc20ParquetReporter(path)
-}
+    class Sc20Parquet : Trace("SC20 Parquet format") {
+        /**
+         * Path to trace directory.
+         */
+        private val path by option("--trace-path", help = "path to the trace directory")
+            .file(canBeFile = false)
+            .required()
 
-class Postgres : Reporter("Options for reporting using PostgreSQL") {
-    private val url by option(help = "JDBC connection url").required()
-    private val experimentId by option(help = "Experiment ID").long().required()
-
-    override fun createReporter(): Sc20Reporter {
-        val conn = DriverManager.getConnection(url)
-        return Sc20PostgresReporter(conn, experimentId)
+        override fun createTraceReader(
+            performanceInterferenceModel: PerformanceInterferenceModel,
+            vms: List<String>,
+            seed: Int
+        ): TraceReader<VmWorkload> {
+            return Sc20ParquetTraceReader(
+                path,
+                performanceInterferenceModel,
+                vms,
+                Random(seed)
+            )
+        }
     }
 }
 
 /**
  * Main entry point of the experiment.
  */
-fun main(args: Array<String>) = ExperimentCommand().main(args)
+fun main(args: Array<String>) = ExperimentCli().main(args)

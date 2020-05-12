@@ -31,7 +31,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com.atlarge.opendc.experiments.sc20.Sc20ExperimentKt"
+    mainClassName = "com.atlarge.opendc.experiments.sc20.ExperimentRunnerCliKt"
     applicationDefaultJvmArgs = listOf("-Xmx2500M", "-Xms1800M")
 }
 

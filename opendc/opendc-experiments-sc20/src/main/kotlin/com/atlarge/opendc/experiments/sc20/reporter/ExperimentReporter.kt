@@ -22,13 +22,16 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.experiments.sc20
+package com.atlarge.opendc.experiments.sc20.reporter
 
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import java.io.Closeable
 
-interface Sc20Reporter : Closeable {
+/**
+ * A reporter used by experiments to report metrics.
+ */
+interface ExperimentReporter : Closeable {
     /**
      * This method is invoked when the state of a VM changes.
      */

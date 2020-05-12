@@ -39,6 +39,8 @@ import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
 import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.failure.FaultInjector
+import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporter
+import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -105,7 +107,12 @@ fun createFaultInjector(domain: Domain, random: Random, failureInterval: Int): F
  * Create the trace reader from which the VM workloads are read.
  */
 fun createTraceReader(path: File, performanceInterferenceModel: PerformanceInterferenceModel, vms: List<String>, seed: Int): Sc20ParquetTraceReader {
-    return Sc20ParquetTraceReader(path, performanceInterferenceModel, vms, Random(seed))
+    return Sc20ParquetTraceReader(
+        path,
+        performanceInterferenceModel,
+        vms,
+        Random(seed)
+    )
 }
 
 /**
@@ -134,7 +141,7 @@ suspend fun createProvisioner(
  * Attach the specified monitor to the VM provisioner.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Sc20Reporter) {
+suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: ExperimentReporter) {
     val domain = simulationContext.domain
     val hypervisors = scheduler.drivers()
 
@@ -178,7 +185,7 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Sc
 /**
  * Process the trace.
  */
-suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtProvisioningService, chan: Channel<Unit>, reporter: Sc20Reporter, vmPlacements: Map<String, String> = emptyMap()) {
+suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtProvisioningService, chan: Channel<Unit>, reporter: ExperimentReporter, vmPlacements: Map<String, String> = emptyMap()) {
     val domain = simulationContext.domain
 
     try {

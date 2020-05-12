@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.experiments.sc20
+package com.atlarge.opendc.experiments.sc20.trace
 
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
@@ -139,7 +139,14 @@ fun main(args: Array<String>) {
                                     )
                                 } else {
                                     val fragment =
-                                        Fragment(vmId, timestamp, flops, traceInterval, cpuUsage, cores)
+                                        Fragment(
+                                            vmId,
+                                            timestamp,
+                                            flops,
+                                            traceInterval,
+                                            cpuUsage,
+                                            cores
+                                        )
                                     if (last != null) {
                                         yield(last!!)
                                     }

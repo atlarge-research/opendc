@@ -31,6 +31,7 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableCoreMemoryAllocationPolicy
+import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporter
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
@@ -63,7 +64,7 @@ class Sc20IntegrationTest {
     /**
      * The monitor used to keep track of the metrics.
      */
-    private lateinit var monitor: TestSc20Reporter
+    private lateinit var monitor: TestExperimentReporter
 
     /**
      * Setup the experimental environment.
@@ -73,7 +74,7 @@ class Sc20IntegrationTest {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         simulationEngine = provider("test")
         root = simulationEngine.newDomain("root")
-        monitor = TestSc20Reporter()
+        monitor = TestExperimentReporter()
     }
 
     /**
@@ -151,7 +152,7 @@ class Sc20IntegrationTest {
         return Sc20ClusterEnvironmentReader(stream)
     }
 
-    class TestSc20Reporter : Sc20Reporter {
+    class TestExperimentReporter : ExperimentReporter {
         var totalRequestedBurst = 0L
         var totalGrantedBurst = 0L
         var totalOvercommissionedBurst = 0L
