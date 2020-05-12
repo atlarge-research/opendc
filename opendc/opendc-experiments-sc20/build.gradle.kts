@@ -46,6 +46,7 @@ dependencies {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }
+    implementation("com.zaxxer:HikariCP:3.4.5")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
     runtimeOnly("org.postgresql:postgresql:42.2.12")
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))
