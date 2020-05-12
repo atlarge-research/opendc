@@ -85,7 +85,6 @@ class SwfTraceReader(
                 }
                 .forEach { line ->
                     val values = line.trim().split("\\s+".toRegex())
-                    println(values)
 
                     jobNumber = values[jobNumberCol].trim().toLong()
                     submitTime = values[submitTimeCol].trim().toLong()
@@ -102,11 +101,12 @@ class SwfTraceReader(
 
                     val flopsHistory = mutableListOf<FlopsHistoryFragment>()
 
-                    // Insert waiting time
+                    // Insert waiting time slices
+
                     // We ignore wait time remainders under one
                     slicedWaitTime = 0L
                     if (waitTime >= sliceDuration) {
-                        for (tick in submitTime until waitTime step sliceDuration) {
+                        for (tick in submitTime until (submitTime + waitTime - sliceDuration) step sliceDuration) {
                             flopsHistory.add(
                                 FlopsHistoryFragment(
                                     tick * 1000L, 0L, sliceDuration * 1000L, 0.0, cores
@@ -116,18 +116,19 @@ class SwfTraceReader(
                         }
                     }
 
-                    // Insert run time
+                    // Insert run time slices
+
                     flopsPerSecond = 4_000L * cores
                     runtimePartialSliceRemainder = runTime % sliceDuration
                     flopsPartialSlice = flopsPerSecond * runtimePartialSliceRemainder
                     flopsFullSlice = flopsPerSecond * runTime - flopsPartialSlice
 
                     for (tick in (submitTime + slicedWaitTime)
-                        until (submitTime + slicedWaitTime + runTime)
+                        until (submitTime + slicedWaitTime + runTime - sliceDuration)
                         step sliceDuration) {
                         flopsHistory.add(
                             FlopsHistoryFragment(
-                                tick * 1000L, flopsFullSlice / sliceDuration, sliceDuration * 1000L, 0.0, cores
+                                tick * 1000L, flopsFullSlice / sliceDuration, sliceDuration * 1000L, 1.0, cores
                             )
                         )
                     }
@@ -136,7 +137,10 @@ class SwfTraceReader(
                         flopsHistory.add(
                             FlopsHistoryFragment(
                                 submitTime + (slicedWaitTime + runTime - runtimePartialSliceRemainder),
-                                flopsPartialSlice, sliceDuration, 0.0, cores
+                                flopsPartialSlice,
+                                sliceDuration,
+                                runtimePartialSliceRemainder / sliceDuration.toDouble(),
+                                cores
                             )
                         )
                     }
