@@ -38,6 +38,7 @@ setup(
         'flask_socketio',
         'oauth2client',
         'eventlet',
-        'flask-compress'
+        'flask-compress',
+        'flask-cors'
     ],
 )

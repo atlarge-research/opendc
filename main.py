@@ -9,6 +9,7 @@ import urllib2
 from flask import Flask, request, send_from_directory, jsonify
 from flask_compress import Compress
 from oauth2client import client, crypt
+from flask_cors import CORS
 
 from opendc.models.user import User
 from opendc.util import exceptions, rest, path_parser, database
@@ -28,12 +29,16 @@ database.init_connection_pool(user=KEYS['MYSQL_USER'], password=KEYS['MYSQL_PASS
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
 FLASK_CORE_APP.config['SECREY_KEY'] = KEYS['FLASK_SECRET']
+if 'localhost' in KEYS['SERVER_BASE_URL']:
+    CORS(FLASK_CORE_APP)
 
 compress = Compress()
 compress.init_app(FLASK_CORE_APP)
 
-SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP)
-
+if 'localhost' in KEYS['SERVER_BASE_URL']:
+    SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP, cors_allowed_origins="*")
+else:
+    SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP)
 
 @FLASK_CORE_APP.errorhandler(404)
 def page_not_found(e):
