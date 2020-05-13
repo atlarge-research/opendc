@@ -43,7 +43,8 @@ import java.util.UUID
  * @param file The trace file.
  */
 class SwfTraceReader(
-    file: File
+    file: File,
+    maxNumCores: Int = -1
 ) : TraceReader<VmWorkload> {
     /**
      * The internal iterator to use for this reader.
@@ -92,6 +93,11 @@ class SwfTraceReader(
                     runTime = values[runTimeCol].trim().toLong()
                     cores = values[numAllocatedCoresCol].trim().toInt()
                     memory = values[requestedMemoryCol].trim().toLong()
+
+                    if (maxNumCores != -1 && cores > maxNumCores) {
+                        println("Skipped a task due to processor count ($cores > $maxNumCores).")
+                        return@forEach
+                    }
 
                     if (memory == -1L) {
                         memory = 1000L * cores // assume 1GB of memory per processor if not specified
