@@ -37,8 +37,10 @@ import com.github.ajalt.clikt.parameters.groups.required
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
@@ -55,19 +57,36 @@ private val logger = KotlinLogging.logger {}
  * Represents the command for running the experiment.
  */
 class ExperimentCli : CliktCommand(name = "sc20-experiment") {
+    /**
+     * The JDBC connection url to use.
+     */
+    private val jdbcUrl by option("--jdbc-url", help = "JDBC connection url").required()
+
+    /**
+     * The path to the directory where the topology descriptions are located.
+     */
     private val environmentPath by option("--environment-path", help = "path to the environment directory")
         .file(canBeFile = false)
         .required()
 
+    /**
+     * The path to the directory where the traces are located.
+     */
     private val tracePath by option("--trace-path", help = "path to the traces directory")
         .file(canBeFile = false)
         .required()
 
+    /**
+     * The path to the performance interference model.
+     */
     private val performanceInterferenceStream by option("--performance-interference-model", help = "path to the performance interference file")
         .file()
         .convert { it.inputStream() as InputStream }
         .defaultLazy { ExperimentCli::class.java.getResourceAsStream("/env/performance-interference.json") }
 
+    /**
+     * The path to the original VM placements file.
+     */
     private val vmPlacements by option("--vm-placements-file", help = "path to the VM placement file")
         .file()
         .convert {
@@ -75,24 +94,31 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
         }
         .default(emptyMap())
 
+    /**
+     * The type of reporter to use.
+     */
     private val reporter by option().groupChoice(
         "parquet" to Reporter.Parquet(),
         "postgres" to Reporter.Postgres()
     ).required()
 
-    private val jdbcUrl by option("--jdbc-url", help = "JDBC connection url").required()
+    /**
+     * The selected portfolios to run.
+     */
+    private val portfolios by option("--portfolio")
+        .choice(
+            "hor-ver" to HorVerPortfolio,
+            "more-velocitory" to MoreVelocityPortfolio,
+            "more-hpc" to MoreHpcPortfolio,
+            "operational-phenomena" to OperationalPhenomenaPortfolio,
+            ignoreCase = true
+        )
+        .multiple()
 
     override fun run() {
         val ds = HikariDataSource()
         ds.jdbcUrl = jdbcUrl
         ds.addDataSourceProperty("reWriteBatchedInserts", "true")
-
-        val portfolios = listOf(
-            HorVerPortfolio // ,
-            // MoreVelocityPortfolio,
-            // MoreHpcPortfolio,
-            // OperationalPhenomenaPortfolio
-        )
 
         val performanceInterferenceModel = Sc20PerformanceInterferenceReader(performanceInterferenceStream)
             .construct()
