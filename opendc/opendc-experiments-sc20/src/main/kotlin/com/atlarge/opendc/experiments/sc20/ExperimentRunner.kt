@@ -27,7 +27,7 @@ package com.atlarge.opendc.experiments.sc20
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporterProvider
-import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
+import com.atlarge.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
 import com.atlarge.opendc.experiments.sc20.util.DatabaseHelper
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
@@ -85,6 +85,10 @@ public class ExperimentRunner(
      */
     private val scenarioIds = mutableMapOf<Scenario, Long>()
 
+    init {
+        reporterProvider.init(ds)
+    }
+
     /**
      * Create an execution plan
      */
@@ -123,7 +127,7 @@ public class ExperimentRunner(
         performanceInterferenceModel: PerformanceInterferenceModel,
         seed: Int
     ): TraceReader<VmWorkload> {
-        return Sc20ParquetTraceReader(
+        return Sc20StreamingParquetTraceReader(
             File(tracePath, name),
             performanceInterferenceModel,
             emptyList(),
@@ -142,10 +146,14 @@ public class ExperimentRunner(
      * Run the specified run.
      */
     private fun run(run: Run) {
-        val reporter = reporterProvider.createReporter(ds, experimentId)
+        val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
         val traceReader = createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run.seed)
         val environmentReader = createEnvironmentReader(run.scenario.topology.name)
-        run.scenario(run, reporter, environmentReader, traceReader)
+        try {
+            run.scenario(run, reporter, environmentReader, traceReader)
+        } finally {
+            reporter.close()
+        }
     }
 
     /**
@@ -197,6 +205,7 @@ public class ExperimentRunner(
     }
 
     override fun close() {
+        reporterProvider.close()
         helper.close()
     }
 }

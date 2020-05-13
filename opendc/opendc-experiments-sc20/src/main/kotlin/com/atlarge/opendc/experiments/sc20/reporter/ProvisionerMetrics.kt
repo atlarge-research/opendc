@@ -24,17 +24,16 @@
 
 package com.atlarge.opendc.experiments.sc20.reporter
 
-import java.io.Closeable
-import javax.sql.DataSource
-
-interface ExperimentReporterProvider : Closeable {
-    /**
-     * Initialize the provider with the specified data source.
-     */
-    public fun init(ds: DataSource) {}
-
-    /**
-     * Create a reporter for a single run.
-     */
-    public fun createReporter(scenario: Long, run: Int): ExperimentReporter
-}
+/**
+ * A periodic report of the provisioner's metrics.
+ */
+data class ProvisionerMetrics(
+    val time: Long,
+    val totalHostCount: Int,
+    val availableHostCount: Int,
+    val totalVmCount: Int,
+    val activeVmCount: Int,
+    val inactiveVmCount: Int,
+    val waitingVmCount: Int,
+    val failedVmCount: Int
+)

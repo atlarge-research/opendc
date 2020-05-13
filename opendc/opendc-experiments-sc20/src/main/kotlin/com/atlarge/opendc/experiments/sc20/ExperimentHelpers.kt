@@ -40,7 +40,7 @@ import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
 import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.failure.FaultInjector
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporter
-import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
+import com.atlarge.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -106,8 +106,8 @@ fun createFaultInjector(domain: Domain, random: Random, failureInterval: Int): F
 /**
  * Create the trace reader from which the VM workloads are read.
  */
-fun createTraceReader(path: File, performanceInterferenceModel: PerformanceInterferenceModel, vms: List<String>, seed: Int): Sc20ParquetTraceReader {
-    return Sc20ParquetTraceReader(
+fun createTraceReader(path: File, performanceInterferenceModel: PerformanceInterferenceModel, vms: List<String>, seed: Int): Sc20StreamingParquetTraceReader {
+    return Sc20StreamingParquetTraceReader(
         path,
         performanceInterferenceModel,
         vms,

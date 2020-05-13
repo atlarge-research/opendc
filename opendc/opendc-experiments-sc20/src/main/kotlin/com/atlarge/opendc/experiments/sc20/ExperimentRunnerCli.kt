@@ -28,6 +28,7 @@ import com.atlarge.opendc.experiments.sc20.reporter.ExperimentParquetReporter
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentPostgresReporter
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporter
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporterProvider
+import com.atlarge.opendc.experiments.sc20.reporter.PostgresHostMetricsWriter
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20VmPlacementReader
 import com.github.ajalt.clikt.core.CliktCommand
@@ -122,11 +123,12 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
 
         val performanceInterferenceModel = Sc20PerformanceInterferenceReader(performanceInterferenceStream)
             .construct()
+        val runner = ExperimentRunner(portfolios, ds, reporter, environmentPath, tracePath, performanceInterferenceModel)
 
         try {
-            val runner = ExperimentRunner(portfolios, ds, reporter, environmentPath, tracePath, performanceInterferenceModel)
             runner.run()
         } finally {
+            runner.close()
             ds.close()
         }
     }
@@ -141,13 +143,25 @@ internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentRepo
             .file()
             .defaultLazy { File("data") }
 
-        override fun createReporter(ds: DataSource, experimentId: Long): ExperimentReporter =
-            ExperimentParquetReporter(File(path, "results-${System.currentTimeMillis()}.parquet"))
+        override fun createReporter(scenario: Long, run: Int): ExperimentReporter =
+            ExperimentParquetReporter(File(path, "results-$scenario-$run.parquet"))
+
+        override fun close() {}
     }
 
     class Postgres : Reporter("Options for reporting using PostgreSQL") {
-        override fun createReporter(ds: DataSource, experimentId: Long): ExperimentReporter =
-            ExperimentPostgresReporter(ds.connection, experimentId)
+        lateinit var hostWriter: PostgresHostMetricsWriter
+
+        override fun init(ds: DataSource) {
+            hostWriter = PostgresHostMetricsWriter(ds, 4096)
+        }
+
+        override fun createReporter(scenario: Long, run: Int): ExperimentReporter =
+            ExperimentPostgresReporter(scenario, run, hostWriter)
+
+        override fun close() {
+            hostWriter.close()
+        }
     }
 }
 

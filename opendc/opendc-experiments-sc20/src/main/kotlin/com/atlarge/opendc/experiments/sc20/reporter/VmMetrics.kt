@@ -24,17 +24,20 @@
 
 package com.atlarge.opendc.experiments.sc20.reporter
 
-import java.io.Closeable
-import javax.sql.DataSource
+import com.atlarge.opendc.compute.core.Server
 
-interface ExperimentReporterProvider : Closeable {
-    /**
-     * Initialize the provider with the specified data source.
-     */
-    public fun init(ds: DataSource) {}
-
-    /**
-     * Create a reporter for a single run.
-     */
-    public fun createReporter(scenario: Long, run: Int): ExperimentReporter
-}
+/**
+ * A periodic report of a virtual machine's metrics.
+ */
+data class VmMetrics(
+    val time: Long,
+    val duration: Long,
+    val vm: Server,
+    val host: Server,
+    val requestedBurst: Long,
+    val grantedBurst: Long,
+    val overcommissionedBurst: Long,
+    val interferedBurst: Long,
+    val cpuUsage: Double,
+    val cpuDemand: Double
+)

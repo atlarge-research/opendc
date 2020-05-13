@@ -31,71 +31,11 @@ import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import kotlinx.coroutines.flow.first
 import mu.KotlinLogging
-import java.sql.Connection
-import java.util.concurrent.ArrayBlockingQueue
-import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
-class ExperimentPostgresReporter(val conn: Connection, val experimentId: Long) : ExperimentReporter {
+class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: PostgresHostMetricsWriter) : ExperimentReporter {
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
-    private val queue = ArrayBlockingQueue<Action>(2048)
-    private val writerThread = thread(start = true, name = "sc20-writer") {
-        val stmt = try {
-            conn.autoCommit = false
-            conn.prepareStatement(
-                """
-                    INSERT INTO host_reports (experiment_id, time, duration, requested_burst, granted_burst, overcommissioned_burst, interfered_burst, cpu_usage, cpu_demand, image_count, server, host_state, host_usage, power_draw, total_submitted_vms, total_queued_vms, total_running_vms, total_finished_vms)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """.trimIndent()
-            )
-        } catch (e: Throwable) {
-            conn.close()
-            throw e
-        }
-
-        val batchSize = 4096
-        var batch = 0
-
-        try {
-            loop@ while (true) {
-                when (val record = queue.take()) {
-                    is Action.Stop -> break@loop
-                    is Action.Write -> {
-                        stmt.setLong(1, experimentId)
-                        stmt.setLong(2, record.time)
-                        stmt.setLong(3, record.duration)
-                        stmt.setLong(4, record.requestedBurst)
-                        stmt.setLong(5, record.grantedBurst)
-                        stmt.setLong(6, record.overcommissionedBurst)
-                        stmt.setLong(7, record.interferedBurst)
-                        stmt.setDouble(8, record.cpuUsage)
-                        stmt.setDouble(9, record.cpuDemand)
-                        stmt.setInt(10, record.numberOfDeployedImages)
-                        stmt.setString(11, record.hostServer.uid.toString())
-                        stmt.setString(12, record.hostServer.state.name)
-                        stmt.setDouble(13, record.hostUsage)
-                        stmt.setDouble(14, record.powerDraw)
-                        stmt.setLong(15, record.submittedVms)
-                        stmt.setLong(16, record.queuedVms)
-                        stmt.setLong(17, record.runningVms)
-                        stmt.setLong(18, record.finishedVms)
-                        stmt.addBatch()
-                        batch++
-
-                        if (batch % batchSize == 0) {
-                            stmt.executeBatch()
-                            conn.commit()
-                        }
-                    }
-                }
-            }
-        } finally {
-            conn.commit()
-            stmt.close()
-            conn.close()
-        }
-    }
 
     override suspend fun reportVmStateChange(server: Server) {}
 
@@ -151,56 +91,24 @@ class ExperimentPostgresReporter(val conn: Connection, val experimentId: Long) :
     ) {
         // Assume for now that the host is not virtualized and measure the current power draw
         val driver = hostServer.services[BareMetalDriver.Key]
-        val usage = driver.usage.first()
         val powerDraw = driver.powerDraw.first()
 
-        queue.put(
-            Action.Write(
+        writer.write(
+            scenario, run, HostMetrics(
                 time,
                 duration,
+                hostServer,
+                numberOfDeployedImages,
                 requestedBurst,
                 grantedBurst,
                 overcommissionedBurst,
                 interferedBurst,
                 cpuUsage,
                 cpuDemand,
-                numberOfDeployedImages,
-                hostServer,
-                usage,
-                powerDraw,
-                submittedVms,
-                queuedVms,
-                runningVms,
-                finishedVms
+                powerDraw
             )
         )
     }
 
-    override fun close() {
-        queue.put(Action.Stop)
-        writerThread.join()
-    }
-
-    private sealed class Action {
-        object Stop : Action()
-
-        data class Write(
-            val time: Long,
-            val duration: Long,
-            val requestedBurst: Long,
-            val grantedBurst: Long,
-            val overcommissionedBurst: Long,
-            val interferedBurst: Long,
-            val cpuUsage: Double,
-            val cpuDemand: Double,
-            val numberOfDeployedImages: Int,
-            val hostServer: Server,
-            val hostUsage: Double,
-            val powerDraw: Double,
-            val submittedVms: Long,
-            val queuedVms: Long,
-            val runningVms: Long,
-            val finishedVms: Long
-        ) : Action()
-    }
+    override fun close() {}
 }

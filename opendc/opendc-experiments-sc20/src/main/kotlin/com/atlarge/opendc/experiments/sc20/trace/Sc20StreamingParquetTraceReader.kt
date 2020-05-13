@@ -53,13 +53,13 @@ import kotlin.random.Random
 private val logger = KotlinLogging.logger {}
 
 /**
- * A [TraceReader] for the internal VM workload trace format.
+ * A [TraceReader] for the internal VM workload trace format that streams workloads on the fly.
  *
  * @param traceFile The directory of the traces.
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
 @OptIn(ExperimentalStdlibApi::class)
-class Sc20ParquetTraceReader(
+class Sc20StreamingParquetTraceReader(
     traceFile: File,
     performanceInterferenceModel: PerformanceInterferenceModel,
     selectedVms: List<String>,
