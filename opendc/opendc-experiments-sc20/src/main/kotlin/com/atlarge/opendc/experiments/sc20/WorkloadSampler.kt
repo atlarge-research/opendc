@@ -26,7 +26,10 @@ package com.atlarge.opendc.experiments.sc20
 
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.format.trace.TraceEntry
+import mu.KotlinLogging
 import kotlin.random.Random
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Sample the workload for the specified [run].
@@ -39,7 +42,8 @@ fun sampleWorkload(trace: List<TraceEntry<VmWorkload>>, run: Run): List<TraceEnt
  * Sample a regular (non-HPC) workload.
  */
 fun sampleRegularWorkload(trace: List<TraceEntry<VmWorkload>>, run: Run): List<TraceEntry<VmWorkload>> {
-    if (run.scenario.workload.fraction >= 1) {
+    val fraction = run.scenario.workload.fraction
+    if (fraction >= 1) {
         return trace
     }
 
@@ -50,13 +54,16 @@ fun sampleRegularWorkload(trace: List<TraceEntry<VmWorkload>>, run: Run): List<T
 
     for (entry in shuffled) {
         val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
-        if ((currentLoad + entryLoad) / totalLoad > run.scenario.workload.fraction) {
+        if ((currentLoad + entryLoad) / totalLoad > fraction) {
             break
         }
 
         currentLoad += entryLoad
         res += entry
     }
+
+    logger.info { "Sampled ${trace.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
+
 
     return res
 }

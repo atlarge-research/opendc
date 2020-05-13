@@ -133,7 +133,7 @@ public class ExperimentRunner(
         performanceInterferenceModel: PerformanceInterferenceModel?,
         run: Run
     ): TraceReader<VmWorkload> {
-        val raw = rawTraceReaders.getOrPut(name) { Sc20RawParquetTraceReader(File(tracePath, name)) }
+        val raw = rawTraceReaders.getValue(name)
         return Sc20ParquetTraceReader(
             raw,
             performanceInterferenceModel,
@@ -146,20 +146,6 @@ public class ExperimentRunner(
      */
     private fun createEnvironmentReader(name: String): EnvironmentReader {
         return Sc20ClusterEnvironmentReader(File(environmentPath, "$name.txt"))
-    }
-
-    /**
-     * Run the specified run.
-     */
-    private fun run(run: Run) {
-        val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
-        val traceReader = createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run)
-        val environmentReader = createEnvironmentReader(run.scenario.topology.name)
-        try {
-            run.scenario(run, reporter, environmentReader, traceReader)
-        } finally {
-            reporter.close()
-        }
     }
 
     /**
@@ -179,6 +165,12 @@ public class ExperimentRunner(
             val mainDispatcher = coroutineContext[CoroutineDispatcher.Key]!!
             for (run in plan) {
                 val scenarioId = scenarioIds[run.scenario]!!
+
+                rawTraceReaders.computeIfAbsent(run.scenario.workload.name) { name ->
+                    logger.info { "Loading trace $name" }
+                    Sc20RawParquetTraceReader(File(tracePath, name))
+                }
+
                 launch(dispatcher) {
                     launch(mainDispatcher) {
                         helper.startRun(scenarioId, run.id)
@@ -189,7 +181,15 @@ public class ExperimentRunner(
                     try {
 
                         val duration = measureTimeMillis {
-                            run(run)
+                            val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
+                            val traceReader = createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run)
+                            val environmentReader = createEnvironmentReader(run.scenario.topology.name)
+
+                            try {
+                                run.scenario(run, reporter, environmentReader, traceReader)
+                            } finally {
+                                reporter.close()
+                            }
                         }
 
                         finished.incrementAndGet()

@@ -35,12 +35,13 @@ interface ExperimentReporter : Closeable {
     /**
      * This method is invoked when the state of a VM changes.
      */
-    suspend fun reportVmStateChange(server: Server) {}
+    fun reportVmStateChange(time: Long, server: Server) {}
 
     /**
      * This method is invoked when the state of a host changes.
      */
-    suspend fun reportHostStateChange(
+    fun reportHostStateChange(
+        time: Long,
         driver: VirtDriver,
         server: Server,
         submittedVms: Long,
@@ -50,9 +51,14 @@ interface ExperimentReporter : Closeable {
     ) {}
 
     /**
+     * Report the power consumption of a host.
+     */
+    fun reportPowerConsumption(host: Server, draw: Double)
+
+    /**
      * This method is invoked for a host for each slice that is finishes.
      */
-    suspend fun reportHostSlice(
+    fun reportHostSlice(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,

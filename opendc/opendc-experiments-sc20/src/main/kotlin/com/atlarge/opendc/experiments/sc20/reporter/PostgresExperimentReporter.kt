@@ -27,9 +27,7 @@ package com.atlarge.opendc.experiments.sc20.reporter
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
-import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import kotlinx.coroutines.flow.first
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -37,9 +35,10 @@ private val logger = KotlinLogging.logger {}
 class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: PostgresHostMetricsWriter) : ExperimentReporter {
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
 
-    override suspend fun reportVmStateChange(server: Server) {}
+    override fun reportVmStateChange(time: Long, server: Server) {}
 
-    override suspend fun reportHostStateChange(
+    override fun reportHostStateChange(
+        time: Long,
         driver: VirtDriver,
         server: Server,
         submittedVms: Long,
@@ -48,10 +47,12 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
         finishedVms: Long
     ) {
         val lastServerState = lastServerStates[server]
+        logger.debug("Host ${server.uid} changed state ${server.state} [$time]")
+
         if (server.state == ServerState.SHUTOFF && lastServerState != null) {
-            val duration = simulationContext.clock.millis() - lastServerState.second
+            val duration = time - lastServerState.second
             reportHostSlice(
-                simulationContext.clock.millis(),
+                time,
                 0,
                 0,
                 0,
@@ -66,14 +67,23 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
                 finishedVms,
                 duration
             )
+
+            lastServerStates.remove(server)
+            lastPowerConsumption.remove(server)
+        } else {
+            lastServerStates[server] = Pair(server.state, time)
         }
-
-        logger.debug("Host ${server.uid} changed state ${server.state} [${simulationContext.clock.millis()}]")
-
-        lastServerStates[server] = Pair(server.state, simulationContext.clock.millis())
     }
 
-    override suspend fun reportHostSlice(
+
+    private val lastPowerConsumption = mutableMapOf<Server, Double>()
+
+    override fun reportPowerConsumption(host: Server, draw: Double) {
+        lastPowerConsumption[host] = draw
+    }
+
+
+    override fun reportHostSlice(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,
@@ -89,10 +99,6 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
         finishedVms: Long,
         duration: Long
     ) {
-        // Assume for now that the host is not virtualized and measure the current power draw
-        val driver = hostServer.services[BareMetalDriver.Key]
-        val powerDraw = driver.powerDraw.first()
-
         writer.write(
             scenario, run, HostMetrics(
                 time,
@@ -105,7 +111,7 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
                 interferedBurst,
                 cpuUsage,
                 cpuDemand,
-                powerDraw
+                lastPowerConsumption[hostServer] ?: 200.0
             )
         )
     }

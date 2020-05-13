@@ -72,7 +72,7 @@ object HorVerPortfolio : AbstractSc20Portfolio("horizontal_vs_vertical") {
         // Workload("solvinity", 0.1),
         // Workload("solvinity", 0.25),
         // Workload("small-parquet", 0.5),
-        Workload("small-parquet", 1.0)
+        Workload("full-traces", 0.10)
     )
 
     override val operationalPhenomena = listOf(

@@ -31,6 +31,7 @@ import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.compute.metal.NODE_CLUSTER
+import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
@@ -143,17 +144,19 @@ suspend fun createProvisioner(
 @OptIn(ExperimentalCoroutinesApi::class)
 suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: ExperimentReporter) {
     val domain = simulationContext.domain
+    val clock = simulationContext.clock
     val hypervisors = scheduler.drivers()
 
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
         // TODO Do not expose VirtDriver directly but use Hypervisor class.
-        reporter.reportHostStateChange(hypervisor, (hypervisor as SimpleVirtDriver).server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
+        reporter.reportHostStateChange(clock.millis(), hypervisor, (hypervisor as SimpleVirtDriver).server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
         hypervisor.server.events
             .onEach { event ->
+                val time = clock.millis()
                 when (event) {
                     is ServerEvent.StateChanged -> {
-                        reporter.reportHostStateChange(hypervisor, event.server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
+                        reporter.reportHostStateChange(time, hypervisor, event.server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
                     }
                 }
             }
@@ -178,6 +181,11 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Ex
                     )
                 }
             }
+            .launchIn(domain)
+
+        val driver = hypervisor.server.services[BareMetalDriver.Key]
+        driver.powerDraw
+            .onEach { reporter.reportPowerConsumption(hypervisor.server, it) }
             .launchIn(domain)
     }
 }
@@ -222,8 +230,10 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
                 // Monitor server events
                 server.events
                     .onEach {
+                        val time = simulationContext.clock.millis()
+
                         if (it is ServerEvent.StateChanged) {
-                            reporter.reportVmStateChange(it.server)
+                            reporter.reportVmStateChange(time, it.server)
                         }
 
                         delay(1)

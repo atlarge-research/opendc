@@ -27,9 +27,7 @@ package com.atlarge.opendc.experiments.sc20.reporter
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
-import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import kotlinx.coroutines.flow.first
 import mu.KotlinLogging
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
@@ -87,9 +85,10 @@ class ExperimentParquetReporter(destination: File) :
         }
     }
 
-    override suspend fun reportVmStateChange(server: Server) {}
+    override fun reportVmStateChange(time: Long, server: Server) {}
 
-    override suspend fun reportHostStateChange(
+    override fun reportHostStateChange(
+        time: Long,
         driver: VirtDriver,
         server: Server,
         submittedVms: Long,
@@ -97,11 +96,13 @@ class ExperimentParquetReporter(destination: File) :
         runningVms: Long,
         finishedVms: Long
     ) {
+        logger.info("Host ${server.uid} changed state ${server.state} [$time]")
+
         val lastServerState = lastServerStates[server]
         if (server.state == ServerState.SHUTOFF && lastServerState != null) {
-            val duration = simulationContext.clock.millis() - lastServerState.second
+            val duration = time - lastServerState.second
             reportHostSlice(
-                simulationContext.clock.millis(),
+                time,
                 0,
                 0,
                 0,
@@ -116,14 +117,21 @@ class ExperimentParquetReporter(destination: File) :
                 finishedVms,
                 duration
             )
+
+            lastServerStates.remove(server)
+            lastPowerConsumption.remove(server)
+        } else {
+            lastServerStates[server] = Pair(server.state, time)
         }
-
-        logger.info("Host ${server.uid} changed state ${server.state} [${simulationContext.clock.millis()}]")
-
-        lastServerStates[server] = Pair(server.state, simulationContext.clock.millis())
     }
 
-    override suspend fun reportHostSlice(
+    private val lastPowerConsumption = mutableMapOf<Server, Double>()
+
+    override fun reportPowerConsumption(host: Server, draw: Double) {
+        lastPowerConsumption[host] = draw
+    }
+
+    override fun reportHostSlice(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,
@@ -139,11 +147,6 @@ class ExperimentParquetReporter(destination: File) :
         finishedVms: Long,
         duration: Long
     ) {
-        // Assume for now that the host is not virtualized and measure the current power draw
-        val driver = hostServer.services[BareMetalDriver.Key]
-        val usage = driver.usage.first()
-        val powerDraw = driver.powerDraw.first()
-
         val record = GenericData.Record(schema)
         record.put("time", time)
         record.put("duration", duration)
@@ -156,8 +159,8 @@ class ExperimentParquetReporter(destination: File) :
         record.put("image_count", numberOfDeployedImages)
         record.put("server", hostServer.uid)
         record.put("host_state", hostServer.state)
-        record.put("host_usage", usage)
-        record.put("power_draw", powerDraw)
+        record.put("host_usage", cpuUsage)
+        record.put("power_draw", lastPowerConsumption[hostServer] ?: 200.0)
         record.put("total_submitted_vms", submittedVms)
         record.put("total_queued_vms", queuedVms)
         record.put("total_running_vms", runningVms)
