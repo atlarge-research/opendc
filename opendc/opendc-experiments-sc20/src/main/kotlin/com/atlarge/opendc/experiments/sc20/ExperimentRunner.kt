@@ -27,7 +27,7 @@ package com.atlarge.opendc.experiments.sc20
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporterProvider
-import com.atlarge.opendc.experiments.sc20.trace.Sc20FilteringParquetTraceReader
+import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
 import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.experiments.sc20.util.DatabaseHelper
 import com.atlarge.opendc.format.environment.EnvironmentReader
@@ -44,7 +44,6 @@ import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
-import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 /**
@@ -132,14 +131,13 @@ public class ExperimentRunner(
     private fun createTraceReader(
         name: String,
         performanceInterferenceModel: PerformanceInterferenceModel?,
-        seed: Int
+        run: Run
     ): TraceReader<VmWorkload> {
         val raw = rawTraceReaders.getOrPut(name) { Sc20RawParquetTraceReader(File(tracePath, name)) }
-        return Sc20FilteringParquetTraceReader(
+        return Sc20ParquetTraceReader(
             raw,
             performanceInterferenceModel,
-            emptySet(),
-            Random(seed)
+            run
         )
     }
 
@@ -155,7 +153,7 @@ public class ExperimentRunner(
      */
     private fun run(run: Run) {
         val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
-        val traceReader = createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run.seed)
+        val traceReader = createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run)
         val environmentReader = createEnvironmentReader(run.scenario.topology.name)
         try {
             run.scenario(run, reporter, environmentReader, traceReader)

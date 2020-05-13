@@ -30,7 +30,7 @@ abstract class AbstractSc20Portfolio(name: String) : Portfolio(name) {
     abstract val operationalPhenomena: List<Pair<Boolean, Boolean>>
     abstract val allocationPolicies: List<String>
 
-    open val repetitions = 2
+    open val repetitions = 4
 
     override val scenarios: Sequence<Scenario> = sequence {
         for (topology in topologies) {
@@ -72,7 +72,7 @@ object HorVerPortfolio : AbstractSc20Portfolio("horizontal_vs_vertical") {
         // Workload("solvinity", 0.1),
         // Workload("solvinity", 0.25),
         // Workload("small-parquet", 0.5),
-        Workload("small-parquet", 1.0)
+        Workload("small-parquet", 0.5)
     )
 
     override val operationalPhenomena = listOf(

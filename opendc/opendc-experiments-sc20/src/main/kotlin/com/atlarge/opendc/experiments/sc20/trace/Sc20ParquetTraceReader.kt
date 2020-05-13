@@ -28,40 +28,37 @@ import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
+import com.atlarge.opendc.experiments.sc20.Run
+import com.atlarge.opendc.experiments.sc20.sampleWorkload
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
 import kotlin.random.Random
 
 /**
- * A [TraceReader] for the internal VM workload trace format that streams workloads on the fly.
+ * A [TraceReader] for the internal VM workload trace format.
  *
- * @param traceFile The directory of the traces.
+ * @param reader The internal trace reader to use.
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
+ * @param run The run to which this reader belongs.
  */
 @OptIn(ExperimentalStdlibApi::class)
-class Sc20FilteringParquetTraceReader(
+class Sc20ParquetTraceReader(
     raw: Sc20RawParquetTraceReader,
     performanceInterferenceModel: PerformanceInterferenceModel?,
-    selectedVms: Set<String>,
-    random: Random
+    run: Run
 ) : TraceReader<VmWorkload> {
     /**
      * The iterator over the actual trace.
      */
     private val iterator: Iterator<TraceEntry<VmWorkload>> =
         raw.read()
-            .run {
-                // Apply VM selection filter
-                if (selectedVms.isEmpty())
-                    this
-                else
-                    filter { it.workload.image.name in selectedVms }
-            }
+            .run { sampleWorkload(this, run) }
             .run {
                 // Apply performance interference model
                 if (performanceInterferenceModel == null)
                     this
-                else
+                else {
+                    val random = Random(run.seed)
                     map { entry ->
                         val image = entry.workload.image
                         val id = image.name
@@ -82,6 +79,7 @@ class Sc20FilteringParquetTraceReader(
                         val newWorkload = entry.workload.copy(image = newImage)
                         Sc20RawParquetTraceReader.TraceEntryImpl(entry.submissionTime, newWorkload)
                     }
+                }
             }
             .iterator()
 

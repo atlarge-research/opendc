@@ -43,6 +43,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.clikt.parameters.types.int
 import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import java.io.File
@@ -83,7 +84,6 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
     private val performanceInterferenceStream by option("--performance-interference-model", help = "path to the performance interference file")
         .file()
         .convert { it.inputStream() as InputStream }
-        .defaultLazy { ExperimentCli::class.java.getResourceAsStream("/env/performance-interference.json") }
 
     /**
      * The path to the original VM placements file.
@@ -109,21 +109,39 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
     private val portfolios by option("--portfolio")
         .choice(
             "hor-ver" to HorVerPortfolio,
-            "more-velocitory" to MoreVelocityPortfolio,
+            "more-velocity" to MoreVelocityPortfolio,
             "more-hpc" to MoreHpcPortfolio,
             "operational-phenomena" to OperationalPhenomenaPortfolio,
             ignoreCase = true
         )
         .multiple()
 
+    /**
+     * The maximum number of threads to use.
+     */
+    private val parallelism by option("--parallelism")
+        .int()
+        .default(Runtime.getRuntime().availableProcessors())
+
+    /**
+     * The batch size for writing results.
+     */
+    private val batchSize by option("--batch-size")
+        .int()
+        .default(4096)
+
     override fun run() {
         val ds = HikariDataSource()
         ds.jdbcUrl = jdbcUrl
         ds.addDataSourceProperty("reWriteBatchedInserts", "true")
 
-        val performanceInterferenceModel = Sc20PerformanceInterferenceReader(performanceInterferenceStream)
-            .construct()
-        val runner = ExperimentRunner(portfolios, ds, reporter, environmentPath, tracePath, performanceInterferenceModel)
+
+        reporter.batchSize = batchSize
+
+        val performanceInterferenceModel =
+            performanceInterferenceStream?.let { Sc20PerformanceInterferenceReader(it).construct()  }
+
+        val runner = ExperimentRunner(portfolios, ds, reporter, environmentPath, tracePath, performanceInterferenceModel, parallelism)
 
         try {
             runner.run()
@@ -138,6 +156,8 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
  * An option for specifying the type of reporter to use.
  */
 internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentReporterProvider {
+    var batchSize = 4096
+
     class Parquet : Reporter("Options for reporting using Parquet") {
         private val path by option("--parquet-directory", help = "path to where the output should be stored")
             .file()
@@ -153,7 +173,7 @@ internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentRepo
         lateinit var hostWriter: PostgresHostMetricsWriter
 
         override fun init(ds: DataSource) {
-            hostWriter = PostgresHostMetricsWriter(ds, 4096)
+            hostWriter = PostgresHostMetricsWriter(ds, batchSize)
         }
 
         override fun createReporter(scenario: Long, run: Int): ExperimentReporter =

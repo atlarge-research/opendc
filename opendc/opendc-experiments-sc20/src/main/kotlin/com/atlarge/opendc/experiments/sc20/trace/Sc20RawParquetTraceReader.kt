@@ -94,29 +94,36 @@ class Sc20RawParquetTraceReader(private val path: File) {
 
         var counter = 0
         val entries = mutableListOf<TraceEntryImpl>()
+        val loadCache = mutableListOf<LoadCacheEntry>()
 
         return try {
             while (true) {
                 val record = metaReader.read() ?: break
                 val id = record["id"].toString()
                 val submissionTime = record["submissionTime"] as Long
+                val endTime = record["endTime"] as Long
                 val maxCores = record["maxCores"] as Int
                 val requiredMemory = record["requiredMemory"] as Long
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
+                val vmFragments = fragments.getValue(id).asSequence()
+                val totalLoad = vmFragments.sumByDouble { it.usage } * 5 * 60 // avg MHz * duration = MFLOPs
                 val vmWorkload = VmWorkload(
-                    uid, "VM Workload $id",
+                    uid, id,
                     UnnamedUser,
                     VmImage(
                         uid,
                         id,
-                        emptyMap(),
-                        fragments.getValue(id).asSequence(),
+                        mapOf(
+                            "submit-time" to submissionTime,
+                            "end-time" to endTime,
+                            "total-load" to totalLoad
+                        ),
+                        vmFragments,
                         maxCores,
                         requiredMemory
                     )
                 )
-
                 entries.add(TraceEntryImpl(submissionTime, vmWorkload))
             }
 
@@ -129,17 +136,17 @@ class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * The entries in the trace.
      */
-    private val entries: Sequence<TraceEntryImpl>
+    private val entries: List<TraceEntryImpl>
 
     init {
         val fragments = parseFragments(path)
-        entries = parseMeta(path, fragments).asSequence()
+        entries = parseMeta(path, fragments)
     }
 
     /**
      * Read the entries in the trace.
      */
-    public fun read(): Sequence<TraceEntry<VmWorkload>> = entries
+    public fun read(): List<TraceEntry<VmWorkload>> = entries
 
     /**
      * An unnamed user.
@@ -156,4 +163,9 @@ class Sc20RawParquetTraceReader(private val path: File) {
         override var submissionTime: Long,
         override val workload: VmWorkload
     ) : TraceEntry<VmWorkload>
+
+    /**
+     * A load cache entry.
+     */
+    data class LoadCacheEntry(val vm: String, val totalLoad: Double, val start: Long, val end: Long)
 }

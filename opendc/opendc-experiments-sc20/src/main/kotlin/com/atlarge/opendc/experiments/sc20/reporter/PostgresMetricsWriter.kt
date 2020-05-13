@@ -43,7 +43,7 @@ public abstract class PostgresMetricsWriter<T>(
     /**
      * The queue of commands to process.
      */
-    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(batchSize)
+    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(12 * batchSize)
 
     /**
      * The thread for the actual writer.
@@ -93,9 +93,8 @@ public abstract class PostgresMetricsWriter<T>(
 
                 if (queue.isEmpty()) {
                     actions.add(queue.take())
-                } else {
-                    queue.drainTo(actions)
                 }
+                queue.drainTo(actions)
 
                 for (action in actions) {
                     when (action) {
@@ -110,6 +109,7 @@ public abstract class PostgresMetricsWriter<T>(
                                 stmt.executeBatch()
                                 conn.commit()
                             }
+
                         }
                     }
                 }

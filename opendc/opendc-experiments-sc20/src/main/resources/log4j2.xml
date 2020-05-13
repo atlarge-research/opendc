@@ -36,6 +36,9 @@
         <Logger name="com.atlarge.opendc" level="warn" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
+        <Logger name="com.atlarge.opendc.experiments.sc20" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Logger name="org.apache.hadoop" level="warn" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
