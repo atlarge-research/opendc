@@ -1,0 +1,94 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 atlarge-research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package com.atlarge.opendc.experiments.sc20.trace
+
+import com.atlarge.opendc.compute.core.image.VmImage
+import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
+import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
+import com.atlarge.opendc.compute.core.workload.VmWorkload
+import com.atlarge.opendc.format.trace.TraceEntry
+import com.atlarge.opendc.format.trace.TraceReader
+import kotlin.random.Random
+
+/**
+ * A [TraceReader] for the internal VM workload trace format that streams workloads on the fly.
+ *
+ * @param traceFile The directory of the traces.
+ * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
+ */
+@OptIn(ExperimentalStdlibApi::class)
+class Sc20FilteringParquetTraceReader(
+    raw: Sc20RawParquetTraceReader,
+    performanceInterferenceModel: PerformanceInterferenceModel?,
+    selectedVms: Set<String>,
+    random: Random
+) : TraceReader<VmWorkload> {
+    /**
+     * The iterator over the actual trace.
+     */
+    private val iterator: Iterator<TraceEntry<VmWorkload>> =
+        raw.read()
+            .run {
+                // Apply VM selection filter
+                if (selectedVms.isEmpty())
+                    this
+                else
+                    filter { it.workload.image.name in selectedVms }
+            }
+            .run {
+                // Apply performance interference model
+                if (performanceInterferenceModel == null)
+                    this
+                else
+                    map { entry ->
+                        val image = entry.workload.image
+                        val id = image.name
+                        val relevantPerformanceInterferenceModelItems =
+                            PerformanceInterferenceModel(
+                                performanceInterferenceModel.items.filter { id in it.workloadNames }.toSet(),
+                                Random(random.nextInt())
+                            )
+                        val newImage =
+                            VmImage(
+                                image.uid,
+                                image.name,
+                                mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
+                                image.flopsHistory,
+                                image.maxCores,
+                                image.requiredMemory
+                            )
+                        val newWorkload = entry.workload.copy(image = newImage)
+                        Sc20RawParquetTraceReader.TraceEntryImpl(entry.submissionTime, newWorkload)
+                    }
+            }
+            .iterator()
+
+
+    override fun hasNext(): Boolean = iterator.hasNext()
+
+    override fun next(): TraceEntry<VmWorkload> = iterator.next()
+
+    override fun close() {}
+}

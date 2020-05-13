@@ -27,7 +27,8 @@ package com.atlarge.opendc.experiments.sc20
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporterProvider
-import com.atlarge.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
+import com.atlarge.opendc.experiments.sc20.trace.Sc20FilteringParquetTraceReader
+import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.experiments.sc20.util.DatabaseHelper
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
@@ -63,7 +64,7 @@ public class ExperimentRunner(
     private val reporterProvider: ExperimentReporterProvider,
     private val environmentPath: File,
     private val tracePath: File,
-    private val performanceInterferenceModel: PerformanceInterferenceModel
+    private val performanceInterferenceModel: PerformanceInterferenceModel?
 ) : Closeable {
     /**
      * The database helper to write the execution plan.
@@ -120,17 +121,23 @@ public class ExperimentRunner(
     }
 
     /**
+     * The raw parquet trace readers that are shared across simulations.
+     */
+    private val rawTraceReaders = mutableMapOf<String, Sc20RawParquetTraceReader>()
+
+    /**
      * Create a trace reader for the specified trace.
      */
     private fun createTraceReader(
         name: String,
-        performanceInterferenceModel: PerformanceInterferenceModel,
+        performanceInterferenceModel: PerformanceInterferenceModel?,
         seed: Int
     ): TraceReader<VmWorkload> {
-        return Sc20StreamingParquetTraceReader(
-            File(tracePath, name),
+        val raw = rawTraceReaders.getOrPut(name) { Sc20RawParquetTraceReader(File(tracePath, name))  }
+        return Sc20FilteringParquetTraceReader(
+            raw,
             performanceInterferenceModel,
-            emptyList(),
+            emptySet(),
             Random(seed)
         )
     }
@@ -167,7 +174,7 @@ public class ExperimentRunner(
         val plan = createPlan()
         val total = plan.size
         val finished = AtomicInteger()
-        val dispatcher = Executors.newWorkStealingPool().asCoroutineDispatcher()
+        val dispatcher = Executors.newWorkStealingPool(2).asCoroutineDispatcher()
 
         runBlocking {
             val mainDispatcher = coroutineContext[CoroutineDispatcher.Key]!!
