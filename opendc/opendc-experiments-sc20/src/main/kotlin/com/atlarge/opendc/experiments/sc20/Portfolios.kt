@@ -110,7 +110,7 @@ object MoreVelocityPortfolio : AbstractSc20Portfolio("more_velocity") {
     )
 }
 
-object MoreHpcPortfolio : AbstractSc20Portfolio("more_velocity") {
+object MoreHpcPortfolio : AbstractSc20Portfolio("more_hpc") {
     override val topologies = listOf(
         Topology("base"),
         Topology("exp-vol-hor-hom"),
@@ -134,7 +134,7 @@ object MoreHpcPortfolio : AbstractSc20Portfolio("more_velocity") {
     )
 }
 
-object OperationalPhenomenaPortfolio : AbstractSc20Portfolio("more_velocity") {
+object OperationalPhenomenaPortfolio : AbstractSc20Portfolio("operational_phenomena") {
     override val topologies = listOf(
         Topology("base")
     )
