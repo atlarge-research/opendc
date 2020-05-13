@@ -43,7 +43,7 @@ public abstract class PostgresMetricsWriter<T>(
     /**
      * The queue of commands to process.
      */
-    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(12 * batchSize)
+    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(4 * batchSize)
 
     /**
      * The thread for the actual writer.

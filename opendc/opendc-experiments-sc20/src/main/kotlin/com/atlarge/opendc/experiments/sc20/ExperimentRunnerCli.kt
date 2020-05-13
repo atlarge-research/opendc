@@ -170,18 +170,23 @@ internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentRepo
     }
 
     class Postgres : Reporter("Options for reporting using PostgreSQL") {
-        lateinit var hostWriter: PostgresHostMetricsWriter
+        lateinit var ds: DataSource
 
         override fun init(ds: DataSource) {
-            hostWriter = PostgresHostMetricsWriter(ds, batchSize)
+            this.ds = ds
         }
 
-        override fun createReporter(scenario: Long, run: Int): ExperimentReporter =
-            ExperimentPostgresReporter(scenario, run, hostWriter)
-
-        override fun close() {
-            hostWriter.close()
+        override fun createReporter(scenario: Long, run: Int): ExperimentReporter {
+            val hostWriter = PostgresHostMetricsWriter(ds, batchSize)
+            val delegate = ExperimentPostgresReporter(scenario, run, hostWriter)
+            return object : ExperimentReporter by delegate {
+                override fun close() {
+                    hostWriter.close()
+                }
+            }
         }
+
+        override fun close() {}
     }
 }
 
