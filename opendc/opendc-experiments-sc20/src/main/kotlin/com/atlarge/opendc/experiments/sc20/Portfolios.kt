@@ -57,8 +57,8 @@ abstract class AbstractSc20Portfolio(name: String) : Portfolio(name) {
 
 object HorVerPortfolio : AbstractSc20Portfolio("horizontal_vs_vertical") {
     override val topologies = listOf(
-        Topology("base")
-        // Topology("rep-vol-hor-hom"),
+        Topology("base"),
+        Topology("rep-vol-hor-hom")
         // Topology("rep-vol-hor-het"),
         // Topology("rep-vol-ver-hom"),
         // Topology("rep-vol-ver-het"),
@@ -71,7 +71,7 @@ object HorVerPortfolio : AbstractSc20Portfolio("horizontal_vs_vertical") {
     override val workloads = listOf(
         // Workload("solvinity", 0.1),
         // Workload("solvinity", 0.25),
-        Workload("small-parquet", 0.5),
+        // Workload("small-parquet", 0.5),
         Workload("small-parquet", 1.0)
     )
 

@@ -64,7 +64,8 @@ public class ExperimentRunner(
     private val reporterProvider: ExperimentReporterProvider,
     private val environmentPath: File,
     private val tracePath: File,
-    private val performanceInterferenceModel: PerformanceInterferenceModel?
+    private val performanceInterferenceModel: PerformanceInterferenceModel?,
+    private val parallelism: Int = Runtime.getRuntime().availableProcessors()
 ) : Closeable {
     /**
      * The database helper to write the execution plan.
@@ -133,7 +134,7 @@ public class ExperimentRunner(
         performanceInterferenceModel: PerformanceInterferenceModel?,
         seed: Int
     ): TraceReader<VmWorkload> {
-        val raw = rawTraceReaders.getOrPut(name) { Sc20RawParquetTraceReader(File(tracePath, name))  }
+        val raw = rawTraceReaders.getOrPut(name) { Sc20RawParquetTraceReader(File(tracePath, name)) }
         return Sc20FilteringParquetTraceReader(
             raw,
             performanceInterferenceModel,
@@ -174,7 +175,7 @@ public class ExperimentRunner(
         val plan = createPlan()
         val total = plan.size
         val finished = AtomicInteger()
-        val dispatcher = Executors.newWorkStealingPool(2).asCoroutineDispatcher()
+        val dispatcher = Executors.newWorkStealingPool(parallelism).asCoroutineDispatcher()
 
         runBlocking {
             val mainDispatcher = coroutineContext[CoroutineDispatcher.Key]!!

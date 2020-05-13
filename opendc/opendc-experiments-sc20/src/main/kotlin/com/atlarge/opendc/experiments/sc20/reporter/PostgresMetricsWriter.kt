@@ -48,8 +48,7 @@ public abstract class PostgresMetricsWriter<T>(
     /**
      * The thread for the actual writer.
      */
-    private val writerThread: Thread = thread { run() }
-
+    private val writerThread: Thread = thread(name = "host-metrics-writer") { run() }
 
     /**
      * Write the specified metrics to the database.

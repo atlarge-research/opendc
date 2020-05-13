@@ -68,7 +68,7 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
             )
         }
 
-        logger.info("Host ${server.uid} changed state ${server.state} [${simulationContext.clock.millis()}]")
+        logger.debug("Host ${server.uid} changed state ${server.state} [${simulationContext.clock.millis()}]")
 
         lastServerStates[server] = Pair(server.state, simulationContext.clock.millis())
     }
