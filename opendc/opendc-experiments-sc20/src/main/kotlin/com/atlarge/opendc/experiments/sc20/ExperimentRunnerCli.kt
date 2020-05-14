@@ -125,11 +125,18 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
         .default(Runtime.getRuntime().availableProcessors())
 
     /**
-     * The maximum number of writer threads to use.
+     * The maximum number of host writer threads to use.
      */
-    private val writerParallelism by option("--writer-parallelism")
+    private val hostWriterParallelism by option("--host-writer-parallelism")
         .int()
         .default(8)
+
+    /**
+     * The maximum number of provisioner writer threads to use.
+     */
+    private val provisionerWriterParallelism by option("--provisioner-writer-parallelism")
+        .int()
+        .default(1)
 
     /**
      * The buffer size for writing results.
@@ -145,7 +152,8 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
         ds.addDataSourceProperty("reWriteBatchedInserts", "true")
 
         reporter.bufferSize = bufferSize
-        reporter.parallelism = writerParallelism
+        reporter.hostParallelism = hostWriterParallelism
+        reporter.provisionerParallelism = provisionerWriterParallelism
 
         val performanceInterferenceModel =
             performanceInterferenceStream?.let { Sc20PerformanceInterferenceReader(it).construct() }
@@ -166,7 +174,8 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
  */
 internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentReporterProvider {
     var bufferSize = 4096
-    var parallelism = 8
+    var hostParallelism = 8
+    var provisionerParallelism = 1
 
     class Parquet : Reporter("Options for reporting using Parquet") {
         private val path by option("--parquet-directory", help = "path to where the output should be stored")
@@ -184,8 +193,8 @@ internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentRepo
         lateinit var provisionerWriter: PostgresProvisionerMetricsWriter
 
         override fun init(ds: DataSource) {
-            hostWriter = PostgresHostMetricsWriter(ds, parallelism, bufferSize)
-            provisionerWriter = PostgresProvisionerMetricsWriter(ds, parallelism, bufferSize)
+            hostWriter = PostgresHostMetricsWriter(ds, hostParallelism, bufferSize)
+            provisionerWriter = PostgresProvisionerMetricsWriter(ds, provisionerParallelism, bufferSize)
         }
 
         override fun createReporter(scenario: Long, run: Int): ExperimentReporter {

@@ -37,6 +37,7 @@ import me.tongfei.progressbar.ProgressBar
 import mu.KotlinLogging
 import java.io.Closeable
 import java.io.File
+import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import javax.sql.DataSource
@@ -153,67 +154,59 @@ public class ExperimentRunner(
 
         val plan = createPlan()
         val total = plan.size
-        val executorService = Executors.newCachedThreadPool()
-        val planIterator = plan.iterator()
-        val futures = mutableListOf<Future<*>>()
+        val completionService = ExecutorCompletionService<Unit>(Executors.newCachedThreadPool())
         val pb = ProgressBar("Experiment", total.toLong())
 
-        while (planIterator.hasNext()) {
-            futures.clear()
+        var running = 0
 
-            repeat(parallelism) {
-                if (!planIterator.hasNext()) {
-                    return@repeat
+        for (run in plan) {
+            if (running >= parallelism) {
+                completionService.take()
+                running--
+            }
+
+            val scenarioId = scenarioIds[run.scenario]!!
+
+            rawTraceReaders.computeIfAbsent(run.scenario.workload.name) { name ->
+                logger.info { "Loading trace $name" }
+                Sc20RawParquetTraceReader(File(tracePath, name))
+            }
+
+            completionService.submit {
+                pb.extraMessage = "($scenarioId, ${run.id}) START"
+
+                var hasFailed = false
+                synchronized(helper) {
+                    helper.startRun(scenarioId, run.id)
                 }
 
-                val run = planIterator.next()
-                val scenarioId = scenarioIds[run.scenario]!!
-
-                rawTraceReaders.computeIfAbsent(run.scenario.workload.name) { name ->
-                    logger.info { "Loading trace $name" }
-                    Sc20RawParquetTraceReader(File(tracePath, name))
-                }
-
-                val future = executorService.submit {
-                    pb.extraMessage = "($scenarioId, ${run.id}) START"
-
-                    var hasFailed = false
-                    synchronized(helper) {
-                        helper.startRun(scenarioId, run.id)
-                    }
+                try {
+                    val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
+                    val traceReader =
+                        createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run)
+                    val environmentReader = createEnvironmentReader(run.scenario.topology.name)
 
                     try {
-                        val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
-                        val traceReader =
-                            createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run)
-                        val environmentReader = createEnvironmentReader(run.scenario.topology.name)
-
-                        try {
-                            run.scenario(run, reporter, environmentReader, traceReader)
-                        } finally {
-                            reporter.close()
-                        }
-
-                        pb.extraMessage = "($scenarioId, ${run.id}) OK"
-                    } catch (e: Throwable) {
-                        logger.error("A run has failed", e)
-                        hasFailed = true
-                        pb.extraMessage = "($scenarioId, ${run.id}) FAIL"
+                        run.scenario(run, reporter, environmentReader, traceReader)
                     } finally {
-                        synchronized(helper) {
-                            helper.finishRun(scenarioId, run.id, hasFailed = hasFailed)
-                        }
-
-                        pb.step()
+                        reporter.close()
                     }
+
+                    pb.extraMessage = "($scenarioId, ${run.id}) OK"
+                } catch (e: Throwable) {
+                    logger.error("A run has failed", e)
+                    hasFailed = true
+                    pb.extraMessage = "($scenarioId, ${run.id}) FAIL"
+                } finally {
+                    synchronized(helper) {
+                        helper.finishRun(scenarioId, run.id, hasFailed = hasFailed)
+                    }
+
+                    pb.step()
                 }
-
-                futures += future
             }
 
-            for (future in futures) {
-                future.get()
-            }
+            running++
         }
     }
 
