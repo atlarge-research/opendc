@@ -33,14 +33,13 @@ import com.atlarge.opendc.experiments.sc20.util.DatabaseHelper
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
+import me.tongfei.progressbar.ProgressBar
 import mu.KotlinLogging
 import java.io.Closeable
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
-import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
-import kotlin.system.measureTimeMillis
 
 /**
  * The logger for the experiment runner.
@@ -154,10 +153,10 @@ public class ExperimentRunner(
 
         val plan = createPlan()
         val total = plan.size
-        val finished = AtomicInteger()
         val executorService = Executors.newCachedThreadPool()
         val planIterator = plan.iterator()
         val futures = mutableListOf<Future<*>>()
+        val pb = ProgressBar("Experiment", total.toLong())
 
         while (planIterator.hasNext()) {
             futures.clear()
@@ -176,38 +175,36 @@ public class ExperimentRunner(
                 }
 
                 val future = executorService.submit {
+                    pb.extraMessage = "($scenarioId, ${run.id}) START"
+
+                    var hasFailed = false
                     synchronized(helper) {
                         helper.startRun(scenarioId, run.id)
                     }
 
-                    logger.info { "[${finished.get()}/$total] Starting run ($scenarioId, ${run.id})" }
-
                     try {
-                        val duration = measureTimeMillis {
-                            val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
-                            val traceReader = createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run)
-                            val environmentReader = createEnvironmentReader(run.scenario.topology.name)
+                        val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
+                        val traceReader =
+                            createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run)
+                        val environmentReader = createEnvironmentReader(run.scenario.topology.name)
 
-                            try {
-                                run.scenario(run, reporter, environmentReader, traceReader)
-                                logger.info { "Done" }
-                            } finally {
-                                reporter.close()
-                            }
+                        try {
+                            run.scenario(run, reporter, environmentReader, traceReader)
+                        } finally {
+                            reporter.close()
                         }
 
-                        finished.incrementAndGet()
-                        logger.info { "[${finished.get()}/$total] Finished run ($scenarioId, ${run.id}) in $duration milliseconds" }
-
-                        synchronized(helper) {
-                            helper.finishRun(scenarioId, run.id, hasFailed = false)
-                        }
+                        pb.extraMessage = "($scenarioId, ${run.id}) OK"
                     } catch (e: Throwable) {
                         logger.error("A run has failed", e)
-                        finished.incrementAndGet()
+                        hasFailed = true
+                        pb.extraMessage = "($scenarioId, ${run.id}) FAIL"
+                    } finally {
                         synchronized(helper) {
-                            helper.finishRun(scenarioId, run.id, hasFailed = true)
+                            helper.finishRun(scenarioId, run.id, hasFailed = hasFailed)
                         }
+
+                        pb.step()
                     }
                 }
 

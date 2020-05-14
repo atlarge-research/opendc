@@ -72,13 +72,11 @@ class ExperimentPostgresReporter(
         }
     }
 
-
     private val lastPowerConsumption = mutableMapOf<Server, Double>()
 
     override fun reportPowerConsumption(host: Server, draw: Double) {
         lastPowerConsumption[host] = draw
     }
-
 
     override fun reportHostSlice(
         time: Long,

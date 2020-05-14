@@ -64,6 +64,5 @@ fun sampleRegularWorkload(trace: List<TraceEntry<VmWorkload>>, run: Run): List<T
 
     logger.info { "Sampled ${trace.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 
-
     return res
 }

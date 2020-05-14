@@ -257,7 +257,6 @@ class SimpleVirtProvisioningService(
                 if (server in hypervisors) {
                     // Corner case for when the hypervisor already exists
                     availableHypervisors += hypervisors.getValue(server)
-
                 } else {
                     val hv = HypervisorView(
                         server.uid,

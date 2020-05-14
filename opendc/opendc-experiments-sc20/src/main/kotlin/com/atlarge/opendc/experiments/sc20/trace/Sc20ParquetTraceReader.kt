@@ -83,7 +83,6 @@ class Sc20ParquetTraceReader(
             }
             .iterator()
 
-
     override fun hasNext(): Boolean = iterator.hasNext()
 
     override fun next(): TraceEntry<VmWorkload> = iterator.next()

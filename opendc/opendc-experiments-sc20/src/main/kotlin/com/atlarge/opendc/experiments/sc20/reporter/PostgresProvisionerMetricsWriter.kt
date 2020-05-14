@@ -24,31 +24,43 @@
 
 package com.atlarge.opendc.experiments.sc20.reporter
 
-import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.Timestamp
+import de.bytefish.pgbulkinsert.row.SimpleRow
+import de.bytefish.pgbulkinsert.row.SimpleRowWriter
 import javax.sql.DataSource
 
 /**
  * A [PostgresMetricsWriter] for persisting [ProvisionerMetrics].
  */
-public class PostgresProvisionerMetricsWriter(ds: DataSource, batchSize: Int) :
-    PostgresMetricsWriter<ProvisionerMetrics>(ds, batchSize) {
-    override fun createStatement(conn: Connection): PreparedStatement {
-        return conn.prepareStatement("INSERT INTO provisioner_metrics (scenario_id, run_id, timestamp, host_total_count, host_available_count, vm_total_count, vm_active_count, vm_inactive_count, vm_waiting_count, vm_failed_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-    }
+public class PostgresProvisionerMetricsWriter(ds: DataSource, parallelism: Int, batchSize: Int) :
+    PostgresMetricsWriter<ProvisionerMetrics>(ds, parallelism, batchSize) {
 
-    override fun persist(action: Action.Write<ProvisionerMetrics>, stmt: PreparedStatement) {
-        stmt.setLong(1, action.scenario)
-        stmt.setInt(2, action.run)
-        stmt.setTimestamp(3, Timestamp(action.metrics.time))
-        stmt.setInt(4, action.metrics.totalHostCount)
-        stmt.setInt(5, action.metrics.availableHostCount)
-        stmt.setInt(6, action.metrics.totalVmCount)
-        stmt.setInt(7, action.metrics.activeVmCount)
-        stmt.setInt(8, action.metrics.inactiveVmCount)
-        stmt.setInt(9, action.metrics.waitingVmCount)
-        stmt.setInt(10, action.metrics.failedVmCount)
+    override val table: SimpleRowWriter.Table = SimpleRowWriter.Table(
+        "provisioner_metrics",
+        *arrayOf(
+            "scenario_id",
+            "run_id",
+            "timestamp",
+            "host_total_count",
+            "host_available_count",
+            "vm_total_count",
+            "vm_active_count",
+            "vm_inactive_count",
+            "vm_waiting_count",
+            "vm_failed_count"
+        )
+    )
+
+    override fun persist(action: Action.Write<ProvisionerMetrics>, row: SimpleRow) {
+        row.setLong("scenario_id", action.scenario)
+        row.setInteger("run_id", action.run)
+        row.setLong("timestamp", action.metrics.time)
+        row.setInteger("host_total_count", action.metrics.totalHostCount)
+        row.setInteger("host_available_count", action.metrics.availableHostCount)
+        row.setInteger("vm_total_count", action.metrics.totalVmCount)
+        row.setInteger("vm_active_count", action.metrics.activeVmCount)
+        row.setInteger("vm_inactive_count", action.metrics.inactiveVmCount)
+        row.setInteger("vm_waiting_count", action.metrics.waitingVmCount)
+        row.setInteger("vm_failed_count", action.metrics.failedVmCount)
     }
 
     override fun toString(): String = "provisioner-writer"

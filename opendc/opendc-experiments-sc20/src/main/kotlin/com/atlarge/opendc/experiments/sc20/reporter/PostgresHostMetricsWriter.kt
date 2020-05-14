@@ -24,35 +24,51 @@
 
 package com.atlarge.opendc.experiments.sc20.reporter
 
-import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.Timestamp
+import de.bytefish.pgbulkinsert.row.SimpleRow
+import de.bytefish.pgbulkinsert.row.SimpleRowWriter
 import javax.sql.DataSource
 
 /**
  * A [PostgresMetricsWriter] for persisting [HostMetrics].
  */
-public class PostgresHostMetricsWriter(ds: DataSource, batchSize: Int) :
-    PostgresMetricsWriter<HostMetrics>(ds, batchSize) {
-    override fun createStatement(conn: Connection): PreparedStatement {
-        return conn.prepareStatement("INSERT INTO host_metrics (scenario_id, run_id, host_id, state, timestamp, duration, vm_count, requested_burst, granted_burst, overcommissioned_burst, interfered_burst, cpu_usage, cpu_demand, power_draw) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-    }
+public class PostgresHostMetricsWriter(ds: DataSource, parallelism: Int, batchSize: Int) :
+    PostgresMetricsWriter<HostMetrics>(ds, parallelism, batchSize) {
 
-    override fun persist(action: Action.Write<HostMetrics>, stmt: PreparedStatement) {
-        stmt.setLong(1, action.scenario)
-        stmt.setInt(2, action.run)
-        stmt.setString(3, action.metrics.host.name)
-        stmt.setString(4, action.metrics.host.state.name)
-        stmt.setTimestamp(5, Timestamp(action.metrics.time))
-        stmt.setLong(6, action.metrics.duration)
-        stmt.setInt(7, action.metrics.vmCount)
-        stmt.setLong(8, action.metrics.requestedBurst)
-        stmt.setLong(9, action.metrics.grantedBurst)
-        stmt.setLong(10, action.metrics.overcommissionedBurst)
-        stmt.setLong(11, action.metrics.interferedBurst)
-        stmt.setDouble(12, action.metrics.cpuUsage)
-        stmt.setDouble(13, action.metrics.cpuDemand)
-        stmt.setDouble(14, action.metrics.powerDraw)
+    override val table: SimpleRowWriter.Table = SimpleRowWriter.Table(
+        "host_metrics",
+        *arrayOf(
+            "scenario_id",
+            "run_id",
+            "host_id",
+            "state",
+            "timestamp",
+            "duration",
+            "vm_count",
+            "requested_burst",
+            "granted_burst",
+            "overcommissioned_burst",
+            "interfered_burst",
+            "cpu_usage",
+            "cpu_demand",
+            "power_draw"
+        )
+    )
+
+    override fun persist(action: Action.Write<HostMetrics>, row: SimpleRow) {
+        row.setLong("scenario_id", action.scenario)
+        row.setInteger("run_id", action.run)
+        row.setText("host_id", action.metrics.host.name)
+        row.setText("state", action.metrics.host.state.name)
+        row.setLong("timestamp", action.metrics.time)
+        row.setLong("duration", action.metrics.duration)
+        row.setInteger("vm_count", action.metrics.vmCount)
+        row.setLong("requested_burst", action.metrics.requestedBurst)
+        row.setLong("granted_burst", action.metrics.grantedBurst)
+        row.setLong("overcommissioned_burst", action.metrics.overcommissionedBurst)
+        row.setLong("interfered_burst", action.metrics.interferedBurst)
+        row.setDouble("cpu_usage", action.metrics.cpuUsage)
+        row.setDouble("cpu_demand", action.metrics.cpuDemand)
+        row.setDouble("power_draw", action.metrics.powerDraw)
     }
 
     override fun toString(): String = "host-writer"

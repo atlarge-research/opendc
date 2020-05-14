@@ -47,6 +47,9 @@ dependencies {
         exclude(group = "log4j")
     }
     implementation("com.zaxxer:HikariCP:3.4.5")
+    implementation("de.bytefish.pgbulkinsert:pgbulkinsert-core:5.1.0")
+    implementation("de.bytefish.pgbulkinsert:pgbulkinsert-rowwriter:5.1.0")
+    implementation("me.tongfei:progressbar:0.8.1")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
     runtimeOnly("org.postgresql:postgresql:42.2.12")
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))

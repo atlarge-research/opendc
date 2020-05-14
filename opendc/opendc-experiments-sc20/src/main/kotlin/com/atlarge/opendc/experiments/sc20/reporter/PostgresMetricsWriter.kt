@@ -24,13 +24,15 @@
 
 package com.atlarge.opendc.experiments.sc20.reporter
 
+import de.bytefish.pgbulkinsert.row.SimpleRow
+import de.bytefish.pgbulkinsert.row.SimpleRowWriter
+import org.postgresql.PGConnection
 import java.io.Closeable
-import java.sql.Connection
-import java.sql.PreparedStatement
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
-import kotlin.concurrent.thread
 
 /**
  * The experiment writer is a separate thread that is responsible for writing the results to the
@@ -38,17 +40,18 @@ import kotlin.concurrent.thread
  */
 public abstract class PostgresMetricsWriter<T>(
     private val ds: DataSource,
-    private val batchSize: Int = 4096
+    private val parallelism: Int = 8,
+    private val bufferSize: Int = 4096
 ) : Runnable, Closeable {
     /**
      * The queue of commands to process.
      */
-    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(4 * batchSize)
+    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(parallelism * bufferSize)
 
     /**
-     * The thread for the actual writer.
+     * The executor service to use.
      */
-    private val writerThread: Thread = thread(name = "metrics-writer") { run() }
+    private val executorService = Executors.newFixedThreadPool(parallelism)
 
     /**
      * Write the specified metrics to the database.
@@ -61,64 +64,52 @@ public abstract class PostgresMetricsWriter<T>(
      * Signal the writer to stop.
      */
     public override fun close() {
-        queue.put(Action.Stop)
-        writerThread.join()
+        repeat(parallelism) {
+            queue.put(Action.Stop)
+        }
+        executorService.shutdown()
+        executorService.awaitTermination(5, TimeUnit.MINUTES)
     }
 
     /**
-     * Create a prepared statement to use.
+     * Create the table to which we write.
      */
-    public abstract fun createStatement(conn: Connection): PreparedStatement
+    public abstract val table: SimpleRowWriter.Table
 
     /**
-     * Persist the specified metrics using the given [stmt].
+     * Persist the specified metrics to the given [row].
      */
-    public abstract fun persist(action: Action.Write<T>, stmt: PreparedStatement)
+    public abstract fun persist(action: Action.Write<T>, row: SimpleRow)
+
+    init {
+        repeat(parallelism) {
+            executorService.submit { run() }
+        }
+    }
 
     /**
      * Start the writer thread.
      */
     override fun run() {
-        writerThread.name = toString()
         val conn = ds.connection
-        var batch = 0
 
-        conn.autoCommit = false
-        val stmt = createStatement(conn)
+        val writer = SimpleRowWriter(table)
+        writer.open(conn.unwrap(PGConnection::class.java))
 
         try {
-            val actions = mutableListOf<Action>()
 
             loop@ while (true) {
-                actions.clear()
-
-                if (queue.isEmpty()) {
-                    actions.add(queue.take())
-                }
-                queue.drainTo(actions)
-
-                for (action in actions) {
-                    when (action) {
-                        is Action.Stop -> break@loop
-                        is Action.Write<*> -> {
-                            @Suppress("UNCHECKED_CAST")
-                            persist(action as Action.Write<T>, stmt)
-                            stmt.addBatch()
-                            batch++
-
-                            if (batch % batchSize == 0) {
-                                stmt.executeBatch()
-                                conn.commit()
-                            }
-
-                        }
+                val action = queue.take()
+                when (action) {
+                    is Action.Stop -> break@loop
+                    is Action.Write<*> -> writer.startRow {
+                        @Suppress("UNCHECKED_CAST")
+                        persist(action as Action.Write<T>, it)
                     }
                 }
             }
-
         } finally {
-            stmt.executeBatch()
-            conn.commit()
+            writer.close()
             conn.close()
         }
     }

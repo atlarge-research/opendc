@@ -192,7 +192,6 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Ex
                 is VirtProvisioningEvent.MetricsAvailable ->
                     reporter.reportProvisionerMetrics(clock.millis(), event)
             }
-
         }
         .launchIn(domain)
 }

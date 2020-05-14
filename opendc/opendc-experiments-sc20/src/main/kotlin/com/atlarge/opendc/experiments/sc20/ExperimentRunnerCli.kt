@@ -118,16 +118,23 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
         .multiple()
 
     /**
-     * The maximum number of threads to use.
+     * The maximum number of worker threads to use.
      */
-    private val parallelism by option("--parallelism")
+    private val workerParallelism by option("--worker-parallelism")
         .int()
         .default(Runtime.getRuntime().availableProcessors())
 
     /**
-     * The batch size for writing results.
+     * The maximum number of writer threads to use.
      */
-    private val batchSize by option("--batch-size")
+    private val writerParallelism by option("--writer-parallelism")
+        .int()
+        .default(8)
+
+    /**
+     * The buffer size for writing results.
+     */
+    private val bufferSize by option("--buffer-size")
         .int()
         .default(4096)
 
@@ -137,13 +144,13 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
         ds.jdbcUrl = jdbcUrl
         ds.addDataSourceProperty("reWriteBatchedInserts", "true")
 
-
-        reporter.batchSize = batchSize
+        reporter.bufferSize = bufferSize
+        reporter.parallelism = writerParallelism
 
         val performanceInterferenceModel =
-            performanceInterferenceStream?.let { Sc20PerformanceInterferenceReader(it).construct()  }
+            performanceInterferenceStream?.let { Sc20PerformanceInterferenceReader(it).construct() }
 
-        val runner = ExperimentRunner(portfolios, ds, reporter, environmentPath, tracePath, performanceInterferenceModel, parallelism)
+        val runner = ExperimentRunner(portfolios, ds, reporter, environmentPath, tracePath, performanceInterferenceModel, workerParallelism)
 
         try {
             runner.run()
@@ -158,7 +165,8 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
  * An option for specifying the type of reporter to use.
  */
 internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentReporterProvider {
-    var batchSize = 4096
+    var bufferSize = 4096
+    var parallelism = 8
 
     class Parquet : Reporter("Options for reporting using Parquet") {
         private val path by option("--parquet-directory", help = "path to where the output should be stored")
@@ -172,25 +180,22 @@ internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentRepo
     }
 
     class Postgres : Reporter("Options for reporting using PostgreSQL") {
-        lateinit var ds: DataSource
+        lateinit var hostWriter: PostgresHostMetricsWriter
+        lateinit var provisionerWriter: PostgresProvisionerMetricsWriter
 
         override fun init(ds: DataSource) {
-            this.ds = ds
+            hostWriter = PostgresHostMetricsWriter(ds, parallelism, bufferSize)
+            provisionerWriter = PostgresProvisionerMetricsWriter(ds, parallelism, bufferSize)
         }
 
         override fun createReporter(scenario: Long, run: Int): ExperimentReporter {
-            val hostWriter = PostgresHostMetricsWriter(ds, batchSize)
-            val provisionerWriter = PostgresProvisionerMetricsWriter(ds, batchSize)
-            val delegate = ExperimentPostgresReporter(scenario, run, hostWriter, provisionerWriter)
-            return object : ExperimentReporter by delegate {
-                override fun close() {
-                    hostWriter.close()
-                    provisionerWriter.close()
-                }
-            }
+            return ExperimentPostgresReporter(scenario, run, hostWriter, provisionerWriter)
         }
 
-        override fun close() {}
+        override fun close() {
+            hostWriter.close()
+            provisionerWriter.close()
+        }
     }
 }
 
