@@ -48,7 +48,7 @@ class DatabaseHelper(val conn: Connection) : Closeable {
     /**
      * Prepared statement for creating a scenario
      */
-    private val createScenario = conn.prepareStatement("INSERT INTO scenarios (portfolio_id, repetitions, topology, workload_name, workload_fraction, allocation_policy, failures, interference) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", arrayOf("id"))
+    private val createScenario = conn.prepareStatement("INSERT INTO scenarios (portfolio_id, repetitions, topology, workload_name, workload_fraction, allocation_policy, failure_frequency, interference) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", arrayOf("id"))
 
     /**
      * Prepared statement for creating a run.
@@ -96,7 +96,7 @@ class DatabaseHelper(val conn: Connection) : Closeable {
         createScenario.setString(4, scenario.workload.name)
         createScenario.setDouble(5, scenario.workload.fraction)
         createScenario.setString(6, scenario.allocationPolicy)
-        createScenario.setBoolean(7, scenario.hasFailures)
+        createScenario.setDouble(7, scenario.failureFrequency)
         createScenario.setBoolean(8, scenario.hasInterference)
 
         val affectedRows = createScenario.executeUpdate()

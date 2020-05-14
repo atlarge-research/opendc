@@ -70,7 +70,7 @@ private val logger = KotlinLogging.logger {}
  */
 suspend fun createFailureDomain(
     seed: Int,
-    failureInterval: Int,
+    failureInterval: Double,
     bareMetalProvisioner: ProvisioningService,
     chan: Channel<Unit>
 ): Domain {
@@ -93,12 +93,12 @@ suspend fun createFailureDomain(
 /**
  * Obtain the [FaultInjector] to use for the experiments.
  */
-fun createFaultInjector(domain: Domain, random: Random, failureInterval: Int): FaultInjector {
+fun createFaultInjector(domain: Domain, random: Random, failureInterval: Double): FaultInjector {
     // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
     // GRID'5000
     return CorrelatedFaultInjector(
         domain,
-        iatScale = ln(failureInterval.toDouble()), iatShape = 1.03, // Hours
+        iatScale = ln(failureInterval), iatShape = 1.03, // Hours
         sizeScale = 1.88, sizeShape = 1.25,
         dScale = 9.51, dShape = 3.21, // Minutes
         random = random

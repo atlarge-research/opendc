@@ -102,7 +102,7 @@ class Sc20IntegrationTest {
 
             val failureDomain = if (failures) {
                 println("ENABLING failures")
-                createFailureDomain(seed, 24 * 7, bareMetalProvisioner, chan)
+                createFailureDomain(seed, 24.0 * 7, bareMetalProvisioner, chan)
             } else {
                 null
             }

@@ -30,7 +30,7 @@ CREATE TABLE scenarios
     workload_name     TEXT                  NOT NULL,
     workload_fraction DOUBLE PRECISION      NOT NULL,
     allocation_policy TEXT                  NOT NULL,
-    failures          BOOLEAN               NOT NULL,
+    failure_frequency DOUBLE PRECISION      NOT NULL,
     interference      BOOLEAN               NOT NULL,
 
     FOREIGN KEY (portfolio_id) REFERENCES portfolios (id)

@@ -27,7 +27,7 @@ package com.atlarge.opendc.experiments.sc20
 abstract class AbstractSc20Portfolio(name: String) : Portfolio(name) {
     abstract val topologies: List<Topology>
     abstract val workloads: List<Workload>
-    abstract val operationalPhenomena: List<Pair<Boolean, Boolean>>
+    abstract val operationalPhenomena: List<Pair<Double, Boolean>>
     abstract val allocationPolicies: List<String>
 
     open val repetitions = 8
@@ -35,7 +35,7 @@ abstract class AbstractSc20Portfolio(name: String) : Portfolio(name) {
     override val scenarios: Sequence<Scenario> = sequence {
         for (topology in topologies) {
             for (workload in workloads) {
-                for ((hasFailures, hasInterference) in operationalPhenomena) {
+                for ((failureFrequency, hasInterference) in operationalPhenomena) {
                     for (allocationPolicy in allocationPolicies) {
                         yield(
                             Scenario(
@@ -44,7 +44,7 @@ abstract class AbstractSc20Portfolio(name: String) : Portfolio(name) {
                                 topology,
                                 workload,
                                 allocationPolicy,
-                                hasFailures,
+                                failureFrequency,
                                 hasInterference
                             )
                         )
@@ -54,6 +54,8 @@ abstract class AbstractSc20Portfolio(name: String) : Portfolio(name) {
         }
     }
 }
+
+private val defaultFailureInterval = 24.0 * 7
 
 object HorVerPortfolio : AbstractSc20Portfolio("horizontal_vs_vertical") {
     override val topologies = listOf(
@@ -76,7 +78,7 @@ object HorVerPortfolio : AbstractSc20Portfolio("horizontal_vs_vertical") {
     )
 
     override val operationalPhenomena = listOf(
-        true to true
+        defaultFailureInterval to true
     )
 
     override val allocationPolicies = listOf(
@@ -101,7 +103,7 @@ object MoreVelocityPortfolio : AbstractSc20Portfolio("more_velocity") {
     )
 
     override val operationalPhenomena = listOf(
-        true to true
+        defaultFailureInterval to true
     )
 
     override val allocationPolicies = listOf(
@@ -125,7 +127,7 @@ object MoreHpcPortfolio : AbstractSc20Portfolio("more_hpc") {
     )
 
     override val operationalPhenomena = listOf(
-        true to true
+        defaultFailureInterval to true
     )
 
     override val allocationPolicies = listOf(
@@ -145,10 +147,10 @@ object OperationalPhenomenaPortfolio : AbstractSc20Portfolio("operational_phenom
     )
 
     override val operationalPhenomena = listOf(
-        true to true,
-        false to true,
-        true to false,
-        true to true
+        defaultFailureInterval to true,
+        0.0 to true,
+        defaultFailureInterval to false,
+        defaultFailureInterval to true
     )
 
     override val allocationPolicies = listOf(

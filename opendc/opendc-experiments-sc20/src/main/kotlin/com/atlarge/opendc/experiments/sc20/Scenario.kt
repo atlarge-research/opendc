@@ -62,9 +62,8 @@ public class Scenario(
     val topology: Topology,
     val workload: Workload,
     val allocationPolicy: String,
-    val hasFailures: Boolean,
-    val hasInterference: Boolean,
-    val failureInterval: Int = 24 * 7
+    val failureFrequency: Double,
+    val hasInterference: Boolean
 ) {
     /**
      * The runs this scenario consists of.
@@ -101,9 +100,9 @@ public class Scenario(
         root.launch {
             val (bareMetalProvisioner, scheduler) = createProvisioner(root, environment, allocationPolicy)
 
-            val failureDomain = if (hasFailures) {
+            val failureDomain = if (failureFrequency > 0) {
                 logger.debug("ENABLING failures")
-                createFailureDomain(seeder.nextInt(), failureInterval, bareMetalProvisioner, chan)
+                createFailureDomain(seeder.nextInt(), failureFrequency, bareMetalProvisioner, chan)
             } else {
                 null
             }
