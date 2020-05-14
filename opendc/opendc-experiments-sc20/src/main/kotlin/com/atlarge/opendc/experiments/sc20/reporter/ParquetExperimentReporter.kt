@@ -24,7 +24,6 @@
 
 package com.atlarge.opendc.experiments.sc20.reporter
 
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
@@ -90,11 +89,7 @@ class ExperimentParquetReporter(destination: File) :
     override fun reportHostStateChange(
         time: Long,
         driver: VirtDriver,
-        server: Server,
-        submittedVms: Long,
-        queuedVms: Long,
-        runningVms: Long,
-        finishedVms: Long
+        server: Server
     ) {
         logger.info("Host ${server.uid} changed state ${server.state} [$time]")
 
@@ -111,10 +106,6 @@ class ExperimentParquetReporter(destination: File) :
                 0.0,
                 0,
                 server,
-                submittedVms,
-                queuedVms,
-                runningVms,
-                finishedVms,
                 duration
             )
 
@@ -141,10 +132,6 @@ class ExperimentParquetReporter(destination: File) :
         cpuDemand: Double,
         numberOfDeployedImages: Int,
         hostServer: Server,
-        submittedVms: Long,
-        queuedVms: Long,
-        runningVms: Long,
-        finishedVms: Long,
         duration: Long
     ) {
         val record = GenericData.Record(schema)
@@ -161,10 +148,10 @@ class ExperimentParquetReporter(destination: File) :
         record.put("host_state", hostServer.state)
         record.put("host_usage", cpuUsage)
         record.put("power_draw", lastPowerConsumption[hostServer] ?: 200.0)
-        record.put("total_submitted_vms", submittedVms)
-        record.put("total_queued_vms", queuedVms)
-        record.put("total_running_vms", runningVms)
-        record.put("total_finished_vms", finishedVms)
+        record.put("total_submitted_vms", -1)
+        record.put("total_queued_vms", -1)
+        record.put("total_running_vms", -1)
+        record.put("total_finished_vms", -1)
 
         queue.put(record)
     }

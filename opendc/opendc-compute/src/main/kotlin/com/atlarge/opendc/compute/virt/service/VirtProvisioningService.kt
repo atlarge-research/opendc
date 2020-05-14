@@ -5,6 +5,7 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
+import kotlinx.coroutines.flow.Flow
 
 /**
  * A service for VM provisioning on a cloud.
@@ -14,6 +15,11 @@ interface VirtProvisioningService {
      * The policy used for allocating a VM on the available hypervisors.
      */
     val allocationPolicy: AllocationPolicy
+
+    /**
+     * The events emitted by the service.
+     */
+    public val events: Flow<VirtProvisioningEvent>
 
     /**
      * Obtain the active hypervisors for this provisioner.

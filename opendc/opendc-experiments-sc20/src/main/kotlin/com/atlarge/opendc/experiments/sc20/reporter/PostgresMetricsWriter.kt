@@ -48,7 +48,7 @@ public abstract class PostgresMetricsWriter<T>(
     /**
      * The thread for the actual writer.
      */
-    private val writerThread: Thread = thread(name = "host-metrics-writer") { run() }
+    private val writerThread: Thread = thread(name = "metrics-writer") { run() }
 
     /**
      * Write the specified metrics to the database.
@@ -79,6 +79,7 @@ public abstract class PostgresMetricsWriter<T>(
      * Start the writer thread.
      */
     override fun run() {
+        writerThread.name = toString()
         val conn = ds.connection
         var batch = 0
 
@@ -114,7 +115,9 @@ public abstract class PostgresMetricsWriter<T>(
                     }
                 }
             }
+
         } finally {
+            stmt.executeBatch()
             conn.commit()
             conn.close()
         }

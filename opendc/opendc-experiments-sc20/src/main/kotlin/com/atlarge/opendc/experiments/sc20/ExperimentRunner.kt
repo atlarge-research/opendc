@@ -33,15 +33,11 @@ import com.atlarge.opendc.experiments.sc20.util.DatabaseHelper
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import java.io.Closeable
 import java.io.File
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
 import kotlin.system.measureTimeMillis
@@ -159,11 +155,19 @@ public class ExperimentRunner(
         val plan = createPlan()
         val total = plan.size
         val finished = AtomicInteger()
-        val dispatcher = Executors.newWorkStealingPool(parallelism).asCoroutineDispatcher()
+        val executorService = Executors.newCachedThreadPool()
+        val planIterator = plan.iterator()
+        val futures = mutableListOf<Future<*>>()
 
-        runBlocking {
-            val mainDispatcher = coroutineContext[CoroutineDispatcher.Key]!!
-            for (run in plan) {
+        while (planIterator.hasNext()) {
+            futures.clear()
+
+            repeat(parallelism) {
+                if (!planIterator.hasNext()) {
+                    return@repeat
+                }
+
+                val run = planIterator.next()
                 val scenarioId = scenarioIds[run.scenario]!!
 
                 rawTraceReaders.computeIfAbsent(run.scenario.workload.name) { name ->
@@ -171,15 +175,14 @@ public class ExperimentRunner(
                     Sc20RawParquetTraceReader(File(tracePath, name))
                 }
 
-                launch(dispatcher) {
-                    launch(mainDispatcher) {
+                val future = executorService.submit {
+                    synchronized(helper) {
                         helper.startRun(scenarioId, run.id)
                     }
 
                     logger.info { "[${finished.get()}/$total] Starting run ($scenarioId, ${run.id})" }
 
                     try {
-
                         val duration = measureTimeMillis {
                             val reporter = reporterProvider.createReporter(scenarioIds[run.scenario]!!, run.id)
                             val traceReader = createTraceReader(run.scenario.workload.name, performanceInterferenceModel, run)
@@ -187,6 +190,7 @@ public class ExperimentRunner(
 
                             try {
                                 run.scenario(run, reporter, environmentReader, traceReader)
+                                logger.info { "Done" }
                             } finally {
                                 reporter.close()
                             }
@@ -195,17 +199,23 @@ public class ExperimentRunner(
                         finished.incrementAndGet()
                         logger.info { "[${finished.get()}/$total] Finished run ($scenarioId, ${run.id}) in $duration milliseconds" }
 
-                        withContext(mainDispatcher) {
+                        synchronized(helper) {
                             helper.finishRun(scenarioId, run.id, hasFailed = false)
                         }
                     } catch (e: Throwable) {
                         logger.error("A run has failed", e)
                         finished.incrementAndGet()
-                        withContext(mainDispatcher) {
+                        synchronized(helper) {
                             helper.finishRun(scenarioId, run.id, hasFailed = true)
                         }
                     }
                 }
+
+                futures += future
+            }
+
+            for (future in futures) {
+                future.get()
             }
         }
     }

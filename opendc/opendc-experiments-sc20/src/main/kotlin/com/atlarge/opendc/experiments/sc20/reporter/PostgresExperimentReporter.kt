@@ -24,15 +24,20 @@
 
 package com.atlarge.opendc.experiments.sc20.reporter
 
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.service.VirtProvisioningEvent
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: PostgresHostMetricsWriter) : ExperimentReporter {
+class ExperimentPostgresReporter(
+    val scenario: Long,
+    val run: Int,
+    val hostWriter: PostgresHostMetricsWriter,
+    val provisionerWriter: PostgresProvisionerMetricsWriter
+) : ExperimentReporter {
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
 
     override fun reportVmStateChange(time: Long, server: Server) {}
@@ -40,11 +45,7 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
     override fun reportHostStateChange(
         time: Long,
         driver: VirtDriver,
-        server: Server,
-        submittedVms: Long,
-        queuedVms: Long,
-        runningVms: Long,
-        finishedVms: Long
+        server: Server
     ) {
         val lastServerState = lastServerStates[server]
         logger.debug("Host ${server.uid} changed state ${server.state} [$time]")
@@ -61,10 +62,6 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
                 0.0,
                 0,
                 server,
-                submittedVms,
-                queuedVms,
-                runningVms,
-                finishedVms,
                 duration
             )
 
@@ -93,13 +90,9 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
         cpuDemand: Double,
         numberOfDeployedImages: Int,
         hostServer: Server,
-        submittedVms: Long,
-        queuedVms: Long,
-        runningVms: Long,
-        finishedVms: Long,
         duration: Long
     ) {
-        writer.write(
+        hostWriter.write(
             scenario, run, HostMetrics(
                 time,
                 duration,
@@ -112,6 +105,23 @@ class ExperimentPostgresReporter(val scenario: Long, val run: Int, val writer: P
                 cpuUsage,
                 cpuDemand,
                 lastPowerConsumption[hostServer] ?: 200.0
+            )
+        )
+    }
+
+    override fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {
+        provisionerWriter.write(
+            scenario,
+            run,
+            ProvisionerMetrics(
+                time,
+                event.totalHostCount,
+                event.availableHostCount,
+                event.totalVmCount,
+                event.activeVmCount,
+                event.inactiveVmCount,
+                event.waitingVmCount,
+                event.failedVmCount
             )
         )
     }

@@ -158,7 +158,7 @@ class Sc20IntegrationTest {
         var totalOvercommissionedBurst = 0L
         var totalInterferedBurst = 0L
 
-        override suspend fun reportHostSlice(
+        override fun reportHostSlice(
             time: Long,
             requestedBurst: Long,
             grantedBurst: Long,
@@ -168,10 +168,6 @@ class Sc20IntegrationTest {
             cpuDemand: Double,
             numberOfDeployedImages: Int,
             hostServer: Server,
-            submittedVms: Long,
-            queuedVms: Long,
-            runningVms: Long,
-            finishedVms: Long,
             duration: Long
         ) {
             totalRequestedBurst += requestedBurst

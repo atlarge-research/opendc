@@ -1,6 +1,7 @@
 package com.atlarge.opendc.compute.virt.service
 
 import com.atlarge.odcsim.SimulationContext
+import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
@@ -19,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -57,11 +59,11 @@ class SimpleVirtProvisioningService(
      */
     private val activeImages: MutableSet<ImageView> = mutableSetOf()
 
-    public var submittedVms = 0L
-    public var queuedVms = 0L
-    public var runningVms = 0L
-    public var finishedVms = 0L
-    public var unscheduledVms = 0L
+    public var submittedVms = 0
+    public var queuedVms = 0
+    public var runningVms = 0
+    public var finishedVms = 0
+    public var unscheduledVms = 0
 
     private var maxCores = 0
     private var maxMemory = 0L
@@ -70,6 +72,13 @@ class SimpleVirtProvisioningService(
      * The allocation logic to use.
      */
     private val allocationLogic = allocationPolicy()
+
+    /**
+     * The [EventFlow] to emit the events.
+     */
+    internal val eventFlow = EventFlow<VirtProvisioningEvent>()
+
+    override val events: Flow<VirtProvisioningEvent> = eventFlow
 
     init {
         launch {
@@ -96,8 +105,17 @@ class SimpleVirtProvisioningService(
         image: Image,
         flavor: Flavor
     ): Server = withContext(coroutineContext) {
-        submittedVms++
-        queuedVms++
+        eventFlow.emit(VirtProvisioningEvent.MetricsAvailable(
+            this@SimpleVirtProvisioningService,
+            hypervisors.size,
+            availableHypervisors.size,
+            ++submittedVms,
+            runningVms,
+            finishedVms,
+            ++queuedVms,
+            unscheduledVms
+        ))
+
         suspendCancellableCoroutine<Server> { cont ->
             val vmInstance = ImageView(name, image, flavor, cont)
             incomingImages += vmInstance
@@ -141,7 +159,17 @@ class SimpleVirtProvisioningService(
 
             if (selectedHv == null) {
                 if (requiredMemory > maxMemory || imageInstance.flavor.cpuCount > maxCores) {
-                    unscheduledVms++
+                    eventFlow.emit(VirtProvisioningEvent.MetricsAvailable(
+                        this@SimpleVirtProvisioningService,
+                        hypervisors.size,
+                        availableHypervisors.size,
+                        submittedVms,
+                        runningVms,
+                        finishedVms,
+                        queuedVms,
+                        ++unscheduledVms
+                    ))
+
                     incomingImages -= imageInstance
 
                     logger.warn("Failed to spawn ${imageInstance.image}: does not fit [${clock.millis()}]")
@@ -168,8 +196,17 @@ class SimpleVirtProvisioningService(
                 )
                 imageInstance.server = server
                 imageInstance.continuation.resume(server)
-                queuedVms--
-                runningVms++
+
+                eventFlow.emit(VirtProvisioningEvent.MetricsAvailable(
+                    this@SimpleVirtProvisioningService,
+                    hypervisors.size,
+                    availableHypervisors.size,
+                    submittedVms,
+                    ++runningVms,
+                    finishedVms,
+                    --queuedVms,
+                    unscheduledVms
+                ))
                 activeImages += imageInstance
 
                 server.events
@@ -178,8 +215,17 @@ class SimpleVirtProvisioningService(
                             is ServerEvent.StateChanged -> {
                                 if (event.server.state == ServerState.SHUTOFF) {
                                     logger.info { "Server ${event.server.uid} ${event.server.name} ${event.server.flavor} finished." }
-                                    runningVms--
-                                    finishedVms++
+
+                                    eventFlow.emit(VirtProvisioningEvent.MetricsAvailable(
+                                        this@SimpleVirtProvisioningService,
+                                        hypervisors.size,
+                                        availableHypervisors.size,
+                                        submittedVms,
+                                        --runningVms,
+                                        ++finishedVms,
+                                        queuedVms,
+                                        unscheduledVms
+                                    ))
 
                                     activeImages -= imageInstance
                                     selectedHv.provisionedCores -= server.flavor.cpuCount
@@ -211,6 +257,7 @@ class SimpleVirtProvisioningService(
                 if (server in hypervisors) {
                     // Corner case for when the hypervisor already exists
                     availableHypervisors += hypervisors.getValue(server)
+
                 } else {
                     val hv = HypervisorView(
                         server.uid,
@@ -223,10 +270,32 @@ class SimpleVirtProvisioningService(
                     maxMemory = max(maxMemory, server.flavor.memorySize)
                     hypervisors[server] = hv
                 }
+
+                eventFlow.emit(VirtProvisioningEvent.MetricsAvailable(
+                    this@SimpleVirtProvisioningService,
+                    hypervisors.size,
+                    availableHypervisors.size,
+                    submittedVms,
+                    runningVms,
+                    finishedVms,
+                    queuedVms,
+                    unscheduledVms
+                ))
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
                 val hv = hypervisors[server] ?: return
                 availableHypervisors -= hv
+
+                eventFlow.emit(VirtProvisioningEvent.MetricsAvailable(
+                    this@SimpleVirtProvisioningService,
+                    hypervisors.size,
+                    availableHypervisors.size,
+                    submittedVms,
+                    runningVms,
+                    finishedVms,
+                    queuedVms,
+                    unscheduledVms
+                ))
 
                 if (incomingImages.isNotEmpty()) {
                     requestCycle()
@@ -241,6 +310,17 @@ class SimpleVirtProvisioningService(
             val hv = hypervisors[server] ?: return
             hv.driver = server.services[VirtDriver]
             availableHypervisors += hv
+
+            eventFlow.emit(VirtProvisioningEvent.MetricsAvailable(
+                this@SimpleVirtProvisioningService,
+                hypervisors.size,
+                availableHypervisors.size,
+                submittedVms,
+                runningVms,
+                finishedVms,
+                queuedVms,
+                unscheduledVms
+            ))
 
             hv.driver.events
                 .onEach { event ->

@@ -36,6 +36,7 @@ import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
+import com.atlarge.opendc.compute.virt.service.VirtProvisioningEvent
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
 import com.atlarge.opendc.core.failure.FailureDomain
@@ -150,13 +151,13 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Ex
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
         // TODO Do not expose VirtDriver directly but use Hypervisor class.
-        reporter.reportHostStateChange(clock.millis(), hypervisor, (hypervisor as SimpleVirtDriver).server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
+        reporter.reportHostStateChange(clock.millis(), hypervisor, (hypervisor as SimpleVirtDriver).server)
         hypervisor.server.events
             .onEach { event ->
                 val time = clock.millis()
                 when (event) {
                     is ServerEvent.StateChanged -> {
-                        reporter.reportHostStateChange(time, hypervisor, event.server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
+                        reporter.reportHostStateChange(time, hypervisor, event.server)
                     }
                 }
             }
@@ -173,11 +174,7 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Ex
                         event.cpuUsage,
                         event.cpuDemand,
                         event.numberOfDeployedImages,
-                        event.hostServer,
-                        scheduler.submittedVms,
-                        scheduler.queuedVms,
-                        scheduler.runningVms,
-                        scheduler.finishedVms
+                        event.hostServer
                     )
                 }
             }
@@ -188,6 +185,16 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Ex
             .onEach { reporter.reportPowerConsumption(hypervisor.server, it) }
             .launchIn(domain)
     }
+
+    scheduler.events
+        .onEach { event ->
+            when (event) {
+                is VirtProvisioningEvent.MetricsAvailable ->
+                    reporter.reportProvisionerMetrics(clock.millis(), event)
+            }
+
+        }
+        .launchIn(domain)
 }
 
 /**
@@ -197,7 +204,7 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
     val domain = simulationContext.domain
 
     try {
-        var submitted = 0L
+        var submitted = 0
         val finished = Channel<Unit>(Channel.CONFLATED)
         val hypervisors = TreeSet(scheduler.drivers().map { (it as SimpleVirtDriver).server.name })
 

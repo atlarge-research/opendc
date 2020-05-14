@@ -30,30 +30,26 @@ import java.sql.Timestamp
 import javax.sql.DataSource
 
 /**
- * A [PostgresMetricsWriter] for persisting [HostMetrics].
+ * A [PostgresMetricsWriter] for persisting [ProvisionerMetrics].
  */
-public class PostgresHostMetricsWriter(ds: DataSource, batchSize: Int) :
-    PostgresMetricsWriter<HostMetrics>(ds, batchSize) {
+public class PostgresProvisionerMetricsWriter(ds: DataSource, batchSize: Int) :
+    PostgresMetricsWriter<ProvisionerMetrics>(ds, batchSize) {
     override fun createStatement(conn: Connection): PreparedStatement {
-        return conn.prepareStatement("INSERT INTO host_metrics (scenario_id, run_id, host_id, state, timestamp, duration, vm_count, requested_burst, granted_burst, overcommissioned_burst, interfered_burst, cpu_usage, cpu_demand, power_draw) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+        return conn.prepareStatement("INSERT INTO provisioner_metrics (scenario_id, run_id, timestamp, host_total_count, host_available_count, vm_total_count, vm_active_count, vm_inactive_count, vm_waiting_count, vm_failed_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
     }
 
-    override fun persist(action: Action.Write<HostMetrics>, stmt: PreparedStatement) {
+    override fun persist(action: Action.Write<ProvisionerMetrics>, stmt: PreparedStatement) {
         stmt.setLong(1, action.scenario)
         stmt.setInt(2, action.run)
-        stmt.setString(3, action.metrics.host.name)
-        stmt.setString(4, action.metrics.host.state.name)
-        stmt.setTimestamp(5, Timestamp(action.metrics.time))
-        stmt.setLong(6, action.metrics.duration)
-        stmt.setInt(7, action.metrics.vmCount)
-        stmt.setLong(8, action.metrics.requestedBurst)
-        stmt.setLong(9, action.metrics.grantedBurst)
-        stmt.setLong(10, action.metrics.overcommissionedBurst)
-        stmt.setLong(11, action.metrics.interferedBurst)
-        stmt.setDouble(12, action.metrics.cpuUsage)
-        stmt.setDouble(13, action.metrics.cpuDemand)
-        stmt.setDouble(14, action.metrics.powerDraw)
+        stmt.setTimestamp(3, Timestamp(action.metrics.time))
+        stmt.setInt(4, action.metrics.totalHostCount)
+        stmt.setInt(5, action.metrics.availableHostCount)
+        stmt.setInt(6, action.metrics.totalVmCount)
+        stmt.setInt(7, action.metrics.activeVmCount)
+        stmt.setInt(8, action.metrics.inactiveVmCount)
+        stmt.setInt(9, action.metrics.waitingVmCount)
+        stmt.setInt(10, action.metrics.failedVmCount)
     }
 
-    override fun toString(): String = "host-writer"
+    override fun toString(): String = "provisioner-writer"
 }

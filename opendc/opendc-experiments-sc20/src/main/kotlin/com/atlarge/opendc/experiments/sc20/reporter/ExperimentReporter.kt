@@ -26,6 +26,7 @@ package com.atlarge.opendc.experiments.sc20.reporter
 
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.service.VirtProvisioningEvent
 import java.io.Closeable
 
 /**
@@ -43,17 +44,13 @@ interface ExperimentReporter : Closeable {
     fun reportHostStateChange(
         time: Long,
         driver: VirtDriver,
-        server: Server,
-        submittedVms: Long,
-        queuedVms: Long,
-        runningVms: Long,
-        finishedVms: Long
+        server: Server
     ) {}
 
     /**
      * Report the power consumption of a host.
      */
-    fun reportPowerConsumption(host: Server, draw: Double)
+    fun reportPowerConsumption(host: Server, draw: Double) {}
 
     /**
      * This method is invoked for a host for each slice that is finishes.
@@ -68,10 +65,11 @@ interface ExperimentReporter : Closeable {
         cpuDemand: Double,
         numberOfDeployedImages: Int,
         hostServer: Server,
-        submittedVms: Long,
-        queuedVms: Long,
-        runningVms: Long,
-        finishedVms: Long,
         duration: Long = 5 * 60 * 1000L
     ) {}
+
+    /**
+     * This method is invoked for a provisioner event.
+     */
+    fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {}
 }

@@ -29,6 +29,7 @@ import com.atlarge.opendc.experiments.sc20.reporter.ExperimentPostgresReporter
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporter
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporterProvider
 import com.atlarge.opendc.experiments.sc20.reporter.PostgresHostMetricsWriter
+import com.atlarge.opendc.experiments.sc20.reporter.PostgresProvisionerMetricsWriter
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.atlarge.opendc.format.trace.sc20.Sc20VmPlacementReader
 import com.github.ajalt.clikt.core.CliktCommand
@@ -132,6 +133,7 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
 
     override fun run() {
         val ds = HikariDataSource()
+        ds.maximumPoolSize = Runtime.getRuntime().availableProcessors() * 3
         ds.jdbcUrl = jdbcUrl
         ds.addDataSourceProperty("reWriteBatchedInserts", "true")
 
@@ -178,10 +180,12 @@ internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentRepo
 
         override fun createReporter(scenario: Long, run: Int): ExperimentReporter {
             val hostWriter = PostgresHostMetricsWriter(ds, batchSize)
-            val delegate = ExperimentPostgresReporter(scenario, run, hostWriter)
+            val provisionerWriter = PostgresProvisionerMetricsWriter(ds, batchSize)
+            val delegate = ExperimentPostgresReporter(scenario, run, hostWriter, provisionerWriter)
             return object : ExperimentReporter by delegate {
                 override fun close() {
                     hostWriter.close()
+                    provisionerWriter.close()
                 }
             }
         }
