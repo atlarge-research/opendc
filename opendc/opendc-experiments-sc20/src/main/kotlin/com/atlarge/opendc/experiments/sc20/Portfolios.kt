@@ -69,8 +69,8 @@ object HorVerPortfolio : AbstractSc20Portfolio("horizontal_vs_vertical") {
     )
 
     override val workloads = listOf(
-        Workload("solvinity", 0.1),
-        Workload("solvinity", 0.25),
+        // Workload("solvinity", 0.1),
+        // Workload("solvinity", 0.25),
         Workload("solvinity", 0.5),
         Workload("solvinity", 1.0)
     )
