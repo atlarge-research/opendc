@@ -27,62 +27,19 @@ package com.atlarge.opendc.experiments.sc20.reporter
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import com.atlarge.opendc.compute.virt.service.VirtProvisioningEvent
 import mu.KotlinLogging
-import org.apache.avro.SchemaBuilder
-import org.apache.avro.generic.GenericData
-import org.apache.hadoop.fs.Path
-import org.apache.parquet.avro.AvroParquetWriter
-import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import java.io.File
-import java.util.concurrent.ArrayBlockingQueue
-import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
-class ExperimentParquetReporter(destination: File) :
+class ExperimentParquetReporter(
+    val scenario: Long,
+    val run: Int,
+    val hostWriter: ParquetHostMetricsWriter,
+    val provisionerWriter: ParquetProvisionerMetricsWriter
+) :
     ExperimentReporter {
     private val lastServerStates = mutableMapOf<Server, Pair<ServerState, Long>>()
-    private val schema = SchemaBuilder
-        .record("slice")
-        .namespace("com.atlarge.opendc.experiments.sc20")
-        .fields()
-        .name("time").type().longType().noDefault()
-        .name("duration").type().longType().noDefault()
-        .name("requested_burst").type().longType().noDefault()
-        .name("granted_burst").type().longType().noDefault()
-        .name("overcommissioned_burst").type().longType().noDefault()
-        .name("interfered_burst").type().longType().noDefault()
-        .name("cpu_usage").type().doubleType().noDefault()
-        .name("cpu_demand").type().doubleType().noDefault()
-        .name("image_count").type().intType().noDefault()
-        .name("server").type().stringType().noDefault()
-        .name("host_state").type().stringType().noDefault()
-        .name("host_usage").type().doubleType().noDefault()
-        .name("power_draw").type().doubleType().noDefault()
-        .name("total_submitted_vms").type().longType().noDefault()
-        .name("total_queued_vms").type().longType().noDefault()
-        .name("total_running_vms").type().longType().noDefault()
-        .name("total_finished_vms").type().longType().noDefault()
-        .endRecord()
-    private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(destination.absolutePath))
-        .withSchema(schema)
-        .withCompressionCodec(CompressionCodecName.SNAPPY)
-        .withPageSize(4 * 1024 * 1024) // For compression
-        .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
-        .build()
-    private val queue = ArrayBlockingQueue<GenericData.Record>(2048)
-    private val writerThread = thread(start = true, name = "sc20-writer") {
-        try {
-            while (true) {
-                val record = queue.take()
-                writer.write(record)
-            }
-        } catch (e: InterruptedException) {
-            // Do not rethrow this
-        } finally {
-            writer.close()
-        }
-    }
 
     override fun reportVmStateChange(time: Long, server: Server) {}
 
@@ -91,7 +48,7 @@ class ExperimentParquetReporter(destination: File) :
         driver: VirtDriver,
         server: Server
     ) {
-        logger.info("Host ${server.uid} changed state ${server.state} [$time]")
+        logger.debug("Host ${server.uid} changed state ${server.state} [$time]")
 
         val lastServerState = lastServerStates[server]
         if (server.state == ServerState.SHUTOFF && lastServerState != null) {
@@ -134,33 +91,42 @@ class ExperimentParquetReporter(destination: File) :
         hostServer: Server,
         duration: Long
     ) {
-        val record = GenericData.Record(schema)
-        record.put("time", time)
-        record.put("duration", duration)
-        record.put("requested_burst", requestedBurst)
-        record.put("granted_burst", grantedBurst)
-        record.put("overcommissioned_burst", overcommissionedBurst)
-        record.put("interfered_burst", interferedBurst)
-        record.put("cpu_usage", cpuUsage)
-        record.put("cpu_demand", cpuDemand)
-        record.put("image_count", numberOfDeployedImages)
-        record.put("server", hostServer.uid)
-        record.put("host_state", hostServer.state)
-        record.put("host_usage", cpuUsage)
-        record.put("power_draw", lastPowerConsumption[hostServer] ?: 200.0)
-        record.put("total_submitted_vms", -1)
-        record.put("total_queued_vms", -1)
-        record.put("total_running_vms", -1)
-        record.put("total_finished_vms", -1)
+        hostWriter.write(
+            scenario, run, HostMetrics(
+                time,
+                duration,
+                hostServer,
+                numberOfDeployedImages,
+                requestedBurst,
+                grantedBurst,
+                overcommissionedBurst,
+                interferedBurst,
+                cpuUsage,
+                cpuDemand,
+                lastPowerConsumption[hostServer] ?: 200.0
+            )
+        )
+    }
 
-        queue.put(record)
+    override fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {
+        provisionerWriter.write(
+            scenario,
+            run,
+            ProvisionerMetrics(
+                time,
+                event.totalHostCount,
+                event.availableHostCount,
+                event.totalVmCount,
+                event.activeVmCount,
+                event.inactiveVmCount,
+                event.waitingVmCount,
+                event.failedVmCount
+            )
+        )
     }
 
     override fun close() {
-        // Busy loop to wait for writer thread to finish
-        while (queue.isNotEmpty()) {
-            Thread.sleep(500)
-        }
-        writerThread.interrupt()
+        hostWriter.close()
+        provisionerWriter.close()
     }
 }

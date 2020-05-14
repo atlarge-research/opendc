@@ -39,7 +39,6 @@ import java.io.Closeable
 import java.io.File
 import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
-import java.util.concurrent.Future
 import javax.sql.DataSource
 
 /**

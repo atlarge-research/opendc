@@ -28,6 +28,8 @@ import com.atlarge.opendc.experiments.sc20.reporter.ExperimentParquetReporter
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentPostgresReporter
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporter
 import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporterProvider
+import com.atlarge.opendc.experiments.sc20.reporter.ParquetHostMetricsWriter
+import com.atlarge.opendc.experiments.sc20.reporter.ParquetProvisionerMetricsWriter
 import com.atlarge.opendc.experiments.sc20.reporter.PostgresHostMetricsWriter
 import com.atlarge.opendc.experiments.sc20.reporter.PostgresProvisionerMetricsWriter
 import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
@@ -182,8 +184,11 @@ internal sealed class Reporter(name: String) : OptionGroup(name), ExperimentRepo
             .file()
             .defaultLazy { File("data") }
 
-        override fun createReporter(scenario: Long, run: Int): ExperimentReporter =
-            ExperimentParquetReporter(File(path, "results-$scenario-$run.parquet"))
+        override fun createReporter(scenario: Long, run: Int): ExperimentReporter {
+            val hostWriter = ParquetHostMetricsWriter(File(path, "$scenario-$run-host.parquet"), bufferSize)
+            val provisionerWriter = ParquetProvisionerMetricsWriter(File(path, "$scenario-$run-provisioner.parquet"), bufferSize)
+            return ExperimentParquetReporter(scenario, run, hostWriter, provisionerWriter)
+        }
 
         override fun close() {}
     }

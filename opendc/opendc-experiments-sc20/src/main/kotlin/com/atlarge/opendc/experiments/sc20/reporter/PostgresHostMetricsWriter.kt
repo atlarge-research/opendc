@@ -28,31 +28,31 @@ import de.bytefish.pgbulkinsert.row.SimpleRow
 import de.bytefish.pgbulkinsert.row.SimpleRowWriter
 import javax.sql.DataSource
 
+private val table: SimpleRowWriter.Table = SimpleRowWriter.Table(
+    "host_metrics",
+    *arrayOf(
+        "scenario_id",
+        "run_id",
+        "host_id",
+        "state",
+        "timestamp",
+        "duration",
+        "vm_count",
+        "requested_burst",
+        "granted_burst",
+        "overcommissioned_burst",
+        "interfered_burst",
+        "cpu_usage",
+        "cpu_demand",
+        "power_draw"
+    )
+)
+
 /**
  * A [PostgresMetricsWriter] for persisting [HostMetrics].
  */
 public class PostgresHostMetricsWriter(ds: DataSource, parallelism: Int, batchSize: Int) :
-    PostgresMetricsWriter<HostMetrics>(ds, parallelism, batchSize) {
-
-    override val table: SimpleRowWriter.Table = SimpleRowWriter.Table(
-        "host_metrics",
-        *arrayOf(
-            "scenario_id",
-            "run_id",
-            "host_id",
-            "state",
-            "timestamp",
-            "duration",
-            "vm_count",
-            "requested_burst",
-            "granted_burst",
-            "overcommissioned_burst",
-            "interfered_burst",
-            "cpu_usage",
-            "cpu_demand",
-            "power_draw"
-        )
-    )
+    PostgresMetricsWriter<HostMetrics>(ds, table, parallelism, batchSize) {
 
     override fun persist(action: Action.Write<HostMetrics>, row: SimpleRow) {
         row.setLong("scenario_id", action.scenario)

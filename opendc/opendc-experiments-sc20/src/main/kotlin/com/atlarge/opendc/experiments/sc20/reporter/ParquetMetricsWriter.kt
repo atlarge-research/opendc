@@ -24,35 +24,30 @@
 
 package com.atlarge.opendc.experiments.sc20.reporter
 
-import de.bytefish.pgbulkinsert.row.SimpleRow
-import de.bytefish.pgbulkinsert.row.SimpleRowWriter
-import org.postgresql.PGConnection
+import mu.KotlinLogging
+import org.apache.avro.Schema
+import org.apache.avro.generic.GenericData
+import org.apache.hadoop.fs.Path
+import org.apache.parquet.avro.AvroParquetWriter
+import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import java.io.Closeable
+import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import javax.sql.DataSource
+import kotlin.concurrent.thread
 
-/**
- * The experiment writer is a separate thread that is responsible for writing the results to the
- * database.
- */
-public abstract class PostgresMetricsWriter<T>(
-    private val ds: DataSource,
-    private val table: SimpleRowWriter.Table,
-    private val parallelism: Int = 8,
+private val logger = KotlinLogging.logger {}
+
+public abstract class ParquetMetricsWriter<T>(
+    private val path: File,
+    private val schema: Schema,
     private val bufferSize: Int = 4096
 ) : Runnable, Closeable {
     /**
      * The queue of commands to process.
      */
-    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(parallelism * bufferSize)
-
-    /**
-     * The executor service to use.
-     */
-    private val executorService = Executors.newFixedThreadPool(parallelism)
+    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(bufferSize)
+    private val writerThread = thread(start = true, name = "parquet-writer") { run() }
 
     /**
      * Write the specified metrics to the database.
@@ -65,48 +60,43 @@ public abstract class PostgresMetricsWriter<T>(
      * Signal the writer to stop.
      */
     public override fun close() {
-        repeat(parallelism) {
-            queue.put(Action.Stop)
-        }
-        executorService.shutdown()
-        executorService.awaitTermination(5, TimeUnit.MINUTES)
+        queue.put(Action.Stop)
+        writerThread.join()
     }
 
     /**
      * Persist the specified metrics to the given [row].
      */
-    public abstract fun persist(action: Action.Write<T>, row: SimpleRow)
-
-    init {
-        repeat(parallelism) {
-            executorService.submit { run() }
-        }
-    }
+    public abstract fun persist(action: Action.Write<T>, row: GenericData.Record)
 
     /**
      * Start the writer thread.
      */
     override fun run() {
-        val conn = ds.connection
-
-        val writer = SimpleRowWriter(table)
-        writer.open(conn.unwrap(PGConnection::class.java))
+        val writer = AvroParquetWriter.builder<GenericData.Record>(Path(path.absolutePath))
+            .withSchema(schema)
+            .withCompressionCodec(CompressionCodecName.SNAPPY)
+            .withPageSize(4 * 1024 * 1024) // For compression
+            .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
+            .build()
 
         try {
-
             loop@ while (true) {
                 val action = queue.take()
                 when (action) {
                     is Action.Stop -> break@loop
-                    is Action.Write<*> -> writer.startRow {
+                    is Action.Write<*> -> {
+                        val record = GenericData.Record(schema)
                         @Suppress("UNCHECKED_CAST")
-                        persist(action as Action.Write<T>, it)
+                        persist(action as Action.Write<T>, record)
+                        writer.write(record)
                     }
                 }
             }
+        } catch (e: Throwable) {
+            logger.error("Writer failed", e)
         } finally {
             writer.close()
-            conn.close()
         }
     }
 
