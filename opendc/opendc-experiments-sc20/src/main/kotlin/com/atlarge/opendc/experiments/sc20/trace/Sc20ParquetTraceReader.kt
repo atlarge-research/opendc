@@ -64,7 +64,7 @@ class Sc20ParquetTraceReader(
                         val id = image.name
                         val relevantPerformanceInterferenceModelItems =
                             PerformanceInterferenceModel(
-                                performanceInterferenceModel.items.filter { id in it.workloadNames }.toSet(),
+                                performanceInterferenceModel.workloadToItem[id] ?: emptySet(),
                                 Random(random.nextInt())
                             )
                         val newImage =

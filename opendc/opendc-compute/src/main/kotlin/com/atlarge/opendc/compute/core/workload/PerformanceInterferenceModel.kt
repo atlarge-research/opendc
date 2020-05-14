@@ -58,10 +58,20 @@ class PerformanceInterferenceModel(
         lhs.hashCode().compareTo(rhs.hashCode())
     }
     val items = TreeSet(comparator)
+    val workloadToItem: Map<String, Set<PerformanceInterferenceModelItem>>
     private val colocatedWorkloads = TreeSet<String>()
 
     init {
-        this.items.addAll(items)
+        val workloadToItem = mutableMapOf<String, MutableSet<PerformanceInterferenceModelItem>>()
+
+        for (item in items) {
+            for (workload in item.workloadNames) {
+                workloadToItem.getOrPut(workload) { mutableSetOf() }.add(item)
+            }
+            this.items.add(item)
+        }
+
+        this.workloadToItem = workloadToItem
     }
 
     fun vmStarted(server: Server) {
