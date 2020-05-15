@@ -91,7 +91,8 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
                 Sc20RawParquetTraceReader(File(experiment.traces, name))
             }
         }
-        val trace = Sc20ParquetTraceReader(raw, experiment.performanceInterferenceModel, this)
+        val performanceInterferenceModel = experiment.performanceInterferenceModel?.construct(seeder) ?: emptyMap()
+        val trace = Sc20ParquetTraceReader(raw, performanceInterferenceModel, parent.workload, seed)
 
         val monitor = ParquetExperimentMonitor(this)
 

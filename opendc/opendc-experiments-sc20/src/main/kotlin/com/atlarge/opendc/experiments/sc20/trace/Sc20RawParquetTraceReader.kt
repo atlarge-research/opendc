@@ -164,9 +164,4 @@ class Sc20RawParquetTraceReader(private val path: File) {
         override var submissionTime: Long,
         override val workload: VmWorkload
     ) : TraceEntry<VmWorkload>
-
-    /**
-     * A load cache entry.
-     */
-    data class LoadCacheEntry(val vm: String, val totalLoad: Double, val start: Long, val end: Long)
 }

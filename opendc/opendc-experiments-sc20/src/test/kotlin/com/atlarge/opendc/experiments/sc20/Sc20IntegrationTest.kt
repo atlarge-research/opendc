@@ -34,13 +34,14 @@ import com.atlarge.opendc.compute.virt.service.allocation.AvailableCoreMemoryAll
 import com.atlarge.opendc.experiments.sc20.experiment.attachMonitor
 import com.atlarge.opendc.experiments.sc20.experiment.createFailureDomain
 import com.atlarge.opendc.experiments.sc20.experiment.createProvisioner
-import com.atlarge.opendc.experiments.sc20.experiment.createTraceReader
+import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
 import com.atlarge.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
 import com.atlarge.opendc.experiments.sc20.experiment.processTrace
+import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
+import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
-import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -141,8 +142,8 @@ class Sc20IntegrationTest {
         assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs")
         assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run")
         assertEquals(207379117949, monitor.totalRequestedBurst)
-        assertEquals(207378478631, monitor.totalGrantedBurst)
-        assertEquals(639360, monitor.totalOvercommissionedBurst)
+        assertEquals(207102919834, monitor.totalGrantedBurst)
+        assertEquals(276198896, monitor.totalOvercommissionedBurst)
         assertEquals(0, monitor.totalInterferedBurst)
     }
 
@@ -157,13 +158,10 @@ class Sc20IntegrationTest {
      * Obtain the trace reader for the test.
      */
     private fun createTestTraceReader(): TraceReader<VmWorkload> {
-        val performanceInterferenceStream = object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
-        val performanceInterferenceModel = Sc20PerformanceInterferenceReader(performanceInterferenceStream)
-            .construct()
-        return createTraceReader(
-            File("src/test/resources/trace"),
-            performanceInterferenceModel,
-            emptyList(),
+        return Sc20ParquetTraceReader(
+            Sc20RawParquetTraceReader(File("src/test/resources/trace")),
+            emptyMap(),
+            Workload("test", 1.0),
             0
         )
     }

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.InputStream
 import java.util.TreeSet
+import kotlin.random.Random
 
 /**
  * A parser for the JSON performance interference setup files used for the SC20 paper.
@@ -42,20 +43,25 @@ import java.util.TreeSet
 class Sc20PerformanceInterferenceReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) :
     PerformanceInterferenceModelReader {
     /**
-     * The environment that was read from the file.
+     * The computed value from the file.
      */
-    private val performanceInterferenceModel: List<PerformanceInterferenceEntry> = mapper.readValue(input)
+    private val items: Map<String, TreeSet<PerformanceInterferenceModelItem>>
 
-    override fun construct(): PerformanceInterferenceModel {
-        return PerformanceInterferenceModel(
-            performanceInterferenceModel.map { item ->
-                PerformanceInterferenceModelItem(
-                    TreeSet(item.vms),
-                    item.minServerLoad,
-                    item.performanceScore
-                )
-            }.toSet()
-        )
+    init {
+        val entries: List<PerformanceInterferenceEntry> = mapper.readValue(input)
+        val res = mutableMapOf<String, TreeSet<PerformanceInterferenceModelItem>>()
+        for (entry in entries) {
+            val item = PerformanceInterferenceModelItem(TreeSet(entry.vms), entry.minServerLoad, entry.performanceScore)
+            for (workload in entry.vms) {
+                res.computeIfAbsent(workload) { TreeSet() }.add(item)
+            }
+        }
+
+        items = res
+    }
+
+    override fun construct(random: Random): Map<String, PerformanceInterferenceModel> {
+        return items.mapValues { PerformanceInterferenceModel(it.value, Random(random.nextInt())) }
     }
 
     override fun close() {}

@@ -40,39 +40,11 @@ const val IMAGE_PERF_INTERFERENCE_MODEL = "image:performance-interference"
  * @param items The [PerformanceInterferenceModelItem]s that make up this model.
  */
 class PerformanceInterferenceModel(
-    items: Set<PerformanceInterferenceModelItem>,
+    val items: SortedSet<PerformanceInterferenceModelItem>,
     val random: Random = Random(0)
 ) {
     private var intersectingItems: List<PerformanceInterferenceModelItem> = emptyList()
-    private val comparator = Comparator<PerformanceInterferenceModelItem> { lhs, rhs ->
-        var cmp = lhs.performanceScore.compareTo(rhs.performanceScore)
-        if (cmp != 0) {
-            return@Comparator cmp
-        }
-
-        cmp = lhs.minServerLoad.compareTo(rhs.minServerLoad)
-        if (cmp != 0) {
-            return@Comparator cmp
-        }
-
-        lhs.hashCode().compareTo(rhs.hashCode())
-    }
-    val items = TreeSet(comparator)
-    val workloadToItem: Map<String, Set<PerformanceInterferenceModelItem>>
     private val colocatedWorkloads = TreeSet<String>()
-
-    init {
-        val workloadToItem = mutableMapOf<String, MutableSet<PerformanceInterferenceModelItem>>()
-
-        for (item in items) {
-            for (workload in item.workloadNames) {
-                workloadToItem.getOrPut(workload) { mutableSetOf() }.add(item)
-            }
-            this.items.add(item)
-        }
-
-        this.workloadToItem = workloadToItem
-    }
 
     fun vmStarted(server: Server) {
         colocatedWorkloads.add(server.image.name)
@@ -123,7 +95,7 @@ data class PerformanceInterferenceModelItem(
     val workloadNames: SortedSet<String>,
     val minServerLoad: Double,
     val performanceScore: Double
-) {
+) : Comparable<PerformanceInterferenceModelItem> {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -136,4 +108,18 @@ data class PerformanceInterferenceModelItem(
     }
 
     override fun hashCode(): Int = workloadNames.hashCode()
+
+    override fun compareTo(other: PerformanceInterferenceModelItem): Int {
+        var cmp = performanceScore.compareTo(other.performanceScore)
+        if (cmp != 0) {
+            return cmp
+        }
+
+        cmp = minServerLoad.compareTo(other.minServerLoad)
+        if (cmp != 0) {
+            return cmp
+        }
+
+        return hashCode().compareTo(other.hashCode())
+    }
 }

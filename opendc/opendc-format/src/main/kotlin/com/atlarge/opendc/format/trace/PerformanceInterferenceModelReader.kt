@@ -26,6 +26,7 @@ package com.atlarge.opendc.format.trace
 
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import java.io.Closeable
+import kotlin.random.Random
 
 /**
  * An interface for reading descriptions of performance interference models into memory.
@@ -34,5 +35,5 @@ interface PerformanceInterferenceModelReader : Closeable {
     /**
      * Construct a [PerformanceInterferenceModel].
      */
-    fun construct(): PerformanceInterferenceModel
+    fun construct(random: Random): Map<String, PerformanceInterferenceModel>
 }

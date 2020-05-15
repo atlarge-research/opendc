@@ -128,7 +128,7 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
         logger.info { "Constructing performance interference model" }
 
         val performanceInterferenceModel =
-            performanceInterferenceStream?.let { Sc20PerformanceInterferenceReader(it).construct() }
+            performanceInterferenceStream?.let { Sc20PerformanceInterferenceReader(it) }
 
         logger.info { "Creating experiment descriptor" }
         val descriptor = object : Experiment(environmentPath, tracePath, output, performanceInterferenceModel, vmPlacements, bufferSize) {

@@ -231,7 +231,7 @@ class Sc20StreamingParquetTraceReader(
                 }
                 val relevantPerformanceInterferenceModelItems =
                     PerformanceInterferenceModel(
-                        performanceInterferenceModel.items.filter { it.workloadNames.contains(id) }.toSet(),
+                        performanceInterferenceModel.items.filter { it.workloadNames.contains(id) }.toSortedSet(),
                         Random(random.nextInt())
                     )
                 val vmWorkload = VmWorkload(

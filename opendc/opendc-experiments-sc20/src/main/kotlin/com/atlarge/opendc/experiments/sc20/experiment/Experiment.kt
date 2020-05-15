@@ -24,13 +24,13 @@
 
 package com.atlarge.opendc.experiments.sc20.experiment
 
-import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.experiments.sc20.runner.ContainerExperimentDescriptor
 import com.atlarge.opendc.experiments.sc20.runner.ExperimentDescriptor
 import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionContext
 import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionListener
 import com.atlarge.opendc.experiments.sc20.telemetry.RunEvent
 import com.atlarge.opendc.experiments.sc20.telemetry.parquet.ParquetRunEventWriter
+import com.atlarge.opendc.format.trace.PerformanceInterferenceModelReader
 import java.io.File
 
 /**
@@ -47,7 +47,7 @@ public abstract class Experiment(
     val environments: File,
     val traces: File,
     val output: File,
-    val performanceInterferenceModel: PerformanceInterferenceModel?,
+    val performanceInterferenceModel: PerformanceInterferenceModelReader?,
     val vmPlacements: Map<String, String>,
     val bufferSize: Int
 ) : ContainerExperimentDescriptor() {

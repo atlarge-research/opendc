@@ -28,10 +28,10 @@ import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
-import com.atlarge.opendc.experiments.sc20.experiment.Run
+import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
-import kotlin.random.Random
+import java.util.TreeSet
 
 /**
  * A [TraceReader] for the internal VM workload trace format.
@@ -43,29 +43,27 @@ import kotlin.random.Random
 @OptIn(ExperimentalStdlibApi::class)
 class Sc20ParquetTraceReader(
     raw: Sc20RawParquetTraceReader,
-    performanceInterferenceModel: PerformanceInterferenceModel?,
-    run: Run
+    performanceInterferenceModel: Map<String, PerformanceInterferenceModel>,
+    workload: Workload,
+    seed: Int
 ) : TraceReader<VmWorkload> {
     /**
      * The iterator over the actual trace.
      */
     private val iterator: Iterator<TraceEntry<VmWorkload>> =
         raw.read()
-            .run { sampleWorkload(this, run) }
+            .run { sampleWorkload(this, workload, seed) }
             .run {
                 // Apply performance interference model
-                if (performanceInterferenceModel == null)
+                if (performanceInterferenceModel.isEmpty())
                     this
                 else {
-                    val random = Random(run.seed)
                     map { entry ->
                         val image = entry.workload.image
                         val id = image.name
                         val relevantPerformanceInterferenceModelItems =
-                            PerformanceInterferenceModel(
-                                performanceInterferenceModel.workloadToItem[id] ?: emptySet(),
-                                Random(random.nextInt())
-                            )
+                                performanceInterferenceModel[id] ?: PerformanceInterferenceModel(TreeSet())
+
                         val newImage =
                             VmImage(
                                 image.uid,

@@ -25,7 +25,7 @@
 package com.atlarge.opendc.experiments.sc20.trace
 
 import com.atlarge.opendc.compute.core.workload.VmWorkload
-import com.atlarge.opendc.experiments.sc20.experiment.Run
+import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
 import com.atlarge.opendc.format.trace.TraceEntry
 import mu.KotlinLogging
 import kotlin.random.Random
@@ -35,20 +35,20 @@ private val logger = KotlinLogging.logger {}
 /**
  * Sample the workload for the specified [run].
  */
-fun sampleWorkload(trace: List<TraceEntry<VmWorkload>>, run: Run): List<TraceEntry<VmWorkload>> {
-    return sampleRegularWorkload(trace, run)
+fun sampleWorkload(trace: List<TraceEntry<VmWorkload>>, workload: Workload, seed: Int): List<TraceEntry<VmWorkload>> {
+    return sampleRegularWorkload(trace, workload, seed)
 }
 
 /**
  * Sample a regular (non-HPC) workload.
  */
-fun sampleRegularWorkload(trace: List<TraceEntry<VmWorkload>>, run: Run): List<TraceEntry<VmWorkload>> {
-    val fraction = run.parent.workload.fraction
+fun sampleRegularWorkload(trace: List<TraceEntry<VmWorkload>>, workload: Workload, seed: Int): List<TraceEntry<VmWorkload>> {
+    val fraction = workload.fraction
     if (fraction >= 1) {
         return trace
     }
 
-    val shuffled = trace.shuffled(Random(run.seed))
+    val shuffled = trace.shuffled(Random(seed))
     val res = mutableListOf<TraceEntry<VmWorkload>>()
     val totalLoad = shuffled.sumByDouble { it.workload.image.tags.getValue("total-load") as Double }
     var currentLoad = 0.0
