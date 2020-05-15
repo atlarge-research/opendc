@@ -28,8 +28,7 @@ import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
-import com.atlarge.opendc.experiments.sc20.Run
-import com.atlarge.opendc.experiments.sc20.sampleWorkload
+import com.atlarge.opendc.experiments.sc20.experiment.Run
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
 import kotlin.random.Random

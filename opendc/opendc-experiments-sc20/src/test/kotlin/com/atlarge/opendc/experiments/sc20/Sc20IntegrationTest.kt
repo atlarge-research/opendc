@@ -31,7 +31,12 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableCoreMemoryAllocationPolicy
-import com.atlarge.opendc.experiments.sc20.reporter.ExperimentReporter
+import com.atlarge.opendc.experiments.sc20.experiment.attachMonitor
+import com.atlarge.opendc.experiments.sc20.experiment.createFailureDomain
+import com.atlarge.opendc.experiments.sc20.experiment.createProvisioner
+import com.atlarge.opendc.experiments.sc20.experiment.createTraceReader
+import com.atlarge.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
+import com.atlarge.opendc.experiments.sc20.experiment.processTrace
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
@@ -96,19 +101,33 @@ class Sc20IntegrationTest {
         lateinit var scheduler: SimpleVirtProvisioningService
 
         root.launch {
-            val res = createProvisioner(root, environmentReader, allocationPolicy)
+            val res = createProvisioner(
+                root,
+                environmentReader,
+                allocationPolicy
+            )
             val bareMetalProvisioner = res.first
             scheduler = res.second
 
             val failureDomain = if (failures) {
                 println("ENABLING failures")
-                createFailureDomain(seed, 24.0 * 7, bareMetalProvisioner, chan)
+                createFailureDomain(
+                    seed,
+                    24.0 * 7,
+                    bareMetalProvisioner,
+                    chan
+                )
             } else {
                 null
             }
 
             attachMonitor(scheduler, monitor)
-            processTrace(traceReader, scheduler, chan, monitor)
+            processTrace(
+                traceReader,
+                scheduler,
+                chan,
+                monitor
+            )
 
             println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
@@ -141,7 +160,12 @@ class Sc20IntegrationTest {
         val performanceInterferenceStream = object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
         val performanceInterferenceModel = Sc20PerformanceInterferenceReader(performanceInterferenceStream)
             .construct()
-        return createTraceReader(File("src/test/resources/trace"), performanceInterferenceModel, emptyList(), 0)
+        return createTraceReader(
+            File("src/test/resources/trace"),
+            performanceInterferenceModel,
+            emptyList(),
+            0
+        )
     }
 
     /**
@@ -152,7 +176,7 @@ class Sc20IntegrationTest {
         return Sc20ClusterEnvironmentReader(stream)
     }
 
-    class TestExperimentReporter : ExperimentReporter {
+    class TestExperimentReporter : ExperimentMonitor {
         var totalRequestedBurst = 0L
         var totalGrantedBurst = 0L
         var totalOvercommissionedBurst = 0L
