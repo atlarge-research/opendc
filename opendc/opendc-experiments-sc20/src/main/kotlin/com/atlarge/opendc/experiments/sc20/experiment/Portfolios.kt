@@ -42,8 +42,8 @@ public class HorVerPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id
     )
 
     override val workloads = listOf(
-        // Workload("solvinity", 0.1),
-        // Workload("solvinity", 0.25),
+        Workload("solvinity", 0.1),
+        Workload("solvinity", 0.25),
         Workload("solvinity", 0.5),
         Workload("solvinity", 1.0)
     )
@@ -67,8 +67,8 @@ public class MoreVelocityPortfolio(parent: Experiment, id: Int) : Portfolio(pare
     )
 
     override val workloads = listOf(
-        // Workload("solvinity", 0.1),
-        // Workload("solvinity", 0.25),
+        Workload("solvinity", 0.1),
+        Workload("solvinity", 0.25),
         Workload("solvinity", 0.5),
         Workload("solvinity", 1.0)
     )
@@ -91,8 +91,8 @@ public class MoreHpcPortfolio(parent: Experiment, id: Int) : Portfolio(parent, i
     )
 
     override val workloads = listOf(
-        // Workload("solvinity", 0.1),
-        // Workload("solvinity", 0.25),
+        Workload("solvinity", 0.1),
+        Workload("solvinity", 0.25),
         Workload("solvinity", 0.5),
         Workload("solvinity", 1.0)
     )
@@ -112,8 +112,9 @@ public class OperationalPhenomenaPortfolio(parent: Experiment, id: Int) : Portfo
     )
 
     override val workloads = listOf(
-        // Workload("solvinity", 0.1),
-        // Workload("solvinity", 0.25),
+        Workload("solvinity", 0.1),
+        Workload("solvinity", 0.25),
+        Workload("solvinity", 0.5),
         Workload("solvinity", 1.0)
     )
 
