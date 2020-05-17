@@ -28,12 +28,14 @@ import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.flow.StateFlow
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
+import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.execution.ShutdownException
 import com.atlarge.opendc.compute.core.image.EmptyImage
@@ -48,9 +50,11 @@ import com.atlarge.opendc.core.services.ServiceRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DisposableHandle
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
@@ -62,6 +66,7 @@ import kotlin.math.min
 import kotlinx.coroutines.withContext
 import java.lang.Exception
 import kotlin.coroutines.ContinuationInterceptor
+import kotlin.math.round
 import kotlin.random.Random
 
 /**
@@ -113,7 +118,11 @@ public class SimpleBareMetalDriver(
 
     override val node: Flow<Node> = nodeState
 
+    @OptIn(FlowPreview::class)
     override val usage: Flow<Double> = usageState
+        // Debounce changes for 1 ms to prevent emitting two values during the same instant (e.g. slices finishes and
+        // new slice starts).
+        .debounce(1)
 
     override val powerDraw: Flow<Double> = powerModel(this)
 
@@ -252,79 +261,168 @@ public class SimpleBareMetalDriver(
             setNode(nodeState.value.copy(state = newNodeState, server = server))
         }
 
-        private var flush: DisposableHandle? = null
-
         @OptIn(InternalCoroutinesApi::class)
-        override fun onRun(burst: LongArray, limit: DoubleArray, deadline: Long): SelectClause0 {
-            require(burst.size == limit.size) { "Array dimensions do not match" }
+        override fun onRun(
+            batch: List<ServerContext.Slice>,
+            triggerMode: ServerContext.TriggerMode,
+            merge: (ServerContext.Slice, ServerContext.Slice) -> ServerContext.Slice
+        ): SelectClause0 {
             assert(!finalized) { "Server instance is already finalized" }
 
             return object : SelectClause0 {
                 @InternalCoroutinesApi
                 override fun <R> registerSelectClause0(select: SelectInstance<R>, block: suspend () -> R) {
-                    // If run is called in at the same timestamp as the previous call, cancel the load flush
-                    flush?.dispose()
-                    flush = null
-
                     val context = select.completion.context
-                    val simulationContext = context[SimulationContext]!!
+                    val clock = context[SimulationContext]!!.clock
                     val delay = context[ContinuationInterceptor] as Delay
 
-                    val start = simulationContext.clock.millis()
-                    var duration = max(0, deadline - start)
-                    var totalUsage = 0.0
+                    val queue = batch.iterator()
+                    var start = Long.MIN_VALUE
+                    var currentWork: SliceWork? = null
+                    var currentDisposable: DisposableHandle? = null
 
-                    // Determine the duration of the first CPU to finish
-                    for (i in 0 until min(cpus.size, burst.size)) {
-                        val cpu = cpus[i]
-                        val usage = min(limit[i], cpu.frequency)
-                        val cpuDuration = ceil(burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
+                    fun schedule(slice: ServerContext.Slice) {
+                        start = clock.millis()
 
-                        totalUsage += usage / cpu.frequency
-
-                        if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
-                            duration = min(duration, cpuDuration)
+                        val isLastSlice = !queue.hasNext()
+                        val work = SliceWork(slice)
+                        val duration = when (triggerMode) {
+                            ServerContext.TriggerMode.FIRST -> min(work.minExit, slice.deadline - start)
+                            ServerContext.TriggerMode.LAST -> min(work.maxExit, slice.deadline - start)
+                            ServerContext.TriggerMode.DEADLINE -> slice.deadline - start
                         }
-                    }
 
-                    if (!unavailable) {
-                        delay.invokeOnTimeout(1, Runnable {
-                            usageState.value = totalUsage / cpus.size
-                        })
-                    }
+                        val action = Runnable {
+                            currentWork = null
 
-                    val action = Runnable {
-                        // todo: we could have replaced startCoroutine with startCoroutineUndispatched
-                        // But we need a way to know that Delay.invokeOnTimeout had used the right thread
-                        if (select.trySelect()) {
-                            block.startCoroutineCancellable(select.completion) // shall be cancellable while waits for dispatch
-                        }
-                    }
 
-                    val disposable = delay.invokeOnTimeout(duration, action)
-                    val flush = DisposableHandle {
-                        val end = simulationContext.clock.millis()
+                            // Flush all the work that was performed
+                            val hasFinished = work.stop(duration)
 
-                        // Flush the load if they do not receive a new run call for the same timestamp
-                        flush = delay.invokeOnTimeout(1, Runnable {
-                            usageState.value = 0.0
-                            flush = null
-                        })
-
-                        if (!unavailable) {
-                            // Write back the remaining burst time
-                            for (i in 0 until min(cpus.size, burst.size)) {
-                                val usage = min(limit[i], cpus[i].frequency)
-                                val granted = ceil((end - start) / 1000.0 * usage).toLong()
-                                burst[i] = max(0, burst[i] - granted)
+                            if (!isLastSlice) {
+                                val candidateSlice = queue.next()
+                                val nextSlice =
+                                    // If our previous slice exceeds its deadline, merge it with the next candidate slice
+                                    if (hasFinished)
+                                        candidateSlice
+                                    else
+                                        merge(candidateSlice, slice)
+                                schedule(nextSlice)
+                            } else if (select.trySelect()) {
+                                block.startCoroutineCancellable(select.completion)
                             }
                         }
 
-                        disposable.dispose()
+                        // Schedule the flush after the entire slice has finished
+                        currentDisposable = delay.invokeOnTimeout(duration, action)
+
+                        // Start the slice work
+                        currentWork = work
+                        work.start()
                     }
 
-                    select.disposeOnSelect(flush)
+                    // Schedule the first work
+                    if (queue.hasNext()) {
+                        schedule(queue.next())
+
+                        // A DisposableHandle to flush the work in case the call is cancelled
+                        val flush = DisposableHandle {
+                            val end = clock.millis()
+                            val duration = end - start
+
+                            currentWork?.stop(duration)
+                            currentDisposable?.dispose()
+                        }
+
+                        select.disposeOnSelect(flush)
+                    } else if (select.trySelect()) {
+                        // No work has been given: select immediately
+                        block.startCoroutineCancellable(select.completion)
+                    }
                 }
+            }
+        }
+
+        /**
+         * A slice to be processed.
+         */
+        private inner class SliceWork(val slice: ServerContext.Slice) {
+            /**
+             * The duration after which the first processor finishes processing this slice.
+             */
+            public val minExit: Long
+
+            /**
+             * The duration after which the last processor finishes processing this slice.
+             */
+            public val maxExit: Long
+
+            /**
+             * A flag to indicate that the slice will exceed the deadline.
+             */
+            public val exceedsDeadline: Boolean
+                get() = slice.deadline < maxExit
+
+            /**
+             * The total amount of CPU usage.
+             */
+            public val totalUsage: Double
+
+            init {
+                var totalUsage = 0.0
+                var minExit = Long.MAX_VALUE
+                var maxExit = 0L
+
+                // Determine the duration of the first/last CPU to finish
+                for (i in 0 until min(cpus.size, slice.burst.size)) {
+                    val cpu = cpus[i]
+                    val usage = min(slice.limit[i], cpu.frequency)
+                    val cpuDuration = ceil(slice.burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
+
+                    totalUsage += usage
+
+                    if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
+                        minExit = min(minExit, cpuDuration)
+                        maxExit = max(maxExit, cpuDuration)
+                    }
+                }
+
+                this.totalUsage = totalUsage
+                this.minExit = minExit
+                this.maxExit = maxExit
+            }
+
+            /**
+             * Indicate that the work on the slice has started.
+             */
+            public fun start() {
+                usageState.value = totalUsage
+            }
+
+            /**
+             * Flush the work performed on the slice.
+             */
+            public fun stop(duration: Long): Boolean {
+                var hasFinished = true
+
+                // Only flush the work if the machine is available
+                if (!unavailable) {
+                    for (i in 0 until min(cpus.size, slice.burst.size)) {
+                        val usage = min(slice.limit[i], cpus[i].frequency)
+                        val granted = ceil(duration / 1000.0 * usage).toLong()
+                        val res = max(0, slice.burst[i] - granted)
+                        slice.burst[i] = res
+
+                        if (res != 0L) {
+                            hasFinished = false
+                        }
+                    }
+                }
+
+                // Reset the usage of the machine since the slice has finished
+                usageState.value = 0.0
+
+                return hasFinished
             }
         }
     }

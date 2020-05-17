@@ -51,36 +51,113 @@ public interface ServerContext {
     public suspend fun <T : Any> publishService(key: ServiceKey<T>, service: T)
 
     /**
-     * Request the specified burst time from the processor cores and suspend execution until a processor core finishes
-     * processing a **non-zero** burst or until the deadline is reached.
+     * Ask the processor cores to run the specified [slice] and suspend execution until the trigger condition is met as
+     * specified by [triggerMode].
      *
-     * After the method returns, [burst] will contain the remaining burst length for each of the cores (which may be
-     * zero).
+     * After the method returns, [Slice.burst] will contain the remaining burst length for each of the cores (which
+     * may be zero). These changes may happen anytime during execution of this method and callers should not rely on
+     * the timing of this change.
+     *
+     * @param slice The representation of work to run on the processors.
+     * @param triggerMode The trigger condition to resume execution.
+     */
+    public suspend fun run(slice: Slice, triggerMode: TriggerMode = TriggerMode.FIRST) =
+        select<Unit> { onRun(slice, triggerMode).invoke {} }
+
+    /**
+     * Ask the processors cores to run the specified [batch] of work slices and suspend execution until the trigger
+     * condition is met as specified by [triggerMode].
+     *
+     * After the method returns, [Slice.burst] will contain the remaining burst length for each of the cores (which
+     * may be zero). These changes may happen anytime during execution of this method and callers should not rely on
+     * the timing of this change.
+     *
+     * In case slices in the batch do not finish processing before their deadline, [merge] is called to merge these
+     * slices with the next slice to be executed.
+     *
+     * @param batch The batch of work to run on the processors.
+     * @param triggerMode The trigger condition to resume execution.
+     * @param merge The merge function for consecutive slices in case the last slice was not completed within its
+     * deadline.
+     */
+    public suspend fun run(
+        batch: List<Slice>,
+        triggerMode: TriggerMode = TriggerMode.FIRST,
+        merge: (Slice, Slice) -> Slice = { _, r -> r }
+    ) = select<Unit> { onRun(batch, triggerMode, merge).invoke {}  }
+
+    /**
+     * Ask the processor cores to run the specified [slice] and select when the trigger condition is met as specified
+     * by [triggerMode].
+     *
+     * After the method returns, [Slice.burst] will contain the remaining burst length for each of the cores (which
+     * may be zero). These changes may happen anytime during execution of this method and callers should not rely on
+     * the timing of this change.
+     *
+     * @param slice The representation of work to request from the processors.
+     * @param triggerMode The trigger condition to resume execution.
+     */
+    public fun onRun(slice: Slice, triggerMode: TriggerMode = TriggerMode.FIRST): SelectClause0 =
+        onRun(listOf(slice), triggerMode)
+
+    /**
+     * Ask the processors cores to run the specified [batch] of work slices and select when the trigger condition is met
+     * as specified by [triggerMode].
+     *
+     * After the method returns, [Slice.burst] will contain the remaining burst length for each of the cores (which
+     * may be zero). These changes may happen anytime during execution of this method and callers should not rely on
+     * the timing of this change.
+     *
+     * In case slices in the batch do not finish processing before their deadline, [merge] is called to merge these
+     * slices with the next slice to be executed.
+     *
+     * @param batch The batch of work to run on the processors.
+     * @param triggerMode The trigger condition to resume execution during the **last** slice.
+     * @param merge The merge function for consecutive slices in case the last slice was not completed within its
+     * deadline.
+     */
+    public fun onRun(
+        batch: List<Slice>,
+        triggerMode: TriggerMode = TriggerMode.FIRST,
+        merge: (Slice, Slice) -> Slice = { _, r -> r }
+    ): SelectClause0
+
+    /**
+     * A request to the host machine for a slice of CPU time from the processor cores.
      *
      * Both [burst] and [limit] must be of the same size and in any other case the method will throw an
      * [IllegalArgumentException].
      *
+     *
      * @param burst The burst time to request from each of the processor cores.
      * @param limit The maximum usage in terms of MHz that the processing core may use while running the burst.
-     * @param deadline The instant at which this request needs to be fulfilled.
+     * @param deadline The instant at which this slice needs to be fulfilled.
      */
-    public suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
-        select<Unit> { onRun(burst, limit, deadline).invoke {} }
+    public class Slice(val burst: LongArray, val limit: DoubleArray, val deadline: Long) {
+        init {
+            require(burst.size == limit.size) { "Incompatible array dimensions" }
+        }
     }
 
     /**
-     * Request the specified burst time from the processor cores and suspend execution until a processor core finishes
-     * processing a **non-zero** burst or until the deadline is reached.
-     *
-     * After the method returns, [burst] will contain the remaining burst length for each of the cores (which may be
-     * zero).
-     *
-     * Both [burst] and [limit] must be of the same size and in any other case the method will throw an
-     * [IllegalArgumentException].
-     *
-     * @param burst The burst time to request from each of the processor cores.
-     * @param limit The maximum usage in terms of MHz that the processing core may use while running the burst.
-     * @param deadline The instant at which this request needs to be fulfilled.
+     * The modes for triggering a machine exit from the machine.
      */
-    public fun onRun(burst: LongArray, limit: DoubleArray, deadline: Long): SelectClause0
+    public enum class TriggerMode {
+        /**
+         * A machine exit occurs when either the first processor finishes processing a **non-zero** burst or the
+         * deadline is reached.
+         */
+        FIRST,
+
+        /**
+         * A machine exit occurs when either the last processor finishes processing a **non-zero** burst or the deadline
+         * is reached.
+         */
+        LAST,
+
+        /**
+         * A machine exit occurs only when the deadline is reached.
+         */
+        DEADLINE
+    }
 }

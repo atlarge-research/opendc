@@ -43,8 +43,7 @@ public interface BareMetalDriver : Powerable, FailureDomain {
     public val node: Flow<Node>
 
     /**
-     * The amount of work done by the machine in percentage with respect to the total amount of processing power
-     * available.
+     * The amount of work done by the machine in MHz.
      */
     public val usage: Flow<Double>
 

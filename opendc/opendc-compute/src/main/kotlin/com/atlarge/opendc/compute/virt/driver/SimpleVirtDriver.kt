@@ -265,9 +265,9 @@ class SimpleVirtDriver(
 
             // We run the total burst on the host processor. Note that this call may be cancelled at any moment in
             // time, so not all of the burst may be executed.
-            val interrupted = select<Boolean> {
+            select<Boolean> {
                 schedulingQueue.onReceive { schedulingQueue.offer(it); true }
-                hostContext.onRun(burst, usage, deadline).invoke { false }
+                hostContext.onRun(ServerContext.Slice(burst, usage, deadline)).invoke { false }
             }
 
             val end = clock.millis()
@@ -451,10 +451,9 @@ class SimpleVirtDriver(
             events.close()
         }
 
-        override suspend fun run(burst: LongArray, limit: DoubleArray, deadline: Long) {
-            require(burst.size == limit.size) { "Array dimensions do not match" }
-            this.deadline = deadline
-            this.burst = burst
+        override suspend fun run(slice: ServerContext.Slice, triggerMode: ServerContext.TriggerMode) {
+            deadline = slice.deadline
+            burst = slice.burst
 
             val requests = cpus.asSequence()
                 .take(burst.size)
@@ -463,7 +462,7 @@ class SimpleVirtDriver(
                         this,
                         cpu,
                         burst[i],
-                        limit[i]
+                        slice.limit[i]
                     )
                 }
                 .toList()
@@ -482,6 +481,10 @@ class SimpleVirtDriver(
         }
 
         @OptIn(InternalCoroutinesApi::class)
-        override fun onRun(burst: LongArray, limit: DoubleArray, deadline: Long): SelectClause0 = TODO()
+        override fun onRun(
+            batch: List<ServerContext.Slice>,
+            triggerMode: ServerContext.TriggerMode,
+            merge: (ServerContext.Slice, ServerContext.Slice) -> ServerContext.Slice
+        ): SelectClause0 = TODO()
     }
 }

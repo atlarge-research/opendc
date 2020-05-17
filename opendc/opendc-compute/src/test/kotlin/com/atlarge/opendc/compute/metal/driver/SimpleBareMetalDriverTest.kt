@@ -25,12 +25,15 @@
 package com.atlarge.opendc.compute.metal.driver
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -61,11 +64,18 @@ internal class SimpleBareMetalDriverTest {
                 driver.init()
                 driver.setImage(image)
                 val server = driver.start().server!!
+                driver.usage
+                    .onEach { println("${simulationContext.clock.millis()} $it") }
+                    .launchIn(this)
                 server.events.collect { event ->
                     when (event) {
-                        is ServerEvent.StateChanged -> { println(event); finalState = event.server.state }
+                        is ServerEvent.StateChanged -> {
+                            println("${simulationContext.clock.millis()} $event");
+                            finalState = event.server.state
+                        }
                     }
                 }
+
             }
         }
 

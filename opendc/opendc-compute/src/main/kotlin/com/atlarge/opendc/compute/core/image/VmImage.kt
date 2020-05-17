@@ -33,7 +33,7 @@ class VmImage(
                 val burst = LongArray(cores) { fragment.flops / cores }
                 val usage = DoubleArray(cores) { fragment.usage / cores }
 
-                ctx.run(burst, usage, clock.millis() + fragment.duration)
+                ctx.run(ServerContext.Slice(burst, usage, clock.millis() + fragment.duration))
             }
         }
     }

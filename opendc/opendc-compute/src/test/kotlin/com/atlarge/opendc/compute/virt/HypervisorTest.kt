@@ -71,6 +71,7 @@ internal class HypervisorTest {
             val node = metalDriver.start()
             node.server?.events?.onEach { println(it) }?.launchIn(this)
 
+
             delay(5)
 
             val flavor = Flavor(1, 0)
