@@ -105,7 +105,7 @@ fun createFaultInjector(domain: Domain, random: Random, failureInterval: Double)
     return CorrelatedFaultInjector(
         domain,
         iatScale = ln(failureInterval), iatShape = 1.03, // Hours
-        sizeScale = 1.88, sizeShape = 1.25,
+        sizeScale = ln(2.0), sizeShape = ln(1.0), // Expect 2 machines, with variation of 1
         dScale = 9.51, dShape = 3.21, // Minutes
         random = random
     )
