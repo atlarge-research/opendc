@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,27 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.format.trace
+package com.atlarge.opendc.experiments.sc20.experiment
 
-import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
-import java.io.Closeable
-import kotlin.random.Random
+import com.atlarge.opendc.experiments.sc20.experiment.model.OperationalPhenomena
+import com.atlarge.opendc.experiments.sc20.experiment.model.Topology
+import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
+import com.atlarge.opendc.experiments.sc20.runner.ContainerExperimentDescriptor
+import com.atlarge.opendc.experiments.sc20.runner.ExperimentDescriptor
 
 /**
- * An interface for reading descriptions of performance interference models into memory.
+ * A scenario represents a single point in the design space (a unique combination of parameters).
  */
-interface PerformanceInterferenceModelReader : Closeable {
-    /**
-     * Construct a [PerformanceInterferenceModel].
-     */
-    fun construct(random: Random): Map<String, PerformanceInterferenceModel>
+public class Scenario(
+    override val parent: Portfolio,
+    val id: Int,
+    val repetitions: Int,
+    val topology: Topology,
+    val workload: Workload,
+    val allocationPolicy: String,
+    val operationalPhenomena: OperationalPhenomena
+) : ContainerExperimentDescriptor() {
+    override val children: Sequence<ExperimentDescriptor> = sequence {
+        repeat(repetitions) { i -> yield(Run(this@Scenario, i, i)) }
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,28 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.format.trace
-
-import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
-import java.io.Closeable
-import kotlin.random.Random
+package com.atlarge.opendc.compute.virt.service
 
 /**
- * An interface for reading descriptions of performance interference models into memory.
+ * An event that is emitted by the [VirtProvisioningService].
  */
-interface PerformanceInterferenceModelReader : Closeable {
+public sealed class VirtProvisioningEvent {
     /**
-     * Construct a [PerformanceInterferenceModel].
+     * The service that has emitted the event.
      */
-    fun construct(random: Random): Map<String, PerformanceInterferenceModel>
+    public abstract val provisioner: VirtProvisioningService
+
+    /**
+     * An event emitted for writing metrics.
+     */
+    data class MetricsAvailable(
+        override val provisioner: VirtProvisioningService,
+        public val totalHostCount: Int,
+        public val availableHostCount: Int,
+        public val totalVmCount: Int,
+        public val activeVmCount: Int,
+        public val inactiveVmCount: Int,
+        public val waitingVmCount: Int,
+        public val failedVmCount: Int
+    ) : VirtProvisioningEvent()
 }

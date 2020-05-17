@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,27 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.format.trace
+package com.atlarge.opendc.experiments.sc20.runner.execution
 
-import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
-import java.io.Closeable
-import kotlin.random.Random
+import com.atlarge.opendc.experiments.sc20.runner.ExperimentDescriptor
 
 /**
- * An interface for reading descriptions of performance interference models into memory.
+ * Listener to be notified of experiment execution events by experiment runners.
  */
-interface PerformanceInterferenceModelReader : Closeable {
+interface ExperimentExecutionListener {
     /**
-     * Construct a [PerformanceInterferenceModel].
+     * A method that is invoked when a new [ExperimentDescriptor] is registered.
      */
-    fun construct(random: Random): Map<String, PerformanceInterferenceModel>
+    fun descriptorRegistered(descriptor: ExperimentDescriptor)
+
+    /**
+     * A method that is invoked when when the execution of a leaf or subtree of the experiment tree has finished,
+     * regardless of the outcome.
+     */
+    fun executionFinished(descriptor: ExperimentDescriptor, result: ExperimentExecutionResult)
+
+    /**
+     * A method that is invoked when the execution of a leaf or subtree of the experiment tree is about to be started.
+     */
+    fun executionStarted(descriptor: ExperimentDescriptor)
 }

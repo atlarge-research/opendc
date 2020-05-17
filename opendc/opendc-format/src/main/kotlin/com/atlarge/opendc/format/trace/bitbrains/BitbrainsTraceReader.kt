@@ -125,7 +125,7 @@ class BitbrainsTraceReader(
 
                 val relevantPerformanceInterferenceModelItems =
                     PerformanceInterferenceModel(
-                        performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId.toString()) }.toSet()
+                        performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId.toString()) }.toSortedSet()
                     )
 
                 val vmWorkload = VmWorkload(

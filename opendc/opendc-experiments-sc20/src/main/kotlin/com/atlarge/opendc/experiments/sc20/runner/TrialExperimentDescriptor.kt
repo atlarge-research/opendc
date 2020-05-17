@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,11 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.format.trace
-
-import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
-import java.io.Closeable
-import kotlin.random.Random
+package com.atlarge.opendc.experiments.sc20.runner
 
 /**
- * An interface for reading descriptions of performance interference models into memory.
+ * An abstract [ExperimentDescriptor] specifically for trials.
  */
-interface PerformanceInterferenceModelReader : Closeable {
-    /**
-     * Construct a [PerformanceInterferenceModel].
-     */
-    fun construct(random: Random): Map<String, PerformanceInterferenceModel>
+public abstract class TrialExperimentDescriptor : ExperimentDescriptor() {
+    override val type: Type = Type.TRIAL
 }

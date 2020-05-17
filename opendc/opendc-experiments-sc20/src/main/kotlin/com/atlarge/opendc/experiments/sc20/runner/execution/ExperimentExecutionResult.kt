@@ -22,47 +22,21 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.experiments.sc20
+package com.atlarge.opendc.experiments.sc20.runner.execution
 
-import com.atlarge.opendc.compute.core.Server
-import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import java.io.Closeable
+import java.io.Serializable
 
-interface Sc20Reporter : Closeable {
+/**
+ * The result of executing an experiment.
+ */
+public sealed class ExperimentExecutionResult : Serializable {
     /**
-     * This method is invoked when the state of a VM changes.
+     * The experiment executed successfully
      */
-    suspend fun reportVmStateChange(server: Server) {}
-
-    /**
-     * This method is invoked when the state of a host changes.
-     */
-    suspend fun reportHostStateChange(
-        driver: VirtDriver,
-        server: Server,
-        submittedVms: Long,
-        queuedVms: Long,
-        runningVms: Long,
-        finishedVms: Long
-    ) {}
+    public object Success : ExperimentExecutionResult()
 
     /**
-     * This method is invoked for a host for each slice that is finishes.
+     * The experiment failed during execution.
      */
-    suspend fun reportHostSlice(
-        time: Long,
-        requestedBurst: Long,
-        grantedBurst: Long,
-        overcommissionedBurst: Long,
-        interferedBurst: Long,
-        cpuUsage: Double,
-        cpuDemand: Double,
-        numberOfDeployedImages: Int,
-        hostServer: Server,
-        submittedVms: Long,
-        queuedVms: Long,
-        runningVms: Long,
-        finishedVms: Long,
-        duration: Long = 5 * 60 * 1000L
-    ) {}
+    public data class Failed(val throwable: Throwable) : ExperimentExecutionResult()
 }

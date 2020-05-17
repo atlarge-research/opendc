@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.experiments.sc20
+package com.atlarge.opendc.experiments.sc20.experiment
 
 import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.simulationContext
@@ -31,14 +31,18 @@ import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.compute.metal.NODE_CLUSTER
+import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
+import com.atlarge.opendc.compute.virt.service.VirtProvisioningEvent
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 import com.atlarge.opendc.core.failure.CorrelatedFaultInjector
 import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.failure.FaultInjector
+import com.atlarge.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
+import com.atlarge.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -66,7 +70,7 @@ private val logger = KotlinLogging.logger {}
  */
 suspend fun createFailureDomain(
     seed: Int,
-    failureInterval: Int,
+    failureInterval: Double,
     bareMetalProvisioner: ProvisioningService,
     chan: Channel<Unit>
 ): Domain {
@@ -79,7 +83,13 @@ suspend fun createFailureDomain(
         for (node in bareMetalProvisioner.nodes()) {
             val cluster = node.metadata[NODE_CLUSTER] as String
             val injector =
-                injectors.getOrPut(cluster) { createFaultInjector(simulationContext.domain, random, failureInterval) }
+                injectors.getOrPut(cluster) {
+                    createFaultInjector(
+                        simulationContext.domain,
+                        random,
+                        failureInterval
+                    )
+                }
             injector.enqueue(node.metadata["driver"] as FailureDomain)
         }
     }
@@ -89,13 +99,13 @@ suspend fun createFailureDomain(
 /**
  * Obtain the [FaultInjector] to use for the experiments.
  */
-fun createFaultInjector(domain: Domain, random: Random, failureInterval: Int): FaultInjector {
+fun createFaultInjector(domain: Domain, random: Random, failureInterval: Double): FaultInjector {
     // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
     // GRID'5000
     return CorrelatedFaultInjector(
         domain,
-        iatScale = ln(failureInterval.toDouble()), iatShape = 1.03, // Hours
-        sizeScale = 1.88, sizeShape = 1.25,
+        iatScale = ln(failureInterval), iatShape = 1.03, // Hours
+        sizeScale = ln(2.0), sizeShape = ln(1.0), // Expect 2 machines, with variation of 1
         dScale = 9.51, dShape = 3.21, // Minutes
         random = random
     )
@@ -104,8 +114,13 @@ fun createFaultInjector(domain: Domain, random: Random, failureInterval: Int): F
 /**
  * Create the trace reader from which the VM workloads are read.
  */
-fun createTraceReader(path: File, performanceInterferenceModel: PerformanceInterferenceModel, vms: List<String>, seed: Int): Sc20ParquetTraceReader {
-    return Sc20ParquetTraceReader(path, performanceInterferenceModel, vms, Random(seed))
+fun createTraceReader(path: File, performanceInterferenceModel: PerformanceInterferenceModel, vms: List<String>, seed: Int): Sc20StreamingParquetTraceReader {
+    return Sc20StreamingParquetTraceReader(
+        path,
+        performanceInterferenceModel,
+        vms,
+        Random(seed)
+    )
 }
 
 /**
@@ -134,19 +149,21 @@ suspend fun createProvisioner(
  * Attach the specified monitor to the VM provisioner.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Sc20Reporter) {
+suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, monitor: ExperimentMonitor) {
     val domain = simulationContext.domain
+    val clock = simulationContext.clock
     val hypervisors = scheduler.drivers()
 
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
         // TODO Do not expose VirtDriver directly but use Hypervisor class.
-        reporter.reportHostStateChange(hypervisor, (hypervisor as SimpleVirtDriver).server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
+        monitor.reportHostStateChange(clock.millis(), hypervisor, (hypervisor as SimpleVirtDriver).server)
         hypervisor.server.events
             .onEach { event ->
+                val time = clock.millis()
                 when (event) {
                     is ServerEvent.StateChanged -> {
-                        reporter.reportHostStateChange(hypervisor, event.server, scheduler.submittedVms, scheduler.queuedVms, scheduler.runningVms, scheduler.finishedVms)
+                        monitor.reportHostStateChange(time, hypervisor, event.server)
                     }
                 }
             }
@@ -154,7 +171,7 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Sc
         hypervisor.events
             .onEach { event ->
                 when (event) {
-                    is HypervisorEvent.SliceFinished -> reporter.reportHostSlice(
+                    is HypervisorEvent.SliceFinished -> monitor.reportHostSlice(
                         simulationContext.clock.millis(),
                         event.requestedBurst,
                         event.grantedBurst,
@@ -163,26 +180,36 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, reporter: Sc
                         event.cpuUsage,
                         event.cpuDemand,
                         event.numberOfDeployedImages,
-                        event.hostServer,
-                        scheduler.submittedVms,
-                        scheduler.queuedVms,
-                        scheduler.runningVms,
-                        scheduler.finishedVms
+                        event.hostServer
                     )
                 }
             }
             .launchIn(domain)
+
+        val driver = hypervisor.server.services[BareMetalDriver.Key]
+        driver.powerDraw
+            .onEach { monitor.reportPowerConsumption(hypervisor.server, it) }
+            .launchIn(domain)
     }
+
+    scheduler.events
+        .onEach { event ->
+            when (event) {
+                is VirtProvisioningEvent.MetricsAvailable ->
+                    monitor.reportProvisionerMetrics(clock.millis(), event)
+            }
+        }
+        .launchIn(domain)
 }
 
 /**
  * Process the trace.
  */
-suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtProvisioningService, chan: Channel<Unit>, reporter: Sc20Reporter, vmPlacements: Map<String, String> = emptyMap()) {
+suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtProvisioningService, chan: Channel<Unit>, monitor: ExperimentMonitor, vmPlacements: Map<String, String> = emptyMap()) {
     val domain = simulationContext.domain
 
     try {
-        var submitted = 0L
+        var submitted = 0
         val finished = Channel<Unit>(Channel.CONFLATED)
         val hypervisors = TreeSet(scheduler.drivers().map { (it as SimpleVirtDriver).server.name })
 
@@ -215,8 +242,10 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
                 // Monitor server events
                 server.events
                     .onEach {
+                        val time = simulationContext.clock.millis()
+
                         if (it is ServerEvent.StateChanged) {
-                            reporter.reportVmStateChange(it.server)
+                            monitor.reportVmStateChange(time, it.server)
                         }
 
                         delay(1)

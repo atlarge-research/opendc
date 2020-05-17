@@ -31,23 +31,26 @@ plugins {
 }
 
 application {
-    mainClassName = "com.atlarge.opendc.experiments.sc20.Sc20ExperimentKt"
-    applicationDefaultJvmArgs = listOf("-Xmx2500M", "-Xms1800M")
+    mainClassName = "com.atlarge.opendc.experiments.sc20.MainKt"
+    applicationDefaultJvmArgs = listOf("-Xms2500M")
 }
 
 dependencies {
     api(project(":opendc:opendc-core"))
     implementation(project(":opendc:opendc-format"))
     implementation(kotlin("stdlib"))
+
     implementation("com.github.ajalt:clikt:2.6.0")
+    implementation("me.tongfei:progressbar:0.8.1")
     implementation("io.github.microutils:kotlin-logging:1.7.9")
+
     implementation("org.apache.parquet:parquet-avro:1.11.0")
     implementation("org.apache.hadoop:hadoop-client:3.2.1") {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }
+
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
-    runtimeOnly("org.postgresql:postgresql:42.2.12")
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")

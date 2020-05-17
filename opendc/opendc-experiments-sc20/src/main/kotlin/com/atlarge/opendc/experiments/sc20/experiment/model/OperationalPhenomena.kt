@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,12 @@
  * SOFTWARE.
  */
 
-package com.atlarge.opendc.format.trace
-
-import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
-import java.io.Closeable
-import kotlin.random.Random
+package com.atlarge.opendc.experiments.sc20.experiment.model
 
 /**
- * An interface for reading descriptions of performance interference models into memory.
+ * Operation phenomena during experiments.
+ *
+ * @param failureFrequency The average time between failures in hours.
+ * @param hasInterference A flag to enable performance interference between VMs.
  */
-interface PerformanceInterferenceModelReader : Closeable {
-    /**
-     * Construct a [PerformanceInterferenceModel].
-     */
-    fun construct(random: Random): Map<String, PerformanceInterferenceModel>
-}
+public data class OperationalPhenomena(val failureFrequency: Double, val hasInterference: Boolean)

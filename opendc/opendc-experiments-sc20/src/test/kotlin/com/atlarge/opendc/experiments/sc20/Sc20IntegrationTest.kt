@@ -31,10 +31,17 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableCoreMemoryAllocationPolicy
+import com.atlarge.opendc.experiments.sc20.experiment.attachMonitor
+import com.atlarge.opendc.experiments.sc20.experiment.createFailureDomain
+import com.atlarge.opendc.experiments.sc20.experiment.createProvisioner
+import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
+import com.atlarge.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
+import com.atlarge.opendc.experiments.sc20.experiment.processTrace
+import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
+import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
-import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -63,7 +70,7 @@ class Sc20IntegrationTest {
     /**
      * The monitor used to keep track of the metrics.
      */
-    private lateinit var monitor: TestSc20Reporter
+    private lateinit var monitor: TestExperimentReporter
 
     /**
      * Setup the experimental environment.
@@ -73,7 +80,7 @@ class Sc20IntegrationTest {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         simulationEngine = provider("test")
         root = simulationEngine.newDomain("root")
-        monitor = TestSc20Reporter()
+        monitor = TestExperimentReporter()
     }
 
     /**
@@ -95,19 +102,33 @@ class Sc20IntegrationTest {
         lateinit var scheduler: SimpleVirtProvisioningService
 
         root.launch {
-            val res = createProvisioner(root, environmentReader, allocationPolicy)
+            val res = createProvisioner(
+                root,
+                environmentReader,
+                allocationPolicy
+            )
             val bareMetalProvisioner = res.first
             scheduler = res.second
 
             val failureDomain = if (failures) {
                 println("ENABLING failures")
-                createFailureDomain(seed, 24 * 7, bareMetalProvisioner, chan)
+                createFailureDomain(
+                    seed,
+                    24.0 * 7,
+                    bareMetalProvisioner,
+                    chan
+                )
             } else {
                 null
             }
 
             attachMonitor(scheduler, monitor)
-            processTrace(traceReader, scheduler, chan, monitor)
+            processTrace(
+                traceReader,
+                scheduler,
+                chan,
+                monitor
+            )
 
             println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
@@ -121,8 +142,8 @@ class Sc20IntegrationTest {
         assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs")
         assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run")
         assertEquals(207379117949, monitor.totalRequestedBurst)
-        assertEquals(207378478631, monitor.totalGrantedBurst)
-        assertEquals(639360, monitor.totalOvercommissionedBurst)
+        assertEquals(207102919834, monitor.totalGrantedBurst)
+        assertEquals(276198896, monitor.totalOvercommissionedBurst)
         assertEquals(0, monitor.totalInterferedBurst)
     }
 
@@ -137,10 +158,12 @@ class Sc20IntegrationTest {
      * Obtain the trace reader for the test.
      */
     private fun createTestTraceReader(): TraceReader<VmWorkload> {
-        val performanceInterferenceStream = object {}.javaClass.getResourceAsStream("/env/performance-interference.json")
-        val performanceInterferenceModel = Sc20PerformanceInterferenceReader(performanceInterferenceStream)
-            .construct()
-        return createTraceReader(File("src/test/resources/trace"), performanceInterferenceModel, emptyList(), 0)
+        return Sc20ParquetTraceReader(
+            Sc20RawParquetTraceReader(File("src/test/resources/trace")),
+            emptyMap(),
+            Workload("test", 1.0),
+            0
+        )
     }
 
     /**
@@ -151,13 +174,13 @@ class Sc20IntegrationTest {
         return Sc20ClusterEnvironmentReader(stream)
     }
 
-    class TestSc20Reporter : Sc20Reporter {
+    class TestExperimentReporter : ExperimentMonitor {
         var totalRequestedBurst = 0L
         var totalGrantedBurst = 0L
         var totalOvercommissionedBurst = 0L
         var totalInterferedBurst = 0L
 
-        override suspend fun reportHostSlice(
+        override fun reportHostSlice(
             time: Long,
             requestedBurst: Long,
             grantedBurst: Long,
@@ -167,10 +190,6 @@ class Sc20IntegrationTest {
             cpuDemand: Double,
             numberOfDeployedImages: Int,
             hostServer: Server,
-            submittedVms: Long,
-            queuedVms: Long,
-            runningVms: Long,
-            finishedVms: Long,
             duration: Long
         ) {
             totalRequestedBurst += requestedBurst
