@@ -339,7 +339,7 @@ class SimpleVirtDriver(
                     min(totalRequestedSubBurst, totalGrantedBurst), // We can run more than requested due to timing
                     totalOvercommissionedBurst,
                     totalInterferedBurst, // Might be smaller than zero due to FP rounding errors,
-                    totalAllocatedUsage,
+                    min(totalAllocatedUsage, totalRequestedUsage), // The allocated usage might be slightly higher due to FP rounding
                     totalRequestedUsage,
                     vmCount, // Some VMs might already have finished, so keep initial VM count
                     server
