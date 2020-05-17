@@ -135,3 +135,21 @@ public class OperationalPhenomenaPortfolio(parent: Experiment, id: Int) : Portfo
         "random"
     )
 }
+
+public class TestPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "test") {
+    override val repetitions: Int = 1
+
+    override val topologies: List<Topology> = listOf(
+        Topology("base")
+    )
+
+    override val workloads: List<Workload> = listOf(
+        Workload("solvinity", 1.0)
+    )
+
+    override val operationalPhenomenas: List<OperationalPhenomena> = listOf(
+        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
+    )
+
+    override val allocationPolicies: List<String> = listOf("active-servers")
+}
