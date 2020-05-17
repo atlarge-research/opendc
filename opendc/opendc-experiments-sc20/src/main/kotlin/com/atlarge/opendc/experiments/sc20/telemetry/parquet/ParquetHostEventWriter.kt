@@ -54,7 +54,7 @@ public class ParquetHostEventWriter(path: File, bufferSize: Int) :
             record.put("interfered_burst", event.interferedBurst)
             record.put("cpu_usage", event.cpuUsage)
             record.put("cpu_demand", event.cpuDemand)
-            record.put("power_draw", event.powerDraw * (1 / 12))
+            record.put("power_draw", event.powerDraw * (1.0 / 12))
         }
 
         val schema: Schema = SchemaBuilder
