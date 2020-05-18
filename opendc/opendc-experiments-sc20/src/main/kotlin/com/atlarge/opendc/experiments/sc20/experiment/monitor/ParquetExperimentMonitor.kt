@@ -63,7 +63,7 @@ class ParquetExperimentMonitor(val run: Run) : ExperimentMonitor {
         driver: VirtDriver,
         server: Server
     ) {
-        logger.debug("Host ${server.uid} changed state ${server.state} [$time]")
+        logger.debug { "Host ${server.uid} changed state ${server.state} [$time]" }
 
         val lastServerState = lastServerStates[server]
         if (server.state == ServerState.SHUTOFF && lastServerState != null) {
@@ -106,6 +106,8 @@ class ParquetExperimentMonitor(val run: Run) : ExperimentMonitor {
         hostServer: Server,
         duration: Long
     ) {
+        lastServerStates[hostServer] = Pair(hostServer.state, time)
+
         hostWriter.write(
             HostEvent(
                 time,
