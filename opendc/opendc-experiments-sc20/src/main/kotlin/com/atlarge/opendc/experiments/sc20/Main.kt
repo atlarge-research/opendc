@@ -96,12 +96,8 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
      */
     private val portfolios by option("--portfolio")
         .choice(
-            "hor-ver" to { experiment: Experiment, i: Int ->
-                HorVerPortfolio(
-                    experiment,
-                    i
-                )
-            } as (Experiment, Int) -> Portfolio,
+            "hor-ver" to { experiment: Experiment, i: Int -> HorVerPortfolio(experiment, i) }
+                as (Experiment, Int) -> Portfolio,
             "more-velocity" to { experiment, i -> MoreVelocityPortfolio(experiment, i) },
             "composite-workload" to { experiment, i -> CompositeWorkloadPortfolio(experiment, i) },
             "operational-phenomena" to { experiment, i -> OperationalPhenomenaPortfolio(experiment, i) },

@@ -100,6 +100,7 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
                 }
             }
         }
+
         val performanceInterferenceModel = experiment.performanceInterferenceModel
             ?.takeIf { parent.operationalPhenomena.hasInterference }
             ?.construct(seeder) ?: emptyMap()

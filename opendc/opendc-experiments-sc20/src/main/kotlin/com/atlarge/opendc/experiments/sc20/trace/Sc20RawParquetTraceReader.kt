@@ -98,7 +98,12 @@ class Sc20RawParquetTraceReader(private val path: File) {
         return try {
             while (true) {
                 val record = metaReader.read() ?: break
+
                 val id = record["id"].toString()
+                if (!fragments.containsKey(id)) {
+                    continue
+                }
+
                 val submissionTime = record["submissionTime"] as Long
                 val endTime = record["endTime"] as Long
                 val maxCores = record["maxCores"] as Int
@@ -127,6 +132,9 @@ class Sc20RawParquetTraceReader(private val path: File) {
             }
 
             entries
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw e
         } finally {
             metaReader.close()
         }
