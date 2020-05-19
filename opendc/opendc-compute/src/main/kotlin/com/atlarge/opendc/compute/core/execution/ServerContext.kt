@@ -81,7 +81,7 @@ public interface ServerContext {
      * deadline.
      */
     public suspend fun run(
-        batch: List<Slice>,
+        batch: Sequence<Slice>,
         triggerMode: TriggerMode = TriggerMode.FIRST,
         merge: (Slice, Slice) -> Slice = { _, r -> r }
     ) = select<Unit> { onRun(batch, triggerMode, merge).invoke {} }
@@ -98,7 +98,7 @@ public interface ServerContext {
      * @param triggerMode The trigger condition to resume execution.
      */
     public fun onRun(slice: Slice, triggerMode: TriggerMode = TriggerMode.FIRST): SelectClause0 =
-        onRun(listOf(slice), triggerMode)
+        onRun(sequenceOf(slice), triggerMode)
 
     /**
      * Ask the processors cores to run the specified [batch] of work slices and select when the trigger condition is met
@@ -117,7 +117,7 @@ public interface ServerContext {
      * deadline.
      */
     public fun onRun(
-        batch: List<Slice>,
+        batch: Sequence<Slice>,
         triggerMode: TriggerMode = TriggerMode.FIRST,
         merge: (Slice, Slice) -> Slice = { _, r -> r }
     ): SelectClause0

@@ -406,7 +406,7 @@ class SimpleVirtDriver(
         /**
          * Schedule the given slices on this vCPU, replacing the existing slices.
          */
-        fun schedule(slices: List<ServerContext.Slice>) {
+        fun schedule(slices: Sequence<ServerContext.Slice>) {
             queue = slices.iterator()
 
             if (queue.hasNext()) {
@@ -579,7 +579,7 @@ class SimpleVirtDriver(
 
         @OptIn(InternalCoroutinesApi::class)
         override fun onRun(
-            batch: List<ServerContext.Slice>,
+            batch: Sequence<ServerContext.Slice>,
             triggerMode: ServerContext.TriggerMode,
             merge: (ServerContext.Slice, ServerContext.Slice) -> ServerContext.Slice
         ): SelectClause0 = object : SelectClause0 {

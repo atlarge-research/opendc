@@ -261,7 +261,7 @@ public class SimpleBareMetalDriver(
 
         @OptIn(InternalCoroutinesApi::class)
         override fun onRun(
-            batch: List<ServerContext.Slice>,
+            batch: Sequence<ServerContext.Slice>,
             triggerMode: ServerContext.TriggerMode,
             merge: (ServerContext.Slice, ServerContext.Slice) -> ServerContext.Slice
         ): SelectClause0 {
