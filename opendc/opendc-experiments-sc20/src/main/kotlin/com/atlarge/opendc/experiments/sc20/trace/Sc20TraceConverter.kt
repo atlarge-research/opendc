@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.experiments.sc20.trace
 
+import me.tongfei.progressbar.ProgressBar
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
@@ -307,7 +308,7 @@ fun readAzureTrace(
     val vmIdToLastFragment = mutableMapOf<String, Fragment?>()
     val allFragments = mutableListOf<Fragment>()
 
-    for (i in 1..195) {
+    for (i in ProgressBar.wrap((1..195).toList(), "Reading Trace")) {
         val readingsFile = File(File(traceDirectory, "readings"), "readings-$i.csv")
         var timestamp: Long
         var cpuUsage: Double
