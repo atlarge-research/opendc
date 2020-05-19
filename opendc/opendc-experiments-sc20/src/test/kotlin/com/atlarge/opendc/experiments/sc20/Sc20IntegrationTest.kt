@@ -204,7 +204,7 @@ class Sc20IntegrationTest {
      */
     private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<VmWorkload> {
         return Sc20ParquetTraceReader(
-            Sc20RawParquetTraceReader(File("src/test/resources/trace")),
+            listOf(Sc20RawParquetTraceReader(File("src/test/resources/trace"))),
             emptyMap(),
             Workload("test", fraction),
             seed
