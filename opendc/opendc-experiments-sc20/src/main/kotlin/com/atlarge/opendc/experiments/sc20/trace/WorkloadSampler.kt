@@ -43,17 +43,22 @@ fun sampleWorkload(
     seed: Int
 ): List<TraceEntry<VmWorkload>> {
     return if (workload is CompositeWorkload) {
-        sampleRegularWorkload(trace, subWorkload, seed)
+        sampleRegularWorkload(trace, workload, subWorkload, seed)
     } else {
-        sampleRegularWorkload(trace, workload, seed)
+        sampleRegularWorkload(trace, workload, workload, seed)
     }
 }
 
 /**
  * Sample a regular (non-HPC) workload.
  */
-fun sampleRegularWorkload(trace: List<TraceEntry<VmWorkload>>, workload: Workload, seed: Int): List<TraceEntry<VmWorkload>> {
-    val fraction = workload.fraction
+fun sampleRegularWorkload(
+    trace: List<TraceEntry<VmWorkload>>,
+    workload: Workload,
+    subWorkload: Workload,
+    seed: Int
+): List<TraceEntry<VmWorkload>> {
+    val fraction = subWorkload.fraction
 
     val shuffled = trace.shuffled(Random(seed))
     val res = mutableListOf<TraceEntry<VmWorkload>>()
