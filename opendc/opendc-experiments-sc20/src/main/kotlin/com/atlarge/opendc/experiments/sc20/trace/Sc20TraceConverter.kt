@@ -141,9 +141,39 @@ fun readSolvinityTrace(
     val timestampCol = 0
     val cpuUsageCol = 1
     val coreCol = 12
-    val vmIdCol = 19
     val provisionedMemoryCol = 20
     val traceInterval = 5 * 60 * 1000L
+
+    // Identify start time of the entire trace
+    var minTimestamp = Long.MAX_VALUE
+    traceDirectory.walk()
+        .filterNot { it.isDirectory }
+        .filter { it.extension == "csv" || it.extension == "txt" }
+        .toList()
+        .forEach { vmFile ->
+            BufferedReader(FileReader(vmFile)).use { reader ->
+                reader.lineSequence()
+                    .chunked(128)
+                    .forEachIndexed { idx, lines ->
+                        for (line in lines) {
+                            // Ignore comments in the trace
+                            if (line.startsWith("#") || line.isBlank()) {
+                                continue
+                            }
+
+                            val values = line.split("    ")
+                            val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
+
+                            if (timestamp < minTimestamp) {
+                                minTimestamp = timestamp
+                            }
+                            return@forEach
+                        }
+                    }
+            }
+        }
+
+    println("Start of trace at $minTimestamp")
 
     val allFragments = mutableListOf<Fragment>()
 
@@ -176,7 +206,7 @@ fun readSolvinityTrace(
                                 val values = line.split("    ")
 
                                 vmId = vmFile.name
-                                val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
+                                val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L - minTimestamp
                                 cores = values[coreCol].trim().toInt()
                                 requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
                                 maxCores = max(maxCores, cores)
