@@ -305,74 +305,71 @@ fun readAzureTrace(
     val vmIdToLastFragment = mutableMapOf<String, Fragment?>()
     val allFragments = mutableListOf<Fragment>()
 
-    File(traceDirectory, "readings").walk()
-        .filterNot { it.isDirectory }
-        .filter { it.extension == "csv" }
-        .toList()
-        .forEach { readingsFile ->
-            var timestamp: Long
-            var vmId: String
-            var cpuUsage: Double
+    for (i in 1..195) {
+        val readingsFile = File(File(traceDirectory, "readings"), "readings-$i.csv")
+        var timestamp: Long
+        var vmId: String
+        var cpuUsage: Double
 
-            BufferedReader(FileReader(readingsFile)).use { reader ->
-                reader.lineSequence()
-                    .chunked(128)
-                    .forEach { lines ->
-                        for (line in lines) {
-                            // Ignore comments in the trace
-                            if (line.startsWith("#") || line.isBlank()) {
-                                continue
-                            }
+        BufferedReader(FileReader(readingsFile)).use { reader ->
+            reader.lineSequence()
+                .chunked(128)
+                .forEach { lines ->
+                    for (line in lines) {
+                        // Ignore comments in the trace
+                        if (line.startsWith("#") || line.isBlank()) {
+                            continue
+                        }
 
-                            val values = line.split(",")
-                            vmId = values[vmIdCol].trim()
+                        val values = line.split(",")
+                        vmId = values[vmIdCol].trim()
 
-                            // Ignore readings for VMs not in the sample
-                            if (!vmIds.contains(vmId)) {
-                                continue
-                            }
+                        // Ignore readings for VMs not in the sample
+                        if (!vmIds.contains(vmId)) {
+                            continue
+                        }
 
-                            timestamp = values[timestampCol].trim().toLong() * 1000L
-                            vmIdToMetadata[vmId]!!.minTime = min(vmIdToMetadata[vmId]!!.minTime, timestamp)
-                            cpuUsage = values[cpuUsageCol].trim().toDouble() * 4_000 // MHz
-                            vmIdToMetadata[vmId]!!.maxTime = max(vmIdToMetadata[vmId]!!.maxTime, timestamp)
+                        timestamp = values[timestampCol].trim().toLong() * 1000L
+                        vmIdToMetadata[vmId]!!.minTime = min(vmIdToMetadata[vmId]!!.minTime, timestamp)
+                        cpuUsage = values[cpuUsageCol].trim().toDouble() * 4_000 // MHz
+                        vmIdToMetadata[vmId]!!.maxTime = max(vmIdToMetadata[vmId]!!.maxTime, timestamp)
 
-                            val flops: Long = (cpuUsage * 5 * 60).toLong()
-                            val lastFragment = vmIdToLastFragment[vmId]
+                        val flops: Long = (cpuUsage * 5 * 60).toLong()
+                        val lastFragment = vmIdToLastFragment[vmId]
 
-                            vmIdToLastFragment[vmId] =
-                                if (lastFragment != null && lastFragment.flops == 0L && flops == 0L) {
+                        vmIdToLastFragment[vmId] =
+                            if (lastFragment != null && lastFragment.flops == 0L && flops == 0L) {
+                                Fragment(
+                                    vmId,
+                                    lastFragment.tick,
+                                    lastFragment.flops + flops,
+                                    lastFragment.duration + traceInterval,
+                                    cpuUsage,
+                                    vmIdToMetadata[vmId]!!.cores
+                                )
+                            } else {
+                                val fragment =
                                     Fragment(
                                         vmId,
-                                        lastFragment.tick,
-                                        lastFragment.flops + flops,
-                                        lastFragment.duration + traceInterval,
+                                        timestamp,
+                                        flops,
+                                        traceInterval,
                                         cpuUsage,
                                         vmIdToMetadata[vmId]!!.cores
                                     )
-                                } else {
-                                    val fragment =
-                                        Fragment(
-                                            vmId,
-                                            timestamp,
-                                            flops,
-                                            traceInterval,
-                                            cpuUsage,
-                                            vmIdToMetadata[vmId]!!.cores
-                                        )
-                                    if (lastFragment != null) {
-                                        if (vmIdToFragments[vmId] == null) {
-                                            vmIdToFragments[vmId] = mutableListOf()
-                                        }
-                                        vmIdToFragments[vmId]!!.add(lastFragment)
-                                        allFragments.add(lastFragment)
+                                if (lastFragment != null) {
+                                    if (vmIdToFragments[vmId] == null) {
+                                        vmIdToFragments[vmId] = mutableListOf()
                                     }
-                                    fragment
+                                    vmIdToFragments[vmId]!!.add(lastFragment)
+                                    allFragments.add(lastFragment)
                                 }
-                        }
+                                fragment
+                            }
                     }
-            }
+                }
         }
+    }
 
     for (entry in vmIdToLastFragment) {
         if (entry.value != null) {
