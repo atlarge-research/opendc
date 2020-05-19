@@ -54,9 +54,6 @@ fun sampleWorkload(
  */
 fun sampleRegularWorkload(trace: List<TraceEntry<VmWorkload>>, workload: Workload, seed: Int): List<TraceEntry<VmWorkload>> {
     val fraction = workload.fraction
-    if (fraction >= 1) {
-        return trace
-    }
 
     val shuffled = trace.shuffled(Random(seed))
     val res = mutableListOf<TraceEntry<VmWorkload>>()
