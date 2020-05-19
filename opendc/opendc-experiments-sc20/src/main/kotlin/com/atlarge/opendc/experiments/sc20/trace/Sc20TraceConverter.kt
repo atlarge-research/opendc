@@ -97,7 +97,6 @@ fun main(args: Array<String>) {
         .build()
 
     val traceType = args[2]
-    val startTime = System.currentTimeMillis()
     val allFragments = if (traceType == "solvinity") {
         readSolvinityTrace(traceDirectory, metaSchema, metaWriter)
     } else {
@@ -105,7 +104,6 @@ fun main(args: Array<String>) {
         readAzureTrace(traceDirectory, metaSchema, metaWriter, seed)
     }
     allFragments.sortWith(compareBy<Fragment> { it.tick }.thenBy { it.id })
-    println("Reading trace took ${(System.currentTimeMillis() - startTime) / 1000} seconds")
 
     for (fragment in allFragments) {
         val record = GenericData.Record(schema)
