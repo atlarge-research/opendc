@@ -70,12 +70,11 @@ internal class SimpleBareMetalDriverTest {
                 server.events.collect { event ->
                     when (event) {
                         is ServerEvent.StateChanged -> {
-                            println("${simulationContext.clock.millis()} $event");
+                            println("${simulationContext.clock.millis()} $event")
                             finalState = event.server.state
                         }
                     }
                 }
-
             }
         }
 

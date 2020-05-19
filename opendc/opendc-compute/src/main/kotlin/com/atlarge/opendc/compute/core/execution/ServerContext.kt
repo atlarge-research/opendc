@@ -84,7 +84,7 @@ public interface ServerContext {
         batch: List<Slice>,
         triggerMode: TriggerMode = TriggerMode.FIRST,
         merge: (Slice, Slice) -> Slice = { _, r -> r }
-    ) = select<Unit> { onRun(batch, triggerMode, merge).invoke {}  }
+    ) = select<Unit> { onRun(batch, triggerMode, merge).invoke {} }
 
     /**
      * Ask the processor cores to run the specified [slice] and select when the trigger condition is met as specified

@@ -482,7 +482,7 @@ class SimpleVirtDriver(
          */
         fun consume(burst: Long): Boolean {
             this.burst = max(0, this.burst - burst)
-            return this.burst == 0L
+            return allocatedLimit > 0.0 && this.burst == 0L
         }
 
         /**
@@ -510,7 +510,6 @@ class SimpleVirtDriver(
         override fun toString(): String =
             "vCPU(vm=${vm.ctx.server.uid},id=$id,burst=$burst,limit=$limit,allocatedLimit=$allocatedLimit)"
     }
-
 
     /**
      * The execution context in which a VM runs.

@@ -136,6 +136,7 @@ class Sc20IntegrationTest {
 
             failureDomain?.cancel()
             scheduler.terminate()
+            monitor.close()
         }
 
         runSimulation()
@@ -166,7 +167,6 @@ class Sc20IntegrationTest {
             )
             scheduler = res.second
 
-
             attachMonitor(scheduler, monitor)
             processTrace(
                 traceReader,
@@ -178,6 +178,7 @@ class Sc20IntegrationTest {
             println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
             scheduler.terminate()
+            monitor.close()
         }
 
         runSimulation()
@@ -241,6 +242,7 @@ class Sc20IntegrationTest {
             totalOvercommissionedBurst += overcommissionedBurst
             totalInterferedBurst += interferedBurst
         }
+
         override fun close() {}
     }
 }
