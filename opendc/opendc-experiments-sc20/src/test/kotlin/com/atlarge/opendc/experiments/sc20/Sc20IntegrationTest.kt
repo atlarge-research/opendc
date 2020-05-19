@@ -145,8 +145,8 @@ class Sc20IntegrationTest {
         assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs")
         assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run")
         assertEquals(207379117949, monitor.totalRequestedBurst)
-        assertEquals(207102919834, monitor.totalGrantedBurst)
-        assertEquals(276198896, monitor.totalOvercommissionedBurst)
+        assertEquals(203388071813, monitor.totalGrantedBurst)
+        assertEquals(3991046136, monitor.totalOvercommissionedBurst)
         assertEquals(0, monitor.totalInterferedBurst)
     }
 

@@ -281,7 +281,7 @@ fun readAzureTrace(
     seed: Long
 ): MutableList<Fragment> {
     val random = Random(seed)
-    val fraction = 0.005
+    val fraction = 0.02
 
     // Read VM table
     val vmIdTableCol = 0
