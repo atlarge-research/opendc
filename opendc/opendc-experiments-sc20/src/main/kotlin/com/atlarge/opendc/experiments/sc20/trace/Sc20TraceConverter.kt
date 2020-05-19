@@ -147,7 +147,6 @@ fun readSolvinityTrace(
 
     val allFragments = mutableListOf<Fragment>()
 
-
     traceDirectory.walk()
         .filterNot { it.isDirectory }
         .filter { it.extension == "csv" || it.extension == "txt" }
@@ -177,7 +176,7 @@ fun readSolvinityTrace(
                                 val values = line.split("    ")
 
                                 vmId = vmFile.name
-                                val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
+                                val timestamp = values[timestampCol].trim().toLong() * 1000L
                                 cores = values[coreCol].trim().toInt()
                                 requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
                                 maxCores = max(maxCores, cores)
