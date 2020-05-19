@@ -4,7 +4,6 @@ import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import java.util.UUID
 import kotlin.coroutines.coroutineContext
@@ -23,18 +22,20 @@ class VmImage(
         val clock = simulationContext.clock
         val job = coroutineContext[Job]!!
 
-        for (fragment in flopsHistory) {
+        for (fragments in flopsHistory.chunked(1024)) {
             job.ensureActive()
 
-            if (fragment.flops == 0L) {
-                delay(fragment.duration)
-            } else {
+            var offset = clock.millis()
+
+            val batch = fragments.map { fragment ->
                 val cores = min(fragment.cores, ctx.server.flavor.cpuCount)
                 val burst = LongArray(cores) { fragment.flops / cores }
                 val usage = DoubleArray(cores) { fragment.usage / cores }
-
-                ctx.run(ServerContext.Slice(burst, usage, clock.millis() + fragment.duration))
+                offset += fragment.duration
+                ServerContext.Slice(burst, usage, offset)
             }
+
+            ctx.run(batch)
         }
     }
 

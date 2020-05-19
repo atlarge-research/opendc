@@ -126,6 +126,7 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
      * Schedule the specified event to be processed by the engine.
      */
     private fun schedule(@Async.Schedule event: Event) {
+        assert(event.time >= clock.time) { "Message scheduled in the past [received=${event.time}, actual=${clock.time}]" }
         queue.add(event)
     }
 

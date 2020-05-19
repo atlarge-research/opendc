@@ -28,7 +28,6 @@ import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.flow.StateFlow
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
@@ -66,7 +65,6 @@ import kotlin.math.min
 import kotlinx.coroutines.withContext
 import java.lang.Exception
 import kotlin.coroutines.ContinuationInterceptor
-import kotlin.math.round
 import kotlin.random.Random
 
 /**
@@ -286,15 +284,17 @@ public class SimpleBareMetalDriver(
 
                         val isLastSlice = !queue.hasNext()
                         val work = SliceWork(slice)
-                        val duration = when (triggerMode) {
-                            ServerContext.TriggerMode.FIRST -> min(work.minExit, slice.deadline - start)
-                            ServerContext.TriggerMode.LAST -> min(work.maxExit, slice.deadline - start)
+                        val candidateDuration = when (triggerMode) {
+                            ServerContext.TriggerMode.FIRST -> work.minExit
+                            ServerContext.TriggerMode.LAST -> work.maxExit
                             ServerContext.TriggerMode.DEADLINE -> slice.deadline - start
                         }
 
+                        // Check whether the deadline is exceeded during the run of the slice.
+                        val duration = min(candidateDuration, slice.deadline - start)
+
                         val action = Runnable {
                             currentWork = null
-
 
                             // Flush all the work that was performed
                             val hasFinished = work.stop(duration)
@@ -368,10 +368,16 @@ public class SimpleBareMetalDriver(
              */
             public val totalUsage: Double
 
+            /**
+             * A flag to indicate that this slice is empty.
+             */
+            public val isEmpty: Boolean
+
             init {
                 var totalUsage = 0.0
                 var minExit = Long.MAX_VALUE
                 var maxExit = 0L
+                var nonEmpty = false
 
                 // Determine the duration of the first/last CPU to finish
                 for (i in 0 until min(cpus.size, slice.burst.size)) {
@@ -384,9 +390,11 @@ public class SimpleBareMetalDriver(
                     if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
                         minExit = min(minExit, cpuDuration)
                         maxExit = max(maxExit, cpuDuration)
+                        nonEmpty = true
                     }
                 }
 
+                this.isEmpty = !nonEmpty
                 this.totalUsage = totalUsage
                 this.minExit = minExit
                 this.maxExit = maxExit
