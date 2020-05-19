@@ -176,7 +176,7 @@ fun readSolvinityTrace(
                                 val values = line.split("    ")
 
                                 vmId = vmFile.name
-                                val timestamp = values[timestampCol].trim().toLong() * 1000L
+                                val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
                                 cores = values[coreCol].trim().toInt()
                                 requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
                                 maxCores = max(maxCores, cores)
@@ -332,7 +332,7 @@ fun readAzureTrace(
                                 continue
                             }
 
-                            timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
+                            timestamp = values[timestampCol].trim().toLong() * 1000L
                             vmIdToMetadata[vmId]!!.minTime = min(vmIdToMetadata[vmId]!!.minTime, timestamp)
                             cpuUsage = values[cpuUsageCol].trim().toDouble() * 4_000 // MHz
                             vmIdToMetadata[vmId]!!.maxTime = max(vmIdToMetadata[vmId]!!.maxTime, timestamp)
