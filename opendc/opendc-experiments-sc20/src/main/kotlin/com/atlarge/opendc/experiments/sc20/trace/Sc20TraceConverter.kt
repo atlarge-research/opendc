@@ -42,8 +42,8 @@ import kotlin.math.min
  * A script to convert a trace in text format into a Parquet trace.
  */
 fun main(args: Array<String>) {
-    if (args.size < 2) {
-        println("error: expected <OUTPUT> <INPUT> <TRACE-TYPE>")
+    if (args.size < 3) {
+        println("error: expected <OUTPUT> <INPUT> <TRACE-TYPE> [<SEED>]")
         return
     }
 
@@ -100,7 +100,8 @@ fun main(args: Array<String>) {
     val allFragments = if (traceType == "solvinity") {
         readSolvinityTrace(traceDirectory, metaSchema, metaWriter)
     } else {
-        readAzureTrace(traceDirectory, metaSchema, metaWriter)
+        val seed = args[3].toLong()
+        readAzureTrace(traceDirectory, metaSchema, metaWriter, seed)
     }
     allFragments.sortWith(compareBy<Fragment> { it.tick }.thenBy { it.id })
     println("Reading trace took ${(System.currentTimeMillis() - startTime) / 1000} seconds")
@@ -247,9 +248,10 @@ fun readSolvinityTrace(
 fun readAzureTrace(
     traceDirectory: File,
     metaSchema: Schema,
-    metaWriter: ParquetWriter<GenericData.Record>
+    metaWriter: ParquetWriter<GenericData.Record>,
+    seed: Long
 ): MutableList<Fragment> {
-    val random = Random(0)
+    val random = Random(seed)
     val fraction = 0.005
 
     // Read VM table
@@ -308,7 +310,6 @@ fun readAzureTrace(
     for (i in 1..195) {
         val readingsFile = File(File(traceDirectory, "readings"), "readings-$i.csv")
         var timestamp: Long
-        var vmId: String
         var cpuUsage: Double
 
         BufferedReader(FileReader(readingsFile)).use { reader ->
