@@ -28,6 +28,7 @@ import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.core.workload.VmWorkload
+import com.atlarge.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
@@ -42,7 +43,7 @@ import java.util.TreeSet
  */
 @OptIn(ExperimentalStdlibApi::class)
 class Sc20ParquetTraceReader(
-    raw: Sc20RawParquetTraceReader,
+    rawReaders: List<Sc20RawParquetTraceReader>,
     performanceInterferenceModel: Map<String, PerformanceInterferenceModel>,
     workload: Workload,
     seed: Int
@@ -51,8 +52,17 @@ class Sc20ParquetTraceReader(
      * The iterator over the actual trace.
      */
     private val iterator: Iterator<TraceEntry<VmWorkload>> =
-        raw.read()
-            .run { sampleWorkload(this, workload, seed) }
+        rawReaders
+            .map { it.read() }
+            .run {
+                if (workload is CompositeWorkload) {
+                    this.zip(workload.workloads)
+                } else {
+                    this.zip(listOf(workload))
+                }
+            }
+            .map { sampleWorkload(it.first, workload, it.second, seed) }
+            .flatten()
             .run {
                 // Apply performance interference model
                 if (performanceInterferenceModel.isEmpty())
@@ -62,7 +72,7 @@ class Sc20ParquetTraceReader(
                         val image = entry.workload.image
                         val id = image.name
                         val relevantPerformanceInterferenceModelItems =
-                                performanceInterferenceModel[id] ?: PerformanceInterferenceModel(TreeSet())
+                            performanceInterferenceModel[id] ?: PerformanceInterferenceModel(TreeSet())
 
                         val newImage =
                             VmImage(

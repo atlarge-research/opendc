@@ -24,9 +24,9 @@
 
 package com.atlarge.opendc.experiments.sc20
 
+import com.atlarge.opendc.experiments.sc20.experiment.CompositeWorkloadPortfolio
 import com.atlarge.opendc.experiments.sc20.experiment.Experiment
 import com.atlarge.opendc.experiments.sc20.experiment.HorVerPortfolio
-import com.atlarge.opendc.experiments.sc20.experiment.MoreHpcPortfolio
 import com.atlarge.opendc.experiments.sc20.experiment.MoreVelocityPortfolio
 import com.atlarge.opendc.experiments.sc20.experiment.OperationalPhenomenaPortfolio
 import com.atlarge.opendc.experiments.sc20.experiment.Portfolio
@@ -96,9 +96,14 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
      */
     private val portfolios by option("--portfolio")
         .choice(
-            "hor-ver" to { experiment: Experiment, i: Int -> HorVerPortfolio(experiment, i) } as (Experiment, Int) -> Portfolio,
+            "hor-ver" to { experiment: Experiment, i: Int ->
+                HorVerPortfolio(
+                    experiment,
+                    i
+                )
+            } as (Experiment, Int) -> Portfolio,
             "more-velocity" to { experiment, i -> MoreVelocityPortfolio(experiment, i) },
-            "more-hpc" to { experiment, i -> MoreHpcPortfolio(experiment, i) },
+            "composite-workload" to { experiment, i -> CompositeWorkloadPortfolio(experiment, i) },
             "operational-phenomena" to { experiment, i -> OperationalPhenomenaPortfolio(experiment, i) },
             "test" to { experiment, i -> TestPortfolio(experiment, i) },
             ignoreCase = true
