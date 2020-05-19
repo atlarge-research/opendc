@@ -250,7 +250,7 @@ fun readAzureTrace(
     metaWriter: ParquetWriter<GenericData.Record>
 ): MutableList<Fragment> {
     val random = Random(0)
-    val fraction = 0.001
+    val fraction = 0.005
 
     // Read VM table
     val vmIdTableCol = 0
