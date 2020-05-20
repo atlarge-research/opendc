@@ -361,7 +361,7 @@ fun readAzureTrace(
 
                         timestamp = values[timestampCol].trim().toLong() * 1000L
                         vmIdToMetadata[vmId]!!.minTime = min(vmIdToMetadata[vmId]!!.minTime, timestamp)
-                        cpuUsage = values[cpuUsageCol].trim().toDouble() * 4_000 // MHz
+                        cpuUsage = values[cpuUsageCol].trim().toDouble() * 3_000 // MHz
                         vmIdToMetadata[vmId]!!.maxTime = max(vmIdToMetadata[vmId]!!.maxTime, timestamp)
 
                         val flops: Long = (cpuUsage * 5 * 60).toLong()
