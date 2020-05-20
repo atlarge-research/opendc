@@ -53,7 +53,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
@@ -118,9 +117,6 @@ public class SimpleBareMetalDriver(
 
     @OptIn(FlowPreview::class)
     override val usage: Flow<Double> = usageState
-        // Debounce changes for 1 ms to prevent emitting two values during the same instant (e.g. slices finishes and
-        // new slice starts).
-        .debounce(1)
 
     override val powerDraw: Flow<Double> = powerModel(this)
 
@@ -259,6 +255,11 @@ public class SimpleBareMetalDriver(
             setNode(nodeState.value.copy(state = newNodeState, server = server))
         }
 
+        /**
+         * A disposable to prevent resetting the usage state for subsequent calls to onRun.
+         */
+        private var usageFlush: DisposableHandle? = null
+
         @OptIn(InternalCoroutinesApi::class)
         override fun onRun(
             batch: Sequence<ServerContext.Slice>,
@@ -270,6 +271,10 @@ public class SimpleBareMetalDriver(
             return object : SelectClause0 {
                 @InternalCoroutinesApi
                 override fun <R> registerSelectClause0(select: SelectInstance<R>, block: suspend () -> R) {
+                    // Do not reset the usage state: we will set it ourselves
+                    usageFlush?.dispose()
+                    usageFlush = null
+
                     val context = select.completion.context
                     val clock = context[SimulationContext]!!.clock
                     val delay = context[ContinuationInterceptor] as Delay
@@ -326,15 +331,21 @@ public class SimpleBareMetalDriver(
                         schedule(queue.next())
 
                         // A DisposableHandle to flush the work in case the call is cancelled
-                        val flush = DisposableHandle {
+                        val disposable = DisposableHandle {
                             val end = clock.millis()
                             val duration = end - start
 
                             currentWork?.stop(duration)
                             currentDisposable?.dispose()
+
+                            // Schedule reset the usage of the machine since the call is returning
+                            usageFlush = delay.invokeOnTimeout(1, Runnable {
+                                usageState.value = 0.0
+                                usageFlush = null
+                            })
                         }
 
-                        select.disposeOnSelect(flush)
+                        select.disposeOnSelect(disposable)
                     } else if (select.trySelect()) {
                         // No work has been given: select immediately
                         block.startCoroutineCancellable(select.completion)
@@ -385,7 +396,7 @@ public class SimpleBareMetalDriver(
                     val usage = min(slice.limit[i], cpu.frequency)
                     val cpuDuration = ceil(slice.burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
 
-                    totalUsage += usage
+                    totalUsage += usage / cpu.frequency
 
                     if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
                         minExit = min(minExit, cpuDuration)
@@ -404,7 +415,7 @@ public class SimpleBareMetalDriver(
              * Indicate that the work on the slice has started.
              */
             public fun start() {
-                usageState.value = totalUsage
+                usageState.value = totalUsage / cpus.size
             }
 
             /**
@@ -426,9 +437,6 @@ public class SimpleBareMetalDriver(
                         }
                     }
                 }
-
-                // Reset the usage of the machine since the slice has finished
-                usageState.value = 0.0
 
                 return hasFinished
             }
