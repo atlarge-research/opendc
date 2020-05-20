@@ -411,6 +411,7 @@ class SimpleVirtDriver(
 
             if (queue.hasNext()) {
                 activeSlice = queue.next()
+                vcpus.forEach { it.refresh() }
             }
         }
 
@@ -420,6 +421,7 @@ class SimpleVirtDriver(
         fun cancel() {
             queue = emptyList<ServerContext.Slice>().iterator()
             activeSlice = null
+            vcpus.forEach { it.refresh() }
         }
 
         /**
@@ -436,6 +438,10 @@ class SimpleVirtDriver(
                 val slice = if (needsMerge) merge(activeSlice, candidateSlice) else candidateSlice
 
                 this.activeSlice = slice
+
+                // Update the vCPU cache
+                vcpus.forEach { it.refresh() }
+
                 false
             } else {
                 this.activeSlice = null
@@ -460,8 +466,7 @@ class SimpleVirtDriver(
         /**
          * The current limit on the vCPU.
          */
-        val limit: Double
-            get() = vm.activeSlice?.limit?.takeIf { id < it.size }?.get(id) ?: 0.0
+        var limit: Double = 0.0
 
         /**
          * The limit allocated by the hypervisor.
@@ -471,18 +476,26 @@ class SimpleVirtDriver(
         /**
          * The current burst running on the vCPU.
          */
-        var burst: Long
-            get() = vm.activeSlice?.burst?.takeIf { id < it.size }?.get(id) ?: 0
-            set(value) {
-                vm.activeSlice?.burst?.takeIf { id < it.size }?.set(id, value)
-            }
+        var burst: Long = 0L
 
         /**
          * Consume the specified burst on this vCPU.
          */
         fun consume(burst: Long): Boolean {
             this.burst = max(0, this.burst - burst)
+
+            // Flush the result to the slice if it exists
+            vm.activeSlice?.burst?.takeIf { id < it.size }?.set(id, this.burst)
+
             return allocatedLimit > 0.0 && this.burst == 0L
+        }
+
+        /**
+         * Refresh the information of this vCPU based on the current slice.
+         */
+        fun refresh() {
+            limit = vm.activeSlice?.limit?.takeIf { id < it.size }?.get(id) ?: 0.0
+            burst = vm.activeSlice?.burst?.takeIf { id < it.size }?.get(id) ?: 0
         }
 
         /**
