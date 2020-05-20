@@ -3,7 +3,6 @@ package com.atlarge.opendc.compute.virt.service.allocation
 import com.atlarge.opendc.compute.virt.service.HypervisorView
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
 import mu.KotlinLogging
-import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
@@ -13,7 +12,7 @@ private val logger = KotlinLogging.logger {}
  * Within each cluster, the active servers on each node determine which node gets
  * assigned the VM image.
  */
-class ReplayAllocationPolicy(val vmPlacements: Map<String, String>, val random: Random = Random(0)) : AllocationPolicy {
+class ReplayAllocationPolicy(val vmPlacements: Map<String, String>) : AllocationPolicy {
     override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
         override fun select(
             hypervisors: Set<HypervisorView>,
@@ -25,7 +24,7 @@ class ReplayAllocationPolicy(val vmPlacements: Map<String, String>, val random: 
 
             if (machinesInCluster.isEmpty()) {
                 logger.info { "Could not find any machines belonging to cluster $clusterName for image ${image.name}, assigning randomly." }
-                return hypervisors.random(random)
+                return hypervisors.maxBy { it.availableMemory }
             }
 
             return machinesInCluster.maxBy { it.availableMemory }
