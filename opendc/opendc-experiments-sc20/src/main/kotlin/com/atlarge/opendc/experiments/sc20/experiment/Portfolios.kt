@@ -160,6 +160,25 @@ public class OperationalPhenomenaPortfolio(parent: Experiment, id: Int) : Portfo
     )
 }
 
+public class ReplayPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "replay") {
+    override val topologies = listOf(
+        Topology("base")
+    )
+
+    override val workloads = listOf(
+        Workload("solvinity", 1.0)
+    )
+
+    override val operationalPhenomenas = listOf(
+        OperationalPhenomena(failureFrequency = 0.0, hasInterference = false)
+    )
+
+    override val allocationPolicies = listOf(
+        "replay",
+        "active-servers"
+    )
+}
+
 public class TestPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "test") {
     override val repetitions: Int = 1
 

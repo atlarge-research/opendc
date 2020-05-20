@@ -79,7 +79,7 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
             "provisioned-cores" -> ProvisionedCoresAllocationPolicy()
             "provisioned-cores-inv" -> ProvisionedCoresAllocationPolicy(true)
             "random" -> RandomAllocationPolicy(Random(seeder.nextInt()))
-            "replay" -> ReplayAllocationPolicy(emptyMap())
+            "replay" -> ReplayAllocationPolicy(experiment.vmPlacements)
             else -> throw IllegalArgumentException("Unknown policy ${parent.allocationPolicy}")
         }
 
