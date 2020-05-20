@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import java.util.ServiceLoader
@@ -54,6 +55,7 @@ internal class HypervisorTest {
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
+    @Disabled
     fun smoke() {
         val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
         val system = provider("test")
