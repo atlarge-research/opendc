@@ -180,7 +180,7 @@ class SimpleVirtProvisioningService(
             }
 
             try {
-                logger.info { "Spawning ${imageInstance.image} on ${selectedHv.server.uid} ${selectedHv.server.name} ${selectedHv.server.flavor}" }
+                logger.info { "[${ctx.clock.millis()}] Spawning ${imageInstance.image} on ${selectedHv.server.uid} ${selectedHv.server.name} ${selectedHv.server.flavor}" }
                 incomingImages -= imageInstance
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
@@ -214,7 +214,7 @@ class SimpleVirtProvisioningService(
                         when (event) {
                             is ServerEvent.StateChanged -> {
                                 if (event.server.state == ServerState.SHUTOFF) {
-                                    logger.info { "Server ${event.server.uid} ${event.server.name} ${event.server.flavor} finished." }
+                                    logger.info { "[${ctx.clock.millis()}] Server ${event.server.uid} ${event.server.name} ${event.server.flavor} finished." }
 
                                     eventFlow.emit(VirtProvisioningEvent.MetricsAvailable(
                                         this@SimpleVirtProvisioningService,
@@ -254,6 +254,8 @@ class SimpleVirtProvisioningService(
     private fun stateChanged(server: Server) {
         when (server.state) {
             ServerState.ACTIVE -> {
+                logger.debug { "[${ctx.clock.millis()}] Server ${server.uid} available: ${server.state}" }
+
                 if (server in hypervisors) {
                     // Corner case for when the hypervisor already exists
                     availableHypervisors += hypervisors.getValue(server)
@@ -280,8 +282,14 @@ class SimpleVirtProvisioningService(
                     queuedVms,
                     unscheduledVms
                 ))
+
+                // Re-schedule on the new machine
+                if (incomingImages.isNotEmpty()) {
+                    requestCycle()
+                }
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
+                logger.debug { "[${ctx.clock.millis()}] Server ${server.uid} unavailable: ${server.state}" }
                 val hv = hypervisors[server] ?: return
                 availableHypervisors -= hv
 

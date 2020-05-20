@@ -26,9 +26,7 @@ package com.atlarge.opendc.compute.core.image
 
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
-import kotlinx.coroutines.ensureActive
 import java.util.UUID
-import kotlin.coroutines.coroutineContext
 import kotlin.math.min
 
 /**
@@ -64,9 +62,6 @@ data class FlopsApplicationImage(
         val burst = LongArray(cores) { flops / cores }
         val maxUsage = DoubleArray(cores) { i -> ctx.cpus[i].frequency * utilization }
 
-        while (burst.any { it != 0L }) {
-            coroutineContext.ensureActive()
-            ctx.run(burst, maxUsage, Long.MAX_VALUE)
-        }
+        ctx.run(ServerContext.Slice(burst, maxUsage, Long.MAX_VALUE), triggerMode = ServerContext.TriggerMode.LAST)
     }
 }

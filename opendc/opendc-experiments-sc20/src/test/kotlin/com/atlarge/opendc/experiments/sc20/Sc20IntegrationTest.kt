@@ -47,9 +47,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import java.io.File
 import java.util.ServiceLoader
 
@@ -134,6 +136,7 @@ class Sc20IntegrationTest {
 
             failureDomain?.cancel()
             scheduler.terminate()
+            monitor.close()
         }
 
         runSimulation()
@@ -147,6 +150,48 @@ class Sc20IntegrationTest {
         assertEquals(0, monitor.totalInterferedBurst)
     }
 
+    @Test
+    fun small() {
+        val seed = 1
+        val chan = Channel<Unit>(Channel.CONFLATED)
+        val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
+        val traceReader = createTestTraceReader(0.5, seed)
+        val environmentReader = createTestEnvironmentReader("single")
+        lateinit var scheduler: SimpleVirtProvisioningService
+
+        root.launch {
+            val res = createProvisioner(
+                root,
+                environmentReader,
+                allocationPolicy
+            )
+            scheduler = res.second
+
+            attachMonitor(scheduler, monitor)
+            processTrace(
+                traceReader,
+                scheduler,
+                chan,
+                monitor
+            )
+
+            println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
+
+            scheduler.terminate()
+            monitor.close()
+        }
+
+        runSimulation()
+
+        // Note that these values have been verified beforehand
+        assertAll(
+            { assertEquals(96344114723, monitor.totalRequestedBurst) },
+            { assertEquals(96324378235, monitor.totalGrantedBurst) },
+            { assertEquals(19736424, monitor.totalOvercommissionedBurst) },
+            { assertEquals(0, monitor.totalInterferedBurst) }
+        )
+    }
+
     /**
      * Run the simulation.
      */
@@ -157,20 +202,20 @@ class Sc20IntegrationTest {
     /**
      * Obtain the trace reader for the test.
      */
-    private fun createTestTraceReader(): TraceReader<VmWorkload> {
+    private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<VmWorkload> {
         return Sc20ParquetTraceReader(
             Sc20RawParquetTraceReader(File("src/test/resources/trace")),
             emptyMap(),
-            Workload("test", 1.0),
-            0
+            Workload("test", fraction),
+            seed
         )
     }
 
     /**
      * Obtain the environment reader for the test.
      */
-    private fun createTestEnvironmentReader(): EnvironmentReader {
-        val stream = object {}.javaClass.getResourceAsStream("/env/topology.txt")
+    private fun createTestEnvironmentReader(name: String = "topology"): EnvironmentReader {
+        val stream = object {}.javaClass.getResourceAsStream("/env/$name.txt")
         return Sc20ClusterEnvironmentReader(stream)
     }
 
@@ -197,6 +242,7 @@ class Sc20IntegrationTest {
             totalOvercommissionedBurst += overcommissionedBurst
             totalInterferedBurst += interferedBurst
         }
+
         override fun close() {}
     }
 }

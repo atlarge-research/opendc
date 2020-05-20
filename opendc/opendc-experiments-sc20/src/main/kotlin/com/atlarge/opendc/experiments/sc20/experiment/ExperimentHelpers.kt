@@ -172,7 +172,7 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, monitor: Exp
             .onEach { event ->
                 when (event) {
                     is HypervisorEvent.SliceFinished -> monitor.reportHostSlice(
-                        simulationContext.clock.millis(),
+                        clock.millis(),
                         event.requestedBurst,
                         event.grantedBurst,
                         event.overcommissionedBurst,
@@ -242,10 +242,8 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
                 // Monitor server events
                 server.events
                     .onEach {
-                        val time = simulationContext.clock.millis()
-
                         if (it is ServerEvent.StateChanged) {
-                            monitor.reportVmStateChange(time, it.server)
+                            monitor.reportVmStateChange(simulationContext.clock.millis(), it.server)
                         }
 
                         delay(1)
