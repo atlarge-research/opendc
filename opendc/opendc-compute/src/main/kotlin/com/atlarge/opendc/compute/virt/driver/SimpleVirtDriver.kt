@@ -55,7 +55,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.SelectInstance
 import kotlinx.coroutines.selects.select
-import java.util.TreeSet
 import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.max
@@ -153,9 +152,14 @@ class SimpleVirtDriver(
      */
     private sealed class SchedulerCommand {
         /**
-         * Refresh the dirty datastructures of the specified VM.
+         * Schedule the specified VM on the hypervisor.
          */
-        data class Refresh(val vm: Vm) : SchedulerCommand()
+        data class Schedule(val vm: Vm) : SchedulerCommand()
+
+        /**
+         * De-schedule the specified VM on the hypervisor.
+         */
+        data class Deschedule(val vm: Vm) : SchedulerCommand()
 
         /**
          * Interrupt the scheduler.
@@ -182,22 +186,20 @@ class SimpleVirtDriver(
         val pCPUs = hostContext.cpus.indices.sortedBy { hostContext.cpus[it].frequency }
 
         val vms = mutableSetOf<Vm>()
-        val vcpus = TreeSet<VCpu>()
+        val vcpus = mutableListOf<VCpu>()
 
         val usage = DoubleArray(hostContext.cpus.size)
         val burst = LongArray(hostContext.cpus.size)
 
         fun process(command: SchedulerCommand) {
             when (command) {
-                is SchedulerCommand.Refresh -> {
-                    if (command.vm.isIdle) {
-                        vms -= command.vm
-                        vcpus.removeAll(command.vm.vcpus)
-                    } else {
-                        vms += command.vm
-                        vcpus.removeAll(command.vm.vcpus)
-                        vcpus.addAll(command.vm.vcpus)
-                    }
+                is SchedulerCommand.Schedule -> {
+                    vms += command.vm
+                    vcpus.addAll(command.vm.vcpus)
+                }
+                is SchedulerCommand.Deschedule -> {
+                    vms -= command.vm
+                    vcpus.removeAll(command.vm.vcpus)
                 }
                 is SchedulerCommand.Interrupt -> {}
             }
@@ -227,6 +229,10 @@ class SimpleVirtDriver(
             var availableUsage = maxUsage
             var totalRequestedUsage = 0.0
             var totalRequestedBurst = 0L
+
+            // Sort the vCPUs based on their requested usage
+            // Profiling shows that it is faster to sort every slice instead of maintaining some kind of sorted set
+            vcpus.sort()
 
             // Divide the available host capacity fairly across the vCPUs using max-min fair sharing
             for ((i, req) in vcpus.withIndex()) {
@@ -331,12 +337,10 @@ class SimpleVirtDriver(
                 }
 
                 if (hasFinished || vm.deadline <= end) {
-                    vcpus.removeAll(vm.vcpus)
                     // Mark the VM as finished and deschedule the VMs if needed
                     if (vm.finish()) {
                         vmIterator.remove()
-                    } else {
-                        vcpus.addAll(vm.vcpus)
+                        vcpus.removeAll(vm.vcpus)
                     }
                 }
             }
@@ -607,7 +611,7 @@ class SimpleVirtDriver(
                 }
                 vm.schedule(batch)
                 // Indicate to the hypervisor that the VM should be re-scheduled
-                schedulingQueue.offer(SchedulerCommand.Refresh(vm))
+                schedulingQueue.offer(SchedulerCommand.Schedule(vm))
                 select.disposeOnSelect(this@VmServerContext)
             }
         }
@@ -615,7 +619,7 @@ class SimpleVirtDriver(
         override fun dispose() {
             if (!vm.isIdle) {
                 vm.cancel()
-                schedulingQueue.offer(SchedulerCommand.Refresh(vm))
+                schedulingQueue.offer(SchedulerCommand.Deschedule(vm))
             }
         }
     }
