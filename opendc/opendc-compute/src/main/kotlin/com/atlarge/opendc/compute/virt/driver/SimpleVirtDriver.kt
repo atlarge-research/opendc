@@ -546,7 +546,6 @@ class SimpleVirtDriver(
                 server.image(this@VmServerContext)
                 exit()
             } catch (cause: Throwable) {
-                cause.printStackTrace()
                 exit(cause)
             }
         }
