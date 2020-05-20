@@ -172,7 +172,7 @@ suspend fun attachMonitor(scheduler: SimpleVirtProvisioningService, monitor: Exp
             .onEach { event ->
                 when (event) {
                     is HypervisorEvent.SliceFinished -> monitor.reportHostSlice(
-                        simulationContext.clock.millis(),
+                        clock.millis(),
                         event.requestedBurst,
                         event.grantedBurst,
                         event.overcommissionedBurst,

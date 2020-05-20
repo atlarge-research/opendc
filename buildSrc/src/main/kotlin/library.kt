@@ -45,5 +45,5 @@ object Library {
     /**
      * Kotlin coroutines support
      */
-    val KOTLINX_COROUTINES = "1.3.6"
+    val KOTLINX_COROUTINES = "1.3.7"
 }

@@ -49,10 +49,12 @@ import com.atlarge.opendc.core.services.ServiceRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DisposableHandle
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
@@ -63,6 +65,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.withContext
 import java.lang.Exception
+import java.time.Clock
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.random.Random
 
@@ -77,6 +80,7 @@ import kotlin.random.Random
  * @param memoryUnits The memory units in this machine.
  * @param powerModel The power model of this machine.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 public class SimpleBareMetalDriver(
     private val domain: Domain,
     uid: UUID,
@@ -106,7 +110,7 @@ public class SimpleBareMetalDriver(
     /**
      * The flow containing the load of the server.
      */
-    private val usageState = StateFlow(0.0)
+    private val usageState = MutableStateFlow(0.0)
 
     /**
      * The machine state.
@@ -260,6 +264,17 @@ public class SimpleBareMetalDriver(
          */
         private var usageFlush: DisposableHandle? = null
 
+        /**
+         * Cache the [Clock] for timing.
+         */
+        private val clock= domain.coroutineContext[SimulationContext]!!.clock
+
+        /**
+         * Cache the [Delay] instance for timing. Ugly hack which may break in the future.
+         */
+        @OptIn(InternalCoroutinesApi::class)
+        private val delay = domain.coroutineContext[ContinuationInterceptor] as Delay
+
         @OptIn(InternalCoroutinesApi::class)
         override fun onRun(
             batch: Sequence<ServerContext.Slice>,
@@ -276,8 +291,6 @@ public class SimpleBareMetalDriver(
                     usageFlush = null
 
                     val context = select.completion.context
-                    val clock = context[SimulationContext]!!.clock
-                    val delay = context[ContinuationInterceptor] as Delay
 
                     val queue = batch.iterator()
                     var start = Long.MIN_VALUE
