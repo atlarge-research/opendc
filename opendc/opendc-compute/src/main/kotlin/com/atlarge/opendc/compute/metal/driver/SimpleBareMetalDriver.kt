@@ -267,10 +267,13 @@ public class SimpleBareMetalDriver(
         /**
          * Cache the [Clock] for timing.
          */
-        private val clock= domain.coroutineContext[SimulationContext]!!.clock
+        private val clock = domain.coroutineContext[SimulationContext]!!.clock
 
         /**
-         * Cache the [Delay] instance for timing. Ugly hack which may break in the future.
+         * Cache the [Delay] instance for timing.
+         *
+         * XXX We need to cache this before the call to [onRun] since doing this in [onRun] is too heavy.
+         * XXX Note however that this is an ugly hack which may break in the future.
          */
         @OptIn(InternalCoroutinesApi::class)
         private val delay = domain.coroutineContext[ContinuationInterceptor] as Delay
@@ -289,8 +292,6 @@ public class SimpleBareMetalDriver(
                     // Do not reset the usage state: we will set it ourselves
                     usageFlush?.dispose()
                     usageFlush = null
-
-                    val context = select.completion.context
 
                     val queue = batch.iterator()
                     var start = Long.MIN_VALUE
