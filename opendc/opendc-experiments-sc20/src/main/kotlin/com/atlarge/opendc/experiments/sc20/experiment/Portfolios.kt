@@ -95,7 +95,7 @@ public class CompositeWorkloadPortfolio(parent: Experiment, id: Int) : Portfolio
 
     override val workloads = listOf(
         CompositeWorkload(
-            "all-solvinity",
+            "all-azure",
             listOf(Workload("solvinity", 0.0), Workload("azure", 1.0)),
             totalSampleLoad
         ),
@@ -115,7 +115,7 @@ public class CompositeWorkloadPortfolio(parent: Experiment, id: Int) : Portfolio
             totalSampleLoad
         ),
         CompositeWorkload(
-            "all-azure",
+            "all-solvinity",
             listOf(Workload("solvinity", 1.0), Workload("azure", 0.0)),
             totalSampleLoad
         )
