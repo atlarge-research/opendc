@@ -30,6 +30,7 @@ import com.atlarge.opendc.experiments.sc20.experiment.HorVerPortfolio
 import com.atlarge.opendc.experiments.sc20.experiment.MoreVelocityPortfolio
 import com.atlarge.opendc.experiments.sc20.experiment.OperationalPhenomenaPortfolio
 import com.atlarge.opendc.experiments.sc20.experiment.Portfolio
+import com.atlarge.opendc.experiments.sc20.experiment.ReplayPortfolio
 import com.atlarge.opendc.experiments.sc20.experiment.TestPortfolio
 import com.atlarge.opendc.experiments.sc20.reporter.ConsoleExperimentReporter
 import com.atlarge.opendc.experiments.sc20.runner.ExperimentDescriptor
@@ -101,6 +102,7 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
             "more-velocity" to { experiment, i -> MoreVelocityPortfolio(experiment, i) },
             "composite-workload" to { experiment, i -> CompositeWorkloadPortfolio(experiment, i) },
             "operational-phenomena" to { experiment, i -> OperationalPhenomenaPortfolio(experiment, i) },
+            "replay" to { experiment, i -> ReplayPortfolio(experiment, i) },
             "test" to { experiment, i -> TestPortfolio(experiment, i) },
             ignoreCase = true
         )
