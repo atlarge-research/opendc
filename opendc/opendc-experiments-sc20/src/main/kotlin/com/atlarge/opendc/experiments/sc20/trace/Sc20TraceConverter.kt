@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.experiments.sc20.trace
 
+import com.atlarge.opendc.format.trace.sc20.Sc20VmPlacementReader
 import me.tongfei.progressbar.ProgressBar
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
@@ -43,8 +44,8 @@ import kotlin.math.min
  * A script to convert a trace in text format into a Parquet trace.
  */
 fun main(args: Array<String>) {
-    if (args.size < 3) {
-        println("error: expected <OUTPUT> <INPUT> <TRACE-TYPE> [<SEED>]")
+    if (args.size < 4) {
+        println("error: expected <OUTPUT> <INPUT> <TRACE-TYPE> <SEED/CLUSTERS+MAPPING>")
         return
     }
 
@@ -98,7 +99,11 @@ fun main(args: Array<String>) {
 
     val traceType = args[2]
     val allFragments = if (traceType == "solvinity") {
-        readSolvinityTrace(traceDirectory, metaSchema, metaWriter)
+        val clusters = args[3].split(",")
+        val vmPlacementFile = File(args[4])
+        val vmPlacements = Sc20VmPlacementReader(vmPlacementFile.inputStream().buffered()).construct()
+
+        readSolvinityTrace(traceDirectory, metaSchema, metaWriter, clusters, vmPlacements)
     } else {
         val seed = args[3].toLong()
         readAzureTrace(traceDirectory, metaSchema, metaWriter, seed)
@@ -136,7 +141,9 @@ data class Fragment(
 fun readSolvinityTrace(
     traceDirectory: File,
     metaSchema: Schema,
-    metaWriter: ParquetWriter<GenericData.Record>
+    metaWriter: ParquetWriter<GenericData.Record>,
+    clusters: List<String>,
+    vmPlacements: Map<String, String>
 ): MutableList<Fragment> {
     val timestampCol = 0
     val cpuUsageCol = 1
@@ -158,6 +165,14 @@ fun readSolvinityTrace(
                         for (line in lines) {
                             // Ignore comments in the trace
                             if (line.startsWith("#") || line.isBlank()) {
+                                continue
+                            }
+
+                            val vmId = vmFile.name
+
+                            // Check if VM in topology
+                            val clusterName = vmPlacements[vmId]
+                            if (clusterName == null || !clusters.contains(clusterName)) {
                                 continue
                             }
 
@@ -206,6 +221,13 @@ fun readSolvinityTrace(
                                 val values = line.split("    ")
 
                                 vmId = vmFile.name
+
+                                // Check if VM in topology
+                                val clusterName = vmPlacements[vmId]
+                                if (clusterName == null || !clusters.contains(clusterName)) {
+                                    continue
+                                }
+
                                 val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L - minTimestamp
                                 cores = values[coreCol].trim().toInt()
                                 requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
