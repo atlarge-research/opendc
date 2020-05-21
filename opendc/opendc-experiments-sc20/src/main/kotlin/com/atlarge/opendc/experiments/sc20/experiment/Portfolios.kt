@@ -84,7 +84,7 @@ public class MoreVelocityPortfolio(parent: Experiment, id: Int) : Portfolio(pare
 }
 
 public class CompositeWorkloadPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "composite-workload") {
-    private val totalSampleLoad = 3425709788935.9976
+    private val totalSampleLoad = 3063174751459.0
 
     override val topologies = listOf(
         Topology("base"),
