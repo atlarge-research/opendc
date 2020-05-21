@@ -216,7 +216,7 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
         while (reader.hasNext()) {
             val (time, workload) = reader.next()
 
-            if (vmPlacements.isNotEmpty()) {
+            if (vmPlacements.isNotEmpty() && workload.name.contains(".txt")) {
                 val vmId = workload.name.replace("VM Workload ", "")
                 // Check if VM in topology
                 val clusterName = vmPlacements[vmId]

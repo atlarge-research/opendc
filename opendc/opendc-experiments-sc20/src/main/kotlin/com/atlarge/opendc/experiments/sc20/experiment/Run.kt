@@ -31,6 +31,7 @@ import com.atlarge.opendc.compute.virt.service.allocation.NumberOfActiveServersA
 import com.atlarge.opendc.compute.virt.service.allocation.ProvisionedCoresAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.RandomAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.ReplayAllocationPolicy
+import com.atlarge.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import com.atlarge.opendc.experiments.sc20.experiment.monitor.ParquetExperimentMonitor
 import com.atlarge.opendc.experiments.sc20.runner.TrialExperimentDescriptor
 import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionContext
@@ -78,23 +79,32 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
             "provisioned-cores" -> ProvisionedCoresAllocationPolicy()
             "provisioned-cores-inv" -> ProvisionedCoresAllocationPolicy(true)
             "random" -> RandomAllocationPolicy(Random(seeder.nextInt()))
-            "replay" -> ReplayAllocationPolicy(emptyMap())
+            "replay" -> ReplayAllocationPolicy(experiment.vmPlacements)
             else -> throw IllegalArgumentException("Unknown policy ${parent.allocationPolicy}")
         }
 
         @Suppress("UNCHECKED_CAST")
-        val rawTraceReaders = context.cache.computeIfAbsent("raw-trace-readers") { mutableMapOf<String, Sc20RawParquetTraceReader>() } as MutableMap<String, Sc20RawParquetTraceReader>
-        val raw = synchronized(rawTraceReaders) {
-            val name = parent.workload.name
-            rawTraceReaders.computeIfAbsent(name) {
-                logger.info { "Loading trace $name" }
-                Sc20RawParquetTraceReader(File(experiment.traces, name))
+        val rawTraceReaders =
+            context.cache.computeIfAbsent("raw-trace-readers") { mutableMapOf<String, Sc20RawParquetTraceReader>() } as MutableMap<String, Sc20RawParquetTraceReader>
+        val rawReaders = synchronized(rawTraceReaders) {
+            val workloadNames = if (parent.workload is CompositeWorkload) {
+                parent.workload.workloads.map { it.name }
+            } else {
+                listOf(parent.workload.name)
+            }
+
+            workloadNames.map { workloadName ->
+                rawTraceReaders.computeIfAbsent(workloadName) {
+                    logger.info { "Loading trace $workloadName" }
+                    Sc20RawParquetTraceReader(File(experiment.traces, workloadName))
+                }
             }
         }
+
         val performanceInterferenceModel = experiment.performanceInterferenceModel
             ?.takeIf { parent.operationalPhenomena.hasInterference }
             ?.construct(seeder) ?: emptyMap()
-        val trace = Sc20ParquetTraceReader(raw, performanceInterferenceModel, parent.workload, seed)
+        val trace = Sc20ParquetTraceReader(rawReaders, performanceInterferenceModel, parent.workload, seed)
 
         val monitor = ParquetExperimentMonitor(this)
 

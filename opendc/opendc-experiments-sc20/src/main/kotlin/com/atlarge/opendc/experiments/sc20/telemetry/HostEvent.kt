@@ -40,5 +40,6 @@ data class HostEvent(
     val interferedBurst: Long,
     val cpuUsage: Double,
     val cpuDemand: Double,
-    val powerDraw: Double
+    val powerDraw: Double,
+    val cores: Int
 ) : Event("host-metrics")

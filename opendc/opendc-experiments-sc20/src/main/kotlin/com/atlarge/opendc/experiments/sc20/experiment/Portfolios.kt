@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.experiments.sc20.experiment
 
+import com.atlarge.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import com.atlarge.opendc.experiments.sc20.experiment.model.OperationalPhenomena
 import com.atlarge.opendc.experiments.sc20.experiment.model.Topology
 import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
@@ -82,7 +83,9 @@ public class MoreVelocityPortfolio(parent: Experiment, id: Int) : Portfolio(pare
     )
 }
 
-public class MoreHpcPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "more_hpc") {
+public class CompositeWorkloadPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "composite-workload") {
+    private val totalSampleLoad = 3425709788935.9976
+
     override val topologies = listOf(
         Topology("base"),
         Topology("exp-vol-hor-hom"),
@@ -91,14 +94,35 @@ public class MoreHpcPortfolio(parent: Experiment, id: Int) : Portfolio(parent, i
     )
 
     override val workloads = listOf(
-        Workload("solvinity", 0.1),
-        Workload("solvinity", 0.25),
-        Workload("solvinity", 0.5),
-        Workload("solvinity", 1.0)
+        CompositeWorkload(
+            "all-azure",
+            listOf(Workload("solvinity", 0.0), Workload("azure", 1.0)),
+            totalSampleLoad
+        ),
+        CompositeWorkload(
+            "solvinity-25-azure-75",
+            listOf(Workload("solvinity", 0.25), Workload("azure", 0.75)),
+            totalSampleLoad
+        ),
+        CompositeWorkload(
+            "solvinity-50-azure-50",
+            listOf(Workload("solvinity", 0.5), Workload("azure", 0.5)),
+            totalSampleLoad
+        ),
+        CompositeWorkload(
+            "solvinity-75-azure-25",
+            listOf(Workload("solvinity", 0.75), Workload("azure", 0.25)),
+            totalSampleLoad
+        ),
+        CompositeWorkload(
+            "all-solvinity",
+            listOf(Workload("solvinity", 1.0), Workload("azure", 0.0)),
+            totalSampleLoad
+        )
     )
 
     override val operationalPhenomenas = listOf(
-        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
+        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = false)
     )
 
     override val allocationPolicies = listOf(
@@ -133,6 +157,25 @@ public class OperationalPhenomenaPortfolio(parent: Experiment, id: Int) : Portfo
         "active-servers",
         "active-servers-inv",
         "random"
+    )
+}
+
+public class ReplayPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "replay") {
+    override val topologies = listOf(
+        Topology("base")
+    )
+
+    override val workloads = listOf(
+        Workload("solvinity", 1.0)
+    )
+
+    override val operationalPhenomenas = listOf(
+        OperationalPhenomena(failureFrequency = 0.0, hasInterference = false)
+    )
+
+    override val allocationPolicies = listOf(
+        "replay",
+        "active-servers"
     )
 }
 

@@ -131,7 +131,8 @@ class ParquetExperimentMonitor(val run: Run) : ExperimentMonitor {
                     interferedBurst,
                     cpuUsage,
                     cpuDemand,
-                    lastPowerConsumption[hostServer] ?: 200.0
+                    lastPowerConsumption[hostServer] ?: 200.0,
+                    hostServer.flavor.cpuCount
                 )
 
                 currentHostEvent[hostServer] = event
@@ -148,7 +149,8 @@ class ParquetExperimentMonitor(val run: Run) : ExperimentMonitor {
                     interferedBurst,
                     cpuUsage,
                     cpuDemand,
-                    lastPowerConsumption[hostServer] ?: 200.0
+                    lastPowerConsumption[hostServer] ?: 200.0,
+                    hostServer.flavor.cpuCount
                 )
 
                 currentHostEvent[hostServer] = event
@@ -167,7 +169,8 @@ class ParquetExperimentMonitor(val run: Run) : ExperimentMonitor {
                     interferedBurst,
                     cpuUsage,
                     cpuDemand,
-                    lastPowerConsumption[hostServer] ?: 200.0
+                    lastPowerConsumption[hostServer] ?: 200.0,
+                    hostServer.flavor.cpuCount
                 )
 
                 currentHostEvent[hostServer] = event

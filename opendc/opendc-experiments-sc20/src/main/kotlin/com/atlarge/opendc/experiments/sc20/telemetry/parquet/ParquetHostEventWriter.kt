@@ -55,6 +55,7 @@ public class ParquetHostEventWriter(path: File, bufferSize: Int) :
             record.put("cpu_usage", event.cpuUsage)
             record.put("cpu_demand", event.cpuDemand)
             record.put("power_draw", event.powerDraw * (1.0 / 12))
+            record.put("cores", event.cores)
         }
 
         val schema: Schema = SchemaBuilder
@@ -76,6 +77,7 @@ public class ParquetHostEventWriter(path: File, bufferSize: Int) :
             .name("cpu_usage").type().doubleType().noDefault()
             .name("cpu_demand").type().doubleType().noDefault()
             .name("power_draw").type().doubleType().noDefault()
+            .name("cores").type().intType().noDefault()
             .endRecord()
     }
 }
