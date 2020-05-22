@@ -105,7 +105,7 @@ fun createFaultInjector(domain: Domain, random: Random, failureInterval: Double)
         domain,
         iatScale = ln(failureInterval), iatShape = 1.03, // Hours
         sizeScale = ln(2.0), sizeShape = ln(1.0), // Expect 2 machines, with variation of 1
-        dScale = 9.51, dShape = 3.21, // Minutes
+        dScale = ln(60.0), dShape = ln(60.0 * 8), // Minutes
         random = random
     )
 }

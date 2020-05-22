@@ -31,6 +31,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlin.math.exp
+import kotlin.math.max
 import kotlin.random.Random
 import kotlin.random.asJavaRandom
 
@@ -107,7 +108,7 @@ public class CorrelatedFaultInjector(
                     failureDomain.fail()
                 }
 
-                val df = lognvariate(dScale, dShape) * 6e4
+                val df = max(lognvariate(dScale, dShape) * 6e4, 15 * 6e4)
 
                 // Handle long overflow
                 if (simulationContext.clock.millis() + df <= 0) {
