@@ -24,6 +24,7 @@
 
 package com.atlarge.opendc.experiments.sc20.trace
 
+import com.atlarge.opendc.format.trace.sc20.Sc20VmPlacementReader
 import me.tongfei.progressbar.ProgressBar
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
@@ -43,8 +44,8 @@ import kotlin.math.min
  * A script to convert a trace in text format into a Parquet trace.
  */
 fun main(args: Array<String>) {
-    if (args.size < 3) {
-        println("error: expected <OUTPUT> <INPUT> <TRACE-TYPE> [<SEED>]")
+    if (args.size < 4) {
+        println("error: expected <OUTPUT> <INPUT> <TRACE-TYPE> <SEED/CLUSTERS+MAPPING>")
         return
     }
 
@@ -98,7 +99,11 @@ fun main(args: Array<String>) {
 
     val traceType = args[2]
     val allFragments = if (traceType == "solvinity") {
-        readSolvinityTrace(traceDirectory, metaSchema, metaWriter)
+        val clusters = args[3].split(",")
+        val vmPlacementFile = File(args[4])
+        val vmPlacements = Sc20VmPlacementReader(vmPlacementFile.inputStream().buffered()).construct()
+
+        readSolvinityTrace(traceDirectory, metaSchema, metaWriter, clusters, vmPlacements)
     } else {
         val seed = args[3].toLong()
         readAzureTrace(traceDirectory, metaSchema, metaWriter, seed)
@@ -136,7 +141,9 @@ data class Fragment(
 fun readSolvinityTrace(
     traceDirectory: File,
     metaSchema: Schema,
-    metaWriter: ParquetWriter<GenericData.Record>
+    metaWriter: ParquetWriter<GenericData.Record>,
+    clusters: List<String>,
+    vmPlacements: Map<String, String>
 ): MutableList<Fragment> {
     val timestampCol = 0
     val cpuUsageCol = 1
@@ -161,6 +168,14 @@ fun readSolvinityTrace(
                                 continue
                             }
 
+                            val vmId = vmFile.name
+
+                            // Check if VM in topology
+                            val clusterName = vmPlacements[vmId]
+                            if (clusterName == null || !clusters.contains(clusterName)) {
+                                continue
+                            }
+
                             val values = line.split("    ")
                             val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
 
@@ -176,6 +191,9 @@ fun readSolvinityTrace(
     println("Start of trace at $minTimestamp")
 
     val allFragments = mutableListOf<Fragment>()
+
+    val begin = 15 * 24 * 60 * 60 * 1000L
+    val end = 45 * 24 * 60 * 60 * 1000L
 
     traceDirectory.walk()
         .filterNot { it.isDirectory }
@@ -206,7 +224,18 @@ fun readSolvinityTrace(
                                 val values = line.split("    ")
 
                                 vmId = vmFile.name
+
+                                // Check if VM in topology
+                                val clusterName = vmPlacements[vmId]
+                                if (clusterName == null || !clusters.contains(clusterName)) {
+                                    continue
+                                }
+
                                 val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L - minTimestamp
+                                if (begin > timestamp || timestamp > end) {
+                                    continue
+                                }
+
                                 cores = values[coreCol].trim().toInt()
                                 requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
                                 maxCores = max(maxCores, cores)
@@ -252,18 +281,20 @@ fun readSolvinityTrace(
             }
 
             var maxTime = Long.MIN_VALUE
-            flopsFragments.forEach { fragment ->
+            flopsFragments.filter { it.tick in begin until end }.forEach { fragment ->
                 allFragments.add(fragment)
                 maxTime = max(maxTime, fragment.tick)
             }
 
-            val metaRecord = GenericData.Record(metaSchema)
-            metaRecord.put("id", vmId)
-            metaRecord.put("submissionTime", minTime)
-            metaRecord.put("endTime", maxTime)
-            metaRecord.put("maxCores", maxCores)
-            metaRecord.put("requiredMemory", requiredMemory)
-            metaWriter.write(metaRecord)
+            if (minTime in begin until end) {
+                val metaRecord = GenericData.Record(metaSchema)
+                metaRecord.put("id", vmId)
+                metaRecord.put("submissionTime", minTime)
+                metaRecord.put("endTime", maxTime)
+                metaRecord.put("maxCores", maxCores)
+                metaRecord.put("requiredMemory", requiredMemory)
+                metaWriter.write(metaRecord)
+            }
         }
 
     return allFragments

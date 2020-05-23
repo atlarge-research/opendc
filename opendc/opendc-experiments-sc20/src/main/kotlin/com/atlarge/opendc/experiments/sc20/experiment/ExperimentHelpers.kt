@@ -55,7 +55,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import java.io.File
-import java.util.TreeSet
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.random.Random
@@ -106,7 +105,7 @@ fun createFaultInjector(domain: Domain, random: Random, failureInterval: Double)
         domain,
         iatScale = ln(failureInterval), iatShape = 1.03, // Hours
         sizeScale = ln(2.0), sizeShape = ln(1.0), // Expect 2 machines, with variation of 1
-        dScale = 9.51, dShape = 3.21, // Minutes
+        dScale = ln(60.0), dShape = ln(60.0 * 8), // Minutes
         random = random
     )
 }
@@ -211,25 +210,9 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
     try {
         var submitted = 0
         val finished = Channel<Unit>(Channel.CONFLATED)
-        val hypervisors = TreeSet(scheduler.drivers().map { (it as SimpleVirtDriver).server.name })
 
         while (reader.hasNext()) {
             val (time, workload) = reader.next()
-
-            if (vmPlacements.isNotEmpty() && workload.name.contains(".txt")) {
-                val vmId = workload.name.replace("VM Workload ", "")
-                // Check if VM in topology
-                val clusterName = vmPlacements[vmId]
-                if (clusterName == null) {
-                    logger.warn { "Could not find placement data in VM placement file for VM $vmId" }
-                    continue
-                }
-                val machineInCluster = hypervisors.ceiling(clusterName)?.contains(clusterName) ?: false
-                if (machineInCluster) {
-                    logger.info { "Ignored VM $vmId" }
-                    continue
-                }
-            }
 
             submitted++
             delay(max(0, time - simulationContext.clock.millis()))
