@@ -84,7 +84,7 @@ public class MoreVelocityPortfolio(parent: Experiment, id: Int) : Portfolio(pare
 }
 
 public class CompositeWorkloadPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "composite-workload") {
-    private val totalSampleLoad = 3063174751459.0
+    private val totalSampleLoad = 1.3301733005049648E12
 
     override val topologies = listOf(
         Topology("base"),
@@ -96,27 +96,27 @@ public class CompositeWorkloadPortfolio(parent: Experiment, id: Int) : Portfolio
     override val workloads = listOf(
         CompositeWorkload(
             "all-azure",
-            listOf(Workload("solvinity", 0.0), Workload("azure", 1.0)),
+            listOf(Workload("solvinity-short", 0.0), Workload("azure", 1.0)),
             totalSampleLoad
         ),
         CompositeWorkload(
             "solvinity-25-azure-75",
-            listOf(Workload("solvinity", 0.25), Workload("azure", 0.75)),
+            listOf(Workload("solvinity-short", 0.25), Workload("azure", 0.75)),
             totalSampleLoad
         ),
         CompositeWorkload(
             "solvinity-50-azure-50",
-            listOf(Workload("solvinity", 0.5), Workload("azure", 0.5)),
+            listOf(Workload("solvinity-short", 0.5), Workload("azure", 0.5)),
             totalSampleLoad
         ),
         CompositeWorkload(
             "solvinity-75-azure-25",
-            listOf(Workload("solvinity", 0.75), Workload("azure", 0.25)),
+            listOf(Workload("solvinity-short", 0.75), Workload("azure", 0.25)),
             totalSampleLoad
         ),
         CompositeWorkload(
             "all-solvinity",
-            listOf(Workload("solvinity", 1.0), Workload("azure", 0.0)),
+            listOf(Workload("solvinity-short", 1.0), Workload("azure", 0.0)),
             totalSampleLoad
         )
     )

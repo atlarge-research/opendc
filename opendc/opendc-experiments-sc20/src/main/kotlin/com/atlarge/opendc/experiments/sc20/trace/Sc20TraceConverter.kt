@@ -192,6 +192,9 @@ fun readSolvinityTrace(
 
     val allFragments = mutableListOf<Fragment>()
 
+    val begin = 15 * 24 * 60 * 60 * 1000L
+    val end = 45 * 24 * 60 * 60 * 1000L
+
     traceDirectory.walk()
         .filterNot { it.isDirectory }
         .filter { it.extension == "csv" || it.extension == "txt" }
@@ -229,6 +232,10 @@ fun readSolvinityTrace(
                                 }
 
                                 val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L - minTimestamp
+                                if (begin > timestamp || timestamp > end) {
+                                    continue
+                                }
+
                                 cores = values[coreCol].trim().toInt()
                                 requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
                                 maxCores = max(maxCores, cores)
@@ -274,18 +281,20 @@ fun readSolvinityTrace(
             }
 
             var maxTime = Long.MIN_VALUE
-            flopsFragments.forEach { fragment ->
+            flopsFragments.filter { it.tick in begin until end }.forEach { fragment ->
                 allFragments.add(fragment)
                 maxTime = max(maxTime, fragment.tick)
             }
 
-            val metaRecord = GenericData.Record(metaSchema)
-            metaRecord.put("id", vmId)
-            metaRecord.put("submissionTime", minTime)
-            metaRecord.put("endTime", maxTime)
-            metaRecord.put("maxCores", maxCores)
-            metaRecord.put("requiredMemory", requiredMemory)
-            metaWriter.write(metaRecord)
+            if (minTime in begin until end) {
+                val metaRecord = GenericData.Record(metaSchema)
+                metaRecord.put("id", vmId)
+                metaRecord.put("submissionTime", minTime)
+                metaRecord.put("endTime", maxTime)
+                metaRecord.put("maxCores", maxCores)
+                metaRecord.put("requiredMemory", requiredMemory)
+                metaWriter.write(metaRecord)
+            }
         }
 
     return allFragments
