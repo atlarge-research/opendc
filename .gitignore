@@ -4,3 +4,5 @@
 .idea/
 
 keys.json
+
+mongodb/opendc_testing/*
