@@ -7,6 +7,8 @@ import RoomHoverLayer from "../../../containers/app/map/layers/RoomHoverLayer";
 import jQuery from "../../../util/jquery";
 import { NAVBAR_HEIGHT } from "../../navigation/Navbar";
 import { MAP_MOVE_PIXELS_PER_EVENT } from "./MapConstants";
+import { Provider } from "react-redux";
+import { store } from "../../../store/configure-store";
 
 class MapStageComponent extends React.Component {
   state = {
@@ -14,8 +16,8 @@ class MapStageComponent extends React.Component {
     mouseY: 0
   };
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.updateDimensions = this.updateDimensions.bind(this);
     this.updateScale = this.updateScale.bind(this);
@@ -104,15 +106,17 @@ class MapStageComponent extends React.Component {
           height={this.props.mapDimensions.height}
           onMouseMove={this.updateMousePosition.bind(this)}
         >
-          <MapLayer />
-          <RoomHoverLayer
-            mouseX={this.state.mouseX}
-            mouseY={this.state.mouseY}
-          />
-          <ObjectHoverLayer
-            mouseX={this.state.mouseX}
-            mouseY={this.state.mouseY}
-          />
+          <Provider store={store}>
+            <MapLayer />
+            <RoomHoverLayer
+              mouseX={this.state.mouseX}
+              mouseY={this.state.mouseY}
+            />
+            <ObjectHoverLayer
+              mouseX={this.state.mouseX}
+              mouseY={this.state.mouseY}
+            />
+          </Provider>
         </Stage>
       </Shortcuts>
     );

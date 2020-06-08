@@ -22,8 +22,8 @@ class Modal extends React.Component {
   // 'close' triggers)
   visible = false;
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.id = "modal-" + Modal.idCounter++;
   }
 
