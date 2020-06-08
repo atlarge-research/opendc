@@ -1,4 +1,4 @@
-FROM node:7.4
+FROM node:14.2.0
 MAINTAINER Sacheendra Talluri <sacheendra.t@gmail.com>
 
 # Installing python and web-server dependencies
@@ -11,14 +11,15 @@ RUN echo "deb http://ftp.debian.org/debian stretch main" >> /etc/apt/sources.lis
 COPY ./ /opendc
 
 # Setting up simulator
-RUN python /opendc/opendc-web-server/setup.py install \
+RUN pip install -e /opendc/opendc-web-server \
+    && python /opendc/opendc-web-server/setup.py install \
 	&& chmod 555 /opendc/build/configure.sh \
 	&& cd /opendc/opendc-frontend \
 	&& rm -rf ./build \
 	&& rm -rf ./node_modules \
-	&& npm install \
+	&& yarn \
 	&& export REACT_APP_OAUTH_CLIENT_ID=$(cat ../keys.json | python -c "import sys, json; print json.load(sys.stdin)['OAUTH_CLIENT_ID']") \
-	&& npm run build
+	&& yarn build
 
 # Set working directory
 WORKDIR /opendc

@@ -20,6 +20,8 @@ until eval $MYSQL_COMMAND -e "use opendc;" ; do
   sleep 1
 done
 
+echo "MariaDB available"
+
 NUM_TABLES=$(eval "$MYSQL_COMMAND -B --disable-column-names -e \"SELECT count(*) FROM information_schema.tables WHERE table_schema='$MYSQL_DATABASE';\"")
 
 # Check if database is empty
