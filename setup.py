@@ -10,7 +10,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='opendc-web-server',
-    version='0.1.0',
+    version='0.2.0',
 
     description='Python web server for the OpenDC project',
     long_description=long_description,
@@ -25,8 +25,8 @@ setup(
     classifiers=[
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
     ],
 
     keywords='opendc datacenter simulation web-server',

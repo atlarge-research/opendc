@@ -1,8 +1,12 @@
 import json
 import sys
-from datetime import datetime
 
-from mysql.connector.pooling import MySQLConnectionPool
+from datetime import datetime
+from pymongo import MongoClient
+from bson.json_util import loads, dumps, RELAXED_JSON_OPTIONS, CANONICAL_JSON_OPTIONS
+
+
+#from mysql.connector.pooling import MySQLConnectionPool
 
 # Get keys from config file
 with open(sys.argv[1]) as f:
@@ -13,9 +17,27 @@ CONNECTION_POOL = None
 
 
 def init_connection_pool(user, password, database, host, port):
-    global CONNECTION_POOL
-    CONNECTION_POOL = MySQLConnectionPool(pool_name="opendcpool", pool_size=5,
-                                          user=user, password=password, database=database, host=host, port=port)
+    user = urllib.parse.quote_plus(user) #TODO: replace this with environment variable
+    password = urllib.parse.quote_plus(password) #TODO: same as above
+    database = urllib.parse.quote_plus(database)
+    host = urllib.parse.quote_plus(host)
+
+    global client 
+    global opendcdb
+    global prefabs_collection
+    global user_collection
+    global topologies_collection
+
+    client = MongoClient('mongodb://%s:%s@%s/default_db?authSource=%s' % (user, password, host, database))
+    opendcdb = client.opendc
+    prefabs_collection = opendcdb.prefabs
+    topologies_collection = opendcdb.topologies
+    user_collection = opendcdb.users
+
+
+    #global CONNECTION_POOL
+    #CONNECTION_POOL = MySQLConnectionPool(pool_name="opendcpool", pool_size=5,
+                                          #user=user, password=password, database=database, host=host, port=port)
 
 
 def execute(statement, t):
