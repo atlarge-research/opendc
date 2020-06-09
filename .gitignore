@@ -6,6 +6,7 @@ keys.json
 
 # pyenv version files
 .python-version
+mongodb/opendc_testing/*
 
 # macOS-specific files
 .DS_Store
