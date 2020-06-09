@@ -291,7 +291,7 @@ class Model(object):
         try:
             last_row_id = database.execute(statement, values)
         except Exception as e:
-            print e
+            print(e)
             raise exceptions.ForeignKeyError(e.message)
 
         if 'id' in self.COLUMNS_PRIMARY_KEY:

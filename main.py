@@ -5,7 +5,7 @@ import json
 import os
 import sys
 import traceback
-import urllib2
+import urllib
 from flask import Flask, request, send_from_directory, jsonify
 from flask_compress import Compress
 from oauth2client import client, crypt
@@ -15,7 +15,7 @@ from opendc.models.user import User
 from opendc.util import exceptions, rest, path_parser, database
 
 if len(sys.argv) < 2:
-    print "config file path not given as argument"
+    print("config file path not given as argument")
     sys.exit(1)
 
 # Get keys from config file
@@ -24,8 +24,8 @@ with open(sys.argv[1]) as f:
 
 STATIC_ROOT = os.path.join(KEYS['ROOT_DIR'], 'opendc-frontend', 'build')
 
-database.init_connection_pool(user=KEYS['MYSQL_USER'], password=KEYS['MYSQL_PASSWORD'],
-                              database=KEYS['MYSQL_DATABASE'], host=KEYS['MYSQL_HOST'], port=KEYS['MYSQL_PORT'])
+database.init_connection_pool(user=KEYS['MONGODB_USER'], password=KEYS['MONGODB_PASSWORD'],
+                              database=KEYS['MONGODB_DATABASE'], host=KEYS['MONGODB_HOST'], port=KEYS['MONGODB_PORT'])
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
 FLASK_CORE_APP.config['SECREY_KEY'] = KEYS['FLASK_SECRET']
@@ -68,7 +68,7 @@ def sign_in():
         response = urllib2.urlopen(url=req, timeout=30)
         res = response.read()
         idinfo = json.loads(res)
-    except crypt.AppIdentityError, e:
+    except crypt.AppIdentityError as e:
         return 'Did not successfully authenticate'
 
     user = User.from_google_id(idinfo['sub'])
@@ -115,12 +115,7 @@ def api_call(version, endpoint_path):
         'token': request.headers.get('auth-token')
     })
 
-    print 'HTTP:\t{} to `/{}` resulted in {}: {}'.format(
-        req.method,
-        req.path,
-        response.status['code'],
-        response.status['description']
-    )
+    print(f'HTTP:\t{req.method} to `/{req.path}` resulted in {response.status["code"]}: {response.status["description"]}')
     sys.stdout.flush()
 
     flask_response = jsonify(json.loads(response.to_JSON()))
@@ -151,12 +146,7 @@ def receive_message(message):
 
     (request, response) = _process_message(message)
 
-    print 'Socket:\t{} to `/{}` resulted in {}: {}'.format(
-        request.method,
-        request.path,
-        response.status['code'],
-        response.status['description']
-    )
+    print(f'Socket:\t{request.method} to `/{request.path}` resulted in {response.status["code"]}: {response.status["description"]}')
     sys.stdout.flush()
 
     flask_socketio.emit('response', response.to_JSON(), json=True)
