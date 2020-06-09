@@ -105,43 +105,28 @@ $MONGO_CMD --eval 'db.prefabs.insertOne(
         ]
     });'
 
-# $MONGO_CMD --eval 'db.createCollection("prefabs", {
-# 	validator: {
-# 		$jsonSchema: {
-# 			bsonType: "object",
-# 			required: ["name"],
-# 			properties: {
-# 				name: {
-# 					bsonType: "string",
-# 					description: "The name of the environment i.e. Production, or Compute Cluster"
-# 				},
-# 				datacenters: {
-# 					bsonType: "object",
-# 					required: ["name, location, length, width, height"],
-# 					properties: {
-# 						name: {
-# 							bsonType: "string",
-# 							description: "The name of the datacenter i.e. eu-west-1, or Science Building"
-# 						},
-# 						location: {
-# 							bsonType: "string",
-# 							description: "The location of the datacenter i.e. Frankfurt, or De Boelelaan 1105"
-# 						},
-# 						length: {
-# 							bsonType: "double",
-# 							description: "The physical length of the datacenter, in centimetres"
-# 						},
-# 						width: {
-# 							bsonType: "double",
-# 							description: "The physical width of the datacenter, in centimetres"
-# 						},
-# 						height: {
-# 							bsonType: "double",
-# 							description: "The physical height of the datacenter, in centimetres"
-# 						}
-# 					}
-# 				}
-# 			}
-# 		}
-# 	}
-# });'
+$MONGO_CMD --eval 'db.createCollection("topologies");'
+
+$MONGO_CMD --eval 'db.createCollection("users");'
+
+$MONGO_CMD --eval 'db.users.insertOne(
+    {
+        "google_id": "23483578932789231",
+        "email": "jorgos.andreadis@gmail.com",
+        "given_name": "Jorgos",
+        "family_name": "Andreadis",
+        "authorizations": [
+            {
+                "simulation_id": 1,
+                "authorization_level": "OWN"
+            },
+            {
+                "simulation_id": 2,
+                "authorization_level": "READ"
+            },
+            {
+                "simulation_id": 3,
+                "authorization_level": "READWRITE"
+            }
+        ]
+    });'
