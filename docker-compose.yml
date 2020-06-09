@@ -14,6 +14,9 @@ services:
       - MYSQL_DATABASE=opendc
       - MYSQL_USER=opendc
       - MYSQL_PASSWORD=opendcpassword
+      - MONGO_DB=opendc
+      - MONGO_DB_USERNAME=opendc
+      - MONGO_DB_PASSWORD=opendcpassword
   simulator:
     build:
         context: ./opendc-simulator
@@ -53,12 +56,12 @@ services:
         context: ./mongodb
     restart: on-failure
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpassword
-      MONGO_INITDB_DATABASE: admin
-      OPENDC_DB: opendc
-      OPENDC_DB_USERNAME: opendc
-      OPENDC_DB_PASSWORD: opendcpassword
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=rootpassword
+      - MONGO_INITDB_DATABASE=admin
+      - OPENDC_DB=opendc
+      - OPENDC_DB_USERNAME=opendc
+      - OPENDC_DB_PASSWORD=opendcpassword
     ports:
       - 27017:27017
     #volumes:
