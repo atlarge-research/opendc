@@ -17,6 +17,9 @@ services:
       - MONGO_DB=opendc
       - MONGO_DB_USERNAME=opendc
       - MONGO_DB_PASSWORD=opendcpassword
+      - MONGO_DB_HOST=mongo
+      - MONGO_DB_PORT=27017
+
   simulator:
     build:
         context: ./opendc-simulator
