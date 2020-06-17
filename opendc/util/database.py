@@ -104,6 +104,32 @@ def fetchall(statement, t=None):
     return values
 
 
+def fetchone(query, collection):
+    """Uses existing mongo connection to return a single (the first) document in a collection matching the given query as a JSON object"""
+    # query needs to be in json format, i.e.: {'name': prefab_name}
+    #TODO: determine which collection to pull from
+    bson = prefabs_collection.find_one(query)
+    json_string = dumps(bson) #convert BSON representation to JSON
+    json_obj = json.loads(json_string) #load as a JSON object
+    #leave the id field in for now, we can use it later
+    #json_obj.pop("_id")
+    return json_obj
+
+
+
+def fetchall(query, collection):
+    """Uses existing mongo connection to return all documents matching a given query, as a list of JSON objects"""
+    results = []
+    cursor = prefabs_collection.find(query)
+    for doc in cursor:
+        json_string = dumps(bson) #convert BSON representation to JSON
+        json_obj = json.loads(json_string) #load as a JSON object
+        #leave the id field in for now, we can use it later
+        #json_obj.pop("_id")
+        results.append(json_obj)
+    return results
+
+
 def datetime_to_string(datetime_to_convert):
     """Return a database-compatible string representation of the given datetime object."""
 
