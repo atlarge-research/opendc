@@ -5,7 +5,7 @@ import json
 import os
 import sys
 import traceback
-import urllib
+import urllib.request
 from flask import Flask, request, send_from_directory, jsonify
 from flask_compress import Compress
 from oauth2client import client, crypt
@@ -64,8 +64,8 @@ def sign_in():
             raise crypt.AppIdentityError('Wrong issuer.')
     except ValueError:
         url = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={}".format(token)
-        req = urllib2.Request(url)
-        response = urllib2.urlopen(url=req, timeout=30)
+        req = urllib.request.Request(url)
+        response = urllib.request.urlopen(url=req, timeout=30)
         res = response.read()
         idinfo = json.loads(res)
     except crypt.AppIdentityError as e:
