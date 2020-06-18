@@ -42,6 +42,7 @@ setup(
         'flask-cors==3.0.8',
         'pyasn1-modules==0.2.2',
         'six==1.11.0',
-        'pymongo==3.10.1'
+        'pymongo==3.10.1',
+        'bson==0.5.10'
     ],
 )

@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 from pymongo import MongoClient
 from bson.json_util import loads, dumps, RELAXED_JSON_OPTIONS, CANONICAL_JSON_OPTIONS
-
+import urllib.parse
 
 #from mysql.connector.pooling import MySQLConnectionPool
 
@@ -122,7 +122,7 @@ def fetchall(query, collection):
     results = []
     cursor = prefabs_collection.find(query)
     for doc in cursor:
-        json_string = dumps(bson) #convert BSON representation to JSON
+        json_string = dumps(doc) #convert BSON representation to JSON
         json_obj = json.loads(json_string) #load as a JSON object
         #leave the id field in for now, we can use it later
         #json_obj.pop("_id")
