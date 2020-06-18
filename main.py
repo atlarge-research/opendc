@@ -1,5 +1,3 @@
-#!/var/www/opendc.ewi.tudelft.nl/web-server/venv/bin/python
-
 import flask_socketio
 import json
 import os
