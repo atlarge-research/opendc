@@ -7,6 +7,7 @@ host: opendc.org
 basePath: /v1
 schemes:
   - https
+
 paths:
   '/users':
     get:
@@ -761,91 +762,6 @@ paths:
           description: Trace not found.
 
 definitions:
-  Topology:
-    type: object
-    properties:
-      _id:
-        type: string
-      name:
-        type: string
-      rooms:
-        type: array
-        items:
-          type: object
-          properties:
-            _id:
-              type: string
-            name:
-              type: string
-            tiles:
-              type: array
-              items:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                  positionX:
-                    type: integer
-                  positionY:
-                    type: integer
-                  object:
-                    type: object
-                    properties:
-                      capacity:
-                        type: integer
-                      powerCapacityW:
-                        type: integer
-                      machines:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            position:
-                              type: integer
-                            cpuItems:
-                              type: array
-                              items:
-                                type: object
-                                properties:
-                                  name:
-                                    type: string
-                                  clockRateMhz:
-                                    type: integer
-                                  numberOfCores:
-                                    type: integer
-                            gpuItems:
-                              type: array
-                              items:
-                                type: object
-                                properties:
-                                  name:
-                                    type: string
-                                  clockRateMhz:
-                                    type: integer
-                                  numberOfCores:
-                                    type: integer
-                            memoryItems:
-                              type: array
-                              items:
-                                type: object
-                                properties:
-                                  name:
-                                    type: string
-                                  speedMbPerS:
-                                    type: integer
-                                  sizeMb:
-                                    type: integer
-                            storageItems:
-                              type: array
-                              items:
-                                type: integer
-                                properties:
-                                  name:
-                                    type: string
-                                  speedMbPerS:
-                                    type: integer
-                                  sizeMb:
-                                    type: integer
   Experiment:
     type: object
     properties:
@@ -944,6 +860,91 @@ definitions:
         type: integer
       flopsLeft:
         type: integer
+  Topology:
+    type: object
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+      rooms:
+        type: array
+        items:
+          type: object
+          properties:
+            _id:
+              type: string
+            name:
+              type: string
+            tiles:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  positionX:
+                    type: integer
+                  positionY:
+                    type: integer
+                  object:
+                    type: object
+                    properties:
+                      capacity:
+                        type: integer
+                      powerCapacityW:
+                        type: integer
+                      machines:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            position:
+                              type: integer
+                            cpuItems:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  clockRateMhz:
+                                    type: integer
+                                  numberOfCores:
+                                    type: integer
+                            gpuItems:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  clockRateMhz:
+                                    type: integer
+                                  numberOfCores:
+                                    type: integer
+                            memoryItems:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  speedMbPerS:
+                                    type: integer
+                                  sizeMb:
+                                    type: integer
+                            storageItems:
+                              type: array
+                              items:
+                                type: integer
+                                properties:
+                                  name:
+                                    type: string
+                                  speedMbPerS:
+                                    type: integer
+                                  sizeMb:
+                                    type: integer
   Trace:
     type: object
     properties:
@@ -982,7 +983,7 @@ definitions:
         type: string
       familyName:
         type: string
-      simulations:
+      authorizations:
         type: array
         items:
           type: object
