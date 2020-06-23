@@ -58,6 +58,26 @@ def update(_id, obj, collection):
     return convert_bson_to_json(bson)
 
 
+def delete_one(query, collection):
+    """Deletes one object matching the given query.
+
+    The query needs to be in json format, i.e.: `{'name': prefab_name}`.
+    """
+    bson = getattr(opendcdb, collection).delete_one(query)
+
+    return convert_bson_to_json(bson)
+
+
+def delete_all(query, collection):
+    """Deletes all objects matching the given query.
+
+    The query needs to be in json format, i.e.: `{'name': prefab_name}`.
+    """
+    bson = getattr(opendcdb, collection).delete_many(query)
+
+    return convert_bson_to_json(bson)
+
+
 def convert_bson_to_json(bson):
     # Convert BSON representation to JSON
     json_string = dumps(bson)
