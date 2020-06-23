@@ -14,7 +14,7 @@ class Simulation(Model):
         }
     }
 
-    TABLE_NAME = 'simulations'
+    COLLECTION_NAME = 'simulations'
     COLUMNS = ['id', 'datetime_created', 'datetime_last_edited', 'name']
     COLUMNS_PRIMARY_KEY = ['id']
 

@@ -43,6 +43,7 @@ setup(
         'pyasn1-modules==0.2.2',
         'six==1.11.0',
         'pymongo==3.10.1',
-        'bson==0.5.10'
+        'bson==0.5.10',
+        'yapf==0.30.0'
     ],
 )

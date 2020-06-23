@@ -12,7 +12,7 @@ class Task(Model):
         }
     }
 
-    TABLE_NAME = 'tasks'
+    COLLECTION_NAME = 'tasks'
     COLUMNS = ['id', 'start_tick', 'total_flop_count', 'job_id', 'core_count']
     COLUMNS_PRIMARY_KEY = ['id']
 

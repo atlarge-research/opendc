@@ -11,7 +11,7 @@ class Authorization(Model):
         }
     }
 
-    TABLE_NAME = 'authorizations'
+    COLLECTION_NAME = 'authorizations'
     COLUMNS = ['user_id', 'simulation_id', 'authorization_level']
     COLUMNS_PRIMARY_KEY = ['user_id', 'simulation_id']
 

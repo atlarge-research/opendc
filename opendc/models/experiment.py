@@ -17,7 +17,7 @@ class Experiment(Model):
         }
     }
 
-    TABLE_NAME = 'experiments'
+    COLLECTION_NAME = 'experiments'
     COLUMNS = ['id', 'simulation_id', 'path_id', 'trace_id', 'scheduler_name', 'name', 'state', 'last_simulated_tick']
     COLUMNS_PRIMARY_KEY = ['id']
 

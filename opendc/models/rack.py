@@ -16,7 +16,7 @@ class Rack(Model):
 
     PATH = '/v1/tiles/{tileId}/rack'
 
-    TABLE_NAME = 'racks'
+    COLLECTION_NAME = 'racks'
     COLUMNS = ['id', 'name', 'capacity', 'power_capacity_w', 'topology_id']
     COLUMNS_PRIMARY_KEY = ['id']
 

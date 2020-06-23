@@ -14,7 +14,7 @@ class Path(Model):
         }
     }
 
-    TABLE_NAME = 'paths'
+    COLLECTION_NAME = 'paths'
     COLUMNS = ['id', 'simulation_id', 'name', 'datetime_created']
     COLUMNS_PRIMARY_KEY = ['id']
 

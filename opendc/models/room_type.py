@@ -8,7 +8,7 @@ class RoomType(Model):
         }
     }
 
-    TABLE_NAME = 'room_types'
+    COLLECTION_NAME = 'room_types'
     COLUMNS = ['name']
     COLUMNS_PRIMARY_KEY = ['name']
 

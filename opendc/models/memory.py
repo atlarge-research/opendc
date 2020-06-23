@@ -16,7 +16,7 @@ class Memory(Model):
         }
     }
 
-    TABLE_NAME = 'memories'
+    COLLECTION_NAME = 'memories'
 
     COLUMNS = [
         'id',

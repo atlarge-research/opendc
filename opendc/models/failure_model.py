@@ -10,7 +10,7 @@ class FailureModel(Model):
         }
     }
 
-    TABLE_NAME = 'failure_models'
+    COLLECTION_NAME = 'failure_models'
     COLUMNS = ['id', 'name', 'rate']
     COLUMNS_PRIMARY_KEY = ['id']
 

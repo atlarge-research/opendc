@@ -22,7 +22,7 @@ class Machine(Model):
 
     PATH = '/v1/tiles/{tileId}/rack/machines'
 
-    TABLE_NAME = 'machines'
+    COLLECTION_NAME = 'machines'
     COLUMNS = ['id', 'rack_id', 'position', 'topology_id']
     COLUMNS_PRIMARY_KEY = ['id']
 

@@ -8,6 +8,6 @@ class QueuedExperiment(Model):
         }
     }
 
-    TABLE_NAME = 'queued_experiments'
+    COLLECTION_NAME = 'queued_experiments'
     COLUMNS = ['experiment_id']
     COLUMNS_PRIMARY_KEY = ['experiment_id']

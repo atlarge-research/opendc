@@ -14,7 +14,7 @@ class TaskState(Model):
         }
     }
 
-    TABLE_NAME = 'task_states'
+    COLLECTION_NAME = 'task_states'
 
     COLUMNS = ['id', 'task_id', 'experiment_id', 'tick', 'flops_left', 'cores_used']
     COLUMNS_PRIMARY_KEY = ['id']

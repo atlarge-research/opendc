@@ -16,7 +16,7 @@ class Storage(Model):
         }
     }
 
-    TABLE_NAME = 'storages'
+    COLLECTION_NAME = 'storages'
 
     COLUMNS = [
         'id',

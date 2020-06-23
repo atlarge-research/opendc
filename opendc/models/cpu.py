@@ -16,7 +16,7 @@ class CPU(Model):
         }
     }
 
-    TABLE_NAME = 'cpus'
+    COLLECTION_NAME = 'cpus'
 
     COLUMNS = [
         'id',

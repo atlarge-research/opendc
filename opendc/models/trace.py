@@ -9,7 +9,7 @@ class Trace(Model):
         }
     }
 
-    TABLE_NAME = 'traces'
+    COLLECTION_NAME = 'traces'
     COLUMNS = ['id', 'name']
     COLUMNS_PRIMARY_KEY = ['id']
 

@@ -9,7 +9,7 @@ class AllowedObject(Model):
         }
     }
 
-    TABLE_NAME = 'allowed_objects'
+    COLLECTION_NAME = 'allowed_objects'
     COLUMNS = ['room_type', 'object_type']
     COLUMNS_PRIMARY_KEY = ['room_type', 'object_type']
 

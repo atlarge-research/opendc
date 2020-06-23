@@ -12,7 +12,7 @@ class User(Model):
         }
     }
 
-    TABLE_NAME = 'users'
+    COLLECTION_NAME = 'users'
     COLUMNS = ['id', 'google_id', 'email', 'given_name', 'family_name']
     COLUMNS_PRIMARY_KEY = ['id']
 

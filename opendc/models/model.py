@@ -13,7 +13,7 @@ class Model(object):
     PATH = ''
     PATH_PARAMETERS = {}
 
-    TABLE_NAME = ''
+    COLLECTION_NAME = ''
     COLUMNS = []
     COLUMNS_PRIMARY_KEY = []
 
@@ -34,7 +34,7 @@ class Model(object):
             identifiers.append('{} = {}'.format(attribute, getattr(self, attribute)))
 
         return '{} ({})'.format(
-            self.TABLE_NAME[:-1].title().replace('_', ''),
+            self.COLLECTION_NAME[:-1].title().replace('_', ''),
             '; '.join(identifiers)
         )
 
@@ -183,7 +183,7 @@ class Model(object):
         """
 
         query = 'SELECT * FROM {} WHERE {}'.format(
-            cls.TABLE_NAME,
+            cls.COLLECTION_NAME,
             cls._generate_primary_key_string()
         )
 
@@ -206,11 +206,11 @@ class Model(object):
         """Return all instances of the Model in the database where column_name = value."""
 
         if column_name is not None and value is not None:
-            statement = 'SELECT * FROM {} WHERE {} = %s'.format(cls.TABLE_NAME, column_name)
+            statement = 'SELECT * FROM {} WHERE {} = %s'.format(cls.COLLECTION_NAME, column_name)
             database_models = database.fetch_all(statement, (value,))
 
         else:
-            statement = 'SELECT * FROM {}'.format(cls.TABLE_NAME)
+            statement = 'SELECT * FROM {}'.format(cls.COLLECTION_NAME)
             database_models = database.fetch_all(statement)
 
         models = []
@@ -231,7 +231,7 @@ class Model(object):
         self.read()
 
         statement = 'DELETE FROM {} WHERE {}'.format(
-            self.TABLE_NAME,
+            self.COLLECTION_NAME,
             self._generate_primary_key_string()
         )
 
@@ -255,14 +255,14 @@ class Model(object):
 
         if column is None:
             query = query.format(
-                self.TABLE_NAME,
+                self.COLLECTION_NAME,
                 self._generate_primary_key_string()
             )
             values = self._generate_primary_key_tuple()
 
         else:
             query = query.format(
-                self.TABLE_NAME,
+                self.COLLECTION_NAME,
                 '{} = %s'.format(column)
             )
             values = (getattr(self, column),)
@@ -281,7 +281,7 @@ class Model(object):
         """Insert this Model into the database without removing its id."""
 
         statement = 'INSERT INTO {} ({}) VALUES ({})'.format(
-            self.TABLE_NAME,
+            self.COLLECTION_NAME,
             self._generate_insert_columns_string(),
             self._generate_insert_placeholders_string()
         )
@@ -303,7 +303,7 @@ class Model(object):
         """Read this Model's non-primary key attributes from the database."""
 
         if not self.exists():
-            raise exceptions.RowNotFoundError(self.TABLE_NAME)
+            raise exceptions.RowNotFoundError(self.COLLECTION_NAME)
 
         database_model = self.from_primary_key(self._generate_primary_key_tuple())
 
@@ -316,7 +316,7 @@ class Model(object):
         """Update this Model's non-primary key attributes in the database."""
 
         statement = 'UPDATE {} SET {} WHERE {}'.format(
-            self.TABLE_NAME,
+            self.COLLECTION_NAME,
             self._generate_update_columns_string(),
             self._generate_primary_key_string()
         )

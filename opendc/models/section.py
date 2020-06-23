@@ -13,7 +13,7 @@ class Section(Model):
         }
     }
 
-    TABLE_NAME = 'sections'
+    COLLECTION_NAME = 'sections'
     COLUMNS = ['id', 'path_id', 'datacenter_id', 'start_tick']
     COLUMNS_PRIMARY_KEY = ['id']
 

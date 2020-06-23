@@ -8,7 +8,7 @@ class Scheduler(Model):
         }
     }
 
-    TABLE_NAME = 'schedulers'
+    COLLECTION_NAME = 'schedulers'
     COLUMNS = ['name']
     COLUMNS_PRIMARY_KEY = ['name']
 

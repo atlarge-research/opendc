@@ -16,7 +16,7 @@ class GPU(Model):
         }
     }
 
-    TABLE_NAME = 'gpus'
+    COLLECTION_NAME = 'gpus'
 
     COLUMNS = [
         'id',

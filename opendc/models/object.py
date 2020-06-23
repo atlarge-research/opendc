@@ -9,7 +9,7 @@ class Object(Model):
         }
     }
 
-    TABLE_NAME = 'objects'
+    COLLECTION_NAME = 'objects'
     COLUMNS = ['id', 'type']
     COLUMNS_PRIMARY_KEY = ['id']
 

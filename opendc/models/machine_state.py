@@ -13,7 +13,7 @@ class MachineState(Model):
         }
     }
 
-    TABLE_NAME = 'machine_states'
+    COLLECTION_NAME = 'machine_states'
     COLUMNS = ['id', 'machine_id', 'experiment_id', 'tick', 'temperature_c', 'in_use_memory_mb',
                'load_fraction']
 

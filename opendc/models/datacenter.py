@@ -13,7 +13,7 @@ class Datacenter(Model):
 
     PATH = '/v1/simulations/{simulationId}/datacenters'
 
-    TABLE_NAME = 'datacenters'
+    COLLECTION_NAME = 'datacenters'
     COLUMNS = ['id', 'simulation_id', 'starred']
     COLUMNS_PRIMARY_KEY = ['id']
 

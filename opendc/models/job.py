@@ -9,7 +9,7 @@ class Job(Model):
         }
     }
 
-    TABLE_NAME = 'jobs'
+    COLLECTION_NAME = 'jobs'
     COLUMNS = ['id', 'name']
     COLUMNS_PRIMARY_KEY = ['id']
 
