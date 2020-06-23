@@ -1,0 +1,993 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: OpenDC API
+  description: 'OpenDC is an open-source datacenter simulator for education, featuring real-time online collaboration, diverse simulation models, and detailed performance feedback statistics.'
+host: opendc.org
+basePath: /v1
+schemes:
+  - https
+paths:
+  '/users':
+    get:
+      tags:
+        - users
+      description: Search for a User using their email address.
+      parameters:
+        - name: email
+          in: query
+          description: User's email address.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully searched Users.
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '404':
+          description: User not found.
+    post:
+      tags:
+        - users
+      description: Add a new User.
+      parameters:
+        - name: user
+          in: body
+          description: The new User.
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: Successfully added User.
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '409':
+          description: User already exists.
+  '/users/{userId}':
+    get:
+      tags:
+        - users
+      description: Get this User.
+      parameters:
+        - name: userId
+          in: path
+          description: User's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved User.
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '404':
+          description: User not found.
+    put:
+      tags:
+        - users
+      description: Update this User's given name and/ or family name.
+      parameters:
+        - name: userId
+          in: path
+          description: User's ID.
+          required: true
+          type: string
+        - name: user
+          in: body
+          description: User's new properties.
+          required: true
+          schema:
+            properties:
+              givenName:
+                type: string
+              familyName:
+                type: string
+      responses:
+        '200':
+          description: Successfully updated User.
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from updating User.
+        '404':
+          description: User not found.
+    delete:
+      tags:
+        - users
+      description: Delete this User.
+      parameters:
+        - name: userId
+          in: path
+          description: User's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted User.
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from deleting User.
+        '404':
+          description: User not found.
+  '/simulations':
+    post:
+      tags:
+        - simulations
+      description: Add a Simulation.
+      parameters:
+        - name: simulation
+          in: body
+          description: The new Simulation.
+          required: true
+          schema:
+            properties:
+              name:
+                type: string
+      responses:
+        '200':
+          description: Successfully added Simulation.
+          schema:
+            $ref: '#/definitions/Simulation'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+  '/simulations/{simulationId}':
+    get:
+      tags:
+        - simulations
+      description: Get this Simulation.
+      parameters:
+        - name: simulationId
+          in: path
+          description: Simulation's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Simulation.
+          schema:
+            $ref: '#/definitions/Simulation'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from retrieving Simulation.
+        '404':
+          description: Simulation not found
+    put:
+      tags:
+        - simulations
+      description: Update this Simulation.
+      parameters:
+        - name: simulationId
+          in: path
+          description: Simulation's ID.
+          required: true
+          type: string
+        - name: simulation
+          in: body
+          description: Simulation's new properties.
+          required: true
+          schema:
+            properties:
+              simulation:
+                $ref: '#/definitions/Simulation'
+      responses:
+        '200':
+          description: Successfully updated Simulation.
+          schema:
+            $ref: '#/definitions/Simulation'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from updating Simulation.
+        '404':
+          description: Simulation not found.
+    delete:
+      tags:
+        - simulations
+      description: Delete this simulation.
+      parameters:
+        - name: simulationId
+          in: path
+          description: Simulation's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted Simulation.
+          schema:
+            $ref: '#/definitions/Simulation'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from deleting Simulation.
+        '404':
+          description: Simulation not found.
+  '/simulations/{simulationId}/authorizations':
+    get:
+      tags:
+        - simulations
+      description: Get this Simulation's Authorizations.
+      parameters:
+        - name: simulationId
+          in: path
+          description: Simulation's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Simulation's Authorizations.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                userId:
+                  type: string
+                simulationId:
+                  type: string
+                authorizationLevel:
+                  type: string
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from retrieving this Simulation's Authorizations.
+        '404':
+          description: Simulation not found.
+  '/topologies':
+    post:
+      tags:
+        - topologies
+      description: Add a Topology.
+      parameters:
+        - name: topology
+          in: body
+          description: The new Topology.
+          required: true
+          schema:
+            properties:
+              topology:
+                $ref: '#/definitions/Topology'
+      responses:
+        '200':
+          description: Successfully added Topology.
+          schema:
+            $ref: '#/definitions/Topology'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+  '/topologies/{topologyId}':
+    get:
+      tags:
+        - topologies
+      description: Get this Topology.
+      parameters:
+        - name: topologyId
+          in: path
+          description: Topology's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Topology.
+          schema:
+            $ref: '#/definitions/Topology'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from retrieving Topology.
+        '404':
+          description: Topology not found.
+    put:
+      tags:
+        - topologies
+      description: Update this Topology's name.
+      parameters:
+        - name: topologyId
+          in: path
+          description: Topology's ID.
+          required: true
+          type: string
+        - name: topology
+          in: body
+          description: Topology's new properties.
+          required: true
+          schema:
+            properties:
+              topology:
+                $ref: '#/definitions/Topology'
+      responses:
+        '200':
+          description: Successfully updated Topology.
+          schema:
+            $ref: '#/definitions/Topology'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from updating Topology.
+        '404':
+          description: Topology not found.
+    delete:
+      tags:
+        - topologies
+      description: Delete this Topology.
+      parameters:
+        - name: topologyId
+          in: path
+          description: Topology's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted Topology.
+          schema:
+            $ref: '#/definitions/Topology'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from deleting Topology.
+        '404':
+          description: Topology not found.
+  '/simulations/{simulationId}/experiments':
+    get:
+      tags:
+        - experiments
+      description: Get this Simulation's Experiments.
+      parameters:
+        - name: simulationId
+          in: path
+          description: Simulation's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Experiments.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Experiment'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from retrieving Simulation's Experiments.
+        '404':
+          description: Simulation not found.
+    post:
+      tags:
+        - experiments
+      description: Add a new Experiment for this Simulation.
+      parameters:
+        - name: simulationId
+          in: path
+          description: Simulation's ID.
+          required: true
+          type: string
+        - name: experiment
+          in: body
+          description: Experiment to add to this Simulation.
+          required: true
+          schema:
+            $ref: '#/definitions/Experiment'
+      responses:
+        '200':
+          description: Successfully added new Experiment.
+          schema:
+            $ref: '#/definitions/Experiment'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from adding an Experiment to this Simulation.
+        '404':
+          description: 'Simulation, Topology, Scheduler or Trace not found.'
+  '/experiments/{experimentId}':
+    get:
+      tags:
+        - experiments
+      description: Get this Experiment.
+      parameters:
+        - name: experimentId
+          in: path
+          description: Experiment's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Experiment.
+          schema:
+            $ref: '#/definitions/Experiment'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from retrieving Experiment.
+        '404':
+          description: Experiment not found.
+    put:
+      tags:
+        - experiments
+      description: "Update this Experiment's Topology, Trace, Scheduler, and/or name."
+      parameters:
+        - name: experimentId
+          in: path
+          description: Experiment's ID.
+          required: true
+          type: string
+        - name: experiment
+          in: body
+          description: Experiment's new properties.
+          required: true
+          schema:
+            properties:
+              topologyId:
+                type: string
+              traceId:
+                type: string
+              schedulerName:
+                type: string
+              name:
+                type: string
+      responses:
+        '200':
+          description: Successfully updated Experiment.
+          schema:
+            $ref: '#/definitions/Experiment'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from updating Experiment.
+        '404':
+          description: 'Experiment, Topology, Trace, or Scheduler not found.'
+    delete:
+      tags:
+        - experiment
+      description: Delete this Experiment.
+      parameters:
+        - name: experimentId
+          in: path
+          description: Experiment's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted Experiment.
+          schema:
+            $ref: '#/definitions/Experiment'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from deleting Experiment.
+        '404':
+          description: Experiment not found.
+  '/experiments/{experimentId}/last-simulated-tick':
+    get:
+      tags:
+        - simulations
+      description: Get this Experiment's last simulated tick.
+      parameters:
+        - name: experimentId
+          in: path
+          description: Experiment's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Experiment's last simulated tick.
+          schema:
+            properties:
+              lastSimulatedTick:
+                type: integer
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden from getting this simulation
+        '404':
+          description: Simulation not found
+  '/experiments/{experimentId}/machine-states':
+    get:
+      tags:
+        - simulations
+        - states
+      description: Get this experiment's Machine States.
+      parameters:
+        - name: experimentId
+          in: path
+          description: Experiment's ID.
+          required: true
+          type: string
+        - name: tick
+          in: query
+          description: Tick to filter on.
+          required: false
+          type: integer
+        - name: machineId
+          in: query
+          description: Machine's ID to filter on.
+          required: false
+          type: string
+        - name: rackId
+          in: query
+          description: Rack's ID to filter on.
+          required: false
+          type: string
+        - name: roomId
+          in: query
+          description: Room's ID to filter on.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Machine States.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MachineState'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from getting Experiment's Machine States.
+        '404':
+          description: 'Experiment, Machine, Rack, Room or Tick not found.'
+  '/experiments/{experimentId}/rack-states':
+    get:
+      tags:
+        - simulations
+        - states
+      description: Get this Experiment's Rack States.
+      parameters:
+        - name: experimentId
+          in: path
+          description: Experiment's ID.
+          required: true
+          type: string
+        - name: tick
+          in: query
+          description: Tick to filter on.
+          required: false
+          type: integer
+        - name: rackId
+          in: query
+          description: Rack's ID to filter on.
+          required: false
+          type: string
+        - name: roomId
+          in: query
+          description: Room's ID to filter on.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Rack States.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RackState'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from getting Experiment's Rack States.
+        '404':
+          description: 'Experiment, Room, Rack or Tick not found.'
+  '/experiments/{experimentId}/room-states':
+    get:
+      tags:
+        - simulations
+        - states
+      description: Get this Experiment's Room States.
+      parameters:
+        - name: experimentId
+          in: path
+          description: Experiment's ID.
+          required: true
+          type: string
+        - name: tick
+          in: query
+          description: Tick to filter on.
+          required: false
+          type: integer
+        - name: roomId
+          in: query
+          description: Room's ID to filter on.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Room States.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RoomState'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from getting Experiment's Room States.
+        '404':
+          description: 'Experiment, Room or Tick not found.'
+  '/experiments/{experimentId}/task-states':
+    get:
+      tags:
+        - simulations
+        - states
+      description: Get this Experiment's Task States.
+      parameters:
+        - name: experimentId
+          in: path
+          description: Experiment's ID.
+          required: true
+          type: string
+        - name: tick
+          in: query
+          description: Tick to filter on.
+          required: false
+          type: integer
+        - name: taskId
+          in: query
+          description: Task's ID to filter on.
+          required: false
+          type: string
+        - name: machineId
+          in: query
+          description: Machine's ID to filter on.
+          required: false
+          type: string
+        - name: rackId
+          in: query
+          description: ID the rack whose machines' task states to get
+          required: false
+          type: string
+        - name: roomId
+          in: query
+          description: ID of the room whose racks' machines' states to get
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Task States.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TaskState'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from retrieving Experiment's Task States.
+        '404':
+          description: 'Experiment, Tick, Task, Machine, Rack or Room not found.'
+  /schedulers:
+    get:
+      tags:
+        - experiments
+      description: Get all available Schedulers
+      responses:
+        '200':
+          description: Successfully retrieved Schedulers.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Scheduler'
+        '401':
+          description: Unauthorized.
+  /traces:
+    get:
+      tags:
+        - experiments
+      description: Get all available Traces (non-populated).
+      responses:
+        '200':
+          description: Successfully retrieved Traces (non-populated).
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                _id:
+                  type: string
+                name:
+                  type: string
+        '401':
+          description: Unauthorized.
+  '/traces/{traceId}':
+    get:
+      tags:
+        - experiments
+      description: Get this Trace.
+      parameters:
+        - name: traceId
+          in: path
+          description: Trace's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Trace.
+          schema:
+            $ref: '#/definitions/Trace'
+        '401':
+          description: Unauthorized.
+        '404':
+          description: Trace not found.
+
+definitions:
+  Topology:
+    type: object
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+      rooms:
+        type: array
+        items:
+          type: object
+          properties:
+            _id:
+              type: string
+            name:
+              type: string
+            tiles:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  positionX:
+                    type: integer
+                  positionY:
+                    type: integer
+                  object:
+                    type: object
+                    properties:
+                      capacity:
+                        type: integer
+                      powerCapacityW:
+                        type: integer
+                      machines:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            position:
+                              type: integer
+                            cpuItems:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  clockRateMhz:
+                                    type: integer
+                                  numberOfCores:
+                                    type: integer
+                            gpuItems:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  clockRateMhz:
+                                    type: integer
+                                  numberOfCores:
+                                    type: integer
+                            memoryItems:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  speedMbPerS:
+                                    type: integer
+                                  sizeMb:
+                                    type: integer
+                            storageItems:
+                              type: array
+                              items:
+                                type: integer
+                                properties:
+                                  name:
+                                    type: string
+                                  speedMbPerS:
+                                    type: integer
+                                  sizeMb:
+                                    type: integer
+  Experiment:
+    type: object
+    properties:
+      _id:
+        type: string
+      simulationId:
+        type: string
+      topologyId:
+        type: string
+      traceId:
+        type: string
+      schedulerName:
+        type: string
+      name:
+        type: string
+  MachineState:
+    type: object
+    properties:
+      _id:
+        type: string
+      machineId:
+        type: string
+      experimentId:
+        type: string
+      tick:
+        type: integer
+      inUseMemoryMb:
+        type: integer
+      loadFraction:
+        type: number
+        format: float
+  RackState:
+    type: object
+    properties:
+      _id:
+        type: string
+      rackId:
+        type: string
+      experimentId:
+        type: string
+      tick:
+        type: integer
+      inUseMemoryMb:
+        type: integer
+      loadFraction:
+        type: number
+        format: float
+  RoomState:
+    type: object
+    properties:
+      _id:
+        type: string
+      roomId:
+        type: string
+      experimentId:
+        type: string
+      tick:
+        type: integer
+      inUseMemoryMb:
+        type: integer
+      loadFraction:
+        type: number
+        format: float
+  Scheduler:
+    type: object
+    properties:
+      name:
+        type: string
+  Simulation:
+    type: object
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+      datetimeCreated:
+        type: string
+        format: dateTime
+      datetimeLastEdited:
+        type: string
+        format: dateTime
+      topologyIds:
+        type: array
+        items:
+          type: string
+  TaskState:
+    type: object
+    properties:
+      _id:
+        type: string
+      taskId:
+        type: string
+      experimentId:
+        type: string
+      tick:
+        type: integer
+      flopsLeft:
+        type: integer
+  Trace:
+    type: object
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+      jobs:
+        type: array
+        items:
+          type: object
+          properties:
+            _id:
+              type: string
+            name:
+              type: string
+            tasks:
+              type: array
+              items:
+                type: object
+                properties:
+                  startTick:
+                    type: integer
+                  totalFlopCount:
+                    type: integer
+  User:
+    type: object
+    properties:
+      _id:
+        type: string
+      googleId:
+        type: integer
+      email:
+        type: string
+      givenName:
+        type: string
+      familyName:
+        type: string
+      simulations:
+        type: array
+        items:
+          type: object
+          properties:
+            simulationId:
+              type: string
+            authorizationLevel:
+              type: string
