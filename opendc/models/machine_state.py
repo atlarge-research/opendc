@@ -38,7 +38,7 @@ class MachineState(Model):
         machine_states = []
 
         statement = 'SELECT * FROM machine_states WHERE experiment_id = %s'
-        results = database.fetchall(statement, (experiment_id,))
+        results = database.fetch_all(statement, (experiment_id,))
 
         for row in results:
             machine_states.append(cls._from_database_row(row))
@@ -52,7 +52,7 @@ class MachineState(Model):
         machine_states = []
 
         statement = 'SELECT * FROM machine_states WHERE experiment_id = %s AND machine_states.tick = %s'
-        results = database.fetchall(statement, (experiment_id, tick))
+        results = database.fetch_all(statement, (experiment_id, tick))
 
         for row in results:
             machine_states.append(cls._from_database_row(row))
@@ -65,7 +65,7 @@ class MachineState(Model):
         super(MachineState, self).read()
 
         statement = 'SELECT tick FROM task_states WHERE id = %s'
-        result = database.fetchone(statement, (self.task_state_id,))
+        result = database.fetch_one(statement, (self.task_state_id,))
 
         self.tick = result[0]
 

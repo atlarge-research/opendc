@@ -39,7 +39,7 @@ class RoomState(Model):
                 AND machine_states.experiment_id = %s
             GROUP BY machine_states.tick, rooms.id
         '''
-        results = database.fetchall(statement, (experiment_id,))
+        results = database.fetch_all(statement, (experiment_id,))
 
         for row in results:
             room_states.append(cls._from_database_row(row))
@@ -65,7 +65,7 @@ class RoomState(Model):
                 AND machine_states.tick = %s
             GROUP BY rooms.id
         '''
-        results = database.fetchall(statement, (experiment_id, tick))
+        results = database.fetch_all(statement, (experiment_id, tick))
 
         for row in results:
             room_states.append(cls._from_database_row(row))

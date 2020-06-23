@@ -35,7 +35,7 @@ class RackState(Model):
             WHERE machine_states.experiment_id = %s
             GROUP BY machine_states.tick, racks.id
         '''
-        results = database.fetchall(statement, (experiment_id,))
+        results = database.fetch_all(statement, (experiment_id,))
 
         for row in results:
             rack_states.append(cls._from_database_row(row))
@@ -57,7 +57,7 @@ class RackState(Model):
                 AND machine_states.tick = %s
             GROUP BY machine_states.tick, racks.id
         '''
-        results = database.fetchall(statement, (experiment_id, tick))
+        results = database.fetch_all(statement, (experiment_id, tick))
 
         for row in results:
             rack_states.append(cls._from_database_row(row))

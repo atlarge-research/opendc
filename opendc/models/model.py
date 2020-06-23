@@ -163,7 +163,7 @@ class Model(object):
         """Initialize a Model by fetching it from the database."""
 
         parameters = {}
-        model_from_database = database.fetchone(statement, values)
+        model_from_database = database.fetch_one(statement, values)
 
         if model_from_database is None:
             return None
@@ -207,11 +207,11 @@ class Model(object):
 
         if column_name is not None and value is not None:
             statement = 'SELECT * FROM {} WHERE {} = %s'.format(cls.TABLE_NAME, column_name)
-            database_models = database.fetchall(statement, (value,))
+            database_models = database.fetch_all(statement, (value,))
 
         else:
             statement = 'SELECT * FROM {}'.format(cls.TABLE_NAME)
-            database_models = database.fetchall(statement)
+            database_models = database.fetch_all(statement)
 
         models = []
 
@@ -267,7 +267,7 @@ class Model(object):
             )
             values = (getattr(self, column),)
 
-        return database.fetchone(query, values)[0] == 1
+        return database.fetch_one(query, values)[0] == 1
 
     def insert(self):
         """Insert this Model into the database."""

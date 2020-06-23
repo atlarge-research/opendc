@@ -22,11 +22,11 @@ with open(sys.argv[1]) as f:
 
 STATIC_ROOT = os.path.join(KEYS['ROOT_DIR'], 'opendc-frontend', 'build')
 
-database.init_connection_pool(user=KEYS['MONGODB_USER'], password=KEYS['MONGODB_PASSWORD'],
-                              database=KEYS['MONGODB_DATABASE'], host=KEYS['MONGODB_HOST'], port=KEYS['MONGODB_PORT'])
+database.init_connection_pool(user=KEYS['OPENDC_DB_USERNAME'], password=KEYS['OPENDC_DB_PASSWORD'],
+                              database=KEYS['OPENDC_DB'], host='localhost', port=27017)
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
-FLASK_CORE_APP.config['SECREY_KEY'] = KEYS['FLASK_SECRET']
+FLASK_CORE_APP.config['SECRET_KEY'] = KEYS['FLASK_SECRET']
 if 'localhost' in KEYS['SERVER_BASE_URL']:
     CORS(FLASK_CORE_APP)
 

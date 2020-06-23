@@ -26,7 +26,7 @@ class TaskState(Model):
         task_states = []
 
         statement = 'SELECT * FROM task_states WHERE experiment_id = %s AND tick = %s'
-        results = database.fetchall(statement, (experiment_id, tick))
+        results = database.fetch_all(statement, (experiment_id, tick))
 
         for row in results:
             task_states.append(

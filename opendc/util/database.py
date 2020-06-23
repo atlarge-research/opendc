@@ -15,68 +15,54 @@ def init_connection_pool(user, password, database, host, port):
     database = urllib.parse.quote_plus(database)
     host = urllib.parse.quote_plus(host)
 
-    global client
     global opendcdb
-    global prefabs_collection
-    global user_collection
-    global topologies_collection
 
     client = MongoClient('mongodb://%s:%s@%s/default_db?authSource=%s' % (user, password, host, database))
     opendcdb = client.opendc
-    prefabs_collection = opendcdb.prefabs
-    topologies_collection = opendcdb.topologies
-    user_collection = opendcdb.users
-
-    # global CONNECTION_POOL
-    # CONNECTION_POOL = MySQLConnectionPool(pool_name="opendcpool", pool_size=5,
-    # user=user, password=password, database=database, host=host, port=port)
 
 
-def execute(statement, t):
-    """Open a database connection and execute the statement."""
+def fetch_one(query, collection):
+    """Uses existing mongo connection to return a single (the first) document in a collection matching the given
+    query as a JSON object.
 
-    # Connect to the database
-    connection = CONNECTION_POOL.get_connection()
-    cursor = connection.cursor()
+    The query needs to be in json format, i.e.: `{'name': prefab_name}`.
+    """
+    bson = getattr(opendcdb, collection).find_one(query)
 
-    # Execute the statement
-    cursor.execute(statement, t)
-
-    # Get the id
-    cursor.execute('SELECT last_insert_id();')
-    row_id = cursor.fetchone()[0]
-
-    # Disconnect from the database
-    connection.commit()
-    connection.close()
-
-    # Return the id
-    return row_id
+    return convert_bson_to_json(bson)
 
 
-def fetchone(query, collection):
-    """Uses existing mongo connection to return a single (the first) document in a collection matching the given query as a JSON object"""
-    # query needs to be in json format, i.e.: {'name': prefab_name}
-    # TODO: determine which collection to pull from
-    bson = prefabs_collection.find_one(query)
-    json_string = dumps(bson)  # convert BSON representation to JSON
-    json_obj = json.loads(json_string)  # load as a JSON object
-    # leave the id field in for now, we can use it later
-    # json_obj.pop("_id")
-    return json_obj
+def fetch_all(query, collection):
+    """Uses existing mongo connection to return all documents matching a given query, as a list of JSON objects.
 
-
-def fetchall(query, collection):
-    """Uses existing mongo connection to return all documents matching a given query, as a list of JSON objects"""
+    The query needs to be in json format, i.e.: `{'name': prefab_name}`.
+    """
     results = []
-    cursor = prefabs_collection.find(query)
+    cursor = getattr(opendcdb, collection).find(query)
     for doc in cursor:
-        json_string = dumps(doc)  # convert BSON representation to JSON
-        json_obj = json.loads(json_string)  # load as a JSON object
-        # leave the id field in for now, we can use it later
-        # json_obj.pop("_id")
-        results.append(json_obj)
+        results.append(convert_bson_to_json(doc))
     return results
+
+
+def insert(obj, collection):
+    """Updates an existing object."""
+    bson = getattr(opendcdb, collection).insert(obj)
+
+    return convert_bson_to_json(bson)
+
+
+def update(_id, obj, collection):
+    """Updates an existing object."""
+    bson = getattr(opendcdb, collection).update({'_id': _id}, obj)
+
+    return convert_bson_to_json(bson)
+
+
+def convert_bson_to_json(bson):
+    # Convert BSON representation to JSON
+    json_string = dumps(bson)
+    # Load as a JSON object
+    return json.loads(json_string)
 
 
 def datetime_to_string(datetime_to_convert):

@@ -31,7 +31,7 @@ class TaskDuration(Model):
             GROUP BY task_id
         '''
 
-        results = database.fetchall(statement, (experiment_id,))
+        results = database.fetch_all(statement, (experiment_id,))
 
         for row in results:
             room_states.append(cls._from_database_row(row))

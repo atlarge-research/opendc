@@ -64,7 +64,7 @@ class Machine(Model):
 
         try:
             statement = 'SELECT id FROM machines WHERE rack_id = %s AND position = %s'
-            machine_id = database.fetchone(statement, (rack.id, position))[0]
+            machine_id = database.fetch_one(statement, (rack.id, position))[0]
         except:
             return cls(id=-1)
 
@@ -102,7 +102,7 @@ class Machine(Model):
         for device_table in self.device_table_to_attribute.keys():
 
             statement = 'SELECT * FROM machine_{} WHERE machine_id = %s'.format(device_table)
-            results = database.fetchall(statement, (self.id,))
+            results = database.fetch_all(statement, (self.id,))
 
             device_ids = []
 
