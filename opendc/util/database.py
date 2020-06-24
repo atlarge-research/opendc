@@ -7,91 +7,87 @@ from pymongo import MongoClient
 
 DATETIME_STRING_FORMAT = '%Y-%m-%dT%H:%M:%S'
 CONNECTION_POOL = None
+DB = None
 
 
-def init_connection_pool(user, password, database, host, port):
-    user = urllib.parse.quote_plus(user)  # TODO: replace this with environment variable
-    password = urllib.parse.quote_plus(password)  # TODO: same as above
-    database = urllib.parse.quote_plus(database)
-    host = urllib.parse.quote_plus(host)
+class Database:
+    def __init__(self, user, password, database, host):
+        user = urllib.parse.quote_plus(user)  # TODO: replace this with environment variable
+        password = urllib.parse.quote_plus(password)  # TODO: same as above
+        database = urllib.parse.quote_plus(database)
+        host = urllib.parse.quote_plus(host)
 
-    global opendcdb
+        client = MongoClient('mongodb://%s:%s@%s/default_db?authSource=%s' % (user, password, host, database))
+        self.opendc_db = client.opendc
 
-    client = MongoClient('mongodb://%s:%s@%s/default_db?authSource=%s' % (user, password, host, database))
-    opendcdb = client.opendc
+    def fetch_one(self, query, collection):
+        """Uses existing mongo connection to return a single (the first) document in a collection matching the given
+        query as a JSON object.
 
+        The query needs to be in json format, i.e.: `{'name': prefab_name}`.
+        """
+        bson = getattr(self.opendc_db, collection).find_one(query)
 
-def fetch_one(query, collection):
-    """Uses existing mongo connection to return a single (the first) document in a collection matching the given
-    query as a JSON object.
+        return self.convert_bson_to_json(bson)
 
-    The query needs to be in json format, i.e.: `{'name': prefab_name}`.
-    """
-    bson = getattr(opendcdb, collection).find_one(query)
+    def fetch_all(self, query, collection):
+        """Uses existing mongo connection to return all documents matching a given query, as a list of JSON objects.
 
-    return convert_bson_to_json(bson)
+        The query needs to be in json format, i.e.: `{'name': prefab_name}`.
+        """
+        results = []
+        cursor = getattr(self.opendc_db, collection).find(query)
+        for doc in cursor:
+            results.append(self.convert_bson_to_json(doc))
+        return results
 
+    def insert(self, obj, collection):
+        """Updates an existing object."""
+        bson = getattr(self.opendc_db, collection).insert(obj)
 
-def fetch_all(query, collection):
-    """Uses existing mongo connection to return all documents matching a given query, as a list of JSON objects.
+        return self.convert_bson_to_json(bson)
 
-    The query needs to be in json format, i.e.: `{'name': prefab_name}`.
-    """
-    results = []
-    cursor = getattr(opendcdb, collection).find(query)
-    for doc in cursor:
-        results.append(convert_bson_to_json(doc))
-    return results
+    def update(self, _id, obj, collection):
+        """Updates an existing object."""
+        bson = getattr(self.opendc_db, collection).update({'_id': _id}, obj)
 
+        return self.convert_bson_to_json(bson)
 
-def insert(obj, collection):
-    """Updates an existing object."""
-    bson = getattr(opendcdb, collection).insert(obj)
+    def delete_one(self, query, collection):
+        """Deletes one object matching the given query.
 
-    return convert_bson_to_json(bson)
+        The query needs to be in json format, i.e.: `{'name': prefab_name}`.
+        """
+        bson = getattr(self.opendc_db, collection).delete_one(query)
 
+        return self.convert_bson_to_json(bson)
 
-def update(_id, obj, collection):
-    """Updates an existing object."""
-    bson = getattr(opendcdb, collection).update({'_id': _id}, obj)
+    def delete_all(self, query, collection):
+        """Deletes all objects matching the given query.
 
-    return convert_bson_to_json(bson)
+        The query needs to be in json format, i.e.: `{'name': prefab_name}`.
+        """
+        bson = getattr(self.opendc_db, collection).delete_many(query)
 
+        return self.convert_bson_to_json(bson)
 
-def delete_one(query, collection):
-    """Deletes one object matching the given query.
+    @staticmethod
+    def convert_bson_to_json(bson):
+        """Converts a BSON representation to JSON and returns the JSON representation."""
+        json_string = dumps(bson)
+        return json.loads(json_string)
 
-    The query needs to be in json format, i.e.: `{'name': prefab_name}`.
-    """
-    bson = getattr(opendcdb, collection).delete_one(query)
+    @staticmethod
+    def datetime_to_string(datetime_to_convert):
+        """Return a database-compatible string representation of the given datetime object."""
+        return datetime_to_convert.strftime(DATETIME_STRING_FORMAT)
 
-    return convert_bson_to_json(bson)
-
-
-def delete_all(query, collection):
-    """Deletes all objects matching the given query.
-
-    The query needs to be in json format, i.e.: `{'name': prefab_name}`.
-    """
-    bson = getattr(opendcdb, collection).delete_many(query)
-
-    return convert_bson_to_json(bson)
-
-
-def convert_bson_to_json(bson):
-    # Convert BSON representation to JSON
-    json_string = dumps(bson)
-    # Load as a JSON object
-    return json.loads(json_string)
-
-
-def datetime_to_string(datetime_to_convert):
-    """Return a database-compatible string representation of the given datetime object."""
-
-    return datetime_to_convert.strftime(DATETIME_STRING_FORMAT)
+    @staticmethod
+    def string_to_datetime(string_to_convert):
+        """Return a datetime corresponding to the given string representation."""
+        return datetime.strptime(string_to_convert, DATETIME_STRING_FORMAT)
 
 
-def string_to_datetime(string_to_convert):
-    """Return a datetime corresponding to the given string representation."""
-
-    return datetime.strptime(string_to_convert, DATETIME_STRING_FORMAT)
+def initialize_database(user, password, database, host):
+    global DB
+    DB = Database(user, password, database, host)

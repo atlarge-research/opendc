@@ -1,13 +1,11 @@
 import importlib
 import json
+import os
 import sys
 
 from oauth2client import client, crypt
 
 from opendc.util import exceptions, parameter_checker
-
-with open(sys.argv[1]) as f:
-    KEYS = json.load(f)
 
 
 class Request(object):
@@ -45,6 +43,7 @@ class Request(object):
             module_base = 'opendc.api.{}.endpoint'
             module_path = self.path.replace('/', '.')
 
+            print(module_base.format(module_path))
             self.module = importlib.import_module(module_base.format(module_path))
         except ImportError:
             raise exceptions.UnimplementedEndpointError('Unimplemented endpoint: {}.'.format(self.path))
@@ -60,30 +59,13 @@ class Request(object):
 
         # Verify the user
 
+        if "OPENDC_FLASK_TESTING" in os.environ:
+            return
+
         try:
             self.google_id = self._verify_token(self.token)
-
         except crypt.AppIdentityError as e:
             raise exceptions.AuthorizationTokenError(e)
-
-    def _verify_token(self, token):
-        """Return the ID of the signed-in user.
-        
-        Or throw an Exception if the token is invalid.
-        """
-
-        try:
-            idinfo = client.verify_id_token(token, KEYS['OAUTH_CLIENT_ID'])
-        except Exception as e:
-            raise crypt.AppIdentityError('Exception caught trying to verify ID token: {}'.format(e))
-
-        if idinfo['aud'] != KEYS['OAUTH_CLIENT_ID']:
-            raise crypt.AppIdentityError('Unrecognized client.')
-
-        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-            raise crypt.AppIdentityError('Wrong issuer.')
-
-        return idinfo['sub']
 
     def check_required_parameters(self, **kwargs):
         """Raise an error if a parameter is missing or of the wrong type."""
@@ -107,6 +89,27 @@ class Request(object):
         self.message['token'] = None
 
         return json.dumps(self.message)
+
+    @staticmethod
+    def _verify_token(token):
+        """Return the ID of the signed-in user.
+
+        Or throw an Exception if the token is invalid.
+        """
+
+        try:
+            id_info = client.verify_id_token(token, os.environ['OPENDC_OAUTH_CLIENT_ID'])
+        except Exception as e:
+            print(e)
+            raise crypt.AppIdentityError('Exception caught trying to verify ID token: {}'.format(e))
+
+        if id_info['aud'] != os.environ['OPENDC_OAUTH_CLIENT_ID']:
+            raise crypt.AppIdentityError('Unrecognized client.')
+
+        if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise crypt.AppIdentityError('Wrong issuer.')
+
+        return id_info['sub']
 
 
 class Response(object):

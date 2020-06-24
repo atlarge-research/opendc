@@ -2,7 +2,7 @@ from werkzeug.exceptions import abort
 
 from opendc.models.user import User
 from opendc.util import exceptions
-from opendc.util.database import fetch_one, insert
+from opendc.util.database import DB
 from opendc.util.rest import Response
 
 
@@ -14,7 +14,7 @@ def GET(request):
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    user = fetch_one({'email': request.params_query['email']}, 'users')
+    user = DB.fetch_one({'email': request.params_query['email']}, 'users')
 
     if user is not None:
         return Response(404, f'User with email {request.params_query["email"]} not found')
@@ -32,7 +32,7 @@ def POST(request):
 
     request.params_body['user']['googleId'] = request.google_id
     user = request.params_body['user']
-    existing_user = fetch_one({'googleId': user['googleId']}, 'users')
+    existing_user = DB.fetch_one({'googleId': user['googleId']}, 'users')
 
     if existing_user is not None:
         return Response(409, '{} already exists.'.format(existing_user))

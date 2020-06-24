@@ -96,7 +96,7 @@ def PUT(request):
         return Response(409, 'Rack position occupied.')
 
     except Exception as e:
-        print e
+        print(e)
         return Response(400, 'Invalid Machine.')
 
     # Return this Machine
