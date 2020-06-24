@@ -4,7 +4,7 @@ info:
   title: OpenDC API
   description: 'OpenDC is an open-source datacenter simulator for education, featuring real-time online collaboration, diverse simulation models, and detailed performance feedback statistics.'
 host: opendc.org
-basePath: /v1
+basePath: /v2
 schemes:
   - https
 
@@ -484,7 +484,7 @@ paths:
           description: 'Experiment, Topology, Trace, or Scheduler not found.'
     delete:
       tags:
-        - experiment
+        - experiments
       description: Delete this Experiment.
       parameters:
         - name: experimentId
