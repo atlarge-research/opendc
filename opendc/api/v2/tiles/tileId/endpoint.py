@@ -9,18 +9,14 @@ def GET(request):
     # Make sure request parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'tileId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Tile from the database
 
-    tile = Tile.from_primary_key((request.params_path['tileId'],))
+    tile = Tile.from_primary_key((request.params_path['tileId'], ))
 
     # Make sure this Tile exists
 
@@ -36,11 +32,7 @@ def GET(request):
 
     tile.read()
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(tile),
-        tile.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(tile), tile.to_JSON())
 
 
 def DELETE(request):
@@ -49,18 +41,14 @@ def DELETE(request):
     # Make sure request parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'tileId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Tile from the database
 
-    tile = Tile.from_primary_key((request.params_path['tileId'],))
+    tile = Tile.from_primary_key((request.params_path['tileId'], ))
 
     # Make sure this Tile exists
 
@@ -78,8 +66,4 @@ def DELETE(request):
 
     # Return this Tile
 
-    return Response(
-        200,
-        'Successfully deleted {}.'.format(tile),
-        tile.to_JSON()
-    )
+    return Response(200, 'Successfully deleted {}.'.format(tile), tile.to_JSON())

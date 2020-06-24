@@ -27,7 +27,7 @@ class Experiment(Model):
         # Get the Simulation
 
         try:
-            simulation = Simulation.from_primary_key((self.simulation_id,))
+            simulation = Simulation.from_primary_key((self.simulation_id, ))
         except exceptions.RowNotFoundError:
             return False
 

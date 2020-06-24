@@ -19,14 +19,7 @@ class Storage(Model):
     COLLECTION_NAME = 'storages'
 
     COLUMNS = [
-        'id',
-        'manufacturer',
-        'family',
-        'generation',
-        'model',
-        'speed_mb_per_s',
-        'size_mb',
-        'energy_consumption_w',
+        'id', 'manufacturer', 'family', 'generation', 'model', 'speed_mb_per_s', 'size_mb', 'energy_consumption_w',
         'failure_model_id'
     ]
 

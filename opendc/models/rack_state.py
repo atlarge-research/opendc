@@ -3,23 +3,13 @@ from opendc.util import database
 
 
 class RackState(Model):
-    JSON_TO_PYTHON_DICT = {
-        'RackState': {
-            'rackId': 'rack_id',
-            'loadFraction': 'load_fraction',
-            'tick': 'tick'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'RackState': {'rackId': 'rack_id', 'loadFraction': 'load_fraction', 'tick': 'tick'}}
 
     @classmethod
     def _from_database_row(cls, row):
         """Instantiate a RackState from a database row."""
 
-        return cls(
-            rack_id=row[0],
-            load_fraction=row[1],
-            tick=row[2]
-        )
+        return cls(rack_id=row[0], load_fraction=row[1], tick=row[2])
 
     @classmethod
     def from_experiment_id(cls, experiment_id):
@@ -35,7 +25,7 @@ class RackState(Model):
             WHERE machine_states.experiment_id = %s
             GROUP BY machine_states.tick, racks.id
         '''
-        results = database.fetch_all(statement, (experiment_id,))
+        results = database.fetch_all(statement, (experiment_id, ))
 
         for row in results:
             rack_states.append(cls._from_database_row(row))

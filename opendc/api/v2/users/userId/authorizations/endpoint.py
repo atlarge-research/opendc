@@ -10,18 +10,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'userId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'userId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a User and make sure they exist
 
-    user = User.from_primary_key((request.params_path['userId'],))
+    user = User.from_primary_key((request.params_path['userId'], ))
 
     if not user.exists():
         return Response(404, '{} not found.'.format(user))
@@ -35,8 +31,5 @@ def GET(request):
 
     authorizations = Authorization.query('user_id', request.params_path['userId'])
 
-    return Response(
-        200,
-        'Successfully retrieved Authorizations for {}.'.format(user),
-        [x.to_JSON() for x in authorizations]
-    )
+    return Response(200, 'Successfully retrieved Authorizations for {}.'.format(user),
+                    [x.to_JSON() for x in authorizations])

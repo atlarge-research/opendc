@@ -10,18 +10,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Simulation from the database
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
 
     # Make sure this Simulation exists
 
@@ -37,11 +33,8 @@ def GET(request):
 
     experiments = Experiment.query('simulation_id', request.params_path['simulationId'])
 
-    return Response(
-        200,
-        'Successfully retrieved Experiments for {}.'.format(simulation),
-        [x.to_JSON() for x in experiments]
-    )
+    return Response(200, 'Successfully retrieved Experiments for {}.'.format(simulation),
+                    [x.to_JSON() for x in experiments])
 
 
 def POST(request):
@@ -50,20 +43,16 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int'
-            },
-            body={
-                'experiment': {
-                    'simulationId': 'int',
-                    'pathId': 'int',
-                    'traceId': 'int',
-                    'schedulerName': 'string',
-                    'name': 'string'
-                }
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int'},
+                                          body={
+                                              'experiment': {
+                                                  'simulationId': 'int',
+                                                  'pathId': 'int',
+                                                  'traceId': 'int',
+                                                  'schedulerName': 'string',
+                                                  'name': 'string'
+                                              }
+                                          })
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -75,7 +64,7 @@ def POST(request):
 
     # Instantiate a Simulation from the database
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
 
     # Make sure this Simulation exists
 
@@ -105,8 +94,4 @@ def POST(request):
 
     experiment.read()
 
-    return Response(
-        200,
-        'Successfully added {}.'.format(experiment),
-        experiment.to_JSON()
-    )
+    return Response(200, 'Successfully added {}.'.format(experiment), experiment.to_JSON())

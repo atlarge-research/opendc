@@ -2,12 +2,7 @@ from opendc.models.model import Model
 
 
 class Job(Model):
-    JSON_TO_PYTHON_DICT = {
-        'Job': {
-            'id': 'id',
-            'name': 'name'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'Job': {'id': 'id', 'name': 'name'}}
 
     COLLECTION_NAME = 'jobs'
     COLUMNS = ['id', 'name']

@@ -10,18 +10,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'roomId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'roomId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Room from the database
 
-    room = Room.from_primary_key((request.params_path['roomId'],))
+    room = Room.from_primary_key((request.params_path['roomId'], ))
 
     # Make sure this Room exists
 
@@ -40,11 +36,7 @@ def GET(request):
     for tile in tiles:
         tile.read()
 
-    return Response(
-        200,
-        'Successfully retrieved Tiles for {}.'.format(room),
-        [x.to_JSON() for x in tiles]
-    )
+    return Response(200, 'Successfully retrieved Tiles for {}.'.format(room), [x.to_JSON() for x in tiles])
 
 
 def POST(request):
@@ -53,18 +45,12 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'roomId': 'int'
-            },
-            body={
-                'tile': {
-                    'roomId': 'int',
-                    'positionX': 'int',
-                    'positionY': 'int'
-                }
-            }
-        )
+        request.check_required_parameters(path={'roomId': 'int'},
+                                          body={'tile': {
+                                              'roomId': 'int',
+                                              'positionX': 'int',
+                                              'positionY': 'int'
+                                          }})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -74,7 +60,7 @@ def POST(request):
 
     # Instantiate a Room from the database
 
-    room = Room.from_primary_key((request.params_path['roomId'],))
+    room = Room.from_primary_key((request.params_path['roomId'], ))
 
     # Make sure this Room exists
 
@@ -114,8 +100,4 @@ def POST(request):
 
     tile.read()
 
-    return Response(
-        200,
-        'Successfully added {}.'.format(tile),
-        tile.to_JSON()
-    )
+    return Response(200, 'Successfully added {}.'.format(tile), tile.to_JSON())

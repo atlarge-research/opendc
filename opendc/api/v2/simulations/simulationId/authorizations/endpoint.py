@@ -10,18 +10,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Simulation and make sure it exists
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
 
     if not simulation.exists():
         return Response(404, '{} not found.'.format(simulation))
@@ -37,8 +33,5 @@ def GET(request):
 
     # Return the Authorizations
 
-    return Response(
-        200,
-        'Successfully retrieved Authorizations for {}.'.format(simulation),
-        [x.to_JSON() for x in authorizations]
-    )
+    return Response(200, 'Successfully retrieved Authorizations for {}.'.format(simulation),
+                    [x.to_JSON() for x in authorizations])

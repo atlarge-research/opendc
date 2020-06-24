@@ -10,18 +10,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'experimentId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'experimentId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate an Experiment from the database
 
-    experiment = Experiment.from_primary_key((request.params_path['experimentId'],))
+    experiment = Experiment.from_primary_key((request.params_path['experimentId'], ))
 
     # Make sure this Experiment exists
 
@@ -36,16 +32,11 @@ def GET(request):
     # Get and return the Machine States
 
     if 'tick' in request.params_query:
-        machine_states = MachineState.from_experiment_id_and_tick(
-            request.params_path['experimentId'],
-            request.params_query['tick']
-        )
+        machine_states = MachineState.from_experiment_id_and_tick(request.params_path['experimentId'],
+                                                                  request.params_query['tick'])
 
     else:
         machine_states = MachineState.from_experiment_id(request.params_path['experimentId'])
 
-    return Response(
-        200,
-        'Successfully retrieved Machine States for {}.'.format(experiment),
-        [x.to_JSON() for x in machine_states]
-    )
+    return Response(200, 'Successfully retrieved Machine States for {}.'.format(experiment),
+                    [x.to_JSON() for x in machine_states])

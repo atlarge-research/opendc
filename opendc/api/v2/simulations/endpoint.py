@@ -16,13 +16,7 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            body={
-                'simulation': {
-                    'name': 'string'
-                }
-            }
-        )
+        request.check_required_parameters(body={'simulation': {'name': 'string'}})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -42,46 +36,30 @@ def POST(request):
 
     # Instantiate an Authorization and insert it into the database
 
-    authorization = Authorization(
-        user_id=User.from_google_id(request.google_id).id,
-        simulation_id=simulation.id,
-        authorization_level='OWN'
-    )
+    authorization = Authorization(user_id=User.from_google_id(request.google_id).id,
+                                  simulation_id=simulation.id,
+                                  authorization_level='OWN')
 
     authorization.insert()
 
     # Instantiate a Path and insert it into the database
 
-    path = Path(
-        simulation_id=simulation.id,
-        datetime_created=database.datetime_to_string(datetime.now())
-    )
+    path = Path(simulation_id=simulation.id, datetime_created=database.datetime_to_string(datetime.now()))
 
     path.insert()
 
     # Instantiate a Datacenter and insert it into the database
 
-    datacenter = Datacenter(
-        starred=0,
-        simulation_id=simulation.id
-    )
+    datacenter = Datacenter(starred=0, simulation_id=simulation.id)
 
     datacenter.insert()
 
     # Instantiate a Section and insert it into the database
 
-    section = Section(
-        path_id=path.id,
-        datacenter_id=datacenter.id,
-        start_tick=0
-    )
+    section = Section(path_id=path.id, datacenter_id=datacenter.id, start_tick=0)
 
     section.insert()
 
     # Return this Simulation
 
-    return Response(
-        200,
-        'Successfully created {}.'.format(simulation),
-        simulation.to_JSON()
-    )
+    return Response(200, 'Successfully created {}.'.format(simulation), simulation.to_JSON())

@@ -4,11 +4,7 @@ from opendc.util import database, exceptions
 class Model(object):
     # MUST OVERRIDE IN DERIVED CLASS
 
-    JSON_TO_PYTHON_DICT = {
-        'Model': {
-            'jsonParameterName': 'python_parameter_name'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'Model': {'jsonParameterName': 'python_parameter_name'}}
 
     PATH = ''
     PATH_PARAMETERS = {}
@@ -33,10 +29,7 @@ class Model(object):
         for attribute in self.COLUMNS_PRIMARY_KEY:
             identifiers.append('{} = {}'.format(attribute, getattr(self, attribute)))
 
-        return '{} ({})'.format(
-            self.COLLECTION_NAME[:-1].title().replace('_', ''),
-            '; '.join(identifiers)
-        )
+        return '{} ({})'.format(self.COLLECTION_NAME[:-1].title().replace('_', ''), '; '.join(identifiers))
 
     # JSON CONVERSION METHODS
 
@@ -120,9 +113,7 @@ class Model(object):
     def _generate_update_columns_string(cls):
         """Generate a SQLite updatable columns string for this Model."""
 
-        return ', '.join(
-            ['{} = %s'.format(x) for x in cls.COLUMNS if x not in cls.COLUMNS_PRIMARY_KEY]
-        )
+        return ', '.join(['{} = %s'.format(x) for x in cls.COLUMNS if x not in cls.COLUMNS_PRIMARY_KEY])
 
     # SQL TUPLE GENERATION METHODS
 
@@ -182,10 +173,7 @@ class Model(object):
         If the primary key does not exist in the database, return a stub.
         """
 
-        query = 'SELECT * FROM {} WHERE {}'.format(
-            cls.COLLECTION_NAME,
-            cls._generate_primary_key_string()
-        )
+        query = 'SELECT * FROM {} WHERE {}'.format(cls.COLLECTION_NAME, cls._generate_primary_key_string())
 
         # Return an instantiation of the Model with values from the row if it exists
 
@@ -207,7 +195,7 @@ class Model(object):
 
         if column_name is not None and value is not None:
             statement = 'SELECT * FROM {} WHERE {} = %s'.format(cls.COLLECTION_NAME, column_name)
-            database_models = database.fetch_all(statement, (value,))
+            database_models = database.fetch_all(statement, (value, ))
 
         else:
             statement = 'SELECT * FROM {}'.format(cls.COLLECTION_NAME)
@@ -230,10 +218,7 @@ class Model(object):
 
         self.read()
 
-        statement = 'DELETE FROM {} WHERE {}'.format(
-            self.COLLECTION_NAME,
-            self._generate_primary_key_string()
-        )
+        statement = 'DELETE FROM {} WHERE {}'.format(self.COLLECTION_NAME, self._generate_primary_key_string())
 
         values = self._generate_primary_key_tuple()
 
@@ -254,18 +239,12 @@ class Model(object):
         """
 
         if column is None:
-            query = query.format(
-                self.COLLECTION_NAME,
-                self._generate_primary_key_string()
-            )
+            query = query.format(self.COLLECTION_NAME, self._generate_primary_key_string())
             values = self._generate_primary_key_tuple()
 
         else:
-            query = query.format(
-                self.COLLECTION_NAME,
-                '{} = %s'.format(column)
-            )
-            values = (getattr(self, column),)
+            query = query.format(self.COLLECTION_NAME, '{} = %s'.format(column))
+            values = (getattr(self, column), )
 
         return database.fetch_one(query, values)[0] == 1
 
@@ -280,11 +259,9 @@ class Model(object):
     def insert_with_id(self, is_auto_generated=True):
         """Insert this Model into the database without removing its id."""
 
-        statement = 'INSERT INTO {} ({}) VALUES ({})'.format(
-            self.COLLECTION_NAME,
-            self._generate_insert_columns_string(),
-            self._generate_insert_placeholders_string()
-        )
+        statement = 'INSERT INTO {} ({}) VALUES ({})'.format(self.COLLECTION_NAME,
+                                                             self._generate_insert_columns_string(),
+                                                             self._generate_insert_placeholders_string())
 
         values = self._generate_insert_columns_tuple()
 
@@ -315,11 +292,8 @@ class Model(object):
     def update(self):
         """Update this Model's non-primary key attributes in the database."""
 
-        statement = 'UPDATE {} SET {} WHERE {}'.format(
-            self.COLLECTION_NAME,
-            self._generate_update_columns_string(),
-            self._generate_primary_key_string()
-        )
+        statement = 'UPDATE {} SET {} WHERE {}'.format(self.COLLECTION_NAME, self._generate_update_columns_string(),
+                                                       self._generate_primary_key_string())
 
         values = self._generate_update_columns_tuple() + self._generate_primary_key_tuple()
 

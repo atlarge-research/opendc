@@ -9,11 +9,7 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'name': 'string'
-            }
-        )
+        request.check_required_parameters(path={'name': 'string'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -24,8 +20,4 @@ def GET(request):
 
     # Return the AllowedObjects
 
-    return Response(
-        200,
-        'Successfully retrieved AllowedObjects.',
-        [x.to_JSON() for x in allowed_objects]
-    )
+    return Response(200, 'Successfully retrieved AllowedObjects.', [x.to_JSON() for x in allowed_objects])

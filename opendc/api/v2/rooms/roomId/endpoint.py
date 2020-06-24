@@ -9,18 +9,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'roomId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'roomId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Room from the database
 
-    room = Room.from_primary_key((request.params_path['roomId'],))
+    room = Room.from_primary_key((request.params_path['roomId'], ))
 
     # Make sure this Room exists
 
@@ -36,11 +32,7 @@ def GET(request):
 
     room.read()
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(room),
-        room.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(room), room.to_JSON())
 
 
 def PUT(request):
@@ -49,24 +41,18 @@ def PUT(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'roomId': 'int'
-            },
-            body={
-                'room': {
-                    'name': 'string',
-                    'roomType': 'string'
-                }
-            }
-        )
+        request.check_required_parameters(path={'roomId': 'int'},
+                                          body={'room': {
+                                              'name': 'string',
+                                              'roomType': 'string'
+                                          }})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Room from the database
 
-    room = Room.from_primary_key((request.params_path['roomId'],))
+    room = Room.from_primary_key((request.params_path['roomId'], ))
 
     # Make sure this Room exists
 
@@ -90,11 +76,7 @@ def PUT(request):
 
     # Return this Room
 
-    return Response(
-        200,
-        'Successfully updated {}.'.format(room),
-        room.to_JSON()
-    )
+    return Response(200, 'Successfully updated {}.'.format(room), room.to_JSON())
 
 
 def DELETE(request):
@@ -103,18 +85,14 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'roomId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'roomId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Room and make sure it exists
 
-    room = Room.from_primary_key((request.params_path['roomId'],))
+    room = Room.from_primary_key((request.params_path['roomId'], ))
 
     if not room.exists():
         return Response(404, '{} not found.'.format(room))
@@ -130,8 +108,4 @@ def DELETE(request):
 
     # Return this Room
 
-    return Response(
-        200,
-        'Successfully deleted {}.'.format(room),
-        room.to_JSON()
-    )
+    return Response(200, 'Successfully deleted {}.'.format(room), room.to_JSON())

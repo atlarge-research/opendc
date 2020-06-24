@@ -11,8 +11,4 @@ def GET(request):
 
     # Return the Traces
 
-    return Response(
-        200,
-        'Successfully retrieved Traces',
-        [x.to_JSON() for x in traces]
-    )
+    return Response(200, 'Successfully retrieved Traces', [x.to_JSON() for x in traces])

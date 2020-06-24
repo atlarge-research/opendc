@@ -23,7 +23,7 @@ class Section(Model):
         # Get the Path
 
         try:
-            path = Path.from_primary_key((self.path_id,))
+            path = Path.from_primary_key((self.path_id, ))
         except exceptions.RowNotFoundError:
             return False
 

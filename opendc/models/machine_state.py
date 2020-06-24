@@ -14,8 +14,7 @@ class MachineState(Model):
     }
 
     COLLECTION_NAME = 'machine_states'
-    COLUMNS = ['id', 'machine_id', 'experiment_id', 'tick', 'temperature_c', 'in_use_memory_mb',
-               'load_fraction']
+    COLUMNS = ['id', 'machine_id', 'experiment_id', 'tick', 'temperature_c', 'in_use_memory_mb', 'load_fraction']
 
     COLUMNS_PRIMARY_KEY = ['id']
 
@@ -23,13 +22,7 @@ class MachineState(Model):
     def _from_database_row(cls, row):
         """Instantiate a MachineState from a database row (including tick from the TaskState)."""
 
-        return cls(
-            machine_id=row[1],
-            temperature_c=row[4],
-            in_use_memory_mb=row[5],
-            load_fraction=row[6],
-            tick=row[3]
-        )
+        return cls(machine_id=row[1], temperature_c=row[4], in_use_memory_mb=row[5], load_fraction=row[6], tick=row[3])
 
     @classmethod
     def from_experiment_id(cls, experiment_id):
@@ -38,7 +31,7 @@ class MachineState(Model):
         machine_states = []
 
         statement = 'SELECT * FROM machine_states WHERE experiment_id = %s'
-        results = database.fetch_all(statement, (experiment_id,))
+        results = database.fetch_all(statement, (experiment_id, ))
 
         for row in results:
             machine_states.append(cls._from_database_row(row))
@@ -65,7 +58,7 @@ class MachineState(Model):
         super(MachineState, self).read()
 
         statement = 'SELECT tick FROM task_states WHERE id = %s'
-        result = database.fetch_one(statement, (self.task_state_id,))
+        result = database.fetch_one(statement, (self.task_state_id, ))
 
         self.tick = result[0]
 

@@ -41,15 +41,13 @@ class Machine(Model):
             # First, delete current machine-device links
 
             statement = 'DELETE FROM machine_{} WHERE machine_id = %s'.format(device_table)
-            database.execute(statement, (before_insert.id,))
+            database.execute(statement, (before_insert.id, ))
 
             # Then, add current ones
 
             for device_id in getattr(before_insert, before_insert.device_table_to_attribute[device_table]):
                 statement = 'INSERT INTO machine_{} (machine_id, {}) VALUES (%s, %s)'.format(
-                    device_table,
-                    before_insert.device_table_to_attribute[device_table][:-1]
-                )
+                    device_table, before_insert.device_table_to_attribute[device_table][:-1])
 
                 database.execute(statement, (before_insert.id, device_id))
 
@@ -68,7 +66,7 @@ class Machine(Model):
         except:
             return cls(id=-1)
 
-        return cls.from_primary_key((machine_id,))
+        return cls.from_primary_key((machine_id, ))
 
     def google_id_has_at_least(self, google_id, authorization_level):
         """Return True if the user has at least the given auth level over this Machine."""
@@ -76,7 +74,7 @@ class Machine(Model):
         # Get the Rack
 
         try:
-            rack = Rack.from_primary_key((self.rack_id,))
+            rack = Rack.from_primary_key((self.rack_id, ))
         except exceptions.RowNotFoundError:
             return False
 
@@ -102,7 +100,7 @@ class Machine(Model):
         for device_table in self.device_table_to_attribute.keys():
 
             statement = 'SELECT * FROM machine_{} WHERE machine_id = %s'.format(device_table)
-            results = database.fetch_all(statement, (self.id,))
+            results = database.fetch_all(statement, (self.id, ))
 
             device_ids = []
 

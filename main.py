@@ -22,8 +22,11 @@ with open(sys.argv[1]) as f:
 
 STATIC_ROOT = os.path.join(KEYS['ROOT_DIR'], 'opendc-frontend', 'build')
 
-database.init_connection_pool(user=KEYS['OPENDC_DB_USERNAME'], password=KEYS['OPENDC_DB_PASSWORD'],
-                              database=KEYS['OPENDC_DB'], host='localhost', port=27017)
+database.init_connection_pool(user=KEYS['OPENDC_DB_USERNAME'],
+                              password=KEYS['OPENDC_DB_PASSWORD'],
+                              database=KEYS['OPENDC_DB'],
+                              host='localhost',
+                              port=27017)
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
 FLASK_CORE_APP.config['SECRET_KEY'] = KEYS['FLASK_SECRET']
@@ -37,6 +40,7 @@ if 'localhost' in KEYS['SERVER_BASE_URL']:
     SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP, cors_allowed_origins="*")
 else:
     SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP)
+
 
 @FLASK_CORE_APP.errorhandler(404)
 def page_not_found(e):
@@ -71,9 +75,7 @@ def sign_in():
 
     user = User.from_google_id(idinfo['sub'])
 
-    data = {
-        'isNewUser': not user.exists()
-    }
+    data = {'isNewUser': not user.exists()}
 
     if user.exists():
         data['userId'] = user.id
@@ -113,7 +115,8 @@ def api_call(version, endpoint_path):
         'token': request.headers.get('auth-token')
     })
 
-    print(f'HTTP:\t{req.method} to `/{req.path}` resulted in {response.status["code"]}: {response.status["description"]}')
+    print(
+        f'HTTP:\t{req.method} to `/{req.path}` resulted in {response.status["code"]}: {response.status["description"]}')
     sys.stdout.flush()
 
     flask_response = jsonify(json.loads(response.to_JSON()))
@@ -144,7 +147,9 @@ def receive_message(message):
 
     (request, response) = _process_message(message)
 
-    print(f'Socket:\t{request.method} to `/{request.path}` resulted in {response.status["code"]}: {response.status["description"]}')
+    print(
+        f'Socket:\t{request.method} to `/{request.path}` resulted in {response.status["code"]}: {response.status["description"]}'
+    )
     sys.stdout.flush()
 
     flask_socketio.emit('response', response.to_JSON(), json=True)

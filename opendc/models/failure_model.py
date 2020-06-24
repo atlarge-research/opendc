@@ -2,13 +2,7 @@ from opendc.models.model import Model
 
 
 class FailureModel(Model):
-    JSON_TO_PYTHON_DICT = {
-        'FailureModel': {
-            'id': 'id',
-            'name': 'name',
-            'rate': 'rate'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'FailureModel': {'id': 'id', 'name': 'name', 'rate': 'rate'}}
 
     COLLECTION_NAME = 'failure_models'
     COLUMNS = ['id', 'name', 'rate']

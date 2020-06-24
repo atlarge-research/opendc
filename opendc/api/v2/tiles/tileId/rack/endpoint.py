@@ -10,18 +10,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int'
-            },
-        )
+        request.check_required_parameters(path={'tileId': 'int'}, )
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Tile from the database
 
-    tile = Tile.from_primary_key((request.params_path['tileId'],))
+    tile = Tile.from_primary_key((request.params_path['tileId'], ))
 
     # Make sure this Tile exists
 
@@ -35,7 +31,7 @@ def GET(request):
 
     # Instantiate a Rack from the database
 
-    rack = Rack.from_primary_key((tile.object_id,))
+    rack = Rack.from_primary_key((tile.object_id, ))
 
     # Make sure this Rack exists
 
@@ -46,11 +42,7 @@ def GET(request):
 
     rack.read()
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(rack),
-        rack.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(rack), rack.to_JSON())
 
 
 def POST(request):
@@ -59,25 +51,19 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int'
-            },
-            body={
-                'rack': {
-                    'name': 'string',
-                    'capacity': 'int',
-                    'powerCapacityW': 'int'
-                }
-            }
-        )
+        request.check_required_parameters(path={'tileId': 'int'},
+                                          body={'rack': {
+                                              'name': 'string',
+                                              'capacity': 'int',
+                                              'powerCapacityW': 'int'
+                                          }})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Tile from the database
 
-    tile = Tile.from_primary_key((request.params_path['tileId'],))
+    tile = Tile.from_primary_key((request.params_path['tileId'], ))
 
     # Make sure this Tile exists
 
@@ -109,11 +95,7 @@ def POST(request):
 
     rack.read()
 
-    return Response(
-        200,
-        'Successfully added {}.'.format(rack),
-        rack.to_JSON()
-    )
+    return Response(200, 'Successfully added {}.'.format(rack), rack.to_JSON())
 
 
 def PUT(request):
@@ -122,25 +104,19 @@ def PUT(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int'
-            },
-            body={
-                'rack': {
-                    'name': 'string',
-                    'capacity': 'int',
-                    'powerCapacityW': 'int'
-                }
-            }
-        )
+        request.check_required_parameters(path={'tileId': 'int'},
+                                          body={'rack': {
+                                              'name': 'string',
+                                              'capacity': 'int',
+                                              'powerCapacityW': 'int'
+                                          }})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Tile from the database
 
-    tile = Tile.from_primary_key((request.params_path['tileId'],))
+    tile = Tile.from_primary_key((request.params_path['tileId'], ))
 
     # Make sure this Tile exists
 
@@ -154,7 +130,7 @@ def PUT(request):
 
     # Instantiate a Rack from the database
 
-    rack = Rack.from_primary_key((tile.object_id,))
+    rack = Rack.from_primary_key((tile.object_id, ))
 
     # Make sure this Rack exists
 
@@ -172,11 +148,7 @@ def PUT(request):
 
     rack.read()
 
-    return Response(
-        200,
-        'Successfully updated {}.'.format(rack),
-        rack.to_JSON()
-    )
+    return Response(200, 'Successfully updated {}.'.format(rack), rack.to_JSON())
 
 
 def DELETE(request):
@@ -185,18 +157,14 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int'
-            },
-        )
+        request.check_required_parameters(path={'tileId': 'int'}, )
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Tile from the database
 
-    tile = Tile.from_primary_key((request.params_path['tileId'],))
+    tile = Tile.from_primary_key((request.params_path['tileId'], ))
 
     # Make sure this Tile exists
 
@@ -210,7 +178,7 @@ def DELETE(request):
 
     # Instantiate a Rack from the database
 
-    rack = Rack.from_primary_key((tile.object_id,))
+    rack = Rack.from_primary_key((tile.object_id, ))
 
     # Make sure this Rack exists
 
@@ -230,8 +198,4 @@ def DELETE(request):
 
     # Return this Rack
 
-    return Response(
-        200,
-        'Successfully deleted {}.'.format(rack),
-        rack.to_JSON()
-    )
+    return Response(200, 'Successfully deleted {}.'.format(rack), rack.to_JSON())

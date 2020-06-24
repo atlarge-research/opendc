@@ -120,3 +120,9 @@ python main.py config.json
 To try a different query, use the Postman `Builder` to edit the method, path, body, query parameters, etc. `Create New Simulation` is provided as an additional example.
 
 When editing the web server code, restart the server (`CTRL` + `c` followed by `python main.py config.json` in the console running the server) to see the result of your changes.
+
+To format all files, run the following command:
+
+```bash
+yapf **/*.py -i
+```

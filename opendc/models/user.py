@@ -20,7 +20,7 @@ class User(Model):
     def from_google_id(cls, google_id):
         """Initialize a User by fetching them by their google id."""
 
-        user = cls._from_database('SELECT * FROM users WHERE google_id = %s', (google_id,))
+        user = cls._from_database('SELECT * FROM users WHERE google_id = %s', (google_id, ))
 
         if user is not None:
             return user
@@ -31,7 +31,7 @@ class User(Model):
     def from_email(cls, email):
         """Initialize a User by fetching them by their email."""
 
-        user = cls._from_database('SELECT * FROM users WHERE email = %s', (email,))
+        user = cls._from_database('SELECT * FROM users WHERE email = %s', (email, ))
 
         if user is not None:
             return user

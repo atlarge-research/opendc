@@ -11,8 +11,4 @@ def GET(request):
 
     # Return the Storages
 
-    return Response(
-        200,
-        'Successfully retrieved Storages.',
-        [x.to_JSON() for x in storages]
-    )
+    return Response(200, 'Successfully retrieved Storages.', [x.to_JSON() for x in storages])

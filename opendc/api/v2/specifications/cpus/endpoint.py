@@ -11,8 +11,4 @@ def GET(request):
 
     # Return the CPUs
 
-    return Response(
-        200,
-        'Successfully retrieved CPUs.',
-        [x.to_JSON() for x in cpus]
-    )
+    return Response(200, 'Successfully retrieved CPUs.', [x.to_JSON() for x in cpus])

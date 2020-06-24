@@ -11,22 +11,14 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int',
-                'userId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int', 'userId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate an Authorization
 
-    authorization = Authorization.from_primary_key((
-        request.params_path['userId'],
-        request.params_path['simulationId']
-    ))
+    authorization = Authorization.from_primary_key((request.params_path['userId'], request.params_path['simulationId']))
 
     # Make sure this Authorization exists in the database
 
@@ -42,11 +34,7 @@ def DELETE(request):
 
     authorization.delete()
 
-    return Response(
-        200,
-        'Successfully deleted {}.'.format(authorization),
-        authorization.to_JSON()
-    )
+    return Response(200, 'Successfully deleted {}.'.format(authorization), authorization.to_JSON())
 
 
 def GET(request):
@@ -55,22 +43,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int',
-                'userId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int', 'userId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate an Authorization
 
-    authorization = Authorization.from_primary_key((
-        request.params_path['userId'],
-        request.params_path['simulationId']
-    ))
+    authorization = Authorization.from_primary_key((request.params_path['userId'], request.params_path['simulationId']))
 
     # Make sure this Authorization exists in the database
 
@@ -83,11 +63,7 @@ def GET(request):
 
     # Return this Authorization
 
-    return Response(
-        200,
-        'Successfully retrieved {}'.format(authorization),
-        authorization.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}'.format(authorization), authorization.to_JSON())
 
 
 def POST(request):
@@ -96,17 +72,13 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'userId': 'int',
-                'simulationId': 'int'
-            },
-            body={
-                'authorization': {
-                    'authorizationLevel': 'string'
-                }
-            }
-        )
+        request.check_required_parameters(path={
+            'userId': 'int',
+            'simulationId': 'int'
+        },
+                                          body={'authorization': {
+                                              'authorizationLevel': 'string'
+                                          }})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -114,18 +86,21 @@ def POST(request):
     # Instantiate an Authorization
 
     authorization = Authorization.from_JSON({
-        'userId': request.params_path['userId'],
-        'simulationId': request.params_path['simulationId'],
-        'authorizationLevel': request.params_body['authorization']['authorizationLevel']
+        'userId':
+        request.params_path['userId'],
+        'simulationId':
+        request.params_path['simulationId'],
+        'authorizationLevel':
+        request.params_body['authorization']['authorizationLevel']
     })
 
     # Make sure the Simulation and User exist
 
-    user = User.from_primary_key((authorization.user_id,))
+    user = User.from_primary_key((authorization.user_id, ))
     if not user.exists():
         return Response(404, '{} not found.'.format(user))
 
-    simulation = Simulation.from_primary_key((authorization.simulation_id,))
+    simulation = Simulation.from_primary_key((authorization.simulation_id, ))
     if not simulation.exists():
         return Response(404, '{} not found.'.format(simulation))
 
@@ -149,11 +124,7 @@ def POST(request):
 
     # Return this Authorization
 
-    return Response(
-        200,
-        'Successfully added {}'.format(authorization),
-        authorization.to_JSON()
-    )
+    return Response(200, 'Successfully added {}'.format(authorization), authorization.to_JSON())
 
 
 def PUT(request):
@@ -162,17 +133,13 @@ def PUT(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int',
-                'userId': 'int'
-            },
-            body={
-                'authorization': {
-                    'authorizationLevel': 'string'
-                }
-            }
-        )
+        request.check_required_parameters(path={
+            'simulationId': 'int',
+            'userId': 'int'
+        },
+                                          body={'authorization': {
+                                              'authorizationLevel': 'string'
+                                          }})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -180,9 +147,12 @@ def PUT(request):
     # Instantiate and Authorization
 
     authorization = Authorization.from_JSON({
-        'userId': request.params_path['userId'],
-        'simulationId': request.params_path['simulationId'],
-        'authorizationLevel': request.params_body['authorization']['authorizationLevel']
+        'userId':
+        request.params_path['userId'],
+        'simulationId':
+        request.params_path['simulationId'],
+        'authorizationLevel':
+        request.params_body['authorization']['authorizationLevel']
     })
 
     # Make sure this Authorization exists
@@ -205,8 +175,4 @@ def PUT(request):
 
     # Return this Authorization
 
-    return Response(
-        200,
-        'Successfully updated {}.'.format(authorization),
-        authorization.to_JSON()
-    )
+    return Response(200, 'Successfully updated {}.'.format(authorization), authorization.to_JSON())

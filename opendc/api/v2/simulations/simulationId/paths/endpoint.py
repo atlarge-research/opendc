@@ -10,17 +10,13 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int'})
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Simulation from the database
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
 
     # Make sure this Simulation exists
 
@@ -36,8 +32,4 @@ def GET(request):
 
     paths = Path.query('simulation_id', request.params_path['simulationId'])
 
-    return Response(
-        200,
-        'Successfully retrieved Paths for {}.'.format(simulation),
-        [x.to_JSON() for x in paths]
-    )
+    return Response(200, 'Successfully retrieved Paths for {}.'.format(simulation), [x.to_JSON() for x in paths])

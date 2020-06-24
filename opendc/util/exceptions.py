@@ -27,11 +27,8 @@ class ForeignKeyError(Exception):
 
 class RowNotFoundError(Exception):
     """Raised when a database row is not found."""
-
     def __init__(self, table_name):
-        super(RowNotFoundError, self).__init__(
-            'Row in `{}` table not found.'.format(table_name)
-        )
+        super(RowNotFoundError, self).__init__('Row in `{}` table not found.'.format(table_name))
 
         self.table_name = table_name
 
@@ -42,14 +39,9 @@ class ParameterError(Exception):
 
 class IncorrectParameterError(ParameterError):
     """Raised when a parameter is of the wrong type."""
-
     def __init__(self, parameter_name, parameter_location):
-        super(IncorrectParameterError, self).__init__(
-            'Incorrectly typed `{}` {} parameter.'.format(
-                parameter_name,
-                parameter_location
-            )
-        )
+        super(IncorrectParameterError,
+              self).__init__('Incorrectly typed `{}` {} parameter.'.format(parameter_name, parameter_location))
 
         self.parameter_name = parameter_name
         self.parameter_location = parameter_location
@@ -57,14 +49,9 @@ class IncorrectParameterError(ParameterError):
 
 class MissingParameterError(ParameterError):
     """Raised when a parameter is missing."""
-
     def __init__(self, parameter_name, parameter_location):
-        super(MissingParameterError, self).__init__(
-            'Missing required `{}` {} parameter.'.format(
-                parameter_name,
-                parameter_location
-            )
-        )
+        super(MissingParameterError,
+              self).__init__('Missing required `{}` {} parameter.'.format(parameter_name, parameter_location))
 
         self.parameter_name = parameter_name
         self.parameter_location = parameter_location

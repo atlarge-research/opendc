@@ -10,17 +10,11 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int'
-            },
-            body={
-                'datacenter': {
-                    'starred': 'int',
-                    'simulationId': 'int'
-                }
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int'},
+                                          body={'datacenter': {
+                                              'starred': 'int',
+                                              'simulationId': 'int'
+                                          }})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -32,7 +26,7 @@ def POST(request):
 
     # Instantiate a Simulation from the database
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
 
     # Make sure this Simulation exists
 
@@ -54,8 +48,4 @@ def POST(request):
 
     datacenter.read()
 
-    return Response(
-        200,
-        'Successfully added {}.'.format(datacenter),
-        datacenter.to_JSON()
-    )
+    return Response(200, 'Successfully added {}.'.format(datacenter), datacenter.to_JSON())

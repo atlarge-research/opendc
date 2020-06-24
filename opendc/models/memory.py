@@ -19,14 +19,7 @@ class Memory(Model):
     COLLECTION_NAME = 'memories'
 
     COLUMNS = [
-        'id',
-        'manufacturer',
-        'family',
-        'generation',
-        'model',
-        'speed_mb_per_s',
-        'size_mb',
-        'energy_consumption_w',
+        'id', 'manufacturer', 'family', 'generation', 'model', 'speed_mb_per_s', 'size_mb', 'energy_consumption_w',
         'failure_model_id'
     ]
 

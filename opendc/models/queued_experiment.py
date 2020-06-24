@@ -2,11 +2,7 @@ from opendc.models.model import Model
 
 
 class QueuedExperiment(Model):
-    JSON_TO_PYTHON_DICT = {
-        'QueuedExperiment': {
-            'experimentId': 'experiment_id'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'QueuedExperiment': {'experimentId': 'experiment_id'}}
 
     COLLECTION_NAME = 'queued_experiments'
     COLUMNS = ['experiment_id']

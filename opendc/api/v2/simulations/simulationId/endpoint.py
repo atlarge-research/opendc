@@ -11,18 +11,14 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Simulation and make sure it exists
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
 
     if not simulation.exists():
         return Response(404, '{} not found.'.format(simulation))
@@ -38,11 +34,7 @@ def DELETE(request):
 
     # Return this Simulation
 
-    return Response(
-        200,
-        'Successfully deleted {}.'.format(simulation),
-        simulation.to_JSON()
-    )
+    return Response(200, 'Successfully deleted {}.'.format(simulation), simulation.to_JSON())
 
 
 def GET(request):
@@ -51,18 +43,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'simulationId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Simulation and make sure it exists
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
 
     if not simulation.exists():
         return Response(404, '{} not found.'.format(simulation))
@@ -76,11 +64,7 @@ def GET(request):
 
     simulation.read()
 
-    return Response(
-        200,
-        'Successfully retrieved {}'.format(simulation),
-        simulation.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}'.format(simulation), simulation.to_JSON())
 
 
 def PUT(request):
@@ -89,23 +73,14 @@ def PUT(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            body={
-                'simulation': {
-                    'name': 'name'
-                }
-            },
-            path={
-                'simulationId': 'int'
-            }
-        )
+        request.check_required_parameters(body={'simulation': {'name': 'name'}}, path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Simulation and make sure it exists
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'],))
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
 
     if not simulation.exists():
         return Response(404, '{} not found.'.format(simulation))
@@ -126,8 +101,4 @@ def PUT(request):
 
     # Return this Simulation
 
-    return Response(
-        200,
-        'Successfully updated {}.'.format(simulation),
-        simulation.to_JSON()
-    )
+    return Response(200, 'Successfully updated {}.'.format(simulation), simulation.to_JSON())

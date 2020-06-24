@@ -19,15 +19,8 @@ class CPU(Model):
     COLLECTION_NAME = 'cpus'
 
     COLUMNS = [
-        'id',
-        'manufacturer',
-        'family',
-        'generation',
-        'model',
-        'clock_rate_mhz',
-        'number_of_cores',
-        'energy_consumption_w',
-        'failure_model_id'
+        'id', 'manufacturer', 'family', 'generation', 'model', 'clock_rate_mhz', 'number_of_cores',
+        'energy_consumption_w', 'failure_model_id'
     ]
 
     COLUMNS_PRIMARY_KEY = ['id']

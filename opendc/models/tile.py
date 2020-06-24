@@ -29,7 +29,7 @@ class Tile(Model):
         # Get the Room
 
         try:
-            room = Room.from_primary_key((self.room_id,))
+            room = Room.from_primary_key((self.room_id, ))
         except exceptions.RowNotFoundError:
             return False
 
@@ -43,5 +43,5 @@ class Tile(Model):
         super(Tile, self).read()
 
         if self.object_id is not None:
-            obj = Object.from_primary_key((self.object_id,))
+            obj = Object.from_primary_key((self.object_id, ))
             self.object_type = obj.type

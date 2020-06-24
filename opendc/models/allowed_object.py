@@ -2,12 +2,7 @@ from opendc.models.model import Model
 
 
 class AllowedObject(Model):
-    JSON_TO_PYTHON_DICT = {
-        'AllowedObject': {
-            'roomType': 'room_type',
-            'objectType': 'object_type'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'AllowedObject': {'roomType': 'room_type', 'objectType': 'object_type'}}
 
     COLLECTION_NAME = 'allowed_objects'
     COLUMNS = ['room_type', 'object_type']

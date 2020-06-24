@@ -10,11 +10,7 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'tileId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -40,11 +36,7 @@ def GET(request):
     for machine in machines:
         machine.read()
 
-    return Response(
-        200,
-        'Successfully retrieved Machines for {}.'.format(rack),
-        [x.to_JSON() for x in machines]
-    )
+    return Response(200, 'Successfully retrieved Machines for {}.'.format(rack), [x.to_JSON() for x in machines])
 
 
 def POST(request):
@@ -53,22 +45,18 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int'
-            },
-            body={
-                'machine': {
-                    'rackId': 'int',
-                    'position': 'int',
-                    'tags': 'list-string',
-                    'cpuIds': 'list-int',
-                    'gpuIds': 'list-int',
-                    'memoryIds': 'list-int',
-                    'storageIds': 'list-int'
-                }
-            }
-        )
+        request.check_required_parameters(path={'tileId': 'int'},
+                                          body={
+                                              'machine': {
+                                                  'rackId': 'int',
+                                                  'position': 'int',
+                                                  'tags': 'list-string',
+                                                  'cpuIds': 'list-int',
+                                                  'gpuIds': 'list-int',
+                                                  'memoryIds': 'list-int',
+                                                  'storageIds': 'list-int'
+                                              }
+                                          })
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -111,8 +99,4 @@ def POST(request):
 
     machine.read()
 
-    return Response(
-        200,
-        'Successfully added {}.'.format(machine),
-        machine.to_JSON()
-    )
+    return Response(200, 'Successfully added {}.'.format(machine), machine.to_JSON())

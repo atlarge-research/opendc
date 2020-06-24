@@ -9,18 +9,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'datacenterId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'datacenterId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Datacenter from the database
 
-    datacenter = Datacenter.from_primary_key((request.params_path['datacenterId'],))
+    datacenter = Datacenter.from_primary_key((request.params_path['datacenterId'], ))
 
     # Make sure this Datacenter exists
 
@@ -36,8 +32,4 @@ def GET(request):
 
     datacenter.read()
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(datacenter),
-        datacenter.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(datacenter), datacenter.to_JSON())

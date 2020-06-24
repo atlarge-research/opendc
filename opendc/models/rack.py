@@ -24,12 +24,12 @@ class Rack(Model):
     def from_tile_id(cls, tile_id):
         """Get a Rack from the ID of the Tile it's on."""
 
-        tile = Tile.from_primary_key((tile_id,))
+        tile = Tile.from_primary_key((tile_id, ))
 
         if not tile.exists():
             return Rack(id=-1)
 
-        return cls.from_primary_key((tile.object_id,))
+        return cls.from_primary_key((tile.object_id, ))
 
     def google_id_has_at_least(self, google_id, authorization_level):
         """Return True if the user has at least the given auth level over this Rack."""
@@ -57,5 +57,5 @@ class Rack(Model):
     def delete(self):
         """Delete a Rack by deleting its associated object."""
 
-        obj = Object.from_primary_key((self.id,))
+        obj = Object.from_primary_key((self.id, ))
         obj.delete()

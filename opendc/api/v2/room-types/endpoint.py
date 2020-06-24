@@ -11,8 +11,4 @@ def GET(request):
 
     # Return the RoomTypes
 
-    return Response(
-        200,
-        'Successfully retrieved RoomTypes.',
-        [x.to_JSON() for x in room_types]
-    )
+    return Response(200, 'Successfully retrieved RoomTypes.', [x.to_JSON() for x in room_types])

@@ -2,12 +2,7 @@ from opendc.models.model import Model
 
 
 class Trace(Model):
-    JSON_TO_PYTHON_DICT = {
-        'Trace': {
-            'id': 'id',
-            'name': 'name'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'Trace': {'id': 'id', 'name': 'name'}}
 
     COLLECTION_NAME = 'traces'
     COLUMNS = ['id', 'name']

@@ -18,23 +18,14 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'pathId': 'int'
-            },
-            body={
-                'section': {
-                    'startTick': 'int'
-                }
-            }
-        )
+        request.check_required_parameters(path={'pathId': 'int'}, body={'section': {'startTick': 'int'}})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate the current Path from the database
 
-    current_path = Path.from_primary_key((request.params_path['pathId'],))
+    current_path = Path.from_primary_key((request.params_path['pathId'], ))
 
     # Make sure the current Path exists
 
@@ -48,10 +39,8 @@ def POST(request):
 
     # Create the new Path
 
-    new_path = Path(
-        simulation_id=current_path.simulation_id,
-        datetime_created=database.datetime_to_string(datetime.now())
-    )
+    new_path = Path(simulation_id=current_path.simulation_id,
+                    datetime_created=database.datetime_to_string(datetime.now()))
 
     new_path.insert()
 
@@ -63,11 +52,9 @@ def POST(request):
     for current_section in current_sections:
 
         if current_section.start_tick < request.params_body['section']['startTick'] or current_section.start_tick == 0:
-            new_section = Section(
-                path_id=new_path.id,
-                datacenter_id=current_section.datacenter_id,
-                start_tick=current_section.start_tick
-            )
+            new_section = Section(path_id=new_path.id,
+                                  datacenter_id=current_section.datacenter_id,
+                                  start_tick=current_section.start_tick)
 
             new_section.insert()
 
@@ -75,13 +62,11 @@ def POST(request):
 
     # Make a deep copy of the last section's datacenter, its rooms, their tiles, etc.
 
-    path_parameters = {
-        'simulationId': new_path.simulation_id
-    }
+    path_parameters = {'simulationId': new_path.simulation_id}
 
     # Copy the Datacenter
 
-    old_datacenter = Datacenter.from_primary_key((last_section.datacenter_id,))
+    old_datacenter = Datacenter.from_primary_key((last_section.datacenter_id, ))
 
     message = old_datacenter.generate_api_call(path_parameters, request.token)
     response = Request(message).process()
@@ -91,11 +76,9 @@ def POST(request):
     # Create the new last Section, with the IDs of the new Path and new Datacenter
 
     if last_section.start_tick != 0:
-        new_section = Section(
-            path_id=new_path.id,
-            datacenter_id=path_parameters['datacenterId'],
-            start_tick=request.params_body['section']['startTick']
-        )
+        new_section = Section(path_id=new_path.id,
+                              datacenter_id=path_parameters['datacenterId'],
+                              start_tick=request.params_body['section']['startTick'])
 
         new_section.insert()
 
@@ -169,8 +152,4 @@ def POST(request):
 
     # Return the new Path
 
-    return Response(
-        200,
-        'Successfully created {}.'.format(new_path),
-        new_path.to_JSON()
-    )
+    return Response(200, 'Successfully created {}.'.format(new_path), new_path.to_JSON())

@@ -3,13 +3,7 @@ from opendc.models.section import Section
 
 
 class Datacenter(Model):
-    JSON_TO_PYTHON_DICT = {
-        'datacenter': {
-            'id': 'id',
-            'starred': 'starred',
-            'simulationId': 'simulation_id'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'datacenter': {'id': 'id', 'starred': 'starred', 'simulationId': 'simulation_id'}}
 
     PATH = '/v1/simulations/{simulationId}/datacenters'
 

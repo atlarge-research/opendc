@@ -9,17 +9,13 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'sectionId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'sectionId': 'int'})
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Section from the database
 
-    section = Section.from_primary_key((request.params_path['sectionId'],))
+    section = Section.from_primary_key((request.params_path['sectionId'], ))
 
     # Make sure this Section exists
 
@@ -35,8 +31,4 @@ def GET(request):
 
     section.read()
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(section),
-        section.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(section), section.to_JSON())

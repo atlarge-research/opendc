@@ -3,21 +3,13 @@ from opendc.util import database
 
 
 class TaskDuration(Model):
-    JSON_TO_PYTHON_DICT = {
-        'TaskDuration': {
-            'taskId': 'task_id',
-            'duration': 'duration'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'TaskDuration': {'taskId': 'task_id', 'duration': 'duration'}}
 
     @classmethod
     def _from_database_row(cls, row):
         """Instantiate a RoomState from a database row."""
 
-        return cls(
-            task_id=row[0],
-            duration=row[1]
-        )
+        return cls(task_id=row[0], duration=row[1])
 
     @classmethod
     def from_experiment_id(cls, experiment_id):
@@ -31,7 +23,7 @@ class TaskDuration(Model):
             GROUP BY task_id
         '''
 
-        results = database.fetch_all(statement, (experiment_id,))
+        results = database.fetch_all(statement, (experiment_id, ))
 
         for row in results:
             room_states.append(cls._from_database_row(row))

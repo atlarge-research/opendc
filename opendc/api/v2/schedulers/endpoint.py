@@ -11,8 +11,4 @@ def GET(request):
 
     # Return the Schedulers
 
-    return Response(
-        200,
-        'Successfully retrieved Schedulers.',
-        [x.to_JSON() for x in schedulers]
-    )
+    return Response(200, 'Successfully retrieved Schedulers.', [x.to_JSON() for x in schedulers])

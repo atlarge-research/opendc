@@ -9,18 +9,14 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'userId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'userId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a User and make sure they exist
 
-    user = User.from_primary_key((request.params_path['userId'],))
+    user = User.from_primary_key((request.params_path['userId'], ))
 
     if not user.exists():
         return Response(404, '{} not found'.format(user))
@@ -36,11 +32,7 @@ def DELETE(request):
 
     # Return this User
 
-    return Response(
-        200,
-        'Successfully deleted {}'.format(user),
-        user.to_JSON()
-    )
+    return Response(200, 'Successfully deleted {}'.format(user), user.to_JSON())
 
 
 def GET(request):
@@ -49,18 +41,14 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'userId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'userId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a User and make sure they exist
 
-    user = User.from_primary_key((request.params_path['userId'],))
+    user = User.from_primary_key((request.params_path['userId'], ))
 
     if not user.exists():
         return Response(404, '{} not found.'.format(user))
@@ -80,24 +68,18 @@ def PUT(request):
     # Make sure the required parameters are there
 
     try:
-        request.check_required_parameters(
-            body={
-                'user': {
-                    'givenName': 'string',
-                    'familyName': 'string'
-                }
-            },
-            path={
-                'userId': 'int'
-            }
-        )
+        request.check_required_parameters(body={'user': {
+            'givenName': 'string',
+            'familyName': 'string'
+        }},
+                                          path={'userId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a User and make sure they exist
 
-    user = User.from_primary_key((request.params_path['userId'],))
+    user = User.from_primary_key((request.params_path['userId'], ))
 
     if not user.exists():
         return Response(404, '{} not found.'.format(user))
@@ -116,8 +98,4 @@ def PUT(request):
 
     # Return this User
 
-    return Response(
-        200,
-        'Successfully updated {}.'.format(user),
-        user.to_JSON()
-    )
+    return Response(200, 'Successfully updated {}.'.format(user), user.to_JSON())

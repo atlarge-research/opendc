@@ -26,7 +26,7 @@ class Room(Model):
         # Get the Datacenter
 
         try:
-            datacenter = Datacenter.from_primary_key((self.datacenter_id,))
+            datacenter = Datacenter.from_primary_key((self.datacenter_id, ))
         except exceptions.RowNotFoundError:
             return False
 

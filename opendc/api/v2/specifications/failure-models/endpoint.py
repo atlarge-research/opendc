@@ -11,8 +11,4 @@ def GET(request):
 
     # Return the FailureModels
 
-    return Response(
-        200,
-        'Successfully retrieved FailureModels.',
-        [x.to_JSON() for x in failure_models]
-    )
+    return Response(200, 'Successfully retrieved FailureModels.', [x.to_JSON() for x in failure_models])

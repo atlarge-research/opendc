@@ -14,11 +14,7 @@ def _missing_parameter(params_required, params_actual, parent=''):
 
         if isinstance(param_required, dict):
 
-            param_missing = _missing_parameter(
-                param_required,
-                param_actual,
-                param_name
-            )
+            param_missing = _missing_parameter(param_required, param_actual, param_name)
 
             if param_missing is not None:
                 return '{}.{}'.format(parent, param_missing)
@@ -36,11 +32,7 @@ def _incorrect_parameter(params_required, params_actual, parent=''):
 
         if isinstance(param_required, dict):
 
-            param_incorrect = _incorrect_parameter(
-                param_required,
-                param_actual,
-                param_name
-            )
+            param_incorrect = _incorrect_parameter(param_required, param_actual, param_name)
 
             if param_incorrect is not None:
                 return '{}.{}'.format(parent, param_incorrect)
@@ -80,14 +72,8 @@ def check(request, **kwargs):
 
         missing_parameter = _missing_parameter(params_required, params_actual)
         if missing_parameter is not None:
-            raise exceptions.MissingParameterError(
-                _format_parameter(missing_parameter),
-                location
-            )
+            raise exceptions.MissingParameterError(_format_parameter(missing_parameter), location)
 
         incorrect_parameter = _incorrect_parameter(params_required, params_actual)
         if incorrect_parameter is not None:
-            raise exceptions.IncorrectParameterError(
-                _format_parameter(incorrect_parameter),
-                location
-            )
+            raise exceptions.IncorrectParameterError(_format_parameter(incorrect_parameter), location)

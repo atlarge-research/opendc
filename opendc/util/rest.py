@@ -12,7 +12,6 @@ with open(sys.argv[1]) as f:
 
 class Request(object):
     """WebSocket message to REST request mapping."""
-
     def __init__(self, message=None):
         """"Initialize a Request from a socket message."""
 
@@ -52,9 +51,7 @@ class Request(object):
             raise exceptions.UnimplementedEndpointError('Non-ASCII path')
 
         except ImportError:
-            raise exceptions.UnimplementedEndpointError(
-                'Unimplemented endpoint: {}.'.format(self.path)
-            )
+            raise exceptions.UnimplementedEndpointError('Unimplemented endpoint: {}.'.format(self.path))
 
         # Check the method
 
@@ -62,8 +59,8 @@ class Request(object):
             raise exceptions.UnsupportedMethodError('Non-rest method: {}'.format(self.method))
 
         if not hasattr(self.module, self.method):
-            raise exceptions.UnsupportedMethodError(
-                'Unimplemented method at endpoint {}: {}'.format(self.path, self.method))
+            raise exceptions.UnsupportedMethodError('Unimplemented method at endpoint {}: {}'.format(
+                self.path, self.method))
 
         # Verify the user
 
@@ -118,23 +115,16 @@ class Request(object):
 
 class Response(object):
     """Response to websocket mapping"""
-
     def __init__(self, status_code, status_description, content=None):
         """Initialize a new Response."""
 
-        self.status = {
-            'code': status_code,
-            'description': status_description
-        }
+        self.status = {'code': status_code, 'description': status_description}
         self.content = content
 
     def to_JSON(self):
         """"Return a JSON representation of this Response"""
 
-        data = {
-            'id': self.id,
-            'status': self.status
-        }
+        data = {'id': self.id, 'status': self.status}
 
         if self.content is not None:
             data['content'] = self.content

@@ -10,17 +10,13 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'datacenterId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'datacenterId': 'int'})
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Datacenter from the database
 
-    datacenter = Datacenter.from_primary_key((request.params_path['datacenterId'],))
+    datacenter = Datacenter.from_primary_key((request.params_path['datacenterId'], ))
 
     # Make sure this Datacenter exists
 
@@ -36,11 +32,7 @@ def GET(request):
 
     rooms = Room.query('datacenter_id', datacenter.id)
 
-    return Response(
-        200,
-        'Successfully retrieved Rooms for {}.'.format(datacenter),
-        [x.to_JSON() for x in rooms]
-    )
+    return Response(200, 'Successfully retrieved Rooms for {}.'.format(datacenter), [x.to_JSON() for x in rooms])
 
 
 def POST(request):
@@ -49,18 +41,12 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'datacenterId': 'int'
-            },
-            body={
-                'room': {
-                    'id': 'int',
-                    'datacenterId': 'int',
-                    'roomType': 'string'
-                }
-            }
-        )
+        request.check_required_parameters(path={'datacenterId': 'int'},
+                                          body={'room': {
+                                              'id': 'int',
+                                              'datacenterId': 'int',
+                                              'roomType': 'string'
+                                          }})
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
@@ -71,7 +57,7 @@ def POST(request):
 
     # Instantiate a Datacenter from the database
 
-    datacenter = Datacenter.from_primary_key((request.params_path['datacenterId'],))
+    datacenter = Datacenter.from_primary_key((request.params_path['datacenterId'], ))
 
     # Make sure this Datacenter exists
 
@@ -104,8 +90,4 @@ def POST(request):
 
     room.read()
 
-    return Response(
-        200,
-        'Successfully added {}.'.format(room),
-        room.to_JSON()
-    )
+    return Response(200, 'Successfully added {}.'.format(room), room.to_JSON())

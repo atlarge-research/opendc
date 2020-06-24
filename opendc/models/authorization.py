@@ -18,12 +18,7 @@ class Authorization(Model):
     def google_id_has_at_least(self, google_id, authorization_level):
         """Return True if the User has at least the given auth level over this Authorization."""
 
-        authorization = Authorization.from_primary_key(
-            (
-                User.from_google_id(google_id).id,
-                self.simulation_id
-            )
-        )
+        authorization = Authorization.from_primary_key((User.from_google_id(google_id).id, self.simulation_id))
 
         if authorization is None:
             return False

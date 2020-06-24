@@ -10,12 +10,7 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int',
-                'position': 'int'
-            }
-        )
+        request.check_required_parameters(path={'tileId': 'int', 'position': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -38,34 +33,28 @@ def GET(request):
 
     machine.read()
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(machine),
-        machine.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(machine), machine.to_JSON())
 
 
 def PUT(request):
     """Update the Machine at this location in this Rack."""
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int',
-                'position': 'int'
-            },
-            body={
-                'machine': {
-                    'rackId': 'int',
-                    'position': 'int',
-                    'tags': 'list-string',
-                    'cpuIds': 'list-int',
-                    'gpuIds': 'list-int',
-                    'memoryIds': 'list-int',
-                    'storageIds': 'list-int'
-                }
-            }
-        )
+        request.check_required_parameters(path={
+            'tileId': 'int',
+            'position': 'int'
+        },
+                                          body={
+                                              'machine': {
+                                                  'rackId': 'int',
+                                                  'position': 'int',
+                                                  'tags': 'list-string',
+                                                  'cpuIds': 'list-int',
+                                                  'gpuIds': 'list-int',
+                                                  'memoryIds': 'list-int',
+                                                  'storageIds': 'list-int'
+                                              }
+                                          })
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -114,11 +103,7 @@ def PUT(request):
 
     machine.read()
 
-    return Response(
-        200,
-        'Successfully updated {}.'.format(machine),
-        machine.to_JSON()
-    )
+    return Response(200, 'Successfully updated {}.'.format(machine), machine.to_JSON())
 
 
 def DELETE(request):
@@ -127,12 +112,7 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'tileId': 'int',
-                'position': 'int'
-            }
-        )
+        request.check_required_parameters(path={'tileId': 'int', 'position': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -157,8 +137,4 @@ def DELETE(request):
 
     # Return this Machine
 
-    return Response(
-        200,
-        'Successfully deleted {}.'.format(machine),
-        machine.to_JSON()
-    )
+    return Response(200, 'Successfully deleted {}.'.format(machine), machine.to_JSON())

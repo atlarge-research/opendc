@@ -29,15 +29,7 @@ class TaskState(Model):
         results = database.fetch_all(statement, (experiment_id, tick))
 
         for row in results:
-            task_states.append(
-                cls(
-                    id=row[0],
-                    task_id=row[1],
-                    experiment_id=row[2],
-                    tick=row[3],
-                    flops_left=row[4]
-                )
-            )
+            task_states.append(cls(id=row[0], task_id=row[1], experiment_id=row[2], tick=row[3], flops_left=row[4]))
 
         return task_states
 

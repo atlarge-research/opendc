@@ -2,12 +2,7 @@ from opendc.models.model import Model
 
 
 class Object(Model):
-    JSON_TO_PYTHON_DICT = {
-        'Object': {
-            'id': 'id',
-            'type': 'type'
-        }
-    }
+    JSON_TO_PYTHON_DICT = {'Object': {'id': 'id', 'type': 'type'}}
 
     COLLECTION_NAME = 'objects'
     COLUMNS = ['id', 'type']

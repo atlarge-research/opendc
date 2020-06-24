@@ -9,26 +9,18 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'id': 'int'
-            }
-        )
+        request.check_required_parameters(path={'id': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate a Storage and make sure it exists
 
-    storage = Storage.from_primary_key((request.params_path['id'],))
+    storage = Storage.from_primary_key((request.params_path['id'], ))
 
     if not storage.exists():
         return Response(404, '{} not found.'.format(storage))
 
     # Return this CPU
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(storage),
-        storage.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(storage), storage.to_JSON())

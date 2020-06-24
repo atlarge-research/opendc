@@ -11,8 +11,4 @@ def GET(request):
 
     # Return the Memories
 
-    return Response(
-        200,
-        'Successfully retrieved Memories.',
-        [x.to_JSON() for x in memories]
-    )
+    return Response(200, 'Successfully retrieved Memories.', [x.to_JSON() for x in memories])

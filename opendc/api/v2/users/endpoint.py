@@ -8,11 +8,7 @@ def GET(request):
     """Search for a User using their email address."""
 
     try:
-        request.check_required_parameters(
-            query={
-                'email': 'string'
-            }
-        )
+        request.check_required_parameters(query={'email': 'string'})
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
@@ -21,11 +17,7 @@ def GET(request):
     if user is not None:
         return Response(404, f'User with email {request.params_query["email"]} not found')
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(user),
-        user.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(user), user.to_JSON())
 
 
 def POST(request):
@@ -34,13 +26,7 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            body={
-                'user': {
-                    'email': 'string'
-                }
-            }
-        )
+        request.check_required_parameters(body={'user': {'email': 'string'}})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
@@ -67,8 +53,4 @@ def POST(request):
 
     # Return a JSON representation of the User
 
-    return Response(
-        200,
-        'Successfully created {}'.format(user),
-        user.to_JSON()
-    )
+    return Response(200, 'Successfully created {}'.format(user), user.to_JSON())

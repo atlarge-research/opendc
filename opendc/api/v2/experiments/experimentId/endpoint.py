@@ -7,18 +7,14 @@ def GET(request):
     """Get this Experiment."""
 
     try:
-        request.check_required_parameters(
-            path={
-                'experimentId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'experimentId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate an Experiment from the database
 
-    experiment = Experiment.from_primary_key((request.params_path['experimentId'],))
+    experiment = Experiment.from_primary_key((request.params_path['experimentId'], ))
 
     # Make sure this Experiment exists
 
@@ -34,11 +30,7 @@ def GET(request):
 
     experiment.read()
 
-    return Response(
-        200,
-        'Successfully retrieved {}.'.format(experiment),
-        experiment.to_JSON()
-    )
+    return Response(200, 'Successfully retrieved {}.'.format(experiment), experiment.to_JSON())
 
 
 def PUT(request):
@@ -48,25 +40,20 @@ def PUT(request):
 
     try:
         request.check_required_parameters(
-            path={
-                'experimentId': 'int'
-            },
-            body={
-                'experiment': {
-                    'pathId': 'int',
-                    'traceId': 'int',
-                    'schedulerName': 'string',
-                    'name': 'string'
-                }
-            }
-        )
+            path={'experimentId': 'int'},
+            body={'experiment': {
+                'pathId': 'int',
+                'traceId': 'int',
+                'schedulerName': 'string',
+                'name': 'string'
+            }})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate an Experiment from the database
 
-    experiment = Experiment.from_primary_key((request.params_path['experimentId'],))
+    experiment = Experiment.from_primary_key((request.params_path['experimentId'], ))
 
     # Make sure this Experiment exists
 
@@ -93,11 +80,7 @@ def PUT(request):
 
     # Return this Experiment
 
-    return Response(
-        200,
-        'Successfully updated {}.'.format(experiment),
-        experiment.to_JSON()
-    )
+    return Response(200, 'Successfully updated {}.'.format(experiment), experiment.to_JSON())
 
 
 def DELETE(request):
@@ -106,18 +89,14 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(
-            path={
-                'experimentId': 'int'
-            }
-        )
+        request.check_required_parameters(path={'experimentId': 'int'})
 
     except exceptions.ParameterError as e:
         return Response(400, e.message)
 
     # Instantiate an Experiment and make sure it exists
 
-    experiment = Experiment.from_primary_key((request.params_path['experimentId'],))
+    experiment = Experiment.from_primary_key((request.params_path['experimentId'], ))
 
     if not experiment.exists():
         return Response(404, '{} not found.'.format(experiment))
@@ -131,8 +110,4 @@ def DELETE(request):
 
     experiment.delete()
 
-    return Response(
-        200,
-        'Successfully deleted {}.'.format(experiment),
-        experiment.to_JSON()
-    )
+    return Response(200, 'Successfully deleted {}.'.format(experiment), experiment.to_JSON())

@@ -11,8 +11,4 @@ def GET(request):
 
     # Return the GPUs
 
-    return Response(
-        200,
-        'Successfully retrieved GPUs.',
-        [x.to_JSON() for x in gpus]
-    )
+    return Response(200, 'Successfully retrieved GPUs.', [x.to_JSON() for x in gpus])
