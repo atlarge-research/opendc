@@ -7,11 +7,13 @@ from pymongo import MongoClient
 
 DATETIME_STRING_FORMAT = '%Y-%m-%dT%H:%M:%S'
 CONNECTION_POOL = None
-DB = None
 
 
 class Database:
-    def __init__(self, user, password, database, host):
+    def __init__(self):
+        self.opendc_db = None
+
+    def init_database(self, user, password, database, host):
         user = urllib.parse.quote_plus(user)  # TODO: replace this with environment variable
         password = urllib.parse.quote_plus(password)  # TODO: same as above
         database = urllib.parse.quote_plus(database)
@@ -88,6 +90,4 @@ class Database:
         return datetime.strptime(string_to_convert, DATETIME_STRING_FORMAT)
 
 
-def initialize_database(user, password, database, host):
-    global DB
-    DB = Database(user, password, database, host)
+DB = Database()

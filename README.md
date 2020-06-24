@@ -121,4 +121,10 @@ To try a different query, use the Postman `Builder` to edit the method, path, bo
 
 When editing the web server code, restart the server (`CTRL` + `c` followed by `python main.py config.json` in the console running the server) to see the result of your changes.
 
+#### Code Style
+
 To format all files, run `format.sh` in this directory.
+
+#### Testing
+
+Run `pytest` in this directory to run all tests.

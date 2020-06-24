@@ -15,11 +15,12 @@ def GET(request):
         return Response(400, str(e))
 
     user = DB.fetch_one({'email': request.params_query['email']}, 'users')
+    print(user)
 
-    if user is not None:
+    if user is None:
         return Response(404, f'User with email {request.params_query["email"]} not found')
 
-    return Response(200, 'Successfully retrieved {}.'.format(user), user.to_JSON())
+    return Response(200, 'Successfully retrieved {}.'.format(user), user)
 
 
 def POST(request):
@@ -40,6 +41,6 @@ def POST(request):
     if not request.google_id == user['googleId']:
         return Response(403, 'Forbidden from creating this User.')
 
-    user = insert(user, 'users')
+    user = DB.insert(user, 'users')
 
     return Response(200, 'Successfully created {}'.format(user), user)

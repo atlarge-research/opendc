@@ -18,10 +18,10 @@ TEST_MODE = "OPENDC_FLASK_TESTING" in os.environ
 if TEST_MODE:
     STATIC_ROOT = os.curdir
 else:
-    database.initialize_database(user=os.environ['OPENDC_DB_USERNAME'],
-                                 password=os.environ['OPENDC_DB_PASSWORD'],
-                                 database=os.environ['OPENDC_DB'],
-                                 host='localhost')
+    database.DB.initialize_database(user=os.environ['OPENDC_DB_USERNAME'],
+                                    password=os.environ['OPENDC_DB_PASSWORD'],
+                                    database=os.environ['OPENDC_DB'],
+                                    host='localhost')
     STATIC_ROOT = os.path.join(os.environ['OPENDC_ROOT_DIR'], 'opendc-frontend', 'build')
 
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
