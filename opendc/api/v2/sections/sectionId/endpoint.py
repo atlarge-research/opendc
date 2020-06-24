@@ -11,7 +11,7 @@ def GET(request):
     try:
         request.check_required_parameters(path={'sectionId': 'int'})
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Section from the database
 

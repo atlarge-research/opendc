@@ -40,16 +40,12 @@ class Request(object):
         # Parse the path and import the appropriate module
 
         try:
-            self.path = message['path'].encode('ascii', 'ignore').strip('/')
+            self.path = message['path'].strip('/')
 
             module_base = 'opendc.api.{}.endpoint'
-            module_path = self.path.translate(None, '{}').replace('/', '.')
+            module_path = self.path.replace('/', '.')
 
             self.module = importlib.import_module(module_base.format(module_path))
-
-        except UnicodeError:
-            raise exceptions.UnimplementedEndpointError('Non-ASCII path')
-
         except ImportError:
             raise exceptions.UnimplementedEndpointError('Unimplemented endpoint: {}.'.format(self.path))
 
@@ -68,7 +64,7 @@ class Request(object):
             self.google_id = self._verify_token(self.token)
 
         except crypt.AppIdentityError as e:
-            raise exceptions.AuthorizationTokenError(e.message)
+            raise exceptions.AuthorizationTokenError(e)
 
     def _verify_token(self, token):
         """Return the ID of the signed-in user.

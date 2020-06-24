@@ -85,7 +85,7 @@ def sign_in():
 
 @FLASK_CORE_APP.route('/api/<string:version>/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_call(version, endpoint_path):
-    """Call an API endpoint directly over HTTP"""
+    """Call an API endpoint directly over HTTP."""
 
     # Get path and parameters
     (path, path_parameters) = path_parser.parse(version, endpoint_path)
@@ -169,7 +169,7 @@ def _process_message(message):
         response.id = message['id']
 
     except exceptions.RequestInitializationError as e:
-        response = rest.Response(400, e.message)
+        response = rest.Response(400, str(e))
         response.id = message['id']
 
         if not 'method' in message:

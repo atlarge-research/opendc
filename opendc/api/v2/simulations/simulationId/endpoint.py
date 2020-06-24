@@ -14,7 +14,7 @@ def DELETE(request):
         request.check_required_parameters(path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Simulation and make sure it exists
 
@@ -46,7 +46,7 @@ def GET(request):
         request.check_required_parameters(path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Simulation and make sure it exists
 
@@ -76,7 +76,7 @@ def PUT(request):
         request.check_required_parameters(body={'simulation': {'name': 'name'}}, path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Simulation and make sure it exists
 

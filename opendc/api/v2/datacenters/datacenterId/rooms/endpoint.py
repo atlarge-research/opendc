@@ -12,7 +12,7 @@ def GET(request):
     try:
         request.check_required_parameters(path={'datacenterId': 'int'})
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Datacenter from the database
 
@@ -48,7 +48,7 @@ def POST(request):
                                               'roomType': 'string'
                                           }})
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Make sure the passed object's datacenter id matches the path datacenter id
 

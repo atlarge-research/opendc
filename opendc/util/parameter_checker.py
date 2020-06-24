@@ -66,8 +66,7 @@ def _format_parameter(parameter):
 def check(request, **kwargs):
     """Return True if all required parameters are there."""
 
-    for location, params_required in kwargs.iteritems():
-
+    for location, params_required in kwargs.items():
         params_actual = getattr(request, 'params_{}'.format(location))
 
         missing_parameter = _missing_parameter(params_required, params_actual)

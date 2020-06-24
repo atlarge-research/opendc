@@ -12,7 +12,7 @@ def GET(request):
         request.check_required_parameters(path={'name': 'string'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Get the AllowedObjects
 

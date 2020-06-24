@@ -269,7 +269,7 @@ class Model(object):
             last_row_id = database.execute(statement, values)
         except Exception as e:
             print(e)
-            raise exceptions.ForeignKeyError(e.message)
+            raise exceptions.ForeignKeyError(e)
 
         if 'id' in self.COLUMNS_PRIMARY_KEY:
             if is_auto_generated:
@@ -300,4 +300,4 @@ class Model(object):
         try:
             database.execute(statement, values)
         except Exception as e:
-            raise exceptions.ForeignKeyError(e.message)
+            raise exceptions.ForeignKeyError(e)

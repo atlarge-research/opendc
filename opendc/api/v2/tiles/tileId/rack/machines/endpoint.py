@@ -13,7 +13,7 @@ def GET(request):
         request.check_required_parameters(path={'tileId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Rack from the database
 
@@ -59,7 +59,7 @@ def POST(request):
                                           })
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Rack from the database
 

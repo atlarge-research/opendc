@@ -13,7 +13,7 @@ def GET(request):
         request.check_required_parameters(path={'simulationId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Simulation from the database
 
@@ -55,7 +55,7 @@ def POST(request):
                                           })
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Make sure the passed object's simulation id matches the path simulation id
 
@@ -88,7 +88,7 @@ def POST(request):
         experiment.insert()
 
     except exceptions.ForeignKeyError as e:
-        return Response(400, 'Foreign key constraint not met.' + e.message)
+        return Response(400, 'Foreign key constraint not met.' + e)
 
     # Return this Experiment
 

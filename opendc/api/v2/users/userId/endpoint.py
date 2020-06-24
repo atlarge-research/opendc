@@ -12,7 +12,7 @@ def DELETE(request):
         request.check_required_parameters(path={'userId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a User and make sure they exist
 
@@ -44,7 +44,7 @@ def GET(request):
         request.check_required_parameters(path={'userId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a User and make sure they exist
 
@@ -75,7 +75,7 @@ def PUT(request):
                                           path={'userId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a User and make sure they exist
 

@@ -17,7 +17,7 @@ def POST(request):
                                           }})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Make sure the passed object's simulation id matches the path simulation id
 

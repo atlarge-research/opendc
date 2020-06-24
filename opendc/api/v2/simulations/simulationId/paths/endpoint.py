@@ -12,7 +12,7 @@ def GET(request):
     try:
         request.check_required_parameters(path={'simulationId': 'int'})
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Simulation from the database
 

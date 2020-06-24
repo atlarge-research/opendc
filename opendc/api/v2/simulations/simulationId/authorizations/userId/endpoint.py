@@ -14,7 +14,7 @@ def DELETE(request):
         request.check_required_parameters(path={'simulationId': 'int', 'userId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate an Authorization
 
@@ -46,7 +46,7 @@ def GET(request):
         request.check_required_parameters(path={'simulationId': 'int', 'userId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate an Authorization
 
@@ -81,7 +81,7 @@ def POST(request):
                                           }})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate an Authorization
 
@@ -142,7 +142,7 @@ def PUT(request):
                                           }})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate and Authorization
 

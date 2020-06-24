@@ -10,7 +10,7 @@ def GET(request):
         request.check_required_parameters(path={'experimentId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate an Experiment from the database
 
@@ -49,7 +49,7 @@ def PUT(request):
             }})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate an Experiment from the database
 
@@ -92,7 +92,7 @@ def DELETE(request):
         request.check_required_parameters(path={'experimentId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate an Experiment and make sure it exists
 

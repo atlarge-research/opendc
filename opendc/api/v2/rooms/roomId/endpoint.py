@@ -12,7 +12,7 @@ def GET(request):
         request.check_required_parameters(path={'roomId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Room from the database
 
@@ -48,7 +48,7 @@ def PUT(request):
                                           }})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Room from the database
 
@@ -88,7 +88,7 @@ def DELETE(request):
         request.check_required_parameters(path={'roomId': 'int'})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Room and make sure it exists
 

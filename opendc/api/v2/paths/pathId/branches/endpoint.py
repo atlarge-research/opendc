@@ -21,7 +21,7 @@ def POST(request):
         request.check_required_parameters(path={'pathId': 'int'}, body={'section': {'startTick': 'int'}})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate the current Path from the database
 

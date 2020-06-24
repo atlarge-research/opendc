@@ -19,7 +19,7 @@ def POST(request):
         request.check_required_parameters(body={'simulation': {'name': 'string'}})
 
     except exceptions.ParameterError as e:
-        return Response(400, e.message)
+        return Response(400, str(e))
 
     # Instantiate a Simulation
 
