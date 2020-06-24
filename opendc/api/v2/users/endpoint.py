@@ -1,6 +1,3 @@
-from werkzeug.exceptions import abort
-
-from opendc.models.user import User
 from opendc.util import exceptions
 from opendc.util.database import DB
 from opendc.util.rest import Response

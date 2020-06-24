@@ -43,7 +43,6 @@ class Request(object):
             module_base = 'opendc.api.{}.endpoint'
             module_path = self.path.replace('/', '.')
 
-            print(module_base.format(module_path))
             self.module = importlib.import_module(module_base.format(module_path))
         except ImportError:
             raise exceptions.UnimplementedEndpointError('Unimplemented endpoint: {}.'.format(self.path))
@@ -60,6 +59,7 @@ class Request(object):
         # Verify the user
 
         if "OPENDC_FLASK_TESTING" in os.environ:
+            self.google_id = 'test'
             return
 
         try:
