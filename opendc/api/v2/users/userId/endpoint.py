@@ -1,4 +1,3 @@
-from opendc.models.user import User
 from opendc.util import exceptions
 from opendc.util.database import DB
 from opendc.util.rest import Response
@@ -38,6 +37,7 @@ def PUT(request):
     if user is None:
         return Response(404, f'User with ID {user_id} not found.')
 
+    print(user['googleId'], request.google_id)
     if user['googleId'] != request.google_id:
         return Response(403, f'Forbidden from editing {user}.')
 
@@ -50,32 +50,22 @@ def PUT(request):
 
 
 def DELETE(request):
-    """Delete this user."""
-
-    # Make sure required parameters are there
+    """Delete this User."""
 
     try:
         request.check_required_parameters(path={'userId': 'string'})
-
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    # Instantiate a User and make sure they exist
+    user_id = request.params_path['userId']
+    user = DB.fetch_one({'_id': user_id}, 'users')
 
-    user = User.from_primary_key((request.params_path['userId'], ))
+    if user is None:
+        return Response(404, f'User with ID {user_id} not found.')
 
-    if not user.exists():
-        return Response(404, '{} not found'.format(user))
+    if user['googleId'] != request.google_id:
+        return Response(403, f'Forbidden from editing {user}.')
 
-    # Make sure this User is allowed to delete this User
+    DB.delete_one({'_id': user_id}, 'users')
 
-    if not user.google_id_has_at_least(request.google_id, 'OWN'):
-        return Response(403, 'Forbidden from deleting {}.'.format(user))
-
-    # Delete this User
-
-    user.delete()
-
-    # Return this User
-
-    return Response(200, 'Successfully deleted {}'.format(user), user.to_JSON())
+    return Response(200, f'Successfully deleted {user}.', user)
