@@ -41,7 +41,7 @@ class Request(object):
             self.path = message['path'].strip('/')
 
             module_base = 'opendc.api.{}.endpoint'
-            module_path = self.path.replace('/', '.')
+            module_path = self.path.replace('{', '').replace('}', '').replace('/', '.')
 
             self.module = importlib.import_module(module_base.format(module_path))
         except ImportError:

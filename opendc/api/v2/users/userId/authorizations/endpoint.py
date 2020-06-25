@@ -10,7 +10,7 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(path={'userId': 'int'})
+        request.check_required_parameters(path={'userId': 'string'})
 
     except exceptions.ParameterError as e:
         return Response(400, str(e))

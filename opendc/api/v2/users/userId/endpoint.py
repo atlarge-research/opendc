@@ -1,6 +1,52 @@
 from opendc.models.user import User
 from opendc.util import exceptions
+from opendc.util.database import DB
 from opendc.util.rest import Response
+
+
+def GET(request):
+    """Get this User."""
+
+    try:
+        request.check_required_parameters(path={'userId': 'string'})
+    except exceptions.ParameterError as e:
+        return Response(400, str(e))
+
+    user = DB.fetch_one({'_id': request.params_path['userId']}, 'users')
+
+    if user is None:
+        return Response(404, f'User with ID {request.params_path["userId"]} not found.')
+
+    return Response(200, f'Successfully retrieved {user}.', user)
+
+
+def PUT(request):
+    """Update this User's given name and/or family name."""
+
+    try:
+        request.check_required_parameters(body={'user': {
+            'givenName': 'string',
+            'familyName': 'string'
+        }},
+                                          path={'userId': 'string'})
+    except exceptions.ParameterError as e:
+        return Response(400, str(e))
+
+    user_id = request.params_path['userId']
+    user = DB.fetch_one({'_id': user_id}, 'users')
+
+    if user is None:
+        return Response(404, f'User with ID {user_id} not found.')
+
+    if user['googleId'] != request.google_id:
+        return Response(403, f'Forbidden from editing {user}.')
+
+    user['givenName'] = request.params_body['user']['givenName']
+    user['familyName'] = request.params_body['user']['familyName']
+
+    DB.update(user_id, user, 'users')
+
+    return Response(200, f'Successfully updated {user}.', user)
 
 
 def DELETE(request):
@@ -9,7 +55,7 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(path={'userId': 'int'})
+        request.check_required_parameters(path={'userId': 'string'})
 
     except exceptions.ParameterError as e:
         return Response(400, str(e))
@@ -33,69 +79,3 @@ def DELETE(request):
     # Return this User
 
     return Response(200, 'Successfully deleted {}'.format(user), user.to_JSON())
-
-
-def GET(request):
-    """Get this User."""
-
-    # Make sure required parameters are there
-
-    try:
-        request.check_required_parameters(path={'userId': 'int'})
-
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
-
-    # Instantiate a User and make sure they exist
-
-    user = User.from_primary_key((request.params_path['userId'], ))
-
-    if not user.exists():
-        return Response(404, '{} not found.'.format(user))
-
-    # Return this User
-
-    return Response(
-        200,
-        'Successfully retrieved {}'.format(user),
-        user.to_JSON(),
-    )
-
-
-def PUT(request):
-    """Update this User's given name and/ or family name."""
-
-    # Make sure the required parameters are there
-
-    try:
-        request.check_required_parameters(body={'user': {
-            'givenName': 'string',
-            'familyName': 'string'
-        }},
-                                          path={'userId': 'int'})
-
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
-
-    # Instantiate a User and make sure they exist
-
-    user = User.from_primary_key((request.params_path['userId'], ))
-
-    if not user.exists():
-        return Response(404, '{} not found.'.format(user))
-
-    # Make sure this User is allowed to edit this User
-
-    if not user.google_id_has_at_least(request.google_id, 'OWN'):
-        return Response(403, 'Forbidden from editing {}.'.format(user))
-
-    # Update this User
-
-    user.given_name = request.params_body['user']['givenName']
-    user.family_name = request.params_body['user']['familyName']
-
-    user.update()
-
-    # Return this User
-
-    return Response(200, 'Successfully updated {}.'.format(user), user.to_JSON())

@@ -48,7 +48,7 @@ def _incorrect_parameter(params_required, params_actual, parent=''):
             if param_required == 'int' and not isinstance(param_actual, int):
                 return '{}.{}'.format(parent, param_name)
 
-            if param_required == 'string' and not isinstance(param_actual, str):
+            if param_required == 'string' and not isinstance(param_actual, str) and not isinstance(param_actual, int):
                 return '{}.{}'.format(parent, param_name)
 
             if param_required.startswith('list') and not isinstance(param_actual, list):
