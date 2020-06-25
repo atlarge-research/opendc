@@ -1,11 +1,11 @@
-image: python:latest
+image: "python:3.8"
 
-#variables:
-#  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-#
-#cache:
-#  paths:
-#    - .cache/pip
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
 
 stages:
   - build
@@ -16,7 +16,7 @@ build:
   stage: build
   script:
     - python --version
-    - python setup.py install
+    - pip install -r requirements.txt
 
 static-analysis:
   stage: static-analysis
