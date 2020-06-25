@@ -1,11 +1,11 @@
 image: python:latest
 
-variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-
-cache:
-  paths:
-    - .cache/pip
+#variables:
+#  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+#
+#cache:
+#  paths:
+#    - .cache/pip
 
 stages:
   - build
@@ -17,8 +17,6 @@ build:
   script:
     - python --version
     - python setup.py install
-    - pip show -f pylint
-    - export PATH=$HOME/.local/bin:$PATH
 
 static-analysis:
   stage: static-analysis
@@ -29,4 +27,4 @@ static-analysis:
 test:
   stage: test
   script:
-    - pytest
+    - pytest opendc
