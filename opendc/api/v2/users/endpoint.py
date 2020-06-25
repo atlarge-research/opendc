@@ -31,6 +31,7 @@ def POST(request):
 
     user = User(request.params_body['user'])
     user.set_property('googleId', request.google_id)
+    user.set_property('authorizations', [])
 
     validation_error = user.validate_insertion()
     if validation_error is not None:

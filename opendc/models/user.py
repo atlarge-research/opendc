@@ -10,6 +10,10 @@ class User(Model):
     def from_email(cls, email):
         return User(DB.fetch_one({'email': email}, User.collection_name))
 
+    @classmethod
+    def from_google_id(cls, google_id):
+        return User(DB.fetch_one({'googleId': google_id}, User.collection_name))
+
     def validate(self, request_google_id=None):
         super_validation = super().validate(request_google_id)
 

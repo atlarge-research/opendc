@@ -14,7 +14,7 @@ class Model:
 
     def validate(self, request_google_id=None):
         if self.obj is None:
-            return Response(404, f'Not found.')
+            return Response(404, 'Not found.')
 
         return None
 
@@ -22,10 +22,10 @@ class Model:
         self.obj[key] = value
 
     def insert(self):
-        DB.insert(self.obj, self.collection_name)
+        self.obj = DB.insert(self.obj, self.collection_name)
 
     def update(self):
-        DB.update(self.obj['_id'], self.obj, self.collection_name)
+        self.obj = DB.update(self.obj['_id'], self.obj, self.collection_name)
 
     def delete(self):
-        DB.delete_one({'_id': self.obj['_id']}, self.collection_name)
+        self.obj = DB.delete_one({'_id': self.obj['_id']}, self.collection_name)

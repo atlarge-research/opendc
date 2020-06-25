@@ -29,7 +29,7 @@ def test_update_user_different_user(client, mocker):
 
 def test_update_user(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'googleId': 'test'})
-    mocker.patch.object(DB, 'update', return_value=None)
+    mocker.patch.object(DB, 'update', return_value={'givenName': 'A', 'familyName': 'B'})
     res = client.put('/api/v2/users/1', json={'user': {'givenName': 'A', 'familyName': 'B'}})
     assert 'givenName' in res.json['content']
     assert '200' in res.status
@@ -47,7 +47,7 @@ def test_delete_user_different_user(client, mocker):
 
 def test_delete_user(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'googleId': 'test'})
-    mocker.patch.object(DB, 'delete_one', return_value=None)
+    mocker.patch.object(DB, 'delete_one', return_value={'googleId': 'test'})
     res = client.delete('/api/v2/users/1')
     assert 'googleId' in res.json['content']
     assert '200' in res.status
