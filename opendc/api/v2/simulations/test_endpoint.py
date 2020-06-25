@@ -7,7 +7,14 @@ def test_add_simulation_missing_parameter(client):
 
 def test_add_simulation(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'authorizations': []})
-    mocker.patch.object(DB, 'insert', return_value={'_id': '1', 'datetimeCreated': '000', 'datetimeEdit': '000', 'topologyIds': []})
+    mocker.patch.object(DB,
+                        'insert',
+                        return_value={
+                            '_id': '1',
+                            'datetimeCreated': '000',
+                            'datetimeEdit': '000',
+                            'topologyIds': []
+                        })
     mocker.patch.object(DB, 'update', return_value={})
     res = client.post('/api/v2/simulations', json={'simulation': {'name': 'test simulation'}})
     assert 'datetimeCreated' in res.json['content']

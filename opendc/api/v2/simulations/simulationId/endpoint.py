@@ -3,6 +3,7 @@ from datetime import datetime
 from opendc.models.simulation import Simulation
 from opendc.models.user import User
 from opendc.util import database, exceptions
+from opendc.util.database import Database
 from opendc.util.rest import Response
 
 
@@ -19,12 +20,9 @@ def GET(request):
     if validation_error is not None:
         return validation_error
 
-    user = User.from_google_id(request.google_id)
-    authorizations = list(filter(
-        lambda x: str(x['simulationId']) == str(request.params_path['simulationId']),
-        user.obj['authorizations']))
-    if len(authorizations) == 0 or authorizations[0]['authorizationLevel'] == 'VIEW':
-        return Response(403, "Forbidden from retrieving simulation.")
+    access_error = simulation.validate_user_access(request.google_id, False)
+    if access_error is not None:
+        return access_error
 
     return Response(200, 'Successfully retrieved simulation', simulation.obj)
 
@@ -32,38 +30,26 @@ def GET(request):
 def PUT(request):
     """Update a simulation's name."""
 
-    # Make sure required parameters are there
-
     try:
         request.check_required_parameters(body={'simulation': {'name': 'name'}}, path={'simulationId': 'string'})
-
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    # Instantiate a Simulation and make sure it exists
+    simulation = Simulation.from_id(request.params_path['simulationId'])
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
+    validation_error = simulation.validate()
+    if validation_error is not None:
+        return validation_error
 
-    if not simulation.exists():
-        return Response(404, '{} not found.'.format(simulation))
+    access_error = simulation.validate_user_access(request.google_id, True)
+    if access_error is not None:
+        return access_error
 
-    # Make sure this User is allowed to edit this Simulation
-
-    if not simulation.google_id_has_at_least(request.google_id, 'EDIT'):
-        return Response(403, 'Forbidden from editing {}.'.format(simulation))
-
-    # Update this Simulation in the database
-
-    simulation.read()
-
-    simulation.name = request.params_body['simulation']['name']
-    simulation.datetime_last_edited = database.datetime_to_string(datetime.now())
-
+    simulation.set_property('name', request.params_body['simulation']['name'])
+    simulation.set_property('datetime_last_edited', Database.datetime_to_string(datetime.now()))
     simulation.update()
 
-    # Return this Simulation
-
-    return Response(200, 'Successfully updated {}.'.format(simulation), simulation.to_JSON())
+    return Response(200, 'Successfully updated simulation.', simulation.obj)
 
 
 def DELETE(request):
