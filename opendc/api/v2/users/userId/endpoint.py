@@ -11,13 +11,13 @@ def GET(request):
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    user = User(request.params_path['userId'])
+    user = User.from_id(request.params_path['userId'])
 
     validation_error = user.validate()
-    if validation_error is None:
-        return Response(200, f'Successfully retrieved {user}.', user.obj)
-    else:
+    if validation_error is not None:
         return validation_error
+
+    return Response(200, f'Successfully retrieved user.', user.obj)
 
 
 def PUT(request):
@@ -32,7 +32,7 @@ def PUT(request):
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    user = User(request.params_path['userId'])
+    user = User.from_id(request.params_path['userId'])
 
     validation_error = user.validate(request.google_id)
     if validation_error is not None:
@@ -43,7 +43,7 @@ def PUT(request):
 
     user.update()
 
-    return Response(200, f'Successfully updated {user}.', user.obj)
+    return Response(200, f'Successfully updated user.', user.obj)
 
 
 def DELETE(request):
@@ -54,7 +54,7 @@ def DELETE(request):
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    user = User(request.params_path['userId'])
+    user = User.from_id(request.params_path['userId'])
 
     validation_error = user.validate(request.google_id)
     if validation_error is not None:
@@ -62,4 +62,4 @@ def DELETE(request):
 
     user.delete()
 
-    return Response(200, f'Successfully deleted {user}.', user.obj)
+    return Response(200, f'Successfully deleted user.', user.obj)

@@ -1,3 +1,4 @@
+from opendc.models.user import User
 from opendc.util import exceptions
 from opendc.util.database import DB
 from opendc.util.rest import Response
@@ -11,12 +12,13 @@ def GET(request):
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    user = DB.fetch_one({'email': request.params_query['email']}, 'users')
+    user = User.from_email(request.params_query['email'])
 
-    if user is None:
-        return Response(404, f'User with email {request.params_query["email"]} not found')
+    validation_error = user.validate()
+    if validation_error is not None:
+        return validation_error
 
-    return Response(200, f'Successfully retrieved {user}.', user)
+    return Response(200, f'Successfully retrieved user.', user.obj)
 
 
 def POST(request):
@@ -27,16 +29,12 @@ def POST(request):
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    request.params_body['user']['googleId'] = request.google_id
-    user = request.params_body['user']
-    existing_user = DB.fetch_one({'googleId': user['googleId']}, 'users')
+    user = User(request.params_body['user'])
+    user.set_property('googleId', request.google_id)
 
-    if existing_user is not None:
-        return Response(409, f'{existing_user} already exists.')
+    validation_error = user.validate_insertion()
+    if validation_error is not None:
+        return validation_error
 
-    if not request.google_id == user['googleId']:
-        return Response(403, 'Forbidden from creating this User.')
-
-    user = DB.insert(user, 'users')
-
-    return Response(200, f'Successfully created {user}.', user)
+    user.insert()
+    return Response(200, f'Successfully created user.', user.obj)

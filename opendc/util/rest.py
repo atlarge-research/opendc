@@ -44,7 +44,8 @@ class Request(object):
             module_path = self.path.replace('{', '').replace('}', '').replace('/', '.')
 
             self.module = importlib.import_module(module_base.format(module_path))
-        except ImportError:
+        except ImportError as e:
+            print(e)
             raise exceptions.UnimplementedEndpointError('Unimplemented endpoint: {}.'.format(self.path))
 
         # Check the method

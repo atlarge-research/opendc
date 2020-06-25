@@ -1,26 +1,30 @@
+from opendc.models.model import Model
 from opendc.util.database import DB
 from opendc.util.rest import Response
 
 
-class User:
-    def __init__(self, obj_id):
-        self.obj_id = obj_id
-        self.obj = DB.fetch_one({'_id': obj_id}, 'users')
+class User(Model):
+    collection_name = 'users'
+
+    @classmethod
+    def from_email(cls, email):
+        return User(DB.fetch_one({'email': email}, User.collection_name))
 
     def validate(self, request_google_id=None):
-        if self.obj is None:
-            return Response(404, f'User with ID {self.obj_id} not found.')
+        super_validation = super().validate(request_google_id)
+
+        if super_validation is not None:
+            return super_validation
 
         if request_google_id is not None and self.obj['googleId'] != request_google_id:
-            return Response(403, f'Forbidden from editing user with ID {self.obj_id}.')
+            return Response(403, f'Forbidden from editing user with ID {self.obj["_id"]}.')
 
         return None
 
-    def set_property(self, key, value):
-        self.obj[key] = value
+    def validate_insertion(self):
+        existing_user = DB.fetch_one({'googleId': self.obj['googleId']}, self.collection_name)
 
-    def update(self):
-        DB.update(self.obj_id, self.obj, 'users')
+        if existing_user is not None:
+            return Response(409, f'User already exists.')
 
-    def delete(self):
-        DB.delete_one({'_id': self.obj_id}, 'users')
+        return None
