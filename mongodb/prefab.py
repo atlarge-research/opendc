@@ -11,9 +11,11 @@ import sys
 import prefabs
 
 def usage():
-	print("Usage: prefab add <prefab>:      imports a prefab from YML or JSON")
+	print("Usage: prefab add <prefab>:      imports a prefab from JSON")
 	print("	      list:              lists all (public) prefabs")
 	print("	      export <prefab> [json|yaml]:   exports the specified prefab to the specified filetype (with JSON used by default)")
+	print("	      clone <prefab> [new prefab name]:   clones the specified prefab, giving the new prefab a name if specified")
+	print("	      remove <prefab>:   removes the specified prefab from the database")
 
 def interactive(): #interactive CLI mode: recommended 
 	print("OpenDC Prefab CLI")
