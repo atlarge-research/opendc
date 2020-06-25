@@ -1,0 +1,23 @@
+stages:
+  - build
+  - static-analysis
+  - test
+
+build:
+  stage: build
+  script:
+    - apt-get update -qy
+    - apt-get install -y python-dev python-pip
+    - python --version
+    - python setup.py install
+
+static-analysis:
+  stage: static-analysis
+  allow_failure: true
+  script:
+    - pylint opendc
+
+test:
+  stage: test
+  script:
+    - pytest

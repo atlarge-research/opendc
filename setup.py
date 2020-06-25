@@ -33,13 +33,14 @@ setup(
         'flask-compress==1.4.0',
         'flask-cors==3.0.8',
         'pyasn1-modules==0.2.2',
-        'six==1.11.0',
+        'six==1.15.0',
         'pymongo==3.10.1',
         'bson==0.5.10',
         'yapf==0.30.0',
         'pytest==5.4.3',
         'pytest-mock==3.1.1',
         'pytest-env==0.6.2',
+        'pylint==2.5.3',
     ],
     # yapf: enable
 )
