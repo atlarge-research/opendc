@@ -1,3 +1,12 @@
+image: python:latest
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
 stages:
   - build
   - static-analysis
@@ -6,8 +15,6 @@ stages:
 build:
   stage: build
   script:
-    - apt-get update -qy
-    - apt-get install -y python-dev python-pip
     - python --version
     - python setup.py install
 
