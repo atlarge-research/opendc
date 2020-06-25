@@ -1,13 +1,6 @@
 from opendc.util.database import DB
 
 '''
-POST /topologies
-'''
-
-
-
-
-'''
 GET /topologies/{topologyId}
 '''
 
