@@ -1,70 +1,32 @@
 from datetime import datetime
 
-from opendc.models_old.simulation import Simulation
+from opendc.models.simulation import Simulation
+from opendc.models.user import User
 from opendc.util import database, exceptions
 from opendc.util.rest import Response
-
-
-def DELETE(request):
-    """Delete this Simulation."""
-
-    # Make sure required parameters are there
-
-    try:
-        request.check_required_parameters(path={'simulationId': 'int'})
-
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
-
-    # Instantiate a Simulation and make sure it exists
-
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
-
-    if not simulation.exists():
-        return Response(404, '{} not found.'.format(simulation))
-
-    # Make sure this User is allowed to delete this Simulation
-
-    if not simulation.google_id_has_at_least(request.google_id, 'OWN'):
-        return Response(403, 'Forbidden from deleting {}.'.format(simulation))
-
-    # Delete this Simulation from the database
-
-    simulation.delete()
-
-    # Return this Simulation
-
-    return Response(200, 'Successfully deleted {}.'.format(simulation), simulation.to_JSON())
 
 
 def GET(request):
     """Get this Simulation."""
 
-    # Make sure required parameters are there
-
     try:
-        request.check_required_parameters(path={'simulationId': 'int'})
-
+        request.check_required_parameters(path={'simulationId': 'string'})
     except exceptions.ParameterError as e:
         return Response(400, str(e))
 
-    # Instantiate a Simulation and make sure it exists
+    simulation = Simulation.from_id(request.params_path['simulationId'])
+    validation_error = simulation.validate()
+    if validation_error is not None:
+        return validation_error
 
-    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
+    user = User.from_google_id(request.google_id)
+    authorizations = list(filter(
+        lambda x: str(x['simulationId']) == str(request.params_path['simulationId']),
+        user.obj['authorizations']))
+    if len(authorizations) == 0 or authorizations[0]['authorizationLevel'] == 'VIEW':
+        return Response(403, "Forbidden from retrieving simulation.")
 
-    if not simulation.exists():
-        return Response(404, '{} not found.'.format(simulation))
-
-    # Make sure this User is allowed to view this Simulation
-
-    if not simulation.google_id_has_at_least(request.google_id, 'VIEW'):
-        return Response(403, 'Forbidden from retrieving {}.'.format(simulation))
-
-    # Return this Simulation
-
-    simulation.read()
-
-    return Response(200, 'Successfully retrieved {}'.format(simulation), simulation.to_JSON())
+    return Response(200, 'Successfully retrieved simulation', simulation.obj)
 
 
 def PUT(request):
@@ -73,7 +35,7 @@ def PUT(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(body={'simulation': {'name': 'name'}}, path={'simulationId': 'int'})
+        request.check_required_parameters(body={'simulation': {'name': 'name'}}, path={'simulationId': 'string'})
 
     except exceptions.ParameterError as e:
         return Response(400, str(e))
@@ -102,3 +64,35 @@ def PUT(request):
     # Return this Simulation
 
     return Response(200, 'Successfully updated {}.'.format(simulation), simulation.to_JSON())
+
+
+def DELETE(request):
+    """Delete this Simulation."""
+
+    # Make sure required parameters are there
+
+    try:
+        request.check_required_parameters(path={'simulationId': 'string'})
+
+    except exceptions.ParameterError as e:
+        return Response(400, str(e))
+
+    # Instantiate a Simulation and make sure it exists
+
+    simulation = Simulation.from_primary_key((request.params_path['simulationId'], ))
+
+    if not simulation.exists():
+        return Response(404, '{} not found.'.format(simulation))
+
+    # Make sure this User is allowed to delete this Simulation
+
+    if not simulation.google_id_has_at_least(request.google_id, 'OWN'):
+        return Response(403, 'Forbidden from deleting {}.'.format(simulation))
+
+    # Delete this Simulation from the database
+
+    simulation.delete()
+
+    # Return this Simulation
+
+    return Response(200, 'Successfully deleted {}.'.format(simulation), simulation.to_JSON())

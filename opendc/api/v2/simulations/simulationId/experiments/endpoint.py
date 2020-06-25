@@ -10,7 +10,7 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(path={'simulationId': 'int'})
+        request.check_required_parameters(path={'simulationId': 'string'})
 
     except exceptions.ParameterError as e:
         return Response(400, str(e))
@@ -43,10 +43,10 @@ def POST(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(path={'simulationId': 'int'},
+        request.check_required_parameters(path={'simulationId': 'string'},
                                           body={
                                               'experiment': {
-                                                  'simulationId': 'int',
+                                                  'simulationId': 'string',
                                                   'pathId': 'int',
                                                   'traceId': 'int',
                                                   'schedulerName': 'string',

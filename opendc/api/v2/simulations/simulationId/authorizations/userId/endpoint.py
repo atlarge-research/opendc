@@ -11,7 +11,7 @@ def DELETE(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(path={'simulationId': 'int', 'userId': 'string'})
+        request.check_required_parameters(path={'simulationId': 'string', 'userId': 'string'})
 
     except exceptions.ParameterError as e:
         return Response(400, str(e))
@@ -43,7 +43,7 @@ def GET(request):
     # Make sure required parameters are there
 
     try:
-        request.check_required_parameters(path={'simulationId': 'int', 'userId': 'string'})
+        request.check_required_parameters(path={'simulationId': 'string', 'userId': 'string'})
 
     except exceptions.ParameterError as e:
         return Response(400, str(e))
@@ -74,7 +74,7 @@ def POST(request):
     try:
         request.check_required_parameters(path={
             'userId': 'string',
-            'simulationId': 'int'
+            'simulationId': 'string'
         },
                                           body={'authorization': {
                                               'authorizationLevel': 'string'
@@ -134,7 +134,7 @@ def PUT(request):
 
     try:
         request.check_required_parameters(path={
-            'simulationId': 'int',
+            'simulationId': 'string',
             'userId': 'string'
         },
                                           body={'authorization': {
