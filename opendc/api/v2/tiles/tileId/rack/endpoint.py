@@ -1,5 +1,5 @@
-from opendc.models.rack import Rack
-from opendc.models.tile import Tile
+from opendc.models_old.rack import Rack
+from opendc.models_old.tile import Tile
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

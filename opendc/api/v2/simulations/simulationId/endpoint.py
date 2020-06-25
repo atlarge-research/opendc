@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from opendc.models.simulation import Simulation
+from opendc.models_old.simulation import Simulation
 from opendc.util import database, exceptions
 from opendc.util.rest import Response
 

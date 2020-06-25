@@ -1,4 +1,4 @@
-from opendc.models.job import Job
+from opendc.models_old.job import Job
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

@@ -1,4 +1,4 @@
-from opendc.models.scheduler import Scheduler
+from opendc.models_old.scheduler import Scheduler
 from opendc.util.rest import Response
 
 

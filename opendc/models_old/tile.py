@@ -1,6 +1,6 @@
-from opendc.models.model import Model
-from opendc.models.object import Object
-from opendc.models.room import Room
+from opendc.models_old.model import Model
+from opendc.models_old.object import Object
+from opendc.models_old.room import Room
 from opendc.util import exceptions
 
 

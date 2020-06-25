@@ -1,5 +1,5 @@
-from opendc.models.experiment import Experiment
-from opendc.models.simulation import Simulation
+from opendc.models_old.experiment import Experiment
+from opendc.models_old.simulation import Simulation
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

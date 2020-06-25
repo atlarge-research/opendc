@@ -1,5 +1,5 @@
-from opendc.models.datacenter import Datacenter
-from opendc.models.model import Model
+from opendc.models_old.datacenter import Datacenter
+from opendc.models_old.model import Model
 from opendc.util import exceptions
 
 

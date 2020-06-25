@@ -1,5 +1,5 @@
-from opendc.models.experiment import Experiment
-from opendc.models.room_state import RoomState
+from opendc.models_old.experiment import Experiment
+from opendc.models_old.room_state import RoomState
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

@@ -1,5 +1,5 @@
-from opendc.models.datacenter import Datacenter
-from opendc.models.room import Room
+from opendc.models_old.datacenter import Datacenter
+from opendc.models_old.room import Room
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

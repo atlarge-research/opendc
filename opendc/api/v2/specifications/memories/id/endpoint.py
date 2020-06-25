@@ -1,4 +1,4 @@
-from opendc.models.memory import Memory
+from opendc.models_old.memory import Memory
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

@@ -1,5 +1,5 @@
-from opendc.models.experiment import Experiment
-from opendc.models.task_duration import TaskDuration
+from opendc.models_old.experiment import Experiment
+from opendc.models_old.task_duration import TaskDuration
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

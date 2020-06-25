@@ -1,5 +1,5 @@
-from opendc.models.model import Model
-from opendc.models.user import User
+from opendc.models_old.model import Model
+from opendc.models_old.user import User
 
 
 class Authorization(Model):

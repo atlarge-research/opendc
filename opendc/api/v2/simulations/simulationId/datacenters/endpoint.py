@@ -1,5 +1,5 @@
-from opendc.models.datacenter import Datacenter
-from opendc.models.simulation import Simulation
+from opendc.models_old.datacenter import Datacenter
+from opendc.models_old.simulation import Simulation
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

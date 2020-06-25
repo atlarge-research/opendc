@@ -1,4 +1,4 @@
-from opendc.models.storage import Storage
+from opendc.models_old.storage import Storage
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

@@ -1,4 +1,4 @@
-from opendc.models.room import Room
+from opendc.models_old.room import Room
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

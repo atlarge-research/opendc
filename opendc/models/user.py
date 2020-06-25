@@ -1,47 +1,26 @@
-from opendc.models.model import Model
+from opendc.util.database import DB
+from opendc.util.rest import Response
 
 
-class User(Model):
-    JSON_TO_PYTHON_DICT = {
-        'User': {
-            'id': 'id',
-            'googleId': 'google_id',
-            'email': 'email',
-            'givenName': 'given_name',
-            'familyName': 'family_name'
-        }
-    }
+class User:
+    def __init__(self, obj_id):
+        self.obj_id = obj_id
+        self.obj = DB.fetch_one({'_id': obj_id}, 'users')
 
-    COLLECTION_NAME = 'users'
-    COLUMNS = ['id', 'google_id', 'email', 'given_name', 'family_name']
-    COLUMNS_PRIMARY_KEY = ['id']
+    def validate(self, request_google_id=None):
+        if self.obj is None:
+            return Response(404, f'User with ID {self.obj_id} not found.')
 
-    @classmethod
-    def from_google_id(cls, google_id):
-        """Initialize a User by fetching them by their google id."""
+        if request_google_id is not None and self.obj['googleId'] != request_google_id:
+            return Response(403, f'Forbidden from editing user with ID {self.obj_id}.')
 
-        user = cls._from_database('SELECT * FROM users WHERE google_id = %s', (google_id, ))
+        return None
 
-        if user is not None:
-            return user
+    def set_property(self, key, value):
+        self.obj[key] = value
 
-        return User()
+    def update(self):
+        DB.update(self.obj_id, self.obj, 'users')
 
-    @classmethod
-    def from_email(cls, email):
-        """Initialize a User by fetching them by their email."""
-
-        user = cls._from_database('SELECT * FROM users WHERE email = %s', (email, ))
-
-        if user is not None:
-            return user
-
-        return User()
-
-    def google_id_has_at_least(self, google_id, authorization_level):
-        """Return True if the User has at least the given auth level over this User."""
-
-        if authorization_level in ['EDIT', 'OWN']:
-            return google_id == self.google_id
-
-        return True
+    def delete(self):
+        DB.delete_one({'_id': self.obj_id}, 'users')

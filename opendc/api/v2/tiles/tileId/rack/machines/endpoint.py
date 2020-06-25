@@ -1,5 +1,5 @@
-from opendc.models.machine import Machine
-from opendc.models.rack import Rack
+from opendc.models_old.machine import Machine
+from opendc.models_old.rack import Rack
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

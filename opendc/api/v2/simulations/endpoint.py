@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from opendc.models.authorization import Authorization
-from opendc.models.datacenter import Datacenter
-from opendc.models.path import Path
-from opendc.models.section import Section
-from opendc.models.simulation import Simulation
-from opendc.models.user import User
+from opendc.models_old.authorization import Authorization
+from opendc.models_old.datacenter import Datacenter
+from opendc.models_old.path import Path
+from opendc.models_old.section import Section
+from opendc.models_old.simulation import Simulation
+from opendc.models_old.user import User
 from opendc.util import database, exceptions
 from opendc.util.rest import Response
 

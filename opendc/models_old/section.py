@@ -1,5 +1,5 @@
-from opendc.models.model import Model
-from opendc.models.path import Path
+from opendc.models_old.model import Model
+from opendc.models_old.path import Path
 from opendc.util import exceptions
 
 

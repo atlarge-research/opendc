@@ -1,5 +1,5 @@
-from opendc.models.experiment import Experiment
-from opendc.models.machine_state import MachineState
+from opendc.models_old.experiment import Experiment
+from opendc.models_old.machine_state import MachineState
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

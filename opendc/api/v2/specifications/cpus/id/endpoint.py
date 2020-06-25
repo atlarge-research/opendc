@@ -1,4 +1,4 @@
-from opendc.models.cpu import CPU
+from opendc.models_old.cpu import CPU
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

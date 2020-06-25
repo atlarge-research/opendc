@@ -1,5 +1,5 @@
-from opendc.models.path import Path
-from opendc.models.simulation import Simulation
+from opendc.models_old.path import Path
+from opendc.models_old.simulation import Simulation
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

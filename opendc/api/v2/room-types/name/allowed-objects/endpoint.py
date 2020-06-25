@@ -1,4 +1,4 @@
-from opendc.models.allowed_object import AllowedObject
+from opendc.models_old.allowed_object import AllowedObject
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

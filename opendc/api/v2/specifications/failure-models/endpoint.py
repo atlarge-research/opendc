@@ -1,4 +1,4 @@
-from opendc.models.failure_model import FailureModel
+from opendc.models_old.failure_model import FailureModel
 from opendc.util.rest import Response
 
 

@@ -1,4 +1,4 @@
-from opendc.models.path import Path
+from opendc.models_old.path import Path
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

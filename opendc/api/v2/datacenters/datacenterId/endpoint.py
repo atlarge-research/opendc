@@ -1,4 +1,4 @@
-from opendc.models.datacenter import Datacenter
+from opendc.models_old.datacenter import Datacenter
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

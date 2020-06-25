@@ -1,4 +1,4 @@
-from opendc.models.gpu import GPU
+from opendc.models_old.gpu import GPU
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

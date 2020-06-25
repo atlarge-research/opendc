@@ -1,6 +1,6 @@
-from opendc.models.authorization import Authorization
-from opendc.models.model import Model
-from opendc.models.user import User
+from opendc.models_old.authorization import Authorization
+from opendc.models_old.model import Model
+from opendc.models_old.user import User
 from opendc.util import exceptions
 
 

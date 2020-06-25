@@ -1,4 +1,4 @@
-from opendc.models.model import Model
+from opendc.models_old.model import Model
 
 
 class Trace(Model):

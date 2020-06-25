@@ -1,5 +1,5 @@
-from opendc.models.job import Job
-from opendc.models.trace import Trace
+from opendc.models_old.job import Job
+from opendc.models_old.trace import Trace
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

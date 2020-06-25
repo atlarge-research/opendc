@@ -1,4 +1,4 @@
-from opendc.models.section import Section
+from opendc.models_old.section import Section
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

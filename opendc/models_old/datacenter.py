@@ -1,5 +1,5 @@
-from opendc.models.model import Model
-from opendc.models.section import Section
+from opendc.models_old.model import Model
+from opendc.models_old.section import Section
 
 
 class Datacenter(Model):

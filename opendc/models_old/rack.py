@@ -1,6 +1,6 @@
-from opendc.models.model import Model
-from opendc.models.object import Object
-from opendc.models.tile import Tile
+from opendc.models_old.model import Model
+from opendc.models_old.object import Object
+from opendc.models_old.tile import Tile
 
 
 class Rack(Model):

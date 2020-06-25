@@ -1,5 +1,5 @@
-from opendc.models.experiment import Experiment
-from opendc.models.rack_state import RackState
+from opendc.models_old.experiment import Experiment
+from opendc.models_old.rack_state import RackState
 from opendc.util import exceptions
 from opendc.util.rest import Response
 

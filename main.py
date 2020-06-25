@@ -9,7 +9,7 @@ from flask_compress import Compress
 from oauth2client import client, crypt
 from flask_cors import CORS
 
-from opendc.models.user import User
+from opendc.models_old.user import User
 from opendc.util import rest, path_parser, database
 from opendc.util.exceptions import AuthorizationTokenError, RequestInitializationError
 

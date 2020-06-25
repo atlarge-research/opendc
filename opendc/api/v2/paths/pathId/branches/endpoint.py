@@ -1,13 +1,13 @@
 from datetime import datetime
 
-from opendc.models.datacenter import Datacenter
-from opendc.models.machine import Machine
-from opendc.models.object import Object
-from opendc.models.path import Path
-from opendc.models.rack import Rack
-from opendc.models.room import Room
-from opendc.models.section import Section
-from opendc.models.tile import Tile
+from opendc.models_old.datacenter import Datacenter
+from opendc.models_old.machine import Machine
+from opendc.models_old.object import Object
+from opendc.models_old.path import Path
+from opendc.models_old.rack import Rack
+from opendc.models_old.room import Room
+from opendc.models_old.section import Section
+from opendc.models_old.tile import Tile
 from opendc.util import database, exceptions
 from opendc.util.rest import Request, Response
 

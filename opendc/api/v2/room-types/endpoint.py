@@ -1,4 +1,4 @@
-from opendc.models.room_type import RoomType
+from opendc.models_old.room_type import RoomType
 from opendc.util.rest import Response
 
 

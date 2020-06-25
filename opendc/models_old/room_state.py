@@ -1,4 +1,4 @@
-from opendc.models.model import Model
+from opendc.models_old.model import Model
 from opendc.util import database
 
 

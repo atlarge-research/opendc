@@ -1,5 +1,5 @@
-from opendc.models.model import Model
-from opendc.models.simulation import Simulation
+from opendc.models_old.model import Model
+from opendc.models_old.simulation import Simulation
 from opendc.util import exceptions
 
 

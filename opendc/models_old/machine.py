@@ -1,7 +1,7 @@
 import copy
 
-from opendc.models.model import Model
-from opendc.models.rack import Rack
+from opendc.models_old.model import Model
+from opendc.models_old.rack import Rack
 from opendc.util import database, exceptions
 
 
