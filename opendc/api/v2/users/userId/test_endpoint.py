@@ -24,13 +24,7 @@ def test_update_user_non_existing(client, mocker):
 
 def test_update_user_different_user(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value={'googleId': 'other_test'})
-    assert '403' in client.put('/api/v2/users/1',
-                               json={
-                                   'user': {
-                                       'givenName': 'A',
-                                       'familyName': 'B'
-                                   }
-                               }).status
+    assert '403' in client.put('/api/v2/users/1', json={'user': {'givenName': 'A', 'familyName': 'B'}}).status
 
 
 def test_update_user(client, mocker):
