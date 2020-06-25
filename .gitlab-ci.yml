@@ -17,6 +17,7 @@ build:
   script:
     - python --version
     - python setup.py install
+    - pip install pylint pytest
 
 static-analysis:
   stage: static-analysis
