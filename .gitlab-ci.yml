@@ -8,23 +8,20 @@ cache:
     - .cache/pip
 
 stages:
-  - build
   - static-analysis
   - test
-
-build:
-  stage: build
-  script:
-    - python --version
-    - pip install -r requirements.txt
 
 static-analysis:
   stage: static-analysis
   allow_failure: true
   script:
+    - python --version
+    - pip install -r requirements.txt
     - pylint opendc
 
 test:
   stage: test
   script:
+    - python --version
+    - pip install -r requirements.txt
     - pytest opendc
