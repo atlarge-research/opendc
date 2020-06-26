@@ -1,8 +1,7 @@
 from datetime import datetime
 
 from opendc.models.simulation import Simulation
-from opendc.models.user import User
-from opendc.util import database, exceptions
+from opendc.models.topology import Topology
 from opendc.util.database import Database
 from opendc.util.rest import Response
 
@@ -47,7 +46,11 @@ def DELETE(request):
     simulation.check_exists()
     simulation.check_user_access(request.google_id, True)
 
-    # FIXME cascading
+    for topology_id in simulation.obj['topologyIds']:
+        topology = Topology.from_id(topology_id)
+        topology.delete()
+
+    # TODO remove all experiments
 
     simulation.delete()
 

@@ -20,6 +20,7 @@ def POST(request):
     simulation.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     simulation.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
     simulation.set_property('topologyIds', [topology.obj['_id']])
+    simulation.set_property('experimentIds', [])
     simulation.insert()
 
     user = User.from_google_id(request.google_id)

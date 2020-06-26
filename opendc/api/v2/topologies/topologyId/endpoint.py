@@ -11,7 +11,6 @@ def GET(request):
     topology = Topology.from_id(request.params_path['topologyId'])
 
     topology.check_exists()
-
     topology.check_user_access(request.google_id, False)
 
     return Response(200, 'Successfully retrieved topology.', topology.obj)
