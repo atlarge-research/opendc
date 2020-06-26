@@ -19,7 +19,7 @@ def POST(request):
 
     # Instantiate a Topology object from our request, and add some metadata 
 
-    topology = Topology({'topology': request.params_body['topology']})
+    topology = Topology({'name': request.params_body['topology']['name']})
     topology.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     topology.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
     topology.insert()
