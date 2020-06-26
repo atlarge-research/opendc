@@ -16,7 +16,7 @@ def test_add_simulation(client, mocker):
                             'topologyIds': []
                         })
     mocker.patch.object(DB, 'update', return_value={})
-    res = client.post('/api/v2/simulations/1/topologies/', json={'simulation': {'name': 'test simulation'}})
+    res = client.post('/api/v2/simulations/1/topologies/', json={'topology': {'name': 'test simulation'}})
     assert 'datetimeCreated' in res.json['content']
     assert 'datetimeEdit' in res.json['content']
     assert 'topologyIds' in res.json['content']
