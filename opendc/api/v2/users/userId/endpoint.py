@@ -10,9 +10,7 @@ def GET(request):
 
     user = User.from_id(request.params_path['userId'])
 
-    validation_error = user.validate()
-    if validation_error is not None:
-        return validation_error
+    user.check_exists()
 
     return Response(200, f'Successfully retrieved user.', user.obj)
 
@@ -28,9 +26,8 @@ def PUT(request):
 
     user = User.from_id(request.params_path['userId'])
 
-    validation_error = user.validate(request.google_id)
-    if validation_error is not None:
-        return validation_error
+    user.check_exists()
+    user.check_correct_user(request.google_id)
 
     user.set_property('givenName', request.params_body['user']['givenName'])
     user.set_property('familyName', request.params_body['user']['familyName'])
@@ -47,9 +44,8 @@ def DELETE(request):
 
     user = User.from_id(request.params_path['userId'])
 
-    validation_error = user.validate(request.google_id)
-    if validation_error is not None:
-        return validation_error
+    user.check_exists()
+    user.check_correct_user(request.google_id)
 
     user.delete()
 

@@ -1,4 +1,5 @@
 from opendc.util.database import DB
+from opendc.util.exceptions import ClientError
 from opendc.util.rest import Response
 
 
@@ -12,11 +13,9 @@ class Model:
     def __init__(self, obj):
         self.obj = obj
 
-    def validate(self, request_google_id=None):
+    def check_exists(self):
         if self.obj is None:
-            return Response(404, 'Not found.')
-
-        return None
+            raise ClientError(Response(404, 'Not found.'))
 
     def set_property(self, key, value):
         self.obj[key] = value

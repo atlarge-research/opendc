@@ -11,9 +11,7 @@ def GET(request):
 
     user = User.from_email(request.params_query['email'])
 
-    validation_error = user.validate()
-    if validation_error is not None:
-        return validation_error
+    user.check_exists()
 
     return Response(200, f'Successfully retrieved user.', user.obj)
 
@@ -27,9 +25,7 @@ def POST(request):
     user.set_property('googleId', request.google_id)
     user.set_property('authorizations', [])
 
-    validation_error = user.validate_insertion()
-    if validation_error is not None:
-        return validation_error
+    user.check_already_exists()
 
     user.insert()
     return Response(200, f'Successfully created user.', user.obj)

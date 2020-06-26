@@ -13,13 +13,9 @@ def GET(request):
     request.check_required_parameters(path={'simulationId': 'string'})
 
     simulation = Simulation.from_id(request.params_path['simulationId'])
-    validation_error = simulation.validate()
-    if validation_error is not None:
-        return validation_error
 
-    access_error = simulation.validate_user_access(request.google_id, False)
-    if access_error is not None:
-        return access_error
+    simulation.check_exists()
+    simulation.check_user_access(request.google_id, False)
 
     return Response(200, 'Successfully retrieved simulation', simulation.obj)
 
@@ -31,13 +27,8 @@ def PUT(request):
 
     simulation = Simulation.from_id(request.params_path['simulationId'])
 
-    validation_error = simulation.validate()
-    if validation_error is not None:
-        return validation_error
-
-    access_error = simulation.validate_user_access(request.google_id, True)
-    if access_error is not None:
-        return access_error
+    simulation.check_exists()
+    simulation.check_user_access(request.google_id, True)
 
     simulation.set_property('name', request.params_body['simulation']['name'])
     simulation.set_property('datetime_last_edited', Database.datetime_to_string(datetime.now()))
@@ -53,13 +44,8 @@ def DELETE(request):
 
     simulation = Simulation.from_id(request.params_path['simulationId'])
 
-    validation_error = simulation.validate()
-    if validation_error is not None:
-        return validation_error
-
-    access_error = simulation.validate_user_access(request.google_id, True)
-    if access_error is not None:
-        return access_error
+    simulation.check_exists()
+    simulation.check_user_access(request.google_id, True)
 
     # FIXME cascading
 
