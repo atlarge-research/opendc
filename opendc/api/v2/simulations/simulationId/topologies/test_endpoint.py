@@ -1,11 +1,11 @@
 from opendc.util.database import DB
 
 
-def test_add_simulation_missing_parameter(client):
+def test_add_topology_missing_parameter(client):
     assert '400' in client.post('/api/v2/simulations/1/topologies/').status
 
 
-def test_add_simulation(client, mocker):
+def test_add_topology(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'authorizations': []})
     mocker.patch.object(DB,
                         'insert',
@@ -21,3 +21,6 @@ def test_add_simulation(client, mocker):
     assert 'datetimeEdit' in res.json['content']
     assert 'topologyIds' in res.json['content']
     assert '200' in res.status
+
+def test_add_topology_no_authorizations(client, mocker):
+    pass
