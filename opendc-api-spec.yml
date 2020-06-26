@@ -265,12 +265,17 @@ paths:
           description: Forbidden from retrieving this Simulation's Authorizations.
         '404':
           description: Simulation not found.
-  '/topologies':
+  '/simulations/{simulationId}/topologies':
     post:
       tags:
-        - topologies
+        - simulations
       description: Add a Topology.
       parameters:
+        - name: simulationId
+          in: path
+          description: Simulation's ID.
+          required: true
+          type: string
         - name: topology
           in: body
           description: The new Topology.
