@@ -6,6 +6,7 @@ import sys
 from oauth2client import client, crypt
 
 from opendc.util import exceptions, parameter_checker
+from opendc.util.exceptions import ClientError
 
 
 class Request(object):
@@ -71,14 +72,22 @@ class Request(object):
     def check_required_parameters(self, **kwargs):
         """Raise an error if a parameter is missing or of the wrong type."""
 
-        parameter_checker.check(self, **kwargs)
+        try:
+            parameter_checker.check(self, **kwargs)
+        except exceptions.ParameterError as e:
+            raise ClientError(Response(400, str(e)))
 
     def process(self):
         """Process the Request and return a Response."""
 
         method = getattr(self.module, self.method)
 
-        response = method(self)
+        try:
+            response = method(self)
+        except ClientError as e:
+            e.response.id = self.id
+            return e.response
+
         response.id = self.id
 
         return response

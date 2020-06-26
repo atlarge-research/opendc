@@ -11,10 +11,7 @@ from opendc.util.rest import Response
 def POST(request):
     """Create a new simulation, and return that new simulation."""
 
-    try:
-        request.check_required_parameters(body={'simulation': {'name': 'string'}})
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
+    request.check_required_parameters(body={'simulation': {'name': 'string'}})
 
     topology = Topology({'name': 'Default topology'})
     topology.insert()
