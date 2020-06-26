@@ -12,10 +12,7 @@ def POST(request):
 
     # Make sure required parameters are there
 
-    try:
-        request.check_required_parameters(body={'topology': {'name': 'string'}})
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
+    request.check_required_parameters(body={'topology': {'name': 'string'}})
 
     # Instantiate a Topology object from our request, and add some metadata 
 

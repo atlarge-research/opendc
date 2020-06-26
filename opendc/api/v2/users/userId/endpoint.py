@@ -6,10 +6,7 @@ from opendc.util.rest import Response
 def GET(request):
     """Get this User."""
 
-    try:
-        request.check_required_parameters(path={'userId': 'string'})
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
+    request.check_required_parameters(path={'userId': 'string'})
 
     user = User.from_id(request.params_path['userId'])
 
@@ -23,14 +20,11 @@ def GET(request):
 def PUT(request):
     """Update this User's given name and/or family name."""
 
-    try:
-        request.check_required_parameters(body={'user': {
-            'givenName': 'string',
-            'familyName': 'string'
-        }},
-                                          path={'userId': 'string'})
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
+    request.check_required_parameters(body={'user': {
+        'givenName': 'string',
+        'familyName': 'string'
+    }},
+                                      path={'userId': 'string'})
 
     user = User.from_id(request.params_path['userId'])
 
@@ -49,10 +43,7 @@ def PUT(request):
 def DELETE(request):
     """Delete this User."""
 
-    try:
-        request.check_required_parameters(path={'userId': 'string'})
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
+    request.check_required_parameters(path={'userId': 'string'})
 
     user = User.from_id(request.params_path['userId'])
 

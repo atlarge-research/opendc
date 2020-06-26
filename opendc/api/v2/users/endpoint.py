@@ -7,10 +7,7 @@ from opendc.util.rest import Response
 def GET(request):
     """Search for a User using their email address."""
 
-    try:
-        request.check_required_parameters(query={'email': 'string'})
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
+    request.check_required_parameters(query={'email': 'string'})
 
     user = User.from_email(request.params_query['email'])
 
@@ -24,10 +21,7 @@ def GET(request):
 def POST(request):
     """Add a new User."""
 
-    try:
-        request.check_required_parameters(body={'user': {'email': 'string'}})
-    except exceptions.ParameterError as e:
-        return Response(400, str(e))
+    request.check_required_parameters(body={'user': {'email': 'string'}})
 
     user = User(request.params_body['user'])
     user.set_property('googleId', request.google_id)
