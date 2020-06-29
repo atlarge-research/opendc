@@ -1,6 +1,5 @@
 from opendc.util.rest import Response
 
-
 SCHEDULERS = ['DEFAULT']
 
 

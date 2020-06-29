@@ -85,13 +85,33 @@ def test_delete_simulation_non_existing(client, mocker):
 
 
 def test_delete_simulation_different_user(client, mocker):
-    mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'googleId': 'other_test', 'authorizations': [{'simulationId': '1', 'authorizationLevel': 'VIEW'}], 'topologyIds': []})
+    mocker.patch.object(DB,
+                        'fetch_one',
+                        return_value={
+                            '_id': '1',
+                            'googleId': 'other_test',
+                            'authorizations': [{
+                                'simulationId': '1',
+                                'authorizationLevel': 'VIEW'
+                            }],
+                            'topologyIds': []
+                        })
     mocker.patch.object(DB, 'delete_one', return_value=None)
     assert '403' in client.delete('/api/v2/simulations/1').status
 
 
 def test_delete_simulation(client, mocker):
-    mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'googleId': 'test', 'authorizations': [{'simulationId': '1', 'authorizationLevel': 'OWN'}], 'topologyIds': []})
+    mocker.patch.object(DB,
+                        'fetch_one',
+                        return_value={
+                            '_id': '1',
+                            'googleId': 'test',
+                            'authorizations': [{
+                                'simulationId': '1',
+                                'authorizationLevel': 'OWN'
+                            }],
+                            'topologyIds': []
+                        })
     mocker.patch.object(DB, 'delete_one', return_value={'googleId': 'test'})
     res = client.delete('/api/v2/simulations/1')
     assert '200' in res.status

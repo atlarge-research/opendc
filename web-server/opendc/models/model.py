@@ -10,6 +10,10 @@ class Model:
     def from_id(cls, _id):
         return cls(DB.fetch_one({'_id': _id}, Model.collection_name))
 
+    @classmethod
+    def get_all(cls):
+        return cls(DB.fetch_all({}, Model.collection_name))
+
     def __init__(self, obj):
         self.obj = obj
 

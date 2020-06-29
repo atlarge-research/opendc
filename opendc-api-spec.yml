@@ -957,24 +957,6 @@ definitions:
         type: string
       name:
         type: string
-      jobs:
-        type: array
-        items:
-          type: object
-          properties:
-            _id:
-              type: string
-            name:
-              type: string
-            tasks:
-              type: array
-              items:
-                type: object
-                properties:
-                  startTick:
-                    type: integer
-                  totalFlopCount:
-                    type: integer
   User:
     type: object
     properties:

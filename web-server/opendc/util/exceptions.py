@@ -59,7 +59,6 @@ class MissingParameterError(ParameterError):
 
 class ClientError(Exception):
     """Raised when a 4xx response is to be returned."""
-
     def __init__(self, response):
         super(ClientError, self).__init__(str(response))
         self.response = response
