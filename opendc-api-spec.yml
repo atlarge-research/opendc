@@ -957,6 +957,10 @@ definitions:
         type: string
       name:
         type: string
+      path:
+        type: string
+      type:
+        type: string
   User:
     type: object
     properties:
