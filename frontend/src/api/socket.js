@@ -30,7 +30,7 @@ export function sendSocketRequest(request, callback) {
   request.token = getAuthToken();
 
   if (!request.isRootRoute) {
-    request.path = "/v1" + request.path;
+    request.path = "/v2" + request.path;
   }
 
   socket.emit("request", request);
