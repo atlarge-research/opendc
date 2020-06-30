@@ -20,12 +20,14 @@ def PUT(request):
     """Update this Experiment."""
 
     request.check_required_parameters(path={'experimentId': 'string'},
-                                      body={'experiment': {
-                                          'topologyId': 'string',
-                                          'traceId': 'string',
-                                          'schedulerName': 'string',
-                                          'name': 'string',
-                                      }})
+                                      body={
+                                          'experiment': {
+                                              'topologyId': 'string',
+                                              'traceId': 'string',
+                                              'schedulerName': 'string',
+                                              'name': 'string',
+                                          }
+                                      })
 
     experiment = Experiment.from_id(request.params_path['experimentId'])
 

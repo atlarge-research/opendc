@@ -48,12 +48,15 @@ def test_update_experiment_missing_parameter(client):
 
 def test_update_experiment_non_existing(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.put('/api/v2/experiments/1', json={'experiment': {
-        'topologyId': '1',
-        'traceId': '1',
-        'schedulerName': 'default',
-        'name': 'test',
-    }}).status
+    assert '404' in client.put('/api/v2/experiments/1',
+                               json={
+                                   'experiment': {
+                                       'topologyId': '1',
+                                       'traceId': '1',
+                                       'schedulerName': 'default',
+                                       'name': 'test',
+                                   }
+                               }).status
 
 
 def test_update_experiment_not_authorized(client, mocker):
@@ -68,12 +71,15 @@ def test_update_experiment_not_authorized(client, mocker):
                             }]
                         })
     mocker.patch.object(DB, 'update', return_value={})
-    assert '403' in client.put('/api/v2/experiments/1', json={'experiment': {
-        'topologyId': '1',
-        'traceId': '1',
-        'schedulerName': 'default',
-        'name': 'test',
-    }}).status
+    assert '403' in client.put('/api/v2/experiments/1',
+                               json={
+                                   'experiment': {
+                                       'topologyId': '1',
+                                       'traceId': '1',
+                                       'schedulerName': 'default',
+                                       'name': 'test',
+                                   }
+                               }).status
 
 
 def test_update_experiment(client, mocker):
@@ -89,12 +95,14 @@ def test_update_experiment(client, mocker):
                         })
     mocker.patch.object(DB, 'update', return_value={})
 
-    res = client.put('/api/v2/experiments/1', json={'experiment': {
-        'topologyId': '1',
-        'traceId': '1',
-        'schedulerName': 'default',
-        'name': 'test',
-    }})
+    res = client.put(
+        '/api/v2/experiments/1',
+        json={'experiment': {
+            'topologyId': '1',
+            'traceId': '1',
+            'schedulerName': 'default',
+            'name': 'test',
+        }})
     assert '200' in res.status
 
 

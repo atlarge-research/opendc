@@ -703,6 +703,10 @@ definitions:
         type: string
       name:
         type: string
+      state:
+        type: string
+      lastSimulatedTick:
+        type: integer
   MachineState:
     type: object
     properties:
