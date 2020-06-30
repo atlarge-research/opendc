@@ -8,20 +8,32 @@ def test_get_authorizations_non_existing(client, mocker):
 
 
 def test_get_authorizations_not_authorized(client, mocker):
-    mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'name': 'test trace', 'authorizations': [{
-        'simulationId': '2',
-        'authorizationLevel': 'OWN'
-    }]})
+    mocker.patch.object(DB,
+                        'fetch_one',
+                        return_value={
+                            '_id': '1',
+                            'name': 'test trace',
+                            'authorizations': [{
+                                'simulationId': '2',
+                                'authorizationLevel': 'OWN'
+                            }]
+                        })
     mocker.patch.object(DB, 'fetch_all', return_value=[])
     res = client.get('/api/v2/simulations/1/authorizations')
     assert '403' in res.status
 
 
 def test_get_authorizations(client, mocker):
-    mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'name': 'test trace', 'authorizations': [{
-        'simulationId': '1',
-        'authorizationLevel': 'OWN'
-    }]})
+    mocker.patch.object(DB,
+                        'fetch_one',
+                        return_value={
+                            '_id': '1',
+                            'name': 'test trace',
+                            'authorizations': [{
+                                'simulationId': '1',
+                                'authorizationLevel': 'OWN'
+                            }]
+                        })
     mocker.patch.object(DB, 'fetch_all', return_value=[])
     res = client.get('/api/v2/simulations/1/authorizations')
     assert len(res.json['content']) == 0
