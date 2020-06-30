@@ -5,7 +5,6 @@
   "/simulations/{simulationId}",
   "/simulations/{simulationId}/authorizations",
   "/simulations/{simulationId}/topologies",
-  "/experiments/{experimentId}/last-simulated-tick",
   "/experiments/{experimentId}/machine-states",
   "/experiments/{experimentId}/rack-states",
   "/experiments/{experimentId}/room-states",
