@@ -9,7 +9,12 @@ from opendc.util.database import Database
 def POST(request):
     """Add a new Topology to the specified simulation and return it"""
 
-    request.check_required_parameters(path={'simulationId': 'string'}, body={'topology': {'name': 'string'}})
+    request.check_required_parameters(path={'simulationId': 'string'},
+                                      body={
+                                          'topology': {
+                                              'name': 'string'
+                                          }
+                                      })
 
     simulation = Simulation.from_id(request.params_path['simulationId'])
 
@@ -17,6 +22,7 @@ def POST(request):
     simulation.check_user_access(request.google_id, True)
 
     topology = Topology({'name': request.params_body['topology']['name']})
+
     topology.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     topology.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
     topology.insert()

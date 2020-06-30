@@ -32,5 +32,21 @@ def test_add_topology(client, mocker):
     assert '200' in res.status
 
 
-def test_add_topology_no_authorizations(client, mocker):
-    pass
+def test_add_topology_not_authorized(client, mocker):
+    mocker.patch.object(DB,
+                        'fetch_one',
+                        return_value={
+                            '_id': '1',
+                            'simulationId': '1',
+                            'authorizations': [{
+                                'simulationId': '1',
+                                'authorizationLevel': 'VIEW'
+                            }]
+                        })
+    assert '403' in client.post('/api/v2/simulations/1/topologies',
+                                json={
+                                    'topology': {
+                                        'name': 'test_topology',
+                                        'rooms': {}
+                                    }
+                                }).status
