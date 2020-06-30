@@ -14,7 +14,7 @@ class Database:
     def __init__(self):
         self.opendc_db = None
 
-    def init_database(self, user, password, database, host):
+    def initialize_database(self, user, password, database, host):
         """Initializes the database connection."""
 
         user = urllib.parse.quote_plus(user)

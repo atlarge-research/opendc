@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo 'Creating opendc user and db'
+echo 'Creating OpenDC user and database'
 
 mongo opendc --host localhost \
         --port 27017 \
@@ -17,6 +17,7 @@ $MONGO_CMD --eval 'db.createCollection("users");'
 $MONGO_CMD --eval 'db.createCollection("simulations");'
 $MONGO_CMD --eval 'db.createCollection("topologies");'
 $MONGO_CMD --eval 'db.createCollection("experiments");'
+$MONGO_CMD --eval 'db.createCollection("traces");'
 $MONGO_CMD --eval 'db.createCollection("prefabs");'
 
 echo 'Loading test data'

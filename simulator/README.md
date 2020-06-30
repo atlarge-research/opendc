@@ -35,12 +35,3 @@ The documentation is located in the [docs/](docs) directory and is divided as fo
 
 ## Getting Started
 TODO
-
-## Contributing
-### Contributing Guide
-Read our [contributing guide](CONTRIBUTING.md) to learn about our
-development process, how to propose bug fixes and improvements, and how
-to build and test your changes to the project.
-
-### License
-The OpenDC simulator is available under the [MIT license](https://github.com/atlarge-research/opendc-simulator/blob/master/LICENSE.txt).

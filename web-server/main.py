@@ -15,17 +15,24 @@ from opendc.util.exceptions import AuthorizationTokenError, RequestInitializatio
 
 TEST_MODE = "OPENDC_FLASK_TESTING" in os.environ
 
+# Specify the directory of static assets
 if TEST_MODE:
     STATIC_ROOT = os.curdir
 else:
+    STATIC_ROOT = os.path.join(os.environ['OPENDC_ROOT_DIR'], 'frontend', 'build')
+
+# Set up database if not testing
+if not TEST_MODE:
     database.DB.initialize_database(user=os.environ['OPENDC_DB_USERNAME'],
                                     password=os.environ['OPENDC_DB_PASSWORD'],
                                     database=os.environ['OPENDC_DB'],
                                     host='localhost')
-    STATIC_ROOT = os.path.join(os.environ['OPENDC_ROOT_DIR'], 'opendc-frontend', 'build')
 
+# Set up the core app
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
 FLASK_CORE_APP.config['SECRET_KEY'] = os.environ['OPENDC_FLASK_SECRET']
+
+# Set up CORS support for local setups
 if 'localhost' in os.environ['OPENDC_SERVER_BASE_URL']:
     CORS(FLASK_CORE_APP)
 

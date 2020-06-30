@@ -95,8 +95,3 @@ The following command runs all tests in the codebase. On top of this, it also wa
 ```bash
 yarn test
 ```
-
-
-## License
-
-The code is released under the MIT license. See `LICENSE.md`.

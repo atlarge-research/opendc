@@ -13,6 +13,7 @@ services:
       OPENDC_DB_PASSWORD: opendcpassword
     ports:
       - 27017:27017
+    # Uncomment for persistent deployment
     #volumes:
     #  - mongo-volume:/data/db
 

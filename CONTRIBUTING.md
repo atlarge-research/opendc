@@ -1,4 +1,4 @@
-# Contributing to the OpenDC Frontend
+# Contributing to OpenDC
 
 First of all, thanks for wanting to contribute! 🎉
 
