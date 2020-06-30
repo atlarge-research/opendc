@@ -24,9 +24,9 @@ def PUT(request):
     request.check_required_parameters(path={'topologyId': 'int'},
                                       body={
                                           'topology': {
-                                                'name': 'string',
-                                                'rooms': {}
-                                           }
+                                              'name': 'string',
+                                              'rooms': {}
+                                          }
                                       })
     topology = Topology.from_id(request.params_path['topologyId'])
 
