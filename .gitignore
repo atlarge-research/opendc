@@ -1,12 +1,15 @@
 # JetBrains platform
 .idea/
 
-# Credential setup file
-keys.json
-
 # pyenv version files
 .python-version
 mongodb/opendc_testing/*
 
 # macOS-specific files
 .DS_Store
+
+# Environment files
+.env
+
+# Old credential setup file
+keys.json
