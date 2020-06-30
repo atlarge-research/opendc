@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="images/logo.png" width="100" alt="OpenDC">
+  <img src="../misc/artwork/logo.png" width="100" alt="OpenDC">
   <br>
   OpenDC Web Server
 </h1>
@@ -7,7 +7,7 @@
 Collaborative Datacenter Simulation and Exploration for Everybody
 </p>
 
-The OpenDC web server is the bridge between OpenDC's frontend and database. It is built with Flask/SocketIO in Python and implements the OpenAPI-compliant [OpenDC API specification](https://github.com/atlarge-research/opendc/blob/master/opendc-api-spec.json).
+The OpenDC web server is the bridge between OpenDC's frontend and database. It is built with Flask/SocketIO in Python and implements the OpenAPI-compliant [OpenDC API specification](../opendc-api-spec.yml).
 
 This document explains a high-level view of the web server architecture ([jump](#architecture)), and describes how to set up the web server for local development ([jump](#setup-for-local-development)).
 
@@ -15,7 +15,7 @@ This document explains a high-level view of the web server architecture ([jump](
 
 The following diagram shows a high-level view of the architecture of the OpenDC web server. Squared-off colored boxes indicate packages (colors become more saturated as packages are nested); rounded-off boxes indicate individual components; dotted lines indicate control flow; and solid lines indicate data flow.
 
-![OpenDC Web Server Component Diagram](https://raw.githubusercontent.com/atlarge-research/opendc-web-server/master/images/opendc-web-server-component-diagram.png)
+![OpenDC Web Server Component Diagram](misc/artwork/opendc-web-server-component-diagram.png)
 
 The OpenDC API is implemented by the `Main Server Loop`, which is the only component in the base package.
 
@@ -23,7 +23,7 @@ The OpenDC API is implemented by the `Main Server Loop`, which is the only compo
 
 The `Util` package handles several miscellaneous tasks:
 
-* `REST`: Parses SockerIO messages into `Request` objects, and calls the appropriate `API` endpoint to get a `Response` object to return to the `Main Server Loop`.
+* `REST`: Parses SocketIO messages into `Request` objects, and calls the appropriate `API` endpoint to get a `Response` object to return to the `Main Server Loop`.
 * `Param Checker`: Recursively checks whether required `Request` parameters are present and correctly typed.
 * `Exceptions`: Holds definitions for exceptions used throughout the web server.
 * `Database API`: Wraps SQLite functionality used by `Models` to read themselves from/ write themselves into the database.

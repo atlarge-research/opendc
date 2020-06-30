@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="images/logo.png" width="100" alt="OpenDC">
+    <img src="misc/artwork/logo.png" width="100" alt="OpenDC">
     <br>
     OpenDC
 </h1>
@@ -11,11 +11,11 @@
 
 OpenDC is an open-source simulator for datacenters aimed at both research and education.
 
-![opendc-frontend-construction](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-frontend-construction.PNG)
+![opendc-frontend-construction](misc/artwork/opendc-frontend-construction.png)
 
 Users can construct datacenters (see above) and define experiments to see how these datacenters perform under different workloads and schedulers (see below). 
 
-![opendc-frontend-simulation](https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-frontend-simulation.PNG)
+![opendc-frontend-simulation](misc/artwork/opendc-frontend-simulation.png)
 
 The simulator is accessible both as a ready-to-use website hosted by Delft University of Technology at [opendc.org](http://opendc.org), and as source code that users can run locally on their own machine.
 
@@ -26,7 +26,7 @@ OpenDC is a project by the [@Large Research Group](http://atlarge-research.com).
 OpenDC consists of four components: a Kotlin simulator, a MariaDB database, a Python Flask web server, and a React.js frontend.
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/tudelft-atlarge/opendc/master/images/opendc-component-diagram.png" alt="OpenDC Component Diagram">
+    <img src="misc/artwork/opendc-component-diagram.png" alt="OpenDC Component Diagram">
 </p>
 
 On the frontend, users can construct a topology by specifying a datacenter's rooms, racks and machines, and create experiments to see how a workload trace runs on that topology. The frontend communicates with the web server over SocketIO, through a custom REST request/response layer. For example, the frontend might make a `GET` request to `/api/v1/users/{userId}`, but this request is completed via SocketIO, not plain HTTP requests.

@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="public/img/logo.png" width="100" alt="OpenDC">
+  <img src="../misc/artwork/logo.png" width="100" alt="OpenDC">
   <br>
   OpenDC Frontend
 </h1>
