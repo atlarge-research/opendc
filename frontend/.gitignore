@@ -7,7 +7,7 @@
 # Production
 /build
 
-# Misc.
+# Misc
 .DS_Store
 .env.local
 .env.development.local
