@@ -34,7 +34,7 @@ def PUT(request):
 
     experiment.set_property('topologyId', request.params_body['experiment']['topologyId'])
     experiment.set_property('traceId', request.params_body['experiment']['traceId'])
-    experiment.set_property('scheduleName', request.params_body['experiment']['scheduleName'])
+    experiment.set_property('schedulerName', request.params_body['experiment']['schedulerName'])
     experiment.set_property('name', request.params_body['experiment']['name'])
 
     experiment.update()
@@ -45,7 +45,7 @@ def PUT(request):
 def DELETE(request):
     """Delete this Experiment."""
 
-    request.check_required_parameters(path={'userId': 'string'})
+    request.check_required_parameters(path={'experimentId': 'string'})
 
     experiment = Experiment.from_id(request.params_path['experimentId'])
 
