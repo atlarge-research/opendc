@@ -49,18 +49,15 @@ def test_get_topology_no_authorizations(client, mocker):
 PUT /topologies/{topologyId}
 '''
 
+
 def test_update_topology_missing_parameter(client):
     assert '400' in client.put('/api/v2/topologies/1').status
 
+
 def test_update_topology_non_existent(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.put('/api/v2/topologies/1',
-                                json={
-                                    'topology': {
-                                        'name': 'test_topology',
-                                        'rooms': {}
-                                    }
-                                }).status
+    assert '404' in client.put('/api/v2/topologies/1', json={'topology': {'name': 'test_topology', 'rooms': {}}}).status
+
 
 def test_update_topology_not_authorized(client, mocker):
     mocker.patch.object(DB,
@@ -74,13 +71,13 @@ def test_update_topology_not_authorized(client, mocker):
                             }]
                         })
     mocker.patch.object(DB, 'update', return_value={})
-    assert '403' in client.put('/api/v2/topologies/1',
-                               json={
-                                   'topology': {
-                                       'name': 'updated_topology',
-                                       'rooms': {}
-                                   }
-                               }).status
+    assert '403' in client.put('/api/v2/topologies/1', json={
+        'topology': {
+            'name': 'updated_topology',
+            'rooms': {}
+        }
+    }).status
+
 
 def test_update_topology(client, mocker):
     mocker.patch.object(DB,
@@ -95,18 +92,18 @@ def test_update_topology(client, mocker):
                         })
     mocker.patch.object(DB, 'update', return_value={})
 
-    assert '200' in client.put('/api/v2/topologies/1',
-                               json={
-                                   'topology': {
-                                       'name': 'updated_topology',
-                                       'rooms': {}
-                                   }
-                               }).status
+    assert '200' in client.put('/api/v2/topologies/1', json={
+        'topology': {
+            'name': 'updated_topology',
+            'rooms': {}
+        }
+    }).status
 
 
 '''
 DELETE /topologies/{topologyId}
 '''
+
 
 def test_delete_topology(client, mocker):
     mocker.patch.object(DB,
@@ -126,7 +123,7 @@ def test_delete_topology(client, mocker):
     res = client.delete('/api/v2/topologies/1')
     assert '200' in res.status
 
+
 def test_delete_nonexistent_topology(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
     assert '404' in client.delete('/api/v2/topologies/1').status
-

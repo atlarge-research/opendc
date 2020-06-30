@@ -23,7 +23,7 @@ OpenDC is a project by the [@Large Research Group](http://atlarge-research.com).
 
 ## Architecture
 
-OpenDC consists of four components: a Kotlin simulator, a MongoDB database, a Python Flask web server, and a React.js frontend.
+OpenDC consists of four components: a Kotlin [simulator](/simulator), a MongoDB database, a Python Flask [web server](/web-server), and a React.js [frontend](/frontend), each in their own subdirectories.
 
 <p align="center">
     <img src="misc/artwork/opendc-component-diagram.png" alt="OpenDC Component Diagram">

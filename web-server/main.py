@@ -8,10 +8,13 @@ from flask import Flask, request, send_from_directory, jsonify
 from flask_compress import Compress
 from oauth2client import client, crypt
 from flask_cors import CORS
+from dotenv import load_dotenv
 
 from opendc.models.user import User
 from opendc.util import rest, path_parser, database
 from opendc.util.exceptions import AuthorizationTokenError, RequestInitializationError
+
+load_dotenv()
 
 TEST_MODE = "OPENDC_FLASK_TESTING" in os.environ
 
@@ -190,4 +193,5 @@ def _process_message(message):
 
 
 if __name__ == '__main__':
+    print("Web server started on 8081")
     SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)

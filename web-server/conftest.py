@@ -1,3 +1,6 @@
+"""
+Configuration file for all unit tests.
+"""
 import pytest
 
 from main import FLASK_CORE_APP

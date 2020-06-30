@@ -6,7 +6,6 @@ from opendc.models.topology import Topology
 from opendc.util.rest import Response
 
 
-
 def GET(request):
     """Get this Topology."""
 
@@ -19,15 +18,10 @@ def GET(request):
 
     return Response(200, 'Successfully retrieved topology.', topology.obj)
 
+
 def PUT(request):
     """Update this topology"""
-    request.check_required_parameters(path={'topologyId': 'int'},
-                                      body={
-                                          'topology': {
-                                              'name': 'string',
-                                              'rooms': {}
-                                          }
-                                      })
+    request.check_required_parameters(path={'topologyId': 'int'}, body={'topology': {'name': 'string', 'rooms': {}}})
     topology = Topology.from_id(request.params_path['topologyId'])
 
     topology.check_exists()
@@ -40,6 +34,7 @@ def PUT(request):
     topology.update()
 
     return Response(200, 'Successfully updated topology.', topology.obj)
+
 
 def DELETE(request):
     """Delete this topology"""
