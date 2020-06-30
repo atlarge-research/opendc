@@ -1,4 +1,4 @@
-FROM mongo:4.2.5
+FROM mongo:4.2.8
 MAINTAINER Jacob Burley <j.burley@vu.nl>
 
 # Import init script
