@@ -9,7 +9,7 @@ from flask_compress import Compress
 from oauth2client import client, crypt
 from flask_cors import CORS
 
-from opendc.models_old.user import User
+from opendc.models.user import User
 from opendc.util import rest, path_parser, database
 from opendc.util.exceptions import AuthorizationTokenError, RequestInitializationError
 
@@ -71,9 +71,9 @@ def sign_in():
 
     user = User.from_google_id(idinfo['sub'])
 
-    data = {'isNewUser': not user.exists()}
+    data = {'isNewUser': user.obj is None}
 
-    if user.exists():
+    if user is not None:
         data['userId'] = user.id
 
     return jsonify(**data)
