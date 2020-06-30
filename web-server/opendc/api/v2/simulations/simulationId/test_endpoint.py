@@ -110,7 +110,8 @@ def test_delete_simulation(client, mocker):
                                 'simulationId': '1',
                                 'authorizationLevel': 'OWN'
                             }],
-                            'topologyIds': []
+                            'topologyIds': [],
+                            'experimentIds': [],
                         })
     mocker.patch.object(DB, 'delete_one', return_value={'googleId': 'test'})
     res = client.delete('/api/v2/simulations/1')

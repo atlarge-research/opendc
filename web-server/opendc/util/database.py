@@ -17,8 +17,8 @@ class Database:
     def init_database(self, user, password, database, host):
         """Initializes the database connection."""
 
-        user = urllib.parse.quote_plus(user)  # TODO: replace this with environment variable
-        password = urllib.parse.quote_plus(password)  # TODO: same as above
+        user = urllib.parse.quote_plus(user)
+        password = urllib.parse.quote_plus(password)
         database = urllib.parse.quote_plus(database)
         host = urllib.parse.quote_plus(host)
 

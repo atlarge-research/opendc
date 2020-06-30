@@ -18,7 +18,7 @@ class Topology(Model):
         :param edit_access: True when edit access should be checked, otherwise view access.
         """
         user = User.from_google_id(google_id)
-        authorizations = list(filter(lambda x: str(x['simulationId']) == str(self.obj['simulationId']),
-                                     user.obj['authorizations']))
+        authorizations = list(
+            filter(lambda x: str(x['simulationId']) == str(self.obj['simulationId']), user.obj['authorizations']))
         if len(authorizations) == 0 or (edit_access and authorizations[0]['authorizationLevel'] == 'VIEW'):
             raise ClientError(Response(403, "Forbidden from retrieving topology."))

@@ -2,7 +2,6 @@ from datetime import datetime
 
 from opendc.models.simulation import Simulation
 from opendc.models.topology import Topology
-from opendc.util import exceptions
 from opendc.util.rest import Response
 from opendc.util.database import Database
 
