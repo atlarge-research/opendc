@@ -15,14 +15,16 @@ def GET(request):
     return Response(200, 'Successfully retrieved topology.', topology.obj)
 
 def PUT(request):
-    pass
+    """Update this topology"""
+    print(request)
 
 def DELETE(request):
+    """Delete this topology"""
     request.check_required_parameters(path={'topologyId': 'int'})
 
     topology = Topology.from_id(request.params_path['topologyId'])
-    
+
     topology.check_exists()
     topology.delete()
 
-    return Response(200, f'Successfully deleted topology.', topology.obj)
+    return Response(200, 'Successfully deleted topology.', topology.obj)
