@@ -11,4 +11,4 @@ def GET(request):
 
     trace.check_exists()
 
-    return Response(200, f'Successfully retrieved trace.', trace.obj)
+    return Response(200, 'Successfully retrieved trace.', trace.obj)

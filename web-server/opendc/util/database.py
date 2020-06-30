@@ -10,10 +10,13 @@ CONNECTION_POOL = None
 
 
 class Database:
+    """Object holding functionality for database access."""
     def __init__(self):
         self.opendc_db = None
 
     def init_database(self, user, password, database, host):
+        """Initializes the database connection."""
+
         user = urllib.parse.quote_plus(user)  # TODO: replace this with environment variable
         password = urllib.parse.quote_plus(password)  # TODO: same as above
         database = urllib.parse.quote_plus(database)

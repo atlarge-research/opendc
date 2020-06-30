@@ -9,8 +9,9 @@ def test_get_topology(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
+                            'simulationId': '1',
                             'authorizations': [{
-                                'topologyId': '1',
+                                'simulationId': '1',
                                 'authorizationLevel': 'EDIT'
                             }]
                         })
@@ -28,8 +29,9 @@ def test_get_topology_not_authorized(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
+                            'simulationId': '1',
                             'authorizations': [{
-                                'topologyId': '2',
+                                'simulationId': '2',
                                 'authorizationLevel': 'OWN'
                             }]
                         })
