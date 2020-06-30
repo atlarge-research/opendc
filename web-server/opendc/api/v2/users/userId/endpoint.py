@@ -1,5 +1,4 @@
 from opendc.models.user import User
-from opendc.util import exceptions
 from opendc.util.rest import Response
 
 
@@ -12,7 +11,7 @@ def GET(request):
 
     user.check_exists()
 
-    return Response(200, f'Successfully retrieved user.', user.obj)
+    return Response(200, 'Successfully retrieved user.', user.obj)
 
 
 def PUT(request):
@@ -34,7 +33,7 @@ def PUT(request):
 
     user.update()
 
-    return Response(200, f'Successfully updated user.', user.obj)
+    return Response(200, 'Successfully updated user.', user.obj)
 
 
 def DELETE(request):
@@ -49,4 +48,4 @@ def DELETE(request):
 
     user.delete()
 
-    return Response(200, f'Successfully deleted user.', user.obj)
+    return Response(200, 'Successfully deleted user.', user.obj)

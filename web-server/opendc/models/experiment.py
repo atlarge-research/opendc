@@ -4,10 +4,10 @@ from opendc.util.exceptions import ClientError
 from opendc.util.rest import Response
 
 
-class Topology(Model):
-    """Model representing a Simulation."""
+class Experiment(Model):
+    """Model representing a Experiment."""
 
-    collection_name = 'topologies'
+    collection_name = 'experiments'
 
     def check_user_access(self, google_id, edit_access):
         """Raises an error if the user with given [google_id] has insufficient access.
@@ -21,4 +21,4 @@ class Topology(Model):
         authorizations = list(
             filter(lambda x: str(x['simulationId']) == str(self.obj['simulationId']), user.obj['authorizations']))
         if len(authorizations) == 0 or (edit_access and authorizations[0]['authorizationLevel'] == 'VIEW'):
-            raise ClientError(Response(403, "Forbidden from retrieving topology."))
+            raise ClientError(Response(403, "Forbidden from retrieving/editing experiment."))

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from opendc.models.experiment import Experiment
 from opendc.models.simulation import Simulation
 from opendc.models.topology import Topology
 from opendc.util.database import Database
@@ -50,8 +51,10 @@ def DELETE(request):
         topology = Topology.from_id(topology_id)
         topology.delete()
 
-    # TODO remove all experiments
+    for experiment_id in simulation.obj['experimentIds']:
+        experiment = Experiment.from_id(experiment_id)
+        experiment.delete()
 
     simulation.delete()
 
-    return Response(200, f'Successfully deleted simulation.', simulation.obj)
+    return Response(200, 'Successfully deleted simulation.', simulation.obj)

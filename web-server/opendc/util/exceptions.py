@@ -12,7 +12,7 @@ class MissingRequestParameterError(RequestInitializationError):
 
 class UnsupportedMethodError(RequestInitializationError):
     """Raised when a Request does not use a supported REST method.
-    
+
     The method must be in all-caps, supported by REST, and implemented by the module.
     """
 

@@ -1,7 +1,6 @@
 import importlib
 import json
 import os
-import sys
 
 from oauth2client import client, crypt
 
@@ -9,7 +8,7 @@ from opendc.util import exceptions, parameter_checker
 from opendc.util.exceptions import ClientError
 
 
-class Request(object):
+class Request:
     """WebSocket message to REST request mapping."""
     def __init__(self, message=None):
         """"Initialize a Request from a socket message."""
@@ -122,11 +121,12 @@ class Request(object):
         return id_info['sub']
 
 
-class Response(object):
+class Response:
     """Response to websocket mapping"""
     def __init__(self, status_code, status_description, content=None):
         """Initialize a new Response."""
 
+        self.id = 0
         self.status = {'code': status_code, 'description': status_description}
         self.content = content
 
