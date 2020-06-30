@@ -293,6 +293,34 @@ paths:
           description: Missing or incorrectly typed parameter.
         '401':
           description: Unauthorized.
+  '/simulations/{simulationId}/experiments':
+    post:
+      tags:
+        - experiments
+      description: Add an Experiment.
+      parameters:
+        - name: simulationId
+          in: path
+          description: Simulation's ID.
+          required: true
+          type: string
+        - name: experiment
+          in: body
+          description: The new Experiment.
+          required: true
+          schema:
+            properties:
+              topology:
+                $ref: '#/definitions/Experiment'
+      responses:
+        '200':
+          description: Successfully added Topology.
+          schema:
+            $ref: '#/definitions/Topology'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
   '/topologies/{topologyId}':
     get:
       tags:
