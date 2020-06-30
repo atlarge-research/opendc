@@ -18,12 +18,12 @@ def POST(request):
     simulation = Simulation({'simulation': request.params_body['simulation']})
     simulation.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     simulation.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
-    simulation.set_property('topologyIds', [topology.obj['_id']])
+    simulation.set_property('topologyIds', [topology.get_id()])
     simulation.set_property('experimentIds', [])
     simulation.insert()
 
     user = User.from_google_id(request.google_id)
-    user.obj['authorizations'].append({'simulationId': simulation.obj['_id'], 'authorizationLevel': 'OWN'})
+    user.obj['authorizations'].append({'simulationId': simulation.get_id(), 'authorizationLevel': 'OWN'})
     user.update()
 
     return Response(200, 'Successfully created simulation.', simulation.obj)

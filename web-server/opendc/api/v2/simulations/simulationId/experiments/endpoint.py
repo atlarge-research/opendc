@@ -29,7 +29,7 @@ def POST(request):
 
     experiment.insert()
 
-    simulation.obj['experimentIds'].append(experiment.obj['_id'])
+    simulation.obj['experimentIds'].append(experiment.get_id())
     simulation.update()
 
     return Response(200, 'Successfully added Experiment.', experiment.obj)

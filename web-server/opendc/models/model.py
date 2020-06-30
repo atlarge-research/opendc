@@ -21,6 +21,10 @@ class Model:
     def __init__(self, obj):
         self.obj = obj
 
+    def get_id(self):
+        """Returns the ID of the enclosed object."""
+        return self.obj['_id']
+
     def check_exists(self):
         """Raises an error if the enclosed object does not exist."""
         if self.obj is None:
@@ -36,8 +40,8 @@ class Model:
 
     def update(self):
         """Updates the enclosed object and updates the internal reference to the newly inserted object."""
-        self.obj = DB.update(self.obj['_id'], self.obj, self.collection_name)
+        self.obj = DB.update(self.get_id(), self.obj, self.collection_name)
 
     def delete(self):
         """Deletes the enclosed object in the database."""
-        DB.delete_one({'_id': self.obj['_id']}, self.collection_name)
+        DB.delete_one({'_id': self.get_id()}, self.collection_name)

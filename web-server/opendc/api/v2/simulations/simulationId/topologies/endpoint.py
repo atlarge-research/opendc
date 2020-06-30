@@ -21,7 +21,7 @@ def POST(request):
     topology.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
     topology.insert()
 
-    simulation.obj['topologyIds'].append(topology.obj['_id'])
+    simulation.obj['topologyIds'].append(topology.get_id())
     simulation.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
     simulation.update()
 
