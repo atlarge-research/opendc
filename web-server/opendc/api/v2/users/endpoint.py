@@ -1,6 +1,4 @@
 from opendc.models.user import User
-from opendc.util import exceptions
-from opendc.util.database import DB
 from opendc.util.rest import Response
 
 
@@ -13,7 +11,7 @@ def GET(request):
 
     user.check_exists()
 
-    return Response(200, f'Successfully retrieved user.', user.obj)
+    return Response(200, 'Successfully retrieved user.', user.obj)
 
 
 def POST(request):
@@ -28,4 +26,4 @@ def POST(request):
     user.check_already_exists()
 
     user.insert()
-    return Response(200, f'Successfully created user.', user.obj)
+    return Response(200, 'Successfully created user.', user.obj)

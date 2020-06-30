@@ -1,5 +1,5 @@
 from opendc.models.experiment import Experiment
-from opendc.util import exceptions
+from opendc.models.simulation import Simulation
 from opendc.util.rest import Response
 
 
@@ -13,7 +13,7 @@ def GET(request):
     experiment.check_exists()
     experiment.check_user_access(request.google_id, False)
 
-    return Response(200, f'Successfully retrieved Experiment.', experiment.obj)
+    return Response(200, 'Successfully retrieved Experiment.', experiment.obj)
 
 
 def PUT(request):
@@ -53,6 +53,12 @@ def DELETE(request):
 
     experiment.check_exists()
     experiment.check_user_access(request.google_id, True)
+
+    simulation = Simulation.from_id(experiment.obj['simulationId'])
+    simulation.check_exists()
+    if request.params_path['experimentId'] in simulation.obj['experimentIds']:
+        simulation.obj['experimentIds'].remove(request.params_path['experimentId'])
+    simulation.update()
 
     experiment.delete()
 

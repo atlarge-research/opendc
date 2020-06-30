@@ -46,6 +46,7 @@ def test_add_experiment(client, mocker):
                         return_value={
                             '_id': '1',
                             'simulationId': '1',
+                            'experimentIds': ['1'],
                             'authorizations': [{
                                 'simulationId': '1',
                                 'authorizationLevel': 'EDIT'
@@ -54,6 +55,7 @@ def test_add_experiment(client, mocker):
     mocker.patch.object(DB,
                         'insert',
                         return_value={
+                            '_id': '1',
                             'topologyId': '1',
                             'traceId': '1',
                             'schedulerName': 'default',
@@ -61,6 +63,7 @@ def test_add_experiment(client, mocker):
                             'state': 'QUEUED',
                             'lastSimulatedTick': 0,
                         })
+    mocker.patch.object(DB, 'update', return_value=None)
     res = client.post(
         '/api/v2/simulations/1/experiments',
         json={'experiment': {

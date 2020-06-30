@@ -1,5 +1,4 @@
 from opendc.models.topology import Topology
-from opendc.util import exceptions
 from opendc.util.rest import Response
 
 

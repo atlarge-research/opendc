@@ -134,11 +134,13 @@ def test_delete_simulation(client, mocker):
                             '_id': '1',
                             'simulationId': '1',
                             'googleId': 'test',
+                            'experimentIds': ['1'],
                             'authorizations': [{
                                 'simulationId': '1',
                                 'authorizationLevel': 'OWN'
                             }]
                         })
     mocker.patch.object(DB, 'delete_one', return_value={})
+    mocker.patch.object(DB, 'update', return_value=None)
     res = client.delete('/api/v2/experiments/1')
     assert '200' in res.status

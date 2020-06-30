@@ -3,7 +3,6 @@ from datetime import datetime
 from opendc.models.simulation import Simulation
 from opendc.models.topology import Topology
 from opendc.models.user import User
-from opendc.util import exceptions
 from opendc.util.database import Database
 from opendc.util.rest import Response
 
@@ -13,7 +12,7 @@ def POST(request):
 
     request.check_required_parameters(body={'simulation': {'name': 'string'}})
 
-    topology = Topology({'name': 'Default topology'})
+    topology = Topology({'name': 'Default topology', 'rooms': []})
     topology.insert()
 
     simulation = Simulation({'simulation': request.params_body['simulation']})
