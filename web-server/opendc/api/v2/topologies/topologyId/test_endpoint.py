@@ -51,3 +51,14 @@ PUT /topologies/{topologyId}
 '''
 DELETE /topologies/{topologyId}
 '''
+
+def test_delete_topology(client, mocker):
+    mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1'})
+    mocker.patch.object(DB, 'delete_one', return_value=None)
+    res = client.delete('/api/v2/topologies/1')
+    assert '200' in res.status
+
+def test_delete_nonexistent_topology(client, mocker):
+    mocker.patch.object(DB, 'fetch_one', return_value=None)
+    assert '404' in client.delete('/api/v2/topologies/1').status
+
