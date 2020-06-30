@@ -371,61 +371,6 @@ paths:
           description: Forbidden from deleting Topology.
         '404':
           description: Topology not found.
-  '/simulations/{simulationId}/experiments':
-    get:
-      tags:
-        - experiments
-      description: Get this Simulation's Experiments.
-      parameters:
-        - name: simulationId
-          in: path
-          description: Simulation's ID.
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Successfully retrieved Experiments.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Experiment'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from retrieving Simulation's Experiments.
-        '404':
-          description: Simulation not found.
-    post:
-      tags:
-        - experiments
-      description: Add a new Experiment for this Simulation.
-      parameters:
-        - name: simulationId
-          in: path
-          description: Simulation's ID.
-          required: true
-          type: string
-        - name: experiment
-          in: body
-          description: Experiment to add to this Simulation.
-          required: true
-          schema:
-            $ref: '#/definitions/Experiment'
-      responses:
-        '200':
-          description: Successfully added new Experiment.
-          schema:
-            $ref: '#/definitions/Experiment'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from adding an Experiment to this Simulation.
-        '404':
-          description: 'Simulation, Topology, Scheduler or Trace not found.'
   '/experiments/{experimentId}':
     get:
       tags:
@@ -660,58 +605,6 @@ paths:
           description: Forbidden from getting Experiment's Room States.
         '404':
           description: 'Experiment, Room or Tick not found.'
-  '/experiments/{experimentId}/task-states':
-    get:
-      tags:
-        - simulations
-        - states
-      description: Get this Experiment's Task States.
-      parameters:
-        - name: experimentId
-          in: path
-          description: Experiment's ID.
-          required: true
-          type: string
-        - name: tick
-          in: query
-          description: Tick to filter on.
-          required: false
-          type: integer
-        - name: taskId
-          in: query
-          description: Task's ID to filter on.
-          required: false
-          type: string
-        - name: machineId
-          in: query
-          description: Machine's ID to filter on.
-          required: false
-          type: string
-        - name: rackId
-          in: query
-          description: ID the rack whose machines' task states to get
-          required: false
-          type: string
-        - name: roomId
-          in: query
-          description: ID of the room whose racks' machines' states to get
-          required: false
-          type: string
-      responses:
-        '200':
-          description: Successfully retrieved Task States.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/TaskState'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from retrieving Experiment's Task States.
-        '404':
-          description: 'Experiment, Tick, Task, Machine, Rack or Room not found.'
   /schedulers:
     get:
       tags:
@@ -852,19 +745,10 @@ definitions:
         type: array
         items:
           type: string
-  TaskState:
-    type: object
-    properties:
-      _id:
-        type: string
-      taskId:
-        type: string
-      experimentId:
-        type: string
-      tick:
-        type: integer
-      flopsLeft:
-        type: integer
+      experimentIds:
+        type: array
+        items:
+          type: string
   Topology:
     type: object
     properties:

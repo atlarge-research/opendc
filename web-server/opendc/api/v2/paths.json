@@ -9,7 +9,6 @@
   "/experiments/{experimentId}/machine-states",
   "/experiments/{experimentId}/rack-states",
   "/experiments/{experimentId}/room-states",
-  "/experiments/{experimentId}/task-states",
   "/topologies/{topologyId}",
   "/simulations/{simulationId}/experiments",
   "/experiments/{experimentId}",
