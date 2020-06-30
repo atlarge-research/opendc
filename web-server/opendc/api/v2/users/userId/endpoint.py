@@ -1,5 +1,4 @@
 from opendc.models.user import User
-from opendc.util import exceptions
 from opendc.util.rest import Response
 
 

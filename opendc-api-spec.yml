@@ -782,6 +782,8 @@ definitions:
     properties:
       _id:
         type: string
+      simulationId:
+        type: string
       name:
         type: string
       rooms:
