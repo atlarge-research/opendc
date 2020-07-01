@@ -1,17 +1,17 @@
-import { connect } from "react-redux";
-import DatacenterGroup from "../../../components/app/map/groups/DatacenterGroup";
+import { connect } from 'react-redux'
+import DatacenterGroup from '../../../components/app/map/groups/DatacenterGroup'
 
 const mapStateToProps = state => {
-  if (state.currentDatacenterId === -1) {
-    return {};
-  }
+    if (state.currentDatacenterId === -1) {
+        return {}
+    }
 
-  return {
-    datacenter: state.objects.datacenter[state.currentDatacenterId],
-    interactionLevel: state.interactionLevel
-  };
-};
+    return {
+        datacenter: state.objects.datacenter[state.currentDatacenterId],
+        interactionLevel: state.interactionLevel,
+    }
+}
 
-const DatacenterContainer = connect(mapStateToProps)(DatacenterGroup);
+const DatacenterContainer = connect(mapStateToProps)(DatacenterGroup)
 
-export default DatacenterContainer;
+export default DatacenterContainer

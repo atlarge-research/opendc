@@ -25,7 +25,7 @@ class Simulation(Model):
     def get_all_authorizations(self):
         """Get all user IDs having access to this simulation."""
         return [
-            user['_id'] for user in DB.fetch_all({'authorizations': {
-                'simulationId': self.get_id()
+            str(user['_id']) for user in DB.fetch_all({'authorizations': {
+                'simulationId': self.obj['_id']
             }}, User.collection_name)
         ]

@@ -21,4 +21,4 @@ class Experiment(Model):
         authorizations = list(
             filter(lambda x: str(x['simulationId']) == str(self.obj['simulationId']), user.obj['authorizations']))
         if len(authorizations) == 0 or (edit_access and authorizations[0]['authorizationLevel'] == 'VIEW'):
-            raise ClientError(Response(403, "Forbidden from retrieving/editing experiment."))
+            raise ClientError(Response(403, 'Forbidden from retrieving/editing experiment.'))

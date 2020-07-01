@@ -17,7 +17,6 @@ RUN pip install -r /opendc/web-server/requirements.txt
 RUN cd /opendc/frontend \
 	&& rm -rf ./build \
 	&& yarn \
-	&& export REACT_APP_OAUTH_CLIENT_ID=$OPENDC_OAUTH_CLIENT_ID \
 	&& yarn build
 
 # Set working directory

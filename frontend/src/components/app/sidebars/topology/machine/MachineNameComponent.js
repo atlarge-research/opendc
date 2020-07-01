@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react'
 
 const MachineNameComponent = ({ position }) => (
-  <h2>Machine at slot {position}</h2>
-);
+    <h2>Machine at slot {position}</h2>
+)
 
-export default MachineNameComponent;
+export default MachineNameComponent

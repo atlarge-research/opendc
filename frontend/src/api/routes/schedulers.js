@@ -1,5 +1,5 @@
-import { getAll } from "./util";
+import { getAll } from './util'
 
 export function getAllSchedulers() {
-  return getAll("/schedulers");
+    return getAll('/schedulers')
 }

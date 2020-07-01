@@ -9,7 +9,7 @@ from opendc.util.rest import Response
 def GET(request):
     """Get this Topology."""
 
-    request.check_required_parameters(path={'topologyId': 'int'})
+    request.check_required_parameters(path={'topologyId': 'string'})
 
     topology = Topology.from_id(request.params_path['topologyId'])
 
@@ -21,7 +21,7 @@ def GET(request):
 
 def PUT(request):
     """Update this topology"""
-    request.check_required_parameters(path={'topologyId': 'int'}, body={'topology': {'name': 'string', 'rooms': {}}})
+    request.check_required_parameters(path={'topologyId': 'string'}, body={'topology': {'name': 'string', 'rooms': {}}})
     topology = Topology.from_id(request.params_path['topologyId'])
 
     topology.check_exists()
@@ -38,7 +38,7 @@ def PUT(request):
 
 def DELETE(request):
     """Delete this topology"""
-    request.check_required_parameters(path={'topologyId': 'int'})
+    request.check_required_parameters(path={'topologyId': 'string'})
 
     topology = Topology.from_id(request.params_path['topologyId'])
 

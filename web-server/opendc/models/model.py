@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from opendc.util.database import DB
 from opendc.util.exceptions import ClientError
 from opendc.util.rest import Response
@@ -23,7 +25,7 @@ class Model:
 
     def get_id(self):
         """Returns the ID of the enclosed object."""
-        return self.obj['_id']
+        return str(self.obj['_id'])
 
     def check_exists(self):
         """Raises an error if the enclosed object does not exist."""
@@ -35,12 +37,13 @@ class Model:
         self.obj[key] = value
 
     def insert(self):
-        """Inserts the enclosed object and updates the internal reference to the newly inserted object."""
-        self.obj = DB.insert(self.obj, self.collection_name)
+        """Inserts the enclosed object and generates a UUID for it."""
+        self.obj['_id'] = str(uuid4())
+        DB.insert(self.obj, self.collection_name)
 
     def update(self):
         """Updates the enclosed object and updates the internal reference to the newly inserted object."""
-        self.obj = DB.update(self.get_id(), self.obj, self.collection_name)
+        DB.update(self.get_id(), self.obj, self.collection_name)
 
     def delete(self):
         """Deletes the enclosed object in the database."""

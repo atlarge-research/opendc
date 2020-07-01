@@ -1,14 +1,15 @@
-import { connect } from "react-redux";
-import BuildingSidebarComponent from "../../../../../components/app/sidebars/topology/building/BuildingSidebarComponent";
+import { connect } from 'react-redux'
+import BuildingSidebarComponent
+    from '../../../../../components/app/sidebars/topology/building/BuildingSidebarComponent'
 
 const mapStateToProps = state => {
-  return {
-    inSimulation: state.currentExperimentId !== -1
-  };
-};
+    return {
+        inSimulation: state.currentExperimentId !== -1,
+    }
+}
 
 const BuildingSidebarContainer = connect(mapStateToProps)(
-  BuildingSidebarComponent
-);
+    BuildingSidebarComponent,
+)
 
-export default BuildingSidebarContainer;
+export default BuildingSidebarContainer

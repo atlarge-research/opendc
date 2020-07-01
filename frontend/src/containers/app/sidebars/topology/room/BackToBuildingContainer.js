@@ -1,15 +1,15 @@
-import { connect } from "react-redux";
-import { goDownOneInteractionLevel } from "../../../../../actions/interaction-level";
-import BackToBuildingComponent from "../../../../../components/app/sidebars/topology/room/BackToBuildingComponent";
+import { connect } from 'react-redux'
+import { goDownOneInteractionLevel } from '../../../../../actions/interaction-level'
+import BackToBuildingComponent from '../../../../../components/app/sidebars/topology/room/BackToBuildingComponent'
 
 const mapDispatchToProps = dispatch => {
-  return {
-    onClick: () => dispatch(goDownOneInteractionLevel())
-  };
-};
+    return {
+        onClick: () => dispatch(goDownOneInteractionLevel()),
+    }
+}
 
 const BackToBuildingContainer = connect(undefined, mapDispatchToProps)(
-  BackToBuildingComponent
-);
+    BackToBuildingComponent,
+)
 
-export default BackToBuildingContainer;
+export default BackToBuildingContainer

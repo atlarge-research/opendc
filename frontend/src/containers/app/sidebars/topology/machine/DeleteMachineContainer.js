@@ -1,15 +1,15 @@
-import { connect } from "react-redux";
-import { openDeleteMachineModal } from "../../../../../actions/modals/topology";
-import DeleteMachineComponent from "../../../../../components/app/sidebars/topology/machine/DeleteMachineComponent";
+import { connect } from 'react-redux'
+import { openDeleteMachineModal } from '../../../../../actions/modals/topology'
+import DeleteMachineComponent from '../../../../../components/app/sidebars/topology/machine/DeleteMachineComponent'
 
 const mapDispatchToProps = dispatch => {
-  return {
-    onClick: () => dispatch(openDeleteMachineModal())
-  };
-};
+    return {
+        onClick: () => dispatch(openDeleteMachineModal()),
+    }
+}
 
 const DeleteMachineContainer = connect(undefined, mapDispatchToProps)(
-  DeleteMachineComponent
-);
+    DeleteMachineComponent,
+)
 
-export default DeleteMachineContainer;
+export default DeleteMachineContainer

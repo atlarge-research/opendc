@@ -7,7 +7,7 @@
  * @returns {string} A human-friendly string version of that date and time.
  */
 export function parseAndFormatDateTime(dateTimeString) {
-  return formatDateTime(parseDateTime(dateTimeString));
+    return formatDateTime(parseDateTime(dateTimeString))
 }
 
 /**
@@ -19,7 +19,7 @@ export function parseAndFormatDateTime(dateTimeString) {
  * @returns {object} A Date object with the parsed date and time information as content.
  */
 export function parseDateTime(dateTimeString) {
-  return new Date(dateTimeString + ".000Z");
+    return new Date(dateTimeString + '.000Z')
 }
 
 /**
@@ -29,34 +29,34 @@ export function parseDateTime(dateTimeString) {
  * @returns {string} A human-friendly string version of that date and time.
  */
 export function formatDateTime(dateTime) {
-  let date;
-  const currentDate = new Date();
+    let date
+    const currentDate = new Date()
 
-  date =
-    addPaddingToTwo(dateTime.getDay()) +
-    "/" +
-    addPaddingToTwo(dateTime.getMonth()) +
-    "/" +
-    addPaddingToTwo(dateTime.getFullYear());
+    date =
+        addPaddingToTwo(dateTime.getDay()) +
+        '/' +
+        addPaddingToTwo(dateTime.getMonth()) +
+        '/' +
+        addPaddingToTwo(dateTime.getFullYear())
 
-  if (
-    dateTime.getFullYear() === currentDate.getFullYear() &&
-    dateTime.getMonth() === currentDate.getMonth()
-  ) {
-    if (dateTime.getDate() === currentDate.getDate()) {
-      date = "Today";
-    } else if (dateTime.getDate() === currentDate.getDate() - 1) {
-      date = "Yesterday";
+    if (
+        dateTime.getFullYear() === currentDate.getFullYear() &&
+        dateTime.getMonth() === currentDate.getMonth()
+    ) {
+        if (dateTime.getDate() === currentDate.getDate()) {
+            date = 'Today'
+        } else if (dateTime.getDate() === currentDate.getDate() - 1) {
+            date = 'Yesterday'
+        }
     }
-  }
 
-  return (
-    date +
-    ", " +
-    addPaddingToTwo(dateTime.getHours()) +
-    ":" +
-    addPaddingToTwo(dateTime.getMinutes())
-  );
+    return (
+        date +
+        ', ' +
+        addPaddingToTwo(dateTime.getHours()) +
+        ':' +
+        addPaddingToTwo(dateTime.getMinutes())
+    )
 }
 
 /**
@@ -66,27 +66,27 @@ export function formatDateTime(dateTime) {
  * @returns {string} A string representation of that amount of second, in the from of HH:MM:SS.
  */
 export function convertSecondsToFormattedTime(seconds) {
-  if (seconds <= 0) {
-    return "0s";
-  }
+    if (seconds <= 0) {
+        return '0s'
+    }
 
-  let hour = Math.floor(seconds / 3600);
-  let minute = Math.floor(seconds / 60) % 60;
-  let second = seconds % 60;
+    let hour = Math.floor(seconds / 3600)
+    let minute = Math.floor(seconds / 60) % 60
+    let second = seconds % 60
 
-  hour = isNaN(hour) ? 0 : hour;
-  minute = isNaN(minute) ? 0 : minute;
-  second = isNaN(second) ? 0 : second;
+    hour = isNaN(hour) ? 0 : hour
+    minute = isNaN(minute) ? 0 : minute
+    second = isNaN(second) ? 0 : second
 
-  if (hour === 0 && minute === 0) {
-    return second + "s";
-  } else if (hour === 0) {
-    return minute + "m" + addPaddingToTwo(second) + "s";
-  } else {
-    return (
-      hour + "h" + addPaddingToTwo(minute) + "m" + addPaddingToTwo(second) + "s"
-    );
-  }
+    if (hour === 0 && minute === 0) {
+        return second + 's'
+    } else if (hour === 0) {
+        return minute + 'm' + addPaddingToTwo(second) + 's'
+    } else {
+        return (
+            hour + 'h' + addPaddingToTwo(minute) + 'm' + addPaddingToTwo(second) + 's'
+        )
+    }
 }
 
 /**
@@ -96,9 +96,9 @@ export function convertSecondsToFormattedTime(seconds) {
  * @returns {string} A string containing the padded integer.
  */
 function addPaddingToTwo(integer) {
-  if (integer < 10) {
-    return "0" + integer.toString();
-  } else {
-    return integer.toString();
-  }
+    if (integer < 10) {
+        return '0' + integer.toString()
+    } else {
+        return integer.toString()
+    }
 }

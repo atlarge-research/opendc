@@ -1,21 +1,21 @@
-import { connect } from "react-redux";
-import { goFromBuildingToRoom } from "../../../actions/interaction-level";
-import RoomGroup from "../../../components/app/map/groups/RoomGroup";
+import { connect } from 'react-redux'
+import { goFromBuildingToRoom } from '../../../actions/interaction-level'
+import RoomGroup from '../../../components/app/map/groups/RoomGroup'
 
 const mapStateToProps = (state, ownProps) => {
-  return {
-    interactionLevel: state.interactionLevel,
-    currentRoomInConstruction: state.construction.currentRoomInConstruction,
-    room: state.objects.room[ownProps.roomId]
-  };
-};
+    return {
+        interactionLevel: state.interactionLevel,
+        currentRoomInConstruction: state.construction.currentRoomInConstruction,
+        room: state.objects.room[ownProps.roomId],
+    }
+}
 
 const mapDispatchToProps = (dispatch, ownProps) => {
-  return {
-    onClick: () => dispatch(goFromBuildingToRoom(ownProps.roomId))
-  };
-};
+    return {
+        onClick: () => dispatch(goFromBuildingToRoom(ownProps.roomId)),
+    }
+}
 
-const RoomContainer = connect(mapStateToProps, mapDispatchToProps)(RoomGroup);
+const RoomContainer = connect(mapStateToProps, mapDispatchToProps)(RoomGroup)
 
-export default RoomContainer;
+export default RoomContainer

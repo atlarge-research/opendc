@@ -1,14 +1,14 @@
-import { connect } from "react-redux";
-import ScaleIndicatorComponent from "../../../../components/app/map/controls/ScaleIndicatorComponent";
+import { connect } from 'react-redux'
+import ScaleIndicatorComponent from '../../../../components/app/map/controls/ScaleIndicatorComponent'
 
 const mapStateToProps = state => {
-  return {
-    scale: state.map.scale
-  };
-};
+    return {
+        scale: state.map.scale,
+    }
+}
 
 const ScaleIndicatorContainer = connect(mapStateToProps)(
-  ScaleIndicatorComponent
-);
+    ScaleIndicatorComponent,
+)
 
-export default ScaleIndicatorContainer;
+export default ScaleIndicatorContainer

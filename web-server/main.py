@@ -26,10 +26,11 @@ else:
 
 # Set up database if not testing
 if not TEST_MODE:
-    database.DB.initialize_database(user=os.environ['OPENDC_DB_USERNAME'],
-                                    password=os.environ['OPENDC_DB_PASSWORD'],
-                                    database=os.environ['OPENDC_DB'],
-                                    host='localhost')
+    database.DB.initialize_database(
+        user=os.environ['OPENDC_DB_USERNAME'],
+        password=os.environ['OPENDC_DB_PASSWORD'],
+        database=os.environ['OPENDC_DB'],
+        host=os.environ['OPENDC_DB_HOST'] if 'OPENDC_DB_HOST' in os.environ else 'localhost')
 
 # Set up the core app
 FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
@@ -83,8 +84,8 @@ def sign_in():
 
     data = {'isNewUser': user.obj is None}
 
-    if user is not None:
-        data['userId'] = user.id
+    if user.obj is not None:
+        data['userId'] = user.get_id()
 
     return jsonify(**data)
 
@@ -151,10 +152,10 @@ def receive_message(message):
     """"Receive a SocketIO request"""
     (req, res) = _process_message(message)
 
-    print(f'Socket:\t{req.method} to `/{req.path}` resulted in {res.status["code"]}: {res.status["description"]}')
+    print(f'Socket: {req.method} to `/{req.path}` resulted in {res.status["code"]}: {res.status["description"]}')
     sys.stdout.flush()
 
-    flask_socketio.emit('res', res.to_JSON(), json=True)
+    flask_socketio.emit('response', res.to_JSON(), json=True)
 
 
 def _process_message(message):

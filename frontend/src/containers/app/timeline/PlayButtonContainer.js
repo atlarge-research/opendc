@@ -1,27 +1,27 @@
-import { connect } from "react-redux";
+import { connect } from 'react-redux'
 import {
-  pauseSimulation,
-  playSimulation
-} from "../../../actions/simulation/playback";
-import PlayButtonComponent from "../../../components/app/timeline/PlayButtonComponent";
+    pauseSimulation,
+    playSimulation,
+} from '../../../actions/simulation/playback'
+import PlayButtonComponent from '../../../components/app/timeline/PlayButtonComponent'
 
 const mapStateToProps = state => {
-  return {
-    isPlaying: state.isPlaying,
-    currentTick: state.currentTick,
-    lastSimulatedTick: state.lastSimulatedTick
-  };
-};
+    return {
+        isPlaying: state.isPlaying,
+        currentTick: state.currentTick,
+        lastSimulatedTick: state.lastSimulatedTick,
+    }
+}
 
 const mapDispatchToProps = dispatch => {
-  return {
-    onPlay: () => dispatch(playSimulation()),
-    onPause: () => dispatch(pauseSimulation())
-  };
-};
+    return {
+        onPlay: () => dispatch(playSimulation()),
+        onPause: () => dispatch(pauseSimulation()),
+    }
+}
 
 const PlayButtonContainer = connect(mapStateToProps, mapDispatchToProps)(
-  PlayButtonComponent
-);
+    PlayButtonComponent,
+)
 
-export default PlayButtonContainer;
+export default PlayButtonContainer

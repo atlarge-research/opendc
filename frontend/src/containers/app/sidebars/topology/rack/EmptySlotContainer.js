@@ -1,21 +1,21 @@
-import { connect } from "react-redux";
-import { addMachine } from "../../../../../actions/topology/rack";
-import EmptySlotComponent from "../../../../../components/app/sidebars/topology/rack/EmptySlotComponent";
+import { connect } from 'react-redux'
+import { addMachine } from '../../../../../actions/topology/rack'
+import EmptySlotComponent from '../../../../../components/app/sidebars/topology/rack/EmptySlotComponent'
 
 const mapStateToProps = state => {
-  return {
-    inSimulation: state.currentExperimentId !== -1
-  };
-};
+    return {
+        inSimulation: state.currentExperimentId !== -1,
+    }
+}
 
 const mapDispatchToProps = (dispatch, ownProps) => {
-  return {
-    onAdd: () => dispatch(addMachine(ownProps.position))
-  };
-};
+    return {
+        onAdd: () => dispatch(addMachine(ownProps.position)),
+    }
+}
 
 const EmptySlotContainer = connect(mapStateToProps, mapDispatchToProps)(
-  EmptySlotComponent
-);
+    EmptySlotComponent,
+)
 
-export default EmptySlotContainer;
+export default EmptySlotContainer

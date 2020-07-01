@@ -1,9 +1,9 @@
-import { getAll, getById } from "./util";
+import { getAll, getById } from './util'
 
 export function getAvailableRoomTypes() {
-  return getAll("/room-types");
+    return getAll('/room-types')
 }
 
 export function getAllowedObjectsOfRoomType(name) {
-  return getById("/room-types/{name}/allowed-objects", { name });
+    return getById('/room-types/{name}/allowed-objects', { name })
 }

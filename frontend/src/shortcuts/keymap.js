@@ -1,10 +1,10 @@
 const KeymapConfiguration = {
-  MAP: {
-    MOVE_LEFT: ["a", "left"],
-    MOVE_RIGHT: ["d", "right"],
-    MOVE_UP: ["w", "up"],
-    MOVE_DOWN: ["s", "down"]
-  }
-};
+    MAP: {
+        MOVE_LEFT: ['a', 'left'],
+        MOVE_RIGHT: ['d', 'right'],
+        MOVE_UP: ['w', 'up'],
+        MOVE_DOWN: ['s', 'down'],
+    },
+}
 
-export default KeymapConfiguration;
+export default KeymapConfiguration

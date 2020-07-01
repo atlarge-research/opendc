@@ -1,8 +1,8 @@
-import React from "react";
-import NameComponent from "../NameComponent";
+import React from 'react'
+import NameComponent from '../NameComponent'
 
 const RackNameComponent = ({ rackName, onEdit }) => (
-  <NameComponent name={rackName} onEdit={onEdit} />
-);
+    <NameComponent name={rackName} onEdit={onEdit}/>
+)
 
-export default RackNameComponent;
+export default RackNameComponent

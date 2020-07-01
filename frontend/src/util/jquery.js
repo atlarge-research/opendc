@@ -3,6 +3,6 @@
  *
  * This should be used instead of '$', to address ESLint warnings relating to undefined global variables.
  */
-const jQuery = window["$"];
+const jQuery = window['$']
 
-export default jQuery;
+export default jQuery

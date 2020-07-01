@@ -1,15 +1,15 @@
-import { connect } from "react-redux";
-import TimelineLabelsComponent from "../../../components/app/timeline/TimelineLabelsComponent";
+import { connect } from 'react-redux'
+import TimelineLabelsComponent from '../../../components/app/timeline/TimelineLabelsComponent'
 
 const mapStateToProps = state => {
-  return {
-    currentTick: state.currentTick,
-    lastSimulatedTick: state.lastSimulatedTick
-  };
-};
+    return {
+        currentTick: state.currentTick,
+        lastSimulatedTick: state.lastSimulatedTick,
+    }
+}
 
 const TimelineLabelsContainer = connect(mapStateToProps)(
-  TimelineLabelsComponent
-);
+    TimelineLabelsComponent,
+)
 
-export default TimelineLabelsContainer;
+export default TimelineLabelsContainer

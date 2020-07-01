@@ -22,15 +22,6 @@ $MONGO_CMD --eval 'db.createCollection("prefabs");'
 
 echo 'Loading test data'
 
-$MONGO_CMD --eval 'db.users.insertOne(
-    {
-        "googleId": "23483578932789231",
-        "email": "jorgos.andreadis@gmail.com",
-        "givenName": "Jorgos",
-        "familyName": "Andreadis",
-        "authorizations": []
-    });'
-
 $MONGO_CMD --eval 'db.prefabs.insertOne(
     {
         "type": "rack",
