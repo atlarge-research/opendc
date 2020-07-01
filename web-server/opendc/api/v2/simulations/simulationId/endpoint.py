@@ -3,6 +3,7 @@ from datetime import datetime
 from opendc.models.experiment import Experiment
 from opendc.models.simulation import Simulation
 from opendc.models.topology import Topology
+from opendc.models.user import User
 from opendc.util.database import Database
 from opendc.util.rest import Response
 
@@ -54,6 +55,11 @@ def DELETE(request):
     for experiment_id in simulation.obj['experimentIds']:
         experiment = Experiment.from_id(experiment_id)
         experiment.delete()
+
+    user = User.from_google_id(request.google_id)
+    user.obj['authorizations'] = list(
+        filter(lambda x: str(x['simulationId']) != request.params_path['simulationId'], user.obj['authorizations']))
+    user.update()
 
     old_object = simulation.delete()
 
