@@ -26,7 +26,7 @@ const SimulationAuthList = ({ authorizations }) => {
                     {authorizations.map(authorization => (
                         <SimulationAuthRow
                             simulationAuth={authorization}
-                            key={authorization.simulation.id}
+                            key={authorization.simulation._id}
                         />
                     ))}
                     </tbody>

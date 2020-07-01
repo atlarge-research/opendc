@@ -60,6 +60,6 @@ def DELETE(request):
         simulation.obj['experimentIds'].remove(request.params_path['experimentId'])
     simulation.update()
 
-    experiment.delete()
+    old_object = experiment.delete()
 
-    return Response(200, 'Successfully deleted experiment.', experiment.obj)
+    return Response(200, 'Successfully deleted experiment.', old_object)

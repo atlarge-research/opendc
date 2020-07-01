@@ -63,18 +63,14 @@ class Database:
 
         The query needs to be in json format, i.e.: `{'name': prefab_name}`.
         """
-        bson = getattr(self.opendc_db, collection).delete_one(query)
-
-        return self.convert_bson_to_json(bson)
+        getattr(self.opendc_db, collection).delete_one(query)
 
     def delete_all(self, query, collection):
         """Deletes all objects matching the given query.
 
         The query needs to be in json format, i.e.: `{'name': prefab_name}`.
         """
-        bson = getattr(self.opendc_db, collection).delete_many(query)
-
-        return self.convert_bson_to_json(bson)
+        getattr(self.opendc_db, collection).delete_many(query)
 
     @staticmethod
     def convert_bson_to_json(bson):

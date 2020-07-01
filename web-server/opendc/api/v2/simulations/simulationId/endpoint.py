@@ -55,6 +55,6 @@ def DELETE(request):
         experiment = Experiment.from_id(experiment_id)
         experiment.delete()
 
-    simulation.delete()
+    old_object = simulation.delete()
 
-    return Response(200, 'Successfully deleted simulation.', simulation.obj)
+    return Response(200, 'Successfully deleted simulation.', old_object)

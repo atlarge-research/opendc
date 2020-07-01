@@ -35,7 +35,7 @@ export const objects = combineReducers({
 })
 
 function object(type) {
-    return objectWithId(type, object => object.id)
+    return objectWithId(type, object => object._id)
 }
 
 function objectWithId(type, getId) {

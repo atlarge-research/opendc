@@ -21,7 +21,7 @@ const SimulationAuthRow = ({ simulationAuth }) => (
       />
             {AUTH_DESCRIPTION_MAP[simulationAuth.authorizationLevel]}
         </td>
-        <SimulationActions simulationId={simulationAuth.simulation.id}/>
+        <SimulationActions simulationId={simulationAuth.simulation._id}/>
     </tr>
 )
 

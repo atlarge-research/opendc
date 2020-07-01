@@ -46,5 +46,10 @@ class Model:
         DB.update(self.get_id(), self.obj, self.collection_name)
 
     def delete(self):
-        """Deletes the enclosed object in the database."""
+        """Deletes the enclosed object in the database, if it existed."""
+        if self.obj is None:
+            return None
+
+        old_object = self.obj.copy()
         DB.delete_one({'_id': self.get_id()}, self.collection_name)
+        return old_object

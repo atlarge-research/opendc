@@ -46,6 +46,6 @@ def DELETE(request):
     user.check_exists()
     user.check_correct_user(request.google_id)
 
-    user.delete()
+    old_object = user.delete()
 
-    return Response(200, 'Successfully deleted user.', user.obj)
+    return Response(200, 'Successfully deleted user.', old_object)

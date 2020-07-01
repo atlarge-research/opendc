@@ -15,7 +15,7 @@ def POST(request):
     topology = Topology({'name': 'Default topology', 'rooms': []})
     topology.insert()
 
-    simulation = Simulation({'simulation': request.params_body['simulation']})
+    simulation = Simulation(request.params_body['simulation'])
     simulation.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     simulation.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
     simulation.set_property('topologyIds', [topology.get_id()])

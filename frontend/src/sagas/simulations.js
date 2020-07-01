@@ -21,9 +21,10 @@ export function* onSimulationAdd(action) {
         yield put(addToStore('simulation', simulation))
 
         const authorization = {
-            simulationId: simulation.id,
+            simulationId: simulation._id,
             userId: action.userId,
             authorizationLevel: 'OWN',
+            simulation,
         }
         yield put(addToStore('authorization', authorization))
         yield put(

@@ -29,7 +29,7 @@ const SimulationActionButtons = ({ simulationId, onViewUsers, onDelete }) => (
 )
 
 SimulationActionButtons.propTypes = {
-    simulationId: PropTypes.number.isRequired,
+    simulationId: PropTypes.string.isRequired,
     onViewUsers: PropTypes.func,
     onDelete: PropTypes.func,
 }

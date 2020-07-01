@@ -51,6 +51,6 @@ def DELETE(request):
         simulation.obj['topologyIds'].remove(request.params_path['topologyId'])
     simulation.update()
 
-    topology.delete()
+    old_object = topology.delete()
 
-    return Response(200, 'Successfully deleted topology.', topology.obj)
+    return Response(200, 'Successfully deleted topology.', old_object)

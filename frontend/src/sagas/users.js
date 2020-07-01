@@ -13,7 +13,7 @@ export function* onFetchLoggedInUser(action) {
             performTokenSignIn,
             action.payload.authToken,
         )
-        console.log(tokenResponse)
+
         let userId = tokenResponse.userId
 
         if (tokenResponse.isNewUser) {
@@ -33,14 +33,13 @@ export function* onFetchAuthorizationsOfCurrentUser(action) {
         const user = yield call(fetchAndStoreUser, action.userId)
 
         for (const authorization of user.authorizations) {
+            authorization.userId = action.userId
             yield put(addToStore('authorization', authorization))
-
             yield fetchAndStoreSimulation(authorization.simulationId)
-            yield fetchAndStoreUser(authorization.userId)
         }
 
         const authorizationIds = user.authorizations.map(authorization => [
-            authorization.userId,
+            action.userId,
             authorization.simulationId,
         ])
 
