@@ -17,14 +17,11 @@ def GET(request):
 
 
 def PUT(request):
-    """Update this Experiment."""
+    """Update this Experiments name."""
 
     request.check_required_parameters(path={'experimentId': 'string'},
                                       body={
                                           'experiment': {
-                                              'topologyId': 'string',
-                                              'traceId': 'string',
-                                              'schedulerName': 'string',
                                               'name': 'string',
                                           }
                                       })
@@ -34,14 +31,11 @@ def PUT(request):
     experiment.check_exists()
     experiment.check_user_access(request.google_id, True)
 
-    experiment.set_property('topologyId', request.params_body['experiment']['topologyId'])
-    experiment.set_property('traceId', request.params_body['experiment']['traceId'])
-    experiment.set_property('schedulerName', request.params_body['experiment']['schedulerName'])
     experiment.set_property('name', request.params_body['experiment']['name'])
 
     experiment.update()
 
-    return Response(200, 'Successfully updated experiment', experiment.obj)
+    return Response(200, 'Successfully updated experiment.', experiment.obj)
 
 
 def DELETE(request):

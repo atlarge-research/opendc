@@ -51,9 +51,6 @@ def test_update_experiment_non_existing(client, mocker):
     assert '404' in client.put('/api/v2/experiments/1',
                                json={
                                    'experiment': {
-                                       'topologyId': '1',
-                                       'traceId': '1',
-                                       'schedulerName': 'default',
                                        'name': 'test',
                                    }
                                }).status
@@ -74,9 +71,6 @@ def test_update_experiment_not_authorized(client, mocker):
     assert '403' in client.put('/api/v2/experiments/1',
                                json={
                                    'experiment': {
-                                       'topologyId': '1',
-                                       'traceId': '1',
-                                       'schedulerName': 'default',
                                        'name': 'test',
                                    }
                                }).status
@@ -98,9 +92,6 @@ def test_update_experiment(client, mocker):
     res = client.put(
         '/api/v2/experiments/1',
         json={'experiment': {
-            'topologyId': '1',
-            'traceId': '1',
-            'schedulerName': 'default',
             'name': 'test',
         }})
     assert '200' in res.status

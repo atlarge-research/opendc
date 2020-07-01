@@ -70,7 +70,14 @@ In `opendc-web-server/static/index.html`, add your own `OAUTH_CLIENT_ID` in `con
 
 #### Set up the database
 
-Run `docker-compose build` and `docker-compose up` in the [`mongodb` directory](../mongodb) of the main OpenDC repository to get a database setup up and running.
+You can selectively run only the database services from the standard OpenDC `docker-compose` setup:
+
+```bash
+docker-compose build mongo mongo-express
+docker-compose up mongo mongo-express
+```
+
+This will set you up with a running MongoDB instance and a visual inspection tool running on [localhost:8082](http://localhost:8082), with which you can view and manipulate the database.
 
 ### Local Development
 
