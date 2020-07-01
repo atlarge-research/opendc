@@ -13,7 +13,7 @@
     "url": "https://github.com/atlarge-research/opendc-frontend/issues",
     "email": "opendc@atlarge-research.com"
   },
-  "author": "Georgios Andreadis <g.andreadis@atlarge-research.com> (http://gandreadis.com/)",
+  "author": "Georgios Andreadis <g.andreadis@atlarge-research.com> (https://gandreadis.com/)",
   "license": "MIT",
   "private": true,
   "proxy": "http://localhost:8081",
