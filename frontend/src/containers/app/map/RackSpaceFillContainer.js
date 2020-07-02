@@ -3,7 +3,7 @@ import RackFillBar from '../../../components/app/map/elements/RackFillBar'
 
 const mapStateToProps = (state, ownProps) => {
     const machineIds =
-        state.objects.rack[state.objects.tile[ownProps.tileId].objectId].machineIds
+        state.objects.rack[state.objects.tile[ownProps.tileId].rackId].machineIds
     return {
         type: 'space',
         fillFraction:

@@ -2,14 +2,14 @@ import React from 'react'
 
 const ExperimentMetadataComponent = ({
                                          experimentName,
-                                         pathName,
+                                         topologyName,
                                          traceName,
                                          schedulerName,
                                      }) => (
     <div>
         <h2>{experimentName}</h2>
         <p>
-            Path: <strong>{pathName}</strong>
+            Topology: <strong>{topologyName}</strong>
         </p>
         <p>
             Trace: <strong>{traceName}</strong>

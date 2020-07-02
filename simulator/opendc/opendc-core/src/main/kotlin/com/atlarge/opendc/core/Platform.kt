@@ -29,7 +29,7 @@ import java.util.UUID
 /**
  * A representation of a cloud platform such as Amazon Web Services (AWS), Microsoft Azure or Google Cloud.
  *
- * @property uid The unique identifier of this datacenter.
+ * @property uid The unique identifier of this topology.
  * @property name the name of the platform.
  * @property zones The availability zones available on this platform.
  */

@@ -16,7 +16,7 @@ class UnitAddComponent extends React.Component {
                         ref={unitSelect => (this.unitSelect = unitSelect)}
                     >
                         {this.props.units.map(unit => (
-                            <option value={unit.id} key={unit.id}>
+                            <option value={unit._id} key={unit._id}>
                                 {unit.manufacturer +
                                 ' ' +
                                 unit.family +
@@ -31,7 +31,7 @@ class UnitAddComponent extends React.Component {
                         type="submit"
                         className="btn btn-outline-primary"
                         onClick={() =>
-                            this.props.onAdd(parseInt(this.unitSelect.value, 10))
+                            this.props.onAdd(this.unitSelect.value)
                         }
                     >
                         <span className="fa fa-plus mr-2"/>

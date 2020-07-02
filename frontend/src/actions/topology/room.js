@@ -35,7 +35,7 @@ export function addRackToTile(positionX, positionY) {
         if (tile !== null) {
             dispatch({
                 type: ADD_RACK_TO_TILE,
-                tileId: tile.id,
+                tileId: tile._id,
             })
         }
     }

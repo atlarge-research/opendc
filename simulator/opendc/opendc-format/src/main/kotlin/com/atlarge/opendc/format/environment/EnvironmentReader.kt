@@ -29,7 +29,7 @@ import com.atlarge.opendc.core.Environment
 import java.io.Closeable
 
 /**
- * An interface for reading descriptions of datacenter environments into memory as [Environment].
+ * An interface for reading descriptions of topology environments into memory as [Environment].
  */
 interface EnvironmentReader : Closeable {
     /**

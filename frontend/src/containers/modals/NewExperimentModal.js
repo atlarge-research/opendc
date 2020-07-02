@@ -6,9 +6,9 @@ import NewExperimentModalComponent from '../../components/modals/custom-componen
 const mapStateToProps = state => {
     return {
         show: state.modals.newExperimentModalVisible,
-        paths: Object.values(state.objects.path).filter(
-            path => path.simulationId === state.currentSimulationId,
-        ),
+        topologies: state.objects.simulation[state.currentSimulationId].topologyIds.map(t => (
+            state.objects.topology[t]
+        )),
         traces: Object.values(state.objects.trace),
         schedulers: Object.values(state.objects.scheduler),
     }
@@ -16,12 +16,12 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        callback: (name, pathId, traceId, schedulerName) => {
+        callback: (name, topologyId, traceId, schedulerName) => {
             if (name) {
                 dispatch(
                     addExperiment({
                         name,
-                        pathId,
+                        topologyId,
                         traceId,
                         schedulerName,
                     }),

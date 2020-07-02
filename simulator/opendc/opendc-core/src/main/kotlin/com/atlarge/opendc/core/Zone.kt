@@ -28,8 +28,8 @@ import com.atlarge.opendc.core.services.ServiceRegistry
 import java.util.UUID
 
 /**
- * An isolated location within a datacenter region from which public cloud services operate, roughly equivalent to a
- * single datacenter. Zones contain one or more clusters and secondary storage.
+ * An isolated location within a topology region from which public cloud services operate, roughly equivalent to a
+ * single topology. Zones contain one or more clusters and secondary storage.
  *
  * This class models *only* the static information of a zone, with dynamic information being contained within the zone's
  * actor. During runtime, it's actor acts as a registry for all the cloud services provided by the zone.

@@ -18,8 +18,8 @@ const UnitListComponent = ({ unitType, unitIds, inSimulation }) => (
                     <strong>No units of this type in this machine</strong>
                 ) : (
                     <span>
-            <strong>No units...</strong> Add some with the menu above!
-          </span>
+                        <strong>No units...</strong> Add some with the menu above!
+                    </span>
                 )}
             </div>
         )}

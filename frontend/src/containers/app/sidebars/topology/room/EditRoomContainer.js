@@ -1,8 +1,5 @@
 import { connect } from 'react-redux'
-import {
-    finishRoomEdit,
-    startRoomEdit,
-} from '../../../../../actions/topology/building'
+import { finishRoomEdit, startRoomEdit } from '../../../../../actions/topology/building'
 import EditRoomComponent from '../../../../../components/app/sidebars/topology/room/EditRoomComponent'
 
 const mapStateToProps = state => {

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-description = "Base model for datacenter simulation"
+description = "Base model for topology simulation"
 
 /* Build configuration */
 plugins {

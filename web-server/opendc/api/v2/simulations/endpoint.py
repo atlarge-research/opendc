@@ -22,6 +22,9 @@ def POST(request):
     simulation.set_property('experimentIds', [])
     simulation.insert()
 
+    topology.set_property('simulationId', simulation.get_id())
+    topology.update()
+
     user = User.from_google_id(request.google_id)
     user.obj['authorizations'].append({'simulationId': simulation.get_id(), 'authorizationLevel': 'OWN'})
     user.update()

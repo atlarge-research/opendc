@@ -22,12 +22,12 @@ const RackGroup = ({ tile, inSimulation, rackLoad }) => {
             />
             <Group opacity={inSimulation ? 0.3 : 1}>
                 <RackSpaceFillContainer
-                    tileId={tile.id}
+                    tileId={tile._id}
                     positionX={tile.positionX}
                     positionY={tile.positionY}
                 />
                 <RackEnergyFillContainer
-                    tileId={tile.id}
+                    tileId={tile._id}
                     positionX={tile.positionX}
                     positionY={tile.positionY}
                 />

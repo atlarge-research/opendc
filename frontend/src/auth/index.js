@@ -29,7 +29,7 @@ export const getAuthToken = () => {
     return authObj.authToken
 }
 
-export const saveAuthLocalStorage = payload => {
+export const saveAuthLocalStorage = (payload) => {
     localStorage.setItem('auth', JSON.stringify(payload))
 }
 
@@ -37,7 +37,7 @@ export const clearAuthLocalStorage = () => {
     localStorage.setItem('auth', '')
 }
 
-export const authRedirectMiddleware = store => next => action => {
+export const authRedirectMiddleware = (store) => (next) => (action) => {
     switch (action.type) {
         case LOG_IN_SUCCEEDED:
             saveAuthLocalStorage(action.payload)

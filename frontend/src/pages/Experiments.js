@@ -30,28 +30,21 @@ class ExperimentsComponent extends React.Component {
                 }
             >
                 <div className="full-height">
-                    <AppNavbar
-                        simulationId={this.props.simulationId}
-                        inSimulation={true}
-                        fullWidth={true}
-                    />
+                    <AppNavbar simulationId={this.props.simulationId} inSimulation={true} fullWidth={true} />
                     <div className="container text-page-container full-height">
-                        <ExperimentListContainer/>
-                        <NewExperimentButtonContainer/>
+                        <ExperimentListContainer />
+                        <NewExperimentButtonContainer />
                     </div>
-                    <NewExperimentModal/>
+                    <NewExperimentModal />
                 </div>
             </DocumentTitle>
         )
     }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     let simulationName = undefined
-    if (
-        state.currentSimulationId !== -1 &&
-        state.objects.simulation[state.currentSimulationId]
-    ) {
+    if (state.currentSimulationId !== -1 && state.objects.simulation[state.currentSimulationId]) {
         simulationName = state.objects.simulation[state.currentSimulationId].name
     }
 
@@ -60,16 +53,13 @@ const mapStateToProps = state => {
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        storeSimulationId: id => dispatch(openSimulationSucceeded(id)),
-        fetchExperimentsOfSimulation: id =>
-            dispatch(fetchExperimentsOfSimulation(id)),
+        storeSimulationId: (id) => dispatch(openSimulationSucceeded(id)),
+        fetchExperimentsOfSimulation: (id) => dispatch(fetchExperimentsOfSimulation(id)),
     }
 }
 
-const Experiments = connect(mapStateToProps, mapDispatchToProps)(
-    ExperimentsComponent,
-)
+const Experiments = connect(mapStateToProps, mapDispatchToProps)(ExperimentsComponent)
 
 export default Experiments

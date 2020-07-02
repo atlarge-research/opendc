@@ -1,5 +1,5 @@
-export const SET_CURRENT_DATACENTER = 'SET_CURRENT_DATACENTER'
-export const RESET_CURRENT_DATACENTER = 'RESET_CURRENT_DATACENTER'
+export const SET_CURRENT_TOPOLOGY = 'SET_CURRENT_TOPOLOGY'
+export const RESET_CURRENT_TOPOLOGY = 'RESET_CURRENT_TOPOLOGY'
 export const START_NEW_ROOM_CONSTRUCTION = 'START_NEW_ROOM_CONSTRUCTION'
 export const START_NEW_ROOM_CONSTRUCTION_SUCCEEDED =
     'START_NEW_ROOM_CONSTRUCTION_SUCCEEDED'
@@ -12,16 +12,16 @@ export const FINISH_ROOM_EDIT = 'FINISH_ROOM_EDIT'
 export const ADD_TILE = 'ADD_TILE'
 export const DELETE_TILE = 'DELETE_TILE'
 
-export function setCurrentDatacenter(datacenterId) {
+export function setCurrentTopology(topologyId) {
     return {
-        type: SET_CURRENT_DATACENTER,
-        datacenterId,
+        type: SET_CURRENT_TOPOLOGY,
+        topologyId,
     }
 }
 
-export function resetCurrentDatacenter() {
+export function resetCurrentTopology() {
     return {
-        type: RESET_CURRENT_DATACENTER,
+        type: RESET_CURRENT_TOPOLOGY,
     }
 }
 

@@ -26,4 +26,5 @@ def POST(request):
     user.check_already_exists()
 
     user.insert()
+
     return Response(200, 'Successfully created user.', user.obj)

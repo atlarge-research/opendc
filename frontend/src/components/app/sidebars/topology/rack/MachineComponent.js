@@ -61,8 +61,8 @@ const MachineComponent = ({
                 )}
                 {hasNoUnits ? (
                     <span className="badge badge-default badge-warning">
-            Machine with no units
-          </span>
+                        Machine with no units
+                    </span>
                 ) : (
                     undefined
                 )}

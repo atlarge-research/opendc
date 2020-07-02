@@ -39,20 +39,6 @@ export function deleteSimulation(simulationId) {
     return deleteById('/simulations/{simulationId}', { simulationId })
 }
 
-export function getAuthorizationsBySimulation(simulationId) {
-    return getById('/simulations/{simulationId}/authorizations', {
-        simulationId,
-    })
-}
-
-export function getPathsOfSimulation(simulationId) {
-    return getById('/simulations/{simulationId}/paths', { simulationId })
-}
-
-export function getExperimentsOfSimulation(simulationId) {
-    return getById('/simulations/{simulationId}/experiments', { simulationId })
-}
-
 export function addExperiment(simulationId, experiment) {
     return sendRequest({
         path: '/simulations/{simulationId}/experiments',

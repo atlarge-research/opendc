@@ -18,29 +18,26 @@ class SimulationsContainer extends React.Component {
         return (
             <DocumentTitle title="My Simulations - OpenDC">
                 <div className="full-height">
-                    <AppNavbar inSimulation={false} fullWidth={false}/>
+                    <AppNavbar inSimulation={false} fullWidth={false} />
                     <div className="container text-page-container full-height">
-                        <SimulationFilterPanel/>
-                        <VisibleSimulationList/>
-                        <NewSimulationButtonContainer/>
+                        <SimulationFilterPanel />
+                        <VisibleSimulationList />
+                        <NewSimulationButtonContainer />
                     </div>
-                    <NewSimulationModal/>
+                    <NewSimulationModal />
                 </div>
             </DocumentTitle>
         )
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        fetchAuthorizationsOfCurrentUser: () =>
-            dispatch(fetchAuthorizationsOfCurrentUser()),
+        fetchAuthorizationsOfCurrentUser: () => dispatch(fetchAuthorizationsOfCurrentUser()),
         openNewSimulationModal: () => dispatch(openNewSimulationModal()),
     }
 }
 
-const Simulations = connect(undefined, mapDispatchToProps)(
-    SimulationsContainer,
-)
+const Simulations = connect(undefined, mapDispatchToProps)(SimulationsContainer)
 
 export default Simulations

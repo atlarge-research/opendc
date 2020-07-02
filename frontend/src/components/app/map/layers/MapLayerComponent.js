@@ -1,6 +1,6 @@
 import React from 'react'
 import { Group, Layer } from 'react-konva'
-import DatacenterContainer from '../../../../containers/app/map/DatacenterContainer'
+import TopologyContainer from '../../../../containers/app/map/TopologyContainer'
 import Backdrop from '../elements/Backdrop'
 import GridGroup from '../groups/GridGroup'
 
@@ -13,7 +13,7 @@ const MapLayerComponent = ({ mapPosition, mapScale }) => (
             scaleY={mapScale}
         >
             <Backdrop/>
-            <DatacenterContainer/>
+            <TopologyContainer/>
             <GridGroup/>
         </Group>
     </Layer>

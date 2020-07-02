@@ -1,6 +1,5 @@
 import { connect } from 'react-redux'
-import BuildingSidebarComponent
-    from '../../../../../components/app/sidebars/topology/building/BuildingSidebarComponent'
+import BuildingSidebarComponent from '../../../../../components/app/sidebars/topology/building/BuildingSidebarComponent'
 
 const mapStateToProps = state => {
     return {

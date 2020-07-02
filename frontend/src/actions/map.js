@@ -36,13 +36,7 @@ export function zoomInOnCenter(zoomIn) {
     return (dispatch, getState) => {
         const state = getState()
 
-        dispatch(
-            zoomInOnPosition(
-                zoomIn,
-                state.map.dimensions.width / 2,
-                state.map.dimensions.height / 2,
-            ),
-        )
+        dispatch(zoomInOnPosition(zoomIn, state.map.dimensions.width / 2, state.map.dimensions.height / 2))
     }
 }
 
@@ -54,13 +48,8 @@ export function zoomInOnPosition(zoomIn, x, y) {
             x: x / state.map.scale - state.map.position.x / state.map.scale,
             y: y / state.map.scale - state.map.position.y / state.map.scale,
         }
-        const newScale = zoomIn
-            ? state.map.scale * MAP_SCALE_PER_EVENT
-            : state.map.scale / MAP_SCALE_PER_EVENT
-        const boundedScale = Math.min(
-            Math.max(MAP_MIN_SCALE, newScale),
-            MAP_MAX_SCALE,
-        )
+        const newScale = zoomIn ? state.map.scale * MAP_SCALE_PER_EVENT : state.map.scale / MAP_SCALE_PER_EVENT
+        const boundedScale = Math.min(Math.max(MAP_MIN_SCALE, newScale), MAP_MAX_SCALE)
 
         const newX = -(centerPoint.x - x / boundedScale) * boundedScale
         const newY = -(centerPoint.y - y / boundedScale) * boundedScale

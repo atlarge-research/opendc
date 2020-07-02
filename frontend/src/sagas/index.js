@@ -29,26 +29,26 @@ import {
     onAddMachine,
     onAddRackToTile,
     onAddTile,
+    onAddTopology,
     onAddUnit,
     onCancelNewRoomConstruction,
     onDeleteMachine,
     onDeleteRack,
     onDeleteRoom,
     onDeleteTile,
+    onDeleteTopology,
     onDeleteUnit,
     onEditRackName,
     onEditRoomName,
     onStartNewRoomConstruction,
 } from './topology'
 import { onFetchAuthorizationsOfCurrentUser, onFetchLoggedInUser } from './users'
+import { ADD_TOPOLOGY, DELETE_TOPOLOGY } from '../actions/topologies'
 
 export default function* rootSaga() {
     yield takeEvery(LOG_IN, onFetchLoggedInUser)
 
-    yield takeEvery(
-        FETCH_AUTHORIZATIONS_OF_CURRENT_USER,
-        onFetchAuthorizationsOfCurrentUser,
-    )
+    yield takeEvery(FETCH_AUTHORIZATIONS_OF_CURRENT_USER, onFetchAuthorizationsOfCurrentUser)
     yield takeEvery(ADD_SIMULATION, onSimulationAdd)
     yield takeEvery(DELETE_SIMULATION, onSimulationDelete)
 
@@ -57,6 +57,8 @@ export default function* rootSaga() {
     yield takeEvery(OPEN_SIMULATION_SUCCEEDED, onOpenSimulationSucceeded)
     yield takeEvery(OPEN_EXPERIMENT_SUCCEEDED, onOpenExperimentSucceeded)
 
+    yield takeEvery(ADD_TOPOLOGY, onAddTopology)
+    yield takeEvery(DELETE_TOPOLOGY, onDeleteTopology)
     yield takeEvery(START_NEW_ROOM_CONSTRUCTION, onStartNewRoomConstruction)
     yield takeEvery(CANCEL_NEW_ROOM_CONSTRUCTION, onCancelNewRoomConstruction)
     yield takeEvery(ADD_TILE, onAddTile)
@@ -71,10 +73,7 @@ export default function* rootSaga() {
     yield takeEvery(ADD_UNIT, onAddUnit)
     yield takeEvery(DELETE_UNIT, onDeleteUnit)
 
-    yield takeEvery(
-        FETCH_EXPERIMENTS_OF_SIMULATION,
-        onFetchExperimentsOfSimulation,
-    )
+    yield takeEvery(FETCH_EXPERIMENTS_OF_SIMULATION, onFetchExperimentsOfSimulation)
     yield takeEvery(ADD_EXPERIMENT, onAddExperiment)
     yield takeEvery(DELETE_EXPERIMENT, onDeleteExperiment)
 }

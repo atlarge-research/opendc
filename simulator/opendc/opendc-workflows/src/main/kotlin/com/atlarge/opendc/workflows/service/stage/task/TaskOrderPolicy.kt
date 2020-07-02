@@ -28,7 +28,7 @@ import com.atlarge.opendc.workflows.service.TaskState
 import com.atlarge.opendc.workflows.service.stage.StagePolicy
 
 /**
- * This interface represents the **T2** stage of the Reference Architecture for Datacenter Schedulers and provides the
+ * This interface represents the **T2** stage of the Reference Architecture for Topology Schedulers and provides the
  * scheduler with a sorted list of tasks to schedule.
  */
 interface TaskOrderPolicy : StagePolicy<Comparator<TaskState>>

@@ -32,7 +32,7 @@ import java.util.UUID
 /**
  * A service for cloud workflow management.
  *
- * The workflow scheduler is modelled after the Reference Architecture for Datacenter Scheduling by Andreadis et al.
+ * The workflow scheduler is modelled after the Reference Architecture for Topology Scheduling by Andreadis et al.
  */
 public interface WorkflowService {
     /**

@@ -1,4 +1,21 @@
 import { deleteById, getById } from './util'
+import { sendRequest } from '../index'
+
+export function addExperiment(simulationId, experiment) {
+    return sendRequest({
+        path: '/simulations/{simulationId}/experiments',
+        method: 'POST',
+        parameters: {
+            body: {
+                experiment,
+            },
+            path: {
+                simulationId,
+            },
+            query: {},
+        },
+    })
+}
 
 export function getExperiment(experimentId) {
     return getById('/experiments/{experimentId}', { experimentId })
@@ -6,12 +23,6 @@ export function getExperiment(experimentId) {
 
 export function deleteExperiment(experimentId) {
     return deleteById('/experiments/{experimentId}', { experimentId })
-}
-
-export function getLastSimulatedTick(experimentId) {
-    return getById('/experiments/{experimentId}/last-simulated-tick', {
-        experimentId,
-    })
 }
 
 export function getAllMachineStates(experimentId) {
@@ -26,8 +37,4 @@ export function getAllRackStates(experimentId) {
 
 export function getAllRoomStates(experimentId) {
     return getById('/experiments/{experimentId}/room-states', { experimentId })
-}
-
-export function getAllTaskStates(experimentId) {
-    return getById('/experiments/{experimentId}/task-states', { experimentId })
 }

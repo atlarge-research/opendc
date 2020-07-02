@@ -43,7 +43,7 @@ import java.io.InputStream
 import java.util.UUID
 
 /**
- * A parser for the JSON experiment setup files used for the SC18 paper: "A Reference Architecture for Datacenter
+ * A parser for the JSON experiment setup files used for the SC18 paper: "A Reference Architecture for Topology
  * Schedulers".
  *
  * @param input The input stream to read from.

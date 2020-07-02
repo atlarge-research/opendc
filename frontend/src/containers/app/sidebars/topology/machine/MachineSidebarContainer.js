@@ -6,7 +6,7 @@ const mapStateToProps = state => {
         inSimulation: state.currentExperimentId !== -1,
         machineId:
             state.objects.rack[
-                state.objects.tile[state.interactionLevel.tileId].objectId
+                state.objects.tile[state.interactionLevel.tileId].rackId
                 ].machineIds[state.interactionLevel.position - 1],
     }
 }

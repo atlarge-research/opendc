@@ -19,7 +19,7 @@ const mapStateToProps = state => {
             )
             const tile = findTileWithPosition(tiles, x, y)
 
-            return !(tile === null || tile.objectType)
+            return !(tile === null || tile.rackId)
         },
     }
 }

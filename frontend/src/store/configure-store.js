@@ -27,10 +27,7 @@ const middlewares = [
 export let store = undefined
 
 export default function configureStore() {
-    const configuredStore = createStore(
-        rootReducer,
-        compose(persistState('auth'), applyMiddleware(...middlewares)),
-    )
+    const configuredStore = createStore(rootReducer, compose(persistState('auth'), applyMiddleware(...middlewares)))
     sagaMiddleware.run(rootSaga)
     store = configuredStore
 

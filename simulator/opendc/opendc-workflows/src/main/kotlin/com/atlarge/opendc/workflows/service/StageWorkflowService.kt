@@ -51,7 +51,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * A [WorkflowService] that distributes work through a multi-stage process based on the Reference Architecture for
- * Datacenter Scheduling.
+ * Topology Scheduling.
  */
 class StageWorkflowService(
     private val domain: Domain,

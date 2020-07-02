@@ -3,7 +3,7 @@ import RackFillBar from '../../../components/app/map/elements/RackFillBar'
 
 const mapStateToProps = (state, ownProps) => {
     let energyConsumptionTotal = 0
-    const rack = state.objects.rack[state.objects.tile[ownProps.tileId].objectId]
+    const rack = state.objects.rack[state.objects.tile[ownProps.tileId].rackId]
     const machineIds = rack.machineIds
     machineIds.forEach(machineId => {
         if (machineId !== null) {

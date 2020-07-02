@@ -1,46 +1,25 @@
 import { call, put, select } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
-import { getDatacenter, getRoomsOfDatacenter } from '../api/routes/datacenters'
-import { getPath, getSectionsOfPath } from '../api/routes/paths'
-import { getTilesOfRoom } from '../api/routes/rooms'
 import { getAllSchedulers } from '../api/routes/schedulers'
-import { getSection } from '../api/routes/sections'
-import { getPathsOfSimulation, getSimulation } from '../api/routes/simulations'
-import {
-    getAllCPUs,
-    getAllGPUs,
-    getAllMemories,
-    getAllStorages,
-    getCoolingItem,
-    getCPU,
-    getFailureModel,
-    getGPU,
-    getMemory,
-    getPSU,
-    getStorage,
-} from '../api/routes/specifications'
-import { getMachinesOfRackByTile, getRackByTile } from '../api/routes/tiles'
+import { getSimulation } from '../api/routes/simulations'
 import { getAllTraces } from '../api/routes/traces'
 import { getUser } from '../api/routes/users'
+import { getTopology, updateTopology } from '../api/routes/topologies'
+import { uuid } from 'uuidv4'
 
 export const OBJECT_SELECTORS = {
-    simulation: state => state.objects.simulation,
-    user: state => state.objects.user,
-    authorization: state => state.objects.authorization,
-    failureModel: state => state.objects.failureModel,
-    cpu: state => state.objects.cpu,
-    gpu: state => state.objects.gpu,
-    memory: state => state.objects.memory,
-    storage: state => state.objects.storage,
-    machine: state => state.objects.machine,
-    rack: state => state.objects.rack,
-    coolingItem: state => state.objects.coolingItem,
-    psu: state => state.objects.psu,
-    tile: state => state.objects.tile,
-    room: state => state.objects.room,
-    datacenter: state => state.objects.datacenter,
-    section: state => state.objects.section,
-    path: state => state.objects.path,
+    simulation: (state) => state.objects.simulation,
+    user: (state) => state.objects.user,
+    authorization: (state) => state.objects.authorization,
+    cpu: (state) => state.objects.cpu,
+    gpu: (state) => state.objects.gpu,
+    memory: (state) => state.objects.memory,
+    storage: (state) => state.objects.storage,
+    machine: (state) => state.objects.machine,
+    rack: (state) => state.objects.rack,
+    tile: (state) => state.objects.tile,
+    room: (state) => state.objects.room,
+    topology: (state) => state.objects.topology,
 }
 
 function* fetchAndStoreObject(objectType, id, apiCall) {
@@ -61,79 +40,151 @@ function* fetchAndStoreObjects(objectType, apiCall) {
     return objects
 }
 
-export const fetchAndStoreSimulation = id =>
-    fetchAndStoreObject('simulation', id, call(getSimulation, id))
+export const fetchAndStoreSimulation = (id) => fetchAndStoreObject('simulation', id, call(getSimulation, id))
 
-export const fetchAndStoreUser = id =>
-    fetchAndStoreObject('user', id, call(getUser, id))
+export const fetchAndStoreUser = (id) => fetchAndStoreObject('user', id, call(getUser, id))
 
-export const fetchAndStoreFailureModel = id =>
-    fetchAndStoreObject('failureModel', id, call(getFailureModel, id))
+export const fetchAndStoreTopology = function* (id) {
+    const topologyStore = yield select(OBJECT_SELECTORS['topology'])
+    const roomStore = yield select(OBJECT_SELECTORS['room'])
+    const tileStore = yield select(OBJECT_SELECTORS['tile'])
+    const rackStore = yield select(OBJECT_SELECTORS['rack'])
+    const machineStore = yield select(OBJECT_SELECTORS['machine'])
 
-export const fetchAndStoreAllCPUs = () =>
-    fetchAndStoreObjects('cpu', call(getAllCPUs))
+    let topology = topologyStore[id]
+    if (!topology) {
+        const fullTopology = yield call(getTopology, id)
 
-export const fetchAndStoreCPU = id =>
-    fetchAndStoreObject('cpu', id, call(getCPU, id))
+        for (let roomIdx in fullTopology.rooms) {
+            const fullRoom = fullTopology.rooms[roomIdx]
 
-export const fetchAndStoreAllGPUs = () =>
-    fetchAndStoreObjects('gpu', call(getAllGPUs))
+            generateIdIfNotPresent(fullRoom)
 
-export const fetchAndStoreGPU = id =>
-    fetchAndStoreObject('gpu', id, call(getGPU, id))
+            if (!roomStore[fullRoom._id]) {
+                for (let tileIdx in fullRoom.tiles) {
+                    const fullTile = fullRoom.tiles[tileIdx]
 
-export const fetchAndStoreAllMemories = () =>
-    fetchAndStoreObjects('memory', call(getAllMemories))
+                    generateIdIfNotPresent(fullTile)
 
-export const fetchAndStoreMemory = id =>
-    fetchAndStoreObject('memory', id, call(getMemory, id))
+                    if (!tileStore[fullTile._id]) {
+                        if (fullTile.rack) {
+                            const fullRack = fullTile.rack
 
-export const fetchAndStoreAllStorages = () =>
-    fetchAndStoreObjects('storage', call(getAllStorages))
+                            generateIdIfNotPresent(fullTile)
 
-export const fetchAndStoreStorage = id =>
-    fetchAndStoreObject('storage', id, call(getStorage, id))
+                            if (!rackStore[fullRack._id]) {
+                                for (let machineIdx in fullRack.machines) {
+                                    const fullMachine = fullRoom.machines[machineIdx]
 
-export const fetchAndStoreMachinesOfTile = tileId =>
-    fetchAndStoreObjects('machine', call(getMachinesOfRackByTile, tileId))
+                                    generateIdIfNotPresent(fullMachine)
 
-export const fetchAndStoreRackOnTile = (id, tileId) =>
-    fetchAndStoreObject('rack', id, call(getRackByTile, tileId))
+                                    if (!machineStore[fullMachine._id]) {
+                                        let machine = (({ _id, position, cpuIds, gpuIds, memoryIds, storageIds }) => ({
+                                            _id,
+                                            rackId: fullRack._id,
+                                            position,
+                                            cpuIds,
+                                            gpuIds,
+                                            memoryIds,
+                                            storageIds,
+                                        }))(fullMachine)
+                                        yield put(addToStore('machine', machine))
+                                    }
+                                }
 
-export const fetchAndStoreCoolingItem = id =>
-    fetchAndStoreObject('coolingItem', id, call(getCoolingItem, id))
+                                const filledSlots = new Array(fullRack.capacity).fill(null)
+                                fullRack.machines.forEach(
+                                    (machine) => (filledSlots[machine.position - 1] = machine._id)
+                                )
+                                let rack = (({ _id, capacity, powerCapacityW }) => ({
+                                    _id,
+                                    capacity,
+                                    powerCapacityW,
+                                    machineIds: filledSlots,
+                                }))(fullRack)
+                                yield put(addToStore('rack', rack))
+                            }
+                        }
 
-export const fetchAndStorePSU = id =>
-    fetchAndStoreObject('psu', id, call(getPSU, id))
+                        let tile = (({ _id, positionX, positionY, rack }) => ({
+                            _id,
+                            roomId: fullRoom._id,
+                            positionX,
+                            positionY,
+                            rackId: rack ? rack._id : undefined,
+                        }))(fullTile)
+                        yield put(addToStore('tile', tile))
+                    }
+                }
 
-export const fetchAndStoreTilesOfRoom = roomId =>
-    fetchAndStoreObjects('tile', call(getTilesOfRoom, roomId))
+                let room = (({ _id, name, tiles }) => ({ _id, name, tileIds: tiles.map((t) => t._id) }))(fullRoom)
+                yield put(addToStore('room', room))
+            }
+        }
 
-export const fetchAndStoreRoomsOfDatacenter = datacenterId =>
-    fetchAndStoreObjects('room', call(getRoomsOfDatacenter, datacenterId))
+        topology = (({ _id, name, rooms }) => ({ _id, name, roomIds: rooms.map((r) => r._id) }))(fullTopology)
+        yield put(addToStore('topology', topology))
 
-export const fetchAndStoreDatacenter = id =>
-    fetchAndStoreObject('datacenter', id, call(getDatacenter, id))
+        console.log('Full topology after insertion', fullTopology)
+        // TODO consider pushing the IDs
+    }
 
-export const fetchAndStoreSection = id =>
-    fetchAndStoreObject('section', id, call(getSection, id))
+    return topology
+}
 
-export const fetchAndStoreSectionsOfPath = pathId =>
-    fetchAndStoreObjects('section', call(getSectionsOfPath, pathId))
+const generateIdIfNotPresent = (obj) => {
+    if (!obj._id) {
+        obj._id = uuid()
+    }
+}
 
-export const fetchAndStorePath = id =>
-    fetchAndStoreObject('path', id, call(getPath, id))
+export const updateTopologyOnServer = function* (id) {
+    const topologyStore = yield select(OBJECT_SELECTORS['topology'])
+    const roomStore = yield select(OBJECT_SELECTORS['room'])
+    const tileStore = yield select(OBJECT_SELECTORS['tile'])
+    const rackStore = yield select(OBJECT_SELECTORS['rack'])
+    const machineStore = yield select(OBJECT_SELECTORS['machine'])
 
-export const fetchAndStorePathsOfSimulation = simulationId =>
-    fetchAndStoreObjects('path', call(getPathsOfSimulation, simulationId))
+    const topology = {
+        _id: id,
+        name: topologyStore[id].name,
+        rooms: topologyStore[id].roomIds.map((roomId) => ({
+            _id: roomId,
+            name: roomStore[roomId].name,
+            tiles: roomStore[roomId].tileIds.map((tileId) => ({
+                _id: tileId,
+                positionX: tileStore[tileId].positionX,
+                positionY: tileStore[tileId].positionY,
+                rack: !tileStore[tileId].rackId
+                    ? undefined
+                    : {
+                          _id: rackStore[tileStore[tileId].rackId]._id,
+                          capacity: rackStore[tileStore[tileId].rackId].capacity,
+                          powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
+                          machines: rackStore[tileStore[tileId].rackId].machineIds
+                              .filter((m) => m !== null)
+                              .map((machineId) => ({
+                                  _id: machineId,
+                                  position: machineStore[machineId].position,
+                                  cpuIds: machineStore[machineId].cpuIds,
+                                  gpuIds: machineStore[machineId].gpuIds,
+                                  memoryIds: machineStore[machineId].memoryIds,
+                                  storageIds: machineStore[machineId].storageIds,
+                              })),
+                      },
+            })),
+        })),
+    }
 
-export const fetchAndStoreAllTraces = () =>
-    fetchAndStoreObjects('trace', call(getAllTraces))
+    yield call(updateTopology, topology)
+}
+
+export const fetchAndStoreAllTraces = () => fetchAndStoreObjects('trace', call(getAllTraces))
 
 export const fetchAndStoreAllSchedulers = function* () {
     const objects = yield call(getAllSchedulers)
     for (let index in objects) {
-        objects[index].id = objects[index].name
+        objects[index]._id = objects[index].name
         yield put(addToStore('scheduler', objects[index]))
     }
     return objects

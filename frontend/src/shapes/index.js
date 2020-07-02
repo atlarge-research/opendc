@@ -8,6 +8,7 @@ Shapes.User = PropTypes.shape({
     email: PropTypes.string.isRequired,
     givenName: PropTypes.string.isRequired,
     familyName: PropTypes.string.isRequired,
+    authorizations: PropTypes.array.isRequired,
 })
 
 Shapes.Simulation = PropTypes.shape({
@@ -15,6 +16,8 @@ Shapes.Simulation = PropTypes.shape({
     name: PropTypes.string.isRequired,
     datetimeCreated: PropTypes.string.isRequired,
     datetimeLastEdited: PropTypes.string.isRequired,
+    topologyIds: PropTypes.array.isRequired,
+    experimentIds: PropTypes.array.isRequired,
 })
 
 Shapes.Authorization = PropTypes.shape({
@@ -25,148 +28,81 @@ Shapes.Authorization = PropTypes.shape({
     authorizationLevel: PropTypes.string.isRequired,
 })
 
-Shapes.FailureModel = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    rate: PropTypes.number.isRequired,
-})
-
 Shapes.ProcessingUnit = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    manufacturer: PropTypes.string.isRequired,
-    family: PropTypes.string.isRequired,
-    generation: PropTypes.string.isRequired,
-    model: PropTypes.string.isRequired,
+    _id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
     clockRateMhz: PropTypes.number.isRequired,
     numberOfCores: PropTypes.number.isRequired,
     energyConsumptionW: PropTypes.number.isRequired,
-    failureModelId: PropTypes.number.isRequired,
-    failureModel: Shapes.FailureModel,
 })
 
 Shapes.StorageUnit = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    manufacturer: PropTypes.string.isRequired,
-    family: PropTypes.string.isRequired,
-    generation: PropTypes.string.isRequired,
-    model: PropTypes.string.isRequired,
+    _id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
     speedMbPerS: PropTypes.number.isRequired,
     sizeMb: PropTypes.number.isRequired,
     energyConsumptionW: PropTypes.number.isRequired,
-    failureModelId: PropTypes.number.isRequired,
-    failureModel: Shapes.FailureModel,
 })
 
 Shapes.Machine = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    rackId: PropTypes.number.isRequired,
+    _id: PropTypes.string.isRequired,
+    rackId: PropTypes.string.isRequired,
     position: PropTypes.number.isRequired,
-    cpuIds: PropTypes.arrayOf(PropTypes.number.isRequired),
+    cpuIds: PropTypes.arrayOf(PropTypes.string.isRequired),
     cpus: PropTypes.arrayOf(Shapes.ProcessingUnit),
-    gpuIds: PropTypes.arrayOf(PropTypes.number.isRequired),
+    gpuIds: PropTypes.arrayOf(PropTypes.string.isRequired),
     gpus: PropTypes.arrayOf(Shapes.ProcessingUnit),
-    memoryIds: PropTypes.arrayOf(PropTypes.number.isRequired),
+    memoryIds: PropTypes.arrayOf(PropTypes.string.isRequired),
     memories: PropTypes.arrayOf(Shapes.StorageUnit),
-    storageIds: PropTypes.arrayOf(PropTypes.number.isRequired),
+    storageIds: PropTypes.arrayOf(PropTypes.string.isRequired),
     storages: PropTypes.arrayOf(Shapes.StorageUnit),
 })
 
 Shapes.Rack = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
+    _id: PropTypes.string.isRequired,
     capacity: PropTypes.number.isRequired,
     powerCapacityW: PropTypes.number.isRequired,
     machines: PropTypes.arrayOf(Shapes.Machine),
 })
 
-Shapes.CoolingItem = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    energyConsumptionW: PropTypes.number.isRequired,
-    type: PropTypes.string.isRequired,
-    failureModelId: PropTypes.number.isRequired,
-    failureModel: Shapes.FailureModel,
-})
-
-Shapes.PSU = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    energyKwh: PropTypes.number.isRequired,
-    type: PropTypes.string.isRequired,
-    failureModelId: PropTypes.number.isRequired,
-    failureModel: Shapes.FailureModel,
-})
-
 Shapes.Tile = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    roomId: PropTypes.number.isRequired,
+    _id: PropTypes.string.isRequired,
+    roomId: PropTypes.string.isRequired,
     positionX: PropTypes.number.isRequired,
     positionY: PropTypes.number.isRequired,
-    objectId: PropTypes.number,
-    objectType: PropTypes.string,
+    rackId: PropTypes.string,
     rack: Shapes.Rack,
-    coolingItem: Shapes.CoolingItem,
-    psu: Shapes.PSU,
 })
 
 Shapes.Room = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    datacenterId: PropTypes.number.isRequired,
+    _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    roomType: PropTypes.string.isRequired,
     tiles: PropTypes.arrayOf(Shapes.Tile),
 })
 
-Shapes.Datacenter = PropTypes.shape({
-    id: PropTypes.number.isRequired,
+Shapes.Topology = PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
     rooms: PropTypes.arrayOf(Shapes.Room),
-})
-
-Shapes.Section = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    pathId: PropTypes.number.isRequired,
-    startTick: PropTypes.number.isRequired,
-    datacenterId: PropTypes.number.isRequired,
-    datacenter: Shapes.Datacenter,
-})
-
-Shapes.Path = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    simulationId: PropTypes.number.isRequired,
-    name: PropTypes.string,
-    datetimeCreated: PropTypes.string.isRequired,
-    sections: PropTypes.arrayOf(Shapes.Section),
 })
 
 Shapes.Scheduler = PropTypes.shape({
     name: PropTypes.string.isRequired,
 })
 
-Shapes.Task = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    jobId: PropTypes.number.isRequired,
-    startTick: PropTypes.number.isRequired,
-    totalFlopCount: PropTypes.number.isRequired,
-})
-
-Shapes.Job = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    traceId: PropTypes.number.isRequired,
-    taskIds: PropTypes.arrayOf(PropTypes.number),
-})
-
 Shapes.Trace = PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    jobIds: PropTypes.arrayOf(PropTypes.number),
+    type: PropTypes.string.isRequired,
 })
 
 Shapes.Experiment = PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    simulationId: PropTypes.number.isRequired,
-    traceId: PropTypes.number.isRequired,
+    _id: PropTypes.string.isRequired,
+    simulationId: PropTypes.string.isRequired,
+    topologyId: PropTypes.string.isRequired,
+    topology: Shapes.Topology,
+    traceId: PropTypes.string.isRequired,
     trace: Shapes.Trace,
-    pathId: PropTypes.number.isRequired,
-    path: Shapes.Path,
     schedulerName: PropTypes.string.isRequired,
     scheduler: Shapes.Scheduler,
     name: PropTypes.string.isRequired,
@@ -181,8 +117,8 @@ Shapes.WallSegment = PropTypes.shape({
 
 Shapes.InteractionLevel = PropTypes.shape({
     mode: PropTypes.string.isRequired,
-    roomId: PropTypes.number,
-    rackId: PropTypes.bool,
+    roomId: PropTypes.string,
+    rackId: PropTypes.string,
 })
 
 export default Shapes

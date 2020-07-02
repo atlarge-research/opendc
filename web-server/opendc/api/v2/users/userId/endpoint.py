@@ -1,3 +1,4 @@
+from opendc.models.simulation import Simulation
 from opendc.models.user import User
 from opendc.util.rest import Response
 
@@ -45,6 +46,13 @@ def DELETE(request):
 
     user.check_exists()
     user.check_correct_user(request.google_id)
+
+    for authorization in user.obj['authorizations']:
+        if authorization['authorizationLevel'] != 'OWN':
+            continue
+
+        simulation = Simulation.from_id(authorization['simulationId'])
+        simulation.delete()
 
     old_object = user.delete()
 

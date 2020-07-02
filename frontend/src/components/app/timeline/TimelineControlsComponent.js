@@ -27,19 +27,6 @@ class TimelineControlsComponent extends React.Component {
                             ),
                         }}
                     />
-                    {this.props.sectionTicks.map(sectionTick => (
-                        <div
-                            key={sectionTick}
-                            className="section-marker"
-                            style={{
-                                left: convertTickToPercentage(
-                                    sectionTick,
-                                    this.props.lastSimulatedTick,
-                                ),
-                            }}
-                            title="Topology changes at this tick"
-                        />
-                    ))}
                 </div>
             </div>
         )

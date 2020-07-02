@@ -1,12 +1,12 @@
 import { OPEN_EXPERIMENT_SUCCEEDED } from '../actions/experiments'
 import { OPEN_SIMULATION_SUCCEEDED } from '../actions/simulations'
-import { RESET_CURRENT_DATACENTER, SET_CURRENT_DATACENTER } from '../actions/topology/building'
+import { RESET_CURRENT_TOPOLOGY, SET_CURRENT_TOPOLOGY } from '../actions/topology/building'
 
-export function currentDatacenterId(state = -1, action) {
+export function currentTopologyId(state = -1, action) {
     switch (action.type) {
-        case SET_CURRENT_DATACENTER:
-            return action.datacenterId
-        case RESET_CURRENT_DATACENTER:
+        case SET_CURRENT_TOPOLOGY:
+            return action.topologyId
+        case RESET_CURRENT_TOPOLOGY:
             return -1
         default:
             return state

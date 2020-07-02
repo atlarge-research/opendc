@@ -46,7 +46,7 @@ def test_delete_user_different_user(client, mocker):
 
 
 def test_delete_user(client, mocker):
-    mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'googleId': 'test'})
+    mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'googleId': 'test', 'authorizations': []})
     mocker.patch.object(DB, 'delete_one', return_value={'googleId': 'test'})
     res = client.delete('/api/v2/users/1')
     assert 'googleId' in res.json['content']

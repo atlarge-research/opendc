@@ -10,9 +10,7 @@ export function setupSocketConnection(onConnect) {
     if (process.env.NODE_ENV !== 'production') {
         port = 8081
     }
-    socket = io.connect(
-        window.location.protocol + '//' + window.location.hostname + ':' + port,
-    )
+    socket = io.connect(window.location.protocol + '//' + window.location.hostname + ':' + port)
     socket.on('connect', onConnect)
     socket.on('response', onSocketResponse)
 }

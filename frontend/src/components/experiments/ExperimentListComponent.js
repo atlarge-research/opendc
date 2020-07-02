@@ -31,7 +31,7 @@ const ExperimentListComponent = ({ experimentIds, loading }) => {
                     <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Path</th>
+                        <th>Topology</th>
                         <th>Trace</th>
                         <th>Scheduler</th>
                         <th/>
@@ -52,7 +52,7 @@ const ExperimentListComponent = ({ experimentIds, loading }) => {
 }
 
 ExperimentListComponent.propTypes = {
-    experimentIds: PropTypes.arrayOf(PropTypes.number).isRequired,
+    experimentIds: PropTypes.arrayOf(PropTypes.string).isRequired,
     loading: PropTypes.bool,
 }
 

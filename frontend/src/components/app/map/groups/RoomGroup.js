@@ -11,7 +11,7 @@ const RoomGroup = ({
                        currentRoomInConstruction,
                        onClick,
                    }) => {
-    if (currentRoomInConstruction === room.id) {
+    if (currentRoomInConstruction === room._id) {
         return (
             <Group onClick={onClick}>
                 {room.tileIds.map(tileId => (
@@ -27,7 +27,7 @@ const RoomGroup = ({
                 if (
                     (interactionLevel.mode === 'RACK' ||
                         interactionLevel.mode === 'MACHINE') &&
-                    interactionLevel.roomId === room.id
+                    interactionLevel.roomId === room._id
                 ) {
                     return [
                         room.tileIds
@@ -44,7 +44,7 @@ const RoomGroup = ({
                     ))
                 }
             })()}
-            <WallContainer roomId={room.id}/>
+            <WallContainer roomId={room._id}/>
         </Group>
     )
 }

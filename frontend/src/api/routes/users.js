@@ -1,5 +1,5 @@
 import { sendRequest } from '../index'
-import { deleteById, getById } from './util'
+import { deleteById } from './util'
 
 export function getUserByEmail(email) {
     return sendRequest({
@@ -43,29 +43,6 @@ export function getUser(userId) {
     })
 }
 
-export function updateUser(userId, user) {
-    return sendRequest({
-        path: '/users/{userId}',
-        method: 'PUT',
-        parameters: {
-            body: {
-                user: {
-                    givenName: user.givenName,
-                    familyName: user.familyName,
-                },
-            },
-            path: {
-                userId,
-            },
-            query: {},
-        },
-    })
-}
-
 export function deleteUser(userId) {
     return deleteById('/users/{userId}', { userId })
-}
-
-export function getAuthorizationsByUser(userId) {
-    return getById('/users/{userId}/authorizations', { userId })
 }

@@ -9,12 +9,10 @@ import RoomTile from '../elements/RoomTile'
 
 const TileGroup = ({ tile, newTile, inSimulation, roomLoad, onClick }) => {
     let tileObject
-    switch (tile.objectType) {
-        case 'RACK':
-            tileObject = <RackContainer tile={tile}/>
-            break
-        default:
-            tileObject = null
+    if (tile.rackId) {
+        tileObject = <RackContainer tile={tile}/>
+    } else {
+        tileObject = null
     }
 
     let color = ROOM_DEFAULT_COLOR

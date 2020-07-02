@@ -1,9 +1,5 @@
 import { connect } from 'react-redux'
-import {
-    setMapDimensions,
-    setMapPositionWithBoundsCheck,
-    zoomInOnPosition,
-} from '../../../actions/map'
+import { setMapDimensions, setMapPositionWithBoundsCheck, zoomInOnPosition } from '../../../actions/map'
 import MapStageComponent from '../../../components/app/map/MapStageComponent'
 
 const mapStateToProps = state => {

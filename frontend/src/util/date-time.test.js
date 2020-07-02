@@ -15,7 +15,7 @@ describe('date-time parsing', () => {
 })
 
 describe('tick formatting', () => {
-    it('returns \'0s\' for numbers <= 0', () => {
+    it("returns '0s' for numbers <= 0", () => {
         expect(convertSecondsToFormattedTime(-1)).toEqual('0s')
         expect(convertSecondsToFormattedTime(0)).toEqual('0s')
     })

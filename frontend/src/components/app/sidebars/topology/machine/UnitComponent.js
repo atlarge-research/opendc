@@ -40,13 +40,7 @@ class UnitComponent extends React.Component {
         return (
             <li className="d-flex list-group-item justify-content-between align-items-center">
         <span style={{ maxWidth: '60%' }}>
-          {this.props.unit.manufacturer +
-          ' ' +
-          this.props.unit.family +
-          ' ' +
-          this.props.unit.model +
-          ' ' +
-          this.props.unit.generation}
+          {this.props.unit.name}
         </span>
                 <span>
           <span

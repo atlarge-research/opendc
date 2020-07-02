@@ -5,7 +5,7 @@ const mapStateToProps = state => {
     return {
         machineIds:
         state.objects.rack[
-            state.objects.tile[state.interactionLevel.tileId].objectId
+            state.objects.tile[state.interactionLevel.tileId].rackId
             ].machineIds,
     }
 }

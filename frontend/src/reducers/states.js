@@ -2,7 +2,6 @@ import { combineReducers } from 'redux'
 import { ADD_BATCH_TO_STATES } from '../actions/states'
 
 export const states = combineReducers({
-    task: objectStates('task'),
     room: objectStates('room'),
     rack: objectStates('rack'),
     machine: objectStates('machine'),
@@ -21,7 +20,7 @@ function objectStates(type) {
                     {},
                     state[action.objects[i].tick],
                     batch[action.objects[i].tick],
-                    { [action.objects[i][action.objectType + 'Id']]: action.objects[i] },
+                    { [action.objects[i][action.objectType + 'Id']]: action.objects[i] }
                 )
             }
 

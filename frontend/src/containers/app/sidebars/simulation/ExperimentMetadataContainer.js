@@ -5,21 +5,21 @@ const mapStateToProps = state => {
     if (!state.objects.experiment[state.currentExperimentId]) {
         return {
             experimentName: 'Loading experiment',
-            pathName: '',
+            topologyName: '',
             traceName: '',
             schedulerName: '',
         }
     }
 
-    const path =
-        state.objects.path[
-            state.objects.experiment[state.currentExperimentId].pathId
+    const topology =
+        state.objects.topology[
+            state.objects.experiment[state.currentExperimentId].topologyId
             ]
-    const pathName = path.name ? path.name : 'Path ' + path.id
+    const topologyName = topology.name
 
     return {
         experimentName: state.objects.experiment[state.currentExperimentId].name,
-        pathName,
+        topologyName,
         traceName:
         state.objects.trace[
             state.objects.experiment[state.currentExperimentId].traceId

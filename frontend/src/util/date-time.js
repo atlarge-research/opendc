@@ -39,10 +39,7 @@ export function formatDateTime(dateTime) {
         '/' +
         addPaddingToTwo(dateTime.getFullYear())
 
-    if (
-        dateTime.getFullYear() === currentDate.getFullYear() &&
-        dateTime.getMonth() === currentDate.getMonth()
-    ) {
+    if (dateTime.getFullYear() === currentDate.getFullYear() && dateTime.getMonth() === currentDate.getMonth()) {
         if (dateTime.getDate() === currentDate.getDate()) {
             date = 'Today'
         } else if (dateTime.getDate() === currentDate.getDate() - 1) {
@@ -50,13 +47,7 @@ export function formatDateTime(dateTime) {
         }
     }
 
-    return (
-        date +
-        ', ' +
-        addPaddingToTwo(dateTime.getHours()) +
-        ':' +
-        addPaddingToTwo(dateTime.getMinutes())
-    )
+    return date + ', ' + addPaddingToTwo(dateTime.getHours()) + ':' + addPaddingToTwo(dateTime.getMinutes())
 }
 
 /**
@@ -83,9 +74,7 @@ export function convertSecondsToFormattedTime(seconds) {
     } else if (hour === 0) {
         return minute + 'm' + addPaddingToTwo(second) + 's'
     } else {
-        return (
-            hour + 'h' + addPaddingToTwo(minute) + 'm' + addPaddingToTwo(second) + 's'
-        )
+        return hour + 'h' + addPaddingToTwo(minute) + 'm' + addPaddingToTwo(second) + 's'
     }
 }
 

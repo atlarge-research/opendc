@@ -1,7 +1,5 @@
-export const FETCH_AUTHORIZATIONS_OF_CURRENT_USER =
-    'FETCH_AUTHORIZATIONS_OF_CURRENT_USER'
-export const FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED =
-    'FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED'
+export const FETCH_AUTHORIZATIONS_OF_CURRENT_USER = 'FETCH_AUTHORIZATIONS_OF_CURRENT_USER'
+export const FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED = 'FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED'
 export const DELETE_CURRENT_USER = 'DELETE_CURRENT_USER'
 export const DELETE_CURRENT_USER_SUCCEEDED = 'DELETE_CURRENT_USER_SUCCEEDED'
 
@@ -15,9 +13,7 @@ export function fetchAuthorizationsOfCurrentUser() {
     }
 }
 
-export function fetchAuthorizationsOfCurrentUserSucceeded(
-    authorizationsOfCurrentUser,
-) {
+export function fetchAuthorizationsOfCurrentUserSucceeded(authorizationsOfCurrentUser) {
     return {
         type: FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED,
         authorizationsOfCurrentUser,

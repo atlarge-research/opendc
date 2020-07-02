@@ -9,7 +9,7 @@ const mapStateToProps = (state, ownProps) => {
     )
     experiment.trace = state.objects.trace[experiment.traceId]
     experiment.scheduler = state.objects.scheduler[experiment.schedulerName]
-    experiment.path = state.objects.path[experiment.pathId]
+    experiment.topology = state.objects.topology[experiment.topologyId]
 
     return {
         experiment,

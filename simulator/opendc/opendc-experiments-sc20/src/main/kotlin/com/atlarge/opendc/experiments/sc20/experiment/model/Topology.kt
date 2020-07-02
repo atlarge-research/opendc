@@ -25,6 +25,6 @@
 package com.atlarge.opendc.experiments.sc20.experiment.model
 
 /**
- * The datacenter topology on which we test the workload.
+ * The topology topology on which we test the workload.
  */
 public data class Topology(val name: String)

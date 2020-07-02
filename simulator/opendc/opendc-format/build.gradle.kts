@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-description = "Library for reading common data formats for datacenter simulation"
+description = "Library for reading common data formats for topology simulation"
 
 /* Build configuration */
 plugins {

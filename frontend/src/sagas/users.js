@@ -9,10 +9,7 @@ import { fetchAndStoreSimulation, fetchAndStoreUser } from './objects'
 
 export function* onFetchLoggedInUser(action) {
     try {
-        const tokenResponse = yield call(
-            performTokenSignIn,
-            action.payload.authToken,
-        )
+        const tokenResponse = yield call(performTokenSignIn, action.payload.authToken)
 
         let userId = tokenResponse.userId
 
@@ -38,10 +35,7 @@ export function* onFetchAuthorizationsOfCurrentUser(action) {
             yield fetchAndStoreSimulation(authorization.simulationId)
         }
 
-        const authorizationIds = user.authorizations.map(authorization => [
-            action.userId,
-            authorization.simulationId,
-        ])
+        const authorizationIds = user.authorizations.map((authorization) => [action.userId, authorization.simulationId])
 
         yield put(fetchAuthorizationsOfCurrentUserSucceeded(authorizationIds))
     } catch (error) {

@@ -21,9 +21,9 @@ const mapStateToProps = state => {
                 .map(id => Object.assign({}, state.objects.room[id]))
                 .filter(
                     room =>
-                        state.objects.datacenter[state.currentDatacenterId].roomIds.indexOf(
-                            room.id,
-                        ) !== -1 && room.id !== state.construction.currentRoomInConstruction,
+                        state.objects.topology[state.currentTopologyId].roomIds.indexOf(
+                            room._id,
+                        ) !== -1 && room._id !== state.construction.currentRoomInConstruction,
                 );
 
             [...oldRooms, newRoom].forEach(room => {

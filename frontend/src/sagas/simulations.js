@@ -2,14 +2,14 @@ import { call, put } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
 import { addSimulationSucceeded, deleteSimulationSucceeded } from '../actions/simulations'
 import { addSimulation, deleteSimulation, getSimulation } from '../api/routes/simulations'
-import { fetchLatestDatacenter } from './topology'
+import { fetchAndStoreAllTopologiesOfSimulation } from './topology'
 
 export function* onOpenSimulationSucceeded(action) {
     try {
         const simulation = yield call(getSimulation, action.id)
         yield put(addToStore('simulation', simulation))
 
-        yield fetchLatestDatacenter(action.id)
+        yield fetchAndStoreAllTopologiesOfSimulation(action.id)
     } catch (error) {
         console.error(error)
     }
@@ -27,9 +27,7 @@ export function* onSimulationAdd(action) {
             simulation,
         }
         yield put(addToStore('authorization', authorization))
-        yield put(
-            addSimulationSucceeded([authorization.userId, authorization.simulationId]),
-        )
+        yield put(addSimulationSucceeded([authorization.userId, authorization.simulationId]))
     } catch (error) {
         console.error(error)
     }

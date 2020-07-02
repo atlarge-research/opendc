@@ -6,7 +6,7 @@ import Modal from '../Modal'
 class NewExperimentModalComponent extends React.Component {
     static propTypes = {
         show: PropTypes.bool.isRequired,
-        paths: PropTypes.arrayOf(Shapes.Path),
+        topologies: PropTypes.arrayOf(Shapes.Topology),
         schedulers: PropTypes.arrayOf(Shapes.Scheduler),
         traces: PropTypes.arrayOf(Shapes.Trace),
         callback: PropTypes.func.isRequired,
@@ -14,7 +14,7 @@ class NewExperimentModalComponent extends React.Component {
 
     reset() {
         this.textInput.value = ''
-        this.pathSelect.selectedIndex = 0
+        this.topologySelect.selectedIndex = 0
         this.traceSelect.selectedIndex = 0
         this.schedulerSelect.selectedIndex = 0
     }
@@ -22,8 +22,8 @@ class NewExperimentModalComponent extends React.Component {
     onSubmit() {
         this.props.callback(
             this.textInput.value,
-            parseInt(this.pathSelect.value, 10),
-            parseInt(this.traceSelect.value, 10),
+            this.topologySelect.value,
+            this.traceSelect.value,
             this.schedulerSelect.value,
         )
         this.reset()
@@ -53,18 +53,19 @@ class NewExperimentModalComponent extends React.Component {
                         <input
                             type="text"
                             className="form-control"
+                            required
                             ref={textInput => (this.textInput = textInput)}
                         />
                     </div>
                     <div className="form-group">
-                        <label className="form-control-label">Path</label>
+                        <label className="form-control-label">Topology</label>
                         <select
                             className="form-control"
-                            ref={pathSelect => (this.pathSelect = pathSelect)}
+                            ref={topologySelect => (this.topologySelect = topologySelect)}
                         >
-                            {this.props.paths.map(path => (
-                                <option value={path.id} key={path.id}>
-                                    {path.name ? path.name : 'Path ' + path.id}
+                            {this.props.topologies.map(topology => (
+                                <option value={topology._id} key={topology._id}>
+                                    {topology.name}
                                 </option>
                             ))}
                         </select>
@@ -76,7 +77,7 @@ class NewExperimentModalComponent extends React.Component {
                             ref={traceSelect => (this.traceSelect = traceSelect)}
                         >
                             {this.props.traces.map(trace => (
-                                <option value={trace.id} key={trace.id}>
+                                <option value={trace._id} key={trace._id}>
                                     {trace.name}
                                 </option>
                             ))}

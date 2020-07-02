@@ -11,11 +11,11 @@ const mapStateToProps = (state, ownProps) => {
     if (inSimulation) {
         if (
             state.states.machine[state.currentTick] &&
-            state.states.machine[state.currentTick][machine.id]
+            state.states.machine[state.currentTick][machine._id]
         ) {
             machineLoad = getStateLoad(
                 state.loadMetric,
-                state.states.machine[state.currentTick][machine.id],
+                state.states.machine[state.currentTick][machine._id],
             )
         }
     }

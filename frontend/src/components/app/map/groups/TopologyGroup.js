@@ -4,15 +4,15 @@ import GrayContainer from '../../../../containers/app/map/GrayContainer'
 import RoomContainer from '../../../../containers/app/map/RoomContainer'
 import Shapes from '../../../../shapes/index'
 
-const DatacenterGroup = ({ datacenter, interactionLevel }) => {
-    if (!datacenter) {
+const TopologyGroup = ({ topology, interactionLevel }) => {
+    if (!topology) {
         return <Group/>
     }
 
     if (interactionLevel.mode === 'BUILDING') {
         return (
             <Group>
-                {datacenter.roomIds.map(roomId => (
+                {topology.roomIds.map(roomId => (
                     <RoomContainer key={roomId} roomId={roomId}/>
                 ))}
             </Group>
@@ -21,20 +21,20 @@ const DatacenterGroup = ({ datacenter, interactionLevel }) => {
 
     return (
         <Group>
-            {datacenter.roomIds
+            {topology.roomIds
                 .filter(roomId => roomId !== interactionLevel.roomId)
                 .map(roomId => <RoomContainer key={roomId} roomId={roomId}/>)}
             {interactionLevel.mode === 'ROOM' ? <GrayContainer/> : null}
-            {datacenter.roomIds
+            {topology.roomIds
                 .filter(roomId => roomId === interactionLevel.roomId)
                 .map(roomId => <RoomContainer key={roomId} roomId={roomId}/>)}
         </Group>
     )
 }
 
-DatacenterGroup.propTypes = {
-    datacenter: Shapes.Datacenter,
+TopologyGroup.propTypes = {
+    topology: Shapes.Topology,
     interactionLevel: Shapes.InteractionLevel,
 }
 
-export default DatacenterGroup
+export default TopologyGroup

@@ -1,8 +1,5 @@
 import { connect } from 'react-redux'
-import {
-    pauseSimulation,
-    playSimulation,
-} from '../../../actions/simulation/playback'
+import { pauseSimulation, playSimulation } from '../../../actions/simulation/playback'
 import PlayButtonComponent from '../../../components/app/timeline/PlayButtonComponent'
 
 const mapStateToProps = state => {

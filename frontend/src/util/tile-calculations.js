@@ -7,7 +7,7 @@ function getWallSegments(tiles) {
     const verticalWalls = {}
     const horizontalWalls = {}
 
-    tiles.forEach(tile => {
+    tiles.forEach((tile) => {
         const x = tile.positionX,
             y = tile.positionY
 
@@ -19,10 +19,7 @@ function getWallSegments(tiles) {
 
                 let doInsert = true
                 for (let tileIndex in tiles) {
-                    if (
-                        tiles[tileIndex].positionX === x + dX &&
-                        tiles[tileIndex].positionY === y + dY
-                    ) {
+                    if (tiles[tileIndex].positionX === x + dX && tiles[tileIndex].positionY === y + dY) {
                         doInsert = false
                         break
                     }
@@ -143,7 +140,7 @@ export function deriveValidNextTilePositions(rooms, selectedTiles) {
         newPosition = { x: 0, y: 0 }
     let isSurroundingTile
 
-    selectedTiles.forEach(tile => {
+    selectedTiles.forEach((tile) => {
         const x = tile.positionX
         const y = tile.positionY
         result.push({ x, y })
@@ -168,10 +165,7 @@ export function deriveValidNextTilePositions(rooms, selectedTiles) {
                     }
                 }
 
-                if (
-                    isSurroundingTile &&
-                    findPositionInRooms(rooms, newPosition.x, newPosition.y) === -1
-                ) {
+                if (isSurroundingTile && findPositionInRooms(rooms, newPosition.x, newPosition.y) === -1) {
                     result.push({ x: newPosition.x, y: newPosition.y })
                 }
             }
@@ -231,8 +225,8 @@ export function calculateRoomListBounds(rooms) {
     const min = { x: Number.MAX_VALUE, y: Number.MAX_VALUE }
     const max = { x: -1, y: -1 }
 
-    rooms.forEach(room => {
-        room.tiles.forEach(tile => {
+    rooms.forEach((room) => {
+        room.tiles.forEach((tile) => {
             if (tile.positionX < min.x) {
                 min.x = tile.positionX
             }

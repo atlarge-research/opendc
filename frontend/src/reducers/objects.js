@@ -5,41 +5,32 @@ import {
     ADD_TO_STORE,
     REMOVE_ID_FROM_STORE_OBJECT_LIST_PROP,
 } from '../actions/objects'
+import { CPU_UNITS, GPU_UNITS, MEMORY_UNITS, STORAGE_UNITS } from '../util/unit-specifications'
 
 export const objects = combineReducers({
     simulation: object('simulation'),
     user: object('user'),
-    authorization: objectWithId('authorization', object => [
-        object.userId,
-        object.simulationId,
-    ]),
-    failureModel: object('failureModel'),
-    cpu: object('cpu'),
-    gpu: object('gpu'),
-    memory: object('memory'),
-    storage: object('storage'),
+    authorization: objectWithId('authorization', (object) => [object.userId, object.simulationId]),
+    cpu: object('cpu', CPU_UNITS),
+    gpu: object('gpu', GPU_UNITS),
+    memory: object('memory', MEMORY_UNITS),
+    storage: object('storage', STORAGE_UNITS),
     machine: object('machine'),
     rack: object('rack'),
-    coolingItem: object('coolingItem'),
-    psu: object('psu'),
     tile: object('tile'),
     room: object('room'),
-    datacenter: object('datacenter'),
-    section: object('section'),
-    path: object('path'),
-    task: object('task'),
-    job: object('job'),
+    topology: object('topology'),
     trace: object('trace'),
     scheduler: object('scheduler'),
     experiment: object('experiment'),
 })
 
-function object(type) {
-    return objectWithId(type, object => object._id)
+function object(type, defaultState = {}) {
+    return objectWithId(type, (object) => object._id, defaultState)
 }
 
-function objectWithId(type, getId) {
-    return (state = {}, action) => {
+function objectWithId(type, getId, defaultState = {}) {
+    return (state = defaultState, action) => {
         if (action.objectType !== type) {
             return state
         }
@@ -50,27 +41,18 @@ function objectWithId(type, getId) {
             })
         } else if (action.type === ADD_PROP_TO_STORE_OBJECT) {
             return Object.assign({}, state, {
-                [action.objectId]: Object.assign(
-                    {},
-                    state[action.objectId],
-                    action.propObject,
-                ),
+                [action.objectId]: Object.assign({}, state[action.objectId], action.propObject),
             })
         } else if (action.type === ADD_ID_TO_STORE_OBJECT_LIST_PROP) {
             return Object.assign({}, state, {
                 [action.objectId]: Object.assign({}, state[action.objectId], {
-                    [action.propName]: [
-                        ...state[action.objectId][action.propName],
-                        action.id,
-                    ],
+                    [action.propName]: [...state[action.objectId][action.propName], action.id],
                 }),
             })
         } else if (action.type === REMOVE_ID_FROM_STORE_OBJECT_LIST_PROP) {
             return Object.assign({}, state, {
                 [action.objectId]: Object.assign({}, state[action.objectId], {
-                    [action.propName]: state[action.objectId][action.propName].filter(
-                        id => id !== action.id,
-                    ),
+                    [action.propName]: state[action.objectId][action.propName].filter((id) => id !== action.id),
                 }),
             })
         }

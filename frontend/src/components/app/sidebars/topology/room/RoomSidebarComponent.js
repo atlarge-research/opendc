@@ -6,18 +6,11 @@ import DeleteRoomContainer from '../../../../../containers/app/sidebars/topology
 import EditRoomContainer from '../../../../../containers/app/sidebars/topology/room/EditRoomContainer'
 import RackConstructionContainer from '../../../../../containers/app/sidebars/topology/room/RackConstructionContainer'
 import RoomNameContainer from '../../../../../containers/app/sidebars/topology/room/RoomNameContainer'
-import RoomTypeContainer from '../../../../../containers/app/sidebars/topology/room/RoomTypeContainer'
 
-const RoomSidebarComponent = ({ roomId, roomType, inSimulation }) => {
-    let allowedObjects
-    if (!inSimulation && roomType === 'SERVER') {
-        allowedObjects = <RackConstructionContainer/>
-    }
-
+const RoomSidebarComponent = ({ roomId, inSimulation }) => {
     return (
         <div>
             <RoomNameContainer/>
-            <RoomTypeContainer/>
             <BackToBuildingContainer/>
             {inSimulation ? (
                 <div>
@@ -26,7 +19,7 @@ const RoomSidebarComponent = ({ roomId, roomType, inSimulation }) => {
                 </div>
             ) : (
                 <div>
-                    {allowedObjects}
+                    <RackConstructionContainer/>
                     <EditRoomContainer/>
                     <DeleteRoomContainer/>
                 </div>

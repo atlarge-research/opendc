@@ -13,7 +13,6 @@ stages:
 
 static-analysis:
   stage: static-analysis
-  allow_failure: true
   script:
     - python --version
     - pip install -r requirements.txt

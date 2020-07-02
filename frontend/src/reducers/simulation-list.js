@@ -13,7 +13,7 @@ export function authorizationsOfCurrentUser(state = [], action) {
         case ADD_SIMULATION_SUCCEEDED:
             return [...state, action.authorization]
         case DELETE_SIMULATION_SUCCEEDED:
-            return state.filter(authorization => authorization[1] !== action.id)
+            return state.filter((authorization) => authorization[1] !== action.id)
         default:
             return state
     }

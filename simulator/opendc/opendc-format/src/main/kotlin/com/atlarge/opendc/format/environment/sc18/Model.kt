@@ -4,17 +4,17 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 
 /**
- * A datacenter setup.
+ * A topology setup.
  *
  * @property name The name of the setup.
- * @property rooms The rooms in the datacenter.
+ * @property rooms The rooms in the topology.
  */
 internal data class Setup(val name: String, val rooms: List<Room>)
 
 /**
- * A room in a datacenter.
+ * A room in a topology.
  *
- * @property type The type of room in the datacenter.
+ * @property type The type of room in the topology.
  * @property objects The objects in the room.
  */
 internal data class Room(val type: String, val objects: List<RoomObject>)

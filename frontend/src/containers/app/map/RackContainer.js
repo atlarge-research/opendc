@@ -9,11 +9,11 @@ const mapStateToProps = (state, ownProps) => {
     if (inSimulation) {
         if (
             state.states.rack[state.currentTick] &&
-            state.states.rack[state.currentTick][ownProps.tile.objectId]
+            state.states.rack[state.currentTick][ownProps.tile.rackId]
         ) {
             rackLoad = getStateLoad(
                 state.loadMetric,
-                state.states.rack[state.currentTick][ownProps.tile.objectId],
+                state.states.rack[state.currentTick][ownProps.tile.rackId],
             )
         }
     }

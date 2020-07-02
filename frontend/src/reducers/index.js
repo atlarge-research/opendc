@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux'
 import { auth } from './auth'
 import { construction } from './construction-mode'
-import { currentDatacenterId, currentSimulationId } from './current-ids'
+import { currentTopologyId, currentSimulationId } from './current-ids'
 import { interactionLevel } from './interaction-level'
 import { map } from './map'
 import { modals } from './modals'
@@ -18,7 +18,7 @@ const rootReducer = combineReducers({
     construction,
     map,
     currentSimulationId,
-    currentDatacenterId,
+    currentTopologyId,
     currentExperimentId,
     currentTick,
     lastSimulatedTick,
