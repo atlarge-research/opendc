@@ -4,7 +4,7 @@ import { GO_DOWN_ONE_INTERACTION_LEVEL } from '../actions/interaction-level'
 import {
     CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
     FINISH_NEW_ROOM_CONSTRUCTION,
-    FINISH_ROOM_EDIT,
+    FINISH_ROOM_EDIT, SET_CURRENT_TOPOLOGY,
     START_NEW_ROOM_CONSTRUCTION_SUCCEEDED,
     START_ROOM_EDIT,
 } from '../actions/topology/building'
@@ -20,6 +20,7 @@ export function currentRoomInConstruction(state = '-1', action) {
         case FINISH_NEW_ROOM_CONSTRUCTION:
         case OPEN_EXPERIMENT_SUCCEEDED:
         case FINISH_ROOM_EDIT:
+        case SET_CURRENT_TOPOLOGY:
         case DELETE_ROOM:
             return '-1'
         default:
@@ -33,6 +34,7 @@ export function inRackConstructionMode(state = false, action) {
             return true
         case STOP_RACK_CONSTRUCTION:
         case OPEN_EXPERIMENT_SUCCEEDED:
+        case SET_CURRENT_TOPOLOGY:
         case GO_DOWN_ONE_INTERACTION_LEVEL:
             return false
         default:

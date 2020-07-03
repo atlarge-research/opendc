@@ -106,9 +106,10 @@ class ChangeTopologyModalComponent extends React.Component {
                         />
                     </div>
                     <div className="form-group">
-                        <label className="form-control-label">Topology to duplicate</label>
+                        <label className="form-control-label">Topology to duplicate (not supported yet)</label>
                         <select
                             className="form-control"
+                            disabled
                             ref={originTopology => (this.originTopology = originTopology)}
                         >
                             <option value={-1} key={-1}>
