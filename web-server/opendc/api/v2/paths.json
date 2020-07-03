@@ -10,5 +10,7 @@
   "/experiments/{experimentId}",
   "/schedulers",
   "/traces",
-  "/traces/{traceId}"
+  "/traces/{traceId}",
+  "/prefabs",
+  "/prefabs/{prefabId}",
 ]

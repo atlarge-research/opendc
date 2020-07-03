@@ -660,6 +660,107 @@ paths:
           description: Unauthorized.
         '404':
           description: Trace not found.
+  /prefabs:
+    post:
+      tags:
+        - prefabs
+      description: Add a Prefab.
+      parameters:
+        - name: prefab
+          in: body
+          description: The new Prefab.
+          required: true
+          schema:
+            properties:
+              name:
+                type: string
+      responses:
+        '200':
+          description: Successfully added Prefab.
+          schema:
+            $ref: '#/definitions/Prefab'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+  '/prefabs/{prefabId}':
+    get:
+      tags:
+        - prefabs
+      description: Get this Prefab.
+      parameters:
+        - name: prefabId
+          in: path
+          description: Prefab's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved Prefab.
+          schema:
+            $ref: '#/definitions/Prefab'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from retrieving Prefab.
+        '404':
+          description: Prefab not found
+    put:
+      tags:
+        - prefabs
+      description: Update this Prefab.
+      parameters:
+        - name: prefabId
+          in: path
+          description: Prefab's ID.
+          required: true
+          type: string
+        - name: prefab
+          in: body
+          description: Prefab's new properties.
+          required: true
+          schema:
+            properties:
+              simulation:
+                $ref: '#/definitions/Prefab'
+      responses:
+        '200':
+          description: Successfully updated Prefab.
+          schema:
+            $ref: '#/definitions/Prefab'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from updating Prefab.
+        '404':
+          description: Prefab not found.
+    delete:
+      tags:
+        - prefabs
+      description: Delete this prefab.
+      parameters:
+        - name: prefabId
+          in: path
+          description: Prefab's ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted Prefab.
+          schema:
+            $ref: '#/definitions/Prefab'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden from deleting Prefab.
+        '404':
+          description: Prefab not found.
 
 definitions:
   Experiment:
@@ -697,6 +798,20 @@ definitions:
       loadFraction:
         type: number
         format: float
+  Prefab:
+    type: object
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+      datetimeCreated:
+        type: string
+        format: dateTime
+      datetimeLastEdited:
+        type: string
+        format: dateTime
+
   RackState:
     type: object
     properties:
