@@ -73,7 +73,7 @@ export function* onDeleteTopology(action) {
         const topologyIds = yield select((state) => state.objects.simulation[currentSimulationId].topologyIds)
         const currentTopologyId = yield select((state) => state.currentTopologyId)
         if (currentTopologyId === action.id) {
-            yield put(setCurrentTopology(topologyIds.filter(t => t !== action.id)[0]))
+            yield put(setCurrentTopology(topologyIds.filter((t) => t !== action.id)[0]))
         }
 
         yield call(deleteTopology, action.id)
