@@ -50,11 +50,10 @@ export function* onAddTopology(action) {
         const topology = yield call(
             addTopology,
             Object.assign({}, action.topology, {
-                _id: -1,
                 simulationId: currentSimulationId,
             })
         )
-        yield put(addToStore('topology', topology))
+        yield fetchAndStoreTopology(topology._id)
 
         const topologyIds = yield select((state) => state.objects.simulation[currentSimulationId].topologyIds)
         yield put(
@@ -62,6 +61,7 @@ export function* onAddTopology(action) {
                 topologyIds: topologyIds.concat([topology._id]),
             })
         )
+        yield put(setCurrentTopology(topology._id))
     } catch (error) {
         console.error(error)
     }
@@ -69,10 +69,14 @@ export function* onAddTopology(action) {
 
 export function* onDeleteTopology(action) {
     try {
-        yield call(deleteTopology, action.id)
-
         const currentSimulationId = yield select((state) => state.currentSimulationId)
         const topologyIds = yield select((state) => state.objects.simulation[currentSimulationId].topologyIds)
+        const currentTopologyId = yield select((state) => state.currentTopologyId)
+        if (currentTopologyId === action.id) {
+            yield put(setCurrentTopology(topologyIds.filter(t => t !== action.id)[0]))
+        }
+
+        yield call(deleteTopology, action.id)
 
         yield put(
             addPropToStoreObject('simulation', currentSimulationId, {

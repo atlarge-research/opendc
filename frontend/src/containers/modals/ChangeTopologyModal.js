@@ -2,6 +2,7 @@ import { connect } from 'react-redux'
 import ChangeTopologyModalComponent from '../../components/modals/custom-components/ChangeTopologyModalComponent'
 import { closeChangeTopologyModal } from '../../actions/modals/topology'
 import { addTopology, deleteTopology } from '../../actions/topologies'
+import { setCurrentTopology } from '../../actions/topology/building'
 
 const mapStateToProps = state => {
     let topologies = state.objects.simulation[state.currentSimulationId] ? state.objects.simulation[state.currentSimulationId].topologyIds.map(t => (
@@ -12,17 +13,24 @@ const mapStateToProps = state => {
     }
 
     return {
-        show: state.modals.newExperimentModalVisible,
+        show: state.modals.changeTopologyModalVisible,
+        currentTopologyId: state.currentTopologyId,
         topologies,
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
+        onChooseTopology: (id) => {
+            dispatch(
+                setCurrentTopology(id)
+            )
+            dispatch(closeChangeTopologyModal())
+        },
         onCreateTopology: (name) => {
             if (name) {
                 dispatch(
-                    addTopology({name})
+                    addTopology({name, rooms: []})
                 )
             }
             dispatch(closeChangeTopologyModal())
@@ -31,7 +39,7 @@ const mapDispatchToProps = dispatch => {
             if (name) {
                 // TODO different handling here
                 dispatch(
-                    addTopology({name})
+                    addTopology({name, rooms: []})
                 )
             }
             dispatch(closeChangeTopologyModal())

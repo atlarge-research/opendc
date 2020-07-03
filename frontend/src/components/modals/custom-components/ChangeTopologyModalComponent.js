@@ -7,6 +7,8 @@ class ChangeTopologyModalComponent extends React.Component {
     static propTypes = {
         show: PropTypes.bool.isRequired,
         topologies: PropTypes.arrayOf(Shapes.Topology),
+        currentTopologyId: PropTypes.number,
+        onChooseTopology: PropTypes.func.isRequired,
         onCreateTopology: PropTypes.func.isRequired,
         onDuplicateTopology: PropTypes.func.isRequired,
         onDeleteTopology: PropTypes.func.isRequired,
@@ -24,6 +26,11 @@ class ChangeTopologyModalComponent extends React.Component {
         } else {
             this.onDuplicate()
         }
+    }
+
+    onChoose(id) {
+        this.props.onChooseTopology(id)
+        this.reset()
     }
 
     onCreate() {
@@ -58,19 +65,31 @@ class ChangeTopologyModalComponent extends React.Component {
                 onCancel={this.onCancel.bind(this)}
             >
                 <div>
-                    {this.props.topologies.forEach(topology => (
-                        <div key={topology._id}>
-                            {topology.name}
-                            <div
-                                className="btn btn-danger"
-                                onClick={() => this.onDelete(topology._id)}
-                            >
-                                Delete
+                    {this.props.topologies.map((topology, idx) => (
+                        <div key={topology._id} className="row mb-1">
+                            <div className="col-6">
+                                <em>{topology._id === this.props.currentTopologyId ? 'Active: ' : ''}</em>
+                                {topology.name}
+                            </div>
+                            <div className="col-6 text-right">
+                                <span
+                                    className="btn btn-primary mr-1"
+                                    onClick={() => this.onChoose(topology._id)}
+                                >
+                                    Choose
+                                </span>
+                                <span
+                                    className={'btn btn-danger ' + (idx === 0 ? 'disabled' : '')}
+                                    onClick={() => idx !== 0 ? this.onDelete(topology._id) : undefined}
+                                >
+                                    Delete
+                                </span>
                             </div>
                         </div>
                     ))}
                 </div>
 
+                <h5 className="pt-3 pt-1">New Topology</h5>
                 <form
                     onSubmit={e => {
                         e.preventDefault()

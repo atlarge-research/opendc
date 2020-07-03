@@ -16,10 +16,12 @@ def POST(request):
     simulation.check_exists()
     simulation.check_user_access(request.google_id, True)
 
-    topology = Topology({'name': request.params_body['topology']['name']})
+    topology = Topology({
+        'simulationId': request.params_path['simulationId'],
+        'name': request.params_body['topology']['name'],
+        'rooms': request.params_body['topology']['rooms'],
+    })
 
-    topology.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
-    topology.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
     topology.insert()
 
     simulation.obj['topologyIds'].append(topology.get_id())
