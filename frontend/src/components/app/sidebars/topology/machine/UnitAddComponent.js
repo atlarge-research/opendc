@@ -17,13 +17,7 @@ class UnitAddComponent extends React.Component {
                     >
                         {this.props.units.map(unit => (
                             <option value={unit._id} key={unit._id}>
-                                {unit.manufacturer +
-                                ' ' +
-                                unit.family +
-                                ' ' +
-                                unit.model +
-                                ' ' +
-                                unit.generation}
+                                {unit.name}
                             </option>
                         ))}
                     </select>

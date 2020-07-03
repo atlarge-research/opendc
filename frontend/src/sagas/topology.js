@@ -199,6 +199,7 @@ export function* onAddRackToTile(action) {
         const topologyId = yield select((state) => state.currentTopologyId)
         const rack = {
             _id: uuid(),
+            name: 'Rack',
             capacity: DEFAULT_RACK_SLOT_CAPACITY,
             powerCapacityW: DEFAULT_RACK_POWER_CAPACITY,
         }
@@ -218,7 +219,8 @@ export function* onAddMachine(action) {
         const rack = yield select((state) => state.objects.rack[rackId])
 
         const machine = {
-            _id: -1,
+            _id: uuid(),
+            rackId,
             position: action.position,
             cpuIds: [],
             gpuIds: [],

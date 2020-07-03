@@ -30,7 +30,7 @@ const AppNavbar = ({ simulationId, inSimulation, fullWidth, onViewTopologies }) 
                         title="Topologies"
                         onClick={onViewTopologies}
                     >
-                        <FontAwesome name="home" className="mr-2"/>
+                        <FontAwesome name="server" className="mr-2"/>
                         Topologies
                     </span>
                 </NavItem>

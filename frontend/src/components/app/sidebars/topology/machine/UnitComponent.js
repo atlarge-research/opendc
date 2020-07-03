@@ -39,31 +39,29 @@ class UnitComponent extends React.Component {
 
         return (
             <li className="d-flex list-group-item justify-content-between align-items-center">
-        <span style={{ maxWidth: '60%' }}>
-          {this.props.unit.name}
-        </span>
+                <span style={{ maxWidth: '60%' }}>
+                    {this.props.unit.name}
+                </span>
                 <span>
-          <span
-              tabIndex="0"
-              className="unit-info-popover btn btn-outline-info mr-1 fa fa-info-circle"
-              role="button"
-              data-toggle="popover"
-              data-trigger="focus"
-              title="Unit information"
-              data-content={unitInfo}
-              data-html="true"
-          />
+                    <span
+                        tabIndex="0"
+                        className="unit-info-popover btn btn-outline-info mr-1 fa fa-info-circle"
+                        role="button"
+                        data-toggle="popover"
+                        data-trigger="focus"
+                        title="Unit information"
+                        data-content={unitInfo}
+                        data-html="true"
+                    />
                     {this.props.inSimulation ? (
                         undefined
                     ) : (
                         <span
-                            className="btn btn-outline-danger"
+                            className="btn btn-outline-danger fa fa-trash"
                             onClick={this.props.onDelete}
-                        >
-              <span className="fa fa-trash"/>
-            </span>
+                        />
                     )}
-        </span>
+                </span>
             </li>
         )
     }

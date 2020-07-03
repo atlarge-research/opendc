@@ -70,23 +70,23 @@ export const fetchAndStoreTopology = function* (id) {
                         if (fullTile.rack) {
                             const fullRack = fullTile.rack
 
-                            generateIdIfNotPresent(fullTile)
+                            generateIdIfNotPresent(fullRack)
 
                             if (!rackStore[fullRack._id]) {
                                 for (let machineIdx in fullRack.machines) {
-                                    const fullMachine = fullRoom.machines[machineIdx]
+                                    const fullMachine = fullRack.machines[machineIdx]
 
                                     generateIdIfNotPresent(fullMachine)
 
                                     if (!machineStore[fullMachine._id]) {
-                                        let machine = (({ _id, position, cpuIds, gpuIds, memoryIds, storageIds }) => ({
+                                        let machine = (({ _id, position, cpus, gpus, memories, storages }) => ({
                                             _id,
                                             rackId: fullRack._id,
                                             position,
-                                            cpuIds,
-                                            gpuIds,
-                                            memoryIds,
-                                            storageIds,
+                                            cpuIds: cpus.map((u) => u._id),
+                                            gpuIds: gpus.map((u) => u._id),
+                                            memoryIds: memories.map((u) => u._id),
+                                            storageIds: storages.map((u) => u._id),
                                         }))(fullMachine)
                                         yield put(addToStore('machine', machine))
                                     }
@@ -96,8 +96,9 @@ export const fetchAndStoreTopology = function* (id) {
                                 fullRack.machines.forEach(
                                     (machine) => (filledSlots[machine.position - 1] = machine._id)
                                 )
-                                let rack = (({ _id, capacity, powerCapacityW }) => ({
+                                let rack = (({ _id, name, capacity, powerCapacityW }) => ({
                                     _id,
+                                    name,
                                     capacity,
                                     powerCapacityW,
                                     machineIds: filledSlots,
@@ -144,6 +145,10 @@ export const updateTopologyOnServer = function* (id) {
     const tileStore = yield select(OBJECT_SELECTORS['tile'])
     const rackStore = yield select(OBJECT_SELECTORS['rack'])
     const machineStore = yield select(OBJECT_SELECTORS['machine'])
+    const cpuStore = yield select(OBJECT_SELECTORS['cpu'])
+    const gpuStore = yield select(OBJECT_SELECTORS['gpu'])
+    const memoryStore = yield select(OBJECT_SELECTORS['memory'])
+    const storageStore = yield select(OBJECT_SELECTORS['storage'])
 
     const topology = {
         _id: id,
@@ -159,6 +164,7 @@ export const updateTopologyOnServer = function* (id) {
                     ? undefined
                     : {
                           _id: rackStore[tileStore[tileId].rackId]._id,
+                          name: rackStore[tileStore[tileId].rackId].name,
                           capacity: rackStore[tileStore[tileId].rackId].capacity,
                           powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
                           machines: rackStore[tileStore[tileId].rackId].machineIds
@@ -166,10 +172,10 @@ export const updateTopologyOnServer = function* (id) {
                               .map((machineId) => ({
                                   _id: machineId,
                                   position: machineStore[machineId].position,
-                                  cpuIds: machineStore[machineId].cpuIds,
-                                  gpuIds: machineStore[machineId].gpuIds,
-                                  memoryIds: machineStore[machineId].memoryIds,
-                                  storageIds: machineStore[machineId].storageIds,
+                                  cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
+                                  gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
+                                  memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
+                                  storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
                               })),
                       },
             })),
