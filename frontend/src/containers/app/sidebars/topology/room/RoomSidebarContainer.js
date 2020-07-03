@@ -3,7 +3,7 @@ import RoomSidebarComponent from '../../../../../components/app/sidebars/topolog
 
 const mapStateToProps = state => {
     return {
-        inSimulation: state.currentExperimentId !== -1,
+        inSimulation: state.currentExperimentId !== '-1',
         roomId: state.interactionLevel.roomId,
     }
 }

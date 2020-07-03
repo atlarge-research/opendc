@@ -5,7 +5,7 @@ import { getStateLoad } from '../../../util/simulation-load'
 
 const mapStateToProps = (state, ownProps) => {
     const tile = state.objects.tile[ownProps.tileId]
-    const inSimulation = state.currentExperimentId !== -1
+    const inSimulation = state.currentExperimentId !== '-1'
 
     let roomLoad = undefined
     if (inSimulation) {

@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import TopologyGroup from '../../../components/app/map/groups/TopologyGroup'
 
 const mapStateToProps = state => {
-    if (state.currentTopologyId === -1) {
+    if (state.currentTopologyId === '-1') {
         return {}
     }
 

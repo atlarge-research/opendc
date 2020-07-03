@@ -3,7 +3,7 @@ import UnitTabsComponent from '../../../../../components/app/sidebars/topology/m
 
 const mapStateToProps = state => {
     return {
-        inSimulation: state.currentExperimentId !== -1,
+        inSimulation: state.currentExperimentId !== '-1',
     }
 }
 

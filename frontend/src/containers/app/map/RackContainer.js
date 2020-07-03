@@ -3,7 +3,7 @@ import RackGroup from '../../../components/app/map/groups/RackGroup'
 import { getStateLoad } from '../../../util/simulation-load'
 
 const mapStateToProps = (state, ownProps) => {
-    const inSimulation = state.currentExperimentId !== -1
+    const inSimulation = state.currentExperimentId !== '-1'
 
     let rackLoad = undefined
     if (inSimulation) {

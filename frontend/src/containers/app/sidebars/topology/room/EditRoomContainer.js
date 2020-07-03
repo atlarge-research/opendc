@@ -4,7 +4,7 @@ import EditRoomComponent from '../../../../../components/app/sidebars/topology/r
 
 const mapStateToProps = state => {
     return {
-        isEditing: state.construction.currentRoomInConstruction !== -1,
+        isEditing: state.construction.currentRoomInConstruction !== '-1',
         isInRackConstructionMode: state.construction.inRackConstructionMode,
     }
 }

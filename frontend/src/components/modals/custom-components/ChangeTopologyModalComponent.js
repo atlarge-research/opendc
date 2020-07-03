@@ -7,7 +7,7 @@ class ChangeTopologyModalComponent extends React.Component {
     static propTypes = {
         show: PropTypes.bool.isRequired,
         topologies: PropTypes.arrayOf(Shapes.Topology),
-        currentTopologyId: PropTypes.number,
+        currentTopologyId: PropTypes.string,
         onChooseTopology: PropTypes.func.isRequired,
         onCreateTopology: PropTypes.func.isRequired,
         onDuplicateTopology: PropTypes.func.isRequired,

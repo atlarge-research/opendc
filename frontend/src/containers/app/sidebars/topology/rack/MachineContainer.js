@@ -5,7 +5,7 @@ import { getStateLoad } from '../../../../../util/simulation-load'
 
 const mapStateToProps = (state, ownProps) => {
     const machine = state.objects.machine[ownProps.machineId]
-    const inSimulation = state.currentExperimentId !== -1
+    const inSimulation = state.currentExperimentId !== '-1'
 
     let machineLoad = undefined
     if (inSimulation) {

@@ -6,7 +6,7 @@ const NewRoomConstructionComponent = ({
                                           onCancel,
                                           currentRoomInConstruction,
                                       }) => {
-    if (currentRoomInConstruction === -1) {
+    if (currentRoomInConstruction === '-1') {
         return (
             <div className="btn btn-outline-primary btn-block" onClick={onStart}>
                 <span className="fa fa-plus mr-2"/>

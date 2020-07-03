@@ -26,7 +26,7 @@ const AppNavbar = ({ simulationId, inSimulation, fullWidth, onViewTopologies }) 
                 </NavItem>
                 <NavItem route="topologies">
                     <span
-                        className="nav-link clickable"
+                        className="nav-link"
                         title="Topologies"
                         onClick={onViewTopologies}
                     >

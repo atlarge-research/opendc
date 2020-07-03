@@ -4,7 +4,7 @@ import EmptySlotComponent from '../../../../../components/app/sidebars/topology/
 
 const mapStateToProps = state => {
     return {
-        inSimulation: state.currentExperimentId !== -1,
+        inSimulation: state.currentExperimentId !== '-1',
     }
 }
 

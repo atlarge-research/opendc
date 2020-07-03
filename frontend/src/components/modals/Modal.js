@@ -50,8 +50,10 @@ class Modal extends React.Component {
     }
 
     componentDidUpdate() {
-        this.visible = this.props.show
-        this.openOrCloseModal()
+        if (this.visible !== this.props.show) {
+            this.visible = this.props.show
+            this.openOrCloseModal()
+        }
     }
 
     onSubmit() {

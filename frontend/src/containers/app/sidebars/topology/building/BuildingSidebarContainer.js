@@ -3,7 +3,7 @@ import BuildingSidebarComponent from '../../../../../components/app/sidebars/top
 
 const mapStateToProps = state => {
     return {
-        inSimulation: state.currentExperimentId !== -1,
+        inSimulation: state.currentExperimentId !== '-1',
     }
 }
 

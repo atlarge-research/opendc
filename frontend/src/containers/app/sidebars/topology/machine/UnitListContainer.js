@@ -3,7 +3,7 @@ import UnitListComponent from '../../../../../components/app/sidebars/topology/m
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        inSimulation: state.currentExperimentId !== -1,
+        inSimulation: state.currentExperimentId !== '-1',
         unitIds:
             state.objects.machine[
                 state.objects.rack[

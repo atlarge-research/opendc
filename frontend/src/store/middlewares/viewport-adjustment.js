@@ -12,20 +12,20 @@ import { calculateRoomListBounds } from '../../util/tile-calculations'
 export const viewportAdjustmentMiddleware = store => next => action => {
     const state = store.getState()
 
-    let topologyId = -1
+    let topologyId = '-1'
     let mapDimensions = {}
-    if (action.type === SET_CURRENT_TOPOLOGY && action.topologyId !== -1) {
+    if (action.type === SET_CURRENT_TOPOLOGY && action.topologyId !== '-1') {
         topologyId = action.topologyId
         mapDimensions = state.map.dimensions
     } else if (
         action.type === SET_MAP_DIMENSIONS &&
-        state.currentTopologyId !== -1
+        state.currentTopologyId !== '-1'
     ) {
         topologyId = state.currentTopologyId
         mapDimensions = { width: action.width, height: action.height }
     }
 
-    if (topologyId !== -1) {
+    if (topologyId !== '-1') {
         const roomIds = state.objects.topology[topologyId].roomIds
         const rooms = roomIds.map(id => Object.assign({}, state.objects.room[id]))
         rooms.forEach(

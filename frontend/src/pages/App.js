@@ -92,12 +92,12 @@ class AppComponent extends React.Component {
 
 const mapStateToProps = (state) => {
     let simulationName = undefined
-    if (state.currentSimulationId !== -1 && state.objects.simulation[state.currentSimulationId]) {
+    if (state.currentSimulationId !== '-1' && state.objects.simulation[state.currentSimulationId]) {
         simulationName = state.objects.simulation[state.currentSimulationId].name
     }
 
     return {
-        topologyIsLoading: state.currentTopologyId === -1,
+        topologyIsLoading: state.currentTopologyId === '-1',
         simulationName,
     }
 }

@@ -4,7 +4,7 @@ import UnitComponent from '../../../../../components/app/sidebars/topology/machi
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        inSimulation: state.currentExperimentId !== -1,
+        inSimulation: state.currentExperimentId !== '-1',
         unit: state.objects[ownProps.unitType][ownProps.unitId],
     }
 }

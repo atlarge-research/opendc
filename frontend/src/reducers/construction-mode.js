@@ -10,7 +10,7 @@ import {
 } from '../actions/topology/building'
 import { DELETE_ROOM, START_RACK_CONSTRUCTION, STOP_RACK_CONSTRUCTION } from '../actions/topology/room'
 
-export function currentRoomInConstruction(state = -1, action) {
+export function currentRoomInConstruction(state = '-1', action) {
     switch (action.type) {
         case START_NEW_ROOM_CONSTRUCTION_SUCCEEDED:
             return action.roomId
@@ -21,7 +21,7 @@ export function currentRoomInConstruction(state = -1, action) {
         case OPEN_EXPERIMENT_SUCCEEDED:
         case FINISH_ROOM_EDIT:
         case DELETE_ROOM:
-            return -1
+            return '-1'
         default:
             return state
     }

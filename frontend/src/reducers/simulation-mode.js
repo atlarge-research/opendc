@@ -4,12 +4,12 @@ import { SET_PLAYING } from '../actions/simulation/playback'
 import { GO_TO_TICK, SET_LAST_SIMULATED_TICK } from '../actions/simulation/tick'
 import { OPEN_SIMULATION_SUCCEEDED } from '../actions/simulations'
 
-export function currentExperimentId(state = -1, action) {
+export function currentExperimentId(state = '-1', action) {
     switch (action.type) {
         case OPEN_EXPERIMENT_SUCCEEDED:
             return action.experimentId
         case OPEN_SIMULATION_SUCCEEDED:
-            return -1
+            return '-1'
         default:
             return state
     }

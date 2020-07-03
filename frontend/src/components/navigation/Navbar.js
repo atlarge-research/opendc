@@ -27,7 +27,7 @@ const GitHubLink = () => (
 const NavItemWithoutRoute = ({ route, location, children }) => (
     <li
         className={classNames(
-            'nav-item',
+            'nav-item clickable',
             location.pathname === route ? 'active' : undefined,
         )}
     >

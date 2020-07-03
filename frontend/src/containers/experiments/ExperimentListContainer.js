@@ -3,7 +3,7 @@ import ExperimentListComponent from '../../components/experiments/ExperimentList
 
 const mapStateToProps = state => {
     if (
-        state.currentSimulationId === -1 ||
+        state.currentSimulationId === '-1' ||
         !('experimentIds' in state.objects.simulation[state.currentSimulationId])
     ) {
         return {
