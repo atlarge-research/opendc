@@ -25,9 +25,8 @@ def test_add_topology(client, mocker):
                             'topologyIds': []
                         })
     mocker.patch.object(DB, 'update', return_value={})
-    res = client.post('/api/v2/simulations/1/topologies', json={'topology': {'name': 'test simulation'}})
-    assert 'datetimeCreated' in res.json['content']
-    assert 'datetimeLastEdited' in res.json['content']
+    res = client.post('/api/v2/simulations/1/topologies', json={'topology': {'name': 'test simulation', 'rooms': []}})
+    assert 'rooms' in res.json['content']
     assert '200' in res.status
 
 

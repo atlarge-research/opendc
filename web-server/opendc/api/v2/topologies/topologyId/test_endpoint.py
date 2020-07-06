@@ -40,7 +40,7 @@ def test_get_topology_not_authorized(client, mocker):
 
 
 def test_get_topology_no_authorizations(client, mocker):
-    mocker.patch.object(DB, 'fetch_one', return_value={'authorizations': []})
+    mocker.patch.object(DB, 'fetch_one', return_value={'simulationId': '1', 'authorizations': []})
     res = client.get('/api/v2/topologies/1')
     assert '403' in res.status
 
