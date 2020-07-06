@@ -48,12 +48,11 @@ def test_update_experiment_missing_parameter(client):
 
 def test_update_experiment_non_existing(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.put('/api/v2/experiments/1',
-                               json={
-                                   'experiment': {
-                                       'name': 'test',
-                                   }
-                               }).status
+    assert '404' in client.put('/api/v2/experiments/1', json={
+        'experiment': {
+            'name': 'test',
+        }
+    }).status
 
 
 def test_update_experiment_not_authorized(client, mocker):
@@ -68,12 +67,11 @@ def test_update_experiment_not_authorized(client, mocker):
                             }]
                         })
     mocker.patch.object(DB, 'update', return_value={})
-    assert '403' in client.put('/api/v2/experiments/1',
-                               json={
-                                   'experiment': {
-                                       'name': 'test',
-                                   }
-                               }).status
+    assert '403' in client.put('/api/v2/experiments/1', json={
+        'experiment': {
+            'name': 'test',
+        }
+    }).status
 
 
 def test_update_experiment(client, mocker):
@@ -89,11 +87,9 @@ def test_update_experiment(client, mocker):
                         })
     mocker.patch.object(DB, 'update', return_value={})
 
-    res = client.put(
-        '/api/v2/experiments/1',
-        json={'experiment': {
-            'name': 'test',
-        }})
+    res = client.put('/api/v2/experiments/1', json={'experiment': {
+        'name': 'test',
+    }})
     assert '200' in res.status
 
 

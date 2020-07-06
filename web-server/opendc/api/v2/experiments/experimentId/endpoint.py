@@ -19,12 +19,9 @@ def GET(request):
 def PUT(request):
     """Update this Experiments name."""
 
-    request.check_required_parameters(path={'experimentId': 'string'},
-                                      body={
-                                          'experiment': {
-                                              'name': 'string',
-                                          }
-                                      })
+    request.check_required_parameters(path={'experimentId': 'string'}, body={'experiment': {
+        'name': 'string',
+    }})
 
     experiment = Experiment.from_id(request.params_path['experimentId'])
 

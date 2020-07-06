@@ -1,7 +1,4 @@
 from opendc.util.database import DB
-'''
-GET /topologies/{topologyId}
-'''
 
 
 def test_get_topology(client, mocker):
@@ -43,11 +40,6 @@ def test_get_topology_no_authorizations(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value={'simulationId': '1', 'authorizations': []})
     res = client.get('/api/v2/topologies/1')
     assert '403' in res.status
-
-
-'''
-PUT /topologies/{topologyId}
-'''
 
 
 def test_update_topology_missing_parameter(client):
@@ -98,11 +90,6 @@ def test_update_topology(client, mocker):
             'rooms': {}
         }
     }).status
-
-
-'''
-DELETE /topologies/{topologyId}
-'''
 
 
 def test_delete_topology(client, mocker):
