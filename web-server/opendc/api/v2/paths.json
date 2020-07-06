@@ -12,5 +12,5 @@
   "/traces",
   "/traces/{traceId}",
   "/prefabs",
-  "/prefabs/{prefabId}",
+  "/prefabs/{prefabId}"
 ]
