@@ -11,7 +11,7 @@ Shapes.User = PropTypes.shape({
     authorizations: PropTypes.array.isRequired,
 })
 
-Shapes.Simulation = PropTypes.shape({
+Shapes.Project = PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     datetimeCreated: PropTypes.string.isRequired,
@@ -23,8 +23,8 @@ Shapes.Simulation = PropTypes.shape({
 Shapes.Authorization = PropTypes.shape({
     userId: PropTypes.string.isRequired,
     user: Shapes.User,
-    simulationId: PropTypes.string.isRequired,
-    simulation: Shapes.Simulation,
+    projectId: PropTypes.string.isRequired,
+    project: Shapes.Project,
     authorizationLevel: PropTypes.string.isRequired,
 })
 
@@ -98,7 +98,7 @@ Shapes.Trace = PropTypes.shape({
 
 Shapes.Experiment = PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    simulationId: PropTypes.string.isRequired,
+    projectId: PropTypes.string.isRequired,
     topologyId: PropTypes.string.isRequired,
     topology: Shapes.Topology,
     traceId: PropTypes.string.isRequired,

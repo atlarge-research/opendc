@@ -1,6 +1,5 @@
 import React from 'react'
 import Shapes from '../../../../../shapes'
-import { convertLoadToSimulationColor } from '../../../../../util/simulation-load'
 
 const UnitIcon = ({ id, type }) => (
     <div>
@@ -16,14 +15,8 @@ const UnitIcon = ({ id, type }) => (
 const MachineComponent = ({
                               position,
                               machine,
-                              inSimulation,
-                              machineLoad,
                               onClick,
                           }) => {
-    let color = 'white'
-    if (inSimulation && machineLoad >= 0) {
-        color = convertLoadToSimulationColor(machineLoad)
-    }
     const hasNoUnits =
         machine.cpuIds.length +
         machine.gpuIds.length +
@@ -35,7 +28,7 @@ const MachineComponent = ({
         <li
             className="d-flex list-group-item list-group-item-action justify-content-between align-items-center"
             onClick={onClick}
-            style={{ backgroundColor: color }}
+            style={{ backgroundColor: 'white' }}
         >
             <span className="badge badge-default badge-info mr-1">{position}</span>
             <div className="d-inline-flex">

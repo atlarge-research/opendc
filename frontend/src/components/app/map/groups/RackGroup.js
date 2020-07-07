@@ -4,23 +4,17 @@ import RackEnergyFillContainer from '../../../../containers/app/map/RackEnergyFi
 import RackSpaceFillContainer from '../../../../containers/app/map/RackSpaceFillContainer'
 import Shapes from '../../../../shapes/index'
 import { RACK_BACKGROUND_COLOR } from '../../../../util/colors'
-import { convertLoadToSimulationColor } from '../../../../util/simulation-load'
 import TileObject from '../elements/TileObject'
 
-const RackGroup = ({ tile, inSimulation, rackLoad }) => {
-    let color = RACK_BACKGROUND_COLOR
-    if (inSimulation && rackLoad >= 0) {
-        color = convertLoadToSimulationColor(rackLoad)
-    }
-
+const RackGroup = ({ tile }) => {
     return (
         <Group>
             <TileObject
                 positionX={tile.positionX}
                 positionY={tile.positionY}
-                color={color}
+                color={RACK_BACKGROUND_COLOR}
             />
-            <Group opacity={inSimulation ? 0.3 : 1}>
+            <Group>
                 <RackSpaceFillContainer
                     tileId={tile._id}
                     positionX={tile.positionX}

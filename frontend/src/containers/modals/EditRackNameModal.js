@@ -20,7 +20,7 @@ const mapStateToProps = state => {
         previousName:
             state.interactionLevel.mode === 'RACK'
                 ? state.objects.rack[
-                        state.objects.tile[state.interactionLevel.tileId].rackId
+                    state.objects.tile[state.interactionLevel.tileId].rackId
                     ].name
                 : '',
     }

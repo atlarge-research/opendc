@@ -59,7 +59,7 @@ All pages are represented by a component in the `src/pages` directory. There are
 
 **Home.js** - Entry page (`/`)
 
-**Simulations.js** - Overview of simulations of the user (`/simulations`)
+**Projects.js** - Overview of simulations of the user (`/simulations`)
 
 **App.js** - Main application, with datacenter construction and simulation UI (`/simulations/:simulationId` and `/simulations/:simulationId/experiments/:experimentId`)
 

@@ -14,7 +14,7 @@ const HomeNavbar = () => (
     <Navbar fullWidth={false}>
         <ScrollNavItem id="#stakeholders" name="Stakeholders"/>
         <ScrollNavItem id="#modeling" name="Modeling"/>
-        <ScrollNavItem id="#simulation" name="Simulation"/>
+        <ScrollNavItem id="#project" name="Project"/>
         <ScrollNavItem id="#technologies" name="Technologies"/>
         <ScrollNavItem id="#team" name="Team"/>
         <ScrollNavItem id="#contact" name="Contact"/>

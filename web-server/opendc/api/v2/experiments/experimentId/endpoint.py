@@ -1,5 +1,5 @@
 from opendc.models.experiment import Experiment
-from opendc.models.simulation import Simulation
+from opendc.models.project import Project
 from opendc.util.rest import Response
 
 
@@ -45,11 +45,11 @@ def DELETE(request):
     experiment.check_exists()
     experiment.check_user_access(request.google_id, True)
 
-    simulation = Simulation.from_id(experiment.obj['simulationId'])
-    simulation.check_exists()
-    if request.params_path['experimentId'] in simulation.obj['experimentIds']:
-        simulation.obj['experimentIds'].remove(request.params_path['experimentId'])
-    simulation.update()
+    project = Project.from_id(experiment.obj['projectId'])
+    project.check_exists()
+    if request.params_path['experimentId'] in project.obj['experimentIds']:
+        project.obj['experimentIds'].remove(request.params_path['experimentId'])
+    project.update()
 
     old_object = experiment.delete()
 

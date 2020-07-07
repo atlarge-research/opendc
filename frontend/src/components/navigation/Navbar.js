@@ -40,9 +40,9 @@ const LoggedInSectionWithoutRoute = ({ location }) => (
         {userIsLoggedIn() ? (
             [
                 location.pathname === '/' ? (
-                    <NavItem route="/simulations" key="simulations">
-                        <Link className="nav-link" title="My Simulations" to="/simulations">
-                            My Simulations
+                    <NavItem route="/projects" key="projects">
+                        <Link className="nav-link" title="My Projects" to="/projects">
+                            My Projects
                         </Link>
                     </NavItem>
                 ) : (

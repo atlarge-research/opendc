@@ -2,36 +2,23 @@ import React from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { userIsLoggedIn } from '../auth/index'
 import App from '../pages/App'
-import Experiments from '../pages/Experiments'
 import Home from '../pages/Home'
 import NotFound from '../pages/NotFound'
 import Profile from '../pages/Profile'
-import Simulations from '../pages/Simulations'
+import Projects from '../pages/Projects'
 
-const ProtectedComponent = (component) => () => (userIsLoggedIn() ? component : <Redirect to="/" />)
+const ProtectedComponent = (component) => () => (userIsLoggedIn() ? component : <Redirect to="/"/>)
 const AppComponent = ({ match }) =>
-    userIsLoggedIn() ? <App simulationId={match.params.simulationId} /> : <Redirect to="/" />
-
-const ExperimentsComponent = ({ match }) =>
-    userIsLoggedIn() ? <Experiments simulationId={match.params.simulationId} /> : <Redirect to="/" />
-
-const SimulationComponent = ({ match }) =>
-    userIsLoggedIn() ? (
-        <App simulationId={match.params.simulationId} inSimulation={true} experimentId={match.params.experimentId} />
-    ) : (
-        <Redirect to="/" />
-    )
+    userIsLoggedIn() ? <App projectId={match.params.projectId}/> : <Redirect to="/"/>
 
 const Routes = () => (
     <BrowserRouter>
         <Switch>
-            <Route exact path="/" component={Home} />
-            <Route exact path="/simulations" render={ProtectedComponent(<Simulations />)} />
-            <Route exact path="/simulations/:simulationId" component={AppComponent} />
-            <Route exact path="/simulations/:simulationId/experiments" component={ExperimentsComponent} />
-            <Route exact path="/simulations/:simulationId/experiments/:experimentId" component={SimulationComponent} />
-            <Route exact path="/profile" render={ProtectedComponent(<Profile />)} />
-            <Route path="/*" component={NotFound} />
+            <Route exact path="/" component={Home}/>
+            <Route exact path="/projects" render={ProtectedComponent(<Projects/>)}/>
+            <Route exact path="/projects/:projectId" component={AppComponent}/>
+            <Route exact path="/profile" render={ProtectedComponent(<Profile/>)}/>
+            <Route path="/*" component={NotFound}/>
         </Switch>
     </BrowserRouter>
 )

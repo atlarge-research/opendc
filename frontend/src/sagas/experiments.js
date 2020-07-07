@@ -1,22 +1,14 @@
-import { call, delay, put, select } from 'redux-saga/effects'
+import { call, put, select } from 'redux-saga/effects'
 import { addPropToStoreObject, addToStore } from '../actions/objects'
-import { setLastSimulatedTick } from '../actions/simulation/tick'
-import { addBatchToStates } from '../actions/states'
-import {
-    deleteExperiment,
-    getAllMachineStates,
-    getAllRackStates,
-    getAllRoomStates,
-    getExperiment,
-} from '../api/routes/experiments'
-import { addExperiment, getSimulation } from '../api/routes/simulations'
+import { deleteExperiment, getExperiment } from '../api/routes/experiments'
+import { addExperiment, getProject } from '../api/routes/projects'
 import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
-import { fetchAndStoreAllTopologiesOfSimulation, fetchTopologyOfExperiment } from './topology'
+import { fetchAndStoreAllTopologiesOfProject, fetchTopologyOfExperiment } from './topology'
 
 export function* onOpenExperimentSucceeded(action) {
     try {
-        const simulation = yield call(getSimulation, action.simulationId)
-        yield put(addToStore('simulation', simulation))
+        const project = yield call(getProject, action.projectId)
+        yield put(addToStore('project', project))
 
         const experiment = yield call(getExperiment, action.experimentId)
         yield put(addToStore('experiment', experiment))
@@ -24,46 +16,20 @@ export function* onOpenExperimentSucceeded(action) {
         yield fetchExperimentSpecifications()
 
         yield fetchTopologyOfExperiment(experiment)
-        yield startStateFetchLoop(action.experimentId)
     } catch (error) {
         console.error(error)
     }
 }
 
-function* startStateFetchLoop(experimentId) {
+export function* onFetchExperimentsOfProject() {
     try {
-        while ((yield select((state) => state.currentExperimentId)) !== '-1') {
-            const lastSimulatedTick = (yield call(getExperiment, experimentId)).lastSimulatedTick
-            if (lastSimulatedTick !== (yield select((state) => state.lastSimulatedTick))) {
-                yield put(setLastSimulatedTick(lastSimulatedTick))
-
-                const machineStates = yield call(getAllMachineStates, experimentId)
-                const rackStates = yield call(getAllRackStates, experimentId)
-                const roomStates = yield call(getAllRoomStates, experimentId)
-
-                yield put(addBatchToStates('machine', machineStates))
-                yield put(addBatchToStates('rack', rackStates))
-                yield put(addBatchToStates('room', roomStates))
-
-                yield delay(5000)
-            } else {
-                yield delay(10000)
-            }
-        }
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export function* onFetchExperimentsOfSimulation() {
-    try {
-        const currentSimulationId = yield select((state) => state.currentSimulationId)
-        const currentSimulation = yield select((state) => state.object.simulation[currentSimulationId])
+        const currentProjectId = yield select((state) => state.currentProjectId)
+        const currentProject = yield select((state) => state.object.project[currentProjectId])
 
         yield fetchExperimentSpecifications()
 
-        for (let i in currentSimulation.experimentIds) {
-            const experiment = yield call(getExperiment, currentSimulation.experimentIds[i])
+        for (let i in currentProject.experimentIds) {
+            const experiment = yield call(getExperiment, currentProject.experimentIds[i])
             yield put(addToStore('experiment', experiment))
         }
     } catch (error) {
@@ -73,8 +39,8 @@ export function* onFetchExperimentsOfSimulation() {
 
 function* fetchExperimentSpecifications() {
     try {
-        const currentSimulationId = yield select((state) => state.currentSimulationId)
-        yield fetchAndStoreAllTopologiesOfSimulation(currentSimulationId)
+        const currentProjectId = yield select((state) => state.currentProjectId)
+        yield fetchAndStoreAllTopologiesOfProject(currentProjectId)
         yield fetchAndStoreAllTraces()
         yield fetchAndStoreAllSchedulers()
     } catch (error) {
@@ -84,23 +50,23 @@ function* fetchExperimentSpecifications() {
 
 export function* onAddExperiment(action) {
     try {
-        const currentSimulationId = yield select((state) => state.currentSimulationId)
+        const currentProjectId = yield select((state) => state.currentProjectId)
 
         const experiment = yield call(
             addExperiment,
-            currentSimulationId,
+            currentProjectId,
             Object.assign({}, action.experiment, {
                 id: '-1',
-                simulationId: currentSimulationId,
-            })
+                projectId: currentProjectId,
+            }),
         )
         yield put(addToStore('experiment', experiment))
 
-        const experimentIds = yield select((state) => state.objects.simulation[currentSimulationId].experimentIds)
+        const experimentIds = yield select((state) => state.objects.project[currentProjectId].experimentIds)
         yield put(
-            addPropToStoreObject('simulation', currentSimulationId, {
+            addPropToStoreObject('project', currentProjectId, {
                 experimentIds: experimentIds.concat([experiment._id]),
-            })
+            }),
         )
     } catch (error) {
         console.error(error)
@@ -111,13 +77,13 @@ export function* onDeleteExperiment(action) {
     try {
         yield call(deleteExperiment, action.id)
 
-        const currentSimulationId = yield select((state) => state.currentSimulationId)
-        const experimentIds = yield select((state) => state.objects.simulation[currentSimulationId].experimentIds)
+        const currentProjectId = yield select((state) => state.currentProjectId)
+        const experimentIds = yield select((state) => state.objects.project[currentProjectId].experimentIds)
 
         yield put(
-            addPropToStoreObject('simulation', currentSimulationId, {
+            addPropToStoreObject('project', currentProjectId, {
                 experimentIds: experimentIds.filter((id) => id !== action.id),
-            })
+            }),
         )
     } catch (error) {
         console.error(error)

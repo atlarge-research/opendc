@@ -8,18 +8,18 @@ import DeleteProfileModal from '../containers/modals/DeleteProfileModal'
 const ProfileContainer = ({ onDelete }) => (
     <DocumentTitle title="My Profile - OpenDC">
         <div className="full-height">
-            <AppNavbar inSimulation={false} fullWidth={false} />
+            <AppNavbar inProject={false} fullWidth={false}/>
             <div className="container text-page-container full-height">
                 <button className="btn btn-danger mb-2 ml-auto mr-auto" style={{ maxWidth: 300 }} onClick={onDelete}>
                     Delete my account on OpenDC
                 </button>
                 <p className="text-muted text-center">
                     This does not delete your Google account, but simply disconnects it from the OpenDC platform and
-                    deletes any simulation info that is associated with you (simulations you own and any authorizations
+                    deletes any project info that is associated with you (projects you own and any authorizations
                     you may have on other projects).
                 </p>
             </div>
-            <DeleteProfileModal />
+            <DeleteProfileModal/>
         </div>
     </DocumentTitle>
 )

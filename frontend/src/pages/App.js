@@ -4,16 +4,14 @@ import DocumentTitle from 'react-document-title'
 import { connect } from 'react-redux'
 import { ShortcutManager } from 'react-shortcuts'
 import { openExperimentSucceeded } from '../actions/experiments'
-import { openSimulationSucceeded } from '../actions/simulations'
+import { openProjectSucceeded } from '../actions/projects'
 import { resetCurrentTopology } from '../actions/topology/building'
 import ToolPanelComponent from '../components/app/map/controls/ToolPanelComponent'
 import LoadingScreen from '../components/app/map/LoadingScreen'
-import SimulationSidebarComponent from '../components/app/sidebars/simulation/SimulationSidebarComponent'
 import AppNavbar from '../components/navigation/AppNavbar'
 import ScaleIndicatorContainer from '../containers/app/map/controls/ScaleIndicatorContainer'
 import MapStage from '../containers/app/map/MapStage'
 import TopologySidebar from '../containers/app/sidebars/topology/TopologySidebar'
-import TimelineContainer from '../containers/app/timeline/TimelineContainer'
 import DeleteMachineModal from '../containers/modals/DeleteMachineModal'
 import DeleteRackModal from '../containers/modals/DeleteRackModal'
 import DeleteRoomModal from '../containers/modals/DeleteRoomModal'
@@ -27,10 +25,9 @@ const shortcutManager = new ShortcutManager(KeymapConfiguration)
 
 class AppComponent extends React.Component {
     static propTypes = {
-        simulationId: PropTypes.string.isRequired,
-        inSimulation: PropTypes.bool,
+        projectId: PropTypes.string.isRequired,
         experimentId: PropTypes.number,
-        simulationName: PropTypes.string,
+        projectName: PropTypes.string,
         onViewTopologies: PropTypes.func,
     }
     static childContextTypes = {
@@ -38,12 +35,7 @@ class AppComponent extends React.Component {
     }
 
     componentDidMount() {
-        // TODO this.props.resetCurrentTopology()
-        if (this.props.inSimulation) {
-            this.props.openExperimentSucceeded(this.props.simulationId, this.props.experimentId)
-            return
-        }
-        this.props.openSimulationSucceeded(this.props.simulationId)
+        this.props.openProjectSucceeded(this.props.projectId)
     }
 
     getChildContext() {
@@ -55,35 +47,33 @@ class AppComponent extends React.Component {
     render() {
         return (
             <DocumentTitle
-                title={this.props.simulationName ? this.props.simulationName + ' - OpenDC' : 'Simulation - OpenDC'}
+                title={this.props.projectName ? this.props.projectName + ' - OpenDC' : 'Simulation - OpenDC'}
             >
                 <div className="page-container full-height">
                     <AppNavbar
-                        simulationId={this.props.simulationId}
-                        inSimulation={true}
+                        projectId={this.props.projectId}
+                        inProject={true}
                         fullWidth={true}
                         onViewTopologies={this.props.onViewTopologies}
                     />
                     {this.props.topologyIsLoading ? (
                         <div className="full-height d-flex align-items-center justify-content-center">
-                            <LoadingScreen />
+                            <LoadingScreen/>
                         </div>
                     ) : (
                         <div className="full-height">
-                            <MapStage />
-                            <ScaleIndicatorContainer />
-                            <ToolPanelComponent />
-                            <TopologySidebar />
-                            {this.props.inSimulation ? <TimelineContainer /> : undefined}
-                            {this.props.inSimulation ? <SimulationSidebarComponent /> : undefined}
+                            <MapStage/>
+                            <ScaleIndicatorContainer/>
+                            <ToolPanelComponent/>
+                            <TopologySidebar/>
                         </div>
                     )}
-                    <ChangeTopologyModal />
-                    <EditRoomNameModal />
-                    <DeleteRoomModal />
-                    <EditRackNameModal />
-                    <DeleteRackModal />
-                    <DeleteMachineModal />
+                    <ChangeTopologyModal/>
+                    <EditRoomNameModal/>
+                    <DeleteRoomModal/>
+                    <EditRackNameModal/>
+                    <DeleteRackModal/>
+                    <DeleteMachineModal/>
                 </div>
             </DocumentTitle>
         )
@@ -91,24 +81,24 @@ class AppComponent extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-    let simulationName = undefined
-    if (state.currentSimulationId !== '-1' && state.objects.simulation[state.currentSimulationId]) {
-        simulationName = state.objects.simulation[state.currentSimulationId].name
+    let projectName = undefined
+    if (state.currentProjectId !== '-1' && state.objects.project[state.currentProjectId]) {
+        projectName = state.objects.project[state.currentProjectId].name
     }
 
     return {
         topologyIsLoading: state.currentTopologyId === '-1',
-        simulationName,
+        projectName,
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
         resetCurrentTopology: () => dispatch(resetCurrentTopology()),
-        openSimulationSucceeded: (id) => dispatch(openSimulationSucceeded(id)),
+        openProjectSucceeded: (id) => dispatch(openProjectSucceeded(id)),
         onViewTopologies: () => dispatch(openChangeTopologyModal()),
-        openExperimentSucceeded: (simulationId, experimentId) =>
-            dispatch(openExperimentSucceeded(simulationId, experimentId)),
+        openExperimentSucceeded: (projectId, experimentId) =>
+            dispatch(openExperimentSucceeded(projectId, experimentId)),
     }
 }
 

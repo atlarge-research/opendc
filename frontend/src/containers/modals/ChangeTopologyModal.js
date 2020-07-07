@@ -5,7 +5,7 @@ import { addTopology, deleteTopology } from '../../actions/topologies'
 import { setCurrentTopology } from '../../actions/topology/building'
 
 const mapStateToProps = state => {
-    let topologies = state.objects.simulation[state.currentSimulationId] ? state.objects.simulation[state.currentSimulationId].topologyIds.map(t => (
+    let topologies = state.objects.project[state.currentProjectId] ? state.objects.project[state.currentProjectId].topologyIds.map(t => (
         state.objects.topology[t]
     )) : []
     if (topologies.filter(t => !t).length > 0) {
@@ -23,14 +23,14 @@ const mapDispatchToProps = dispatch => {
     return {
         onChooseTopology: (id) => {
             dispatch(
-                setCurrentTopology(id)
+                setCurrentTopology(id),
             )
             dispatch(closeChangeTopologyModal())
         },
         onCreateTopology: (name) => {
             if (name) {
                 dispatch(
-                    addTopology({name, rooms: []})
+                    addTopology({ name, rooms: [] }),
                 )
             }
             dispatch(closeChangeTopologyModal())
@@ -39,7 +39,7 @@ const mapDispatchToProps = dispatch => {
             if (name) {
                 // TODO different handling here
                 dispatch(
-                    addTopology({name, rooms: []})
+                    addTopology({ name, rooms: [] }),
                 )
             }
             dispatch(closeChangeTopologyModal())
@@ -47,7 +47,7 @@ const mapDispatchToProps = dispatch => {
         onDeleteTopology: (id) => {
             if (id) {
                 dispatch(
-                    deleteTopology(id)
+                    deleteTopology(id),
                 )
             }
         },

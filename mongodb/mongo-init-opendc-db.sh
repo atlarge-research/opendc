@@ -14,7 +14,7 @@ MONGO_CMD="mongo $OPENDC_DB -u $OPENDC_DB_USERNAME -p $OPENDC_DB_PASSWORD --auth
 echo 'Creating collections'
 
 $MONGO_CMD --eval 'db.createCollection("users");'
-$MONGO_CMD --eval 'db.createCollection("simulations");'
+$MONGO_CMD --eval 'db.createCollection("projects");'
 $MONGO_CMD --eval 'db.createCollection("topologies");'
 $MONGO_CMD --eval 'db.createCollection("experiments");'
 $MONGO_CMD --eval 'db.createCollection("traces");'

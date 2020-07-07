@@ -3,7 +3,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import Shapes from '../../shapes/index'
 
-const ExperimentRowComponent = ({ experiment, simulationId, onDelete }) => (
+const ExperimentRowComponent = ({ experiment, projectId, onDelete }) => (
     <tr>
         <td className="pt-3">{experiment.name}</td>
         <td className="pt-3">{experiment.topology.name}</td>
@@ -11,7 +11,7 @@ const ExperimentRowComponent = ({ experiment, simulationId, onDelete }) => (
         <td className="pt-3">{experiment.scheduler.name}</td>
         <td className="text-right">
             <Link
-                to={'/simulations/' + simulationId + '/experiments/' + experiment._id}
+                to={'/projects/' + projectId + '/experiments/' + experiment._id}
                 className="btn btn-outline-primary btn-sm mr-2"
                 title="Open this experiment"
             >
@@ -30,7 +30,7 @@ const ExperimentRowComponent = ({ experiment, simulationId, onDelete }) => (
 
 ExperimentRowComponent.propTypes = {
     experiment: Shapes.Experiment.isRequired,
-    simulationId: PropTypes.string.isRequired,
+    projectId: PropTypes.string.isRequired,
 }
 
 export default ExperimentRowComponent

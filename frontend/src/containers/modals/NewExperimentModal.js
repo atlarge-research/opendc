@@ -6,7 +6,7 @@ import NewExperimentModalComponent from '../../components/modals/custom-componen
 const mapStateToProps = state => {
     return {
         show: state.modals.newExperimentModalVisible,
-        topologies: state.objects.simulation[state.currentSimulationId].topologyIds.map(t => (
+        topologies: state.objects.project[state.currentProjectId].topologyIds.map(t => (
             state.objects.topology[t]
         )),
         traces: Object.values(state.objects.trace),

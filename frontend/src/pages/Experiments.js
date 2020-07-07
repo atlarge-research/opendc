@@ -2,8 +2,8 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import DocumentTitle from 'react-document-title'
 import { connect } from 'react-redux'
-import { fetchExperimentsOfSimulation } from '../actions/experiments'
-import { openSimulationSucceeded } from '../actions/simulations'
+import { fetchExperimentsOfProject } from '../actions/experiments'
+import { openProjectSucceeded } from '../actions/projects'
 import AppNavbar from '../components/navigation/AppNavbar'
 import ExperimentListContainer from '../containers/experiments/ExperimentListContainer'
 import NewExperimentButtonContainer from '../containers/experiments/NewExperimentButtonContainer'
@@ -11,31 +11,31 @@ import NewExperimentModal from '../containers/modals/NewExperimentModal'
 
 class ExperimentsComponent extends React.Component {
     static propTypes = {
-        simulationId: PropTypes.string.isRequired,
-        simulationName: PropTypes.string,
+        projectId: PropTypes.string.isRequired,
+        projectName: PropTypes.string,
     }
 
     componentDidMount() {
-        this.props.storeSimulationId(this.props.simulationId)
-        this.props.fetchExperimentsOfSimulation(this.props.simulationId)
+        this.props.storeProjectId(this.props.projectId)
+        this.props.fetchExperimentsOfProject(this.props.projectId)
     }
 
     render() {
         return (
             <DocumentTitle
                 title={
-                    this.props.simulationName
-                        ? 'Experiments - ' + this.props.simulationName + ' - OpenDC'
+                    this.props.projectName
+                        ? 'Experiments - ' + this.props.projectName + ' - OpenDC'
                         : 'Experiments - OpenDC'
                 }
             >
                 <div className="full-height">
-                    <AppNavbar simulationId={this.props.simulationId} inSimulation={true} fullWidth={true} />
+                    <AppNavbar projectId={this.props.projectId} inProject={true} fullWidth={true}/>
                     <div className="container text-page-container full-height">
-                        <ExperimentListContainer />
-                        <NewExperimentButtonContainer />
+                        <ExperimentListContainer/>
+                        <NewExperimentButtonContainer/>
                     </div>
-                    <NewExperimentModal />
+                    <NewExperimentModal/>
                 </div>
             </DocumentTitle>
         )
@@ -43,20 +43,20 @@ class ExperimentsComponent extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-    let simulationName = undefined
-    if (state.currentSimulationId !== '-1' && state.objects.simulation[state.currentSimulationId]) {
-        simulationName = state.objects.simulation[state.currentSimulationId].name
+    let projectName = undefined
+    if (state.currentProjectId !== '-1' && state.objects.project[state.currentProjectId]) {
+        projectName = state.objects.project[state.currentProjectId].name
     }
 
     return {
-        simulationName,
+        projectName,
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        storeSimulationId: (id) => dispatch(openSimulationSucceeded(id)),
-        fetchExperimentsOfSimulation: (id) => dispatch(fetchExperimentsOfSimulation(id)),
+        storeProjectId: (id) => dispatch(openProjectSucceeded(id)),
+        fetchExperimentsOfProject: (id) => dispatch(fetchExperimentsOfProject(id)),
     }
 }
 

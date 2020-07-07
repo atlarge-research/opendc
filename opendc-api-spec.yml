@@ -131,15 +131,15 @@ paths:
           description: Forbidden from deleting User.
         '404':
           description: User not found.
-  '/simulations':
+  '/projects':
     post:
       tags:
-        - simulations
-      description: Add a Simulation.
+        - projects
+      description: Add a Project.
       parameters:
-        - name: simulation
+        - name: project
           in: body
-          description: The new Simulation.
+          description: The new Project.
           required: true
           schema:
             properties:
@@ -147,105 +147,105 @@ paths:
                 type: string
       responses:
         '200':
-          description: Successfully added Simulation.
+          description: Successfully added Project.
           schema:
-            $ref: '#/definitions/Simulation'
+            $ref: '#/definitions/Project'
         '400':
           description: Missing or incorrectly typed parameter.
         '401':
           description: Unauthorized.
-  '/simulations/{simulationId}':
+  '/projects/{projectId}':
     get:
       tags:
-        - simulations
-      description: Get this Simulation.
+        - projects
+      description: Get this Project.
       parameters:
-        - name: simulationId
+        - name: projectId
           in: path
-          description: Simulation's ID.
+          description: Project's ID.
           required: true
           type: string
       responses:
         '200':
-          description: Successfully retrieved Simulation.
+          description: Successfully retrieved Project.
           schema:
-            $ref: '#/definitions/Simulation'
+            $ref: '#/definitions/Project'
         '400':
           description: Missing or incorrectly typed parameter.
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden from retrieving Simulation.
+          description: Forbidden from retrieving Project.
         '404':
-          description: Simulation not found
+          description: Project not found
     put:
       tags:
-        - simulations
-      description: Update this Simulation.
+        - projects
+      description: Update this Project.
       parameters:
-        - name: simulationId
+        - name: projectId
           in: path
-          description: Simulation's ID.
+          description: Project's ID.
           required: true
           type: string
-        - name: simulation
+        - name: project
           in: body
-          description: Simulation's new properties.
+          description: Project's new properties.
           required: true
           schema:
             properties:
-              simulation:
-                $ref: '#/definitions/Simulation'
+              project:
+                $ref: '#/definitions/Project'
       responses:
         '200':
-          description: Successfully updated Simulation.
+          description: Successfully updated Project.
           schema:
-            $ref: '#/definitions/Simulation'
+            $ref: '#/definitions/Project'
         '400':
           description: Missing or incorrectly typed parameter.
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden from updating Simulation.
+          description: Forbidden from updating Project.
         '404':
-          description: Simulation not found.
+          description: Project not found.
     delete:
       tags:
-        - simulations
-      description: Delete this simulation.
+        - projects
+      description: Delete this project.
       parameters:
-        - name: simulationId
+        - name: projectId
           in: path
-          description: Simulation's ID.
+          description: Project's ID.
           required: true
           type: string
       responses:
         '200':
-          description: Successfully deleted Simulation.
+          description: Successfully deleted Project.
           schema:
-            $ref: '#/definitions/Simulation'
+            $ref: '#/definitions/Project'
         '400':
           description: Missing or incorrectly typed parameter.
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden from deleting Simulation.
+          description: Forbidden from deleting Project.
         '404':
-          description: Simulation not found.
-  '/simulations/{simulationId}/authorizations':
+          description: Project not found.
+  '/projects/{projectId}/authorizations':
     get:
       tags:
-        - simulations
-      description: Get this Simulation's Authorizations.
+        - projects
+      description: Get this Project's Authorizations.
       parameters:
-        - name: simulationId
+        - name: projectId
           in: path
-          description: Simulation's ID.
+          description: Project's ID.
           required: true
           type: string
       responses:
         '200':
-          description: Successfully retrieved Simulation's Authorizations.
+          description: Successfully retrieved Project's Authorizations.
           schema:
             type: array
             items:
@@ -253,7 +253,7 @@ paths:
               properties:
                 userId:
                   type: string
-                simulationId:
+                projectId:
                   type: string
                 authorizationLevel:
                   type: string
@@ -262,18 +262,18 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden from retrieving this Simulation's Authorizations.
+          description: Forbidden from retrieving this Project's Authorizations.
         '404':
-          description: Simulation not found.
-  '/simulations/{simulationId}/topologies':
+          description: Project not found.
+  '/projects/{projectId}/topologies':
     post:
       tags:
-        - simulations
+        - projects
       description: Add a Topology.
       parameters:
-        - name: simulationId
+        - name: projectId
           in: path
-          description: Simulation's ID.
+          description: Project's ID.
           required: true
           type: string
         - name: topology
@@ -293,15 +293,15 @@ paths:
           description: Missing or incorrectly typed parameter.
         '401':
           description: Unauthorized.
-  '/simulations/{simulationId}/experiments':
+  '/projects/{projectId}/experiments':
     post:
       tags:
         - experiments
       description: Add an Experiment.
       parameters:
-        - name: simulationId
+        - name: projectId
           in: path
-          description: Simulation's ID.
+          description: Project's ID.
           required: true
           type: string
         - name: experiment
@@ -481,132 +481,6 @@ paths:
           description: Forbidden from deleting Experiment.
         '404':
           description: Experiment not found.
-  '/experiments/{experimentId}/machine-states':
-    get:
-      tags:
-        - simulations
-        - states
-      description: Get this experiment's Machine States.
-      parameters:
-        - name: experimentId
-          in: path
-          description: Experiment's ID.
-          required: true
-          type: string
-        - name: tick
-          in: query
-          description: Tick to filter on.
-          required: false
-          type: integer
-        - name: machineId
-          in: query
-          description: Machine's ID to filter on.
-          required: false
-          type: string
-        - name: rackId
-          in: query
-          description: Rack's ID to filter on.
-          required: false
-          type: string
-        - name: roomId
-          in: query
-          description: Room's ID to filter on.
-          required: false
-          type: string
-      responses:
-        '200':
-          description: Successfully retrieved Machine States.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/MachineState'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from getting Experiment's Machine States.
-        '404':
-          description: 'Experiment, Machine, Rack, Room or Tick not found.'
-  '/experiments/{experimentId}/rack-states':
-    get:
-      tags:
-        - simulations
-        - states
-      description: Get this Experiment's Rack States.
-      parameters:
-        - name: experimentId
-          in: path
-          description: Experiment's ID.
-          required: true
-          type: string
-        - name: tick
-          in: query
-          description: Tick to filter on.
-          required: false
-          type: integer
-        - name: rackId
-          in: query
-          description: Rack's ID to filter on.
-          required: false
-          type: string
-        - name: roomId
-          in: query
-          description: Room's ID to filter on.
-          required: false
-          type: string
-      responses:
-        '200':
-          description: Successfully retrieved Rack States.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/RackState'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from getting Experiment's Rack States.
-        '404':
-          description: 'Experiment, Room, Rack or Tick not found.'
-  '/experiments/{experimentId}/room-states':
-    get:
-      tags:
-        - simulations
-        - states
-      description: Get this Experiment's Room States.
-      parameters:
-        - name: experimentId
-          in: path
-          description: Experiment's ID.
-          required: true
-          type: string
-        - name: tick
-          in: query
-          description: Tick to filter on.
-          required: false
-          type: integer
-        - name: roomId
-          in: query
-          description: Room's ID to filter on.
-          required: false
-          type: string
-      responses:
-        '200':
-          description: Successfully retrieved Room States.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/RoomState'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from getting Experiment's Room States.
-        '404':
-          description: 'Experiment, Room or Tick not found.'
   /schedulers:
     get:
       tags:
@@ -723,7 +597,7 @@ paths:
           required: true
           schema:
             properties:
-              simulation:
+              project:
                 $ref: '#/definitions/Prefab'
       responses:
         '200':
@@ -768,7 +642,7 @@ definitions:
     properties:
       _id:
         type: string
-      simulationId:
+      projectId:
         type: string
       topologyId:
         type: string
@@ -849,7 +723,7 @@ definitions:
     properties:
       name:
         type: string
-  Simulation:
+  Project:
     type: object
     properties:
       _id:
@@ -875,7 +749,7 @@ definitions:
     properties:
       _id:
         type: string
-      simulationId:
+      projectId:
         type: string
       name:
         type: string
@@ -986,7 +860,7 @@ definitions:
         items:
           type: object
           properties:
-            simulationId:
+            projectId:
               type: string
             authorizationLevel:
               type: string

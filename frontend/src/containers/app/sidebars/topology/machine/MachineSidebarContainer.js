@@ -3,7 +3,6 @@ import MachineSidebarComponent from '../../../../../components/app/sidebars/topo
 
 const mapStateToProps = state => {
     return {
-        inSimulation: state.currentExperimentId !== '-1',
         machineId:
             state.objects.rack[
                 state.objects.tile[state.interactionLevel.tileId].rackId

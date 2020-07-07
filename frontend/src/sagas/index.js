@@ -3,10 +3,10 @@ import { LOG_IN } from '../actions/auth'
 import {
     ADD_EXPERIMENT,
     DELETE_EXPERIMENT,
-    FETCH_EXPERIMENTS_OF_SIMULATION,
+    FETCH_EXPERIMENTS_OF_PROJECT,
     OPEN_EXPERIMENT_SUCCEEDED,
 } from '../actions/experiments'
-import { ADD_SIMULATION, DELETE_SIMULATION, OPEN_SIMULATION_SUCCEEDED } from '../actions/simulations'
+import { ADD_PROJECT, DELETE_PROJECT, OPEN_PROJECT_SUCCEEDED } from '../actions/projects'
 import {
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
@@ -20,11 +20,11 @@ import { DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER } from '../ac
 import {
     onAddExperiment,
     onDeleteExperiment,
-    onFetchExperimentsOfSimulation,
+    onFetchExperimentsOfProject,
     onOpenExperimentSucceeded,
 } from './experiments'
 import { onDeleteCurrentUser } from './profile'
-import { onOpenSimulationSucceeded, onSimulationAdd, onSimulationDelete } from './simulations'
+import { onOpenProjectSucceeded, onProjectAdd, onProjectDelete } from './projects'
 import {
     onAddMachine,
     onAddRackToTile,
@@ -49,12 +49,12 @@ export default function* rootSaga() {
     yield takeEvery(LOG_IN, onFetchLoggedInUser)
 
     yield takeEvery(FETCH_AUTHORIZATIONS_OF_CURRENT_USER, onFetchAuthorizationsOfCurrentUser)
-    yield takeEvery(ADD_SIMULATION, onSimulationAdd)
-    yield takeEvery(DELETE_SIMULATION, onSimulationDelete)
+    yield takeEvery(ADD_PROJECT, onProjectAdd)
+    yield takeEvery(DELETE_PROJECT, onProjectDelete)
 
     yield takeEvery(DELETE_CURRENT_USER, onDeleteCurrentUser)
 
-    yield takeEvery(OPEN_SIMULATION_SUCCEEDED, onOpenSimulationSucceeded)
+    yield takeEvery(OPEN_PROJECT_SUCCEEDED, onOpenProjectSucceeded)
     yield takeEvery(OPEN_EXPERIMENT_SUCCEEDED, onOpenExperimentSucceeded)
 
     yield takeEvery(ADD_TOPOLOGY, onAddTopology)
@@ -73,7 +73,7 @@ export default function* rootSaga() {
     yield takeEvery(ADD_UNIT, onAddUnit)
     yield takeEvery(DELETE_UNIT, onDeleteUnit)
 
-    yield takeEvery(FETCH_EXPERIMENTS_OF_SIMULATION, onFetchExperimentsOfSimulation)
+    yield takeEvery(FETCH_EXPERIMENTS_OF_PROJECT, onFetchExperimentsOfProject)
     yield takeEvery(ADD_EXPERIMENT, onAddExperiment)
     yield takeEvery(DELETE_EXPERIMENT, onDeleteExperiment)
 }

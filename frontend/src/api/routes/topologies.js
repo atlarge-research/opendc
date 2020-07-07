@@ -3,14 +3,14 @@ import { sendRequest } from '../index'
 
 export function addTopology(topology) {
     return sendRequest({
-        path: '/simulations/{simulationId}/topologies',
+        path: '/projects/{projectId}/topologies',
         method: 'POST',
         parameters: {
             body: {
                 topology,
             },
             path: {
-                simulationId: topology.simulationId,
+                projectId: topology.projectId,
             },
             query: {},
         },

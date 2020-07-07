@@ -4,21 +4,21 @@ import { Link } from 'react-router-dom'
 import Navbar, { NavItem } from './Navbar'
 import './Navbar.css'
 
-const AppNavbar = ({ simulationId, inSimulation, fullWidth, onViewTopologies }) => (
+const AppNavbar = ({ projectId, inProject, fullWidth, onViewTopologies }) => (
     <Navbar fullWidth={fullWidth}>
-        <NavItem route="/simulations">
-            <Link className="nav-link" title="My Simulations" to="/simulations">
+        <NavItem route="/projects">
+            <Link className="nav-link" title="My Projects" to="/projects">
                 <FontAwesome name="list" className="mr-2"/>
-                My Simulations
+                My Projects
             </Link>
         </NavItem>
-        {inSimulation ? (
+        {inProject ? (
             <>
-                <NavItem route={'/simulations/' + simulationId}>
+                <NavItem route={'/projects/' + projectId}>
                     <Link
                         className="nav-link"
                         title="Construction"
-                        to={'/simulations/' + simulationId}
+                        to={'/projects/' + projectId}
                     >
                         <FontAwesome name="industry" className="mr-2"/>
                         Construction
@@ -34,11 +34,11 @@ const AppNavbar = ({ simulationId, inSimulation, fullWidth, onViewTopologies }) 
                         Topologies
                     </span>
                 </NavItem>
-                <NavItem route={'/simulations/' + simulationId + '/experiments'}>
+                <NavItem route={'/projects/' + projectId + '/experiments'}>
                     <Link
                         className="nav-link"
                         title="Experiments"
-                        to={'/simulations/' + simulationId + '/experiments'}
+                        to={'/projects/' + projectId + '/experiments'}
                     >
                         <FontAwesome name="play" className="mr-2"/>
                         Experiments

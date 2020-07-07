@@ -8,9 +8,9 @@ import {
 import { CPU_UNITS, GPU_UNITS, MEMORY_UNITS, STORAGE_UNITS } from '../util/unit-specifications'
 
 export const objects = combineReducers({
-    simulation: object('simulation'),
+    project: object('project'),
     user: object('user'),
-    authorization: objectWithId('authorization', (object) => [object.userId, object.simulationId]),
+    authorization: objectWithId('authorization', (object) => [object.userId, object.projectId]),
     cpu: object('cpu', CPU_UNITS),
     gpu: object('gpu', GPU_UNITS),
     memory: object('memory', MEMORY_UNITS),
