@@ -58,7 +58,7 @@ Make sure you have Python 3.7+ installed (if not, get it [here](https://www.pyth
 pip install -r requirements.txt
 ```
 
-The web server also requires a running MongoDB instance. We recommend setting this up through docker, by running `docker-compose build` and `docker-compose up` in the [`mongodb` directory](../mongodb) of the main OpenDC repository.
+The web server also requires a running MongoDB instance. We recommend setting this up through docker, by running `docker-compose build` and `docker-compose up` in the [`mongodb` directory](../database) of the main OpenDC repository.
 
 #### Get and configure the code
 
