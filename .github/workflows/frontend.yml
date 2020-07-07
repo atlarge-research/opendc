@@ -1,6 +1,9 @@
 name: Frontend
 
-on: [push]
+on:
+    push:
+        paths:
+        - 'frontend/*'
 
 defaults:
     run:

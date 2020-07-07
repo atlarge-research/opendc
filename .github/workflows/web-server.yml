@@ -1,6 +1,9 @@
 name: Web server
 
-on: [push]
+on:
+    push:
+        paths:
+        - 'web-server/*'
 
 defaults:
     run:

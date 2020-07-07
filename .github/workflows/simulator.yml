@@ -1,6 +1,9 @@
 name: Simulator
 
-on: [push]
+on:
+    push:
+        paths:
+        - 'simulator/*'
 
 defaults:
     run:
