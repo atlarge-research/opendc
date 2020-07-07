@@ -19,7 +19,7 @@ jobs:
             -   name: Lint with pylint
                 working-directory: web-server
                 run: |
-                    pylint opendc
+                    ./check.sh
             -   name: Test with pytest
                 working-directory: web-server
                 run: |
