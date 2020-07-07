@@ -4,7 +4,6 @@ import RackSidebarComponent from '../../../../../components/app/sidebars/topolog
 const mapStateToProps = state => {
     return {
         rackId: state.objects.tile[state.interactionLevel.tileId].rackId,
-        inSimulation: state.currentExperimentId !== '-1',
     }
 }
 

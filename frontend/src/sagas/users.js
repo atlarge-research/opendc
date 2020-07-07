@@ -5,7 +5,7 @@ import { fetchAuthorizationsOfCurrentUserSucceeded } from '../actions/users'
 import { performTokenSignIn } from '../api/routes/token-signin'
 import { addUser } from '../api/routes/users'
 import { saveAuthLocalStorage } from '../auth/index'
-import { fetchAndStoreSimulation, fetchAndStoreUser } from './objects'
+import { fetchAndStoreProject, fetchAndStoreUser } from './objects'
 
 export function* onFetchLoggedInUser(action) {
     try {
@@ -32,10 +32,10 @@ export function* onFetchAuthorizationsOfCurrentUser(action) {
         for (const authorization of user.authorizations) {
             authorization.userId = action.userId
             yield put(addToStore('authorization', authorization))
-            yield fetchAndStoreSimulation(authorization.simulationId)
+            yield fetchAndStoreProject(authorization.projectId)
         }
 
-        const authorizationIds = user.authorizations.map((authorization) => [action.userId, authorization.simulationId])
+        const authorizationIds = user.authorizations.map((authorization) => [action.userId, authorization.projectId])
 
         yield put(fetchAuthorizationsOfCurrentUserSucceeded(authorizationIds))
     } catch (error) {

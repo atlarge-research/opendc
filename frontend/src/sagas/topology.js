@@ -29,15 +29,15 @@ export function* fetchTopologyOfExperiment(experiment) {
     }
 }
 
-export function* fetchAndStoreAllTopologiesOfSimulation(simulationId) {
+export function* fetchAndStoreAllTopologiesOfProject(projectId) {
     try {
-        const simulation = yield select((state) => state.objects.simulation[simulationId])
+        const project = yield select((state) => state.objects.project[projectId])
 
-        for (let i in simulation.topologyIds) {
-            yield fetchAndStoreTopology(simulation.topologyIds[i])
+        for (let i in project.topologyIds) {
+            yield fetchAndStoreTopology(project.topologyIds[i])
         }
 
-        yield put(setCurrentTopology(simulation.topologyIds[0]))
+        yield put(setCurrentTopology(project.topologyIds[0]))
     } catch (error) {
         console.error(error)
     }
@@ -45,21 +45,21 @@ export function* fetchAndStoreAllTopologiesOfSimulation(simulationId) {
 
 export function* onAddTopology(action) {
     try {
-        const currentSimulationId = yield select((state) => state.currentSimulationId)
+        const currentProjectId = yield select((state) => state.currentProjectId)
 
         const topology = yield call(
             addTopology,
             Object.assign({}, action.topology, {
-                simulationId: currentSimulationId,
-            })
+                projectId: currentProjectId,
+            }),
         )
         yield fetchAndStoreTopology(topology._id)
 
-        const topologyIds = yield select((state) => state.objects.simulation[currentSimulationId].topologyIds)
+        const topologyIds = yield select((state) => state.objects.project[currentProjectId].topologyIds)
         yield put(
-            addPropToStoreObject('simulation', currentSimulationId, {
+            addPropToStoreObject('project', currentProjectId, {
                 topologyIds: topologyIds.concat([topology._id]),
-            })
+            }),
         )
         yield put(setCurrentTopology(topology._id))
     } catch (error) {
@@ -69,8 +69,8 @@ export function* onAddTopology(action) {
 
 export function* onDeleteTopology(action) {
     try {
-        const currentSimulationId = yield select((state) => state.currentSimulationId)
-        const topologyIds = yield select((state) => state.objects.simulation[currentSimulationId].topologyIds)
+        const currentProjectId = yield select((state) => state.currentProjectId)
+        const topologyIds = yield select((state) => state.objects.project[currentProjectId].topologyIds)
         const currentTopologyId = yield select((state) => state.currentTopologyId)
         if (currentTopologyId === action.id) {
             yield put(setCurrentTopology(topologyIds.filter((t) => t !== action.id)[0]))
@@ -79,9 +79,9 @@ export function* onDeleteTopology(action) {
         yield call(deleteTopology, action.id)
 
         yield put(
-            addPropToStoreObject('simulation', currentSimulationId, {
+            addPropToStoreObject('project', currentProjectId, {
                 topologyIds: topologyIds.filter((id) => id !== action.id),
-            })
+            }),
         )
     } catch (error) {
         console.error(error)
@@ -265,7 +265,7 @@ export function* onAddUnit(action) {
         const position = yield select((state) => state.interactionLevel.position)
         const machine = yield select(
             (state) =>
-                state.objects.machine[state.objects.rack[state.objects.tile[tileId].rackId].machineIds[position - 1]]
+                state.objects.machine[state.objects.rack[state.objects.tile[tileId].rackId].machineIds[position - 1]],
         )
 
         if (machine[action.unitType + 'Ids'].length >= MAX_NUM_UNITS_PER_MACHINE) {
@@ -276,7 +276,7 @@ export function* onAddUnit(action) {
         yield put(
             addPropToStoreObject('machine', machine._id, {
                 [action.unitType + 'Ids']: units,
-            })
+            }),
         )
         yield updateTopologyOnServer(topologyId)
     } catch (error) {
@@ -291,7 +291,7 @@ export function* onDeleteUnit(action) {
         const position = yield select((state) => state.interactionLevel.position)
         const machine = yield select(
             (state) =>
-                state.objects.machine[state.objects.rack[state.objects.tile[tileId].rackId].machineIds[position - 1]]
+                state.objects.machine[state.objects.rack[state.objects.tile[tileId].rackId].machineIds[position - 1]],
         )
         const unitIds = machine[action.unitType + 'Ids'].slice()
         unitIds.splice(action.index, 1)
@@ -299,7 +299,7 @@ export function* onDeleteUnit(action) {
         yield put(
             addPropToStoreObject('machine', machine._id, {
                 [action.unitType + 'Ids']: unitIds,
-            })
+            }),
         )
         yield updateTopologyOnServer(topologyId)
     } catch (error) {

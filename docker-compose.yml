@@ -47,7 +47,7 @@ services:
 
   mongo:
     build:
-        context: ./mongodb
+        context: database
     restart: on-failure
     environment:
       - MONGO_INITDB_ROOT_USERNAME

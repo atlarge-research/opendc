@@ -1,16 +1,16 @@
 [
   "/users",
   "/users/{userId}",
-  "/simulations",
-  "/simulations/{simulationId}",
-  "/simulations/{simulationId}/authorizations",
-  "/simulations/{simulationId}/topologies",
+  "/projects",
+  "/projects/{projectId}",
+  "/projects/{projectId}/authorizations",
+  "/projects/{projectId}/topologies",
   "/topologies/{topologyId}",
-  "/simulations/{simulationId}/experiments",
+  "/projects/{projectId}/experiments",
   "/experiments/{experimentId}",
   "/schedulers",
   "/traces",
   "/traces/{traceId}",
   "/prefabs",
-  "/prefabs/{prefabId}",
+  "/prefabs/{prefabId}"
 ]

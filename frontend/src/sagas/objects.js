@@ -1,14 +1,14 @@
 import { call, put, select } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
 import { getAllSchedulers } from '../api/routes/schedulers'
-import { getSimulation } from '../api/routes/simulations'
+import { getProject } from '../api/routes/projects'
 import { getAllTraces } from '../api/routes/traces'
 import { getUser } from '../api/routes/users'
 import { getTopology, updateTopology } from '../api/routes/topologies'
 import { uuid } from 'uuidv4'
 
 export const OBJECT_SELECTORS = {
-    simulation: (state) => state.objects.simulation,
+    project: (state) => state.objects.project,
     user: (state) => state.objects.user,
     authorization: (state) => state.objects.authorization,
     cpu: (state) => state.objects.cpu,
@@ -40,7 +40,7 @@ function* fetchAndStoreObjects(objectType, apiCall) {
     return objects
 }
 
-export const fetchAndStoreSimulation = (id) => fetchAndStoreObject('simulation', id, call(getSimulation, id))
+export const fetchAndStoreProject = (id) => fetchAndStoreObject('project', id, call(getProject, id))
 
 export const fetchAndStoreUser = (id) => fetchAndStoreObject('user', id, call(getUser, id))
 
@@ -94,7 +94,7 @@ export const fetchAndStoreTopology = function* (id) {
 
                                 const filledSlots = new Array(fullRack.capacity).fill(null)
                                 fullRack.machines.forEach(
-                                    (machine) => (filledSlots[machine.position - 1] = machine._id)
+                                    (machine) => (filledSlots[machine.position - 1] = machine._id),
                                 )
                                 let rack = (({ _id, name, capacity, powerCapacityW }) => ({
                                     _id,
@@ -163,21 +163,21 @@ export const updateTopologyOnServer = function* (id) {
                 rack: !tileStore[tileId].rackId
                     ? undefined
                     : {
-                          _id: rackStore[tileStore[tileId].rackId]._id,
-                          name: rackStore[tileStore[tileId].rackId].name,
-                          capacity: rackStore[tileStore[tileId].rackId].capacity,
-                          powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
-                          machines: rackStore[tileStore[tileId].rackId].machineIds
-                              .filter((m) => m !== null)
-                              .map((machineId) => ({
-                                  _id: machineId,
-                                  position: machineStore[machineId].position,
-                                  cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
-                                  gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
-                                  memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
-                                  storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
-                              })),
-                      },
+                        _id: rackStore[tileStore[tileId].rackId]._id,
+                        name: rackStore[tileStore[tileId].rackId].name,
+                        capacity: rackStore[tileStore[tileId].rackId].capacity,
+                        powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
+                        machines: rackStore[tileStore[tileId].rackId].machineIds
+                            .filter((m) => m !== null)
+                            .map((machineId) => ({
+                                _id: machineId,
+                                position: machineStore[machineId].position,
+                                cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
+                                gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
+                                memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
+                                storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
+                            })),
+                    },
             })),
         })),
     }

@@ -1,12 +1,12 @@
-export const FETCH_EXPERIMENTS_OF_SIMULATION = 'FETCH_EXPERIMENTS_OF_SIMULATION'
+export const FETCH_EXPERIMENTS_OF_PROJECT = 'FETCH_EXPERIMENTS_OF_PROJECT'
 export const ADD_EXPERIMENT = 'ADD_EXPERIMENT'
 export const DELETE_EXPERIMENT = 'DELETE_EXPERIMENT'
 export const OPEN_EXPERIMENT_SUCCEEDED = 'OPEN_EXPERIMENT_SUCCEEDED'
 
-export function fetchExperimentsOfSimulation(simulationId) {
+export function fetchExperimentsOfProject(projectId) {
     return {
-        type: FETCH_EXPERIMENTS_OF_SIMULATION,
-        simulationId,
+        type: FETCH_EXPERIMENTS_OF_PROJECT,
+        projectId,
     }
 }
 
@@ -24,10 +24,10 @@ export function deleteExperiment(id) {
     }
 }
 
-export function openExperimentSucceeded(simulationId, experimentId) {
+export function openExperimentSucceeded(projectId, experimentId) {
     return {
         type: OPEN_EXPERIMENT_SUCCEEDED,
-        simulationId,
+        projectId,
         experimentId,
     }
 }

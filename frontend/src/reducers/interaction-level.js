@@ -5,13 +5,13 @@ import {
     GO_FROM_RACK_TO_MACHINE,
     GO_FROM_ROOM_TO_RACK,
 } from '../actions/interaction-level'
-import { OPEN_SIMULATION_SUCCEEDED } from '../actions/simulations'
+import { OPEN_PROJECT_SUCCEEDED } from '../actions/projects'
 import { SET_CURRENT_TOPOLOGY } from '../actions/topology/building'
 
 export function interactionLevel(state = { mode: 'BUILDING' }, action) {
     switch (action.type) {
         case OPEN_EXPERIMENT_SUCCEEDED:
-        case OPEN_SIMULATION_SUCCEEDED:
+        case OPEN_PROJECT_SUCCEEDED:
         case SET_CURRENT_TOPOLOGY:
             return {
                 mode: 'BUILDING',

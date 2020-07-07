@@ -1,7 +1,4 @@
 from opendc.util.database import DB
-'''
-GET /topologies/{topologyId}
-'''
 
 
 def test_get_topology(client, mocker):
@@ -9,9 +6,9 @@ def test_get_topology(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
-                            'simulationId': '1',
+                            'projectId': '1',
                             'authorizations': [{
-                                'simulationId': '1',
+                                'projectId': '1',
                                 'authorizationLevel': 'EDIT'
                             }]
                         })
@@ -29,9 +26,9 @@ def test_get_topology_not_authorized(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
-                            'simulationId': '1',
+                            'projectId': '1',
                             'authorizations': [{
-                                'simulationId': '2',
+                                'projectId': '2',
                                 'authorizationLevel': 'OWN'
                             }]
                         })
@@ -40,14 +37,9 @@ def test_get_topology_not_authorized(client, mocker):
 
 
 def test_get_topology_no_authorizations(client, mocker):
-    mocker.patch.object(DB, 'fetch_one', return_value={'authorizations': []})
+    mocker.patch.object(DB, 'fetch_one', return_value={'projectId': '1', 'authorizations': []})
     res = client.get('/api/v2/topologies/1')
     assert '403' in res.status
-
-
-'''
-PUT /topologies/{topologyId}
-'''
 
 
 def test_update_topology_missing_parameter(client):
@@ -64,9 +56,9 @@ def test_update_topology_not_authorized(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
-                            'simulationId': '1',
+                            'projectId': '1',
                             'authorizations': [{
-                                'simulationId': '1',
+                                'projectId': '1',
                                 'authorizationLevel': 'VIEW'
                             }]
                         })
@@ -84,9 +76,9 @@ def test_update_topology(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
-                            'simulationId': '1',
+                            'projectId': '1',
                             'authorizations': [{
-                                'simulationId': '1',
+                                'projectId': '1',
                                 'authorizationLevel': 'OWN'
                             }]
                         })
@@ -100,21 +92,16 @@ def test_update_topology(client, mocker):
     }).status
 
 
-'''
-DELETE /topologies/{topologyId}
-'''
-
-
 def test_delete_topology(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
                             '_id': '1',
-                            'simulationId': '1',
+                            'projectId': '1',
                             'googleId': 'test',
                             'topologyIds': ['1'],
                             'authorizations': [{
-                                'simulationId': '1',
+                                'projectId': '1',
                                 'authorizationLevel': 'OWN'
                             }]
                         })

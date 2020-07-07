@@ -1,4 +1,4 @@
-from opendc.models.simulation import Simulation
+from opendc.models.project import Project
 from opendc.models.user import User
 from opendc.util.rest import Response
 
@@ -51,8 +51,8 @@ def DELETE(request):
         if authorization['authorizationLevel'] != 'OWN':
             continue
 
-        simulation = Simulation.from_id(authorization['simulationId'])
-        simulation.delete()
+        project = Project.from_id(authorization['projectId'])
+        project.delete()
 
     old_object = user.delete()
 

@@ -1,29 +1,21 @@
 import { combineReducers } from 'redux'
 import { auth } from './auth'
 import { construction } from './construction-mode'
-import { currentTopologyId, currentSimulationId } from './current-ids'
+import { currentProjectId, currentTopologyId } from './current-ids'
 import { interactionLevel } from './interaction-level'
 import { map } from './map'
 import { modals } from './modals'
 import { objects } from './objects'
-import { simulationList } from './simulation-list'
-import { currentExperimentId, currentTick, isPlaying, lastSimulatedTick, loadMetric } from './simulation-mode'
-import { states } from './states'
+import { projectList } from './project-list'
 
 const rootReducer = combineReducers({
     objects,
-    states,
     modals,
-    simulationList,
+    projectList: projectList,
     construction,
     map,
-    currentSimulationId,
+    currentProjectId,
     currentTopologyId,
-    currentExperimentId,
-    currentTick,
-    lastSimulatedTick,
-    loadMetric,
-    isPlaying,
     interactionLevel,
     auth,
 })

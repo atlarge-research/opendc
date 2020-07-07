@@ -1,5 +1,5 @@
-export const OPEN_CHANGE_TOPOLOGY_MODAL = 'OPEN_CHANGE_TOPOLOGY_MODAL'
-export const CLOSE_CHANGE_TOPOLOGY_MODAL = 'CLOSE_CHANGE_TOPOLOGY_MODAL'
+export const OPEN_NEW_TOPOLOGY_MODAL = 'OPEN_NEW_TOPOLOGY_MODAL'
+export const CLOSE_NEW_TOPOLOGY_MODAL = 'CLOSE_NEW_TOPOLOGY_MODAL'
 export const OPEN_EDIT_ROOM_NAME_MODAL = 'OPEN_EDIT_ROOM_NAME_MODAL'
 export const CLOSE_EDIT_ROOM_NAME_MODAL = 'CLOSE_EDIT_ROOM_NAME_MODAL'
 export const OPEN_DELETE_ROOM_MODAL = 'OPEN_DELETE_ROOM_MODAL'
@@ -11,15 +11,15 @@ export const CLOSE_DELETE_RACK_MODAL = 'CLOSE_DELETE_RACK_MODAL'
 export const OPEN_DELETE_MACHINE_MODAL = 'OPEN_DELETE_MACHINE_MODAL'
 export const CLOSE_DELETE_MACHINE_MODAL = 'CLOSE_DELETE_MACHINE_MODAL'
 
-export function openChangeTopologyModal() {
+export function openNewTopologyModal() {
     return {
-        type: OPEN_CHANGE_TOPOLOGY_MODAL,
+        type: OPEN_NEW_TOPOLOGY_MODAL,
     }
 }
 
-export function closeChangeTopologyModal() {
+export function closeNewTopologyModal() {
     return {
-        type: CLOSE_CHANGE_TOPOLOGY_MODAL,
+        type: CLOSE_NEW_TOPOLOGY_MODAL,
     }
 }
 

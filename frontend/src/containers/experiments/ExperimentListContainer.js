@@ -3,8 +3,8 @@ import ExperimentListComponent from '../../components/experiments/ExperimentList
 
 const mapStateToProps = state => {
     if (
-        state.currentSimulationId === '-1' ||
-        !('experimentIds' in state.objects.simulation[state.currentSimulationId])
+        state.currentProjectId === '-1' ||
+        !('experimentIds' in state.objects.project[state.currentProjectId])
     ) {
         return {
             loading: true,
@@ -13,7 +13,7 @@ const mapStateToProps = state => {
     }
 
     const experimentIds =
-        state.objects.simulation[state.currentSimulationId].experimentIds
+        state.objects.project[state.currentProjectId].experimentIds
     if (experimentIds) {
         return {
             experimentIds,

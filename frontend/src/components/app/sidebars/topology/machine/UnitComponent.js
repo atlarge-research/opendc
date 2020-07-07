@@ -53,14 +53,10 @@ class UnitComponent extends React.Component {
                         data-content={unitInfo}
                         data-html="true"
                     />
-                    {this.props.inSimulation ? (
-                        undefined
-                    ) : (
-                        <span
-                            className="btn btn-outline-danger fa fa-trash"
-                            onClick={this.props.onDelete}
-                        />
-                    )}
+                    <span
+                        className="btn btn-outline-danger fa fa-trash"
+                        onClick={this.props.onDelete}
+                    />
                 </span>
             </li>
         )

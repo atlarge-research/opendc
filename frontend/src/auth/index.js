@@ -41,7 +41,7 @@ export const authRedirectMiddleware = (store) => (next) => (action) => {
     switch (action.type) {
         case LOG_IN_SUCCEEDED:
             saveAuthLocalStorage(action.payload)
-            window.location.href = '/simulations'
+            window.location.href = '/projects'
             break
         case LOG_OUT:
         case DELETE_CURRENT_USER_SUCCEEDED:

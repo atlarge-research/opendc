@@ -32,7 +32,7 @@ The `Util` package handles several miscellaneous tasks:
 
 ### API Package
 
-The `API` package contains the logic for the HTTP methods in each API endpoint. Packages are structured to mirror the API: the code for the endpoint `GET api/simulations`, for example, would be located at the `endpoint.py` inside the `simulations` package (so at `api/simulations/endpoint.py`).
+The `API` package contains the logic for the HTTP methods in each API endpoint. Packages are structured to mirror the API: the code for the endpoint `GET api/projects`, for example, would be located at the `endpoint.py` inside the `projects` package (so at `api/projects/endpoint.py`).
 
 An `endpoint.py` file contains methods for each HTTP method it supports, which takes a request as input (such as `def GET(request):`). Typically, such a method checks whether the parameters were passed correctly (using the `Parameter Checker`); fetches some model from the database; checks whether the data exists and is accessible by the user who made the request; possibly modifies this data and writes it back to the database; and returns a JSON representation of the model.
 
@@ -40,7 +40,7 @@ The `REST` component dynamically imports the appropriate method from the appropr
 
 ### Models Package
 
-The `models` package contains the logic for mapping Python objects to their database representations. This involves an abstract `model` which has generic CRUD operations. Extensions of `model`, such as a `User` or `Simulation`, specify some more specific operations and their collection metadata.
+The `models` package contains the logic for mapping Python objects to their database representations. This involves an abstract `model` which has generic CRUD operations. Extensions of `model`, such as a `User` or `Project`, specify some more specific operations and their collection metadata.
 
 `Endpoint`s import these `models` and use them to execute requests.
 
@@ -58,7 +58,7 @@ Make sure you have Python 3.7+ installed (if not, get it [here](https://www.pyth
 pip install -r requirements.txt
 ```
 
-The web server also requires a running MongoDB instance. We recommend setting this up through docker, by running `docker-compose build` and `docker-compose up` in the [`mongodb` directory](../mongodb) of the main OpenDC repository.
+The web server also requires a running MongoDB instance. We recommend setting this up through docker, by running `docker-compose build` and `docker-compose up` in the [`mongodb` directory](../database) of the main OpenDC repository.
 
 #### Get and configure the code
 

@@ -26,7 +26,7 @@ const TechnologiesSection = () => (
           <FontAwesome name="database" className="mr-2"/>
           <strong>Database</strong>
         </span>
-                <span className="text-right">MariaDB</span>
+                <span className="text-right">MongoDB</span>
             </li>
             <li className="d-flex list-group-item justify-content-between align-items-center list-group-item-danger">
         <span style={{ minWidth: 100 }}>

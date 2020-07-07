@@ -3,7 +3,7 @@
 
 # pyenv version files
 .python-version
-mongodb/opendc_testing/*
+database/opendc_testing/*
 
 # macOS-specific files
 .DS_Store

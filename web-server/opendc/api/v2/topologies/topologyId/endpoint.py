@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from opendc.util.database import Database
-from opendc.models.simulation import Simulation
+from opendc.models.project import Project
 from opendc.models.topology import Topology
 from opendc.util.rest import Response
 
@@ -45,11 +45,11 @@ def DELETE(request):
     topology.check_exists()
     topology.check_user_access(request.google_id, True)
 
-    simulation = Simulation.from_id(topology.obj['simulationId'])
-    simulation.check_exists()
-    if request.params_path['topologyId'] in simulation.obj['topologyIds']:
-        simulation.obj['topologyIds'].remove(request.params_path['topologyId'])
-    simulation.update()
+    project = Project.from_id(topology.obj['projectId'])
+    project.check_exists()
+    if request.params_path['topologyId'] in project.obj['topologyIds']:
+        project.obj['topologyIds'].remove(request.params_path['topologyId'])
+    project.update()
 
     old_object = topology.delete()
 

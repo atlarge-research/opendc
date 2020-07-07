@@ -4,7 +4,7 @@ import FontAwesome from 'react-fontawesome'
 const LoadingScreen = () => (
     <div className="display-4">
         <FontAwesome name="refresh" className="mr-4" spin/>
-        Loading your topology...
+        Loading your project...
     </div>
 )
 

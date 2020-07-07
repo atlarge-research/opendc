@@ -9,7 +9,7 @@
 ## Introduction
 **odcsim** is a framework for discrete event simulation in Kotlin, used
 by the [OpenDC](https://opendc.org) project.
-Simulations are defined in terms of a hierarchical grouping of actors
+Projects are defined in terms of a hierarchical grouping of actors
 and the interactions between these actors
 ([Actor model](https://en.wikipedia.org/wiki/Actor_model)).
 

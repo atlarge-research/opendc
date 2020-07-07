@@ -1,7 +1,7 @@
 import React from 'react'
 import UnitContainer from '../../../../../containers/app/sidebars/topology/machine/UnitContainer'
 
-const UnitListComponent = ({ unitType, unitIds, inSimulation }) => (
+const UnitListComponent = ({ unitType, unitIds }) => (
     <ul className="list-group mt-1">
         {unitIds.length !== 0 ? (
             unitIds.map((unitId, index) => (
@@ -14,13 +14,9 @@ const UnitListComponent = ({ unitType, unitIds, inSimulation }) => (
             ))
         ) : (
             <div className="alert alert-info">
-                {inSimulation ? (
-                    <strong>No units of this type in this machine</strong>
-                ) : (
-                    <span>
-                        <strong>No units...</strong> Add some with the menu above!
-                    </span>
-                )}
+                <span>
+                    <strong>No units...</strong> Add some with the menu above!
+                </span>
             </div>
         )}
     </ul>

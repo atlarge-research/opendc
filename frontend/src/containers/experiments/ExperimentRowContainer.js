@@ -13,7 +13,7 @@ const mapStateToProps = (state, ownProps) => {
 
     return {
         experiment,
-        simulationId: state.currentSimulationId,
+        projectId: state.currentProjectId,
     }
 }
 

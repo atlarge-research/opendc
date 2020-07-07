@@ -4,10 +4,9 @@ import { Group } from 'react-konva'
 import RackContainer from '../../../../containers/app/map/RackContainer'
 import Shapes from '../../../../shapes/index'
 import { ROOM_DEFAULT_COLOR, ROOM_IN_CONSTRUCTION_COLOR } from '../../../../util/colors'
-import { convertLoadToSimulationColor } from '../../../../util/simulation-load'
 import RoomTile from '../elements/RoomTile'
 
-const TileGroup = ({ tile, newTile, inSimulation, roomLoad, onClick }) => {
+const TileGroup = ({ tile, newTile, roomLoad, onClick }) => {
     let tileObject
     if (tile.rackId) {
         tileObject = <RackContainer tile={tile}/>
@@ -18,8 +17,6 @@ const TileGroup = ({ tile, newTile, inSimulation, roomLoad, onClick }) => {
     let color = ROOM_DEFAULT_COLOR
     if (newTile) {
         color = ROOM_IN_CONSTRUCTION_COLOR
-    } else if (inSimulation && roomLoad >= 0) {
-        color = convertLoadToSimulationColor(roomLoad)
     }
 
     return (
