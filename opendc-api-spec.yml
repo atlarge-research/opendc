@@ -293,30 +293,30 @@ paths:
                     description: Missing or incorrectly typed parameter.
                 '401':
                     description: Unauthorized.
-    '/projects/{projectId}/experiments':
+    '/projects/{projectId}/portfolios':
         post:
             tags:
-                - experiments
-            description: Add an Experiment.
+                - portfolios
+            description: Add a Portfolio.
             parameters:
                 -   name: projectId
                     in: path
                     description: Project's ID.
                     required: true
                     type: string
-                -   name: experiment
+                -   name: portfolio
                     in: body
-                    description: The new Experiment.
+                    description: The new Portfolio.
                     required: true
                     schema:
                         properties:
                             topology:
-                                $ref: '#/definitions/Experiment'
+                                $ref: '#/definitions/Portfolio'
             responses:
                 '200':
-                    description: Successfully added Topology.
+                    description: Successfully added Portfolio.
                     schema:
-                        $ref: '#/definitions/Topology'
+                        $ref: '#/definitions/Portfolio'
                 '400':
                     description: Missing or incorrectly typed parameter.
                 '401':
@@ -399,88 +399,154 @@ paths:
                     description: Forbidden from deleting Topology.
                 '404':
                     description: Topology not found.
-    '/experiments/{experimentId}':
+    '/portfolios/{portfolioId}':
         get:
             tags:
-                - experiments
-            description: Get this Experiment.
+                - portfolios
+            description: Get this Portfolio.
             parameters:
-                -   name: experimentId
+                -   name: portfolioId
                     in: path
-                    description: Experiment's ID.
+                    description: Portfolio's ID.
                     required: true
                     type: string
             responses:
                 '200':
-                    description: Successfully retrieved Experiment.
+                    description: Successfully retrieved Portfolio.
                     schema:
-                        $ref: '#/definitions/Experiment'
+                        $ref: '#/definitions/Portfolio'
                 '400':
                     description: Missing or incorrectly typed parameter.
                 '401':
                     description: Unauthorized.
                 '403':
-                    description: Forbidden from retrieving Experiment.
+                    description: Forbidden from retrieving Portfolio.
                 '404':
-                    description: Experiment not found.
+                    description: Portfolio not found.
         put:
             tags:
-                - experiments
-            description: "Update this Experiment's Topology, Trace, Scheduler, and/or name."
+                - portfolios
+            description: "Update this Portfolio."
             parameters:
-                -   name: experimentId
+                -   name: portfolioId
                     in: path
-                    description: Experiment's ID.
+                    description: Portfolio's ID.
                     required: true
                     type: string
-                -   name: experiment
+                -   name: portfolio
                     in: body
-                    description: Experiment's new properties.
+                    description: Portfolio's new properties.
                     required: true
                     schema:
-                        properties:
-                            topologyId:
-                                type: string
-                            traceId:
-                                type: string
-                            schedulerName:
-                                type: string
-                            name:
-                                type: string
+                        $ref: '#/definitions/Portfolio'
             responses:
                 '200':
-                    description: Successfully updated Experiment.
+                    description: Successfully updated Portfolio.
                     schema:
-                        $ref: '#/definitions/Experiment'
+                        $ref: '#/definitions/Portfolio'
                 '400':
                     description: Missing or incorrectly typed parameter.
                 '401':
                     description: Unauthorized.
                 '403':
-                    description: Forbidden from updating Experiment.
+                    description: Forbidden from updating Portfolio.
                 '404':
-                    description: 'Experiment, Topology, Trace, or Scheduler not found.'
+                    description: 'Portfolio not found.'
         delete:
             tags:
-                - experiments
-            description: Delete this Experiment.
+                - portfolios
+            description: Delete this Portfolio.
             parameters:
-                -   name: experimentId
+                -   name: portfolioId
                     in: path
-                    description: Experiment's ID.
+                    description: Portfolio's ID.
                     required: true
                     type: string
             responses:
                 '200':
-                    description: Successfully deleted Experiment.
+                    description: Successfully deleted Portfolio.
                     schema:
-                        $ref: '#/definitions/Experiment'
+                        $ref: '#/definitions/Portfolio'
                 '401':
                     description: Unauthorized.
                 '403':
-                    description: Forbidden from deleting Experiment.
+                    description: Forbidden from deleting Portfolio.
                 '404':
-                    description: Experiment not found.
+                    description: Portfolio not found.
+    '/scenarios/{scenarioId}':
+        get:
+            tags:
+                - scenarios
+            description: Get this Scenario.
+            parameters:
+                -   name: scenarioId
+                    in: path
+                    description: Scenario's ID.
+                    required: true
+                    type: string
+            responses:
+                '200':
+                    description: Successfully retrieved Scenario.
+                    schema:
+                        $ref: '#/definitions/Scenario'
+                '400':
+                    description: Missing or incorrectly typed parameter.
+                '401':
+                    description: Unauthorized.
+                '403':
+                    description: Forbidden from retrieving Scenario.
+                '404':
+                    description: Scenario not found.
+        put:
+            tags:
+                - scenarios
+            description: "Update this Scenario."
+            parameters:
+                -   name: scenarioId
+                    in: path
+                    description: Scenario's ID.
+                    required: true
+                    type: string
+                -   name: scenario
+                    in: body
+                    description: Scenario's new properties.
+                    required: true
+                    schema:
+                        $ref: '#/definitions/Scenario'
+            responses:
+                '200':
+                    description: Successfully updated Scenario.
+                    schema:
+                        $ref: '#/definitions/Scenario'
+                '400':
+                    description: Missing or incorrectly typed parameter.
+                '401':
+                    description: Unauthorized.
+                '403':
+                    description: Forbidden from updating Scenario.
+                '404':
+                    description: 'Scenario not found.'
+        delete:
+            tags:
+                - scenarios
+            description: Delete this Scenario.
+            parameters:
+                -   name: scenarioId
+                    in: path
+                    description: Scenario's ID.
+                    required: true
+                    type: string
+            responses:
+                '200':
+                    description: Successfully deleted Scenario.
+                    schema:
+                        $ref: '#/definitions/Scenario'
+                '401':
+                    description: Unauthorized.
+                '403':
+                    description: Forbidden from deleting Scenario.
+                '404':
+                    description: Scenario not found.
     /schedulers:
         get:
             tags:
@@ -637,25 +703,6 @@ paths:
                     description: Prefab not found.
 
 definitions:
-    Experiment:
-        type: object
-        properties:
-            _id:
-                type: string
-            projectId:
-                type: string
-            topologyId:
-                type: string
-            traceId:
-                type: string
-            schedulerName:
-                type: string
-            name:
-                type: string
-            state:
-                type: string
-            lastSimulatedTick:
-                type: integer
     MachineState:
         type: object
         properties:
@@ -845,6 +892,8 @@ definitions:
                 type: array
                 items:
                     type: string
+            baseScenarioId:
+                type: string
             targets:
                 type: object
                 properties:
@@ -862,6 +911,8 @@ definitions:
             portfolioId:
                 type: string
             name:
+                type: string
+            simulationState:
                 type: string
             trace:
                 type: object
