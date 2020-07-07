@@ -6,7 +6,7 @@ from opendc.util.rest import Response
 
 
 class Prefab(Model):
-    """Model representing a Simulation."""
+    """Model representing a Prefab."""
 
     collection_name = 'prefabs'
 
@@ -23,7 +23,7 @@ class Prefab(Model):
             raise ClientError(Response(403, "Forbidden from retrieving prefab."))
 
     def get_all_authorizations(self):
-        """Get all user IDs having access to this simulation."""
+        """Get all user IDs having access to this prefab."""
         return [
             str(user['_id']) for user in DB.fetch_all({'authorizations': {
                 'prefabId': self.obj['_id']
