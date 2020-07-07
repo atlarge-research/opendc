@@ -1,18 +1,18 @@
 from opendc.util.database import DB
 
 
-def test_get_experiment_non_existing(client, mocker):
+def test_get_portfolio_non_existing(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.get('/api/v2/experiments/1').status
+    assert '404' in client.get('/api/v2/portfolios/1').status
 
 
-def test_get_experiment_no_authorizations(client, mocker):
+def test_get_portfolio_no_authorizations(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value={'projectId': '1', 'authorizations': []})
-    res = client.get('/api/v2/experiments/1')
+    res = client.get('/api/v2/portfolios/1')
     assert '403' in res.status
 
 
-def test_get_experiment_not_authorized(client, mocker):
+def test_get_portfolio_not_authorized(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
@@ -23,11 +23,11 @@ def test_get_experiment_not_authorized(client, mocker):
                                 'authorizationLevel': 'OWN'
                             }]
                         })
-    res = client.get('/api/v2/experiments/1')
+    res = client.get('/api/v2/portfolios/1')
     assert '403' in res.status
 
 
-def test_get_experiment(client, mocker):
+def test_get_portfolio(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
@@ -38,24 +38,28 @@ def test_get_experiment(client, mocker):
                                 'authorizationLevel': 'EDIT'
                             }]
                         })
-    res = client.get('/api/v2/experiments/1')
+    res = client.get('/api/v2/portfolios/1')
     assert '200' in res.status
 
 
-def test_update_experiment_missing_parameter(client):
-    assert '400' in client.put('/api/v2/experiments/1').status
+def test_update_portfolio_missing_parameter(client):
+    assert '400' in client.put('/api/v2/portfolios/1').status
 
 
-def test_update_experiment_non_existing(client, mocker):
+def test_update_portfolio_non_existing(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.put('/api/v2/experiments/1', json={
-        'experiment': {
+    assert '404' in client.put('/api/v2/portfolios/1', json={
+        'portfolio': {
             'name': 'test',
+            'targets': {
+                'enabledMetrics': ['test'],
+                'repeatsPerScenario': 2
+            }
         }
     }).status
 
 
-def test_update_experiment_not_authorized(client, mocker):
+def test_update_portfolio_not_authorized(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
@@ -67,14 +71,18 @@ def test_update_experiment_not_authorized(client, mocker):
                             }]
                         })
     mocker.patch.object(DB, 'update', return_value={})
-    assert '403' in client.put('/api/v2/experiments/1', json={
-        'experiment': {
+    assert '403' in client.put('/api/v2/portfolios/1', json={
+        'portfolio': {
             'name': 'test',
+            'targets': {
+                'enabledMetrics': ['test'],
+                'repeatsPerScenario': 2
+            }
         }
     }).status
 
 
-def test_update_experiment(client, mocker):
+def test_update_portfolio(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
@@ -83,19 +91,27 @@ def test_update_experiment(client, mocker):
                             'authorizations': [{
                                 'projectId': '1',
                                 'authorizationLevel': 'OWN'
-                            }]
+                            }],
+                            'targets': {
+                                'enabledMetrics': [],
+                                'repeatsPerScenario': 1
+                            }
                         })
     mocker.patch.object(DB, 'update', return_value={})
 
-    res = client.put('/api/v2/experiments/1', json={'experiment': {
+    res = client.put('/api/v2/portfolios/1', json={'portfolio': {
         'name': 'test',
+        'targets': {
+            'enabledMetrics': ['test'],
+            'repeatsPerScenario': 2
+        }
     }})
     assert '200' in res.status
 
 
 def test_delete_project_non_existing(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.delete('/api/v2/experiments/1').status
+    assert '404' in client.delete('/api/v2/portfolios/1').status
 
 
 def test_delete_project_different_user(client, mocker):
@@ -111,7 +127,7 @@ def test_delete_project_different_user(client, mocker):
                             }]
                         })
     mocker.patch.object(DB, 'delete_one', return_value=None)
-    assert '403' in client.delete('/api/v2/experiments/1').status
+    assert '403' in client.delete('/api/v2/portfolios/1').status
 
 
 def test_delete_project(client, mocker):
@@ -121,7 +137,7 @@ def test_delete_project(client, mocker):
                             '_id': '1',
                             'projectId': '1',
                             'googleId': 'test',
-                            'experimentIds': ['1'],
+                            'portfolioIds': ['1'],
                             'authorizations': [{
                                 'projectId': '1',
                                 'authorizationLevel': 'OWN'
@@ -129,5 +145,5 @@ def test_delete_project(client, mocker):
                         })
     mocker.patch.object(DB, 'delete_one', return_value={})
     mocker.patch.object(DB, 'update', return_value=None)
-    res = client.delete('/api/v2/experiments/1')
+    res = client.delete('/api/v2/portfolios/1')
     assert '200' in res.status

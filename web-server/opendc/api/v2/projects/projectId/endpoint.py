@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from opendc.models.experiment import Experiment
+from opendc.models.portfolio import Portfolio
 from opendc.models.project import Project
 from opendc.models.topology import Topology
 from opendc.models.user import User
@@ -52,8 +52,8 @@ def DELETE(request):
         topology = Topology.from_id(topology_id)
         topology.delete()
 
-    for experiment_id in project.obj['experimentIds']:
-        experiment = Experiment.from_id(experiment_id)
+    for experiment_id in project.obj['portfolioIds']:
+        experiment = Portfolio.from_id(experiment_id)
         experiment.delete()
 
     user = User.from_google_id(request.google_id)

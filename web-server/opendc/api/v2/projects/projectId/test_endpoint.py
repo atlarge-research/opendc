@@ -111,7 +111,7 @@ def test_delete_project(client, mocker):
                                 'authorizationLevel': 'OWN'
                             }],
                             'topologyIds': [],
-                            'experimentIds': [],
+                            'portfolioIds': [],
                         })
     mocker.patch.object(DB, 'update', return_value=None)
     mocker.patch.object(DB, 'delete_one', return_value={'googleId': 'test'})
