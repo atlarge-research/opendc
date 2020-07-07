@@ -2,13 +2,13 @@ import React from 'react'
 import DocumentTitle from 'react-document-title'
 import { connect } from 'react-redux'
 import { openDeleteProfileModal } from '../actions/modals/profile'
-import AppNavbar from '../components/navigation/AppNavbar'
 import DeleteProfileModal from '../containers/modals/DeleteProfileModal'
+import AppNavbarContainer from '../containers/navigation/AppNavbarContainer'
 
 const ProfileContainer = ({ onDelete }) => (
     <DocumentTitle title="My Profile - OpenDC">
         <div className="full-height">
-            <AppNavbar inProject={false} fullWidth={false}/>
+            <AppNavbarContainer fullWidth={false}/>
             <div className="container text-page-container full-height">
                 <button className="btn btn-danger mb-2 ml-auto mr-auto" style={{ maxWidth: 300 }} onClick={onDelete}>
                     Delete my account on OpenDC

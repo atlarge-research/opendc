@@ -3,15 +3,12 @@ import React from 'react'
 import Shapes from '../../../shapes'
 import Modal from '../Modal'
 
-class ChangeTopologyModalComponent extends React.Component {
+class NewTopologyModalComponent extends React.Component {
     static propTypes = {
         show: PropTypes.bool.isRequired,
         topologies: PropTypes.arrayOf(Shapes.Topology),
-        currentTopologyId: PropTypes.string,
-        onChooseTopology: PropTypes.func.isRequired,
         onCreateTopology: PropTypes.func.isRequired,
         onDuplicateTopology: PropTypes.func.isRequired,
-        onDeleteTopology: PropTypes.func.isRequired,
         onCancel: PropTypes.func.isRequired,
     }
 
@@ -28,11 +25,6 @@ class ChangeTopologyModalComponent extends React.Component {
         }
     }
 
-    onChoose(id) {
-        this.props.onChooseTopology(id)
-        this.reset()
-    }
-
     onCreate() {
         this.props.onCreateTopology(this.textInput.value)
         this.reset()
@@ -46,11 +38,6 @@ class ChangeTopologyModalComponent extends React.Component {
         this.reset()
     }
 
-    onDelete(id) {
-        this.props.onDeleteTopology(id)
-        this.reset()
-    }
-
     onCancel() {
         this.props.onCancel()
         this.reset()
@@ -59,37 +46,11 @@ class ChangeTopologyModalComponent extends React.Component {
     render() {
         return (
             <Modal
-                title="Change Topology"
+                title="New Topology"
                 show={this.props.show}
                 onSubmit={this.onSubmit.bind(this)}
                 onCancel={this.onCancel.bind(this)}
             >
-                <div>
-                    {this.props.topologies.map((topology, idx) => (
-                        <div key={topology._id} className="row mb-1">
-                            <div className="col-6">
-                                <em>{topology._id === this.props.currentTopologyId ? 'Active: ' : ''}</em>
-                                {topology.name}
-                            </div>
-                            <div className="col-6 text-right">
-                                <span
-                                    className="btn btn-primary mr-1"
-                                    onClick={() => this.onChoose(topology._id)}
-                                >
-                                    Choose
-                                </span>
-                                <span
-                                    className={'btn btn-danger ' + (idx === 0 ? 'disabled' : '')}
-                                    onClick={() => idx !== 0 ? this.onDelete(topology._id) : undefined}
-                                >
-                                    Delete
-                                </span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <h5 className="pt-3 pt-1">New Topology</h5>
                 <form
                     onSubmit={e => {
                         e.preventDefault()
@@ -128,4 +89,4 @@ class ChangeTopologyModalComponent extends React.Component {
     }
 }
 
-export default ChangeTopologyModalComponent
+export default NewTopologyModalComponent

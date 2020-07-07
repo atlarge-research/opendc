@@ -8,18 +8,19 @@ import { openProjectSucceeded } from '../actions/projects'
 import { resetCurrentTopology } from '../actions/topology/building'
 import ToolPanelComponent from '../components/app/map/controls/ToolPanelComponent'
 import LoadingScreen from '../components/app/map/LoadingScreen'
-import AppNavbar from '../components/navigation/AppNavbar'
 import ScaleIndicatorContainer from '../containers/app/map/controls/ScaleIndicatorContainer'
 import MapStage from '../containers/app/map/MapStage'
-import TopologySidebar from '../containers/app/sidebars/topology/TopologySidebar'
+import TopologySidebarContainer from '../containers/app/sidebars/topology/TopologySidebarContainer'
 import DeleteMachineModal from '../containers/modals/DeleteMachineModal'
 import DeleteRackModal from '../containers/modals/DeleteRackModal'
 import DeleteRoomModal from '../containers/modals/DeleteRoomModal'
 import EditRackNameModal from '../containers/modals/EditRackNameModal'
 import EditRoomNameModal from '../containers/modals/EditRoomNameModal'
 import KeymapConfiguration from '../shortcuts/keymap'
-import ChangeTopologyModal from '../containers/modals/ChangeTopologyModal'
-import { openChangeTopologyModal } from '../actions/modals/topology'
+import NewTopologyModal from '../containers/modals/NewTopologyModal'
+import { openNewTopologyModal } from '../actions/modals/topology'
+import AppNavbarContainer from '../containers/navigation/AppNavbarContainer'
+import ProjectSidebarContainer from '../containers/app/sidebars/project/ProjectSidebarContainer'
 
 const shortcutManager = new ShortcutManager(KeymapConfiguration)
 
@@ -50,12 +51,7 @@ class AppComponent extends React.Component {
                 title={this.props.projectName ? this.props.projectName + ' - OpenDC' : 'Simulation - OpenDC'}
             >
                 <div className="page-container full-height">
-                    <AppNavbar
-                        projectId={this.props.projectId}
-                        inProject={true}
-                        fullWidth={true}
-                        onViewTopologies={this.props.onViewTopologies}
-                    />
+                    <AppNavbarContainer fullWidth={true} />
                     {this.props.topologyIsLoading ? (
                         <div className="full-height d-flex align-items-center justify-content-center">
                             <LoadingScreen/>
@@ -65,10 +61,11 @@ class AppComponent extends React.Component {
                             <MapStage/>
                             <ScaleIndicatorContainer/>
                             <ToolPanelComponent/>
-                            <TopologySidebar/>
+                            <ProjectSidebarContainer/>
+                            <TopologySidebarContainer/>
                         </div>
                     )}
-                    <ChangeTopologyModal/>
+                    <NewTopologyModal/>
                     <EditRoomNameModal/>
                     <DeleteRoomModal/>
                     <EditRackNameModal/>
@@ -96,7 +93,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         resetCurrentTopology: () => dispatch(resetCurrentTopology()),
         openProjectSucceeded: (id) => dispatch(openProjectSucceeded(id)),
-        onViewTopologies: () => dispatch(openChangeTopologyModal()),
+        onViewTopologies: () => dispatch(openNewTopologyModal()),
         openExperimentSucceeded: (projectId, experimentId) =>
             dispatch(openExperimentSucceeded(projectId, experimentId)),
     }

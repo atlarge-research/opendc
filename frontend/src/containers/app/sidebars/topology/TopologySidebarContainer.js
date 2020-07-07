@@ -7,6 +7,6 @@ const mapStateToProps = state => {
     }
 }
 
-const TopologySidebar = connect(mapStateToProps)(TopologySidebarComponent)
+const TopologySidebarContainer = connect(mapStateToProps)(TopologySidebarComponent)
 
-export default TopologySidebar
+export default TopologySidebarContainer
