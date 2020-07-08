@@ -52,9 +52,9 @@ def DELETE(request):
         topology = Topology.from_id(topology_id)
         topology.delete()
 
-    for experiment_id in project.obj['portfolioIds']:
-        experiment = Portfolio.from_id(experiment_id)
-        experiment.delete()
+    for portfolio_id in project.obj['portfolioIds']:
+        portfolio = Portfolio.from_id(portfolio_id)
+        portfolio.delete()
 
     user = User.from_google_id(request.google_id)
     user.obj['authorizations'] = list(
