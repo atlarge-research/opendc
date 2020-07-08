@@ -46,14 +46,18 @@ def _incorrect_parameter(params_required, params_actual, parent=''):
                 except:
                     return '{}.{}'.format(parent, param_name)
 
-            if param_required == 'int' and not isinstance(param_actual, int):
-                return '{}.{}'.format(parent, param_name)
+            type_pairs = [
+                ('int', (int,)),
+                ('float', (float,)),
+                ('bool', (bool,)),
+                ('string', (str, int)),
+                ('list', (list,)),
+            ]
 
-            if param_required == 'string' and not isinstance(param_actual, str) and not isinstance(param_actual, int):
-                return '{}.{}'.format(parent, param_name)
-
-            if param_required.startswith('list') and not isinstance(param_actual, list):
-                return '{}.{}'.format(parent, param_name)
+            for str_type, actual_types in type_pairs:
+                if param_required == str_type and all(not isinstance(param_actual, t)
+                                                      for t in actual_types):
+                    return '{}.{}'.format(parent, param_name)
 
     return None
 

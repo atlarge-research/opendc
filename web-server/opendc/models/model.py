@@ -33,8 +33,12 @@ class Model:
             raise ClientError(Response(404, 'Not found.'))
 
     def set_property(self, key, value):
-        """Sets the given property on the enclosed object."""
-        self.obj[key] = value
+        """Sets the given property on the enclosed object, with support for simple nested access."""
+        if '.' in key:
+            keys = key.split('.')
+            self.obj[keys[0]][keys[1]] = value
+        else:
+            self.obj[key] = value
 
     def insert(self):
         """Inserts the enclosed object and generates a UUID for it."""
