@@ -1,6 +1,6 @@
 import { call, put, select } from 'redux-saga/effects'
 import { addPropToStoreObject, addToStore } from '../actions/objects'
-import { deleteExperiment, getExperiment } from '../api/routes/experiments'
+import { deleteExperiment, getExperiment } from '../api/routes/portfolios'
 import { addExperiment, getProject } from '../api/routes/projects'
 import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
 import { fetchAndStoreAllTopologiesOfProject, fetchTopologyOfExperiment } from './topology'
