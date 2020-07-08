@@ -29,7 +29,7 @@ def PUT(request):
     scenario.check_user_access(request.google_id, True)
 
     scenario.set_property('name',
-                           request.params_body['scenario']['name'])
+                          request.params_body['scenario']['name'])
 
     scenario.update()
 
