@@ -500,7 +500,7 @@ paths:
         put:
             tags:
                 - scenarios
-            description: "Update this Scenario."
+            description: "Update this Scenario's name (other properties are read-only)."
             parameters:
                 -   name: scenarioId
                     in: path
@@ -509,7 +509,7 @@ paths:
                     type: string
                 -   name: scenario
                     in: body
-                    description: Scenario's new properties.
+                    description: Scenario with new name.
                     required: true
                     schema:
                         $ref: '#/definitions/Scenario'

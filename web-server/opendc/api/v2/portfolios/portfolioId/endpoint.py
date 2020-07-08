@@ -17,7 +17,7 @@ def GET(request):
 
 
 def PUT(request):
-    """Update this Portfolios name."""
+    """Update this Portfolio."""
 
     request.check_required_parameters(path={'portfolioId': 'string'}, body={'portfolio': {
         'name': 'string',
