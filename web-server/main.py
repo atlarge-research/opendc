@@ -140,10 +140,8 @@ def serve_web_server_test():
 @FLASK_CORE_APP.route('/')
 @FLASK_CORE_APP.route('/projects')
 @FLASK_CORE_APP.route('/projects/<path:project_id>')
-@FLASK_CORE_APP.route('/projects/<path:project_id>/experiments')
-@FLASK_CORE_APP.route('/projects/<path:project_id>/experiments/<path:experiment_id>')
 @FLASK_CORE_APP.route('/profile')
-def serve_index(project_id=None, experiment_id=None):
+def serve_index(project_id=None):
     return send_from_directory(STATIC_ROOT, 'index.html')
 
 

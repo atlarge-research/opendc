@@ -19,7 +19,7 @@ def POST(request):
     project.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     project.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
     project.set_property('topologyIds', [topology.get_id()])
-    project.set_property('experimentIds', [])
+    project.set_property('portfolioIds', [])
     project.insert()
 
     topology.set_property('projectId', project.get_id())

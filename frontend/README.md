@@ -59,11 +59,11 @@ All pages are represented by a component in the `src/pages` directory. There are
 
 **Home.js** - Entry page (`/`)
 
-**Projects.js** - Overview of simulations of the user (`/simulations`)
+**Projects.js** - Overview of projects of the user (`/projects`)
 
-**App.js** - Main application, with datacenter construction and simulation UI (`/simulations/:simulationId` and `/simulations/:simulationId/experiments/:experimentId`)
+**App.js** - Main application, with datacenter construction and simulation UI (`/projects/:projectId` and `/projects/:projectId/experiments/:experimentId`)
 
-**Experiments.js** - Overview of experiments of the current simulation (`/simulations/:simulationId/experiments`)
+**Experiments.js** - Overview of experiments of the current project (`/projects/:projectId/experiments`)
 
 **Profile.js** - Profile of the current user (`/profile`)
 
