@@ -14,10 +14,10 @@ def POST(request):
     prefab = Prefab(request.params_body['prefab'])
     prefab.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     prefab.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
-    prefab.insert()
 
     user = User.from_google_id(request.google_id)
-    user.obj['authorizations'].append({'prefabId': prefab.get_id(), 'authorizationLevel': 'OWN'})
-    user.update()
+    prefab.set_property('userId', user.get_id)
+
+    prefab.insert()
 
     return Response(200, 'Successfully created prefab.', prefab.obj)
