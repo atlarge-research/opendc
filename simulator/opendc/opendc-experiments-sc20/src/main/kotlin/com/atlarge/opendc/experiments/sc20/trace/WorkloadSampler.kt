@@ -83,3 +83,72 @@ fun sampleRegularWorkload(
 
     return res
 }
+
+/**
+ * Sample a HPC workload.
+ */
+fun sampleHPCWorkload(
+    trace: List<TraceEntry<VmWorkload>>,
+    workload: Workload,
+    seed: Int,
+    fraction: Double,
+    sampleOnLoad: Boolean
+): List<TraceEntry<VmWorkload>> {
+    val pattern = Regex("^(ComputeNode|cn)")
+    val random = Random(seed)
+
+    val (hpc, nonHpc) = trace.partition { entry ->
+        val name = entry.workload.image.name
+        name.matches(pattern)
+    }
+
+    val totalLoad = if (workload is CompositeWorkload) {
+        workload.totalLoad
+    } else {
+        trace.sumByDouble { it.workload.image.tags.getValue("total-load") as Double }
+    }
+
+    val res = mutableListOf<TraceEntry<VmWorkload>>()
+
+    if (sampleOnLoad) {
+        val hpcPool = mutableListOf<TraceEntry<VmWorkload>>()
+
+        // We repeat the HPC VMs 1000 times to have a large enough pool to pick VMs from.
+        repeat(1000) {
+            hpcPool.addAll(hpc)
+        }
+        hpcPool.shuffle(random)
+
+        var currentLoad = 0.0
+        for (entry in hpcPool) {
+            val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
+            if ((currentLoad + entryLoad) / totalLoad > fraction || res.size > trace.size) {
+                break
+            }
+
+            currentLoad += entryLoad
+            res += entry
+        }
+
+        (nonHpc as MutableList<TraceEntry<VmWorkload>>).shuffle(random)
+        for (entry in nonHpc) {
+            val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
+            if ((currentLoad + entryLoad) / totalLoad > 1 || res.size > trace.size) {
+                break
+            }
+
+            currentLoad += entryLoad
+            res += entry
+        }
+    } else {
+        (hpc as MutableList<TraceEntry<VmWorkload>>).shuffle(random)
+        (nonHpc as MutableList<TraceEntry<VmWorkload>>).shuffle(random)
+
+        res.addAll(hpc.subList(0, (fraction * trace.size).toInt()))
+        res.addAll(nonHpc.subList(0, ((1 - fraction) * trace.size).toInt()))
+    }
+
+    logger.info { "Sampled ${trace.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
+
+    return res
+}
