@@ -30,7 +30,3 @@ allprojects {
     group = "com.atlarge.opendc"
     version = "2.0.0"
 }
-
-tasks.wrapper {
-    gradleVersion = "6.0"
-}
