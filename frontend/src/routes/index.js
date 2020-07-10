@@ -9,7 +9,13 @@ import Projects from '../pages/Projects'
 
 const ProtectedComponent = (component) => () => (userIsLoggedIn() ? component : <Redirect to="/"/>)
 const AppComponent = ({ match }) =>
-    userIsLoggedIn() ? <App projectId={match.params.projectId}/> : <Redirect to="/"/>
+    userIsLoggedIn() ? (
+        <App
+            projectId={match.params.projectId}
+            portfolioId={match.params.portfolioId}
+            scenarioId={match.params.scenarioId}
+        />
+    ) : <Redirect to="/"/>
 
 const Routes = () => (
     <BrowserRouter>
@@ -17,6 +23,8 @@ const Routes = () => (
             <Route exact path="/" component={Home}/>
             <Route exact path="/projects" render={ProtectedComponent(<Projects/>)}/>
             <Route exact path="/projects/:projectId" component={AppComponent}/>
+            <Route exact path="/projects/:projectId/portfolios/:portfolioId" component={AppComponent}/>
+            <Route exact path="/projects/:projectId/portfolios/:portfolioId/scenarios/:scenarioId" component={AppComponent}/>
             <Route exact path="/profile" render={ProtectedComponent(<Profile/>)}/>
             <Route path="/*" component={NotFound}/>
         </Switch>

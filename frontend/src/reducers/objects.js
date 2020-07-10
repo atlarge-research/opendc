@@ -22,7 +22,8 @@ export const objects = combineReducers({
     topology: object('topology'),
     trace: object('trace'),
     scheduler: object('scheduler'),
-    experiment: object('experiment'),
+    portfolio: object('portfolio'),
+    scenario: object('scenario'),
 })
 
 function object(type, defaultState = {}) {

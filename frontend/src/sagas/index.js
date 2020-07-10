@@ -1,11 +1,10 @@
 import { takeEvery } from 'redux-saga/effects'
 import { LOG_IN } from '../actions/auth'
 import {
-    ADD_EXPERIMENT,
-    DELETE_EXPERIMENT,
-    FETCH_EXPERIMENTS_OF_PROJECT,
-    OPEN_EXPERIMENT_SUCCEEDED,
-} from '../actions/experiments'
+    ADD_PORTFOLIO,
+    DELETE_PORTFOLIO,
+    OPEN_PORTFOLIO_SUCCEEDED, UPDATE_PORTFOLIO,
+} from '../actions/portfolios'
 import { ADD_PROJECT, DELETE_PROJECT, OPEN_PROJECT_SUCCEEDED } from '../actions/projects'
 import {
     ADD_TILE,
@@ -18,11 +17,11 @@ import { ADD_MACHINE, DELETE_RACK, EDIT_RACK_NAME } from '../actions/topology/ra
 import { ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME } from '../actions/topology/room'
 import { DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER } from '../actions/users'
 import {
-    onAddExperiment,
-    onDeleteExperiment,
-    onFetchExperimentsOfProject,
-    onOpenExperimentSucceeded,
-} from './experiments'
+    onAddPortfolio,
+    onDeletePortfolio,
+    onOpenPortfolioSucceeded,
+    onUpdatePortfolio,
+} from './portfolios'
 import { onDeleteCurrentUser } from './profile'
 import { onOpenProjectSucceeded, onProjectAdd, onProjectDelete } from './projects'
 import {
@@ -44,6 +43,8 @@ import {
 } from './topology'
 import { onFetchAuthorizationsOfCurrentUser, onFetchLoggedInUser } from './users'
 import { ADD_TOPOLOGY, DELETE_TOPOLOGY } from '../actions/topologies'
+import { ADD_SCENARIO, DELETE_SCENARIO, OPEN_SCENARIO_SUCCEEDED, UPDATE_SCENARIO } from '../actions/scenarios'
+import { onAddScenario, onDeleteScenario, onOpenScenarioSucceeded, onUpdateScenario } from './scenarios'
 
 export default function* rootSaga() {
     yield takeEvery(LOG_IN, onFetchLoggedInUser)
@@ -55,7 +56,8 @@ export default function* rootSaga() {
     yield takeEvery(DELETE_CURRENT_USER, onDeleteCurrentUser)
 
     yield takeEvery(OPEN_PROJECT_SUCCEEDED, onOpenProjectSucceeded)
-    yield takeEvery(OPEN_EXPERIMENT_SUCCEEDED, onOpenExperimentSucceeded)
+    yield takeEvery(OPEN_PORTFOLIO_SUCCEEDED, onOpenPortfolioSucceeded)
+    yield takeEvery(OPEN_SCENARIO_SUCCEEDED, onOpenScenarioSucceeded)
 
     yield takeEvery(ADD_TOPOLOGY, onAddTopology)
     yield takeEvery(DELETE_TOPOLOGY, onDeleteTopology)
@@ -73,7 +75,11 @@ export default function* rootSaga() {
     yield takeEvery(ADD_UNIT, onAddUnit)
     yield takeEvery(DELETE_UNIT, onDeleteUnit)
 
-    yield takeEvery(FETCH_EXPERIMENTS_OF_PROJECT, onFetchExperimentsOfProject)
-    yield takeEvery(ADD_EXPERIMENT, onAddExperiment)
-    yield takeEvery(DELETE_EXPERIMENT, onDeleteExperiment)
+    yield takeEvery(ADD_PORTFOLIO, onAddPortfolio)
+    yield takeEvery(UPDATE_PORTFOLIO, onUpdatePortfolio)
+    yield takeEvery(DELETE_PORTFOLIO, onDeletePortfolio)
+
+    yield takeEvery(ADD_SCENARIO, onAddScenario)
+    yield takeEvery(UPDATE_SCENARIO, onUpdateScenario)
+    yield takeEvery(DELETE_SCENARIO, onDeleteScenario)
 }
