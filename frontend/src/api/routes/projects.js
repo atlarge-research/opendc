@@ -38,19 +38,3 @@ export function updateProject(project) {
 export function deleteProject(projectId) {
     return deleteById('/projects/{projectId}', { projectId })
 }
-
-export function addExperiment(projectId, experiment) {
-    return sendRequest({
-        path: '/projects/{projectId}/experiments',
-        method: 'POST',
-        parameters: {
-            body: {
-                experiment,
-            },
-            path: {
-                projectId,
-            },
-            query: {},
-        },
-    })
-}

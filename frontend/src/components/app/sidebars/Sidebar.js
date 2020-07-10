@@ -1,8 +1,18 @@
+import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import React from 'react'
 import './Sidebar.css'
 
 class Sidebar extends React.Component {
+    static propTypes = {
+        isRight: PropTypes.bool.isRequired,
+        collapsible: PropTypes.bool,
+    }
+
+    static defaultProps = {
+        collapsible: true
+    }
+
     state = {
         collapsed: false,
     }
@@ -41,7 +51,7 @@ class Sidebar extends React.Component {
                 onWheel={e => e.stopPropagation()}
             >
                 {this.props.children}
-                {collapseButton}
+                {this.props.collapsible && collapseButton}
             </div>
         )
     }

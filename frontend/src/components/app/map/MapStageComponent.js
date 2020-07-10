@@ -23,11 +23,9 @@ class MapStageComponent extends React.Component {
         this.updateScale = this.updateScale.bind(this)
     }
 
-    componentWillMount() {
-        this.updateDimensions()
-    }
-
     componentDidMount() {
+        this.updateDimensions()
+
         window.addEventListener('resize', this.updateDimensions)
         window.addEventListener('wheel', this.updateScale)
 

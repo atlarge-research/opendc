@@ -26,7 +26,6 @@ def POST(request):
 
     portfolio.set_property('projectId', request.params_path['projectId'])
     portfolio.set_property('scenarioIds', [])
-    portfolio.set_property('baseScenarioId', '-1')
 
     portfolio.insert()
 

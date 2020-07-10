@@ -842,8 +842,6 @@ definitions:
                 type: array
                 items:
                     type: string
-            baseScenarioId:
-                type: string
             targets:
                 type: object
                 properties:

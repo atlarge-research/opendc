@@ -1,11 +1,12 @@
 import React from 'react'
 import Sidebar from '../Sidebar'
 import TopologyListContainer from '../../../../containers/app/sidebars/project/TopologyListContainer'
+import PortfolioListContainer from '../../../../containers/app/sidebars/project/PortfolioListContainer'
 
-const ProjectSidebarComponent = () => (
-        <Sidebar isRight={false}>
+const ProjectSidebarComponent = ({collapsible}) => (
+        <Sidebar isRight={false} collapsible={collapsible}>
             <TopologyListContainer/>
-            <h2>Portfolios</h2>
+            <PortfolioListContainer/>
         </Sidebar>
     )
 

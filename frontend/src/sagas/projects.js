@@ -3,13 +3,18 @@ import { addToStore } from '../actions/objects'
 import { addProjectSucceeded, deleteProjectSucceeded } from '../actions/projects'
 import { addProject, deleteProject, getProject } from '../api/routes/projects'
 import { fetchAndStoreAllTopologiesOfProject } from './topology'
+import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
+import { fetchPortfoliosOfProject } from './portfolios'
 
 export function* onOpenProjectSucceeded(action) {
     try {
         const project = yield call(getProject, action.id)
         yield put(addToStore('project', project))
 
-        yield fetchAndStoreAllTopologiesOfProject(action.id)
+        yield fetchAndStoreAllTopologiesOfProject(action.id, true)
+        yield fetchPortfoliosOfProject()
+        yield fetchAndStoreAllSchedulers()
+        yield fetchAndStoreAllTraces()
     } catch (error) {
         console.error(error)
     }

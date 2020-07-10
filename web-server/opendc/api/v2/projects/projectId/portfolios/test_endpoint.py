@@ -65,7 +65,6 @@ def test_add_portfolio(client, mocker):
                             },
                             'projectId': '1',
                             'scenarioIds': [],
-                            'baseScenarioId': '-1',
                         })
     mocker.patch.object(DB, 'update', return_value=None)
     res = client.post(
@@ -81,5 +80,4 @@ def test_add_portfolio(client, mocker):
         })
     assert 'projectId' in res.json['content']
     assert 'scenarioIds' in res.json['content']
-    assert 'baseScenarioId' in res.json['content']
     assert '200' in res.status
