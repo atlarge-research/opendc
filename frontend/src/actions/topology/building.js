@@ -1,5 +1,4 @@
 export const SET_CURRENT_TOPOLOGY = 'SET_CURRENT_TOPOLOGY'
-export const RESET_CURRENT_TOPOLOGY = 'RESET_CURRENT_TOPOLOGY'
 export const START_NEW_ROOM_CONSTRUCTION = 'START_NEW_ROOM_CONSTRUCTION'
 export const START_NEW_ROOM_CONSTRUCTION_SUCCEEDED =
     'START_NEW_ROOM_CONSTRUCTION_SUCCEEDED'
@@ -16,12 +15,6 @@ export function setCurrentTopology(topologyId) {
     return {
         type: SET_CURRENT_TOPOLOGY,
         topologyId,
-    }
-}
-
-export function resetCurrentTopology() {
-    return {
-        type: RESET_CURRENT_TOPOLOGY,
     }
 }
 

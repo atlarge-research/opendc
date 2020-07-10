@@ -1,4 +1,5 @@
 from opendc.models.portfolio import Portfolio
+from opendc.models.scenario import Scenario
 from opendc.util.rest import Response
 
 
@@ -29,14 +30,14 @@ def POST(request):
     portfolio.check_exists()
     portfolio.check_user_access(request.google_id, True)
 
-    scenario = Portfolio(request.params_body['scenario'])
+    scenario = Scenario(request.params_body['scenario'])
 
     scenario.set_property('portfolioId', request.params_path['portfolioId'])
     scenario.set_property('simulationState', 'QUEUED')
 
     scenario.insert()
 
-    portfolio.obj['portfolioIds'].append(portfolio.get_id())
+    portfolio.obj['scenarioIds'].append(scenario.get_id())
     portfolio.update()
 
-    return Response(200, 'Successfully added Portfolio.', portfolio.obj)
+    return Response(200, 'Successfully added Scenario.', scenario.obj)

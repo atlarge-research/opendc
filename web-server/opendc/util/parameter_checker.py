@@ -48,7 +48,7 @@ def _incorrect_parameter(params_required, params_actual, parent=''):
 
             type_pairs = [
                 ('int', (int,)),
-                ('float', (float,)),
+                ('float', (float, int)),
                 ('bool', (bool,)),
                 ('string', (str, int)),
                 ('list', (list,)),

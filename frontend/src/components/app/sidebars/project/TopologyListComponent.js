@@ -5,7 +5,6 @@ import FontAwesome from 'react-fontawesome'
 
 class TopologyListComponent extends React.Component {
     static propTypes = {
-        show: PropTypes.bool.isRequired,
         topologies: PropTypes.arrayOf(Shapes.Topology),
         currentTopologyId: PropTypes.string,
         onChooseTopology: PropTypes.func.isRequired,
@@ -15,13 +14,6 @@ class TopologyListComponent extends React.Component {
 
     onChoose(id) {
         this.props.onChooseTopology(id)
-    }
-
-    onDuplicate() {
-        this.props.onNewTopology(
-            this.textInput.value,
-            this.originTopology.value,
-        )
     }
 
     onDelete(id) {

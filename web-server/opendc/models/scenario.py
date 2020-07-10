@@ -21,6 +21,6 @@ class Scenario(Model):
         portfolio = Portfolio.from_id(self.obj['portfolioId'])
         user = User.from_google_id(google_id)
         authorizations = list(
-            filter(lambda x: str(x['projectId']) == str(portfolio.get_id()), user.obj['authorizations']))
+            filter(lambda x: str(x['projectId']) == str(portfolio.obj['projectId']), user.obj['authorizations']))
         if len(authorizations) == 0 or (edit_access and authorizations[0]['authorizationLevel'] == 'VIEW'):
             raise ClientError(Response(403, 'Forbidden from retrieving/editing scenario.'))

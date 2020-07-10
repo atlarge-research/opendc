@@ -17,7 +17,7 @@ Shapes.Project = PropTypes.shape({
     datetimeCreated: PropTypes.string.isRequired,
     datetimeLastEdited: PropTypes.string.isRequired,
     topologyIds: PropTypes.array.isRequired,
-    experimentIds: PropTypes.array.isRequired,
+    portfolioIds: PropTypes.array.isRequired,
 })
 
 Shapes.Authorization = PropTypes.shape({
@@ -96,16 +96,37 @@ Shapes.Trace = PropTypes.shape({
     type: PropTypes.string.isRequired,
 })
 
-Shapes.Experiment = PropTypes.shape({
+Shapes.Portfolio = PropTypes.shape({
     _id: PropTypes.string.isRequired,
     projectId: PropTypes.string.isRequired,
-    topologyId: PropTypes.string.isRequired,
-    topology: Shapes.Topology,
-    traceId: PropTypes.string.isRequired,
-    trace: Shapes.Trace,
-    schedulerName: PropTypes.string.isRequired,
-    scheduler: Shapes.Scheduler,
     name: PropTypes.string.isRequired,
+    scenarioIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+    targets: PropTypes.shape({
+        enabledMetrics: PropTypes.arrayOf(PropTypes.string).isRequired,
+        repeatsPerScenario: PropTypes.number.isRequired,
+    }).isRequired,
+})
+
+Shapes.Scenario = PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    portfolioId: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    simulationState: PropTypes.string.isRequired,
+    trace: PropTypes.shape({
+        traceId: PropTypes.string.isRequired,
+        trace: Shapes.Trace,
+        loadSamplingFraction: PropTypes.number.isRequired,
+    }).isRequired,
+    topology: PropTypes.shape({
+        topologyId: PropTypes.string.isRequired,
+        topology: Shapes.Topology,
+    }).isRequired,
+    operational: PropTypes.shape({
+        failuresEnabled: PropTypes.bool.isRequired,
+        performanceInterferenceEnabled: PropTypes.bool.isRequired,
+        schedulerName: PropTypes.string.isRequired,
+        scheduler: Shapes.Scheduler,
+    }).isRequired,
 })
 
 Shapes.WallSegment = PropTypes.shape({

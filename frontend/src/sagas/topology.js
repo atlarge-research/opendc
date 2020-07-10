@@ -20,16 +20,7 @@ import { fetchAndStoreTopology, updateTopologyOnServer } from './objects'
 import { uuid } from 'uuidv4'
 import { addTopology, deleteTopology } from '../api/routes/topologies'
 
-export function* fetchTopologyOfExperiment(experiment) {
-    try {
-        yield fetchAndStoreTopology(experiment.topologyId)
-        yield put(setCurrentTopology(experiment.topologyId))
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export function* fetchAndStoreAllTopologiesOfProject(projectId) {
+export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = false) {
     try {
         const project = yield select((state) => state.objects.project[projectId])
 
@@ -37,7 +28,9 @@ export function* fetchAndStoreAllTopologiesOfProject(projectId) {
             yield fetchAndStoreTopology(project.topologyIds[i])
         }
 
-        yield put(setCurrentTopology(project.topologyIds[0]))
+        if (setTopology) {
+            yield put(setCurrentTopology(project.topologyIds[0]))
+        }
     } catch (error) {
         console.error(error)
     }
