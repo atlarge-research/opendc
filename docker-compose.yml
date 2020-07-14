@@ -1,8 +1,8 @@
 version: "3"
 services:
-  frontend:
-    build: ./
-    image: frontend
+  api:
+    build: ./api
+    image: api
     restart: on-failure
     ports:
       - "8081:8081"

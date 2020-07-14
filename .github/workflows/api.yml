@@ -1,13 +1,13 @@
-name: Web server
+name: REST API
 
 on:
     push:
         paths:
-        - 'web-server/*'
+        - 'api/*'
 
 defaults:
     run:
-        working-directory: web-server
+        working-directory: api
 
 jobs:
     build:

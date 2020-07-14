@@ -66,7 +66,7 @@ Clone OpenDC and follow the [instructions in the main repository](../) to set up
 
 **Important:** Be sure to set up environment variables according to those instructions, in a `.env` file.
 
-In `opendc-web-server/static/index.html`, add your own `OAUTH_CLIENT_ID` in `content=` on line `2`.
+In `api/static/index.html`, add your own `OAUTH_CLIENT_ID` in `content=` on line `2`.
 
 #### Set up the database
 
@@ -84,7 +84,7 @@ This will set you up with a running MongoDB instance and a visual inspection too
 Run the server.
 
 ```bash
-cd web-server
+cd api
 python main.py
 ```
 

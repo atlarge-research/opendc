@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import flask_socketio
 import json
 import os
