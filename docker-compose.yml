@@ -6,8 +6,8 @@ services:
     restart: on-failure
     ports:
       - "8081:8081"
-    links:
-      - mongo
+    networks:
+      - backend
     depends_on:
       - mongo
     environment:
@@ -56,6 +56,8 @@ services:
       - OPENDC_DB
       - OPENDC_DB_USERNAME
       - OPENDC_DB_PASSWORD
+    networks:
+      - backend
     # Comment out for public deployment
     ports:
       - 27017:27017
@@ -66,10 +68,10 @@ services:
   mongo-express:
     image: mongo-express
     restart: on-failure
-    links:
-        - mongo
+    networks:
+      - backend
     depends_on:
-        - mongo
+      - mongo
     ports:
       - 8082:8081
     environment:
@@ -79,3 +81,6 @@ services:
 volumes:
     mongo-volume:
         external: false
+
+networks:
+  backend: {}
