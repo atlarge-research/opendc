@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-import flask_socketio
 import json
 import os
 import sys
 import traceback
 import urllib.request
-from flask import Flask, request, send_from_directory, jsonify
-from flask_compress import Compress
-from oauth2client import client, crypt
-from flask_cors import CORS
+
+import flask_socketio
 from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+from flask_compress import Compress
+from flask_cors import CORS
+from oauth2client import client, crypt
 
 from opendc.models.user import User
 from opendc.util import rest, path_parser, database
@@ -18,12 +19,6 @@ from opendc.util.exceptions import AuthorizationTokenError, RequestInitializatio
 load_dotenv()
 
 TEST_MODE = "OPENDC_FLASK_TESTING" in os.environ
-
-# Specify the directory of static assets
-if TEST_MODE:
-    STATIC_ROOT = os.curdir
-else:
-    STATIC_ROOT = os.path.join(os.environ['OPENDC_ROOT_DIR'], 'frontend', 'build')
 
 # Set up database if not testing
 if not TEST_MODE:
@@ -34,7 +29,7 @@ if not TEST_MODE:
         host=os.environ['OPENDC_DB_HOST'] if 'OPENDC_DB_HOST' in os.environ else 'localhost')
 
 # Set up the core app
-FLASK_CORE_APP = Flask(__name__, static_url_path='', static_folder=STATIC_ROOT)
+FLASK_CORE_APP = Flask(__name__)
 FLASK_CORE_APP.config['SECRET_KEY'] = os.environ['OPENDC_FLASK_SECRET']
 
 # Set up CORS support for local setups
@@ -48,11 +43,6 @@ if 'OPENDC_SERVER_BASE_URL' in os.environ or 'localhost' in os.environ['OPENDC_S
     SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP, cors_allowed_origins="*")
 else:
     SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP)
-
-
-@FLASK_CORE_APP.errorhandler(404)
-def page_not_found(e):
-    return send_from_directory(STATIC_ROOT, 'index.html')
 
 
 @FLASK_CORE_APP.route('/tokensignin', methods=['POST'])
@@ -130,20 +120,6 @@ def api_call(version, endpoint_path):
     flask_response = jsonify(json.loads(response.to_JSON()))
     flask_response.status_code = response.status['code']
     return flask_response
-
-
-@FLASK_CORE_APP.route('/my-auth-token')
-def serve_web_server_test():
-    """Serve the web server test."""
-    return send_from_directory(STATIC_ROOT, 'index.html')
-
-
-@FLASK_CORE_APP.route('/')
-@FLASK_CORE_APP.route('/projects')
-@FLASK_CORE_APP.route('/projects/<path:project_id>')
-@FLASK_CORE_APP.route('/profile')
-def serve_index(project_id=None):
-    return send_from_directory(STATIC_ROOT, 'index.html')
 
 
 @SOCKET_IO_CORE.on('request')
