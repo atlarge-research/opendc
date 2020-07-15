@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,14 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-sc18")
-include(":opendc:opendc-experiments-sc20")
-include(":opendc:opendc-runner-web")
+description = "Experiment runner for OpenDC"
+
+/* Build configuration */
+plugins {
+    `kotlin-library-convention`
+    application
+}
+
+application {
+    mainClassName = "com.atlarge.opendc.runner.web.MainKt"
+}
+
+dependencies {
+    api(project(":opendc:opendc-core"))
+
+    implementation("com.github.ajalt:clikt:2.8.0")
+    implementation("io.github.microutils:kotlin-logging:1.7.10")
+    implementation("org.mongodb:mongo-java-driver:3.12.6")
+
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
+    runtimeOnly(project(":odcsim:odcsim-engine-omega"))
+}
