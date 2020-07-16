@@ -29,13 +29,13 @@ import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
+import java.util.ServiceLoader
+import java.util.UUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import java.util.ServiceLoader
-import java.util.UUID
 
 /**
  * Test suite for the [SimpleProvisioningService].

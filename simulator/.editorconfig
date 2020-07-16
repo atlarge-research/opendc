@@ -4,4 +4,4 @@
 
 # ktlint
 [*.{kt, kts}]
-disabled_rules = import-ordering
+disabled_rules = no-wildcard-imports

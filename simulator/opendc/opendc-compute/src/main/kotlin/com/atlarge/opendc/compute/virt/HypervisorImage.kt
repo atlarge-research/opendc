@@ -29,9 +29,9 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.virt.driver.SimpleVirtDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.core.resource.TagContainer
+import java.util.UUID
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.util.UUID
 
 /**
  * A hypervisor managing the VMs of a node.

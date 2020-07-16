@@ -28,10 +28,10 @@ import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.flow.StateFlow
-import com.atlarge.opendc.compute.core.ProcessingUnit
-import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.MemoryUnit
+import com.atlarge.opendc.compute.core.ProcessingUnit
+import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.execution.ServerContext
@@ -46,6 +46,14 @@ import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
 import com.atlarge.opendc.core.power.PowerModel
 import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
+import java.lang.Exception
+import java.time.Clock
+import java.util.UUID
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.random.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DisposableHandle
@@ -59,15 +67,7 @@ import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.SelectInstance
-import java.util.UUID
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
 import kotlinx.coroutines.withContext
-import java.lang.Exception
-import java.time.Clock
-import kotlin.coroutines.ContinuationInterceptor
-import kotlin.random.Random
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.

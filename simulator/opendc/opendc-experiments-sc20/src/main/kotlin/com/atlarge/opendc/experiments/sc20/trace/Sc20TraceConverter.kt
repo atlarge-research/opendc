@@ -25,6 +25,12 @@
 package com.atlarge.opendc.experiments.sc20.trace
 
 import com.atlarge.opendc.format.trace.sc20.Sc20VmPlacementReader
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileReader
+import java.util.Random
+import kotlin.math.max
+import kotlin.math.min
 import me.tongfei.progressbar.ProgressBar
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
@@ -33,12 +39,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.util.Random
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * A script to convert a trace in text format into a Parquet trace.

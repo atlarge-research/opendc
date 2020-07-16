@@ -25,10 +25,10 @@
 package com.atlarge.opendc.experiments.sc20.telemetry.parquet
 
 import com.atlarge.opendc.experiments.sc20.telemetry.ProvisionerEvent
+import java.io.File
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
-import java.io.File
 
 /**
  * A Parquet event writer for [ProvisionerEvent]s.

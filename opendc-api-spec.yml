@@ -860,8 +860,11 @@ definitions:
                 type: string
             name:
                 type: string
-            simulationState:
-                type: string
+            simulation:
+                type: object
+                properties:
+                  state:
+                    type: string
             trace:
                 type: object
                 properties:

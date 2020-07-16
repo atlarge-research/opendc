@@ -36,10 +36,13 @@ application {
 
 dependencies {
     api(project(":opendc:opendc-core"))
+    implementation(project(":opendc:opendc-compute"))
+    implementation(project(":opendc:opendc-format"))
+    implementation(project(":opendc:opendc-experiments-sc20"))
 
     implementation("com.github.ajalt:clikt:2.8.0")
     implementation("io.github.microutils:kotlin-logging:1.7.10")
-    implementation("org.mongodb:mongo-java-driver:3.12.6")
+    implementation("org.mongodb:mongodb-driver-sync:4.0.5")
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))

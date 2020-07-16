@@ -39,13 +39,13 @@ import com.atlarge.opendc.workflows.service.stage.resource.ResourceSelectionPoli
 import com.atlarge.opendc.workflows.service.stage.task.TaskEligibilityPolicy
 import com.atlarge.opendc.workflows.service.stage.task.TaskOrderPolicy
 import com.atlarge.opendc.workflows.workload.Job
+import java.util.PriorityQueue
+import java.util.Queue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.util.PriorityQueue
-import java.util.Queue
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 

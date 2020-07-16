@@ -25,9 +25,9 @@
 package com.atlarge.opendc.format.environment.sc18
 
 import com.atlarge.odcsim.Domain
-import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
+import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.metal.service.SimpleProvisioningService

@@ -38,13 +38,13 @@ import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionC
 import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
 import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
+import java.io.File
+import java.util.ServiceLoader
+import kotlin.random.Random
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import java.io.File
-import java.util.ServiceLoader
-import kotlin.random.Random
 
 /**
  * The logger for the experiment scenario.
@@ -106,7 +106,11 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
             ?.construct(seeder) ?: emptyMap()
         val trace = Sc20ParquetTraceReader(rawReaders, performanceInterferenceModel, parent.workload, seed)
 
-        val monitor = ParquetExperimentMonitor(this)
+        val monitor = ParquetExperimentMonitor(
+            parent.parent.parent.output,
+            "portfolio_id=${parent.parent.id}/scenario_id=${parent.id}/run_id=$id",
+            parent.parent.parent.bufferSize
+        )
 
         root.launch {
             val (bareMetalProvisioner, scheduler) = createProvisioner(

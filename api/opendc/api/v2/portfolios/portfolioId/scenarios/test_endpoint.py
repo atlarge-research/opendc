@@ -72,7 +72,9 @@ def test_add_scenario(client, mocker):
                                 'projectId': '1',
                                 'authorizationLevel': 'EDIT'
                             }],
-                            'simulationState': 'QUEUED',
+                            'simulation': {
+                                'state': 'QUEUED',
+                            },
                         })
     mocker.patch.object(DB,
                         'insert',
@@ -92,7 +94,9 @@ def test_add_scenario(client, mocker):
                                 'schedulerName': 'DEFAULT',
                             },
                             'portfolioId': '1',
-                            'simulationState': 'QUEUED',
+                            'simulationState': {
+                                'state': 'QUEUED',
+                            },
                         })
     mocker.patch.object(DB, 'update', return_value=None)
     res = client.post(
@@ -115,5 +119,5 @@ def test_add_scenario(client, mocker):
             }
         })
     assert 'portfolioId' in res.json['content']
-    assert 'simulationState' in res.json['content']
+    assert 'simulation' in res.json['content']
     assert '200' in res.status
