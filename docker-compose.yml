@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 services:
   frontend:
     build:
@@ -33,26 +33,26 @@ services:
       - OPENDC_ROOT_DIR
       - OPENDC_SERVER_BASE_URL
 
-  # TODO: Implement new database interaction on the simulator side
-  #  simulator:
-  #    build:
-  #        context: ./opendc-simulator
-  #        dockerfile: opendc-model-odc/setup/Dockerfile
-  #    image: simulator
-  #    restart: on-failure
-  #    links:
-  #      - mongo
-  #    depends_on:
-  #      - mongo
-  #    environment:
-  #      - PERSISTENCE_URL=jdbc:mysql://mariadb:3306/opendc
-  #      - PERSISTENCE_USER=opendc
-  #      - PERSISTENCE_PASSWORD=opendcpassword
-  #      - COLLECT_MACHINE_STATES=ON
-  #      - COLLECT_TASK_STATES=ON
-  #      - COLLECT_STAGE_MEASUREMENTS=OFF
-  #      - COLLECT_TASK_METRICS=OFF
-  #      - COLLECT_JOB_METRICS=OFF
+  simulator:
+    build: ./simulator
+    image: simulator
+    restart: on-failure
+    networks:
+      - backend
+    depends_on:
+      - mongo
+    volumes:
+      - type: bind
+        source: ./traces
+        target: /home/gradle/simulator/traces
+      - type: volume
+        source: results-volume
+        target: /home/gradle/simulator/results
+    environment:
+     - OPENDC_DB
+     - OPENDC_DB_USERNAME
+     - OPENDC_DB_PASSWORD
+     - OPENDC_DB_HOST=mongo
 
   mongo:
     build:
@@ -90,6 +90,7 @@ services:
 volumes:
   mongo-volume:
     external: false
+  results-volume:
 
 networks:
   backend: {}
