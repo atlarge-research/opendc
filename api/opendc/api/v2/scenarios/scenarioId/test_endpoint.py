@@ -19,6 +19,7 @@ def test_get_scenario_not_authorized(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
+                            'projectId': '1',
                             'portfolioId': '1',
                             '_id': '1',
                             'authorizations': [{
@@ -34,6 +35,7 @@ def test_get_scenario(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
+                            'projectId': '1',
                             'portfolioId': '1',
                             '_id': '1',
                             'authorizations': [{
@@ -63,6 +65,7 @@ def test_update_scenario_not_authorized(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
+                            'projectId': '1',
                             'portfolioId': '1',
                             'authorizations': [{
                                 'projectId': '1',
@@ -82,6 +85,7 @@ def test_update_scenario(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
+                            'projectId': '1',
                             'portfolioId': '1',
                             'authorizations': [{
                                 'projectId': '1',
@@ -110,6 +114,7 @@ def test_delete_project_different_user(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
+                            'projectId': '1',
                             'portfolioId': '1',
                             'googleId': 'other_test',
                             'authorizations': [{
@@ -126,6 +131,7 @@ def test_delete_project(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': '1',
+                            'projectId': '1',
                             'portfolioId': '1',
                             'googleId': 'test',
                             'scenarioIds': ['1'],
