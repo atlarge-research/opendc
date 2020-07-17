@@ -10,6 +10,7 @@ import com.atlarge.opendc.experiments.sc20.experiment.monitor.ParquetExperimentM
 import com.atlarge.opendc.experiments.sc20.experiment.processTrace
 import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
 import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
+import com.atlarge.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
@@ -136,18 +137,30 @@ class RunnerCli : CliktCommand(name = "runner") {
      */
     private suspend fun runScenario(portfolio: Document, scenario: Document, topologies: MongoCollection<Document>) {
         val id = scenario.getString("_id")
-        val traceReader = Sc20RawParquetTraceReader(
-            File(
-                tracePath,
-                scenario.getEmbedded(listOf("trace", "traceId"), String::class.java)
-            )
+
+        logger.info { "Constructing performance interference model" }
+
+        val traceDir = File(
+            tracePath,
+            scenario.getEmbedded(listOf("trace", "traceId"), String::class.java)
         )
+        val traceReader = Sc20RawParquetTraceReader(traceDir)
+        val performanceInterferenceReader = let {
+            val path = File(traceDir, "performance-interference-model.json")
+            val enabled = scenario.getEmbedded(listOf("operational", "performanceInterferenceEnabled"), Boolean::class.java)
+
+            if (!enabled || !path.exists()) {
+                return@let null
+            }
+
+            path.inputStream().use { Sc20PerformanceInterferenceReader(it) }
+        }
 
         val targets = portfolio.get("targets", Document::class.java)
 
         repeat(targets.getInteger("repeatsPerScenario")) {
             logger.info { "Starting repeat $it" }
-            runRepeat(scenario, it, topologies, traceReader)
+            runRepeat(scenario, it, topologies, traceReader, performanceInterferenceReader)
         }
 
         logger.info { "Finished scenario $id" }
@@ -160,7 +173,8 @@ class RunnerCli : CliktCommand(name = "runner") {
         scenario: Document,
         repeat: Int,
         topologies: MongoCollection<Document>,
-        traceReader: Sc20RawParquetTraceReader
+        traceReader: Sc20RawParquetTraceReader,
+        performanceInterferenceReader: Sc20PerformanceInterferenceReader?
     ) {
         val id = scenario.getString("_id")
         val seed = repeat
@@ -189,9 +203,10 @@ class RunnerCli : CliktCommand(name = "runner") {
                 else -> throw IllegalArgumentException("Unknown policy $policyName")
             }
 
+        val performanceInterferenceModel = performanceInterferenceReader?.construct(seeder) ?: emptyMap()
         val trace = Sc20ParquetTraceReader(
             listOf(traceReader),
-            emptyMap(),
+            performanceInterferenceModel,
             Workload(workloadName, workloadFraction),
             seed
         )
@@ -214,7 +229,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                 logger.debug("ENABLING failures")
                 createFailureDomain(
                     seeder.nextInt(),
-                    operational.getDouble("failureFrequency"),
+                    operational.get("failureFrequency", Number::class.java)?.toDouble() ?: 24.0 * 7,
                     bareMetalProvisioner,
                     chan
                 )
