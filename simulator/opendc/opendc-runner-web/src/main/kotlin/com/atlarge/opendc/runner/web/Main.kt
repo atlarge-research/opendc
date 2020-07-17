@@ -109,10 +109,21 @@ class RunnerCli : CliktCommand(name = "runner") {
      */
     private val outputPath by option(
         "--output",
-        help = "path to the results directory"
+        help = "path to the results directory",
+        envvar = "OPENDC_OUTPUT"
     )
         .file(canBeFile = false)
         .defaultLazy { File("results/") }
+
+    /**
+     * The Spark master to connect to.
+     */
+    private val spark by option(
+        "--spark",
+        help = "Spark master to connect to",
+        envvar = "OPENDC_SPARK"
+    )
+        .required()
 
     /**
      * Connect to the user-specified database.
@@ -147,7 +158,8 @@ class RunnerCli : CliktCommand(name = "runner") {
         val traceReader = Sc20RawParquetTraceReader(traceDir)
         val performanceInterferenceReader = let {
             val path = File(traceDir, "performance-interference-model.json")
-            val enabled = scenario.getEmbedded(listOf("operational", "performanceInterferenceEnabled"), Boolean::class.java)
+            val operational = scenario.get("operational", Document::class.java)
+            val enabled = operational.getBoolean("performanceInterferenceEnabled")
 
             if (!enabled || !path.exists()) {
                 return@let null
@@ -163,7 +175,7 @@ class RunnerCli : CliktCommand(name = "runner") {
             runRepeat(scenario, it, topologies, traceReader, performanceInterferenceReader)
         }
 
-        logger.info { "Finished scenario $id" }
+        logger.info { "Finished simulation for scenario $id" }
     }
 
     /**
@@ -266,12 +278,14 @@ class RunnerCli : CliktCommand(name = "runner") {
 
     override fun run() = runBlocking(Dispatchers.Default) {
         logger.info { "Starting OpenDC web runner" }
-
         logger.info { "Connecting to MongoDB instance" }
         val database = createDatabase()
         val manager = ScenarioManager(database.getCollection("scenarios"))
         val portfolios = database.getCollection("portfolios")
         val topologies = database.getCollection("topologies")
+
+        logger.info { "Loading Spark" }
+        val resultProcessor = ResultProcessor(spark, outputPath)
 
         logger.info { "Watching for queued scenarios" }
 
@@ -302,7 +316,13 @@ class RunnerCli : CliktCommand(name = "runner") {
                 try {
                     val portfolio = portfolios.find(Filters.eq("_id", scenario.getString("portfolioId"))).first()!!
                     runScenario(portfolio, scenario, topologies)
-                    manager.finish(id)
+
+                    logger.info { "Starting result processing" }
+
+                    val result = resultProcessor.process(id)
+                    manager.finish(id, result)
+
+                    logger.info { "Successfully finished scenario $id" }
                 } catch (e: Exception) {
                     logger.warn(e) { "Scenario failed to finish" }
                     manager.fail(id)

@@ -39,20 +39,64 @@ services:
     restart: on-failure
     networks:
       - backend
+      - spark
     depends_on:
       - mongo
+      - spark-master
+      - spark-worker
     volumes:
       - type: bind
         source: ./traces
         target: /home/gradle/simulator/traces
       - type: volume
-        source: results-volume
-        target: /home/gradle/simulator/results
+        source:  results-volume
+        target: /results
+    # Override to root as the simulator won't be able to access the volume otherwise
+    user: root
     environment:
      - OPENDC_DB
      - OPENDC_DB_USERNAME
      - OPENDC_DB_PASSWORD
      - OPENDC_DB_HOST=mongo
+     - OPENDC_OUTPUT=/results
+     - OPENDC_SPARK=spark://spark-master:7077
+
+  spark-master:
+    image: docker.io/bitnami/spark:3-debian-10
+    networks:
+      - spark
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    # Comment out for public deployment
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+
+  spark-worker:
+    image: docker.io/bitnami/spark:3-debian-10
+    networks:
+      - spark
+    depends_on:
+      - spark-master
+    volumes:
+      - type: volume
+        source: results-volume
+        target: /results
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+    - "7081:8081"
 
   mongo:
     build:
@@ -69,10 +113,10 @@ services:
       - backend
     # Comment out for public deployment
     ports:
-      - 27017:27017
+      - "27017:27017"
     # Uncomment for persistent deployment
-    #volumes:
-    #  - mongo-volume:/data/db
+    volumes:
+      - mongo-volume:/data/db
 
   mongo-express:
     image: mongo-express
@@ -94,3 +138,4 @@ volumes:
 
 networks:
   backend: {}
+  spark: {}

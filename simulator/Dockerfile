@@ -15,7 +15,7 @@ USER root
 WORKDIR $APP_HOME
 
 # Build the application
-RUN gradle --no-daemon assemble installDist
+RUN gradle --no-daemon :opendc:opendc-runner-web:installDist
 
 # Fix permissions
 RUN chown -R gradle:gradle $APP_HOME

@@ -42,8 +42,14 @@ dependencies {
 
     implementation("com.github.ajalt:clikt:2.8.0")
     implementation("io.github.microutils:kotlin-logging:1.7.10")
-    implementation("org.mongodb:mongodb-driver-sync:4.0.5")
 
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
+    implementation("org.mongodb:mongodb-driver-sync:4.0.5")
+    implementation("org.apache.spark:spark-sql_2.12:3.0.0") {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "log4j")
+    }
+
     runtimeOnly(project(":odcsim:odcsim-engine-omega"))
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
+    runtimeOnly("org.apache.logging.log4j:log4j-1.2-api:2.13.1")
 }

@@ -30,7 +30,7 @@ class ScenarioManager(private val collection: MongoCollection<Document>) {
             ),
             Updates.combine(
                 Updates.set("simulation.state", "RUNNING"),
-                Updates.set("simulation.time", Instant.now())
+                Updates.set("simulation.heartbeat", Instant.now())
             )
         )
         return res != null
@@ -45,7 +45,7 @@ class ScenarioManager(private val collection: MongoCollection<Document>) {
                 Filters.eq("_id", id),
                 Filters.eq("simulation.state", "RUNNING")
             ),
-            Updates.set("simulation.time", Instant.now())
+            Updates.set("simulation.heartbeat", Instant.now())
         )
     }
 
@@ -54,24 +54,40 @@ class ScenarioManager(private val collection: MongoCollection<Document>) {
      */
     fun fail(id: String) {
         collection.findOneAndUpdate(
-            Filters.and(
-                Filters.eq("_id", id),
-                Filters.eq("simulation.state", "FAILED")
-            ),
-            Updates.set("simulation.time", Instant.now())
+            Filters.eq("_id", id),
+            Updates.combine(
+                Updates.set("simulation.state", "FAILED"),
+                Updates.set("simulation.heartbeat", Instant.now())
+            )
         )
     }
 
     /**
-     * Mark the scenario as finished.
+     * Persist the specified results.
      */
-    fun finish(id: String) {
+    fun finish(id: String, result: ResultProcessor.Result) {
         collection.findOneAndUpdate(
-            Filters.and(
-                Filters.eq("_id", id),
-                Filters.eq("simulation.state", "FINISHED")
-            ),
-            Updates.set("simulation.time", Instant.now())
+            Filters.eq("_id", id),
+            Updates.combine(
+                Updates.set("simulation.state", "FINISHED"),
+                Updates.unset("simulation.time"),
+                Updates.set("results.total_requested_burst", result.totalRequestedBurst),
+                Updates.set("results.total_granted_burst", result.totalGrantedBurst),
+                Updates.set("results.total_overcommitted_burst", result.totalOvercommittedBurst),
+                Updates.set("results.total_interfered_burst", result.totalInterferedBurst),
+                Updates.set("results.mean_cpu_usage", result.meanCpuUsage),
+                Updates.set("results.mean_cpu_demand", result.meanCpuDemand),
+                Updates.set("results.mean_num_deployed_images", result.meanNumDeployedImages),
+                Updates.set("results.max_num_deployed_images", result.maxNumDeployedImages),
+                Updates.set("results.max_num_deployed_images", result.maxNumDeployedImages),
+                Updates.set("results.total_power_draw", result.totalPowerDraw),
+                Updates.set("results.total_failure_slices", result.totalFailureSlices),
+                Updates.set("results.total_failure_vm_slices", result.totalFailureVmSlices),
+                Updates.set("results.total_vms_submitted", result.totalVmsSubmitted),
+                Updates.set("results.total_vms_queued", result.totalVmsQueued),
+                Updates.set("results.total_vms_finished", result.totalVmsFinished),
+                Updates.set("results.total_vms_failed", result.totalVmsFailed)
+            )
         )
     }
 }
