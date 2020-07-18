@@ -123,7 +123,7 @@ class RunnerCli : CliktCommand(name = "runner") {
         help = "Spark master to connect to",
         envvar = "OPENDC_SPARK"
     )
-        .required()
+        .default("local[*]")
 
     /**
      * Connect to the user-specified database.
@@ -284,7 +284,7 @@ class RunnerCli : CliktCommand(name = "runner") {
         val portfolios = database.getCollection("portfolios")
         val topologies = database.getCollection("topologies")
 
-        logger.info { "Loading Spark" }
+        logger.info { "Launching Spark" }
         val resultProcessor = ResultProcessor(spark, outputPath)
 
         logger.info { "Watching for queued scenarios" }
