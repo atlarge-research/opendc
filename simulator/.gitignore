@@ -38,7 +38,7 @@ data/
 # IntelliJ
 /out/
 .idea/
-*/out
+**/out
 *.iml
 
 # mpeltonen/sbt-idea plugin

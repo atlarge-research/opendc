@@ -1,11 +1,10 @@
-# IntelliJ
-/out/
+.git
+
 .idea/
-*/out
+**/out
 *.iml
 .idea_modules/
 
-### Gradle
 .gradle
-build/
+**/build/
 
