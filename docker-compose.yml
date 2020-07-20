@@ -16,6 +16,9 @@ services:
     build: ./api
     image: api
     restart: on-failure
+    # Comment out these 2 lines for deployment
+    ports:
+      - "8081:8081"
     networks:
       - backend
     depends_on:
