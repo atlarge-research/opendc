@@ -47,7 +47,7 @@ class ThreadPoolExperimentScheduler(parallelism: Int = Runtime.getRuntime().avai
             override suspend fun invoke(
                 descriptor: ExperimentDescriptor,
                 context: ExperimentExecutionContext
-            ): ExperimentExecutionResult = supervisorScope {
+            ) = supervisorScope {
                 val listener =
                     object : ExperimentExecutionListener {
                         override fun descriptorRegistered(descriptor: ExperimentDescriptor) {
@@ -70,10 +70,7 @@ class ThreadPoolExperimentScheduler(parallelism: Int = Runtime.getRuntime().avai
                 try {
                     withContext(dispatcher) {
                         descriptor(newContext)
-                        ExperimentExecutionResult.Success
                     }
-                } catch (e: Throwable) {
-                    ExperimentExecutionResult.Failed(e)
                 } finally {
                     tickets.release()
                 }

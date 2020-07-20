@@ -49,11 +49,10 @@ interface ExperimentScheduler : Closeable {
          *
          * @param descriptor The descriptor to execute.
          * @param context The context to execute the descriptor in.
-         * @return The results of the experiment trial.
          */
         suspend operator fun invoke(
             descriptor: ExperimentDescriptor,
             context: ExperimentExecutionContext
-        ): ExperimentExecutionResult
+        )
     }
 }
