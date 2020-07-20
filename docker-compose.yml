@@ -51,8 +51,6 @@ services:
       - type: volume
         source:  results-volume
         target: /results
-    # Override to root as the simulator won't be able to access the volume otherwise
-    user: root
     environment:
      - OPENDC_DB
      - OPENDC_DB_USERNAME
@@ -76,7 +74,6 @@ services:
     # Comment out for public deployment
     ports:
       - "27017:27017"
-    # Uncomment for persistent deployment
     volumes:
       - mongo-volume:/data/db
 
@@ -95,7 +92,6 @@ services:
 
 volumes:
   mongo-volume:
-    external: false
   results-volume:
 
 networks:

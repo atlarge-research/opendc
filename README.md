@@ -84,6 +84,9 @@ OPENDC_ROOT_DIR=/your/path/to/opendc
 OPENDC_SERVER_BASE_URL=http://localhost:8081
 ```
 
+Afterwards, you should also create a `traces/` directory in which you place the VM and workflow traces you want to
+experiment with.
+
 If you plan to publicly deploy, please also tweak the other settings. In that case, also check the `docker-compose.yml` for further instructions.
 
 Now, start the server:
