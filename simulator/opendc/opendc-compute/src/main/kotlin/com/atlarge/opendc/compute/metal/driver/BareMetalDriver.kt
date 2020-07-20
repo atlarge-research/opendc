@@ -30,8 +30,8 @@ import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.core.failure.FailureDomain
 import com.atlarge.opendc.core.power.Powerable
 import com.atlarge.opendc.core.services.AbstractServiceKey
-import kotlinx.coroutines.flow.Flow
 import java.util.UUID
+import kotlinx.coroutines.flow.Flow
 
 /**
  * A driver interface for the management interface of a bare-metal compute node.

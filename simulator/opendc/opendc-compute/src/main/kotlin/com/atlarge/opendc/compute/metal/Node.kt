@@ -27,8 +27,8 @@ package com.atlarge.opendc.compute.metal
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.Identity
-import kotlinx.coroutines.flow.Flow
 import java.util.UUID
+import kotlinx.coroutines.flow.Flow
 
 /**
  * A bare-metal compute node.

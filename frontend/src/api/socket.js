@@ -6,11 +6,9 @@ let requestIdCounter = 0
 const callbacks = {}
 
 export function setupSocketConnection(onConnect) {
-    let port = window.location.port
-    if (process.env.NODE_ENV !== 'production') {
-        port = 8081
-    }
-    socket = io.connect(window.location.protocol + '//' + window.location.hostname + ':' + port)
+    const apiUrl = process.env.REACT_APP_API_URL || window.location.hostname + ':' + window.location.port;
+
+    socket = io.connect(window.location.protocol + '//' + apiUrl);
     socket.on('connect', onConnect)
     socket.on('response', onSocketResponse)
 }

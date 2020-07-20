@@ -111,7 +111,9 @@ Shapes.Scenario = PropTypes.shape({
     _id: PropTypes.string.isRequired,
     portfolioId: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    simulationState: PropTypes.string.isRequired,
+    simulation: PropTypes.shape({
+        state: PropTypes.string.isRequired,
+    }).isRequired,
     trace: PropTypes.shape({
         traceId: PropTypes.string.isRequired,
         trace: Shapes.Trace,

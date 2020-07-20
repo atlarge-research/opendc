@@ -28,8 +28,8 @@ import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
 import com.atlarge.opendc.format.trace.TraceEntry
-import mu.KotlinLogging
 import kotlin.random.Random
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

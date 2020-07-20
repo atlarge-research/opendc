@@ -1,13 +1,28 @@
-version: "3"
+version: "3.8"
 services:
   frontend:
-    build: ./
+    build:
+      context: ./frontend
+      args:
+        - REACT_APP_OAUTH_CLIENT_ID=${OPENDC_OAUTH_CLIENT_ID}
     image: frontend
     restart: on-failure
+    networks:
+      - backend
+    depends_on:
+      - api
     ports:
-      - "8081:8081"
-    links:
-      - mongo
+      - "8081:80"
+
+  api:
+    build: ./api
+    image: api
+    restart: on-failure
+    # Comment out these 2 lines for deployment
+    ports:
+      - "8082:8081"
+    networks:
+      - backend
     depends_on:
       - mongo
     environment:
@@ -20,34 +35,34 @@ services:
       - OPENDC_DB_HOST=mongo
       - OPENDC_FLASK_SECRET
       - OPENDC_OAUTH_CLIENT_ID
-      - REACT_APP_OAUTH_CLIENT_ID=${OPENDC_OAUTH_CLIENT_ID}
       - OPENDC_ROOT_DIR
       - OPENDC_SERVER_BASE_URL
 
-# TODO: Implement new database interaction on the simulator side
-#  simulator:
-#    build:
-#        context: ./opendc-simulator
-#        dockerfile: opendc-model-odc/setup/Dockerfile
-#    image: simulator
-#    restart: on-failure
-#    links:
-#      - mongo
-#    depends_on:
-#      - mongo
-#    environment:
-#      - PERSISTENCE_URL=jdbc:mysql://mariadb:3306/opendc
-#      - PERSISTENCE_USER=opendc
-#      - PERSISTENCE_PASSWORD=opendcpassword
-#      - COLLECT_MACHINE_STATES=ON
-#      - COLLECT_TASK_STATES=ON
-#      - COLLECT_STAGE_MEASUREMENTS=OFF
-#      - COLLECT_TASK_METRICS=OFF
-#      - COLLECT_JOB_METRICS=OFF
+  simulator:
+    build: ./simulator
+    image: simulator
+    restart: on-failure
+    networks:
+      - backend
+    depends_on:
+      - mongo
+    volumes:
+      - type: bind
+        source: ./traces
+        target: /app/traces
+      - type: volume
+        source:  results-volume
+        target: /results
+    environment:
+     - OPENDC_DB
+     - OPENDC_DB_USERNAME
+     - OPENDC_DB_PASSWORD
+     - OPENDC_DB_HOST=mongo
+     - OPENDC_OUTPUT=/results
 
   mongo:
     build:
-        context: database
+      context: database
     restart: on-failure
     environment:
       - MONGO_INITDB_ROOT_USERNAME
@@ -56,26 +71,30 @@ services:
       - OPENDC_DB
       - OPENDC_DB_USERNAME
       - OPENDC_DB_PASSWORD
+    networks:
+      - backend
     # Comment out for public deployment
     ports:
-      - 27017:27017
-    # Uncomment for persistent deployment
-    #volumes:
-    #  - mongo-volume:/data/db
+      - "27017:27017"
+    volumes:
+      - mongo-volume:/data/db
 
   mongo-express:
     image: mongo-express
     restart: on-failure
-    links:
-        - mongo
+    networks:
+      - backend
     depends_on:
-        - mongo
+      - mongo
     ports:
-      - 8082:8081
+      - "8083:8081"
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
       ME_CONFIG_MONGODB_ADMINPASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
 
 volumes:
-    mongo-volume:
-        external: false
+  mongo-volume:
+  results-volume:
+
+networks:
+  backend: {}

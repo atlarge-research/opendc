@@ -45,19 +45,20 @@ import com.atlarge.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
 import com.atlarge.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
+import java.io.File
+import kotlin.math.ln
+import kotlin.math.max
+import kotlin.random.Random
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import java.io.File
-import kotlin.math.ln
-import kotlin.math.max
-import kotlin.random.Random
 
 /**
  * The logger for this experiment.
@@ -209,7 +210,6 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
 
     try {
         var submitted = 0
-        val finished = Channel<Unit>(Channel.CONFLATED)
 
         while (reader.hasNext()) {
             val (time, workload) = reader.next()
@@ -228,17 +228,20 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
                         if (it is ServerEvent.StateChanged) {
                             monitor.reportVmStateChange(simulationContext.clock.millis(), it.server)
                         }
-
-                        delay(1)
-                        finished.send(Unit)
                     }
                     .collect()
             }
         }
 
-        while (scheduler.finishedVms + scheduler.unscheduledVms != submitted) {
-            finished.receive()
-        }
+        scheduler.events
+            .takeWhile {
+                when (it) {
+                    is VirtProvisioningEvent.MetricsAvailable ->
+                        it.inactiveVmCount + it.failedVmCount != submitted
+                }
+            }
+            .collect()
+        delay(1)
     } finally {
         reader.close()
     }
