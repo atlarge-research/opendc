@@ -46,21 +46,21 @@ const PortfolioResultsComponent = ({ portfolio, scenarios }) => {
     })
 
     return (
-        <div>
+        <div className="full-height" style={{ overflowY: 'scroll', overflowX: 'hidden' }}>
             <h1>Portfolio: {portfolio.name}</h1>
             <p>Repeats per Scenario: {portfolio.targets.repeatsPerScenario}</p>
             <div className="row">
-                {AVAILABLE_METRICS.map(metric => (
+                {AVAILABLE_METRICS.map((metric) => (
                     <div className="col-6" key={metric}>
                         <h4>{METRIC_NAMES[metric]}</h4>
                         <ResponsiveContainer aspect={16 / 9} width="100%">
                             <BarChart data={dataPerMetric[metric]}>
-                                <CartesianGrid strokeDasharray="3 3"/>
-                                <XAxis dataKey="name"/>
-                                <YAxis tickFormatter={tick => approx(tick)}/>
-                                <Tooltip/>
-                                <Bar dataKey="value" fill="#8884d8"/>
-                                <ErrorBar dataKey="std" width={4} strokeWidth={2} stroke="blue" direction="y"/>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis tickFormatter={(tick) => approx(tick)} />
+                                <Tooltip />
+                                <Bar dataKey="value" fill="#8884d8" />
+                                <ErrorBar dataKey="std" width={4} strokeWidth={2} stroke="blue" direction="y" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

@@ -71,14 +71,18 @@ class AppComponent extends React.Component {
         const portfolioElements = (
             <div className="full-height app-page-container">
                 <ProjectSidebarContainer />
-                <PortfolioResultsContainer/>
+                <div className="container-fluid full-height">
+                    <PortfolioResultsContainer />
+                </div>
             </div>
         )
 
         const scenarioElements = (
             <div className="full-height app-page-container">
                 <ProjectSidebarContainer />
-                <h2>Scenario loading</h2>
+                <div className="container-fluid full-height">
+                    <h2>Scenario loading</h2>
+                </div>
             </div>
         )
 
