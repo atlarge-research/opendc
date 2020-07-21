@@ -1,0 +1,10 @@
+.git
+
+.idea/
+**/out
+*.iml
+.idea_modules/
+
+.gradle
+**/build/
+

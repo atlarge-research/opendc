@@ -26,14 +26,14 @@ package com.atlarge.opendc.core.failure
 
 import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.simulationContext
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.launch
 import kotlin.math.exp
 import kotlin.math.max
 import kotlin.random.Random
 import kotlin.random.asJavaRandom
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 
 /**
  * A [FaultInjector] that injects fault in the system which are correlated to each other. Failures do not occur in

@@ -26,10 +26,10 @@ package com.atlarge.opendc.format.trace.sc20
 
 import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
-import com.atlarge.opendc.compute.core.workload.VmWorkload
-import com.atlarge.opendc.core.User
 import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
+import com.atlarge.opendc.compute.core.workload.VmWorkload
+import com.atlarge.opendc.core.User
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
 import java.io.BufferedReader

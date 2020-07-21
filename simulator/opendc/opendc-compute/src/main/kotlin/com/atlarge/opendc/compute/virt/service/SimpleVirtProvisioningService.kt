@@ -11,11 +11,14 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.metal.service.ProvisioningService
 import com.atlarge.opendc.compute.virt.HypervisorEvent
-import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.HypervisorImage
 import com.atlarge.opendc.compute.virt.driver.InsufficientMemoryOnServerException
+import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.service.allocation.AllocationPolicy
 import com.atlarge.opendc.core.services.ServiceKey
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -27,9 +30,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.math.max
 
 private val logger = KotlinLogging.logger {}
 

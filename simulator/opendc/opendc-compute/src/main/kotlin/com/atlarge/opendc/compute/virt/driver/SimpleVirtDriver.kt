@@ -35,11 +35,15 @@ import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.compute.core.execution.ServerManagementContext
 import com.atlarge.opendc.compute.core.execution.ShutdownException
 import com.atlarge.opendc.compute.core.image.Image
+import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
+import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
-import com.atlarge.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
-import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
+import java.util.UUID
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
@@ -55,10 +59,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.SelectInstance
 import kotlinx.coroutines.selects.select
-import java.util.UUID
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * A [VirtDriver] that is backed by a simple hypervisor implementation.

@@ -1,8 +1,8 @@
 package com.atlarge.opendc.format.trace.swf
 
+import java.io.File
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.io.File
 
 class SwfTraceReaderTest {
     @Test

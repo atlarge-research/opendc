@@ -25,14 +25,16 @@
 package com.atlarge.opendc.compute.virt
 
 import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingNode
+import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
+import java.util.ServiceLoader
+import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -43,8 +45,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import java.util.ServiceLoader
-import java.util.UUID
 
 /**
  * Basic test-suite for the hypervisor.

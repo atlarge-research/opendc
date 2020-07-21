@@ -21,6 +21,20 @@ $MONGO_CMD --eval 'db.createCollection("scenarios");'
 $MONGO_CMD --eval 'db.createCollection("traces");'
 $MONGO_CMD --eval 'db.createCollection("prefabs");'
 
+echo 'Loading default traces'
+
+$MONGO_CMD --eval 'db.traces.update(
+    {"_id": "bitbrains-small"},
+    {
+        "$set": {
+            "_id": "bitbrains-small",
+            "name": "bitbrains-small",
+            "type": "VM",
+        }
+    },
+    {"upsert": true}
+);'
+
 echo 'Loading test data'
 
 $MONGO_CMD --eval 'db.prefabs.insertOne(

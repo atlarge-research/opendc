@@ -1,29 +1,29 @@
 name: Frontend
 
 on:
-    push:
-        paths:
-        - 'frontend/*'
+  push:
+    paths:
+      - 'frontend/**'
 
 defaults:
-    run:
-        working-directory: frontend
+  run:
+    working-directory: frontend
 
 jobs:
-    build:
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                os: [ubuntu-latest]
-                node: [12.x]
-        steps:
-        - uses: actions/checkout@v2
-        - name: Set up Node.js
-          uses: actions/setup-node@v1
-          with:
-            node-version: ${{ matrix.node }}
-        - run: npm install
-        - run: npm run build --if-present
-        - run: npm test
-          env:
-            CI: true
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install
+      - run: npm run build --if-present
+      - run: npm test
+        env:
+          CI: true

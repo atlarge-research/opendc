@@ -35,6 +35,8 @@ import com.atlarge.opendc.workflows.service.stage.resource.FirstFitResourceSelec
 import com.atlarge.opendc.workflows.service.stage.resource.FunctionalResourceFilterPolicy
 import com.atlarge.opendc.workflows.service.stage.task.NullTaskEligibilityPolicy
 import com.atlarge.opendc.workflows.service.stage.task.SubmissionTimeTaskOrderPolicy
+import java.util.ServiceLoader
+import kotlin.math.max
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
@@ -44,8 +46,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.util.ServiceLoader
-import kotlin.math.max
 
 /**
  * Integration test suite for the [StageWorkflowService].

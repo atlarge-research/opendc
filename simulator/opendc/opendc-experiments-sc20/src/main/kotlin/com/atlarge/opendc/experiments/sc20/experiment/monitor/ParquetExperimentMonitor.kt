@@ -27,13 +27,12 @@ package com.atlarge.opendc.experiments.sc20.experiment.monitor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
 import com.atlarge.opendc.compute.virt.service.VirtProvisioningEvent
-import com.atlarge.opendc.experiments.sc20.experiment.Run
 import com.atlarge.opendc.experiments.sc20.telemetry.HostEvent
 import com.atlarge.opendc.experiments.sc20.telemetry.ProvisionerEvent
 import com.atlarge.opendc.experiments.sc20.telemetry.parquet.ParquetHostEventWriter
 import com.atlarge.opendc.experiments.sc20.telemetry.parquet.ParquetProvisionerEventWriter
-import mu.KotlinLogging
 import java.io.File
+import mu.KotlinLogging
 
 /**
  * The logger instance to use.
@@ -43,15 +42,14 @@ private val logger = KotlinLogging.logger {}
 /**
  * An [ExperimentMonitor] that logs the events to a Parquet file.
  */
-class ParquetExperimentMonitor(val run: Run) : ExperimentMonitor {
-    private val partition = "portfolio_id=${run.parent.parent.id}/scenario_id=${run.parent.id}/run_id=${run.id}"
+class ParquetExperimentMonitor(base: File, partition: String, bufferSize: Int) : ExperimentMonitor {
     private val hostWriter = ParquetHostEventWriter(
-        File(run.parent.parent.parent.output, "host-metrics/$partition/data.parquet"),
-        run.parent.parent.parent.bufferSize
+        File(base, "host-metrics/$partition/data.parquet"),
+        bufferSize
     )
     private val provisionerWriter = ParquetProvisionerEventWriter(
-        File(run.parent.parent.parent.output, "provisioner-metrics/$partition/data.parquet"),
-        run.parent.parent.parent.bufferSize
+        File(base, "provisioner-metrics/$partition/data.parquet"),
+        bufferSize
     )
     private val currentHostEvent = mutableMapOf<Server, HostEvent>()
     private var startTime = -1L

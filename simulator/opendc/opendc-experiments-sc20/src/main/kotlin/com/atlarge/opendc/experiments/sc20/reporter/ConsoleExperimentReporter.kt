@@ -30,6 +30,7 @@ import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionL
 import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionResult
 import me.tongfei.progressbar.ProgressBar
 import me.tongfei.progressbar.ProgressBarBuilder
+import mu.KotlinLogging
 
 /**
  * A reporter that reports the experiment progress to the console.
@@ -44,6 +45,11 @@ public class ConsoleExperimentReporter : ExperimentExecutionListener {
      * The total number of runs.
      */
     private var total = 0
+
+    /**
+     * The logger for this reporter.
+     */
+    private val logger = KotlinLogging.logger {}
 
     /**
      * The progress bar to keep track of the progress.
@@ -68,6 +74,10 @@ public class ConsoleExperimentReporter : ExperimentExecutionListener {
             if (runs.isEmpty()) {
                 pb.close()
             }
+        }
+
+        if (result is ExperimentExecutionResult.Failed) {
+            logger.warn(result.throwable) { "Descriptor $descriptor failed" }
         }
     }
 

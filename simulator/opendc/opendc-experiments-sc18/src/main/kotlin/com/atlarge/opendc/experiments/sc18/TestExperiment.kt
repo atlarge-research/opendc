@@ -38,6 +38,8 @@ import com.atlarge.opendc.workflows.service.stage.resource.FirstFitResourceSelec
 import com.atlarge.opendc.workflows.service.stage.resource.FunctionalResourceFilterPolicy
 import com.atlarge.opendc.workflows.service.stage.task.NullTaskEligibilityPolicy
 import com.atlarge.opendc.workflows.service.stage.task.SubmissionTimeTaskOrderPolicy
+import java.io.File
+import java.util.ServiceLoader
 import kotlin.math.max
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -46,8 +48,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.io.File
-import java.util.ServiceLoader
 
 /**
  * Main entry point of the experiment.

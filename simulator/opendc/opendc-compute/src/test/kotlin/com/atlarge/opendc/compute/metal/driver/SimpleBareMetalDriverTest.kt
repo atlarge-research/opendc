@@ -31,6 +31,8 @@ import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
+import java.util.ServiceLoader
+import java.util.UUID
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -39,8 +41,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.util.ServiceLoader
-import java.util.UUID
 
 internal class SimpleBareMetalDriverTest {
     /**
