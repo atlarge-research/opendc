@@ -22,14 +22,7 @@ const WallSegment = ({ wallSegment }) => {
         ]
     }
 
-    return (
-        <Line
-            points={points}
-            lineCap="round"
-            stroke={WALL_COLOR}
-            strokeWidth={WALL_WIDTH_IN_PIXELS}
-        />
-    )
+    return <Line points={points} lineCap="round" stroke={WALL_COLOR} strokeWidth={WALL_WIDTH_IN_PIXELS} />
 }
 
 WallSegment.propTypes = {

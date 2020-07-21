@@ -43,19 +43,12 @@ class MapStageComponent extends React.Component {
     }
 
     updateDimensions() {
-        this.props.setMapDimensions(
-            jQuery(window).width(),
-            jQuery(window).height() - NAVBAR_HEIGHT,
-        )
+        this.props.setMapDimensions(jQuery(window).width(), jQuery(window).height() - NAVBAR_HEIGHT)
     }
 
     updateScale(e) {
         e.preventDefault()
-        this.props.zoomInOnPosition(
-            e.deltaY < 0,
-            this.state.mouseX,
-            this.state.mouseY,
-        )
+        this.props.zoomInOnPosition(e.deltaY < 0, this.state.mouseX, this.state.mouseY)
     }
 
     updateMousePosition() {
@@ -83,21 +76,14 @@ class MapStageComponent extends React.Component {
     }
 
     moveWithDelta(deltaX, deltaY) {
-        this.props.setMapPositionWithBoundsCheck(
-            this.props.mapPosition.x + deltaX,
-            this.props.mapPosition.y + deltaY,
-        )
+        this.props.setMapPositionWithBoundsCheck(this.props.mapPosition.x + deltaX, this.props.mapPosition.y + deltaY)
     }
 
     render() {
         return (
-            <Shortcuts
-                name="MAP"
-                handler={this.handleShortcuts.bind(this)}
-                targetNodeSelector="body"
-            >
+            <Shortcuts name="MAP" handler={this.handleShortcuts.bind(this)} targetNodeSelector="body">
                 <Stage
-                    ref={stage => {
+                    ref={(stage) => {
                         this.stage = stage
                     }}
                     width={this.props.mapDimensions.width}
@@ -105,15 +91,9 @@ class MapStageComponent extends React.Component {
                     onMouseMove={this.updateMousePosition.bind(this)}
                 >
                     <Provider store={store}>
-                        <MapLayer/>
-                        <RoomHoverLayer
-                            mouseX={this.state.mouseX}
-                            mouseY={this.state.mouseY}
-                        />
-                        <ObjectHoverLayer
-                            mouseX={this.state.mouseX}
-                            mouseY={this.state.mouseY}
-                        />
+                        <MapLayer />
+                        <RoomHoverLayer mouseX={this.state.mouseX} mouseY={this.state.mouseY} />
+                        <ObjectHoverLayer mouseX={this.state.mouseX} mouseY={this.state.mouseY} />
                     </Provider>
                 </Stage>
             </Shortcuts>

@@ -13,15 +13,15 @@ const DeleteMachineModalComponent = ({ visible, callback }) => (
     />
 )
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         visible: state.modals.deleteMachineModalVisible,
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        callback: isConfirmed => {
+        callback: (isConfirmed) => {
             if (isConfirmed) {
                 dispatch(deleteMachine())
             }
@@ -30,8 +30,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const DeleteMachineModal = connect(mapStateToProps, mapDispatchToProps)(
-    DeleteMachineModalComponent,
-)
+const DeleteMachineModal = connect(mapStateToProps, mapDispatchToProps)(DeleteMachineModalComponent)
 
 export default DeleteMachineModal

@@ -20,20 +20,17 @@ class NewPortfolioModalComponent extends React.Component {
 
     reset() {
         this.textInput.value = ''
-        AVAILABLE_METRICS.forEach(metric => {
+        AVAILABLE_METRICS.forEach((metric) => {
             this.metricCheckboxes[metric].checked = true
         })
         this.repeatsInput.value = 1
     }
 
     onSubmit() {
-        this.props.callback(
-            this.textInput.value,
-            {
-                enabledMetrics: AVAILABLE_METRICS.filter(metric => this.metricCheckboxes[metric].checked),
-                repeatsPerScenario: parseInt(this.repeatsInput.value),
-            },
-        )
+        this.props.callback(this.textInput.value, {
+            enabledMetrics: AVAILABLE_METRICS.filter((metric) => this.metricCheckboxes[metric].checked),
+            repeatsPerScenario: parseInt(this.repeatsInput.value),
+        })
         this.reset()
     }
 
@@ -51,7 +48,7 @@ class NewPortfolioModalComponent extends React.Component {
                 onCancel={this.onCancel.bind(this)}
             >
                 <form
-                    onSubmit={e => {
+                    onSubmit={(e) => {
                         e.preventDefault()
                         this.onSubmit()
                     }}
@@ -62,19 +59,19 @@ class NewPortfolioModalComponent extends React.Component {
                             type="text"
                             className="form-control"
                             required
-                            ref={textInput => (this.textInput = textInput)}
+                            ref={(textInput) => (this.textInput = textInput)}
                         />
                     </div>
                     <h4>Targets</h4>
                     <h5>Metrics</h5>
                     <div className="form-group">
-                        {AVAILABLE_METRICS.map(metric => (
+                        {AVAILABLE_METRICS.map((metric) => (
                             <div className="form-check" key={metric}>
                                 <label className="form-check-label">
                                     <input
                                         type="checkbox"
                                         className="form-check-input"
-                                        ref={checkbox => (this.metricCheckboxes[metric] = checkbox)}
+                                        ref={(checkbox) => (this.metricCheckboxes[metric] = checkbox)}
                                     />
                                     <code>{metric}</code>
                                 </label>
@@ -87,7 +84,7 @@ class NewPortfolioModalComponent extends React.Component {
                             type="number"
                             className="form-control"
                             required
-                            ref={repeatsInput => (this.repeatsInput = repeatsInput)}
+                            ref={(repeatsInput) => (this.repeatsInput = repeatsInput)}
                         />
                     </div>
                 </form>

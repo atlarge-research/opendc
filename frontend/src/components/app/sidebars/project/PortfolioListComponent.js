@@ -24,8 +24,11 @@ class PortfolioListComponent extends React.Component {
             <div className="pb-3">
                 <h2>
                     Portfolios
-                    <button className="btn btn-outline-primary float-right" onClick={this.props.onNewPortfolio.bind(this)}>
-                        <FontAwesome name="plus"/>
+                    <button
+                        className="btn btn-outline-primary float-right"
+                        onClick={this.props.onNewPortfolio.bind(this)}
+                    >
+                        <FontAwesome name="plus" />
                     </button>
                 </h2>
 
@@ -33,7 +36,11 @@ class PortfolioListComponent extends React.Component {
                     <div key={portfolio._id}>
                         <div className="row mb-1">
                             <div
-                                className={'col-8 align-self-center ' + (portfolio._id === this.props.currentPortfolioId ? 'font-weight-bold' : '')}>
+                                className={
+                                    'col-8 align-self-center ' +
+                                    (portfolio._id === this.props.currentPortfolioId ? 'font-weight-bold' : '')
+                                }
+                            >
                                 {portfolio.name}
                             </div>
                             <div className="col-4 text-right">
@@ -48,7 +55,7 @@ class PortfolioListComponent extends React.Component {
                                 />
                             </div>
                         </div>
-                        <ScenarioListContainer portfolioId={portfolio._id}/>
+                        <ScenarioListContainer portfolioId={portfolio._id} />
                     </div>
                 ))}
             </div>

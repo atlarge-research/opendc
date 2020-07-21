@@ -5,8 +5,8 @@ import './ToolPanelComponent.css'
 
 const ToolPanelComponent = () => (
     <div className="tool-panel">
-        <ZoomControlContainer/>
-        <ExportCanvasComponent/>
+        <ZoomControlContainer />
+        <ExportCanvasComponent />
     </div>
 )
 

@@ -1,10 +1,6 @@
 import { takeEvery } from 'redux-saga/effects'
 import { LOG_IN } from '../actions/auth'
-import {
-    ADD_PORTFOLIO,
-    DELETE_PORTFOLIO,
-    OPEN_PORTFOLIO_SUCCEEDED, UPDATE_PORTFOLIO,
-} from '../actions/portfolios'
+import { ADD_PORTFOLIO, DELETE_PORTFOLIO, OPEN_PORTFOLIO_SUCCEEDED, UPDATE_PORTFOLIO } from '../actions/portfolios'
 import { ADD_PROJECT, DELETE_PROJECT, OPEN_PROJECT_SUCCEEDED } from '../actions/projects'
 import {
     ADD_TILE,
@@ -16,12 +12,7 @@ import { ADD_UNIT, DELETE_MACHINE, DELETE_UNIT } from '../actions/topology/machi
 import { ADD_MACHINE, DELETE_RACK, EDIT_RACK_NAME } from '../actions/topology/rack'
 import { ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME } from '../actions/topology/room'
 import { DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER } from '../actions/users'
-import {
-    onAddPortfolio,
-    onDeletePortfolio,
-    onOpenPortfolioSucceeded,
-    onUpdatePortfolio,
-} from './portfolios'
+import { onAddPortfolio, onDeletePortfolio, onOpenPortfolioSucceeded, onUpdatePortfolio } from './portfolios'
 import { onDeleteCurrentUser } from './profile'
 import { onOpenProjectSucceeded, onProjectAdd, onProjectDelete } from './projects'
 import {

@@ -21,27 +21,14 @@ const RackFillBar = ({ positionX, positionY, type, fillFraction }) => {
     const x =
         positionX * TILE_SIZE_IN_PIXELS +
         OBJECT_MARGIN_IN_PIXELS +
-        (type === 'space'
-            ? halfOfObjectBorderWidth
-            : 0.5 * (TILE_SIZE_IN_PIXELS - 2 * OBJECT_MARGIN_IN_PIXELS))
-    const startY =
-        positionY * TILE_SIZE_IN_PIXELS +
-        OBJECT_MARGIN_IN_PIXELS +
-        halfOfObjectBorderWidth
-    const width =
-        0.5 * (TILE_SIZE_IN_PIXELS - OBJECT_MARGIN_IN_PIXELS * 2) -
-        halfOfObjectBorderWidth
-    const fullHeight =
-        TILE_SIZE_IN_PIXELS -
-        OBJECT_MARGIN_IN_PIXELS * 2 -
-        OBJECT_BORDER_WIDTH_IN_PIXELS
+        (type === 'space' ? halfOfObjectBorderWidth : 0.5 * (TILE_SIZE_IN_PIXELS - 2 * OBJECT_MARGIN_IN_PIXELS))
+    const startY = positionY * TILE_SIZE_IN_PIXELS + OBJECT_MARGIN_IN_PIXELS + halfOfObjectBorderWidth
+    const width = 0.5 * (TILE_SIZE_IN_PIXELS - OBJECT_MARGIN_IN_PIXELS * 2) - halfOfObjectBorderWidth
+    const fullHeight = TILE_SIZE_IN_PIXELS - OBJECT_MARGIN_IN_PIXELS * 2 - OBJECT_BORDER_WIDTH_IN_PIXELS
 
     const fractionHeight = fillFraction * fullHeight
     const fractionY =
-        (positionY + 1) * TILE_SIZE_IN_PIXELS -
-        OBJECT_MARGIN_IN_PIXELS -
-        halfOfObjectBorderWidth -
-        fractionHeight
+        (positionY + 1) * TILE_SIZE_IN_PIXELS - OBJECT_MARGIN_IN_PIXELS - halfOfObjectBorderWidth - fractionHeight
 
     return (
         <Group>
@@ -50,22 +37,14 @@ const RackFillBar = ({ positionX, positionY, type, fillFraction }) => {
                 y={startY}
                 width={width}
                 height={fullHeight}
-                fill={
-                    type === 'space'
-                        ? RACK_SPACE_BAR_BACKGROUND_COLOR
-                        : RACK_ENERGY_BAR_BACKGROUND_COLOR
-                }
+                fill={type === 'space' ? RACK_SPACE_BAR_BACKGROUND_COLOR : RACK_ENERGY_BAR_BACKGROUND_COLOR}
             />
             <Rect
                 x={x}
                 y={fractionY}
                 width={width}
                 height={fractionHeight}
-                fill={
-                    type === 'space'
-                        ? RACK_SPACE_BAR_FILL_COLOR
-                        : RACK_ENERGY_BAR_FILL_COLOR
-                }
+                fill={type === 'space' ? RACK_SPACE_BAR_FILL_COLOR : RACK_ENERGY_BAR_FILL_COLOR}
             />
             <ImageComponent
                 src={'/img/topology/rack-' + type + '-icon.png'}

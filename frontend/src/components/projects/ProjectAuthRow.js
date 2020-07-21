@@ -8,20 +8,12 @@ import { parseAndFormatDateTime } from '../../util/date-time'
 const ProjectAuthRow = ({ projectAuth }) => (
     <tr>
         <td className="pt-3">{projectAuth.project.name}</td>
+        <td className="pt-3">{parseAndFormatDateTime(projectAuth.project.datetimeLastEdited)}</td>
         <td className="pt-3">
-            {parseAndFormatDateTime(projectAuth.project.datetimeLastEdited)}
-        </td>
-        <td className="pt-3">
-      <span
-          className={classNames(
-              'fa',
-              'fa-' + AUTH_ICON_MAP[projectAuth.authorizationLevel],
-              'mr-2',
-          )}
-      />
+            <span className={classNames('fa', 'fa-' + AUTH_ICON_MAP[projectAuth.authorizationLevel], 'mr-2')} />
             {AUTH_DESCRIPTION_MAP[projectAuth.authorizationLevel]}
         </td>
-        <ProjectActions projectId={projectAuth.project._id}/>
+        <ProjectActions projectId={projectAuth.project._id} />
     </tr>
 )
 

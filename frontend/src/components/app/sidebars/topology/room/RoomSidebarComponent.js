@@ -8,11 +8,11 @@ import RoomNameContainer from '../../../../../containers/app/sidebars/topology/r
 const RoomSidebarComponent = () => {
     return (
         <div>
-            <RoomNameContainer/>
-            <BackToBuildingContainer/>
-            <RackConstructionContainer/>
-            <EditRoomContainer/>
-            <DeleteRoomContainer/>
+            <RoomNameContainer />
+            <BackToBuildingContainer />
+            <RackConstructionContainer />
+            <EditRoomContainer />
+            <DeleteRoomContainer />
         </div>
     )
 }

@@ -3,9 +3,7 @@ import WallGroup from '../../../components/app/map/groups/WallGroup'
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        tiles: state.objects.room[ownProps.roomId].tileIds.map(
-            tileId => state.objects.tile[tileId],
-        ),
+        tiles: state.objects.room[ownProps.roomId].tileIds.map((tileId) => state.objects.tile[tileId]),
     }
 }
 

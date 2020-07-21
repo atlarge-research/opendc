@@ -4,16 +4,15 @@ import {
     finishNewRoomConstruction,
     startNewRoomConstruction,
 } from '../../../../../actions/topology/building'
-import StartNewRoomConstructionComponent
-    from '../../../../../components/app/sidebars/topology/building/NewRoomConstructionComponent'
+import StartNewRoomConstructionComponent from '../../../../../components/app/sidebars/topology/building/NewRoomConstructionComponent'
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         currentRoomInConstruction: state.construction.currentRoomInConstruction,
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
         onStart: () => dispatch(startNewRoomConstruction()),
         onFinish: () => dispatch(finishNewRoomConstruction()),
@@ -21,8 +20,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const NewRoomConstructionButton = connect(mapStateToProps, mapDispatchToProps)(
-    StartNewRoomConstructionComponent,
-)
+const NewRoomConstructionButton = connect(mapStateToProps, mapDispatchToProps)(StartNewRoomConstructionComponent)
 
 export default NewRoomConstructionButton

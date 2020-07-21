@@ -9,7 +9,7 @@ const WallGroup = ({ tiles }) => {
     return (
         <Group>
             {deriveWallLocations(tiles).map((wallSegment, index) => (
-                <WallSegment key={index} wallSegment={wallSegment}/>
+                <WallSegment key={index} wallSegment={wallSegment} />
             ))}
         </Group>
     )

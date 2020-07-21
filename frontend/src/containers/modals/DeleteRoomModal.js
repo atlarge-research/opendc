@@ -13,15 +13,15 @@ const DeleteRoomModalComponent = ({ visible, callback }) => (
     />
 )
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         visible: state.modals.deleteRoomModalVisible,
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        callback: isConfirmed => {
+        callback: (isConfirmed) => {
             if (isConfirmed) {
                 dispatch(deleteRoom())
             }
@@ -30,8 +30,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const DeleteRoomModal = connect(mapStateToProps, mapDispatchToProps)(
-    DeleteRoomModalComponent,
-)
+const DeleteRoomModal = connect(mapStateToProps, mapDispatchToProps)(DeleteRoomModalComponent)
 
 export default DeleteRoomModal

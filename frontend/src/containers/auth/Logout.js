@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import { logOut } from '../../actions/auth'
 import LogoutButton from '../../components/navigation/LogoutButton'
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
         onLogout: () => dispatch(logOut()),
     }

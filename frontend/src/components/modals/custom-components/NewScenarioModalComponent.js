@@ -36,13 +36,13 @@ class NewScenarioModalComponent extends React.Component {
                 loadSamplingFraction: parseFloat(this.traceLoadInput.value),
             },
             {
-                topologyId: this.topologySelect.value
+                topologyId: this.topologySelect.value,
             },
             {
                 failuresEnabled: this.failuresCheckbox.checked,
                 performanceInterferenceEnabled: this.performanceInterferenceCheckbox.checked,
                 schedulerName: this.schedulerSelect.value,
-            },
+            }
         )
         this.reset()
     }
@@ -61,7 +61,7 @@ class NewScenarioModalComponent extends React.Component {
                 onCancel={this.onCancel.bind(this)}
             >
                 <form
-                    onSubmit={e => {
+                    onSubmit={(e) => {
                         e.preventDefault()
                         this.onSubmit()
                     }}
@@ -72,17 +72,14 @@ class NewScenarioModalComponent extends React.Component {
                             type="text"
                             className="form-control"
                             required
-                            ref={textInput => (this.textInput = textInput)}
+                            ref={(textInput) => (this.textInput = textInput)}
                         />
                     </div>
                     <h4>Trace</h4>
                     <div className="form-group">
                         <label className="form-control-label">Trace</label>
-                        <select
-                            className="form-control"
-                            ref={traceSelect => (this.traceSelect = traceSelect)}
-                        >
-                            {this.props.traces.map(trace => (
+                        <select className="form-control" ref={(traceSelect) => (this.traceSelect = traceSelect)}>
+                            {this.props.traces.map((trace) => (
                                 <option value={trace._id} key={trace._id}>
                                     {trace.name}
                                 </option>
@@ -95,7 +92,7 @@ class NewScenarioModalComponent extends React.Component {
                             type="number"
                             className="form-control"
                             required
-                            ref={traceLoadInput => (this.traceLoadInput = traceLoadInput)}
+                            ref={(traceLoadInput) => (this.traceLoadInput = traceLoadInput)}
                         />
                     </div>
                     <h4>Topology</h4>
@@ -103,9 +100,9 @@ class NewScenarioModalComponent extends React.Component {
                         <label className="form-control-label">Topology</label>
                         <select
                             className="form-control"
-                            ref={topologySelect => (this.topologySelect = topologySelect)}
+                            ref={(topologySelect) => (this.topologySelect = topologySelect)}
                         >
-                            {this.props.topologies.map(topology => (
+                            {this.props.topologies.map((topology) => (
                                 <option value={topology._id} key={topology._id}>
                                     {topology.name}
                                 </option>
@@ -118,7 +115,7 @@ class NewScenarioModalComponent extends React.Component {
                             <input
                                 type="checkbox"
                                 className="form-check-input"
-                                ref={failuresCheckbox => (this.failuresCheckbox = failuresCheckbox)}
+                                ref={(failuresCheckbox) => (this.failuresCheckbox = failuresCheckbox)}
                             />
                             <span className="ml-2">Enable failures</span>
                         </label>
@@ -128,7 +125,9 @@ class NewScenarioModalComponent extends React.Component {
                             <input
                                 type="checkbox"
                                 className="form-check-input"
-                                ref={performanceInterferenceCheckbox => (this.performanceInterferenceCheckbox = performanceInterferenceCheckbox)}
+                                ref={(performanceInterferenceCheckbox) =>
+                                    (this.performanceInterferenceCheckbox = performanceInterferenceCheckbox)
+                                }
                             />
                             <span className="ml-2">Enable performance interference</span>
                         </label>
@@ -137,9 +136,9 @@ class NewScenarioModalComponent extends React.Component {
                         <label className="form-control-label">Scheduler</label>
                         <select
                             className="form-control"
-                            ref={schedulerSelect => (this.schedulerSelect = schedulerSelect)}
+                            ref={(schedulerSelect) => (this.schedulerSelect = schedulerSelect)}
                         >
-                            {this.props.schedulers.map(scheduler => (
+                            {this.props.schedulers.map((scheduler) => (
                                 <option value={scheduler.name} key={scheduler.name}>
                                     {scheduler.name}
                                 </option>

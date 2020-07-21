@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import MapLayerComponent from '../../../../components/app/map/layers/MapLayerComponent'
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         mapPosition: state.map.position,
         mapScale: state.map.scale,

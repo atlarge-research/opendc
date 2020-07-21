@@ -10,12 +10,10 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
     return {
-        onAdd: id => dispatch(addUnit(ownProps.unitType, id)),
+        onAdd: (id) => dispatch(addUnit(ownProps.unitType, id)),
     }
 }
 
-const UnitAddContainer = connect(mapStateToProps, mapDispatchToProps)(
-    UnitAddComponent,
-)
+const UnitAddContainer = connect(mapStateToProps, mapDispatchToProps)(UnitAddComponent)
 
 export default UnitAddContainer

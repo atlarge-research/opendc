@@ -21,7 +21,7 @@ class Home extends React.Component {
         const scrollOffset = 60
         jQuery('#navbar')
             .find('li a')
-            .click(function(e) {
+            .click(function (e) {
                 if (jQuery(e.target).parents('.auth-links').length > 0) {
                     return
                 }
@@ -42,17 +42,17 @@ class Home extends React.Component {
     render() {
         return (
             <div>
-                <HomeNavbar/>
+                <HomeNavbar />
                 <div className="body-wrapper page-container">
-                    <JumbotronHeader/>
-                    <IntroSection/>
-                    <StakeholderSection/>
-                    <ModelingSection/>
-                    <SimulationSection/>
-                    <TechnologiesSection/>
-                    <TeamSection/>
-                    <ContactSection/>
-                    <DocumentTitle title="OpenDC"/>
+                    <JumbotronHeader />
+                    <IntroSection />
+                    <StakeholderSection />
+                    <ModelingSection />
+                    <SimulationSection />
+                    <TechnologiesSection />
+                    <TeamSection />
+                    <ContactSection />
+                    <DocumentTitle title="OpenDC" />
                 </div>
             </div>
         )

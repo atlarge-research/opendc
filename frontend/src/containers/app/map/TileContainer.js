@@ -11,9 +11,9 @@ const mapStateToProps = (state, ownProps) => {
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        onClick: tile => {
+        onClick: (tile) => {
             if (tile.rackId) {
                 dispatch(goFromRoomToRack(tile._id))
             }

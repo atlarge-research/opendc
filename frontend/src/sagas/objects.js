@@ -96,7 +96,7 @@ export const fetchAndStoreTopology = function* (id) {
 
                                 const filledSlots = new Array(fullRack.capacity).fill(null)
                                 fullRack.machines.forEach(
-                                    (machine) => (filledSlots[machine.position - 1] = machine._id),
+                                    (machine) => (filledSlots[machine.position - 1] = machine._id)
                                 )
                                 let rack = (({ _id, name, capacity, powerCapacityW }) => ({
                                     _id,
@@ -165,21 +165,21 @@ export const updateTopologyOnServer = function* (id) {
                 rack: !tileStore[tileId].rackId
                     ? undefined
                     : {
-                        _id: rackStore[tileStore[tileId].rackId]._id,
-                        name: rackStore[tileStore[tileId].rackId].name,
-                        capacity: rackStore[tileStore[tileId].rackId].capacity,
-                        powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
-                        machines: rackStore[tileStore[tileId].rackId].machineIds
-                            .filter((m) => m !== null)
-                            .map((machineId) => ({
-                                _id: machineId,
-                                position: machineStore[machineId].position,
-                                cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
-                                gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
-                                memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
-                                storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
-                            })),
-                    },
+                          _id: rackStore[tileStore[tileId].rackId]._id,
+                          name: rackStore[tileStore[tileId].rackId].name,
+                          capacity: rackStore[tileStore[tileId].rackId].capacity,
+                          powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
+                          machines: rackStore[tileStore[tileId].rackId].machineIds
+                              .filter((m) => m !== null)
+                              .map((machineId) => ({
+                                  _id: machineId,
+                                  position: machineStore[machineId].position,
+                                  cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
+                                  gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
+                                  memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
+                                  storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
+                              })),
+                      },
             })),
         })),
     }

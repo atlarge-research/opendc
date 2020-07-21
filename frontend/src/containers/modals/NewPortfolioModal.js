@@ -3,21 +3,21 @@ import NewPortfolioModalComponent from '../../components/modals/custom-component
 import { addPortfolio } from '../../actions/portfolios'
 import { closeNewPortfolioModal } from '../../actions/modals/portfolios'
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         show: state.modals.newPortfolioModalVisible,
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
         callback: (name, targets) => {
             if (name) {
                 dispatch(
                     addPortfolio({
                         name,
-                        targets
-                    }),
+                        targets,
+                    })
                 )
             }
             dispatch(closeNewPortfolioModal())
@@ -25,8 +25,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const NewPortfolioModal = connect(mapStateToProps, mapDispatchToProps)(
-    NewPortfolioModalComponent,
-)
+const NewPortfolioModal = connect(mapStateToProps, mapDispatchToProps)(NewPortfolioModalComponent)
 
 export default NewPortfolioModal

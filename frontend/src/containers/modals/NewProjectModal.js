@@ -5,23 +5,18 @@ import { addProject } from '../../actions/projects'
 import TextInputModal from '../../components/modals/TextInputModal'
 
 const NewProjectModalComponent = ({ visible, callback }) => (
-    <TextInputModal
-        title="New Project"
-        label="Project title"
-        show={visible}
-        callback={callback}
-    />
+    <TextInputModal title="New Project" label="Project title" show={visible} callback={callback} />
 )
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         visible: state.modals.newProjectModalVisible,
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        callback: text => {
+        callback: (text) => {
             if (text) {
                 dispatch(addProject(text))
             }
@@ -30,8 +25,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const NewProjectModal = connect(mapStateToProps, mapDispatchToProps)(
-    NewProjectModalComponent,
-)
+const NewProjectModal = connect(mapStateToProps, mapDispatchToProps)(NewProjectModalComponent)
 
 export default NewProjectModal

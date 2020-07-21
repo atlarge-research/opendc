@@ -18,11 +18,12 @@
     "private": true,
     "proxy": "http://localhost:8082",
     "dependencies": {
-        "approximate-number": "~2.0.0",
+        "approximate-number": "^2.0.0",
         "classnames": "~2.2.5",
         "husky": "~4.2.5",
         "konva": "~6.0.0",
         "lint-staged": "~10.2.2",
+        "mathjs": "^7.1.0",
         "node-sass-chokidar": "~1.4.0",
         "npm-run-all": "~4.1.2",
         "prettier": "~2.0.5",
@@ -37,6 +38,7 @@
         "react-router-dom": "~5.1.2",
         "react-scripts": "~3.4.1",
         "react-shortcuts": "~2.1.0",
+        "recharts": "^1.8.5",
         "redux": "~4.0.5",
         "redux-localstorage": "~0.4.1",
         "redux-logger": "~3.0.6",
@@ -54,7 +56,7 @@
         ]
     },
     "scripts": {
-        "format": "prettier --write src/**/*.js",
+        "format": "prettier --write src",
         "precommit": "lint-staged",
         "build-css": "node-sass-chokidar src/ -o src/",
         "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",

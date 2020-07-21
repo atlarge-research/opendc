@@ -9,7 +9,7 @@ import {
 } from '../../components/app/map/MapConstants'
 import { calculateRoomListBounds } from '../../util/tile-calculations'
 
-export const viewportAdjustmentMiddleware = store => next => action => {
+export const viewportAdjustmentMiddleware = (store) => (next) => (action) => {
     const state = store.getState()
 
     let topologyId = '-1'
@@ -17,21 +17,15 @@ export const viewportAdjustmentMiddleware = store => next => action => {
     if (action.type === SET_CURRENT_TOPOLOGY && action.topologyId !== '-1') {
         topologyId = action.topologyId
         mapDimensions = state.map.dimensions
-    } else if (
-        action.type === SET_MAP_DIMENSIONS &&
-        state.currentTopologyId !== '-1'
-    ) {
+    } else if (action.type === SET_MAP_DIMENSIONS && state.currentTopologyId !== '-1') {
         topologyId = state.currentTopologyId
         mapDimensions = { width: action.width, height: action.height }
     }
 
     if (topologyId !== '-1') {
         const roomIds = state.objects.topology[topologyId].roomIds
-        const rooms = roomIds.map(id => Object.assign({}, state.objects.room[id]))
-        rooms.forEach(
-            room =>
-                (room.tiles = room.tileIds.map(tileId => state.objects.tile[tileId])),
-        )
+        const rooms = roomIds.map((id) => Object.assign({}, state.objects.room[id]))
+        rooms.forEach((room) => (room.tiles = room.tileIds.map((tileId) => state.objects.tile[tileId])))
 
         let hasNoTiles = true
         for (let i in rooms) {
@@ -42,11 +36,7 @@ export const viewportAdjustmentMiddleware = store => next => action => {
         }
 
         if (!hasNoTiles) {
-            const viewportParams = calculateParametersToZoomInOnRooms(
-                rooms,
-                mapDimensions.width,
-                mapDimensions.height,
-            )
+            const viewportParams = calculateParametersToZoomInOnRooms(rooms, mapDimensions.width, mapDimensions.height)
             store.dispatch(setMapPosition(viewportParams.newX, viewportParams.newY))
             store.dispatch(setMapScale(viewportParams.newScale))
         }
@@ -75,11 +65,8 @@ function calculateNewScale(bounds, mapWidth, mapHeight) {
     const width = bounds.max.x - bounds.min.x
     const height = bounds.max.y - bounds.min.y
 
-    const scaleX =
-        (mapWidth - 2 * SIDEBAR_WIDTH) /
-        (width * TILE_SIZE_IN_PIXELS + 2 * VIEWPORT_PADDING)
-    const scaleY =
-        mapHeight / (height * TILE_SIZE_IN_PIXELS + 2 * VIEWPORT_PADDING)
+    const scaleX = (mapWidth - 2 * SIDEBAR_WIDTH) / (width * TILE_SIZE_IN_PIXELS + 2 * VIEWPORT_PADDING)
+    const scaleY = mapHeight / (height * TILE_SIZE_IN_PIXELS + 2 * VIEWPORT_PADDING)
     const newScale = Math.min(scaleX, scaleY)
 
     return Math.min(Math.max(MAP_MIN_SCALE, newScale), MAP_MAX_SCALE)

@@ -8,7 +8,7 @@ const AppNavbarComponent = ({ project, fullWidth }) => (
     <Navbar fullWidth={fullWidth}>
         <NavItem route="/projects">
             <Link className="nav-link" title="My Projects" to="/projects">
-                <FontAwesome name="list" className="mr-2"/>
+                <FontAwesome name="list" className="mr-2" />
                 My Projects
             </Link>
         </NavItem>
@@ -18,9 +18,7 @@ const AppNavbarComponent = ({ project, fullWidth }) => (
                     <span>{project.name}</span>
                 </Link>
             </NavItem>
-        ) : (
-            undefined
-        )}
+        ) : undefined}
     </Navbar>
 )
 

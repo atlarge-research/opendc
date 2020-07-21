@@ -12,17 +12,9 @@ const UnitIcon = ({ id, type }) => (
     </div>
 )
 
-const MachineComponent = ({
-                              position,
-                              machine,
-                              onClick,
-                          }) => {
+const MachineComponent = ({ position, machine, onClick }) => {
     const hasNoUnits =
-        machine.cpuIds.length +
-        machine.gpuIds.length +
-        machine.memoryIds.length +
-        machine.storageIds.length ===
-        0
+        machine.cpuIds.length + machine.gpuIds.length + machine.memoryIds.length + machine.storageIds.length === 0
 
     return (
         <li
@@ -32,33 +24,13 @@ const MachineComponent = ({
         >
             <span className="badge badge-default badge-info mr-1">{position}</span>
             <div className="d-inline-flex">
-                {machine.cpuIds.length > 0 ? (
-                    <UnitIcon id="cpu" type="CPU"/>
-                ) : (
-                    undefined
-                )}
-                {machine.gpuIds.length > 0 ? (
-                    <UnitIcon id="gpu" type="GPU"/>
-                ) : (
-                    undefined
-                )}
-                {machine.memoryIds.length > 0 ? (
-                    <UnitIcon id="memory" type="memory"/>
-                ) : (
-                    undefined
-                )}
-                {machine.storageIds.length > 0 ? (
-                    <UnitIcon id="storage" type="storage"/>
-                ) : (
-                    undefined
-                )}
+                {machine.cpuIds.length > 0 ? <UnitIcon id="cpu" type="CPU" /> : undefined}
+                {machine.gpuIds.length > 0 ? <UnitIcon id="gpu" type="GPU" /> : undefined}
+                {machine.memoryIds.length > 0 ? <UnitIcon id="memory" type="memory" /> : undefined}
+                {machine.storageIds.length > 0 ? <UnitIcon id="storage" type="storage" /> : undefined}
                 {hasNoUnits ? (
-                    <span className="badge badge-default badge-warning">
-                        Machine with no units
-                    </span>
-                ) : (
-                    undefined
-                )}
+                    <span className="badge badge-default badge-warning">Machine with no units</span>
+                ) : undefined}
             </div>
         </li>
     )

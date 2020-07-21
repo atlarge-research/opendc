@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import LoadChartComponent from '../../../../components/app/sidebars/elements/LoadChartComponent'
+import MetricChartComponent from '../../../../components/app/results/MetricChartComponent'
 
 const mapStateToProps = (state, ownProps) => {
     const data = []
@@ -10,6 +10,6 @@ const mapStateToProps = (state, ownProps) => {
     }
 }
 
-const LoadChartContainer = connect(mapStateToProps)(LoadChartComponent)
+const LoadChartContainer = connect(mapStateToProps)(MetricChartComponent)
 
 export default LoadChartContainer

@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import { goDownOneInteractionLevel } from '../../../actions/interaction-level'
 import GrayLayer from '../../../components/app/map/elements/GrayLayer'
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
         onClick: () => dispatch(goDownOneInteractionLevel()),
     }

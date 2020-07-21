@@ -62,7 +62,7 @@ export function* onAddPortfolio(action) {
             Object.assign({}, action.portfolio, {
                 projectId: currentProjectId,
                 scenarioIds: [],
-            }),
+            })
         )
         yield put(addToStore('portfolio', portfolio))
 
@@ -70,7 +70,7 @@ export function* onAddPortfolio(action) {
         yield put(
             addPropToStoreObject('project', currentProjectId, {
                 portfolioIds: portfolioIds.concat([portfolio._id]),
-            }),
+            })
         )
     } catch (error) {
         console.error(error)
@@ -79,11 +79,7 @@ export function* onAddPortfolio(action) {
 
 export function* onUpdatePortfolio(action) {
     try {
-        const portfolio = yield call(
-            updatePortfolio,
-            action.portfolio._id,
-            action.portfolio,
-        )
+        const portfolio = yield call(updatePortfolio, action.portfolio._id, action.portfolio)
         yield put(addToStore('portfolio', portfolio))
     } catch (error) {
         console.error(error)
@@ -100,7 +96,7 @@ export function* onDeletePortfolio(action) {
         yield put(
             addPropToStoreObject('project', currentProjectId, {
                 portfolioIds: portfolioIds.filter((id) => id !== action.id),
-            }),
+            })
         )
     } catch (error) {
         console.error(error)
