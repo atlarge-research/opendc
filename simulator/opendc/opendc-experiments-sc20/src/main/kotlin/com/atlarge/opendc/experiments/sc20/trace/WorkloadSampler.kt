@@ -24,10 +24,13 @@
 
 package com.atlarge.opendc.experiments.sc20.trace
 
+import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.experiments.sc20.experiment.model.CompositeWorkload
+import com.atlarge.opendc.experiments.sc20.experiment.model.SamplingStrategy
 import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
 import com.atlarge.opendc.format.trace.TraceEntry
+import java.util.*
 import kotlin.random.Random
 import mu.KotlinLogging
 
@@ -42,10 +45,14 @@ fun sampleWorkload(
     subWorkload: Workload,
     seed: Int
 ): List<TraceEntry<VmWorkload>> {
-    return if (workload is CompositeWorkload) {
-        sampleRegularWorkload(trace, workload, subWorkload, seed)
-    } else {
-        sampleRegularWorkload(trace, workload, workload, seed)
+    return when {
+        workload is CompositeWorkload -> sampleRegularWorkload(trace, workload, subWorkload, seed)
+        workload.samplingStrategy == SamplingStrategy.HPC ->
+            sampleHpcWorkload(trace, workload, seed, sampleOnLoad = false)
+        workload.samplingStrategy == SamplingStrategy.HPC_LOAD ->
+            sampleHpcWorkload(trace, workload, seed, sampleOnLoad = true)
+        else ->
+            sampleRegularWorkload(trace, workload, workload, seed)
     }
 }
 
@@ -87,20 +94,22 @@ fun sampleRegularWorkload(
 /**
  * Sample a HPC workload.
  */
-fun sampleHPCWorkload(
+fun sampleHpcWorkload(
     trace: List<TraceEntry<VmWorkload>>,
     workload: Workload,
     seed: Int,
-    fraction: Double,
     sampleOnLoad: Boolean
 ): List<TraceEntry<VmWorkload>> {
-    val pattern = Regex("^(ComputeNode|cn)")
+    val pattern = Regex("^vm__workload__(ComputeNode|cn).*")
     val random = Random(seed)
 
+    val fraction = workload.fraction
     val (hpc, nonHpc) = trace.partition { entry ->
         val name = entry.workload.image.name
         name.matches(pattern)
     }
+
+    logger.debug { "Found ${hpc.size} HPC workloads and ${nonHpc.size} non-HPC workloads" }
 
     val totalLoad = if (workload is CompositeWorkload) {
         workload.totalLoad
@@ -111,16 +120,12 @@ fun sampleHPCWorkload(
     val res = mutableListOf<TraceEntry<VmWorkload>>()
 
     if (sampleOnLoad) {
-        val hpcPool = mutableListOf<TraceEntry<VmWorkload>>()
-
-        // We repeat the HPC VMs 1000 times to have a large enough pool to pick VMs from.
-        repeat(1000) {
-            hpcPool.addAll(hpc)
-        }
-        hpcPool.shuffle(random)
-
         var currentLoad = 0.0
-        for (entry in hpcPool) {
+        var i = 0
+        while (true) {
+            // Sample random HPC entry with replacement
+            val entry = sample(hpc.random(random), i++)
+
             val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
             if ((currentLoad + entryLoad) / totalLoad > fraction || res.size > trace.size) {
                 break
@@ -141,10 +146,13 @@ fun sampleHPCWorkload(
             res += entry
         }
     } else {
-        (hpc as MutableList<TraceEntry<VmWorkload>>).shuffle(random)
-        (nonHpc as MutableList<TraceEntry<VmWorkload>>).shuffle(random)
+        repeat((fraction * trace.size).toInt()) { i ->
+            // Sample random HPC entry with replacement
+            val entry = sample(hpc.random(random), i)
+            res.add(entry)
+        }
 
-        res.addAll(hpc.subList(0, (fraction * trace.size).toInt()))
+        (nonHpc as MutableList<TraceEntry<VmWorkload>>).shuffle(random)
         res.addAll(nonHpc.subList(0, ((1 - fraction) * trace.size).toInt()))
     }
 
@@ -152,3 +160,22 @@ fun sampleHPCWorkload(
 
     return res
 }
+
+/**
+ * Sample a random trace entry.
+ */
+private fun sample(entry: TraceEntry<VmWorkload>, i: Int): TraceEntry<VmWorkload> {
+    val id = UUID.nameUUIDFromBytes("${entry.workload.image.uid}-$i".toByteArray())
+    val image = VmImage(
+        id,
+        entry.workload.image.name + "-$i",
+        entry.workload.image.tags,
+        entry.workload.image.flopsHistory,
+        entry.workload.image.maxCores,
+        entry.workload.image.requiredMemory
+    )
+    val vmWorkload = entry.workload.copy(uid = id, image = image, name = entry.workload.name + "-$i")
+    return VmTraceEntry(vmWorkload, entry.submissionTime)
+}
+
+private class VmTraceEntry(override val workload: VmWorkload, override val submissionTime: Long) : TraceEntry<VmWorkload>
