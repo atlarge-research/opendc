@@ -16,13 +16,13 @@ export const AVAILABLE_METRICS = [
 ]
 
 export const METRIC_NAMES = {
-    total_overcommitted_burst: 'Overcomm. CPU Cycles [MFLOP]',
-    total_granted_burst: 'Granted CPU Cycles [MFLOP]',
-    total_requested_burst: 'Requested CPU Cycles [MFLOP]',
-    total_interfered_burst: 'Interfered CPU Cycles [MFLOP]',
-    total_power_draw: 'Total Power Consumption [Wh]',
-    mean_cpu_usage: 'Mean Host CPU Usage [MHz]',
-    mean_cpu_demand: 'Mean Host CPU Demand [MHz]',
+    total_overcommitted_burst: 'Overcomm. CPU Cycles',
+    total_granted_burst: 'Granted CPU Cycles',
+    total_requested_burst: 'Requested CPU Cycles',
+    total_interfered_burst: 'Interfered CPU Cycles',
+    total_power_draw: 'Total Power Consumption',
+    mean_cpu_usage: 'Mean Host CPU Usage',
+    mean_cpu_demand: 'Mean Host CPU Demand',
     mean_num_deployed_images: 'Mean Num. Deployed Images Per Host',
     max_num_deployed_images: 'Max. Num. Deployed Images Per Host',
     total_failure_vm_slices: 'Total Num. Failed VM Slices',
@@ -30,4 +30,21 @@ export const METRIC_NAMES = {
     total_vms_queued: 'Max. Num. VMs Queued',
     total_vms_finished: 'Max. Num. VMs Finished',
     total_vms_failed: 'Max. Num. VMs Failed',
+}
+
+export const METRIC_UNITS = {
+    total_overcommitted_burst: 'MFLOP',
+    total_granted_burst: 'MFLOP',
+    total_requested_burst: 'MFLOP',
+    total_interfered_burst: 'MFLOP',
+    total_power_draw: 'Wh',
+    mean_cpu_usage: 'MHz',
+    mean_cpu_demand: 'MHz',
+    mean_num_deployed_images: 'VMs',
+    max_num_deployed_images: 'VMs',
+    total_failure_vm_slices: 'VM Slices',
+    total_vms_submitted: 'VMs',
+    total_vms_queued: 'VMs',
+    total_vms_finished: 'VMs',
+    total_vms_failed: 'VMs',
 }

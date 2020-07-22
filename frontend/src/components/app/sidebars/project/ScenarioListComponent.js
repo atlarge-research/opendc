@@ -34,7 +34,7 @@ class ScenarioListComponent extends React.Component {
                         </div>
                         <div className="col-4 text-right">
                             <Link
-                                className="btn btn-outline-primary mr-1 fa fa-play"
+                                className="btn btn-outline-primary mr-1 fa fa-play disabled"
                                 to={`/projects/${this.props.currentProjectId}/portfolios/${scenario.portfolioId}/scenarios/${scenario._id}`}
                                 onClick={() => this.props.onChooseScenario(scenario.portfolioId, scenario._id)}
                             />

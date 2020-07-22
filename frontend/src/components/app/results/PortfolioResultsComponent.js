@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Bar, BarChart, CartesianGrid, ErrorBar, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { AVAILABLE_METRICS, METRIC_NAMES } from '../../../util/available-metrics'
+import { Bar, CartesianGrid, ComposedChart, ErrorBar, ResponsiveContainer, Scatter, XAxis, YAxis } from 'recharts'
+import { AVAILABLE_METRICS, METRIC_NAMES, METRIC_UNITS } from '../../../util/available-metrics'
 import { mean, std } from 'mathjs'
 import Shapes from '../../../shapes/index'
 import approx from 'approximate-number'
@@ -41,27 +41,32 @@ const PortfolioResultsComponent = ({ portfolio, scenarios }) => {
         dataPerMetric[metric] = scenarios.map((scenario) => ({
             name: scenario.name,
             value: mean(scenario.results[metric]),
-            std: std(scenario.results[metric]),
+            errorX: std(scenario.results[metric]),
         }))
     })
 
     return (
         <div className="full-height" style={{ overflowY: 'scroll', overflowX: 'hidden' }}>
-            <h1>Portfolio: {portfolio.name}</h1>
+            <h2>Portfolio: {portfolio.name}</h2>
             <p>Repeats per Scenario: {portfolio.targets.repeatsPerScenario}</p>
             <div className="row">
                 {AVAILABLE_METRICS.map((metric) => (
-                    <div className="col-6" key={metric}>
+                    <div className="col-6 mb-2" key={metric}>
                         <h4>{METRIC_NAMES[metric]}</h4>
                         <ResponsiveContainer aspect={16 / 9} width="100%">
-                            <BarChart data={dataPerMetric[metric]}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis tickFormatter={(tick) => approx(tick)} />
-                                <Tooltip />
-                                <Bar dataKey="value" fill="#8884d8" />
-                                <ErrorBar dataKey="std" width={4} strokeWidth={2} stroke="blue" direction="y" />
-                            </BarChart>
+                            <ComposedChart data={dataPerMetric[metric]} margin={{ bottom: 15 }} layout="vertical" animationDUration={0}>
+                                <CartesianGrid strokeDasharray="3 3"/>
+                                <XAxis tickFormatter={(tick) => approx(tick)}
+                                       label={{ value: METRIC_UNITS[metric], position: 'bottom', offset: 0 }}
+                                       type="number"/>
+                                <YAxis dataKey="name" type="category"/>
+                                <Bar dataKey="value" fill="#3399FF"/>
+                                <Scatter dataKey="value" opacity={0}>
+                                    <ErrorBar dataKey="errorX" width={10} strokeWidth={3} stroke="#FF6600"
+                                              direction="x"/>
+                                </Scatter>
+
+                            </ComposedChart>
                         </ResponsiveContainer>
                     </div>
                 ))}
