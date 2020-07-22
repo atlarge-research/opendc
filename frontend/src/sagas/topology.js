@@ -43,6 +43,9 @@ export function* onAddTopology(action) {
         let topologyToBeCreated
         if (action.duplicateId) {
             topologyToBeCreated = yield getTopologyAsObject(action.duplicateId, false)
+            topologyToBeCreated = Object.assign({}, topologyToBeCreated, {
+                name: action.name,
+            })
         } else {
             topologyToBeCreated = { name: action.name, rooms: [] }
         }
