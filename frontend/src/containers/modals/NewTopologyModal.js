@@ -21,14 +21,13 @@ const mapDispatchToProps = (dispatch) => {
     return {
         onCreateTopology: (name) => {
             if (name) {
-                dispatch(addTopology({ name, rooms: [] }))
+                dispatch(addTopology(name, undefined))
             }
             dispatch(closeNewTopologyModal())
         },
-        onDuplicateTopology: (name) => {
+        onDuplicateTopology: (name, id) => {
             if (name) {
-                // TODO different handling here
-                dispatch(addTopology({ name, rooms: [] }))
+                dispatch(addTopology(name, id))
             }
             dispatch(closeNewTopologyModal())
         },

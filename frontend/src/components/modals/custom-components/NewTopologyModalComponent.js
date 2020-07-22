@@ -31,7 +31,7 @@ class NewTopologyModalComponent extends React.Component {
     }
 
     onDuplicate() {
-        this.props.onCreateTopology(this.textInput.value, this.originTopology.value)
+        this.props.onDuplicateTopology(this.textInput.value, this.originTopology.value)
         this.reset()
     }
 
@@ -67,7 +67,6 @@ class NewTopologyModalComponent extends React.Component {
                         <label className="form-control-label">Topology to duplicate (not supported yet)</label>
                         <select
                             className="form-control"
-                            disabled
                             ref={(originTopology) => (this.originTopology = originTopology)}
                         >
                             <option value={-1} key={-1}>

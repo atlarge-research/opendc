@@ -16,7 +16,7 @@ import {
     DEFAULT_RACK_SLOT_CAPACITY,
     MAX_NUM_UNITS_PER_MACHINE,
 } from '../components/app/map/MapConstants'
-import { fetchAndStoreTopology, updateTopologyOnServer } from './objects'
+import { fetchAndStoreTopology, getTopologyAsObject, updateTopologyOnServer } from './objects'
 import { uuid } from 'uuidv4'
 import { addTopology, deleteTopology } from '../api/routes/topologies'
 
@@ -40,9 +40,16 @@ export function* onAddTopology(action) {
     try {
         const currentProjectId = yield select((state) => state.currentProjectId)
 
+        let topologyToBeCreated
+        if (action.duplicateId) {
+            topologyToBeCreated = yield getTopologyAsObject(action.duplicateId, false)
+        } else {
+            topologyToBeCreated = { name: action.name, rooms: [] }
+        }
+
         const topology = yield call(
             addTopology,
-            Object.assign({}, action.topology, {
+            Object.assign({}, topologyToBeCreated, {
                 projectId: currentProjectId,
             })
         )

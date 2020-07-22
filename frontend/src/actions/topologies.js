@@ -1,10 +1,11 @@
 export const ADD_TOPOLOGY = 'ADD_TOPOLOGY'
 export const DELETE_TOPOLOGY = 'DELETE_TOPOLOGY'
 
-export function addTopology(topology) {
+export function addTopology(name, duplicateId) {
     return {
         type: ADD_TOPOLOGY,
-        topology,
+        name,
+        duplicateId,
     }
 }
 
