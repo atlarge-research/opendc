@@ -14,8 +14,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     }
 }
 
-const MachineContainer = connect(mapStateToProps, mapDispatchToProps)(
-    MachineComponent,
-)
+const MachineContainer = connect(mapStateToProps, mapDispatchToProps)(MachineComponent)
 
 export default MachineContainer

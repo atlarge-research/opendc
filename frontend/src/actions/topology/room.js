@@ -29,7 +29,7 @@ export function addRackToTile(positionX, positionY) {
     return (dispatch, getState) => {
         const { objects, interactionLevel } = getState()
         const currentRoom = objects.room[interactionLevel.roomId]
-        const tiles = currentRoom.tileIds.map(tileId => objects.tile[tileId])
+        const tiles = currentRoom.tileIds.map((tileId) => objects.tile[tileId])
         const tile = findTileWithPosition(tiles, positionX, positionY)
 
         if (tile !== null) {

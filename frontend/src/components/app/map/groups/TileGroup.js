@@ -9,7 +9,7 @@ import RoomTile from '../elements/RoomTile'
 const TileGroup = ({ tile, newTile, roomLoad, onClick }) => {
     let tileObject
     if (tile.rackId) {
-        tileObject = <RackContainer tile={tile}/>
+        tileObject = <RackContainer tile={tile} />
     } else {
         tileObject = null
     }
@@ -21,7 +21,7 @@ const TileGroup = ({ tile, newTile, roomLoad, onClick }) => {
 
     return (
         <Group onClick={() => onClick(tile)}>
-            <RoomTile tile={tile} color={color}/>
+            <RoomTile tile={tile} color={color} />
             {tileObject}
         </Group>
     )

@@ -6,7 +6,7 @@ const ExportCanvasComponent = () => (
         title="Export Canvas to PNG Image"
         onClick={() => window['exportCanvasToImage']()}
     >
-        <span className="fa fa-camera"/>
+        <span className="fa fa-camera" />
     </button>
 )
 

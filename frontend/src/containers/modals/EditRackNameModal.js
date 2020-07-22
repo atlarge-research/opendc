@@ -14,21 +14,19 @@ const EditRackNameModalComponent = ({ visible, previousName, callback }) => (
     />
 )
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         visible: state.modals.editRackNameModalVisible,
         previousName:
             state.interactionLevel.mode === 'RACK'
-                ? state.objects.rack[
-                    state.objects.tile[state.interactionLevel.tileId].rackId
-                    ].name
+                ? state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].name
                 : '',
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        callback: name => {
+        callback: (name) => {
             if (name) {
                 dispatch(editRackName(name))
             }
@@ -37,8 +35,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const EditRackNameModal = connect(mapStateToProps, mapDispatchToProps)(
-    EditRackNameModalComponent,
-)
+const EditRackNameModal = connect(mapStateToProps, mapDispatchToProps)(EditRackNameModalComponent)
 
 export default EditRackNameModal

@@ -1,5 +1,6 @@
-export const getState = (dispatch) => new Promise((resolve) => {
-    dispatch((dispatch, getState) => {
-        resolve(getState())
+export const getState = (dispatch) =>
+    new Promise((resolve) => {
+        dispatch((dispatch, getState) => {
+            resolve(getState())
+        })
     })
-})

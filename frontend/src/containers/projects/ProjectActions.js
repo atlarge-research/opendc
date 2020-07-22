@@ -8,16 +8,13 @@ const mapStateToProps = (state, ownProps) => {
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        onViewUsers: id => {
-        }, // TODO implement user viewing
-        onDelete: id => dispatch(deleteProject(id)),
+        onViewUsers: (id) => {}, // TODO implement user viewing
+        onDelete: (id) => dispatch(deleteProject(id)),
     }
 }
 
-const ProjectActions = connect(mapStateToProps, mapDispatchToProps)(
-    ProjectActionButtons,
-)
+const ProjectActions = connect(mapStateToProps, mapDispatchToProps)(ProjectActionButtons)
 
 export default ProjectActions

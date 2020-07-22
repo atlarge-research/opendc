@@ -10,7 +10,7 @@ class Sidebar extends React.Component {
     }
 
     static defaultProps = {
-        collapsible: true
+        collapsible: true,
     }
 
     state = {
@@ -25,17 +25,10 @@ class Sidebar extends React.Component {
                 })}
                 onClick={() => this.setState({ collapsed: !this.state.collapsed })}
             >
-                {(this.state.collapsed && this.props.isRight) ||
-                (!this.state.collapsed && !this.props.isRight) ? (
-                    <span
-                        className="fa fa-angle-left"
-                        title={this.props.isRight ? 'Expand' : 'Collapse'}
-                    />
+                {(this.state.collapsed && this.props.isRight) || (!this.state.collapsed && !this.props.isRight) ? (
+                    <span className="fa fa-angle-left" title={this.props.isRight ? 'Expand' : 'Collapse'} />
                 ) : (
-                    <span
-                        className="fa fa-angle-right"
-                        title={this.props.isRight ? 'Collapse' : 'Expand'}
-                    />
+                    <span className="fa fa-angle-right" title={this.props.isRight ? 'Collapse' : 'Expand'} />
                 )}
             </div>
         )
@@ -48,7 +41,7 @@ class Sidebar extends React.Component {
                 className={classNames('sidebar p-3 h-100', {
                     'sidebar-right': this.props.isRight,
                 })}
-                onWheel={e => e.stopPropagation()}
+                onWheel={(e) => e.stopPropagation()}
             >
                 {this.props.children}
                 {this.props.collapsible && collapseButton}

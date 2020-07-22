@@ -2,20 +2,18 @@ import { connect } from 'react-redux'
 import { zoomInOnCenter } from '../../../../actions/map'
 import ZoomControlComponent from '../../../../components/app/map/controls/ZoomControlComponent'
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         mapScale: state.map.scale,
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        zoomInOnCenter: zoomIn => dispatch(zoomInOnCenter(zoomIn)),
+        zoomInOnCenter: (zoomIn) => dispatch(zoomInOnCenter(zoomIn)),
     }
 }
 
-const ZoomControlContainer = connect(mapStateToProps, mapDispatchToProps)(
-    ZoomControlComponent,
-)
+const ZoomControlContainer = connect(mapStateToProps, mapDispatchToProps)(ZoomControlComponent)
 
 export default ZoomControlContainer

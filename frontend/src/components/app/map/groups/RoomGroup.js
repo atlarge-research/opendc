@@ -5,17 +5,12 @@ import TileContainer from '../../../../containers/app/map/TileContainer'
 import WallContainer from '../../../../containers/app/map/WallContainer'
 import Shapes from '../../../../shapes/index'
 
-const RoomGroup = ({
-                       room,
-                       interactionLevel,
-                       currentRoomInConstruction,
-                       onClick,
-                   }) => {
+const RoomGroup = ({ room, interactionLevel, currentRoomInConstruction, onClick }) => {
     if (currentRoomInConstruction === room._id) {
         return (
             <Group onClick={onClick}>
-                {room.tileIds.map(tileId => (
-                    <TileContainer key={tileId} tileId={tileId} newTile={true}/>
+                {room.tileIds.map((tileId) => (
+                    <TileContainer key={tileId} tileId={tileId} newTile={true} />
                 ))}
             </Group>
         )
@@ -25,26 +20,23 @@ const RoomGroup = ({
         <Group onClick={onClick}>
             {(() => {
                 if (
-                    (interactionLevel.mode === 'RACK' ||
-                        interactionLevel.mode === 'MACHINE') &&
+                    (interactionLevel.mode === 'RACK' || interactionLevel.mode === 'MACHINE') &&
                     interactionLevel.roomId === room._id
                 ) {
                     return [
                         room.tileIds
-                            .filter(tileId => tileId !== interactionLevel.tileId)
-                            .map(tileId => <TileContainer key={tileId} tileId={tileId}/>),
-                        <GrayContainer key={-1}/>,
+                            .filter((tileId) => tileId !== interactionLevel.tileId)
+                            .map((tileId) => <TileContainer key={tileId} tileId={tileId} />),
+                        <GrayContainer key={-1} />,
                         room.tileIds
-                            .filter(tileId => tileId === interactionLevel.tileId)
-                            .map(tileId => <TileContainer key={tileId} tileId={tileId}/>),
+                            .filter((tileId) => tileId === interactionLevel.tileId)
+                            .map((tileId) => <TileContainer key={tileId} tileId={tileId} />),
                     ]
                 } else {
-                    return room.tileIds.map(tileId => (
-                        <TileContainer key={tileId} tileId={tileId}/>
-                    ))
+                    return room.tileIds.map((tileId) => <TileContainer key={tileId} tileId={tileId} />)
                 }
             })()}
-            <WallContainer roomId={room._id}/>
+            <WallContainer roomId={room._id} />
         </Group>
     )
 }

@@ -14,19 +14,17 @@ const EditRoomNameModalComponent = ({ visible, previousName, callback }) => (
     />
 )
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         visible: state.modals.editRoomNameModalVisible,
         previousName:
-            state.interactionLevel.mode === 'ROOM'
-                ? state.objects.room[state.interactionLevel.roomId].name
-                : '',
+            state.interactionLevel.mode === 'ROOM' ? state.objects.room[state.interactionLevel.roomId].name : '',
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        callback: name => {
+        callback: (name) => {
             if (name) {
                 dispatch(editRoomName(name))
             }
@@ -35,8 +33,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const EditRoomNameModal = connect(mapStateToProps, mapDispatchToProps)(
-    EditRoomNameModalComponent,
-)
+const EditRoomNameModal = connect(mapStateToProps, mapDispatchToProps)(EditRoomNameModalComponent)
 
 export default EditRoomNameModal

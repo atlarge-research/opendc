@@ -44,7 +44,7 @@ export function* onAddTopology(action) {
             addTopology,
             Object.assign({}, action.topology, {
                 projectId: currentProjectId,
-            }),
+            })
         )
         yield fetchAndStoreTopology(topology._id)
 
@@ -52,7 +52,7 @@ export function* onAddTopology(action) {
         yield put(
             addPropToStoreObject('project', currentProjectId, {
                 topologyIds: topologyIds.concat([topology._id]),
-            }),
+            })
         )
         yield put(setCurrentTopology(topology._id))
     } catch (error) {
@@ -74,7 +74,7 @@ export function* onDeleteTopology(action) {
         yield put(
             addPropToStoreObject('project', currentProjectId, {
                 topologyIds: topologyIds.filter((id) => id !== action.id),
-            }),
+            })
         )
     } catch (error) {
         console.error(error)
@@ -258,7 +258,7 @@ export function* onAddUnit(action) {
         const position = yield select((state) => state.interactionLevel.position)
         const machine = yield select(
             (state) =>
-                state.objects.machine[state.objects.rack[state.objects.tile[tileId].rackId].machineIds[position - 1]],
+                state.objects.machine[state.objects.rack[state.objects.tile[tileId].rackId].machineIds[position - 1]]
         )
 
         if (machine[action.unitType + 'Ids'].length >= MAX_NUM_UNITS_PER_MACHINE) {
@@ -269,7 +269,7 @@ export function* onAddUnit(action) {
         yield put(
             addPropToStoreObject('machine', machine._id, {
                 [action.unitType + 'Ids']: units,
-            }),
+            })
         )
         yield updateTopologyOnServer(topologyId)
     } catch (error) {
@@ -284,7 +284,7 @@ export function* onDeleteUnit(action) {
         const position = yield select((state) => state.interactionLevel.position)
         const machine = yield select(
             (state) =>
-                state.objects.machine[state.objects.rack[state.objects.tile[tileId].rackId].machineIds[position - 1]],
+                state.objects.machine[state.objects.rack[state.objects.tile[tileId].rackId].machineIds[position - 1]]
         )
         const unitIds = machine[action.unitType + 'Ids'].slice()
         unitIds.splice(action.index, 1)
@@ -292,7 +292,7 @@ export function* onDeleteUnit(action) {
         yield put(
             addPropToStoreObject('machine', machine._id, {
                 [action.unitType + 'Ids']: unitIds,
-            }),
+            })
         )
         yield updateTopologyOnServer(topologyId)
     } catch (error) {

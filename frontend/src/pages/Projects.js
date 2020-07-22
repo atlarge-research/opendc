@@ -18,13 +18,13 @@ class ProjectsContainer extends React.Component {
         return (
             <DocumentTitle title="My Projects - OpenDC">
                 <div className="full-height">
-                    <AppNavbarContainer fullWidth={false}/>
+                    <AppNavbarContainer fullWidth={false} />
                     <div className="container text-page-container full-height">
-                        <ProjectFilterPanel/>
-                        <VisibleProjectList/>
-                        <NewProjectButtonContainer/>
+                        <ProjectFilterPanel />
+                        <VisibleProjectList />
+                        <NewProjectButtonContainer />
                     </div>
-                    <NewProjectModal/>
+                    <NewProjectModal />
                 </div>
             </DocumentTitle>
         )

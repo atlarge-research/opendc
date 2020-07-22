@@ -4,26 +4,18 @@ import { Link } from 'react-router-dom'
 
 const ProjectActionButtons = ({ projectId, onViewUsers, onDelete }) => (
     <td className="text-right">
-        <Link
-            to={'/projects/' + projectId}
-            className="btn btn-outline-primary btn-sm mr-2"
-            title="Open this project"
-        >
-            <span className="fa fa-play"/>
+        <Link to={'/projects/' + projectId} className="btn btn-outline-primary btn-sm mr-2" title="Open this project">
+            <span className="fa fa-play" />
         </Link>
         <div
             className="btn btn-outline-success btn-sm disabled mr-2"
             title="View and edit collaborators (not supported currently)"
             onClick={() => onViewUsers(projectId)}
         >
-            <span className="fa fa-users"/>
+            <span className="fa fa-users" />
         </div>
-        <div
-            className="btn btn-outline-danger btn-sm"
-            title="Delete this project"
-            onClick={() => onDelete(projectId)}
-        >
-            <span className="fa fa-trash"/>
+        <div className="btn btn-outline-danger btn-sm" title="Delete this project" onClick={() => onDelete(projectId)}>
+            <span className="fa fa-trash" />
         </div>
     </td>
 )

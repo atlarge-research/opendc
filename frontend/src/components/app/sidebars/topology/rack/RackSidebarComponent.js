@@ -9,12 +9,12 @@ const RackSidebarComponent = () => {
     return (
         <div className="rack-sidebar-container flex-column">
             <div className="rack-sidebar-header-container">
-                <RackNameContainer/>
-                <BackToRoomContainer/>
-                <DeleteRackContainer/>
+                <RackNameContainer />
+                <BackToRoomContainer />
+                <DeleteRackContainer />
             </div>
             <div className="machine-list-container mt-2">
-                <MachineListContainer/>
+                <MachineListContainer />
             </div>
         </div>
     )

@@ -26,18 +26,13 @@ class HoverLayerComponent extends React.Component {
         }
 
         const positionX = Math.floor(
-            (this.props.mouseX - this.props.mapPosition.x) /
-            (this.props.mapScale * TILE_SIZE_IN_PIXELS),
+            (this.props.mouseX - this.props.mapPosition.x) / (this.props.mapScale * TILE_SIZE_IN_PIXELS)
         )
         const positionY = Math.floor(
-            (this.props.mouseY - this.props.mapPosition.y) /
-            (this.props.mapScale * TILE_SIZE_IN_PIXELS),
+            (this.props.mouseY - this.props.mapPosition.y) / (this.props.mapScale * TILE_SIZE_IN_PIXELS)
         )
 
-        if (
-            positionX !== this.state.positionX ||
-            positionY !== this.state.positionY
-        ) {
+        if (positionX !== this.state.positionX || positionY !== this.state.positionY) {
             this.setState({
                 positionX,
                 positionY,
@@ -48,15 +43,11 @@ class HoverLayerComponent extends React.Component {
 
     render() {
         if (!this.props.isEnabled()) {
-            return <Layer/>
+            return <Layer />
         }
 
-        const pixelX =
-            this.props.mapScale * this.state.positionX * TILE_SIZE_IN_PIXELS +
-            this.props.mapPosition.x
-        const pixelY =
-            this.props.mapScale * this.state.positionY * TILE_SIZE_IN_PIXELS +
-            this.props.mapPosition.y
+        const pixelX = this.props.mapScale * this.state.positionX * TILE_SIZE_IN_PIXELS + this.props.mapPosition.x
+        const pixelY = this.props.mapScale * this.state.positionY * TILE_SIZE_IN_PIXELS + this.props.mapPosition.y
 
         return (
             <Layer opacity={0.6}>
@@ -66,16 +57,15 @@ class HoverLayerComponent extends React.Component {
                     scale={this.props.mapScale}
                     isValid={this.state.validity}
                     onClick={() =>
-                        this.state.validity
-                            ? this.props.onClick(this.state.positionX, this.state.positionY)
-                            : undefined}
+                        this.state.validity ? this.props.onClick(this.state.positionX, this.state.positionY) : undefined
+                    }
                 />
                 {this.props.children
                     ? React.cloneElement(this.props.children, {
-                        pixelX,
-                        pixelY,
-                        scale: this.props.mapScale,
-                    })
+                          pixelX,
+                          pixelY,
+                          scale: this.props.mapScale,
+                      })
                     : undefined}
             </Layer>
         )

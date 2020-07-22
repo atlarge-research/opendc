@@ -4,13 +4,13 @@ import { GRID_COLOR } from '../../../../util/colors'
 import { GRID_LINE_WIDTH_IN_PIXELS, MAP_SIZE, MAP_SIZE_IN_PIXELS, TILE_SIZE_IN_PIXELS } from '../MapConstants'
 
 const MAP_COORDINATE_ENTRIES = Array.from(new Array(MAP_SIZE), (x, i) => i)
-const HORIZONTAL_POINT_PAIRS = MAP_COORDINATE_ENTRIES.map(index => [
+const HORIZONTAL_POINT_PAIRS = MAP_COORDINATE_ENTRIES.map((index) => [
     0,
     index * TILE_SIZE_IN_PIXELS,
     MAP_SIZE_IN_PIXELS,
     index * TILE_SIZE_IN_PIXELS,
 ])
-const VERTICAL_POINT_PAIRS = MAP_COORDINATE_ENTRIES.map(index => [
+const VERTICAL_POINT_PAIRS = MAP_COORDINATE_ENTRIES.map((index) => [
     index * TILE_SIZE_IN_PIXELS,
     0,
     index * TILE_SIZE_IN_PIXELS,
@@ -19,9 +19,7 @@ const VERTICAL_POINT_PAIRS = MAP_COORDINATE_ENTRIES.map(index => [
 
 const GridGroup = () => (
     <Group>
-        {HORIZONTAL_POINT_PAIRS.concat(
-            VERTICAL_POINT_PAIRS,
-        ).map((points, index) => (
+        {HORIZONTAL_POINT_PAIRS.concat(VERTICAL_POINT_PAIRS).map((points, index) => (
             <Line
                 key={index}
                 points={points}

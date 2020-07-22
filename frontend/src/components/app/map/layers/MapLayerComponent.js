@@ -6,15 +6,10 @@ import GridGroup from '../groups/GridGroup'
 
 const MapLayerComponent = ({ mapPosition, mapScale }) => (
     <Layer>
-        <Group
-            x={mapPosition.x}
-            y={mapPosition.y}
-            scaleX={mapScale}
-            scaleY={mapScale}
-        >
-            <Backdrop/>
-            <TopologyContainer/>
-            <GridGroup/>
+        <Group x={mapPosition.x} y={mapPosition.y} scaleX={mapScale} scaleY={mapScale}>
+            <Backdrop />
+            <TopologyContainer />
+            <GridGroup />
         </Group>
     </Layer>
 )

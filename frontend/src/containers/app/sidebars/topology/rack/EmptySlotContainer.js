@@ -8,8 +8,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     }
 }
 
-const EmptySlotContainer = connect(undefined, mapDispatchToProps)(
-    EmptySlotComponent,
-)
+const EmptySlotContainer = connect(undefined, mapDispatchToProps)(EmptySlotComponent)
 
 export default EmptySlotContainer

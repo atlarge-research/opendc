@@ -22,6 +22,7 @@ import ProjectSidebarContainer from '../containers/app/sidebars/project/ProjectS
 import { openScenarioSucceeded } from '../actions/scenarios'
 import NewPortfolioModal from '../containers/modals/NewPortfolioModal'
 import NewScenarioModal from '../containers/modals/NewScenarioModal'
+import PortfolioResultsContainer from '../containers/app/results/PortfolioResultsContainer'
 
 const shortcutManager = new ShortcutManager(KeymapConfiguration)
 
@@ -55,29 +56,33 @@ class AppComponent extends React.Component {
     render() {
         const constructionElements = this.props.topologyIsLoading ? (
             <div className="full-height d-flex align-items-center justify-content-center">
-                <LoadingScreen/>
+                <LoadingScreen />
             </div>
         ) : (
             <div className="full-height">
-                <MapStage/>
-                <ScaleIndicatorContainer/>
-                <ToolPanelComponent/>
-                <ProjectSidebarContainer/>
-                <TopologySidebarContainer/>
+                <MapStage />
+                <ScaleIndicatorContainer />
+                <ToolPanelComponent />
+                <ProjectSidebarContainer />
+                <TopologySidebarContainer />
             </div>
         )
 
         const portfolioElements = (
-            <div className="full-height">
-                <ProjectSidebarContainer/>
-                <h2>Portfolio loading</h2>
+            <div className="full-height app-page-container">
+                <ProjectSidebarContainer />
+                <div className="container-fluid full-height">
+                    <PortfolioResultsContainer />
+                </div>
             </div>
         )
 
         const scenarioElements = (
-            <div className="full-height">
-                <ProjectSidebarContainer/>
-                <h2>Scenario loading</h2>
+            <div className="full-height app-page-container">
+                <ProjectSidebarContainer />
+                <div className="container-fluid full-height">
+                    <h2>Scenario loading</h2>
+                </div>
             </div>
         )
 
@@ -86,23 +91,20 @@ class AppComponent extends React.Component {
                 title={this.props.projectName ? this.props.projectName + ' - OpenDC' : 'Simulation - OpenDC'}
             >
                 <div className="page-container full-height">
-                    <AppNavbarContainer fullWidth={true}/>
-                    {this.props.scenarioId ? (
-                        scenarioElements
-                    ) : (this.props.portfolioId ? (
-                            portfolioElements
-                        ) : (
-                            constructionElements
-                        )
-                    )}
-                    <NewTopologyModal/>
-                    <NewPortfolioModal/>
-                    <NewScenarioModal/>
-                    <EditRoomNameModal/>
-                    <DeleteRoomModal/>
-                    <EditRackNameModal/>
-                    <DeleteRackModal/>
-                    <DeleteMachineModal/>
+                    <AppNavbarContainer fullWidth={true} />
+                    {this.props.scenarioId
+                        ? scenarioElements
+                        : this.props.portfolioId
+                        ? portfolioElements
+                        : constructionElements}
+                    <NewTopologyModal />
+                    <NewPortfolioModal />
+                    <NewScenarioModal />
+                    <EditRoomNameModal />
+                    <DeleteRoomModal />
+                    <EditRackNameModal />
+                    <DeleteRackModal />
+                    <DeleteMachineModal />
                 </div>
             </DocumentTitle>
         )
@@ -125,7 +127,8 @@ const mapDispatchToProps = (dispatch) => {
     return {
         openProjectSucceeded: (projectId) => dispatch(openProjectSucceeded(projectId)),
         openPortfolioSucceeded: (projectId, portfolioId) => dispatch(openPortfolioSucceeded(projectId, portfolioId)),
-        openScenarioSucceeded: (projectId, portfolioId, scenarioId) => dispatch(openScenarioSucceeded(projectId, portfolioId, scenarioId)),
+        openScenarioSucceeded: (projectId, portfolioId, scenarioId) =>
+            dispatch(openScenarioSucceeded(projectId, portfolioId, scenarioId)),
     }
 }
 

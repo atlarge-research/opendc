@@ -36,18 +36,14 @@ class TextInputModal extends React.Component {
                 onCancel={this.onCancel.bind(this)}
             >
                 <form
-                    onSubmit={e => {
+                    onSubmit={(e) => {
                         e.preventDefault()
                         this.onSubmit()
                     }}
                 >
                     <div className="form-group">
                         <label className="form-control-label">{this.props.label}</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            ref={textInput => (this.textInput = textInput)}
-                        />
+                        <input type="text" className="form-control" ref={(textInput) => (this.textInput = textInput)} />
                     </div>
                 </form>
             </Modal>

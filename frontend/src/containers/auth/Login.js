@@ -27,7 +27,7 @@ class LoginContainer extends React.Component {
 
     render() {
         if (!this.props.visible) {
-            return <span/>
+            return <span />
         }
 
         return (
@@ -35,13 +35,12 @@ class LoginContainer extends React.Component {
                 clientId={process.env.REACT_APP_OAUTH_CLIENT_ID}
                 onSuccess={this.onAuthResponse.bind(this)}
                 onFailure={this.onAuthFailure.bind(this)}
-                render={renderProps => (
+                render={(renderProps) => (
                     <span onClick={renderProps.onClick} className="login btn btn-primary">
-                        <span className="fa fa-google"/> Login with Google
+                        <span className="fa fa-google" /> Login with Google
                     </span>
                 )}
-            >
-            </GoogleLogin>
+            ></GoogleLogin>
         )
     }
 }
@@ -52,9 +51,9 @@ const mapStateToProps = (state, ownProps) => {
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        onLogin: payload => dispatch(logIn(payload)),
+        onLogin: (payload) => dispatch(logIn(payload)),
     }
 }
 

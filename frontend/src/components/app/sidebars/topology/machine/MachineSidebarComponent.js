@@ -7,10 +7,10 @@ import UnitTabsContainer from '../../../../../containers/app/sidebars/topology/m
 const MachineSidebarComponent = ({ machineId }) => {
     return (
         <div>
-            <MachineNameContainer/>
-            <BackToRackContainer/>
-            <DeleteMachineContainer/>
-            <UnitTabsContainer/>
+            <MachineNameContainer />
+            <BackToRackContainer />
+            <DeleteMachineContainer />
+            <UnitTabsContainer />
         </div>
     )
 }

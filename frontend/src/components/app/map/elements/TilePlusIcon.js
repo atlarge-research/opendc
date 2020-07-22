@@ -10,16 +10,12 @@ const TilePlusIcon = ({ pixelX, pixelY, mapScale }) => {
             pixelX + 0.5 * TILE_SIZE_IN_PIXELS * mapScale,
             pixelY + TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
             pixelX + 0.5 * TILE_SIZE_IN_PIXELS * mapScale,
-            pixelY +
-            TILE_SIZE_IN_PIXELS * mapScale -
-            TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
+            pixelY + TILE_SIZE_IN_PIXELS * mapScale - TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
         ],
         [
             pixelX + TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
             pixelY + 0.5 * TILE_SIZE_IN_PIXELS * mapScale,
-            pixelX +
-            TILE_SIZE_IN_PIXELS * mapScale -
-            TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
+            pixelX + TILE_SIZE_IN_PIXELS * mapScale - TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
             pixelY + 0.5 * TILE_SIZE_IN_PIXELS * mapScale,
         ],
     ]

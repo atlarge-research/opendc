@@ -1,3 +1,3 @@
-export const dummyMiddleware = store => next => action => {
+export const dummyMiddleware = (store) => (next) => (action) => {
     next(action)
 }

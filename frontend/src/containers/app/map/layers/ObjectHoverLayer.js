@@ -3,7 +3,7 @@ import { addRackToTile } from '../../../../actions/topology/room'
 import ObjectHoverLayerComponent from '../../../../components/app/map/layers/ObjectHoverLayerComponent'
 import { findTileWithPosition } from '../../../../util/tile-calculations'
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         mapPosition: state.map.position,
         mapScale: state.map.scale,
@@ -14,9 +14,7 @@ const mapStateToProps = state => {
             }
 
             const currentRoom = state.objects.room[state.interactionLevel.roomId]
-            const tiles = currentRoom.tileIds.map(
-                tileId => state.objects.tile[tileId],
-            )
+            const tiles = currentRoom.tileIds.map((tileId) => state.objects.tile[tileId])
             const tile = findTileWithPosition(tiles, x, y)
 
             return !(tile === null || tile.rackId)
@@ -24,14 +22,12 @@ const mapStateToProps = state => {
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
         onClick: (x, y) => dispatch(addRackToTile(x, y)),
     }
 }
 
-const ObjectHoverLayer = connect(mapStateToProps, mapDispatchToProps)(
-    ObjectHoverLayerComponent,
-)
+const ObjectHoverLayer = connect(mapStateToProps, mapDispatchToProps)(ObjectHoverLayerComponent)
 
 export default ObjectHoverLayer

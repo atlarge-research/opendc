@@ -5,27 +5,13 @@ const mapStateToProps = (state, ownProps) => {
     let energyConsumptionTotal = 0
     const rack = state.objects.rack[state.objects.tile[ownProps.tileId].rackId]
     const machineIds = rack.machineIds
-    machineIds.forEach(machineId => {
+    machineIds.forEach((machineId) => {
         if (machineId !== null) {
             const machine = state.objects.machine[machineId]
-            machine.cpuIds.forEach(
-                id =>
-                    (energyConsumptionTotal += state.objects.cpu[id].energyConsumptionW),
-            )
-            machine.gpuIds.forEach(
-                id =>
-                    (energyConsumptionTotal += state.objects.gpu[id].energyConsumptionW),
-            )
-            machine.memoryIds.forEach(
-                id =>
-                    (energyConsumptionTotal +=
-                        state.objects.memory[id].energyConsumptionW),
-            )
-            machine.storageIds.forEach(
-                id =>
-                    (energyConsumptionTotal +=
-                        state.objects.storage[id].energyConsumptionW),
-            )
+            machine.cpuIds.forEach((id) => (energyConsumptionTotal += state.objects.cpu[id].energyConsumptionW))
+            machine.gpuIds.forEach((id) => (energyConsumptionTotal += state.objects.gpu[id].energyConsumptionW))
+            machine.memoryIds.forEach((id) => (energyConsumptionTotal += state.objects.memory[id].energyConsumptionW))
+            machine.storageIds.forEach((id) => (energyConsumptionTotal += state.objects.storage[id].energyConsumptionW))
         }
     })
 

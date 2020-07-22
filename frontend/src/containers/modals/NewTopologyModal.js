@@ -3,11 +3,11 @@ import NewTopologyModalComponent from '../../components/modals/custom-components
 import { closeNewTopologyModal } from '../../actions/modals/topology'
 import { addTopology } from '../../actions/topologies'
 
-const mapStateToProps = state => {
-    let topologies = state.objects.project[state.currentProjectId] ? state.objects.project[state.currentProjectId].topologyIds.map(t => (
-        state.objects.topology[t]
-    )) : []
-    if (topologies.filter(t => !t).length > 0) {
+const mapStateToProps = (state) => {
+    let topologies = state.objects.project[state.currentProjectId]
+        ? state.objects.project[state.currentProjectId].topologyIds.map((t) => state.objects.topology[t])
+        : []
+    if (topologies.filter((t) => !t).length > 0) {
         topologies = []
     }
 
@@ -17,22 +17,18 @@ const mapStateToProps = state => {
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
         onCreateTopology: (name) => {
             if (name) {
-                dispatch(
-                    addTopology({ name, rooms: [] }),
-                )
+                dispatch(addTopology({ name, rooms: [] }))
             }
             dispatch(closeNewTopologyModal())
         },
         onDuplicateTopology: (name) => {
             if (name) {
                 // TODO different handling here
-                dispatch(
-                    addTopology({ name, rooms: [] }),
-                )
+                dispatch(addTopology({ name, rooms: [] }))
             }
             dispatch(closeNewTopologyModal())
         },
@@ -42,8 +38,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const NewTopologyModal = connect(mapStateToProps, mapDispatchToProps)(
-    NewTopologyModalComponent,
-)
+const NewTopologyModal = connect(mapStateToProps, mapDispatchToProps)(NewTopologyModalComponent)
 
 export default NewTopologyModal

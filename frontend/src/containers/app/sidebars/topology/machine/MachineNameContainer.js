@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import MachineNameComponent from '../../../../../components/app/sidebars/topology/machine/MachineNameComponent'
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         position: state.interactionLevel.position,
     }

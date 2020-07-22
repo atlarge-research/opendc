@@ -13,15 +13,15 @@ const DeleteRackModalComponent = ({ visible, callback }) => (
     />
 )
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         visible: state.modals.deleteRackModalVisible,
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        callback: isConfirmed => {
+        callback: (isConfirmed) => {
             if (isConfirmed) {
                 dispatch(deleteRack())
             }
@@ -30,8 +30,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const DeleteRackModal = connect(mapStateToProps, mapDispatchToProps)(
-    DeleteRackModalComponent,
-)
+const DeleteRackModal = connect(mapStateToProps, mapDispatchToProps)(DeleteRackModalComponent)
 
 export default DeleteRackModal

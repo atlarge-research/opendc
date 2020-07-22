@@ -1,15 +1,10 @@
 import React from 'react'
 
-const NewRoomConstructionComponent = ({
-                                          onStart,
-                                          onFinish,
-                                          onCancel,
-                                          currentRoomInConstruction,
-                                      }) => {
+const NewRoomConstructionComponent = ({ onStart, onFinish, onCancel, currentRoomInConstruction }) => {
     if (currentRoomInConstruction === '-1') {
         return (
             <div className="btn btn-outline-primary btn-block" onClick={onStart}>
-                <span className="fa fa-plus mr-2"/>
+                <span className="fa fa-plus mr-2" />
                 Construct a new room
             </div>
         )
@@ -17,11 +12,11 @@ const NewRoomConstructionComponent = ({
     return (
         <div>
             <div className="btn btn-primary btn-block" onClick={onFinish}>
-                <span className="fa fa-check mr-2"/>
+                <span className="fa fa-check mr-2" />
                 Finalize new room
             </div>
             <div className="btn btn-default btn-block" onClick={onCancel}>
-                <span className="fa fa-times mr-2"/>
+                <span className="fa fa-times mr-2" />
                 Cancel construction
             </div>
         </div>
