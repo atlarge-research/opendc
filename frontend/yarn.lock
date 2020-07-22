@@ -1985,7 +1985,7 @@ anymatch@~3.1.1:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-approximate-number@^2.0.0:
+approximate-number@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/approximate-number/-/approximate-number-2.0.0.tgz#43c7fbfbbb0070a412131d65581f868b24d1eb29"
   integrity sha1-Q8f7+7sAcKQSEx1lWB+GiyTR6yk=
@@ -7298,7 +7298,7 @@ math-expression-evaluator@^1.2.14:
   resolved "https://registry.yarnpkg.com/math-expression-evaluator/-/math-expression-evaluator-1.2.22.tgz#c14dcb3d8b4d150e5dcea9c68c8dad80309b0d5e"
   integrity sha512-L0j0tFVZBQQLeEjmWOvDLoRciIY8gQGWahvkztXUal8jH8R5Rlqo9GCvgqvXcy9LQhEWdQCVvzqAbxgYNt4blQ==
 
-mathjs@^7.1.0:
+mathjs@~7.1.0:
   version "7.1.0"
   resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-7.1.0.tgz#83226e336b8b258b046a139865373e667db94afb"
   integrity sha512-Km6PO2UR+COs5mru5auKQKi84GKBryuL5JDdKeAxAi0QV8mH/qwpZKLnzrycxBacQ/X/4Z4Kn+gtYc5gEeWsDQ==
@@ -9844,7 +9844,7 @@ recharts-scale@^0.4.2:
   dependencies:
     decimal.js-light "^2.4.1"
 
-recharts@^1.8.5:
+recharts@~1.8.5:
   version "1.8.5"
   resolved "https://registry.yarnpkg.com/recharts/-/recharts-1.8.5.tgz#ca94a3395550946334a802e35004ceb2583fdb12"
   integrity sha512-tM9mprJbXVEBxjM7zHsIy6Cc41oO/pVYqyAsOHLxlJrbNBuLs0PHB3iys2M+RqCF0//k8nJtZF6X6swSkWY3tg==
