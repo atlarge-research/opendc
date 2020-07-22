@@ -129,6 +129,7 @@ Shapes.Scenario = PropTypes.shape({
         schedulerName: PropTypes.string.isRequired,
         scheduler: Shapes.Scheduler,
     }).isRequired,
+    results: PropTypes.object,
 })
 
 Shapes.WallSegment = PropTypes.shape({

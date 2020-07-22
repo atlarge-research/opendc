@@ -3,24 +3,26 @@ import NewScenarioModalComponent from '../../components/modals/custom-components
 import { addScenario } from '../../actions/scenarios'
 import { closeNewScenarioModal } from '../../actions/modals/scenarios'
 
-const mapStateToProps = state => {
-    let topologies = state.currentProjectId !== '-1' ? state.objects.project[state.currentProjectId].topologyIds.map(t => (
-        state.objects.topology[t]
-    )) : []
-    if (topologies.filter(t => !t).length > 0) {
+const mapStateToProps = (state) => {
+    let topologies =
+        state.currentProjectId !== '-1'
+            ? state.objects.project[state.currentProjectId].topologyIds.map((t) => state.objects.topology[t])
+            : []
+    if (topologies.filter((t) => !t).length > 0) {
         topologies = []
     }
 
     return {
         show: state.modals.newScenarioModalVisible,
         currentPortfolioId: state.currentPortfolioId,
+        currentPortfolioScenarioIds: state.currentPortfolioId !== '-1' && state.objects.portfolio[state.currentPortfolioId] ? state.objects.portfolio[state.currentPortfolioId].scenarioIds : [],
         traces: Object.values(state.objects.trace),
         topologies,
         schedulers: Object.values(state.objects.scheduler),
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
         callback: (name, portfolioId, trace, topology, operational) => {
             if (name) {
@@ -31,7 +33,7 @@ const mapDispatchToProps = dispatch => {
                         trace,
                         topology,
                         operational,
-                    }),
+                    })
                 )
             }
             dispatch(closeNewScenarioModal())
@@ -39,8 +41,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const NewScenarioModal = connect(mapStateToProps, mapDispatchToProps)(
-    NewScenarioModalComponent,
-)
+const NewScenarioModal = connect(mapStateToProps, mapDispatchToProps)(NewScenarioModalComponent)
 
 export default NewScenarioModal

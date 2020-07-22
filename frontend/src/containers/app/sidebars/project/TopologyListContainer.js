@@ -6,18 +6,17 @@ import { withRouter } from 'react-router-dom'
 import { getState } from '../../../../util/state-utils'
 import { deleteScenario } from '../../../../actions/scenarios'
 
-const mapStateToProps = state => {
-    let topologies = state.objects.project[state.currentProjectId] ? state.objects.project[state.currentProjectId].topologyIds.map(t => (
-        state.objects.topology[t]
-    )) : []
-    if (topologies.filter(t => !t).length > 0) {
+const mapStateToProps = (state) => {
+    let topologies = state.objects.project[state.currentProjectId]
+        ? state.objects.project[state.currentProjectId].topologyIds.map((t) => state.objects.topology[t])
+        : []
+    if (topologies.filter((t) => !t).length > 0) {
         topologies = []
     }
 
     return {
         currentTopologyId: state.currentTopologyId,
         topologies,
-
     }
 }
 
@@ -42,8 +41,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     }
 }
 
-const TopologyListContainer = withRouter(connect(mapStateToProps, mapDispatchToProps)(
-    TopologyListComponent,
-))
+const TopologyListContainer = withRouter(connect(mapStateToProps, mapDispatchToProps)(TopologyListComponent))
 
 export default TopologyListContainer

@@ -6,11 +6,11 @@ import { openNewPortfolioModal } from '../../../../actions/modals/portfolios'
 import { getState } from '../../../../util/state-utils'
 import { setCurrentTopology } from '../../../../actions/topology/building'
 
-const mapStateToProps = state => {
-    let portfolios = state.objects.project[state.currentProjectId] ? state.objects.project[state.currentProjectId].portfolioIds.map(t => (
-        state.objects.portfolio[t]
-    )) : []
-    if (portfolios.filter(t => !t).length > 0) {
+const mapStateToProps = (state) => {
+    let portfolios = state.objects.project[state.currentProjectId]
+        ? state.objects.project[state.currentProjectId].portfolioIds.map((t) => state.objects.portfolio[t])
+        : []
+    if (portfolios.filter((t) => !t).length > 0) {
         portfolios = []
     }
 
@@ -40,8 +40,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     }
 }
 
-const PortfolioListContainer = withRouter(connect(mapStateToProps, mapDispatchToProps)(
-    PortfolioListComponent,
-))
+const PortfolioListContainer = withRouter(connect(mapStateToProps, mapDispatchToProps)(PortfolioListComponent))
 
 export default PortfolioListContainer

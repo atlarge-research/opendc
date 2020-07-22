@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import TopologyGroup from '../../../components/app/map/groups/TopologyGroup'
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     if (state.currentTopologyId === '-1') {
         return {}
     }

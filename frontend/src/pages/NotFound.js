@@ -6,7 +6,7 @@ import './NotFound.css'
 const NotFound = () => (
     <DocumentTitle title="Page Not Found - OpenDC">
         <div className="not-found-backdrop">
-            <TerminalWindow/>
+            <TerminalWindow />
         </div>
     </DocumentTitle>
 )

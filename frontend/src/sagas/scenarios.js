@@ -4,7 +4,7 @@ import { getProject } from '../api/routes/projects'
 import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
 import { fetchAndStoreAllTopologiesOfProject } from './topology'
 import { addScenario, deleteScenario, updateScenario } from '../api/routes/scenarios'
-import { fetchPortfolioWithScenarios } from './portfolios'
+import { fetchPortfolioWithScenarios, watchForPortfolioResults } from './portfolios'
 
 export function* onOpenScenarioSucceeded(action) {
     try {
@@ -23,19 +23,16 @@ export function* onOpenScenarioSucceeded(action) {
 
 export function* onAddScenario(action) {
     try {
-        const scenario = yield call(
-            addScenario,
-            action.scenario.portfolioId,
-            action.scenario,
-        )
+        const scenario = yield call(addScenario, action.scenario.portfolioId, action.scenario)
         yield put(addToStore('scenario', scenario))
 
         const scenarioIds = yield select((state) => state.objects.portfolio[action.scenario.portfolioId].scenarioIds)
         yield put(
             addPropToStoreObject('portfolio', action.scenario.portfolioId, {
                 scenarioIds: scenarioIds.concat([scenario._id]),
-            }),
+            })
         )
+        yield watchForPortfolioResults()
     } catch (error) {
         console.error(error)
     }
@@ -43,11 +40,7 @@ export function* onAddScenario(action) {
 
 export function* onUpdateScenario(action) {
     try {
-        const scenario = yield call(
-            updateScenario,
-            action.scenario._id,
-            action.scenario,
-        )
+        const scenario = yield call(updateScenario, action.scenario._id, action.scenario)
         yield put(addToStore('scenario', scenario))
     } catch (error) {
         console.error(error)
@@ -64,7 +57,7 @@ export function* onDeleteScenario(action) {
         yield put(
             addPropToStoreObject('scenario', currentPortfolioId, {
                 scenarioIds: scenarioIds.filter((id) => id !== action.id),
-            }),
+            })
         )
     } catch (error) {
         console.error(error)

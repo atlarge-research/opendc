@@ -96,7 +96,7 @@ export const fetchAndStoreTopology = function* (id) {
 
                                 const filledSlots = new Array(fullRack.capacity).fill(null)
                                 fullRack.machines.forEach(
-                                    (machine) => (filledSlots[machine.position - 1] = machine._id),
+                                    (machine) => (filledSlots[machine.position - 1] = machine._id)
                                 )
                                 let rack = (({ _id, name, capacity, powerCapacityW }) => ({
                                     _id,
@@ -128,7 +128,6 @@ export const fetchAndStoreTopology = function* (id) {
         topology = (({ _id, name, rooms }) => ({ _id, name, roomIds: rooms.map((r) => r._id) }))(fullTopology)
         yield put(addToStore('topology', topology))
 
-        console.log('Full topology after insertion', fullTopology)
         // TODO consider pushing the IDs
     }
 
@@ -142,6 +141,12 @@ const generateIdIfNotPresent = (obj) => {
 }
 
 export const updateTopologyOnServer = function* (id) {
+    const topology = yield getTopologyAsObject(id, true)
+
+    yield call(updateTopology, topology)
+}
+
+export const getTopologyAsObject = function* (id, keepIds) {
     const topologyStore = yield select(OBJECT_SELECTORS['topology'])
     const roomStore = yield select(OBJECT_SELECTORS['room'])
     const tileStore = yield select(OBJECT_SELECTORS['tile'])
@@ -152,39 +157,37 @@ export const updateTopologyOnServer = function* (id) {
     const memoryStore = yield select(OBJECT_SELECTORS['memory'])
     const storageStore = yield select(OBJECT_SELECTORS['storage'])
 
-    const topology = {
-        _id: id,
+    return {
+        _id: keepIds ? id : undefined,
         name: topologyStore[id].name,
         rooms: topologyStore[id].roomIds.map((roomId) => ({
-            _id: roomId,
+            _id: keepIds ? roomId : undefined,
             name: roomStore[roomId].name,
             tiles: roomStore[roomId].tileIds.map((tileId) => ({
-                _id: tileId,
+                _id: keepIds ? tileId : undefined,
                 positionX: tileStore[tileId].positionX,
                 positionY: tileStore[tileId].positionY,
                 rack: !tileStore[tileId].rackId
                     ? undefined
                     : {
-                        _id: rackStore[tileStore[tileId].rackId]._id,
-                        name: rackStore[tileStore[tileId].rackId].name,
-                        capacity: rackStore[tileStore[tileId].rackId].capacity,
-                        powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
-                        machines: rackStore[tileStore[tileId].rackId].machineIds
-                            .filter((m) => m !== null)
-                            .map((machineId) => ({
-                                _id: machineId,
-                                position: machineStore[machineId].position,
-                                cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
-                                gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
-                                memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
-                                storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
-                            })),
-                    },
+                          _id: keepIds ? rackStore[tileStore[tileId].rackId]._id : undefined,
+                          name: rackStore[tileStore[tileId].rackId].name,
+                          capacity: rackStore[tileStore[tileId].rackId].capacity,
+                          powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
+                          machines: rackStore[tileStore[tileId].rackId].machineIds
+                              .filter((m) => m !== null)
+                              .map((machineId) => ({
+                                  _id: keepIds ? machineId : undefined,
+                                  position: machineStore[machineId].position,
+                                  cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
+                                  gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
+                                  memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
+                                  storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
+                              })),
+                      },
             })),
         })),
     }
-
-    yield call(updateTopology, topology)
 }
 
 export const fetchAndStoreAllTraces = () => fetchAndStoreObjects('trace', call(getAllTraces))

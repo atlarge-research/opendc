@@ -26,23 +26,28 @@ class TopologyListComponent extends React.Component {
                 <h2>
                     Topologies
                     <button className="btn btn-outline-primary float-right" onClick={this.props.onNewTopology}>
-                        <FontAwesome name="plus"/>
+                        <FontAwesome name="plus" />
                     </button>
                 </h2>
 
                 {this.props.topologies.map((topology, idx) => (
                     <div key={topology._id} className="row mb-1">
-                        <div className={'col-8 align-self-center ' + (topology._id === this.props.currentTopologyId ? 'font-weight-bold' : '')}>
+                        <div
+                            className={
+                                'col-7 align-self-center ' +
+                                (topology._id === this.props.currentTopologyId ? 'font-weight-bold' : '')
+                            }
+                        >
                             {topology.name}
                         </div>
-                        <div className="col-4 text-right">
+                        <div className="col-5 text-right">
                             <span
                                 className="btn btn-outline-primary mr-1 fa fa-play"
                                 onClick={() => this.onChoose(topology._id)}
                             />
                             <span
                                 className={'btn btn-outline-danger fa fa-trash ' + (idx === 0 ? 'disabled' : '')}
-                                onClick={() => idx !== 0 ? this.onDelete(topology._id) : undefined}
+                                onClick={() => (idx !== 0 ? this.onDelete(topology._id) : undefined)}
                             />
                         </div>
                     </div>

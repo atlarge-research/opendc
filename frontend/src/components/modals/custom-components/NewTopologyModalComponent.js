@@ -31,10 +31,7 @@ class NewTopologyModalComponent extends React.Component {
     }
 
     onDuplicate() {
-        this.props.onCreateTopology(
-            this.textInput.value,
-            this.originTopology.value,
-        )
+        this.props.onDuplicateTopology(this.textInput.value, this.originTopology.value)
         this.reset()
     }
 
@@ -52,7 +49,7 @@ class NewTopologyModalComponent extends React.Component {
                 onCancel={this.onCancel.bind(this)}
             >
                 <form
-                    onSubmit={e => {
+                    onSubmit={(e) => {
                         e.preventDefault()
                         this.onSubmit()
                     }}
@@ -63,20 +60,19 @@ class NewTopologyModalComponent extends React.Component {
                             type="text"
                             className="form-control"
                             required
-                            ref={textInput => (this.textInput = textInput)}
+                            ref={(textInput) => (this.textInput = textInput)}
                         />
                     </div>
                     <div className="form-group">
                         <label className="form-control-label">Topology to duplicate (not supported yet)</label>
                         <select
                             className="form-control"
-                            disabled
-                            ref={originTopology => (this.originTopology = originTopology)}
+                            ref={(originTopology) => (this.originTopology = originTopology)}
                         >
                             <option value={-1} key={-1}>
                                 None - start from scratch
                             </option>
-                            {this.props.topologies.map(topology => (
+                            {this.props.topologies.map((topology) => (
                                 <option value={topology._id} key={topology._id}>
                                     {topology.name}
                                 </option>

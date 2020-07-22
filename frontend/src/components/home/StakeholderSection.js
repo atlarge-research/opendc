@@ -18,23 +18,11 @@ const Stakeholder = ({ name, title, subtitle }) => (
 const StakeholderSection = () => (
     <ContentSection name="stakeholders" title="Stakeholders">
         <div className="row justify-content-center">
-            <Stakeholder
-                name="Manager"
-                title="Managers"
-                subtitle="Seeing is deciding"
-            />
-            <Stakeholder name="Sales" title="Sales" subtitle="Demo concepts"/>
-            <Stakeholder name="Developer" title="DevOps" subtitle="Develop & tune"/>
-            <Stakeholder
-                name="Researcher"
-                title="Researchers"
-                subtitle="Understand & design"
-            />
-            <Stakeholder
-                name="Student"
-                title="Students"
-                subtitle="Grasp complex concepts"
-            />
+            <Stakeholder name="Manager" title="Managers" subtitle="Seeing is deciding" />
+            <Stakeholder name="Sales" title="Sales" subtitle="Demo concepts" />
+            <Stakeholder name="Developer" title="DevOps" subtitle="Develop & tune" />
+            <Stakeholder name="Researcher" title="Researchers" subtitle="Understand & design" />
+            <Stakeholder name="Student" title="Students" subtitle="Grasp complex concepts" />
         </div>
     </ContentSection>
 )

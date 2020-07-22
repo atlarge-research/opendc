@@ -1,11 +1,9 @@
 export const SET_CURRENT_TOPOLOGY = 'SET_CURRENT_TOPOLOGY'
 export const START_NEW_ROOM_CONSTRUCTION = 'START_NEW_ROOM_CONSTRUCTION'
-export const START_NEW_ROOM_CONSTRUCTION_SUCCEEDED =
-    'START_NEW_ROOM_CONSTRUCTION_SUCCEEDED'
+export const START_NEW_ROOM_CONSTRUCTION_SUCCEEDED = 'START_NEW_ROOM_CONSTRUCTION_SUCCEEDED'
 export const FINISH_NEW_ROOM_CONSTRUCTION = 'FINISH_NEW_ROOM_CONSTRUCTION'
 export const CANCEL_NEW_ROOM_CONSTRUCTION = 'CANCEL_NEW_ROOM_CONSTRUCTION'
-export const CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED =
-    'CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED'
+export const CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED = 'CANCEL_NEW_ROOM_CONSTRUCTION_SUCCEEDED'
 export const START_ROOM_EDIT = 'START_ROOM_EDIT'
 export const FINISH_ROOM_EDIT = 'FINISH_ROOM_EDIT'
 export const ADD_TILE = 'ADD_TILE'
@@ -34,9 +32,7 @@ export function startNewRoomConstructionSucceeded(roomId) {
 export function finishNewRoomConstruction() {
     return (dispatch, getState) => {
         const { objects, construction } = getState()
-        if (
-            objects.room[construction.currentRoomInConstruction].tileIds.length === 0
-        ) {
+        if (objects.room[construction.currentRoomInConstruction].tileIds.length === 0) {
             dispatch(cancelNewRoomConstruction())
             return
         }
@@ -79,8 +75,7 @@ export function toggleTileAtLocation(positionX, positionY) {
     return (dispatch, getState) => {
         const { objects, construction } = getState()
 
-        const tileIds =
-            objects.room[construction.currentRoomInConstruction].tileIds
+        const tileIds = objects.room[construction.currentRoomInConstruction].tileIds
         for (let index in tileIds) {
             if (
                 objects.tile[tileIds[index]].positionX === positionX &&

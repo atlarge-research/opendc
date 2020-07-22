@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         text: state.auth.givenName + ' ' + state.auth.familyName,
     }

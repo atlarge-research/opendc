@@ -14,8 +14,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     }
 }
 
-const UnitContainer = connect(mapStateToProps, mapDispatchToProps)(
-    UnitComponent,
-)
+const UnitContainer = connect(mapStateToProps, mapDispatchToProps)(UnitComponent)
 
 export default UnitContainer

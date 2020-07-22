@@ -9,10 +9,8 @@ import './Navbar.css'
 
 export const NAVBAR_HEIGHT = 60
 
-export const NavItem = withRouter(props => <NavItemWithoutRoute {...props} />)
-export const LoggedInSection = withRouter(props => (
-    <LoggedInSectionWithoutRoute {...props} />
-))
+export const NavItem = withRouter((props) => <NavItemWithoutRoute {...props} />)
+export const LoggedInSection = withRouter((props) => <LoggedInSectionWithoutRoute {...props} />)
 
 const GitHubLink = () => (
     <a
@@ -20,19 +18,12 @@ const GitHubLink = () => (
         className="ml-2 mr-3 text-dark"
         style={{ position: 'relative', top: 7 }}
     >
-        <span className="fa fa-github fa-2x"/>
+        <span className="fa fa-github fa-2x" />
     </a>
 )
 
 const NavItemWithoutRoute = ({ route, location, children }) => (
-    <li
-        className={classNames(
-            'nav-item clickable',
-            location.pathname === route ? 'active' : undefined,
-        )}
-    >
-        {children}
-    </li>
+    <li className={classNames('nav-item clickable', location.pathname === route ? 'active' : undefined)}>{children}</li>
 )
 
 const LoggedInSectionWithoutRoute = ({ location }) => (
@@ -48,28 +39,25 @@ const LoggedInSectionWithoutRoute = ({ location }) => (
                 ) : (
                     <NavItem route="/profile" key="profile">
                         <Link className="nav-link" title="My Profile" to="/profile">
-                            <ProfileName/>
+                            <ProfileName />
                         </Link>
                     </NavItem>
                 ),
                 <NavItem route="logout" key="logout">
-                    <Logout/>
+                    <Logout />
                 </NavItem>,
             ]
         ) : (
             <NavItem route="login">
-                <GitHubLink/>
-                <Login visible={true}/>
+                <GitHubLink />
+                <Login visible={true} />
             </NavItem>
         )}
     </ul>
 )
 
 const Navbar = ({ fullWidth, children }) => (
-    <nav
-        className="navbar fixed-top navbar-expand-lg navbar-light bg-faded"
-        id="navbar"
-    >
+    <nav className="navbar fixed-top navbar-expand-lg navbar-light bg-faded" id="navbar">
         <div className={fullWidth ? 'container-fluid' : 'container'}>
             <button
                 className="navbar-toggler navbar-toggler-right"
@@ -80,20 +68,15 @@ const Navbar = ({ fullWidth, children }) => (
                 aria-expanded="false"
                 aria-label="Toggle navigation"
             >
-                <span className="navbar-toggler-icon"/>
+                <span className="navbar-toggler-icon" />
             </button>
-            <Link
-                className="navbar-brand opendc-brand"
-                to="/"
-                title="OpenDC"
-                onClick={() => window.scrollTo(0, 0)}
-            >
-                <img src="/img/logo.png" alt="OpenDC"/>
+            <Link className="navbar-brand opendc-brand" to="/" title="OpenDC" onClick={() => window.scrollTo(0, 0)}>
+                <img src="/img/logo.png" alt="OpenDC" />
             </Link>
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul className="navbar-nav mr-auto">{children}</ul>
-                <LoggedInSection/>
+                <LoggedInSection />
             </div>
         </div>
     </nav>

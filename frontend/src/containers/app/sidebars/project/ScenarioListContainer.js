@@ -5,10 +5,10 @@ import { deleteScenario, setCurrentScenario } from '../../../../actions/scenario
 import { setCurrentPortfolio } from '../../../../actions/portfolios'
 
 const mapStateToProps = (state, ownProps) => {
-    let scenarios = state.objects.portfolio[ownProps.portfolioId] ? state.objects.portfolio[ownProps.portfolioId].scenarioIds.map(t => (
-        state.objects.scenario[t]
-    )) : []
-    if (scenarios.filter(t => !t).length > 0) {
+    let scenarios = state.objects.portfolio[ownProps.portfolioId]
+        ? state.objects.portfolio[ownProps.portfolioId].scenarioIds.map((t) => state.objects.scenario[t])
+        : []
+    if (scenarios.filter((t) => !t).length > 0) {
         scenarios = []
     }
 
@@ -19,7 +19,7 @@ const mapStateToProps = (state, ownProps) => {
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
         onNewScenario: (currentPortfolioId) => {
             dispatch(setCurrentPortfolio(currentPortfolioId))
@@ -30,16 +30,12 @@ const mapDispatchToProps = dispatch => {
         },
         onDeleteScenario: (id) => {
             if (id) {
-                dispatch(
-                    deleteScenario(id),
-                )
+                dispatch(deleteScenario(id))
             }
         },
     }
 }
 
-const ScenarioListContainer = connect(mapStateToProps, mapDispatchToProps)(
-    ScenarioListComponent,
-)
+const ScenarioListContainer = connect(mapStateToProps, mapDispatchToProps)(ScenarioListComponent)
 
 export default ScenarioListContainer

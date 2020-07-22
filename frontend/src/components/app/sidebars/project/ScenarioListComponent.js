@@ -24,25 +24,33 @@ class ScenarioListComponent extends React.Component {
             <>
                 {this.props.scenarios.map((scenario, idx) => (
                     <div key={scenario._id} className="row mb-1">
-                        <div className={'col-8 pl-5 align-self-center ' + (scenario._id === this.props.currentScenarioId ? 'font-weight-bold' : '')}>
+                        <div
+                            className={
+                                'col-7 pl-5 align-self-center ' +
+                                (scenario._id === this.props.currentScenarioId ? 'font-weight-bold' : '')
+                            }
+                        >
                             {scenario.name}
                         </div>
-                        <div className="col-4 text-right">
+                        <div className="col-5 text-right">
                             <Link
-                                className="btn btn-outline-primary mr-1 fa fa-play"
+                                className="btn btn-outline-primary mr-1 fa fa-play disabled"
                                 to={`/projects/${this.props.currentProjectId}/portfolios/${scenario.portfolioId}/scenarios/${scenario._id}`}
                                 onClick={() => this.props.onChooseScenario(scenario.portfolioId, scenario._id)}
                             />
                             <span
                                 className={'btn btn-outline-danger fa fa-trash ' + (idx === 0 ? 'disabled' : '')}
-                                onClick={() => idx !== 0 ? this.onDelete(scenario._id) : undefined}
+                                onClick={() => (idx !== 0 ? this.onDelete(scenario._id) : undefined)}
                             />
                         </div>
                     </div>
                 ))}
                 <div className="pl-4 mb-2">
-                    <div className="btn btn-outline-primary" onClick={() => this.props.onNewScenario(this.props.portfolioId)}>
-                        <FontAwesome name="plus" className="mr-1"/>
+                    <div
+                        className="btn btn-outline-primary"
+                        onClick={() => this.props.onNewScenario(this.props.portfolioId)}
+                    >
+                        <FontAwesome name="plus" className="mr-1" />
                         New scenario
                     </div>
                 </div>

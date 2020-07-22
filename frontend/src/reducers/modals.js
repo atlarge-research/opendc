@@ -19,7 +19,7 @@ import { CLOSE_NEW_PORTFOLIO_MODAL, OPEN_NEW_PORTFOLIO_MODAL } from '../actions/
 import { CLOSE_NEW_SCENARIO_MODAL, OPEN_NEW_SCENARIO_MODAL } from '../actions/modals/scenarios'
 
 function modal(openAction, closeAction) {
-    return function(state = false, action) {
+    return function (state = false, action) {
         switch (action.type) {
             case openAction:
                 return true

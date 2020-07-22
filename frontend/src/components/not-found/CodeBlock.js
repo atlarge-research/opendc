@@ -12,8 +12,7 @@ const CodeBlock = () => {
     const charList = textBlock.split('')
 
     // Binary representation of the string "OpenDC!" ;)
-    const binaryString =
-        '01001111011100000110010101101110010001000100001100100001'
+    const binaryString = '01001111011100000110010101101110010001000100001100100001'
 
     let binaryIndex = 0
     for (let i = 0; i < charList.length; i++) {
@@ -23,12 +22,7 @@ const CodeBlock = () => {
         }
     }
 
-    return (
-        <div
-            className="code-block"
-            dangerouslySetInnerHTML={{ __html: textBlock }}
-        />
-    )
+    return <div className="code-block" dangerouslySetInnerHTML={{ __html: textBlock }} />
 }
 
 export default CodeBlock

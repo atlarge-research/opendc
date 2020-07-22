@@ -6,14 +6,14 @@ import Shapes from '../../../../shapes/index'
 
 const TopologyGroup = ({ topology, interactionLevel }) => {
     if (!topology) {
-        return <Group/>
+        return <Group />
     }
 
     if (interactionLevel.mode === 'BUILDING') {
         return (
             <Group>
-                {topology.roomIds.map(roomId => (
-                    <RoomContainer key={roomId} roomId={roomId}/>
+                {topology.roomIds.map((roomId) => (
+                    <RoomContainer key={roomId} roomId={roomId} />
                 ))}
             </Group>
         )
@@ -22,12 +22,16 @@ const TopologyGroup = ({ topology, interactionLevel }) => {
     return (
         <Group>
             {topology.roomIds
-                .filter(roomId => roomId !== interactionLevel.roomId)
-                .map(roomId => <RoomContainer key={roomId} roomId={roomId}/>)}
-            {interactionLevel.mode === 'ROOM' ? <GrayContainer/> : null}
+                .filter((roomId) => roomId !== interactionLevel.roomId)
+                .map((roomId) => (
+                    <RoomContainer key={roomId} roomId={roomId} />
+                ))}
+            {interactionLevel.mode === 'ROOM' ? <GrayContainer /> : null}
             {topology.roomIds
-                .filter(roomId => roomId === interactionLevel.roomId)
-                .map(roomId => <RoomContainer key={roomId} roomId={roomId}/>)}
+                .filter((roomId) => roomId === interactionLevel.roomId)
+                .map((roomId) => (
+                    <RoomContainer key={roomId} roomId={roomId} />
+                ))}
         </Group>
     )
 }

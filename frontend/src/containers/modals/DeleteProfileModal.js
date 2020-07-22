@@ -13,15 +13,15 @@ const DeleteProfileModalComponent = ({ visible, callback }) => (
     />
 )
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         visible: state.modals.deleteProfileModalVisible,
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        callback: isConfirmed => {
+        callback: (isConfirmed) => {
             if (isConfirmed) {
                 dispatch(deleteCurrentUser())
             }
@@ -30,8 +30,6 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-const DeleteProfileModal = connect(mapStateToProps, mapDispatchToProps)(
-    DeleteProfileModalComponent,
-)
+const DeleteProfileModal = connect(mapStateToProps, mapDispatchToProps)(DeleteProfileModalComponent)
 
 export default DeleteProfileModal

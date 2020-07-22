@@ -33,18 +33,15 @@ class Modal extends React.Component {
 
         // Trigger auto-focus
         jQuery('#' + this.id)
-            .on('shown.bs.modal', function() {
-                jQuery(this)
-                    .find('input')
-                    .first()
-                    .focus()
+            .on('shown.bs.modal', function () {
+                jQuery(this).find('input').first().focus()
             })
             .on('hide.bs.modal', () => {
                 if (this.visible) {
                     this.props.onCancel()
                 }
             })
-            .on('keydown', e => {
+            .on('keydown', (e) => {
                 e.stopPropagation()
             })
     }
@@ -106,19 +103,12 @@ class Modal extends React.Component {
                         </div>
                         <div className="modal-body">{this.props.children}</div>
                         <div className="modal-footer">
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={this.onCancel.bind(this)}
-                            >
+                            <button type="button" className="btn btn-secondary" onClick={this.onCancel.bind(this)}>
                                 Close
                             </button>
                             <button
                                 type="button"
-                                className={classNames(
-                                    'btn',
-                                    'btn-' + this.props.submitButtonType,
-                                )}
+                                className={classNames('btn', 'btn-' + this.props.submitButtonType)}
                                 onClick={this.onSubmit.bind(this)}
                             >
                                 {this.props.submitButtonText}

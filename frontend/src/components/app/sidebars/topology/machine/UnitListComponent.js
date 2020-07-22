@@ -5,12 +5,7 @@ const UnitListComponent = ({ unitType, unitIds }) => (
     <ul className="list-group mt-1">
         {unitIds.length !== 0 ? (
             unitIds.map((unitId, index) => (
-                <UnitContainer
-                    unitType={unitType}
-                    unitId={unitId}
-                    index={index}
-                    key={index}
-                />
+                <UnitContainer unitType={unitType} unitId={unitId} index={index} key={index} />
             ))
         ) : (
             <div className="alert alert-info">

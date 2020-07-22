@@ -21,10 +21,7 @@ class UnitComponent extends React.Component {
                 '<strong>Energy Cons.:</strong> <code>' +
                 this.props.unit.energyConsumptionW +
                 ' W</code>'
-        } else if (
-            this.props.unitType === 'memory' ||
-            this.props.unitType === 'storage'
-        ) {
+        } else if (this.props.unitType === 'memory' || this.props.unitType === 'storage') {
             unitInfo =
                 '<strong>Speed:</strong> <code>' +
                 this.props.unit.speedMbPerS +
@@ -39,9 +36,7 @@ class UnitComponent extends React.Component {
 
         return (
             <li className="d-flex list-group-item justify-content-between align-items-center">
-                <span style={{ maxWidth: '60%' }}>
-                    {this.props.unit.name}
-                </span>
+                <span style={{ maxWidth: '60%' }}>{this.props.unit.name}</span>
                 <span>
                     <span
                         tabIndex="0"
@@ -53,10 +48,7 @@ class UnitComponent extends React.Component {
                         data-content={unitInfo}
                         data-html="true"
                     />
-                    <span
-                        className="btn btn-outline-danger fa fa-trash"
-                        onClick={this.props.onDelete}
-                    />
+                    <span className="btn btn-outline-danger fa fa-trash" onClick={this.props.onDelete} />
                 </span>
             </li>
         )
