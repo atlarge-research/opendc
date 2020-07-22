@@ -54,7 +54,7 @@ const PortfolioResultsComponent = ({ portfolio, scenarios }) => {
                     <div className="col-6 mb-2" key={metric}>
                         <h4>{METRIC_NAMES[metric]}</h4>
                         <ResponsiveContainer aspect={16 / 9} width="100%">
-                            <ComposedChart data={dataPerMetric[metric]} margin={{ bottom: 15 }} layout="vertical">
+                            <ComposedChart data={dataPerMetric[metric]} margin={{ left: 20, bottom: 15 }} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis
                                     tickFormatter={(tick) => approx(tick)}

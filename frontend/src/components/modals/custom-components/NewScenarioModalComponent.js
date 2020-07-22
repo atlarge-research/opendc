@@ -7,6 +7,7 @@ class NewScenarioModalComponent extends React.Component {
     static propTypes = {
         show: PropTypes.bool.isRequired,
         currentPortfolioId: PropTypes.string.isRequired,
+        currentPortfolioScenarioIds: PropTypes.arrayOf(PropTypes.string),
         traces: PropTypes.arrayOf(Shapes.Trace),
         topologies: PropTypes.arrayOf(Shapes.Topology),
         schedulers: PropTypes.arrayOf(Shapes.Scheduler),
@@ -17,8 +18,12 @@ class NewScenarioModalComponent extends React.Component {
         this.reset()
     }
 
+    componentDidUpdate() {
+        this.textInput.value = this.props.currentPortfolioScenarioIds.length === 0 ? 'Base scenario' : ''
+    }
+
     reset() {
-        this.textInput.value = ''
+        this.textInput.value = this.props.currentPortfolioScenarioIds.length === 0 ? 'Base scenario' : ''
         this.traceSelect.selectedIndex = 0
         this.traceLoadInput.value = 1.0
         this.topologySelect.selectedIndex = 0
@@ -72,6 +77,7 @@ class NewScenarioModalComponent extends React.Component {
                             type="text"
                             className="form-control"
                             required
+                            disabled={this.props.currentPortfolioScenarioIds.length === 0}
                             ref={(textInput) => (this.textInput = textInput)}
                         />
                     </div>
