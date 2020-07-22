@@ -276,6 +276,9 @@ class RunnerCli : CliktCommand(name = "runner") {
         }
     }
 
+    val POLL_INTERVAL = 5000L // ms = 5 s
+    val HEARTBEAT_INTERVAL = 60000L // ms = 1 min
+
     override fun run() = runBlocking(Dispatchers.Default) {
         logger.info { "Starting OpenDC web runner" }
         logger.info { "Connecting to MongoDB instance" }
@@ -293,7 +296,7 @@ class RunnerCli : CliktCommand(name = "runner") {
             val scenario = manager.findNext()
 
             if (scenario == null) {
-                delay(5000)
+                delay(POLL_INTERVAL)
                 continue
             }
 
@@ -308,9 +311,11 @@ class RunnerCli : CliktCommand(name = "runner") {
 
             coroutineScope {
                 // Launch heartbeat process
-                launch {
-                    delay(60000)
-                    manager.heartbeat(id)
+                val heartbeat = launch {
+                    while (true) {
+                        delay(HEARTBEAT_INTERVAL)
+                        manager.heartbeat(id)
+                    }
                 }
 
                 try {
@@ -326,6 +331,8 @@ class RunnerCli : CliktCommand(name = "runner") {
                 } catch (e: Exception) {
                     logger.warn(e) { "Scenario failed to finish" }
                     manager.fail(id)
+                } finally {
+                    heartbeat.cancel()
                 }
             }
         }
