@@ -24,14 +24,7 @@
 
 package com.atlarge.opendc.experiments.sc20
 
-import com.atlarge.opendc.experiments.sc20.experiment.CompositeWorkloadPortfolio
-import com.atlarge.opendc.experiments.sc20.experiment.Experiment
-import com.atlarge.opendc.experiments.sc20.experiment.HorVerPortfolio
-import com.atlarge.opendc.experiments.sc20.experiment.MoreVelocityPortfolio
-import com.atlarge.opendc.experiments.sc20.experiment.OperationalPhenomenaPortfolio
-import com.atlarge.opendc.experiments.sc20.experiment.Portfolio
-import com.atlarge.opendc.experiments.sc20.experiment.ReplayPortfolio
-import com.atlarge.opendc.experiments.sc20.experiment.TestPortfolio
+import com.atlarge.opendc.experiments.sc20.experiment.*
 import com.atlarge.opendc.experiments.sc20.reporter.ConsoleExperimentReporter
 import com.atlarge.opendc.experiments.sc20.runner.ExperimentDescriptor
 import com.atlarge.opendc.experiments.sc20.runner.execution.ThreadPoolExperimentScheduler
@@ -104,6 +97,7 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
             "operational-phenomena" to { experiment, i -> OperationalPhenomenaPortfolio(experiment, i) },
             "replay" to { experiment, i -> ReplayPortfolio(experiment, i) },
             "test" to { experiment, i -> TestPortfolio(experiment, i) },
+            "more-hpc" to { experiment, i -> MoreHpcPortfolio(experiment, i) },
             ignoreCase = true
         )
         .multiple()

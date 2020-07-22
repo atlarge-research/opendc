@@ -24,10 +24,7 @@
 
 package com.atlarge.opendc.experiments.sc20.experiment
 
-import com.atlarge.opendc.experiments.sc20.experiment.model.CompositeWorkload
-import com.atlarge.opendc.experiments.sc20.experiment.model.OperationalPhenomena
-import com.atlarge.opendc.experiments.sc20.experiment.model.Topology
-import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
+import com.atlarge.opendc.experiments.sc20.experiment.model.*
 
 public class HorVerPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "horizontal_vs_vertical") {
     override val topologies = listOf(
@@ -195,4 +192,30 @@ public class TestPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, 
     )
 
     override val allocationPolicies: List<String> = listOf("active-servers")
+}
+
+public class MoreHpcPortfolio(parent: Experiment, id: Int) : Portfolio(parent, id, "more_hpc") {
+    override val topologies = listOf(
+        Topology("base"),
+        Topology("exp-vol-hor-hom"),
+        Topology("exp-vol-ver-hom"),
+        Topology("exp-vel-ver-hom")
+    )
+
+    override val workloads = listOf(
+        Workload("solvinity", 0.25, samplingStrategy = SamplingStrategy.HPC),
+        Workload("solvinity", 0.5, samplingStrategy = SamplingStrategy.HPC),
+        Workload("solvinity", 1.0, samplingStrategy = SamplingStrategy.HPC),
+        Workload("solvinity", 0.25, samplingStrategy = SamplingStrategy.HPC_LOAD),
+        Workload("solvinity", 0.5, samplingStrategy = SamplingStrategy.HPC_LOAD),
+        Workload("solvinity", 1.0, samplingStrategy = SamplingStrategy.HPC_LOAD)
+    )
+
+    override val operationalPhenomenas = listOf(
+        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
+    )
+
+    override val allocationPolicies = listOf(
+        "active-servers"
+    )
 }
