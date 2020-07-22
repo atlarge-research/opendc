@@ -19,7 +19,11 @@ class NewScenarioModalComponent extends React.Component {
     }
 
     componentDidUpdate() {
-        this.textInput.value = this.props.currentPortfolioScenarioIds.length === 0 ? 'Base scenario' : ''
+        if (this.props.currentPortfolioScenarioIds.length === 0) {
+            this.textInput.value = 'Base scenario'
+        } else if (this.textInput.value === 'Base scenario') {
+            this.textInput.value = ''
+        }
     }
 
     reset() {
