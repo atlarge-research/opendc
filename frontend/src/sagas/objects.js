@@ -128,7 +128,6 @@ export const fetchAndStoreTopology = function* (id) {
         topology = (({ _id, name, rooms }) => ({ _id, name, roomIds: rooms.map((r) => r._id) }))(fullTopology)
         yield put(addToStore('topology', topology))
 
-        console.log('Full topology after insertion', fullTopology)
         // TODO consider pushing the IDs
     }
 
