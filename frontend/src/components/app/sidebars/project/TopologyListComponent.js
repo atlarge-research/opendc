@@ -34,13 +34,13 @@ class TopologyListComponent extends React.Component {
                     <div key={topology._id} className="row mb-1">
                         <div
                             className={
-                                'col-8 align-self-center ' +
+                                'col-7 align-self-center ' +
                                 (topology._id === this.props.currentTopologyId ? 'font-weight-bold' : '')
                             }
                         >
                             {topology.name}
                         </div>
-                        <div className="col-4 text-right">
+                        <div className="col-5 text-right">
                             <span
                                 className="btn btn-outline-primary mr-1 fa fa-play"
                                 onClick={() => this.onChoose(topology._id)}

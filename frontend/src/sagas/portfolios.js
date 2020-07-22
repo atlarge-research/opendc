@@ -1,4 +1,4 @@
-import { call, put, select } from 'redux-saga/effects'
+import { call, put, select, delay } from 'redux-saga/effects'
 import { addPropToStoreObject, addToStore } from '../actions/objects'
 import { addPortfolio, deletePortfolio, getPortfolio, updatePortfolio } from '../api/routes/portfolios'
 import { getProject } from '../api/routes/projects'
@@ -15,7 +15,34 @@ export function* onOpenPortfolioSucceeded(action) {
         yield fetchAndStoreAllSchedulers()
         yield fetchAndStoreAllTraces()
 
-        // TODO Fetch portfolio-specific metrics
+        yield watchForPortfolioResults()
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+export function* watchForPortfolioResults() {
+    try {
+        const currentPortfolioId = yield select((state) => state.currentPortfolioId)
+        let unfinishedScenarios = yield getCurrentUnfinishedScenarios()
+
+        while (unfinishedScenarios.length > 0) {
+            yield delay(3000)
+            yield fetchPortfolioWithScenarios(currentPortfolioId)
+            unfinishedScenarios = yield getCurrentUnfinishedScenarios()
+        }
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+export function* getCurrentUnfinishedScenarios() {
+    try {
+        const currentPortfolioId = yield select((state) => state.currentPortfolioId)
+        const scenarioIds = yield select((state) => state.objects.portfolio[currentPortfolioId].scenarioIds)
+        const scenarioObjects = yield select((state) => state.objects.scenario)
+        const scenarios = scenarioIds.map((s) => scenarioObjects[s])
+        return scenarios.filter((s) => !s || s.simulation.state === 'QUEUED' || s.simulation.state === 'RUNNING')
     } catch (error) {
         console.error(error)
     }

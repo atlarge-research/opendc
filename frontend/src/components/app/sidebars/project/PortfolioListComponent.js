@@ -37,13 +37,13 @@ class PortfolioListComponent extends React.Component {
                         <div className="row mb-1">
                             <div
                                 className={
-                                    'col-8 align-self-center ' +
+                                    'col-7 align-self-center ' +
                                     (portfolio._id === this.props.currentPortfolioId ? 'font-weight-bold' : '')
                                 }
                             >
                                 {portfolio.name}
                             </div>
-                            <div className="col-4 text-right">
+                            <div className="col-5 text-right">
                                 <Link
                                     className="btn btn-outline-primary mr-1 fa fa-play"
                                     to={`/projects/${this.props.currentProjectId}/portfolios/${portfolio._id}`}

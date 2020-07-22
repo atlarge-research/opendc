@@ -26,13 +26,13 @@ class ScenarioListComponent extends React.Component {
                     <div key={scenario._id} className="row mb-1">
                         <div
                             className={
-                                'col-8 pl-5 align-self-center ' +
+                                'col-7 pl-5 align-self-center ' +
                                 (scenario._id === this.props.currentScenarioId ? 'font-weight-bold' : '')
                             }
                         >
                             {scenario.name}
                         </div>
-                        <div className="col-4 text-right">
+                        <div className="col-5 text-right">
                             <Link
                                 className="btn btn-outline-primary mr-1 fa fa-play disabled"
                                 to={`/projects/${this.props.currentProjectId}/portfolios/${scenario.portfolioId}/scenarios/${scenario._id}`}

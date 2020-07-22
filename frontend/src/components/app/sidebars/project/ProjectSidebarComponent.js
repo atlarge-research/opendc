@@ -5,8 +5,10 @@ import PortfolioListContainer from '../../../../containers/app/sidebars/project/
 
 const ProjectSidebarComponent = ({ collapsible }) => (
     <Sidebar isRight={false} collapsible={collapsible}>
-        <TopologyListContainer />
-        <PortfolioListContainer />
+        <div className="h-100 overflow-auto container-fluid">
+            <TopologyListContainer />
+            <PortfolioListContainer />
+        </div>
     </Sidebar>
 )
 

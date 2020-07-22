@@ -4,7 +4,7 @@ import { getProject } from '../api/routes/projects'
 import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
 import { fetchAndStoreAllTopologiesOfProject } from './topology'
 import { addScenario, deleteScenario, updateScenario } from '../api/routes/scenarios'
-import { fetchPortfolioWithScenarios } from './portfolios'
+import { fetchPortfolioWithScenarios, watchForPortfolioResults } from './portfolios'
 
 export function* onOpenScenarioSucceeded(action) {
     try {
@@ -32,6 +32,7 @@ export function* onAddScenario(action) {
                 scenarioIds: scenarioIds.concat([scenario._id]),
             })
         )
+        yield watchForPortfolioResults()
     } catch (error) {
         console.error(error)
     }

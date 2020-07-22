@@ -54,18 +54,24 @@ const PortfolioResultsComponent = ({ portfolio, scenarios }) => {
                     <div className="col-6 mb-2" key={metric}>
                         <h4>{METRIC_NAMES[metric]}</h4>
                         <ResponsiveContainer aspect={16 / 9} width="100%">
-                            <ComposedChart data={dataPerMetric[metric]} margin={{ bottom: 15 }} layout="vertical" animationDUration={0}>
-                                <CartesianGrid strokeDasharray="3 3"/>
-                                <XAxis tickFormatter={(tick) => approx(tick)}
-                                       label={{ value: METRIC_UNITS[metric], position: 'bottom', offset: 0 }}
-                                       type="number"/>
-                                <YAxis dataKey="name" type="category"/>
-                                <Bar dataKey="value" fill="#3399FF"/>
-                                <Scatter dataKey="value" opacity={0}>
-                                    <ErrorBar dataKey="errorX" width={10} strokeWidth={3} stroke="#FF6600"
-                                              direction="x"/>
+                            <ComposedChart data={dataPerMetric[metric]} margin={{ bottom: 15 }} layout="vertical">
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis
+                                    tickFormatter={(tick) => approx(tick)}
+                                    label={{ value: METRIC_UNITS[metric], position: 'bottom', offset: 0 }}
+                                    type="number"
+                                />
+                                <YAxis dataKey="name" type="category" />
+                                <Bar dataKey="value" fill="#3399FF" isAnimationActive={false} />
+                                <Scatter dataKey="value" opacity={0} isAnimationActive={false}>
+                                    <ErrorBar
+                                        dataKey="errorX"
+                                        width={10}
+                                        strokeWidth={3}
+                                        stroke="#FF6600"
+                                        direction="x"
+                                    />
                                 </Scatter>
-
                             </ComposedChart>
                         </ResponsiveContainer>
                     </div>
