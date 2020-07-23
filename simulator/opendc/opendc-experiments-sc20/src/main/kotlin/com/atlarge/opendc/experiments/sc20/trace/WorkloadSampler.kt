@@ -109,6 +109,24 @@ fun sampleHpcWorkload(
         name.matches(pattern)
     }
 
+    val hpcSequence = generateSequence(0) { it + 1 }
+        .map { index ->
+            val res = mutableListOf<TraceEntry<VmWorkload>>()
+            hpc.mapTo(res) { sample(it, index) }
+            res.shuffle(random)
+            res
+        }
+        .flatten()
+
+    val nonHpcSequence = generateSequence(0) { it + 1 }
+        .map { index ->
+            val res = mutableListOf<TraceEntry<VmWorkload>>()
+            nonHpc.mapTo(res) { sample(it, index) }
+            res.shuffle(random)
+            res
+        }
+        .flatten()
+
     logger.debug { "Found ${hpc.size} HPC workloads and ${nonHpc.size} non-HPC workloads" }
 
     val totalLoad = if (workload is CompositeWorkload) {
@@ -117,15 +135,14 @@ fun sampleHpcWorkload(
         trace.sumByDouble { it.workload.image.tags.getValue("total-load") as Double }
     }
 
+    logger.debug { "Total trace load: $totalLoad" }
+
     val res = mutableListOf<TraceEntry<VmWorkload>>()
 
     if (sampleOnLoad) {
         var currentLoad = 0.0
         var i = 0
-        while (true) {
-            // Sample random HPC entry with replacement
-            val entry = sample(hpc.random(random), i++)
-
+        for (entry in hpcSequence) {
             val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
             if ((currentLoad + entryLoad) / totalLoad > fraction || res.size > trace.size) {
                 break
@@ -135,8 +152,7 @@ fun sampleHpcWorkload(
             res += entry
         }
 
-        (nonHpc as MutableList<TraceEntry<VmWorkload>>).shuffle(random)
-        for (entry in nonHpc) {
+        for (entry in nonHpcSequence) {
             val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
             if ((currentLoad + entryLoad) / totalLoad > 1 || res.size > trace.size) {
                 break
@@ -146,14 +162,23 @@ fun sampleHpcWorkload(
             res += entry
         }
     } else {
-        repeat((fraction * trace.size).toInt()) { i ->
-            // Sample random HPC entry with replacement
-            val entry = sample(hpc.random(random), i)
-            res.add(entry)
-        }
+        var hpcLoad = 0.0
+        hpcSequence
+            .take((fraction * trace.size).toInt())
+            .forEach { entry ->
+                hpcLoad += entry.workload.image.tags.getValue("total-load") as Double
+                res.add(entry)
+            }
 
-        (nonHpc as MutableList<TraceEntry<VmWorkload>>).shuffle(random)
-        res.addAll(nonHpc.subList(0, ((1 - fraction) * trace.size).toInt()))
+        var nonHpcLoad = 0.0
+        nonHpcSequence
+            .take(((1 - fraction) * trace.size).toInt())
+            .forEach { entry ->
+                nonHpcLoad += entry.workload.image.tags.getValue("total-load") as Double
+                res.add(entry)
+            }
+
+        logger.debug { "HPC load $hpcLoad and non-HPC load $nonHpcLoad" }
     }
 
     logger.info { "Sampled ${trace.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
