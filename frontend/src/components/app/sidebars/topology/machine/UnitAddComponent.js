@@ -11,7 +11,7 @@ class UnitAddComponent extends React.Component {
         return (
             <div className="form-inline">
                 <div className="form-group w-100">
-                    <select className="form-control w-75 mr-1" ref={(unitSelect) => (this.unitSelect = unitSelect)}>
+                    <select className="form-control w-70 mr-1" ref={(unitSelect) => (this.unitSelect = unitSelect)}>
                         {this.props.units.map((unit) => (
                             <option value={unit._id} key={unit._id}>
                                 {unit.name}

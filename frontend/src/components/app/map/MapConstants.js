@@ -23,6 +23,6 @@ export const MAP_SCALE_PER_EVENT = 1.1
 export const MAP_MIN_SCALE = 0.5
 export const MAP_MAX_SCALE = 1.5
 
-export const MAX_NUM_UNITS_PER_MACHINE = 4
+export const MAX_NUM_UNITS_PER_MACHINE = 6
 export const DEFAULT_RACK_SLOT_CAPACITY = 42
 export const DEFAULT_RACK_POWER_CAPACITY = 10000

@@ -22,7 +22,7 @@ const UnitTabsComponent = () => (
             </li>
             <li className="nav-item">
                 <a className="nav-link" data-toggle="tab" href="#storage-units" role="tab">
-                    Storage
+                    Stor.
                 </a>
             </li>
         </ul>
