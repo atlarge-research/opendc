@@ -1,25 +1,13 @@
 export const ADD_PREFAB = 'ADD_PREFAB'
-export const ADD_PREFAB_SUCCEEDED = 'ADD_PREFAB_SUCCEEDED'
 export const DELETE_PREFAB = 'DELETE_PREFAB'
 export const DELETE_PREFAB_SUCCEEDED = 'DELETE_PREFAB_SUCCEEDED'
 export const OPEN_PREFAB_SUCCEEDED = 'OPEN_PREFAB_SUCCEEDED'
 
-
+//infer rackID from state in saga later
 export function addPrefab(name) {
-    return (dispatch, getState) => {
-        const { auth } = getState()
-        dispatch({
-            type: ADD_PREFAB,
-            name,
-            userId: auth.userId,
-        })
-    }
-}
-
-export function addPrefabSucceeded(authorization) {
     return {
-        type: ADD_PREFAB_SUCCEEDED,
-        authorization,
+        type: ADD_PREFAB,
+        name,
     }
 }
 
