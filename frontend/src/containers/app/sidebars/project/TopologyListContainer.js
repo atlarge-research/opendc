@@ -4,7 +4,7 @@ import { setCurrentTopology } from '../../../../actions/topology/building'
 import { openNewTopologyModal } from '../../../../actions/modals/topology'
 import { withRouter } from 'react-router-dom'
 import { getState } from '../../../../util/state-utils'
-import { deleteScenario } from '../../../../actions/scenarios'
+import { deleteTopology } from '../../../../actions/topologies'
 
 const mapStateToProps = (state) => {
     let topologies = state.objects.project[state.currentProjectId]
@@ -33,7 +33,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         onDeleteTopology: async (id) => {
             if (id) {
                 const state = await getState(dispatch)
-                dispatch(deleteScenario(id))
+                dispatch(deleteTopology(id))
                 dispatch(setCurrentTopology(state.objects.project[state.currentProjectId].topologyIds[0]))
                 ownProps.history.push(`/projects/${state.currentProjectId}`)
             }

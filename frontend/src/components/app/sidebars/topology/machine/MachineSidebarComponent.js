@@ -6,7 +6,7 @@ import UnitTabsContainer from '../../../../../containers/app/sidebars/topology/m
 
 const MachineSidebarComponent = ({ machineId }) => {
     return (
-        <div>
+        <div className="h-100 overflow-auto">
             <MachineNameContainer />
             <BackToRackContainer />
             <DeleteMachineContainer />
