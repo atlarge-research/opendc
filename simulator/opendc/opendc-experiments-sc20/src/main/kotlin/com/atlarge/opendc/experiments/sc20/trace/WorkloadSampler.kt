@@ -201,13 +201,13 @@ private fun sample(entry: TraceEntry<VmWorkload>, i: Int): TraceEntry<VmWorkload
     val id = UUID.nameUUIDFromBytes("${entry.workload.image.uid}-$i".toByteArray())
     val image = VmImage(
         id,
-        entry.workload.image.name + "-$i",
+        entry.workload.image.name,
         entry.workload.image.tags,
         entry.workload.image.flopsHistory,
         entry.workload.image.maxCores,
         entry.workload.image.requiredMemory
     )
-    val vmWorkload = entry.workload.copy(uid = id, image = image, name = entry.workload.name + "-$i")
+    val vmWorkload = entry.workload.copy(uid = id, image = image, name = entry.workload.name)
     return VmTraceEntry(vmWorkload, entry.submissionTime)
 }
 
