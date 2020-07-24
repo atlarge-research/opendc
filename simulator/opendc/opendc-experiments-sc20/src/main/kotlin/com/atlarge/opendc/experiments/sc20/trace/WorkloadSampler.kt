@@ -136,6 +136,10 @@ fun sampleHpcWorkload(
     }
 
     logger.debug { "Total trace load: $totalLoad" }
+    var hpcCount = 0
+    var hpcLoad = 0.0
+    var nonHpcCount = 0
+    var nonHpcLoad = 0.0
 
     val res = mutableListOf<TraceEntry<VmWorkload>>()
 
@@ -144,43 +148,47 @@ fun sampleHpcWorkload(
         var i = 0
         for (entry in hpcSequence) {
             val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
-            if ((currentLoad + entryLoad) / totalLoad > fraction || res.size > trace.size) {
+            if ((currentLoad + entryLoad) / totalLoad > fraction) {
                 break
             }
 
+            hpcLoad += entryLoad
+            hpcCount += 1
             currentLoad += entryLoad
             res += entry
         }
 
         for (entry in nonHpcSequence) {
             val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
-            if ((currentLoad + entryLoad) / totalLoad > 1 || res.size > trace.size) {
+            if ((currentLoad + entryLoad) / totalLoad > 1) {
                 break
             }
 
+            nonHpcLoad += entryLoad
+            nonHpcCount += 1
             currentLoad += entryLoad
             res += entry
         }
     } else {
-        var hpcLoad = 0.0
         hpcSequence
             .take((fraction * trace.size).toInt())
             .forEach { entry ->
                 hpcLoad += entry.workload.image.tags.getValue("total-load") as Double
+                hpcCount += 1
                 res.add(entry)
             }
 
-        var nonHpcLoad = 0.0
         nonHpcSequence
             .take(((1 - fraction) * trace.size).toInt())
             .forEach { entry ->
                 nonHpcLoad += entry.workload.image.tags.getValue("total-load") as Double
+                nonHpcCount += 1
                 res.add(entry)
             }
-
-        logger.debug { "HPC load $hpcLoad and non-HPC load $nonHpcLoad" }
     }
 
+    logger.debug { "HPC $hpcCount (load $hpcLoad) and non-HPC $nonHpcCount (load $nonHpcLoad)" }
+    logger.debug { "Total sampled load: ${hpcLoad + nonHpcLoad}" }
     logger.info { "Sampled ${trace.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 
     return res
