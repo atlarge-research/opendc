@@ -58,8 +58,7 @@ class PerformanceInterferenceModel(
     private fun doesMatch(item: PerformanceInterferenceModelItem): Boolean {
         var count = 0
         for (name in item.workloadNames.subSet(colocatedWorkloads.firstKey(), colocatedWorkloads.lastKey() + "\u0000")) {
-            if (name in colocatedWorkloads)
-                count++
+            count += colocatedWorkloads.getOrDefault(name, 0)
             if (count > 1)
                 return true
         }
