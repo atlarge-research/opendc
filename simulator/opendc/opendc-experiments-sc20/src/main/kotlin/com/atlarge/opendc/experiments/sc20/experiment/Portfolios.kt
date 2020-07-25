@@ -203,6 +203,7 @@ public class MoreHpcPortfolio(parent: Experiment, id: Int) : Portfolio(parent, i
     )
 
     override val workloads = listOf(
+        Workload("solvinity", 0.0, samplingStrategy = SamplingStrategy.HPC),
         Workload("solvinity", 0.25, samplingStrategy = SamplingStrategy.HPC),
         Workload("solvinity", 0.5, samplingStrategy = SamplingStrategy.HPC),
         Workload("solvinity", 1.0, samplingStrategy = SamplingStrategy.HPC),
