@@ -16,6 +16,8 @@ class Prefab(Model):
         """
         user = User.from_google_id(google_id)
 
+        # TODO(Jacob) add special handling for OpenDC-provided prefabs
+
         #try:
 
         print(self.obj)

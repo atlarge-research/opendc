@@ -66,18 +66,18 @@ Clone OpenDC and follow the [instructions in the main repository](../) to set up
 
 **Important:** Be sure to set up environment variables according to those instructions, in a `.env` file.
 
-In `api/static/index.html`, add your own `OAUTH_CLIENT_ID` in `content=` on line `2`.
+If you want to test REST calls manually, add your own `OAUTH_CLIENT_ID` in `content=` on line `2` in `api/static/index.html`.
 
 #### Set up the database
 
-You can selectively run only the database services from the standard OpenDC `docker-compose` setup:
+You can selectively run only the database services from the standard OpenDC `docker-compose` setup (in the root directory):
 
 ```bash
 docker-compose build mongo mongo-express
 docker-compose up mongo mongo-express
 ```
 
-This will set you up with a running MongoDB instance and a visual inspection tool running on [localhost:8082](http://localhost:8082), with which you can view and manipulate the database.
+This will set you up with a running MongoDB instance and a visual inspection tool running on [localhost:8082](http://localhost:8082), with which you can view and manipulate the database. Add the simulator images to the command lists above if you want to test simulation capabilities, as well.
 
 ### Local Development
 
@@ -92,10 +92,10 @@ When editing the web server code, restart the server (`CTRL` + `c` followed by `
 
 #### Code Style
 
-To format all files, run `format.sh` in this directory (uses `yapf` internally).
+To format all files, run `format.sh` in this directory. The script uses `yapf` internally to format everything automatically.
 
-To check if code style is up to modern standards, run `check.sh` in this directory (uses `pylint` internally).
+To check if code style is up to modern standards, run `check.sh` in this directory. The script uses `pylint` internally.
 
 #### Testing
 
-Run `pytest` in this directory to run all tests.
+Run `pytest opendc` in this directory to run all tests.

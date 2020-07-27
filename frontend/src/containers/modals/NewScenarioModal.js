@@ -15,7 +15,10 @@ const mapStateToProps = (state) => {
     return {
         show: state.modals.newScenarioModalVisible,
         currentPortfolioId: state.currentPortfolioId,
-        currentPortfolioScenarioIds: state.currentPortfolioId !== '-1' && state.objects.portfolio[state.currentPortfolioId] ? state.objects.portfolio[state.currentPortfolioId].scenarioIds : [],
+        currentPortfolioScenarioIds:
+            state.currentPortfolioId !== '-1' && state.objects.portfolio[state.currentPortfolioId]
+                ? state.objects.portfolio[state.currentPortfolioId].scenarioIds
+                : [],
         traces: Object.values(state.objects.trace),
         topologies,
         schedulers: Object.values(state.objects.scheduler),

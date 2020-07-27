@@ -13,13 +13,13 @@ OpenDC is an open-source simulator for datacenters aimed at both research and ed
 
 ![opendc-frontend-construction](misc/artwork/opendc-frontend-construction.png)
 
-Users can construct datacenters (see above) and define experiments to see how these datacenters perform under different workloads and schedulers (see below). 
+Users can construct datacenters (see above) and define portfolios of scenarios (experiments) to see how these datacenters perform under different workloads and schedulers (see below). 
 
 ![opendc-frontend-simulation](misc/artwork/opendc-frontend-simulation.png)
 
-The simulator is accessible both as a ready-to-use website hosted by Delft University of Technology at [opendc.org](https://opendc.org), and as source code that users can run locally on their own machine.
+The simulator is accessible both as a ready-to-use website hosted by us at [opendc.org](https://opendc.org), and as source code that users can run locally on their own machine, through Docker.
 
-OpenDC is a project by the [@Large Research Group](http://atlarge-research.com).
+OpenDC is a project by the [@Large Research Group](https://atlarge-research.com).
 
 ## Architecture
 
@@ -29,13 +29,13 @@ OpenDC consists of four components: a Kotlin [simulator](/simulator), a MongoDB 
     <img src="misc/artwork/opendc-component-diagram.png" alt="OpenDC Component Diagram">
 </p>
 
-On the frontend, users can construct a topology by specifying a datacenter's rooms, racks and machines, and create experiments to see how a workload trace runs on that topology. The frontend communicates with the web server over SocketIO, through a custom REST request/response layer. For example, the frontend might make a `GET` request to `/api/v1/users/{userId}`, but this request is completed via SocketIO, not plain HTTP requests. Note that the API itself can also be accessed by HTTP.
+On the frontend, users can construct a topology by specifying a datacenter's rooms, racks and machines, and create scenarios to see how a workload trace runs on that topology. The frontend communicates with the web server over SocketIO, through a custom REST request/response layer. For example, the frontend might make a `GET` request to `/api/v1/users/{userId}`, but this request is completed via SocketIO, not plain HTTP requests. Note that the API itself can also be accessed by HTTP.
 
 The (Swagger/OpenAPI compliant) API spec specifies what requests the frontend can make to the web server. To view this specification, go to the [Swagger Editor](https://editor.swagger.io/) and paste in our [opendc-api-spec.yml](opendc-api-spec.yml).
 
-The web server receives API requests and processes them in the database. When the frontend requests to run a new experiment, the web server adds it to the `experiments` table in the database and sets is `state` as `QUEUED`.
+The web server receives API requests and processes them in the database. When the frontend requests to run a new scenario, the web server adds it to the `scenarios` collection in the database and sets its `state` as `QUEUED`.
 
-The simulator monitors the database for `QUEUED` experiments, and simulates them as they are submitted. It writes the resulting `machine_states` to the database, which the frontend can then again retrieve via the web server.
+The simulator monitors the database for `QUEUED` scenarios, and simulates them as they are submitted. It writes the results to parquet files, which in turn are analysed and aggregated by a Spark pipeline. This pipeline then write the aggregated summary to the database, which the frontend can then again retrieve via the web server.
 
 ## Setup
 
@@ -69,7 +69,7 @@ git clone https://github.com/atlarge-research/opendc.git
 cd opendc/
 ```
 
-In the directory you just entered, you need to set up a set of environment variables. To do this, create a file called `.env` in the `opendc` folder. In this file, replace `your-google-oauth-client-id` with your `client_id` from the OAuth client ID you created and put the path of this `opendc` folder in the place of `/your/path/to/opendc`. For a standard setup, you can leave the other settings as-is.
+In the directory you just entered, you need to set up a set of environment variables. To do this, create a file called `.env` in the `opendc` folder. In this file, replace `your-google-oauth-client-id` with your `client_id` from the OAuth client ID you created and put the path of this `opendc` folder where this placeholder is currently listed: `/your/path/to/opendc`. For a standard setup, you can leave the other settings as-is.
 
 ```.env
 MONGO_INITDB_ROOT_USERNAME=root
@@ -84,8 +84,7 @@ OPENDC_ROOT_DIR=/your/path/to/opendc
 OPENDC_SERVER_BASE_URL=http://localhost:8081
 ```
 
-Afterwards, you should also create a `traces/` directory in which you place the VM and workflow traces you want to
-experiment with.
+We provide a list of default traces for you to experiment with. If you want to add others, place them in the `traces` directory and add entries to the database (see also [the database folder](database/mongo-init-opendc-db.sh))
 
 If you plan to publicly deploy, please also tweak the other settings. In that case, also check the `docker-compose.yml` for further instructions.
 
@@ -99,4 +98,4 @@ docker-compose build
 docker-compose up
 ```
 
-Wait a few seconds and open `http://localhost:8081` in your browser to use OpenDC.
+Wait a few seconds and open `http://localhost:8081` in your browser to use OpenDC. We recommend Google Chrome for the best development experience.

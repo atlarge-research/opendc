@@ -1,16 +1,10 @@
 <h1 align="center">
-  <img src="../misc/artwork/logo.png" width="100" alt="OpenDC">
-  <br>
-  OpenDC Frontend
+    <img src="../misc/artwork/logo.png" width="100" alt="OpenDC">
+    <br>
+    OpenDC Frontend
 </h1>
 <p align="center">
-  Collaborative Datacenter Simulation and Exploration for Everybody
-</p>
-
-<p align="center">
-  <a href="https://travis-ci.org/atlarge-research/opendc-frontend"><img src="https://travis-ci.org/atlarge-research/opendc-frontend.svg?branch=master" alt="Build Status"></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/styled_with-prettier-ff69b4.svg" alt="styled with prettier"></a><br/>
+    Collaborative Datacenter Simulation and Exploration for Everybody
 </p>
 
 The user-facing component of the OpenDC stack, allowing users to build and interact with their own (virtual) datacenters. Built in *React.js* and *Redux*, with the help of `create-react-app`.
@@ -32,7 +26,9 @@ yarn
 
 First, you need to have a Google OAuth client ID set up. Check the [documentation of the main OpenDC repo](https://github.com/atlarge-research/opendc) if you're not sure how to do this. Once you have such an ID, you need to set it as environment variable `REACT_APP_OAUTH_CLIENT_ID`. One way of doing this is to create an `.env` file with content `REACT_APP_OAUTH_CLIENT_ID=YOUR_ID` (`YOUR_ID` without quotes), in the root directory of this repo.
 
-Once you've set this variable, you're ready to start the development server:
+Once you've set this variable, start the OpenDC `docker-compose` setup. See the root README for instructions on this.
+ 
+Now, you're ready to start the development server:
 
 ```bash
 yarn start
@@ -46,12 +42,10 @@ To compile everything for camera-ready deployment, use the following command:
 yarn build
 ```
 
-**Note:** Perhaps this goes without saying, but for any functionality beyond visiting the entry page, a server backend running in the background is necessary. The easiest way to do this is to have an OpenDC docker container running, see [the main repo](https://github.com/atlarge-research/opendc) for more information on how to do this.
-
 
 ## Architecture
 
-The codebase follows a standard React.js structure, with static assets being contained in the `public` folder, while dynamic components and their styles are contained in `src`. The app uses client-side routing (with `react-router`), meaning that the only HTML file needed to be served is a `index.html` file.
+The codebase follows a standard React.js structure, with static assets being contained in the `public` folder, while dynamic components and their styles are contained in `src`. The app uses client-side routing (with `react-router`), meaning that the only HTML file needing to be served is a `index.html` file.
 
 ### Pages
 
@@ -61,9 +55,7 @@ All pages are represented by a component in the `src/pages` directory. There are
 
 **Projects.js** - Overview of projects of the user (`/projects`)
 
-**App.js** - Main application, with datacenter construction and simulation UI (`/projects/:projectId` and `/projects/:projectId/experiments/:experimentId`)
-
-**Experiments.js** - Overview of experiments of the current project (`/projects/:projectId/experiments`)
+**App.js** - Main application, with datacenter construction and simulation UI (`/projects/:projectId` and `/projects/:projectId/portfolios/:portfolioId`)
 
 **Profile.js** - Profile of the current user (`/profile`)
 
@@ -77,7 +69,7 @@ Even the canvas (the main component of the app) is built using React components,
 
 ### State Management
 
-Almost all state is kept in a central Redux store. State is kept there in an immutable form, only to be modified through actions being dispatched. These actions are contained in the `src/actions` folder, and the reducers (managing how state is updated according to dispatched actions) are located in `src/reducers`. If you're not familiar with the Redux approach to state management, have a look at their [official documentation](http://redux.js.org/).
+Almost all state is kept in a central Redux store. State is kept there in an immutable form, only to be modified through actions being dispatched. These actions are contained in the `src/actions` folder, and the reducers (managing how state is updated according to dispatched actions) are located in `src/reducers`. If you're not familiar with the Redux approach to state management, have a look at their [official documentation](https://redux.js.org/).
 
 ### API Interaction
 
