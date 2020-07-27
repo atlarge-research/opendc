@@ -149,7 +149,31 @@ export const updateTopologyOnServer = function* (id) {
 export const getTopologyAsObject = function* (id, keepIds) {
     const topologyStore = yield select(OBJECT_SELECTORS['topology'])
     const roomStore = yield select(OBJECT_SELECTORS['room'])
+
+    return {
+        _id: keepIds ? id : undefined,
+        name: topologyStore[id].name,
+        rooms: topologyStore[id].roomIds.map((roomId) => ({
+            _id: keepIds ? roomId : undefined,
+            name: roomStore[roomId].name,
+            tiles: roomStore[roomId].tileIds.map((tileId) => (call(getTileById, tileId, keepIds))),
+        })),
+    }
+}
+
+export const getTileById = function* (id, keepIds) {
     const tileStore = yield select(OBJECT_SELECTORS['tile'])
+    return {
+        _id: keepIds ? id : undefined,
+            positionX: tileStore[id].positionX,
+        positionY: tileStore[id].positionY,
+        rack: !tileStore[id].rackId
+        ? undefined
+        : call(getRackById, tileStore[id].rackId, keepIds),
+    }
+}
+
+export const getRackById = function* (id, keepIds) {
     const rackStore = yield select(OBJECT_SELECTORS['rack'])
     const machineStore = yield select(OBJECT_SELECTORS['machine'])
     const cpuStore = yield select(OBJECT_SELECTORS['cpu'])
@@ -158,37 +182,24 @@ export const getTopologyAsObject = function* (id, keepIds) {
     const storageStore = yield select(OBJECT_SELECTORS['storage'])
 
     return {
-        _id: keepIds ? id : undefined,
-        name: topologyStore[id].name,
-        rooms: topologyStore[id].roomIds.map((roomId) => ({
-            _id: keepIds ? roomId : undefined,
-            name: roomStore[roomId].name,
-            tiles: roomStore[roomId].tileIds.map((tileId) => ({
-                _id: keepIds ? tileId : undefined,
-                positionX: tileStore[tileId].positionX,
-                positionY: tileStore[tileId].positionY,
-                rack: !tileStore[tileId].rackId
-                    ? undefined
-                    : {
-                          _id: keepIds ? rackStore[tileStore[tileId].rackId]._id : undefined,
-                          name: rackStore[tileStore[tileId].rackId].name,
-                          capacity: rackStore[tileStore[tileId].rackId].capacity,
-                          powerCapacityW: rackStore[tileStore[tileId].rackId].powerCapacityW,
-                          machines: rackStore[tileStore[tileId].rackId].machineIds
-                              .filter((m) => m !== null)
-                              .map((machineId) => ({
-                                  _id: keepIds ? machineId : undefined,
-                                  position: machineStore[machineId].position,
-                                  cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
-                                  gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
-                                  memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
-                                  storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
-                              })),
-                      },
+        _id: keepIds ? rackStore[id]._id : undefined,
+        name: rackStore[id].name,
+        capacity: rackStore[id].capacity,
+        powerCapacityW: rackStore[id].powerCapacityW,
+        machines: rackStore[id].machineIds
+            .filter((m) => m !== null)
+            .map((machineId) => ({
+                _id: keepIds ? machineId : undefined,
+                position: machineStore[machineId].position,
+                cpus: machineStore[machineId].cpuIds.map((id) => cpuStore[id]),
+                gpus: machineStore[machineId].gpuIds.map((id) => gpuStore[id]),
+                memories: machineStore[machineId].memoryIds.map((id) => memoryStore[id]),
+                storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
             })),
-        })),
     }
 }
+
+
 
 export const fetchAndStoreAllTraces = () => fetchAndStoreObjects('trace', call(getAllTraces))
 

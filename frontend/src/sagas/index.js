@@ -36,6 +36,8 @@ import { onFetchAuthorizationsOfCurrentUser, onFetchLoggedInUser } from './users
 import { ADD_TOPOLOGY, DELETE_TOPOLOGY } from '../actions/topologies'
 import { ADD_SCENARIO, DELETE_SCENARIO, OPEN_SCENARIO_SUCCEEDED, UPDATE_SCENARIO } from '../actions/scenarios'
 import { onAddScenario, onDeleteScenario, onOpenScenarioSucceeded, onUpdateScenario } from './scenarios'
+import {onAddPrefab} from "./prefabs";
+import {ADD_PREFAB} from "../actions/prefabs";
 
 export default function* rootSaga() {
     yield takeEvery(LOG_IN, onFetchLoggedInUser)
@@ -73,4 +75,6 @@ export default function* rootSaga() {
     yield takeEvery(ADD_SCENARIO, onAddScenario)
     yield takeEvery(UPDATE_SCENARIO, onUpdateScenario)
     yield takeEvery(DELETE_SCENARIO, onDeleteScenario)
+
+    yield takeEvery(ADD_PREFAB, onAddPrefab)
 }
