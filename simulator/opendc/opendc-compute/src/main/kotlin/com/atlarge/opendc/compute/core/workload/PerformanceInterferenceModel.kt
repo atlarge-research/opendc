@@ -25,8 +25,7 @@
 package com.atlarge.opendc.compute.core.workload
 
 import com.atlarge.opendc.compute.core.Server
-import java.util.SortedSet
-import java.util.TreeSet
+import java.util.*
 import kotlin.random.Random
 
 /**
@@ -44,23 +43,22 @@ class PerformanceInterferenceModel(
     val random: Random = Random(0)
 ) {
     private var intersectingItems: List<PerformanceInterferenceModelItem> = emptyList()
-    private val colocatedWorkloads = TreeSet<String>()
+    private val colocatedWorkloads = TreeMap<String, Int>()
 
     fun vmStarted(server: Server) {
-        colocatedWorkloads.add(server.image.name)
+        colocatedWorkloads.merge(server.image.name, 1, Int::plus)
         intersectingItems = items.filter { item -> doesMatch(item) }
     }
 
     fun vmStopped(server: Server) {
-        colocatedWorkloads.remove(server.image.name)
+        colocatedWorkloads.computeIfPresent(server.image.name) { _, v -> (v - 1).takeUnless { it == 0 } }
         intersectingItems = items.filter { item -> doesMatch(item) }
     }
 
     private fun doesMatch(item: PerformanceInterferenceModelItem): Boolean {
         var count = 0
-        for (name in item.workloadNames.subSet(colocatedWorkloads.first(), colocatedWorkloads.last() + "\u0000")) {
-            if (name in colocatedWorkloads)
-                count++
+        for (name in item.workloadNames.subSet(colocatedWorkloads.firstKey(), colocatedWorkloads.lastKey() + "\u0000")) {
+            count += colocatedWorkloads.getOrDefault(name, 0)
             if (count > 1)
                 return true
         }
