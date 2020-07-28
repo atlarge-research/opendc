@@ -15,6 +15,6 @@ insert_final_newline = true
 [*.md]
 trim_trailing_whitespace = false
 
-# Ensure YAML formatting is according to standard
+# Ensure YAML formatting adheres to standard
 [*.{yml,yaml}]
 indent_size = 2

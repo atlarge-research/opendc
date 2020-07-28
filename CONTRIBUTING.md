@@ -10,11 +10,9 @@ Contact us at 📧[opendc@atlarge-research.com](mailto:opendc@atlarge-research.c
 
 ## 🐞 Want to report a bug or suggest a feature?
 
-Please file an issue! First, have a look if someone has already filed an issue addressing your concern. 
+Please file an issue! First, have a look if someone has already filed an issue addressing your concern. If there already is such an issue, feel free to comment on the issue to show your support for it, or to add additional information that might be helpful. You can also just react with a thumbs-up 👍 to the issue, to indicate that you'd be interested in its resolution. This can help us prioritize what we spend our development time on.
 
-If there already is such an issue, feel free to comment on the issue to show your support for it, or to add additional information that might be helpful. You can also just react with a thumbs-up 👍 to the issue, to indicate that you'd be interested in its resolution. This can help us prioritize what we spend our development time on.
-
-If you can't find an issue that fits your problem or feature request, open a new one. Describe actual and expected behavior, and be as detailed as you can. We'll get back to you asap.
+If you can't find an issue that fits your problem or feature request, open a new one. Describe actual and expected behavior, and be as detailed as you can. We'll get back to you asap!
 
 
 ## 💻 Want to contribute code?

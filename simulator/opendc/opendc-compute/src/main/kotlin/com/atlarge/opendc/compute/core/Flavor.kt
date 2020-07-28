@@ -25,7 +25,7 @@
 package com.atlarge.opendc.compute.core
 
 /**
- * Flavors define the compute and memory capacity of [Server] instance. o put it simply, a flavor is an available
+ * Flavors define the compute and memory capacity of [Server] instance. To put it simply, a flavor is an available
  * hardware configuration for a server. It defines the size of a virtual server that can be launched.
  */
 public data class Flavor(

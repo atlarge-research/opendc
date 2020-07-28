@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 1.0.0
+  version: 2.0.0
   title: OpenDC API
   description: 'OpenDC is an open-source datacenter simulator for education, featuring real-time online collaboration, diverse simulation models, and detailed performance feedback statistics.'
 host: opendc.org
@@ -703,19 +703,6 @@ paths:
           description: Prefab not found.
 
 definitions:
-  Prefab:
-    type: object
-    properties:
-      _id:
-        type: string
-      name:
-        type: string
-      datetimeCreated:
-        type: string
-        format: dateTime
-      datetimeLastEdited:
-        type: string
-        format: dateTime
   Scheduler:
     type: object
     properties:
@@ -865,6 +852,8 @@ definitions:
         properties:
           state:
             type: string
+      results:
+        type: object
       trace:
         type: object
         properties:
@@ -919,3 +908,16 @@ definitions:
               type: string
             authorizationLevel:
               type: string
+  Prefab:
+    type: object
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+      datetimeCreated:
+        type: string
+        format: dateTime
+      datetimeLastEdited:
+        type: string
+        format: dateTime
