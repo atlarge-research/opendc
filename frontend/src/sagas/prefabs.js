@@ -5,7 +5,8 @@ import {getTopologyAsObject} from "./objects";
 
 export function* onAddPrefab(action) {
     try {
-        //console.log("DEBUG: " + state.objects.tile[state.interactionLevel.tileId].rack._id)
+        const state = yield select((state) => state)
+        console.log("DEBUG: " + state.objects.tile[state.interactionLevel.tileId].rack._id)
         const currentRackId = yield select((state) => state.objects.tile[state.interactionLevel.tileId].rack._id)
         const currentRackJson = yield call(getTopologyAsObject, currentRackId)
         //TODO: yield call the function in saga to export the specific part of the topology
