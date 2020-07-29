@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
-import {addPrefab} from "../../../../../actions/prefabs";
-import AddPrefabComponent from "../../../../../components/app/sidebars/topology/rack/AddPrefabComponent";
+import { addPrefab } from '../../../../../actions/prefabs'
+import AddPrefabComponent from '../../../../../components/app/sidebars/topology/rack/AddPrefabComponent'
 
 const mapDispatchToProps = (dispatch) => {
     return {

@@ -4,7 +4,7 @@ import DeleteRackContainer from '../../../../../containers/app/sidebars/topology
 import MachineListContainer from '../../../../../containers/app/sidebars/topology/rack/MachineListContainer'
 import RackNameContainer from '../../../../../containers/app/sidebars/topology/rack/RackNameContainer'
 import './RackSidebarComponent.css'
-import AddPrefabContainer from "../../../../../containers/app/sidebars/topology/rack/AddPrefabContainer";
+import AddPrefabContainer from '../../../../../containers/app/sidebars/topology/rack/AddPrefabContainer'
 
 const RackSidebarComponent = () => {
     return (

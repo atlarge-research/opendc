@@ -161,14 +161,13 @@ export const getAllRooms = function* (roomIds, keepIds) {
 
     let rooms = []
 
-    for(let i in roomIds){
+    for (let i in roomIds) {
         let tiles = yield getAllRoomTiles(roomStore[roomIds[i]], keepIds)
         rooms.push({
-                _id: keepIds ? i : undefined,
-                name: roomStore[roomIds[i]].name,
-                tiles: tiles,
-            }
-        )
+            _id: keepIds ? i : undefined,
+            name: roomStore[roomIds[i]].name,
+            tiles: tiles,
+        })
     }
     return rooms
 }
@@ -176,8 +175,8 @@ export const getAllRooms = function* (roomIds, keepIds) {
 export const getAllRoomTiles = function* (roomStore, keepIds) {
     let tiles = []
 
-    for(let i in roomStore.tileIds){
-       tiles.push(yield getTileById(roomStore.tileIds[i], keepIds))
+    for (let i in roomStore.tileIds) {
+        tiles.push(yield getTileById(roomStore.tileIds[i], keepIds))
     }
     return tiles
 }
@@ -188,9 +187,7 @@ export const getTileById = function* (id, keepIds) {
         _id: keepIds ? id : undefined,
         positionX: tileStore[id].positionX,
         positionY: tileStore[id].positionY,
-        rack: !tileStore[id].rackId
-        ? undefined
-        : yield getRackById(tileStore[id].rackId, keepIds),
+        rack: !tileStore[id].rackId ? undefined : yield getRackById(tileStore[id].rackId, keepIds),
     }
 }
 
@@ -219,8 +216,6 @@ export const getRackById = function* (id, keepIds) {
             })),
     }
 }
-
-
 
 export const fetchAndStoreAllTraces = () => fetchAndStoreObjects('trace', call(getAllTraces))
 
