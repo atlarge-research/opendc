@@ -4,6 +4,7 @@ import DeleteRackContainer from '../../../../../containers/app/sidebars/topology
 import MachineListContainer from '../../../../../containers/app/sidebars/topology/rack/MachineListContainer'
 import RackNameContainer from '../../../../../containers/app/sidebars/topology/rack/RackNameContainer'
 import './RackSidebarComponent.css'
+import AddPrefabContainer from '../../../../../containers/app/sidebars/topology/rack/AddPrefabContainer'
 
 const RackSidebarComponent = () => {
     return (
@@ -11,6 +12,7 @@ const RackSidebarComponent = () => {
             <div className="rack-sidebar-header-container">
                 <RackNameContainer />
                 <BackToRoomContainer />
+                <AddPrefabContainer />
                 <DeleteRackContainer />
             </div>
             <div className="machine-list-container mt-2">

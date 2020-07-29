@@ -24,6 +24,7 @@ export const objects = combineReducers({
     scheduler: object('scheduler'),
     portfolio: object('portfolio'),
     scenario: object('scenario'),
+    prefab: object('prefab'),
 })
 
 function object(type, defaultState = {}) {
