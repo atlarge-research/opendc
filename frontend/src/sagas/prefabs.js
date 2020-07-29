@@ -1,7 +1,7 @@
 import {call, put, select} from "redux-saga/effects";
 import {addToStore} from "../actions/objects";
 import {addPrefab} from "../api/routes/prefabs";
-import {getRackById, getTopologyAsObject} from "./objects";
+import {getRackById} from "./objects";
 
 export function* onAddPrefab(action) {
     try {
