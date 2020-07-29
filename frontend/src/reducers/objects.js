@@ -1,6 +1,3 @@
-//TODO: add prefabs
-
-
 import { combineReducers } from 'redux'
 import {
     ADD_ID_TO_STORE_OBJECT_LIST_PROP,

@@ -9,7 +9,6 @@ export function* onAddPrefab(action) {
         console.log("DEBUG: " + state.objects.tile[state.interactionLevel.tileId].rack._id)
         const currentRackId = yield select((state) => state.objects.tile[state.interactionLevel.tileId].rack._id)
         const currentRackJson = yield call(getTopologyAsObject, currentRackId)
-        //TODO: yield call the function in saga to export the specific part of the topology
         const prefab = yield call(addPrefab, { name: action.name, rack: currentRackJson })
         yield put(addToStore('prefab', prefab))
 

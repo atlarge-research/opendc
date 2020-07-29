@@ -146,22 +146,6 @@ export const updateTopologyOnServer = function* (id) {
     yield call(updateTopology, topology)
 }
 
-export const getAllRooms = function* (roomIds, keepIds) {
-    const roomStore = yield select(OBJECT_SELECTORS['room'])
-    let rooms = []
-
-    for(let i in roomIds){
-        let tiles = yield call(getAllRoomTiles, roomStore[i].tileIds, keepIds)
-        rooms.push({
-            _id: keepIds ? i : undefined,
-            name: roomStore[i].name,
-            tiles: tiles,
-            }
-        )
-    }
-    return rooms
-}
-
 export const getTopologyAsObject = function* (id, keepIds) {
     const topologyStore = yield select(OBJECT_SELECTORS['topology'])
 
@@ -173,11 +157,32 @@ export const getTopologyAsObject = function* (id, keepIds) {
     }
 }
 
-export const getAllRoomTiles = function* (room, keepIds) {
-    let tiles = []
+export const getAllRooms = function* (roomIds, keepIds) {
+    const roomStore = yield select(OBJECT_SELECTORS['room'])
 
-    for(let i in room.tileIds){
-       tiles.push(yield call(getTileById, i, keepIds))
+    console.log("DEBUG: roomIds has value " + roomIds)
+    console.log("DEBUG: roomStore has value " + roomStore)
+    console.log("DEBUG: size of roomStore is " + roomStore.length)
+    let rooms = []
+
+    for(let i in roomIds){
+        console.log("DEBUG: on iteration " + i + ", roomStore has value = " + roomStore[i])
+        let tiles = yield call(getAllRoomTiles, roomStore[i], keepIds)
+        rooms.push({
+                _id: keepIds ? i : undefined,
+                name: roomStore[i].name,
+                tiles: tiles,
+            }
+        )
+    }
+    return rooms
+}
+
+export const getAllRoomTiles = function* (roomStore, keepIds) {
+    let tiles = []
+    console.log("DEBUG: roomStore = " + roomStore)
+    for(let i in roomStore.tileIds){
+       tiles.push(yield call(getTileById, roomStore.tileIds[i], keepIds))
     }
     return tiles
 }

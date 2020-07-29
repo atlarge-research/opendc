@@ -3,7 +3,6 @@ export const DELETE_PREFAB = 'DELETE_PREFAB'
 export const DELETE_PREFAB_SUCCEEDED = 'DELETE_PREFAB_SUCCEEDED'
 export const OPEN_PREFAB_SUCCEEDED = 'OPEN_PREFAB_SUCCEEDED'
 
-//infer rackID from state in saga later
 export function addPrefab(name) {
     return {
         type: ADD_PREFAB,
