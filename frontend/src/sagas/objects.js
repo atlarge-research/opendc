@@ -148,7 +148,8 @@ export const updateTopologyOnServer = function* (id) {
 
 export const getTopologyAsObject = function* (id, keepIds) {
     const topologyStore = yield select(OBJECT_SELECTORS['topology'])
-
+    console.log(topologyStore)
+    //console.log("DEBUG: roomIds = " + topologyStore[id].roomIds)
     const rooms = yield getAllRooms(topologyStore[id].roomIds, keepIds)
     return {
         _id: keepIds ? id : undefined,
@@ -167,10 +168,10 @@ export const getAllRooms = function* (roomIds, keepIds) {
 
     for(let i in roomIds){
         console.log("DEBUG: on iteration " + i + ", roomStore has value = " + roomStore[i])
-        let tiles = yield getAllRoomTiles(roomStore[i], keepIds)
+        let tiles = yield getAllRoomTiles(roomStore[roomIds[i]], keepIds)
         rooms.push({
                 _id: keepIds ? i : undefined,
-                name: roomStore[i].name,
+                name: roomStore[roomIds[i]].name,
                 tiles: tiles,
             }
         )
