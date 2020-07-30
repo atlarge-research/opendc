@@ -1,5 +1,6 @@
 from opendc.models.model import Model
 from opendc.models.user import User
+from opendc.util.database import DB
 from opendc.util.exceptions import ClientError
 from opendc.util.rest import Response
 
@@ -26,3 +27,6 @@ class Prefab(Model):
         #except KeyError:
             # OpenDC-authored objects don't necessarily have an authorId
         #    return
+
+    def get_all():
+        return DB.fetch_all({}, Prefab.collection_name)

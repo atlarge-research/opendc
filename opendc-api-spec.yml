@@ -701,6 +701,20 @@ paths:
           description: Forbidden from deleting Prefab.
         '404':
           description: Prefab not found.
+  '/prefabs/authorizations':
+    get:
+      tags:
+        - prefabs
+      description: Get all Prefabs the user has rights to view.
+      responses:
+        '200':
+          description: Successfully retrieved prefabs the user is authorized on.
+          schema:
+            $ref: '#/definitions/Prefab'
+        '400':
+          description: Missing or incorrectly typed parameter.
+        '404':
+          description: Prefab or userId not found
 
 definitions:
   Scheduler:
