@@ -28,5 +28,5 @@ class Prefab(Model):
             # OpenDC-authored objects don't necessarily have an authorId
         #    return
 
-    def get_all():
-        return DB.fetch_all({}, Prefab.collection_name)
+    def get_all(query):
+        return DB.fetch_all(query, Prefab.collection_name)

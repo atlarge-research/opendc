@@ -13,15 +13,13 @@ def GET(request):
 
     user.check_exists()
 
-    prefab_collection = Prefab.get_all()
-    print(type(prefab_collection))
-    print(prefab_collection)
+    own_prefabs = Prefab.get_all({'authorId' : user.get_id()})
+    public_prefabs = Prefab.get_all({'visibility' : 'public'})
 
     authorizations = { "authorizations" : []}
 
-    for prefab in prefab_collection:
-        if prefab['authorId'] == user.get_id() or prefab['visibility'] == "public":
-            authorizations["authorizations"].append(prefab)
+    authorizations["authorizations"].append(own_prefabs)
+    authorizations["authorizations"].append(public_prefabs)
 
     return Response(200, 'Successfully fetched authorizations.', authorizations)
 
