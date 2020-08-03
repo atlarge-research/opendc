@@ -1,6 +1,5 @@
 from opendc.models.model import Model
 from opendc.models.user import User
-from opendc.util.database import DB
 from opendc.util.exceptions import ClientError
 from opendc.util.rest import Response
 
@@ -27,11 +26,3 @@ class Prefab(Model):
         #except KeyError:
             # OpenDC-authored objects don't necessarily have an authorId
         #    return
-
-
-def query_all(query):
-    """Returns a list of all prefabs matching the query.
-
-    :param query: the query to execute on the db.
-    """
-    return DB.fetch_all(query, Prefab.collection_name)

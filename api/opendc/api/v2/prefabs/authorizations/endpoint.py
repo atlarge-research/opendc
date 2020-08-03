@@ -1,4 +1,5 @@
-from opendc.models.prefab import query_all
+from opendc.models.prefab import Prefab
+from opendc.util.database import DB
 from opendc.models.user import User
 from opendc.util.rest import Response
 
@@ -10,8 +11,9 @@ def GET(request):
 
     user.check_exists()
 
-    own_prefabs = query_all({'authorId' : user.get_id()})
-    public_prefabs = query_all({'visibility' : 'public'})
+
+    own_prefabs = DB.fetch_all({'authorId' : user.get_id()}, Prefab.collection_name)
+    public_prefabs = DB.fetch_all({'visibility' : 'public'}, Prefab.collection_name)
 
     authorizations = {"authorizations": []}
 
