@@ -28,5 +28,10 @@ class Prefab(Model):
             # OpenDC-authored objects don't necessarily have an authorId
         #    return
 
-    def get_all(query):
-        return DB.fetch_all(query, Prefab.collection_name)
+
+def query_all(query):
+    """Returns a list of all prefabs matching the query.
+
+    :param query: the query to execute on the db.
+    """
+    return DB.fetch_all(query, Prefab.collection_name)
