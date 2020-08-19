@@ -37,7 +37,6 @@ repositories {
 dependencies {
     api(project(":odcsim:odcsim-api"))
 
-    implementation(kotlin("stdlib"))
     implementation("org.jetbrains:annotations:17.0.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")

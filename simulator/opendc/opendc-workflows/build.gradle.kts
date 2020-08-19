@@ -32,7 +32,6 @@ plugins {
 dependencies {
     api(project(":opendc:opendc-core"))
     api(project(":opendc:opendc-compute"))
-    implementation(kotlin("stdlib"))
 
     testRuntimeOnly(project(":odcsim:odcsim-engine-omega"))
     testImplementation(project(":opendc:opendc-format"))
