@@ -1,0 +1,61 @@
+{
+  "variables": [],
+  "info": {
+    "name": "OpenDC",
+    "_postman_id": "e8b68f59-29cb-71d0-6237-b22932c40f9c",
+    "description": "Sample requests for developing the OpenDC API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create New Simulation",
+      "request": {
+        "url": "localhost:8081/api/v1/simulations",
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": ""
+          },
+          {
+            "key": "auth-token",
+            "value": "PUT YOUR AUTH TOKEN HERE",
+            "description": ""
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"simulation\": {\r\n    \"name\": \"Simulation Name\"\r\n  }\r\n}"
+        },
+        "description": ""
+      },
+      "response": []
+    },
+    {
+      "name": "Create New User",
+      "request": {
+        "url": "localhost:8081/api/v1/users",
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "description": ""
+          },
+          {
+            "key": "auth-token",
+            "value": "PUT YOUR AUTH TOKEN HERE",
+            "description": ""
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"user\": {\r\n    \"email\": \"email@example.com\"\r\n  }\r\n}"
+        },
+        "description": ""
+      },
+      "response": []
+    }
+  ]
+}

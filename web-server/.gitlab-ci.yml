@@ -1,0 +1,27 @@
+image: "python:3.8"
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+stages:
+  - static-analysis
+  - test
+
+static-analysis:
+  stage: static-analysis
+  allow_failure: true
+  script:
+    - python --version
+    - pip install -r requirements.txt
+    - pylint opendc
+
+test:
+  stage: test
+  script:
+    - python --version
+    - pip install -r requirements.txt
+    - pytest opendc

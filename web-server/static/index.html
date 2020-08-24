@@ -1,0 +1,22 @@
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<meta name="google-signin-client_id" content="561588943542-fq7065hk47qdf3lfsc50ebll4spi6u76.apps.googleusercontent.com">
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script>
+    function onSignIn(googleUser) {
+        document.getElementById('token').innerText = googleUser.getAuthResponse().id_token;
+    }
+</script>
+<script>
+    function signOut() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function () {
+            console.log('User signed out.');
+        });
+    }
+</script>
+
+<div class="g-signin2" data-onsuccess="onSignIn"></div>
+<a href="#" onclick="signOut();">Sign out</a>
+
+<p>Your auth token:</p>
+<p id="token" style="word-wrap:break-word;">Loading...</p>

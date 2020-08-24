@@ -1,0 +1,15 @@
+{
+  "short_name": "OpenDC",
+  "name": "OpenDC",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "16x16",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#00A6D6",
+  "background_color": "#eeeeee"
+}

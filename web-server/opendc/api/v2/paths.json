@@ -1,0 +1,19 @@
+[
+  "/users",
+  "/users/{userId}",
+  "/simulations",
+  "/simulations/{simulationId}",
+  "/simulations/{simulationId}/authorizations",
+  "/simulations/{simulationId}/topologies",
+  "/experiments/{experimentId}/last-simulated-tick",
+  "/experiments/{experimentId}/machine-states",
+  "/experiments/{experimentId}/rack-states",
+  "/experiments/{experimentId}/room-states",
+  "/experiments/{experimentId}/task-states",
+  "/topologies/{topologyId}",
+  "/simulations/{simulationId}/experiments",
+  "/experiments/{experimentId}",
+  "/schedulers",
+  "/traces",
+  "/traces/{traceId}"
+]
