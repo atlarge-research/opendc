@@ -54,5 +54,5 @@ public interface VirtDriver {
         flavor: Flavor
     ): Server
 
-    companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")
+    public companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")
 }

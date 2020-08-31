@@ -25,10 +25,10 @@ package org.opendc.core.resource
 /**
  * An immutable map containing the tags of some resource.
  */
-typealias TagContainer = Map<String, Any>
+public typealias TagContainer = Map<String, Any>
 
 /**
  * Obtain the value of the tag with the specified [key] of type [T]. If the tag does not exist or the tag is of
  * different type, `null` is returned.
  */
-inline fun <reified T : Any> TagContainer.typed(key: String): T? = this[key] as? T
+public inline fun <reified T : Any> TagContainer.typed(key: String): T? = this[key] as? T

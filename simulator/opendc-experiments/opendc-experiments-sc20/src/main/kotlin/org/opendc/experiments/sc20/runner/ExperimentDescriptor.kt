@@ -41,7 +41,7 @@ public abstract class ExperimentDescriptor : Serializable {
     /**
      * The type of descriptor.
      */
-    abstract val type: Type
+    public abstract val type: Type
 
     /**
      * A flag to indicate that this descriptor is a root descriptor.
@@ -52,7 +52,7 @@ public abstract class ExperimentDescriptor : Serializable {
     /**
      * A flag to indicate that this descriptor describes an experiment trial.
      */
-    val isTrial: Boolean
+    public val isTrial: Boolean
         get() = type == Type.TRIAL
 
     /**
@@ -65,7 +65,7 @@ public abstract class ExperimentDescriptor : Serializable {
     /**
      * The types of experiment descriptors.
      */
-    enum class Type {
+    public enum class Type {
         /**
          * A composition of multiple experiment descriptions whose invocation happens on a single thread.
          */

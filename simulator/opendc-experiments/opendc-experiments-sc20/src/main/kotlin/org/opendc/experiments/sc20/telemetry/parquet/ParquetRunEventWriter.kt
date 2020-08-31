@@ -36,8 +36,8 @@ public class ParquetRunEventWriter(path: File, bufferSize: Int) :
 
     override fun toString(): String = "run-writer"
 
-    companion object {
-        val convert: (RunEvent, GenericData.Record) -> Unit = { event, record ->
+    public companion object {
+        private val convert: (RunEvent, GenericData.Record) -> Unit = { event, record ->
             val run = event.run
             val scenario = run.parent
             val portfolio = scenario.parent
@@ -56,7 +56,7 @@ public class ParquetRunEventWriter(path: File, bufferSize: Int) :
             record.put("seed", run.seed)
         }
 
-        val schema: Schema = SchemaBuilder
+        private val schema: Schema = SchemaBuilder
             .record("runs")
             .namespace("org.opendc.experiments.sc20")
             .fields()

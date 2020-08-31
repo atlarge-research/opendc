@@ -29,7 +29,7 @@ import java.util.UUID
 /**
  * An empty boot disk [Image] that exits immediately on start.
  */
-object EmptyImage : Image {
+public object EmptyImage : Image {
     override val uid: UUID = UUID.randomUUID()
     override val name: String = "empty"
     override val tags: TagContainer = emptyMap()

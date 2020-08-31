@@ -31,24 +31,24 @@ import org.opendc.core.workload.Workload
  *
  * @param T The shape of the workload in this entry.
  */
-interface TraceEntry<T : Workload> {
+public interface TraceEntry<T : Workload> {
     /**
      * The time of submission of the workload.
      */
-    val submissionTime: Long
+    public val submissionTime: Long
 
     /**
      * The workload in this trace entry.
      */
-    val workload: T
+    public val workload: T
 
     /**
      * Extract the submission time from this entry.
      */
-    operator fun component1() = submissionTime
+    public operator fun component1(): Long = submissionTime
 
     /**
      * Extract the workload from this entry.
      */
-    operator fun component2() = workload
+    public operator fun component2(): T = workload
 }

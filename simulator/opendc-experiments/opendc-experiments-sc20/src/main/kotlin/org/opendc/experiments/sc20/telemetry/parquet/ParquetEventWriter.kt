@@ -112,15 +112,15 @@ public open class ParquetEventWriter<in T : Event>(
         }
     }
 
-    sealed class Action {
+    public sealed class Action {
         /**
          * A poison pill that will stop the writer thread.
          */
-        object Stop : Action()
+        public object Stop : Action()
 
         /**
          * Write the specified metrics to the database.
          */
-        data class Write<out T : Event>(val event: T) : Action()
+        public data class Write<out T : Event>(val event: T) : Action()
     }
 }

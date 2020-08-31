@@ -53,7 +53,7 @@ import kotlin.math.min
 /**
  * Represents the command for converting traces
  */
-class TraceConverterCli : CliktCommand(name = "trace-converter") {
+public class TraceConverterCli : CliktCommand(name = "trace-converter") {
     /**
      * The directory where the trace should be stored.
      */
@@ -70,7 +70,7 @@ class TraceConverterCli : CliktCommand(name = "trace-converter") {
     /**
      * The input type of the trace.
      */
-    val type by option("-t", "--type", help = "input type of trace").groupChoice(
+    private val type by option("-t", "--type", help = "input type of trace").groupChoice(
         "solvinity" to SolvinityConversion(),
         "bitbrains" to BitbrainsConversion(),
         "azure" to AzureConversion()
@@ -149,22 +149,22 @@ class TraceConverterCli : CliktCommand(name = "trace-converter") {
 /**
  * The supported trace conversions.
  */
-sealed class TraceConversion(name: String) : OptionGroup(name) {
+public sealed class TraceConversion(name: String) : OptionGroup(name) {
     /**
      * Read the fragments of the trace.
      */
-    abstract fun read(
+    public abstract fun read(
         traceDirectory: File,
         metaSchema: Schema,
         metaWriter: ParquetWriter<GenericData.Record>
     ): MutableList<Fragment>
 }
 
-class SolvinityConversion : TraceConversion("Solvinity") {
-    val clusters by option()
+public class SolvinityConversion : TraceConversion("Solvinity") {
+    private val clusters by option()
         .split(",")
 
-    val vmPlacements by option("--vm-placements", help = "file containing the VM placements")
+    private val vmPlacements by option("--vm-placements", help = "file containing the VM placements")
         .file(canBeDir = false)
         .convert { it.inputStream().buffered().use { Sc20VmPlacementReader(it).construct() } }
         .required()
@@ -335,7 +335,7 @@ class SolvinityConversion : TraceConversion("Solvinity") {
 /**
  * Conversion of the Bitbrains public trace.
  */
-class BitbrainsConversion : TraceConversion("Bitbrains") {
+public class BitbrainsConversion : TraceConversion("Bitbrains") {
     override fun read(
         traceDirectory: File,
         metaSchema: Schema,
@@ -447,8 +447,8 @@ class BitbrainsConversion : TraceConversion("Bitbrains") {
 /**
  * Conversion of the Azure public VM trace.
  */
-class AzureConversion : TraceConversion("Azure") {
-    val seed by option(help = "seed for trace sampling")
+public class AzureConversion : TraceConversion("Azure") {
+    private val seed by option(help = "seed for trace sampling")
         .long()
         .default(0)
 
@@ -604,18 +604,18 @@ class AzureConversion : TraceConversion("Azure") {
     }
 }
 
-data class Fragment(
-    val id: String,
-    val tick: Long,
-    val flops: Long,
-    val duration: Long,
-    val usage: Double,
-    val cores: Int
+public data class Fragment(
+    public val id: String,
+    public val tick: Long,
+    public val flops: Long,
+    public val duration: Long,
+    public val usage: Double,
+    public val cores: Int
 )
 
-class VmInfo(val cores: Int, val requiredMemory: Long, var minTime: Long, var maxTime: Long)
+public class VmInfo(public val cores: Int, public val requiredMemory: Long, public var minTime: Long, public var maxTime: Long)
 
 /**
  * A script to convert a trace in text format into a Parquet trace.
  */
-fun main(args: Array<String>) = TraceConverterCli().main(args)
+public fun main(args: Array<String>): Unit = TraceConverterCli().main(args)

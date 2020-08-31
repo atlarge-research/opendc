@@ -36,8 +36,8 @@ public class ParquetProvisionerEventWriter(path: File, bufferSize: Int) :
 
     override fun toString(): String = "provisioner-writer"
 
-    companion object {
-        val convert: (ProvisionerEvent, GenericData.Record) -> Unit = { event, record ->
+    public companion object {
+        private val convert: (ProvisionerEvent, GenericData.Record) -> Unit = { event, record ->
             record.put("timestamp", event.timestamp)
             record.put("host_total_count", event.totalHostCount)
             record.put("host_available_count", event.availableHostCount)
@@ -48,7 +48,7 @@ public class ParquetProvisionerEventWriter(path: File, bufferSize: Int) :
             record.put("vm_failed_count", event.failedVmCount)
         }
 
-        val schema: Schema = SchemaBuilder
+        private val schema: Schema = SchemaBuilder
             .record("provisioner_metrics")
             .namespace("org.opendc.experiments.sc20")
             .fields()

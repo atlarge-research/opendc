@@ -33,7 +33,7 @@ import kotlin.random.Random
  * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are
  * independent.
  */
-class UncorrelatedFaultInjector(
+public class UncorrelatedFaultInjector(
     private val clock: Clock,
     private val alpha: Double,
     private val beta: Double,

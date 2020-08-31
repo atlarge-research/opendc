@@ -59,7 +59,7 @@ private val logger = KotlinLogging.logger {}
  * Represents the CLI command for starting the OpenDC web runner.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class RunnerCli : CliktCommand(name = "runner") {
+public class RunnerCli : CliktCommand(name = "runner") {
     /**
      * The name of the database to use.
      */
@@ -299,10 +299,10 @@ class RunnerCli : CliktCommand(name = "runner") {
         }
     }
 
-    val POLL_INTERVAL = 5000L // ms = 5 s
-    val HEARTBEAT_INTERVAL = 60000L // ms = 1 min
+    private val POLL_INTERVAL = 5000L // ms = 5 s
+    private val HEARTBEAT_INTERVAL = 60000L // ms = 1 min
 
-    override fun run() = runBlocking(Dispatchers.Default) {
+    override fun run(): Unit = runBlocking(Dispatchers.Default) {
         logger.info { "Starting OpenDC web runner" }
         logger.info { "Connecting to MongoDB instance" }
         val database = createDatabase()
@@ -365,4 +365,4 @@ class RunnerCli : CliktCommand(name = "runner") {
 /**
  * Main entry point of the runner.
  */
-fun main(args: Array<String>) = RunnerCli().main(args)
+public fun main(args: Array<String>): Unit = RunnerCli().main(args)

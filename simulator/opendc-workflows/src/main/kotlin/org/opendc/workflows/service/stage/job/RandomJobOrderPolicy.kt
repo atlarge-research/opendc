@@ -34,7 +34,7 @@ import kotlin.collections.set
 /**
  * A [JobOrderPolicy] that randomly orders jobs.
  */
-object RandomJobOrderPolicy : JobOrderPolicy {
+public object RandomJobOrderPolicy : JobOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<JobState> =
         object : Comparator<JobState>, StageWorkflowSchedulerListener {
             private val random = Random(123)

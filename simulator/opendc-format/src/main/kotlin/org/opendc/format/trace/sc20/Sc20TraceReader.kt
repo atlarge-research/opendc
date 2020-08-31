@@ -44,7 +44,7 @@ import kotlin.random.Random
  * @param traceDirectory The directory of the traces.
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
-class Sc20TraceReader(
+public class Sc20TraceReader(
     traceDirectory: File,
     performanceInterferenceModel: PerformanceInterferenceModel,
     selectedVms: List<String>,

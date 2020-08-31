@@ -28,10 +28,9 @@ import org.opendc.workflows.service.StageWorkflowService
 /**
  * A [JobAdmissionPolicy] that admits all jobs.
  */
-object NullJobAdmissionPolicy : JobAdmissionPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = object : JobAdmissionPolicy.Logic {
-        override fun invoke(job: JobState): JobAdmissionPolicy.Advice =
-            JobAdmissionPolicy.Advice.ADMIT
+public object NullJobAdmissionPolicy : JobAdmissionPolicy {
+    override fun invoke(scheduler: StageWorkflowService): JobAdmissionPolicy.Logic = object : JobAdmissionPolicy.Logic {
+        override fun invoke(job: JobState): JobAdmissionPolicy.Advice = JobAdmissionPolicy.Advice.ADMIT
     }
 
     override fun toString(): String = "Always"

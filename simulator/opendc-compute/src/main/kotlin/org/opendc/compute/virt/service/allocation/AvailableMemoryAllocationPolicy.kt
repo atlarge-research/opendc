@@ -29,7 +29,7 @@ import org.opendc.compute.virt.service.HypervisorView
  *
  * @param reversed A flag to reverse the order (least amount of memory scores the best).
  */
-public class AvailableMemoryAllocationPolicy(val reversed: Boolean = false) : AllocationPolicy {
+public class AvailableMemoryAllocationPolicy(public val reversed: Boolean = false) : AllocationPolicy {
     override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
         override val comparator: Comparator<HypervisorView> = compareBy<HypervisorView> { -it.availableMemory }
             .run { if (reversed) reversed() else this }

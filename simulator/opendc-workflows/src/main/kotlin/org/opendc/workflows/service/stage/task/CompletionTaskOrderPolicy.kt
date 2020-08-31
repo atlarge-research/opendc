@@ -30,7 +30,7 @@ import org.opendc.workflows.service.TaskState
 /**
  * A [TaskOrderPolicy] that orders tasks based on the number of completed relative tasks.
  */
-data class CompletionTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
+public data class CompletionTaskOrderPolicy(public val ascending: Boolean = true) : TaskOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =
         object : Comparator<TaskState>, StageWorkflowSchedulerListener {
             private val finished = mutableMapOf<JobState, Int>()

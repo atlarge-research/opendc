@@ -33,5 +33,5 @@ public interface Powerable {
     /**
      * The power draw at the device's power supply in watts (W).w
      */
-    val powerDraw: Flow<Double>
+    public val powerDraw: Flow<Double>
 }

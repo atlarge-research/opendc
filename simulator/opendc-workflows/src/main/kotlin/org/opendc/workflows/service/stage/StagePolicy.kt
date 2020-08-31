@@ -28,9 +28,9 @@ import java.io.Serializable
 /**
  * A scheduling stage policy.
  */
-interface StagePolicy<T : Any> : Serializable {
+public interface StagePolicy<T : Any> : Serializable {
     /**
      * Build the logic of the stage policy.
      */
-    operator fun invoke(scheduler: StageWorkflowService): T
+    public operator fun invoke(scheduler: StageWorkflowService): T
 }

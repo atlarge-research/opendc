@@ -28,8 +28,8 @@ import org.opendc.workflows.service.TaskState
 /**
  * A [TaskOrderPolicy] that orders tasks based on the number of dependency tasks it has.
  */
-data class DependenciesTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = compareBy<TaskState> {
+public data class DependenciesTaskOrderPolicy(public val ascending: Boolean = true) : TaskOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> = compareBy<TaskState> {
         it.task.dependencies.size.let { if (ascending) it else -it }
     }
 

@@ -27,15 +27,15 @@ import org.opendc.compute.core.Server
 /**
  * A periodic report of a virtual machine's metrics.
  */
-data class VmEvent(
+public data class VmEvent(
     override val timestamp: Long,
-    val duration: Long,
-    val vm: Server,
-    val host: Server,
-    val requestedBurst: Long,
-    val grantedBurst: Long,
-    val overcommissionedBurst: Long,
-    val interferedBurst: Long,
-    val cpuUsage: Double,
-    val cpuDemand: Double
+    public val duration: Long,
+    public val vm: Server,
+    public val host: Server,
+    public val requestedBurst: Long,
+    public val grantedBurst: Long,
+    public val overcommissionedBurst: Long,
+    public val interferedBurst: Long,
+    public val cpuUsage: Double,
+    public val cpuDemand: Double
 ) : Event("vm-metrics")

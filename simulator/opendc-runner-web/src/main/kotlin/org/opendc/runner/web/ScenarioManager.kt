@@ -31,11 +31,11 @@ import java.time.Instant
 /**
  * Manages the queue of scenarios that need to be processed.
  */
-class ScenarioManager(private val collection: MongoCollection<Document>) {
+public class ScenarioManager(private val collection: MongoCollection<Document>) {
     /**
      * Find the next scenario that the simulator needs to process.
      */
-    fun findNext(): Document? {
+    public fun findNext(): Document? {
         return collection
             .find(Filters.eq("simulation.state", "QUEUED"))
             .first()
@@ -44,7 +44,7 @@ class ScenarioManager(private val collection: MongoCollection<Document>) {
     /**
      * Claim the scenario in the database with the specified id.
      */
-    fun claim(id: String): Boolean {
+    public fun claim(id: String): Boolean {
         val res = collection.findOneAndUpdate(
             Filters.and(
                 Filters.eq("_id", id),
@@ -61,7 +61,7 @@ class ScenarioManager(private val collection: MongoCollection<Document>) {
     /**
      * Update the heartbeat of the specified scenario.
      */
-    fun heartbeat(id: String) {
+    public fun heartbeat(id: String) {
         collection.findOneAndUpdate(
             Filters.and(
                 Filters.eq("_id", id),
@@ -74,7 +74,7 @@ class ScenarioManager(private val collection: MongoCollection<Document>) {
     /**
      * Mark the scenario as failed.
      */
-    fun fail(id: String) {
+    public fun fail(id: String) {
         collection.findOneAndUpdate(
             Filters.eq("_id", id),
             Updates.combine(
@@ -87,7 +87,7 @@ class ScenarioManager(private val collection: MongoCollection<Document>) {
     /**
      * Persist the specified results.
      */
-    fun finish(id: String, result: ResultProcessor.Result) {
+    public fun finish(id: String, result: ResultProcessor.Result) {
         collection.findOneAndUpdate(
             Filters.eq("_id", id),
             Updates.combine(

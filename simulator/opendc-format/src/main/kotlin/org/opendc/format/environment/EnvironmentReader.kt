@@ -30,9 +30,9 @@ import java.time.Clock
 /**
  * An interface for reading descriptions of topology environments into memory as [Environment].
  */
-interface EnvironmentReader : Closeable {
+public interface EnvironmentReader : Closeable {
     /**
      * Construct an [Environment] in the specified [CoroutineScope].
      */
-    suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment
+    public suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment
 }

@@ -51,7 +51,7 @@ private val logger = KotlinLogging.logger {}
 /**
  * Represents the command for running the experiment.
  */
-class ExperimentCli : CliktCommand(name = "sc20-experiment", help = "Run experiments from the Capelin paper") {
+public class ExperimentCli : CliktCommand(name = "sc20-experiment") {
     /**
      * The path to the directory where the topology descriptions are located.
      */
@@ -157,4 +157,4 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment", help = "Run experim
 /**
  * Main entry point of the experiment.
  */
-fun main(args: Array<String>) = ExperimentCli().main(args)
+public fun main(args: Array<String>): Unit = ExperimentCli().main(args)

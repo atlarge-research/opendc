@@ -40,7 +40,7 @@ private val logger = KotlinLogging.logger {}
 /**
  * An [ExperimentMonitor] that logs the events to a Parquet file.
  */
-class ParquetExperimentMonitor(base: File, partition: String, bufferSize: Int) : ExperimentMonitor {
+public class ParquetExperimentMonitor(base: File, partition: String, bufferSize: Int) : ExperimentMonitor {
     private val hostWriter = ParquetHostEventWriter(
         File(base, "host-metrics/$partition/data.parquet"),
         bufferSize

@@ -29,9 +29,9 @@ import java.io.Closeable
 /**
  * An interface for reading VM placement data into memory.
  */
-interface VmPlacementReader : Closeable {
+public interface VmPlacementReader : Closeable {
     /**
      * Construct a map of VMs to clusters.
      */
-    fun construct(): Map<String, String>
+    public fun construct(): Map<String, String>
 }

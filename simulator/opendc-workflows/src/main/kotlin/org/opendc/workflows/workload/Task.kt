@@ -37,12 +37,12 @@ import java.util.*
  * @property dependencies The dependencies of this task in order for it to execute.
  * @property metadata Additional metadata for this task.
  */
-data class Task(
+public data class Task(
     override val uid: UUID,
     override val name: String,
-    val image: Image,
-    val dependencies: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
+    public val image: Image,
+    public val dependencies: Set<Task>,
+    public val metadata: Map<String, Any> = emptyMap()
 ) : Identity {
     override fun equals(other: Any?): Boolean = other is Task && uid == other.uid
 

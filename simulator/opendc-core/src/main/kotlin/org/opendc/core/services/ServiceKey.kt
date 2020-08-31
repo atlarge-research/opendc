@@ -30,7 +30,7 @@ import java.util.*
  *
  * @param T The shape of the messages the service responds to.
  */
-interface ServiceKey<T : Any> : Identity
+public interface ServiceKey<T : Any> : Identity
 
 /**
  * Helper class for constructing a [ServiceKey].
@@ -38,7 +38,7 @@ interface ServiceKey<T : Any> : Identity
  * @property uid The unique identifier of the service.
  * @property name The name of the service.
  */
-abstract class AbstractServiceKey<T : Any>(override val uid: UUID, override val name: String) : ServiceKey<T> {
+public abstract class AbstractServiceKey<T : Any>(override val uid: UUID, override val name: String) : ServiceKey<T> {
     override fun equals(other: Any?): Boolean = other is ServiceKey<*> && uid == other.uid
     override fun hashCode(): Int = uid.hashCode()
     override fun toString(): String = "ServiceKey[uid=$uid, name=$name]"

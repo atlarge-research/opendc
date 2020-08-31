@@ -32,11 +32,11 @@ import org.opendc.compute.virt.service.allocation.AllocationPolicy
 /**
  * A service for VM provisioning on a cloud.
  */
-interface VirtProvisioningService {
+public interface VirtProvisioningService {
     /**
      * The policy used for allocating a VM on the available hypervisors.
      */
-    val allocationPolicy: AllocationPolicy
+    public val allocationPolicy: AllocationPolicy
 
     /**
      * The events emitted by the service.

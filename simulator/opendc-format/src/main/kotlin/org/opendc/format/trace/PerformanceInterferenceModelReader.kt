@@ -29,9 +29,9 @@ import kotlin.random.Random
 /**
  * An interface for reading descriptions of performance interference models into memory.
  */
-interface PerformanceInterferenceModelReader : Closeable {
+public interface PerformanceInterferenceModelReader : Closeable {
     /**
      * Construct a [PerformanceInterferenceModel].
      */
-    fun construct(random: Random): Map<String, PerformanceInterferenceModel>
+    public fun construct(random: Random): Map<String, PerformanceInterferenceModel>
 }

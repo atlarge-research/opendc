@@ -31,8 +31,8 @@ import org.opendc.workflows.service.stage.StagePolicy
  * acts as a filter yielding a list of resources with sufficient resource-capacities, based on fixed or dynamic
  * requirements, and on predicted or monitored information about processing unit availability, memory occupancy, etc.
  */
-interface ResourceFilterPolicy : StagePolicy<ResourceFilterPolicy.Logic> {
-    interface Logic {
+public interface ResourceFilterPolicy : StagePolicy<ResourceFilterPolicy.Logic> {
+    public interface Logic {
         /**
          * Filter the list of machines based on dynamic information.
          *
@@ -40,6 +40,6 @@ interface ResourceFilterPolicy : StagePolicy<ResourceFilterPolicy.Logic> {
          * @param task The task that is to be scheduled.
          * @return The machines on which the task can be scheduled.
          */
-        operator fun invoke(hosts: Sequence<Node>, task: TaskState): Sequence<Node>
+        public operator fun invoke(hosts: Sequence<Node>, task: TaskState): Sequence<Node>
     }
 }

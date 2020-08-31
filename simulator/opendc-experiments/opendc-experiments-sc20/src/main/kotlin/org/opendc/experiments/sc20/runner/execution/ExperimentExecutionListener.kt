@@ -27,20 +27,20 @@ import org.opendc.experiments.sc20.runner.ExperimentDescriptor
 /**
  * Listener to be notified of experiment execution events by experiment runners.
  */
-interface ExperimentExecutionListener {
+public interface ExperimentExecutionListener {
     /**
      * A method that is invoked when a new [ExperimentDescriptor] is registered.
      */
-    fun descriptorRegistered(descriptor: ExperimentDescriptor)
+    public fun descriptorRegistered(descriptor: ExperimentDescriptor)
 
     /**
      * A method that is invoked when when the execution of a leaf or subtree of the experiment tree has finished,
      * regardless of the outcome.
      */
-    fun executionFinished(descriptor: ExperimentDescriptor, result: ExperimentExecutionResult)
+    public fun executionFinished(descriptor: ExperimentDescriptor, result: ExperimentExecutionResult)
 
     /**
      * A method that is invoked when the execution of a leaf or subtree of the experiment tree is about to be started.
      */
-    fun executionStarted(descriptor: ExperimentDescriptor)
+    public fun executionStarted(descriptor: ExperimentDescriptor)
 }

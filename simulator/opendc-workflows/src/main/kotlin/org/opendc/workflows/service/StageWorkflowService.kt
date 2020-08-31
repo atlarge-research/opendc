@@ -48,7 +48,7 @@ import java.util.*
  * A [WorkflowService] that distributes work through a multi-stage process based on the Reference Architecture for
  * Topology Scheduling.
  */
-class StageWorkflowService(
+public class StageWorkflowService(
     internal val coroutineScope: CoroutineScope,
     internal val clock: Clock,
     private val provisioningService: ProvisioningService,
@@ -361,11 +361,11 @@ class StageWorkflowService(
         rootListener.jobFinished(job)
     }
 
-    fun addListener(listener: StageWorkflowSchedulerListener) {
+    public fun addListener(listener: StageWorkflowSchedulerListener) {
         rootListener.listeners += listener
     }
 
-    fun removeListener(listener: StageWorkflowSchedulerListener) {
+    public fun removeListener(listener: StageWorkflowSchedulerListener) {
         rootListener.listeners -= listener
     }
 }

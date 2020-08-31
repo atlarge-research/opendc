@@ -33,7 +33,7 @@ import kotlin.random.Random
 /**
  * A [TaskOrderPolicy] that orders the tasks randomly.
  */
-object RandomTaskOrderPolicy : TaskOrderPolicy {
+public object RandomTaskOrderPolicy : TaskOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =
         object : Comparator<TaskState>, StageWorkflowSchedulerListener {
             private val random = Random(123)

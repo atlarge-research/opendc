@@ -28,9 +28,9 @@ import org.opendc.workflows.service.StageWorkflowService
 /**
  * A [JobOrderPolicy] orders jobs in FIFO order.
  */
-data class SubmissionTimeJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
-    override fun invoke(scheduler: StageWorkflowService) =
-        compareBy<JobState> { it.submittedAt.let { if (ascending) it else -it } }
+public data class SubmissionTimeJobOrderPolicy(public val ascending: Boolean = true) : JobOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<JobState> =
+        compareBy { it.submittedAt.let { if (ascending) it else -it } }
 
     override fun toString(): String {
         return "Submission-Time(${if (ascending) "asc" else "desc"})"

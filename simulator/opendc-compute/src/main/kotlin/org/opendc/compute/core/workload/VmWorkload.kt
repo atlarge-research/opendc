@@ -35,7 +35,7 @@ import java.util.UUID
  * @property owner The owner of the VM.
  * @property image The image of the VM.
  */
-data class VmWorkload(
+public data class VmWorkload(
     override val uid: UUID,
     override val name: String,
     override val owner: User,

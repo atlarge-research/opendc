@@ -27,7 +27,7 @@ package org.opendc.experiments.sc20.telemetry
 /**
  * An event that occurs within the system.
  */
-public abstract class Event(val name: String) {
+public abstract class Event(public val name: String) {
     /**
      * The time of occurrence of this event.
      */

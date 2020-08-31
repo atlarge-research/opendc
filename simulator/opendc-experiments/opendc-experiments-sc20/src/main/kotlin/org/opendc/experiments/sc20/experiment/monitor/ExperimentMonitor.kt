@@ -30,16 +30,16 @@ import java.io.Closeable
 /**
  * A monitor watches the events of an experiment.
  */
-interface ExperimentMonitor : Closeable {
+public interface ExperimentMonitor : Closeable {
     /**
      * This method is invoked when the state of a VM changes.
      */
-    fun reportVmStateChange(time: Long, server: Server) {}
+    public fun reportVmStateChange(time: Long, server: Server) {}
 
     /**
      * This method is invoked when the state of a host changes.
      */
-    fun reportHostStateChange(
+    public fun reportHostStateChange(
         time: Long,
         driver: VirtDriver,
         server: Server
@@ -49,12 +49,12 @@ interface ExperimentMonitor : Closeable {
     /**
      * Report the power consumption of a host.
      */
-    fun reportPowerConsumption(host: Server, draw: Double) {}
+    public fun reportPowerConsumption(host: Server, draw: Double) {}
 
     /**
      * This method is invoked for a host for each slice that is finishes.
      */
-    fun reportHostSlice(
+    public fun reportHostSlice(
         time: Long,
         requestedBurst: Long,
         grantedBurst: Long,
@@ -71,5 +71,5 @@ interface ExperimentMonitor : Closeable {
     /**
      * This method is invoked for a provisioner event.
      */
-    fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {}
+    public fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {}
 }

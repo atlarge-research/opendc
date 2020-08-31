@@ -29,8 +29,8 @@ import java.util.*
 /**
  * A [TaskEligibilityPolicy] that randomly accepts tasks in the system with some [probability].
  */
-data class RandomTaskEligibilityPolicy(val probability: Double = 0.5) : TaskEligibilityPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
+public data class RandomTaskEligibilityPolicy(val probability: Double = 0.5) : TaskEligibilityPolicy {
+    override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic = object : TaskEligibilityPolicy.Logic {
         val random = Random(123)
 
         override fun invoke(task: TaskState): TaskEligibilityPolicy.Advice =

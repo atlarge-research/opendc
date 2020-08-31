@@ -40,7 +40,7 @@ import java.util.*
  *
  * @param file The trace file.
  */
-class SwfTraceReader(
+public class SwfTraceReader(
     file: File,
     maxNumCores: Int = -1
 ) : TraceReader<VmWorkload> {

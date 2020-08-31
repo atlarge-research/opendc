@@ -32,8 +32,8 @@ import org.opendc.experiments.sc20.runner.ContainerExperimentDescriptor
  */
 public abstract class Portfolio(
     override val parent: Experiment,
-    val id: Int,
-    val name: String
+    public val id: Int,
+    public val name: String
 ) : ContainerExperimentDescriptor() {
     /**
      * The topologies to consider.
@@ -58,7 +58,7 @@ public abstract class Portfolio(
     /**
      * The number of repetitions to perform.
      */
-    open val repetitions: Int = 32
+    public open val repetitions: Int = 32
 
     /**
      * Resolve the children of this container.

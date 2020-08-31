@@ -27,13 +27,13 @@ package org.opendc.experiments.sc20.telemetry
 /**
  * A periodic report of the provisioner's metrics.
  */
-data class ProvisionerEvent(
+public data class ProvisionerEvent(
     override val timestamp: Long,
-    val totalHostCount: Int,
-    val availableHostCount: Int,
-    val totalVmCount: Int,
-    val activeVmCount: Int,
-    val inactiveVmCount: Int,
-    val waitingVmCount: Int,
-    val failedVmCount: Int
+    public val totalHostCount: Int,
+    public val availableHostCount: Int,
+    public val totalVmCount: Int,
+    public val activeVmCount: Int,
+    public val inactiveVmCount: Int,
+    public val waitingVmCount: Int,
+    public val failedVmCount: Int
 ) : Event("provisioner-metrics")

@@ -60,14 +60,14 @@ private val logger = KotlinLogging.logger {}
  * A [VirtDriver] that is backed by a simple hypervisor implementation.
  */
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class SimpleVirtDriver(
+public class SimpleVirtDriver(
     private val hostContext: ServerContext,
     scope: CoroutineScope
 ) : VirtDriver, CoroutineScope by scope {
     /**
      * The [Server] on which this hypervisor runs.
      */
-    val server: Server
+    public val server: Server
         get() = hostContext.server
 
     /**

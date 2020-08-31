@@ -25,7 +25,7 @@ package org.opendc.core
 /**
  * A user of the cloud network.
  */
-interface User : Identity {
+public interface User : Identity {
     /**
      * The name of the user.
      */

@@ -60,5 +60,5 @@ public interface ProvisioningService {
     /**
      * The service key of this service.
      */
-    companion object Key : AbstractServiceKey<ProvisioningService>(UUID.randomUUID(), "provisioner")
+    public companion object Key : AbstractServiceKey<ProvisioningService>(UUID.randomUUID(), "provisioner")
 }

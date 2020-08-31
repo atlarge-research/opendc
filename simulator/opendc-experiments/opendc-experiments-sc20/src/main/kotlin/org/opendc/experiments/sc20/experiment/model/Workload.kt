@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.sc20.experiment.model
 
-enum class SamplingStrategy {
+public enum class SamplingStrategy {
     REGULAR,
     HPC,
     HPC_LOAD
@@ -32,13 +32,13 @@ enum class SamplingStrategy {
  * A workload that is considered for a scenario.
  */
 public open class Workload(
-    open val name: String,
-    val fraction: Double,
-    val samplingStrategy: SamplingStrategy = SamplingStrategy.REGULAR
+    public open val name: String,
+    public val fraction: Double,
+    public val samplingStrategy: SamplingStrategy = SamplingStrategy.REGULAR
 )
 
 /**
  * A workload that is composed of multiple workloads.
  */
-public class CompositeWorkload(override val name: String, val workloads: List<Workload>, val totalLoad: Double) :
+public class CompositeWorkload(override val name: String, public val workloads: List<Workload>, public val totalLoad: Double) :
     Workload(name, -1.0)

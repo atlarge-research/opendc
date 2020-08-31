@@ -28,4 +28,4 @@ import org.opendc.workflows.service.stage.StagePolicy
 /**
  * A policy interface for ordering admitted workflows in the scheduling queue.
  */
-interface JobOrderPolicy : StagePolicy<Comparator<JobState>>
+public interface JobOrderPolicy : StagePolicy<Comparator<JobState>>

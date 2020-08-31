@@ -35,8 +35,7 @@ import java.util.concurrent.Executors
  *
  * @param parallelism The maximum amount of parallel workers (default is the number of available processors).
  */
-class ThreadPoolExperimentScheduler(parallelism: Int = Runtime.getRuntime().availableProcessors() + 1) :
-    ExperimentScheduler {
+public class ThreadPoolExperimentScheduler(parallelism: Int = Runtime.getRuntime().availableProcessors() + 1) : ExperimentScheduler {
     private val dispatcher = Executors.newCachedThreadPool().asCoroutineDispatcher()
     private val tickets = Semaphore(parallelism)
 
@@ -80,5 +79,5 @@ class ThreadPoolExperimentScheduler(parallelism: Int = Runtime.getRuntime().avai
         }
     }
 
-    override fun close() = dispatcher.close()
+    override fun close(): Unit = dispatcher.close()
 }

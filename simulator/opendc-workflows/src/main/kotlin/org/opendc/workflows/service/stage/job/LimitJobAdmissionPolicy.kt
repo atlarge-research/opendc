@@ -30,9 +30,11 @@ import org.opendc.workflows.service.StageWorkflowService
  *
  * @property limit The maximum number of concurrent jobs in the system.
  */
-data class LimitJobAdmissionPolicy(val limit: Int) : JobAdmissionPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = object : JobAdmissionPolicy.Logic {
-        override fun invoke(job: JobState): JobAdmissionPolicy.Advice =
+public data class LimitJobAdmissionPolicy(public val limit: Int) : JobAdmissionPolicy {
+    override fun invoke(scheduler: StageWorkflowService): JobAdmissionPolicy.Logic = object : JobAdmissionPolicy.Logic {
+        override fun invoke(
+            job: JobState
+        ): JobAdmissionPolicy.Advice =
             if (scheduler.activeJobs.size < limit)
                 JobAdmissionPolicy.Advice.ADMIT
             else

@@ -57,7 +57,7 @@ private val logger = KotlinLogging.logger {}
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
 @OptIn(ExperimentalStdlibApi::class)
-class Sc20StreamingParquetTraceReader(
+public class Sc20StreamingParquetTraceReader(
     traceFile: File,
     performanceInterferenceModel: PerformanceInterferenceModel,
     selectedVms: List<String>,

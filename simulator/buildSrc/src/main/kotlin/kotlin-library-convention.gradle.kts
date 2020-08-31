@@ -40,6 +40,10 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
+kotlin {
+    explicitApi()
+}
+
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
@@ -55,8 +59,4 @@ tasks.jacocoTestReport {
     reports {
         html.isEnabled = true
     }
-}
-
-dependencies {
-    implementation(kotlin("stdlib"))
 }

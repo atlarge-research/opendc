@@ -32,7 +32,7 @@ import java.io.Closeable
  *
  * @param T The type of [Workload] supported by this writer.
  */
-interface TraceWriter<T : Workload> : Closeable {
+public interface TraceWriter<T : Workload> : Closeable {
     /**
      * Write an entry to the trace.
      *
@@ -41,5 +41,5 @@ interface TraceWriter<T : Workload> : Closeable {
      * @param submissionTime The time of submission of the workload.
      * @param workload The workload to write to the trace.
      */
-    fun write(submissionTime: Long, workload: T)
+    public fun write(submissionTime: Long, workload: T)
 }

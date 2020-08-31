@@ -29,8 +29,8 @@ import java.util.*
 /**
  * A [ResourceSelectionPolicy] that randomly orders the machines.
  */
-object RandomResourceSelectionPolicy : ResourceSelectionPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = object : Comparator<Node> {
+public object RandomResourceSelectionPolicy : ResourceSelectionPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<Node> = object : Comparator<Node> {
         private val ids: Map<Node, Long>
 
         init {

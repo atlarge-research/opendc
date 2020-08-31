@@ -34,7 +34,7 @@ import java.util.UUID
 /**
  * A hypervisor managing the VMs of a node.
  */
-object HypervisorImage : Image {
+public object HypervisorImage : Image {
     override val uid: UUID = UUID.randomUUID()
     override val name: String = "vmm"
     override val tags: TagContainer = emptyMap()

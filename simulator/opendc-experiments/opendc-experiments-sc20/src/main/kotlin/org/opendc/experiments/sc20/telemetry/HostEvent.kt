@@ -27,17 +27,17 @@ import org.opendc.compute.core.Server
 /**
  * A periodic report of the host machine metrics.
  */
-data class HostEvent(
+public data class HostEvent(
     override val timestamp: Long,
-    val duration: Long,
-    val host: Server,
-    val vmCount: Int,
-    val requestedBurst: Long,
-    val grantedBurst: Long,
-    val overcommissionedBurst: Long,
-    val interferedBurst: Long,
-    val cpuUsage: Double,
-    val cpuDemand: Double,
-    val powerDraw: Double,
-    val cores: Int
+    public val duration: Long,
+    public val host: Server,
+    public val vmCount: Int,
+    public val requestedBurst: Long,
+    public val grantedBurst: Long,
+    public val overcommissionedBurst: Long,
+    public val interferedBurst: Long,
+    public val cpuUsage: Double,
+    public val cpuDemand: Double,
+    public val powerDraw: Double,
+    public val cores: Int
 ) : Event("host-metrics")

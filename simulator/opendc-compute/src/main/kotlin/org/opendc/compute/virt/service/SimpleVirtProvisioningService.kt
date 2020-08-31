@@ -49,7 +49,7 @@ import kotlin.math.max
 private val logger = KotlinLogging.logger {}
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SimpleVirtProvisioningService(
+public class SimpleVirtProvisioningService(
     private val coroutineScope: CoroutineScope,
     private val clock: Clock,
     private val provisioningService: ProvisioningService,
@@ -75,11 +75,11 @@ class SimpleVirtProvisioningService(
      */
     private val activeImages: MutableSet<ImageView> = mutableSetOf()
 
-    var submittedVms = 0
-    var queuedVms = 0
-    var runningVms = 0
-    var finishedVms = 0
-    var unscheduledVms = 0
+    public var submittedVms: Int = 0
+    public var queuedVms: Int = 0
+    public var runningVms: Int = 0
+    public var finishedVms: Int = 0
+    public var unscheduledVms: Int = 0
 
     private var maxCores = 0
     private var maxMemory = 0L
@@ -370,11 +370,11 @@ class SimpleVirtProvisioningService(
         }
     }
 
-    data class ImageView(
-        val name: String,
-        val image: Image,
-        val flavor: Flavor,
-        val continuation: Continuation<Server>,
-        var server: Server? = null
+    public data class ImageView(
+        public val name: String,
+        public val image: Image,
+        public val flavor: Flavor,
+        public val continuation: Continuation<Server>,
+        public var server: Server? = null
     )
 }

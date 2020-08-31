@@ -34,7 +34,7 @@ import java.io.InputStream
  * @param input The input stream to read from.
  * @param mapper The Jackson object mapper to use.
  */
-class Sc20VmPlacementReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) :
+public class Sc20VmPlacementReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) :
     VmPlacementReader {
     /**
      * The environment that was read from the file.

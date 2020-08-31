@@ -30,21 +30,21 @@ import org.opendc.workflows.service.stage.StagePolicy
 /**
  * The operating mode of a workflow scheduler.
  */
-sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Logic> {
+public sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Logic> {
     /**
      * The logic for operating the cycles of a workflow scheduler.
      */
-    interface Logic {
+    public interface Logic {
         /**
          * Request a new scheduling cycle to be performed.
          */
-        suspend fun requestCycle()
+        public suspend fun requestCycle()
     }
 
     /**
      * An interactive scheduler immediately triggers a new scheduling cycle when a workflow is received.
      */
-    object Interactive : WorkflowSchedulerMode() {
+    public object Interactive : WorkflowSchedulerMode() {
         override fun invoke(scheduler: StageWorkflowService): Logic = object : Logic {
             override suspend fun requestCycle() {
                 yield()
@@ -58,7 +58,7 @@ sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Logic> {
     /**
      * A batch scheduler triggers a scheduling cycle every time quantum if needed.
      */
-    data class Batch(val quantum: Long) : WorkflowSchedulerMode() {
+    public data class Batch(val quantum: Long) : WorkflowSchedulerMode() {
         private var next: kotlinx.coroutines.Job? = null
 
         override fun invoke(scheduler: StageWorkflowService): Logic = object : Logic {
@@ -84,7 +84,7 @@ sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Logic> {
     /**
      * A scheduling cycle is triggered at a random point in time.
      */
-    data class Random(private val random: java.util.Random = java.util.Random(123)) : WorkflowSchedulerMode() {
+    public data class Random(private val random: java.util.Random = java.util.Random(123)) : WorkflowSchedulerMode() {
         private var next: kotlinx.coroutines.Job? = null
 
         override fun invoke(scheduler: StageWorkflowService): Logic = object : Logic {

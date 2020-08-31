@@ -46,5 +46,5 @@ public interface AllocationPolicy {
     /**
      * Builds the logic of the policy.
      */
-    operator fun invoke(): Logic
+    public operator fun invoke(): Logic
 }

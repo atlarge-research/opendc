@@ -26,12 +26,12 @@ import org.opendc.compute.core.Server
 import org.opendc.compute.virt.driver.VirtDriver
 import java.util.UUID
 
-class HypervisorView(
-    val uid: UUID,
-    var server: Server,
-    var numberOfActiveServers: Int,
-    var availableMemory: Long,
-    var provisionedCores: Int
+public class HypervisorView(
+    public val uid: UUID,
+    public var server: Server,
+    public var numberOfActiveServers: Int,
+    public var availableMemory: Long,
+    public var provisionedCores: Int
 ) {
-    lateinit var driver: VirtDriver
+    public lateinit var driver: VirtDriver
 }
