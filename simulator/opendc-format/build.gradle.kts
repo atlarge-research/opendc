@@ -36,6 +36,12 @@ dependencies {
     }
     implementation(kotlin("reflect"))
 
+    implementation("org.apache.parquet:parquet-avro:1.11.0")
+    implementation("org.apache.hadoop:hadoop-client:3.2.1") {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "log4j")
+    }
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
     testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
