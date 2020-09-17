@@ -35,7 +35,7 @@ import mu.KotlinLogging
 /**
  * A reporter that reports the experiment progress to the console.
  */
-public class ConsoleExperimentReporter : ExperimentExecutionListener {
+public class ConsoleExperimentReporter : ExperimentExecutionListener, AutoCloseable {
     /**
      * The active [Run]s.
      */
@@ -82,4 +82,8 @@ public class ConsoleExperimentReporter : ExperimentExecutionListener {
     }
 
     override fun executionStarted(descriptor: ExperimentDescriptor) {}
+
+    override fun close() {
+        pb.close()
+    }
 }

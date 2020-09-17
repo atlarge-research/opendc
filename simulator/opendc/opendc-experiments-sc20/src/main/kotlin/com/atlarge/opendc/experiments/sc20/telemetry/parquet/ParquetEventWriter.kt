@@ -52,6 +52,16 @@ public open class ParquetEventWriter<in T : Event>(
     private val bufferSize: Int = 4096
 ) : Runnable, Closeable {
     /**
+     * The writer to write the Parquet file.
+     */
+    private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(path.absolutePath))
+        .withSchema(schema)
+        .withCompressionCodec(CompressionCodecName.SNAPPY)
+        .withPageSize(4 * 1024 * 1024) // For compression
+        .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
+        .build()
+
+    /**
      * The queue of commands to process.
      */
     private val queue: BlockingQueue<Action> = ArrayBlockingQueue(bufferSize)
@@ -59,7 +69,7 @@ public open class ParquetEventWriter<in T : Event>(
     /**
      * The thread that is responsible for writing the Parquet records.
      */
-    private val writerThread = thread(start = true, name = "parquet-writer") { run() }
+    private val writerThread = thread(start = false, name = "parquet-writer") { run() }
 
     /**
      * Write the specified metrics to the database.
@@ -76,17 +86,14 @@ public open class ParquetEventWriter<in T : Event>(
         writerThread.join()
     }
 
+    init {
+        writerThread.start()
+    }
+
     /**
      * Start the writer thread.
      */
     override fun run() {
-        val writer = AvroParquetWriter.builder<GenericData.Record>(Path(path.absolutePath))
-            .withSchema(schema)
-            .withCompressionCodec(CompressionCodecName.SNAPPY)
-            .withPageSize(4 * 1024 * 1024) // For compression
-            .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
-            .build()
-
         try {
             loop@ while (true) {
                 val action = queue.take()

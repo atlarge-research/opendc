@@ -142,10 +142,12 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
         logger.info { "Starting experiment runner [parallelism=$parallelism]" }
         val scheduler = ThreadPoolExperimentScheduler(parallelism)
         val runner = DefaultExperimentRunner(scheduler)
+        val reporter = ConsoleExperimentReporter()
         try {
-            runner.execute(descriptor, ConsoleExperimentReporter())
+            runner.execute(descriptor, reporter)
         } finally {
             scheduler.close()
+            reporter.close()
         }
     }
 }
