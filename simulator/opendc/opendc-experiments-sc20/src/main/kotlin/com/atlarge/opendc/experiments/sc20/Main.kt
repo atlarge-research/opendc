@@ -53,7 +53,7 @@ private val logger = KotlinLogging.logger {}
 /**
  * Represents the command for running the experiment.
  */
-class ExperimentCli : CliktCommand(name = "sc20-experiment") {
+class ExperimentCli : CliktCommand(name = "sc20-experiment", help = "Run experiments from the Capelin paper") {
     /**
      * The path to the directory where the topology descriptions are located.
      */
@@ -72,14 +72,14 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
      * The path to the performance interference model.
      */
     private val performanceInterferenceStream by option("--performance-interference-model", help = "path to the performance interference file")
-        .file()
+        .file(canBeDir = false)
         .convert { it.inputStream() as InputStream }
 
     /**
      * The path to the original VM placements file.
      */
     private val vmPlacements by option("--vm-placements-file", help = "path to the VM placement file")
-        .file()
+        .file(canBeDir = false)
         .convert {
             Sc20VmPlacementReader(it.inputStream().buffered()).construct()
         }
@@ -88,7 +88,7 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
     /**
      * The selected portfolios to run.
      */
-    private val portfolios by option("--portfolio")
+    private val portfolios by option("--portfolio", help = "portfolio of scenarios to explore")
         .choice(
             "hor-ver" to { experiment: Experiment, i: Int -> HorVerPortfolio(experiment, i) }
                 as (Experiment, Int) -> Portfolio,
@@ -100,12 +100,12 @@ class ExperimentCli : CliktCommand(name = "sc20-experiment") {
             "more-hpc" to { experiment, i -> MoreHpcPortfolio(experiment, i) },
             ignoreCase = true
         )
-        .multiple()
+        .multiple(required = true)
 
     /**
      * The maximum number of worker threads to use.
      */
-    private val parallelism by option("--parallelism")
+    private val parallelism by option("--parallelism", help = "maximum number of concurrent simulation runs")
         .int()
         .default(Runtime.getRuntime().availableProcessors())
 
