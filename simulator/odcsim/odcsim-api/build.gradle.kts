@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
     api("org.slf4j:slf4j-api:${Library.SLF4J}")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Library.KOTLINX_COROUTINES}")
 

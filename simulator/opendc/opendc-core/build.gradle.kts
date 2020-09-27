@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
     api(project(":odcsim:odcsim-api"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")

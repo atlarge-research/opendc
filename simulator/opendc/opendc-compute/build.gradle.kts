@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
     api(project(":odcsim:odcsim-api"))
     api(project(":opendc:opendc-core"))
     implementation("io.github.microutils:kotlin-logging:1.7.9")

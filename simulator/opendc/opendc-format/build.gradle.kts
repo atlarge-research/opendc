@@ -34,7 +34,6 @@ dependencies {
     api(project(":opendc:opendc-compute"))
     api(project(":opendc:opendc-workflows"))
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8")
-    implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
