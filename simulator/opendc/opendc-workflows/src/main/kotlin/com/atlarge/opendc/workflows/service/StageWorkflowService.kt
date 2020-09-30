@@ -24,7 +24,6 @@
 
 package com.atlarge.opendc.workflows.service
 
-import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
@@ -43,6 +42,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.opendc.utils.flow.EventFlow
 import java.time.Clock
 import java.util.PriorityQueue
 import java.util.Queue

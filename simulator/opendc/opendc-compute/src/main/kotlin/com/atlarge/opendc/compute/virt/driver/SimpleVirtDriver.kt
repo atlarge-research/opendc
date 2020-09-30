@@ -24,7 +24,6 @@
 
 package com.atlarge.opendc.compute.virt.driver
 
-import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
@@ -47,6 +46,7 @@ import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.SelectInstance
 import kotlinx.coroutines.selects.select
 import mu.KotlinLogging
+import org.opendc.utils.flow.EventFlow
 import java.time.Clock
 import java.util.UUID
 import kotlin.math.ceil

@@ -32,6 +32,7 @@ plugins {
 dependencies {
     api(project(":opendc:opendc-core"))
     api(project(":opendc:opendc-compute"))
+    implementation(project(":opendc:opendc-utils"))
 
     testImplementation(project(":opendc:opendc-simulator"))
     testImplementation(project(":opendc:opendc-format"))

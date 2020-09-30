@@ -1,6 +1,5 @@
 package com.atlarge.opendc.compute.virt.service
 
-import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
@@ -19,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
+import org.opendc.utils.flow.EventFlow
 import java.time.Clock
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume

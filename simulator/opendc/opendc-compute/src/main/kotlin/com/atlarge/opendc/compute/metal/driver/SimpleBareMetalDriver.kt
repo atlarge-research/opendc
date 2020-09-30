@@ -24,8 +24,6 @@
 
 package com.atlarge.opendc.compute.metal.driver
 
-import com.atlarge.odcsim.flow.EventFlow
-import com.atlarge.odcsim.flow.StateFlow
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -57,6 +55,8 @@ import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.SelectInstance
+import org.opendc.utils.flow.EventFlow
+import org.opendc.utils.flow.StateFlow
 import java.lang.Exception
 import java.time.Clock
 import java.util.UUID

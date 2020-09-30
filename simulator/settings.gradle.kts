@@ -26,6 +26,7 @@ rootProject.name = "opendc-simulator"
 include(":odcsim:odcsim-api")
 include(":odcsim:odcsim-engine-omega")
 include(":opendc:opendc-simulator")
+include(":opendc:opendc-utils")
 include(":opendc:opendc-core")
 include(":opendc:opendc-compute")
 include(":opendc:opendc-format")
