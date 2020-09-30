@@ -32,7 +32,6 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.consumeAsFlow
-import java.util.WeakHashMap
 
 /**
  * A [Flow] that can be used to emit events.
@@ -61,7 +60,7 @@ public fun <T> EventFlow(): EventFlow<T> = EventFlowImpl()
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 private class EventFlowImpl<T> : EventFlow<T> {
     private var closed: Boolean = false
-    private val subscribers = WeakHashMap<SendChannel<T>, Unit>()
+    private val subscribers = HashMap<SendChannel<T>, Unit>()
 
     override fun emit(event: T) {
         synchronized(this) {

@@ -33,7 +33,7 @@ dependencies {
     api(project(":opendc:opendc-core"))
     api(project(":opendc:opendc-compute"))
 
-    testRuntimeOnly(project(":odcsim:odcsim-engine-omega"))
+    testImplementation(project(":opendc:opendc-simulator"))
     testImplementation(project(":opendc:opendc-format"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")

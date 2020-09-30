@@ -24,7 +24,6 @@
 
 package com.atlarge.opendc.format.environment.sc18
 
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -41,6 +40,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.CoroutineScope
 import java.io.InputStream
+import java.time.Clock
 import java.util.UUID
 
 /**
@@ -56,9 +56,7 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
      */
     private val setup: Setup = mapper.readValue(input)
 
-    override suspend fun construct(coroutineScope: CoroutineScope): Environment {
-        val clock = simulationContext.clock
-
+    override suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment {
         var counter = 0
         val nodes = setup.rooms.flatMap { room ->
             room.objects.flatMap { roomObject ->

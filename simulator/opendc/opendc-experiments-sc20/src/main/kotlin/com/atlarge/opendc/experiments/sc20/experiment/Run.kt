@@ -24,7 +24,6 @@
 
 package com.atlarge.opendc.experiments.sc20.experiment
 
-import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableCoreMemoryAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.AvailableMemoryAllocationPolicy
 import com.atlarge.opendc.compute.virt.service.allocation.NumberOfActiveServersAllocationPolicy
@@ -38,12 +37,14 @@ import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionC
 import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
 import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
+import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.io.File
-import java.util.ServiceLoader
 import kotlin.random.Random
 
 /**
@@ -52,19 +53,15 @@ import kotlin.random.Random
 private val logger = KotlinLogging.logger {}
 
 /**
- * The provider for the simulation engine to use.
- */
-private val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-
-/**
  * An experiment run represent a single invocation of a trial and is used to distinguish between repetitions of the
  * same set of parameters.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 public data class Run(override val parent: Scenario, val id: Int, val seed: Int) : TrialExperimentDescriptor() {
     override suspend fun invoke(context: ExperimentExecutionContext) {
         val experiment = parent.parent.parent
-        val system = provider("experiment-$id")
-        val root = system.newDomain("root")
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
         val seeder = Random(seed)
         val environment = Sc20ClusterEnvironmentReader(File(experiment.environments, "${parent.topology.name}.txt"))
 
@@ -112,9 +109,10 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
             parent.parent.parent.bufferSize
         )
 
-        root.launch {
+        testScope.launch {
             val (bareMetalProvisioner, scheduler) = createProvisioner(
-                root,
+                this,
+                clock,
                 environment,
                 allocationPolicy
             )
@@ -122,6 +120,8 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
             val failureDomain = if (parent.operationalPhenomena.failureFrequency > 0) {
                 logger.debug("ENABLING failures")
                 createFailureDomain(
+                    this,
+                    clock,
                     seeder.nextInt(),
                     parent.operationalPhenomena.failureFrequency,
                     bareMetalProvisioner,
@@ -131,8 +131,10 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
                 null
             }
 
-            attachMonitor(scheduler, monitor)
+            attachMonitor(this, clock, scheduler, monitor)
             processTrace(
+                this,
+                clock,
                 trace,
                 scheduler,
                 chan,
@@ -151,9 +153,8 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
         }
 
         try {
-            system.run()
+            testScope.advanceUntilIdle()
         } finally {
-            system.terminate()
             monitor.close()
         }
     }

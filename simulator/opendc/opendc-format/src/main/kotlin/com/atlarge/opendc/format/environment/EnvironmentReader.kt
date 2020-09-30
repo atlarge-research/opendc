@@ -27,6 +27,7 @@ package com.atlarge.opendc.format.environment
 import com.atlarge.opendc.core.Environment
 import kotlinx.coroutines.CoroutineScope
 import java.io.Closeable
+import java.time.Clock
 
 /**
  * An interface for reading descriptions of topology environments into memory as [Environment].
@@ -35,5 +36,5 @@ interface EnvironmentReader : Closeable {
     /**
      * Construct an [Environment] in the specified [CoroutineScope].
      */
-    suspend fun construct(coroutineScope: CoroutineScope): Environment
+    suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment
 }

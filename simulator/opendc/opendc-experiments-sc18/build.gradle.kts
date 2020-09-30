@@ -38,9 +38,9 @@ dependencies {
     api(project(":opendc:opendc-core"))
     implementation(project(":opendc:opendc-format"))
     implementation(project(":opendc:opendc-workflows"))
+    implementation(project(":opendc:opendc-simulator"))
     implementation(kotlin("stdlib"))
 
-    runtimeOnly(project(":odcsim:odcsim-engine-omega"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
     testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")

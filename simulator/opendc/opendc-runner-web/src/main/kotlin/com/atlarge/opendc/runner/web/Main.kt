@@ -1,6 +1,5 @@
 package com.atlarge.opendc.runner.web
 
-import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.opendc.compute.virt.service.allocation.*
 import com.atlarge.opendc.experiments.sc20.experiment.attachMonitor
 import com.atlarge.opendc.experiments.sc20.experiment.createFailureDomain
@@ -24,8 +23,10 @@ import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
 import org.bson.Document
+import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.io.File
 import java.util.*
 import kotlin.random.Random
@@ -33,13 +34,9 @@ import kotlin.random.Random
 private val logger = KotlinLogging.logger {}
 
 /**
- * The provider for the simulation engine to use.
- */
-private val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-
-/**
  * Represents the CLI command for starting the OpenDC web runner.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class RunnerCli : CliktCommand(name = "runner") {
     /**
      * The name of the database to use.
@@ -195,8 +192,8 @@ class RunnerCli : CliktCommand(name = "runner") {
         val workloadFraction = traceDocument.get("loadSamplingFraction", Number::class.java).toDouble()
 
         val seeder = Random(seed)
-        val system = provider("experiment-$id")
-        val root = system.newDomain("root")
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
 
         val chan = Channel<Unit>(Channel.CONFLATED)
 
@@ -230,9 +227,10 @@ class RunnerCli : CliktCommand(name = "runner") {
             4096
         )
 
-        root.launch {
+        testScope.launch {
             val (bareMetalProvisioner, scheduler) = createProvisioner(
-                root,
+                this,
+                clock,
                 environment,
                 allocationPolicy
             )
@@ -240,6 +238,8 @@ class RunnerCli : CliktCommand(name = "runner") {
             val failureDomain = if (operational.getBoolean("failuresEnabled")) {
                 logger.debug("ENABLING failures")
                 createFailureDomain(
+                    testScope,
+                    clock,
                     seeder.nextInt(),
                     operational.get("failureFrequency", Number::class.java)?.toDouble() ?: 24.0 * 7,
                     bareMetalProvisioner,
@@ -249,8 +249,10 @@ class RunnerCli : CliktCommand(name = "runner") {
                 null
             }
 
-            attachMonitor(scheduler, monitor)
+            attachMonitor(this, clock, scheduler, monitor)
             processTrace(
+                this,
+                clock,
                 trace,
                 scheduler,
                 chan,
@@ -269,9 +271,8 @@ class RunnerCli : CliktCommand(name = "runner") {
         }
 
         try {
-            system.run()
+            testScope.advanceUntilIdle()
         } finally {
-            system.terminate()
             monitor.close()
         }
     }

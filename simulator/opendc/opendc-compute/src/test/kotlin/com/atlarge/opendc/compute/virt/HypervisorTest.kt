@@ -24,8 +24,6 @@
 
 package com.atlarge.opendc.compute.virt
 
-import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -39,17 +37,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import java.util.ServiceLoader
+import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.util.UUID
 
 /**
  * Basic test-suite for the hypervisor.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class HypervisorTest {
     /**
      * A smoke test for the bare-metal driver.
@@ -58,21 +57,17 @@ internal class HypervisorTest {
     @Test
     @Disabled
     fun smoke() {
-        val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        val system = provider("test")
-        val root = system.newDomain("root")
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
 
-        root.launch {
-            val clock = simulationContext.clock
+        testScope.launch {
             val vmm = HypervisorImage
             val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 1)
             val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000, 1)
 
-            val driverDom = root.newDomain("driver")
-
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
             val cpus = List(1) { ProcessingUnit(cpuNode, it, 2000.0) }
-            val metalDriver = SimpleBareMetalDriver(driverDom, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val metalDriver = SimpleBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
 
             metalDriver.init()
             metalDriver.setImage(vmm)
@@ -90,10 +85,7 @@ internal class HypervisorTest {
             vmB.events.onEach { println(it) }.launchIn(this)
         }
 
-        runBlocking {
-            system.run()
-            system.terminate()
-        }
+        testScope.advanceUntilIdle()
     }
 
     /**
@@ -101,16 +93,14 @@ internal class HypervisorTest {
      */
     @Test
     fun overcommission() {
-        val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        val system = provider("test")
-        val root = system.newDomain("root")
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
 
         var requestedBurst = 0L
         var grantedBurst = 0L
         var overcommissionedBurst = 0L
 
-        root.launch {
-            val clock = simulationContext.clock
+        testScope.launch {
             val vmm = HypervisorImage
             val duration = 5 * 60L
             val vmImageA = VmImage(
@@ -140,11 +130,9 @@ internal class HypervisorTest {
                 0
             )
 
-            val driverDom = root.newDomain("driver")
-
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
             val cpus = List(2) { ProcessingUnit(cpuNode, it, 3200.0) }
-            val metalDriver = SimpleBareMetalDriver(driverDom, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val metalDriver = SimpleBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
 
             metalDriver.init()
             metalDriver.setImage(vmm)
@@ -170,10 +158,7 @@ internal class HypervisorTest {
             vmDriver.spawn("b", vmImageB, flavor)
         }
 
-        runBlocking {
-            system.run()
-            system.terminate()
-        }
+        testScope.advanceUntilIdle()
 
         assertAll(
             { assertEquals(2073600, requestedBurst, "Requested Burst does not match") },

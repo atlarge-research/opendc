@@ -34,7 +34,7 @@ dependencies {
     api(project(":opendc:opendc-core"))
     implementation("io.github.microutils:kotlin-logging:1.7.9")
 
-    testRuntimeOnly(project(":odcsim:odcsim-engine-omega"))
+    testImplementation(project(":opendc:opendc-simulator"))
     testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")

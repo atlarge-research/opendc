@@ -24,7 +24,6 @@
 
 package com.atlarge.opendc.format.environment.sc20
 
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -42,6 +41,7 @@ import kotlinx.coroutines.CoroutineScope
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.time.Clock
 import java.util.Random
 import java.util.UUID
 
@@ -57,9 +57,7 @@ class Sc20ClusterEnvironmentReader(
     constructor(file: File) : this(FileInputStream(file))
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun construct(coroutineScope: CoroutineScope): Environment {
-        val clock = simulationContext.clock
-
+    override suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment {
         var clusterIdCol = 0
         var speedCol = 0
         var numberOfHostsCol = 0

@@ -1,6 +1,5 @@
 package com.atlarge.opendc.runner.web
 
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -23,6 +22,7 @@ import com.mongodb.client.model.Projections
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.bson.Document
+import java.time.Clock
 import java.util.*
 
 /**
@@ -32,8 +32,7 @@ class TopologyParser(private val collection: MongoCollection<Document>, private 
     /**
      * Parse the topology with the specified [id].
      */
-    override suspend fun construct(coroutineScope: CoroutineScope): Environment {
-        val clock = simulationContext.clock
+    override suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment {
         val nodes = mutableListOf<SimpleBareMetalDriver>()
         val random = Random(0)
 

@@ -24,9 +24,6 @@
 
 package com.atlarge.opendc.experiments.sc20
 
-import com.atlarge.odcsim.Domain
-import com.atlarge.odcsim.SimulationEngine
-import com.atlarge.odcsim.SimulationEngineProvider
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.compute.virt.service.SimpleVirtProvisioningService
@@ -42,32 +39,35 @@ import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.io.File
-import java.util.ServiceLoader
+import java.time.Clock
 
 /**
  * An integration test suite for the SC20 experiments.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class Sc20IntegrationTest {
     /**
-     * The simulation engine to use.
+     * The [TestCoroutineScope] to use.
      */
-    private lateinit var simulationEngine: SimulationEngine
+    private lateinit var testScope: TestCoroutineScope
 
     /**
-     * The root simulation domain to run in.
+     * The simulation clock to use.
      */
-    private lateinit var root: Domain
+    private lateinit var clock: Clock
 
     /**
      * The monitor used to keep track of the metrics.
@@ -79,9 +79,9 @@ class Sc20IntegrationTest {
      */
     @BeforeEach
     fun setUp() {
-        val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        simulationEngine = provider("test")
-        root = simulationEngine.newDomain("root")
+        testScope = TestCoroutineScope()
+        clock = DelayControllerClockAdapter(testScope)
+
         monitor = TestExperimentReporter()
     }
 
@@ -89,9 +89,7 @@ class Sc20IntegrationTest {
      * Tear down the experimental environment.
      */
     @AfterEach
-    fun tearDown() = runBlocking {
-        simulationEngine.terminate()
-    }
+    fun tearDown() = testScope.cleanupTestCoroutines()
 
     @Test
     fun smoke() {
@@ -103,9 +101,10 @@ class Sc20IntegrationTest {
         val environmentReader = createTestEnvironmentReader()
         lateinit var scheduler: SimpleVirtProvisioningService
 
-        root.launch {
+        testScope.launch {
             val res = createProvisioner(
-                root,
+                this,
+                clock,
                 environmentReader,
                 allocationPolicy
             )
@@ -115,6 +114,8 @@ class Sc20IntegrationTest {
             val failureDomain = if (failures) {
                 println("ENABLING failures")
                 createFailureDomain(
+                    this,
+                    clock,
                     seed,
                     24.0 * 7,
                     bareMetalProvisioner,
@@ -124,8 +125,10 @@ class Sc20IntegrationTest {
                 null
             }
 
-            attachMonitor(scheduler, monitor)
+            attachMonitor(this, clock, scheduler, monitor)
             processTrace(
+                this,
+                clock,
                 traceReader,
                 scheduler,
                 chan,
@@ -159,16 +162,19 @@ class Sc20IntegrationTest {
         val environmentReader = createTestEnvironmentReader("single")
         lateinit var scheduler: SimpleVirtProvisioningService
 
-        root.launch {
+        testScope.launch {
             val res = createProvisioner(
-                root,
+                this,
+                clock,
                 environmentReader,
                 allocationPolicy
             )
             scheduler = res.second
 
-            attachMonitor(scheduler, monitor)
+            attachMonitor(this, clock, scheduler, monitor)
             processTrace(
+                this,
+                clock,
                 traceReader,
                 scheduler,
                 chan,
@@ -195,9 +201,7 @@ class Sc20IntegrationTest {
     /**
      * Run the simulation.
      */
-    private fun runSimulation() = runBlocking {
-        simulationEngine.run()
-    }
+    private fun runSimulation() = testScope.advanceUntilIdle()
 
     /**
      * Obtain the trace reader for the test.

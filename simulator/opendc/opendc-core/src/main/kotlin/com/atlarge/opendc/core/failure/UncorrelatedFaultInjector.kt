@@ -24,9 +24,9 @@
 
 package com.atlarge.opendc.core.failure
 
-import com.atlarge.odcsim.simulationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.Clock
 import kotlin.math.ln1p
 import kotlin.math.pow
 import kotlin.random.Random
@@ -35,7 +35,12 @@ import kotlin.random.Random
  * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are
  * independent.
  */
-public class UncorrelatedFaultInjector(private val alpha: Double, private val beta: Double, private val random: Random = Random(0)) : FaultInjector {
+class UncorrelatedFaultInjector(
+    private val clock: Clock,
+    private val alpha: Double,
+    private val beta: Double,
+    private val random: Random = Random(0)
+) : FaultInjector {
     /**
      * Enqueue the specified [FailureDomain] to fail some time in the future.
      */
@@ -44,7 +49,7 @@ public class UncorrelatedFaultInjector(private val alpha: Double, private val be
             val d = random.weibull(alpha, beta) * 1e3 // Make sure to convert delay to milliseconds
 
             // Handle long overflow
-            if (simulationContext.clock.millis() + d <= 0) {
+            if (clock.millis() + d <= 0) {
                 return@launch
             }
 

@@ -24,53 +24,52 @@
 
 package com.atlarge.opendc.compute.metal.driver
 
-import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.util.ServiceLoader
+import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.util.UUID
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimpleBareMetalDriverTest {
     /**
      * A smoke test for the bare-metal driver.
      */
     @Test
     fun smoke() {
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
+
         var finalState: ServerState = ServerState.BUILD
-        val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        val system = provider("sim")
-        val root = system.newDomain(name = "root")
-        root.launch {
-            val dom = root.newDomain(name = "driver")
+        testScope.launch {
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
-            val driver = SimpleBareMetalDriver(dom, simulationContext.clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val driver = SimpleBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 2)
 
             // Batch driver commands
-            withContext(dom.coroutineContext) {
+            withContext(coroutineContext) {
                 driver.init()
                 driver.setImage(image)
                 val server = driver.start().server!!
                 driver.usage
-                    .onEach { println("${simulationContext.clock.millis()} $it") }
+                    .onEach { println("${clock.millis()} $it") }
                     .launchIn(this)
                 server.events.collect { event ->
                     when (event) {
                         is ServerEvent.StateChanged -> {
-                            println("${simulationContext.clock.millis()} $event")
+                            println("${clock.millis()} $event")
                             finalState = event.server.state
                         }
                     }
@@ -78,11 +77,7 @@ internal class SimpleBareMetalDriverTest {
             }
         }
 
-        runBlocking {
-            system.run()
-            system.terminate()
-        }
-
+        testScope.advanceUntilIdle()
         assertEquals(ServerState.SHUTOFF, finalState)
     }
 }

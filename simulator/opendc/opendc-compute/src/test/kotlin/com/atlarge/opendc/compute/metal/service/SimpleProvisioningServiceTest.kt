@@ -24,40 +24,38 @@
 
 package com.atlarge.opendc.compute.metal.service
 
-import com.atlarge.odcsim.SimulationEngineProvider
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.jupiter.api.Test
-import java.util.ServiceLoader
+import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.util.UUID
 
 /**
  * Test suite for the [SimpleProvisioningService].
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimpleProvisioningServiceTest {
     /**
      * A basic smoke test.
      */
     @Test
     fun smoke() {
-        val provider = ServiceLoader.load(SimulationEngineProvider::class.java).first()
-        val system = provider("sim")
-        val root = system.newDomain(name = "root")
-        root.launch {
-            val clock = simulationContext.clock
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
+
+        testScope.launch {
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
-            val dom = root.newDomain("provisioner")
 
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
-            val driver = SimpleBareMetalDriver(dom.newDomain(), clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val driver = SimpleBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
 
             val provisioner = SimpleProvisioningService()
             provisioner.create(driver)
@@ -67,9 +65,6 @@ internal class SimpleProvisioningServiceTest {
             node.server!!.events.collect { println(it) }
         }
 
-        runBlocking {
-            system.run()
-            system.terminate()
-        }
+        testScope.advanceUntilIdle()
     }
 }
