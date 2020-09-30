@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +19,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-simulator")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-sc18")
-include(":opendc:opendc-experiments-sc20")
-include(":opendc:opendc-runner-web")
+package org.opendc.simulator.utils
+
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.DelayController
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
+
+/**
+ * A virtual [Clock] that abstracts accesses to [DelayController]'s virtual clock.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+public class DelayControllerClockAdapter(
+    private val delayController: DelayController,
+    private val zone: ZoneId = ZoneId.systemDefault()
+) : Clock() {
+    override fun getZone(): ZoneId = zone
+
+    override fun withZone(zone: ZoneId): Clock = DelayControllerClockAdapter(delayController, zone)
+
+    override fun instant(): Instant = Instant.ofEpochMilli(millis())
+
+    override fun millis(): Long = delayController.currentTime
+}

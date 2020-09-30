@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":odcsim:odcsim-api")
-include(":odcsim:odcsim-engine-omega")
-include(":opendc:opendc-simulator")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-sc18")
-include(":opendc:opendc-experiments-sc20")
-include(":opendc:opendc-runner-web")
+description = "Simulation-specific code for use in OpenDC"
+
+/* Build configuration */
+plugins {
+    `kotlin-library-convention`
+}
+
+dependencies {
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Library.KOTLINX_COROUTINES}")
+}
