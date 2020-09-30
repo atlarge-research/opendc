@@ -25,11 +25,11 @@
 package com.atlarge.opendc.core.failure
 
 import com.atlarge.odcsim.simulationContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.ln1p
 import kotlin.math.pow
 import kotlin.random.Random
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 /**
  * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are

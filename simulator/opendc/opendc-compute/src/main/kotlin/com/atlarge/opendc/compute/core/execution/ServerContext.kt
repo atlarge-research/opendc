@@ -30,11 +30,17 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.services.ServiceKey
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.select
+import java.time.Clock
 
 /**
  * Represents the execution context in which a bootable [Image] runs on a [Server].
  */
 public interface ServerContext {
+    /**
+     * The virtual clock.
+     */
+    public val clock: Clock
+
     /**
      * The server on which the image runs.
      */

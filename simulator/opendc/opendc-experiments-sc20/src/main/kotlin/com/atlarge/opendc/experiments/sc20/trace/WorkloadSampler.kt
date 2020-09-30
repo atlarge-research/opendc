@@ -30,9 +30,9 @@ import com.atlarge.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import com.atlarge.opendc.experiments.sc20.experiment.model.SamplingStrategy
 import com.atlarge.opendc.experiments.sc20.experiment.model.Workload
 import com.atlarge.opendc.format.trace.TraceEntry
+import mu.KotlinLogging
 import java.util.*
 import kotlin.random.Random
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

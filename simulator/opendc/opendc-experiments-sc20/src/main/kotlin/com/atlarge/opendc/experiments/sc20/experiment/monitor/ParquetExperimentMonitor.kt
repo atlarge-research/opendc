@@ -31,8 +31,8 @@ import com.atlarge.opendc.experiments.sc20.telemetry.HostEvent
 import com.atlarge.opendc.experiments.sc20.telemetry.ProvisionerEvent
 import com.atlarge.opendc.experiments.sc20.telemetry.parquet.ParquetHostEventWriter
 import com.atlarge.opendc.experiments.sc20.telemetry.parquet.ParquetProvisionerEventWriter
-import java.io.File
 import mu.KotlinLogging
+import java.io.File
 
 /**
  * The logger instance to use.

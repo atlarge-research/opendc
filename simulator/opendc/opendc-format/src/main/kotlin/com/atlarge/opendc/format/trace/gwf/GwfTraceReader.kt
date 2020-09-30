@@ -120,7 +120,8 @@ class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
                     }
                     val workflow = entry.workload
                     val task = Task(
-                        UUID(0L, taskId), "<unnamed>",
+                        UUID(0L, taskId),
+                        "<unnamed>",
                         FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), flops, cores),
                         HashSet(),
                         mapOf(WORKFLOW_TASK_DEADLINE to runtime)
@@ -136,9 +137,11 @@ class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
 
         // Fix dependencies and dependents for all tasks
         taskDependencies.forEach { (task, dependencies) ->
-            (task.dependencies as MutableSet<Task>).addAll(dependencies.map { taskId ->
-                tasks[taskId] ?: throw IllegalArgumentException("Dependency task with id $taskId not found")
-            })
+            (task.dependencies as MutableSet<Task>).addAll(
+                dependencies.map { taskId ->
+                    tasks[taskId] ?: throw IllegalArgumentException("Dependency task with id $taskId not found")
+                }
+            )
         }
 
         // Create the entry iterator

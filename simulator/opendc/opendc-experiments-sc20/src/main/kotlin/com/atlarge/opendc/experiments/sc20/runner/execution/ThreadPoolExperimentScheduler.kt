@@ -25,12 +25,12 @@
 package com.atlarge.opendc.experiments.sc20.runner.execution
 
 import com.atlarge.opendc.experiments.sc20.runner.ExperimentDescriptor
-import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
+import java.util.concurrent.Executors
 
 /**
  * An [ExperimentScheduler] that runs experiments using a local thread pool.

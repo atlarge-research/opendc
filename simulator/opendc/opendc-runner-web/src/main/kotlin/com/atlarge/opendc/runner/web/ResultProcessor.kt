@@ -1,11 +1,11 @@
 package com.atlarge.opendc.runner.web
 
-import java.io.File
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.*
+import java.io.File
 
 /**
  * A helper class for processing the experiment results using Apache Spark.
@@ -175,13 +175,19 @@ class ResultProcessor(private val master: String, private val outputPath: File) 
 
     val sliceLength = 5 * 60 * 1000
     val states = map(
-        lit("ERROR"), lit(1),
-        lit("ACTIVE"), lit(0),
-        lit("SHUTOFF"), lit(0)
+        lit("ERROR"),
+        lit(1),
+        lit("ACTIVE"),
+        lit(0),
+        lit("SHUTOFF"),
+        lit(0)
     )
     val oppositeStates = map(
-        lit("ERROR"), lit(0),
-        lit("ACTIVE"), lit(1),
-        lit("SHUTOFF"), lit(1)
+        lit("ERROR"),
+        lit(0),
+        lit("ACTIVE"),
+        lit(1),
+        lit("SHUTOFF"),
+        lit(1)
     )
 }

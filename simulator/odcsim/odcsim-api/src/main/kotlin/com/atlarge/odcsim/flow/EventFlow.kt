@@ -24,7 +24,6 @@
 
 package com.atlarge.odcsim.flow
 
-import java.util.WeakHashMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -33,6 +32,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.consumeAsFlow
+import java.util.WeakHashMap
 
 /**
  * A [Flow] that can be used to emit events.

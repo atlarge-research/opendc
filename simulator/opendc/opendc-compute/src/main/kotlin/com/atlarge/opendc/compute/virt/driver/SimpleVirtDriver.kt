@@ -25,7 +25,6 @@
 package com.atlarge.opendc.compute.virt.driver
 
 import com.atlarge.odcsim.flow.EventFlow
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.Server
@@ -40,10 +39,6 @@ import com.atlarge.opendc.compute.core.workload.PerformanceInterferenceModel
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
-import java.util.UUID
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
@@ -59,6 +54,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.SelectInstance
 import kotlinx.coroutines.selects.select
+import mu.KotlinLogging
+import java.time.Clock
+import java.util.UUID
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
+
+/**
+ * The logging instance to use.
+ */
+private val logger = KotlinLogging.logger {}
 
 /**
  * A [VirtDriver] that is backed by a simple hypervisor implementation.
@@ -97,7 +103,7 @@ class SimpleVirtDriver(
                 scheduler()
             } catch (e: Exception) {
                 if (e !is CancellationException) {
-                    simulationContext.log.error("Hypervisor scheduler failed", e)
+                    logger.error("Hypervisor scheduler failed", e)
                 }
                 throw e
             }
@@ -117,8 +123,14 @@ class SimpleVirtDriver(
 
         val events = EventFlow<ServerEvent>()
         val server = Server(
-            UUID.randomUUID(), name, emptyMap(), flavor, image, ServerState.BUILD,
-            ServiceRegistry(), events
+            UUID.randomUUID(),
+            name,
+            emptyMap(),
+            flavor,
+            image,
+            ServerState.BUILD,
+            ServiceRegistry(),
+            events
         )
         availableMemory -= requiredMemory
         vms.add(VmServerContext(server, events))
@@ -181,7 +193,7 @@ class SimpleVirtDriver(
      * The scheduling process of the hypervisor.
      */
     private suspend fun scheduler() {
-        val clock = simulationContext.clock
+        val clock = hostContext.clock
         val maxUsage = hostContext.cpus.sumByDouble { it.frequency }
         val pCPUs = hostContext.cpus.indices.sortedBy { hostContext.cpus[it].frequency }
 
@@ -560,6 +572,9 @@ class SimpleVirtDriver(
             }
 
         override val cpus: List<ProcessingUnit> = hostContext.cpus.take(server.flavor.cpuCount)
+
+        override val clock: Clock
+            get() = hostContext.clock
 
         init {
             vm = Vm(this)

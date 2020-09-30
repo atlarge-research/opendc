@@ -115,7 +115,11 @@ class SwfTraceReader(
                         for (tick in submitTime until (submitTime + waitTime - sliceDuration) step sliceDuration) {
                             flopsHistory.add(
                                 FlopsHistoryFragment(
-                                    tick * 1000L, 0L, sliceDuration * 1000L, 0.0, cores
+                                    tick * 1000L,
+                                    0L,
+                                    sliceDuration * 1000L,
+                                    0.0,
+                                    cores
                                 )
                             )
                             slicedWaitTime += sliceDuration
@@ -129,12 +133,18 @@ class SwfTraceReader(
                     flopsPartialSlice = flopsPerSecond * runtimePartialSliceRemainder
                     flopsFullSlice = flopsPerSecond * runTime - flopsPartialSlice
 
-                    for (tick in (submitTime + slicedWaitTime)
-                        until (submitTime + slicedWaitTime + runTime - sliceDuration)
-                        step sliceDuration) {
+                    for (
+                        tick in (submitTime + slicedWaitTime)
+                            until (submitTime + slicedWaitTime + runTime - sliceDuration)
+                            step sliceDuration
+                    ) {
                         flopsHistory.add(
                             FlopsHistoryFragment(
-                                tick * 1000L, flopsFullSlice / sliceDuration, sliceDuration * 1000L, 1.0, cores
+                                tick * 1000L,
+                                flopsFullSlice / sliceDuration,
+                                sliceDuration * 1000L,
+                                1.0,
+                                cores
                             )
                         )
                     }
@@ -153,7 +163,9 @@ class SwfTraceReader(
 
                     val uuid = UUID(0L, jobNumber)
                     val vmWorkload = VmWorkload(
-                        uuid, "SWF Workload $jobNumber", UnnamedUser,
+                        uuid,
+                        "SWF Workload $jobNumber",
+                        UnnamedUser,
                         VmImage(
                             uuid,
                             jobNumber.toString(),

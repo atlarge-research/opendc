@@ -164,7 +164,9 @@ class Sc20TraceReader(
                         Random(random.nextInt())
                     )
                 val vmWorkload = VmWorkload(
-                    uuid, "VM Workload $vmId", UnnamedUser,
+                    uuid,
+                    "VM Workload $vmId",
+                    UnnamedUser,
                     VmImage(
                         uuid,
                         vmId,

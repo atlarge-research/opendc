@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.format.environment.sc18
 
-import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -39,6 +39,7 @@ import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.CoroutineScope
 import java.io.InputStream
 import java.util.UUID
 
@@ -55,8 +56,8 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
      */
     private val setup: Setup = mapper.readValue(input)
 
-    override suspend fun construct(dom: Domain): Environment {
-        val provisioningDomain = dom.newDomain("provisioner")
+    override suspend fun construct(coroutineScope: CoroutineScope): Environment {
+        val clock = simulationContext.clock
 
         var counter = 0
         val nodes = setup.rooms.flatMap { room ->
@@ -78,7 +79,8 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                 }
                             }
                             SimpleBareMetalDriver(
-                                dom.newDomain("node-$counter"),
+                                coroutineScope,
+                                clock,
                                 UUID.randomUUID(),
                                 "node-${counter++}",
                                 emptyMap(),
@@ -91,14 +93,16 @@ class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
             }
         }
 
-        val provisioningService = SimpleProvisioningService(provisioningDomain)
+        val provisioningService = SimpleProvisioningService()
         for (node in nodes) {
             provisioningService.create(node)
         }
 
         val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
         val platform = Platform(
-            UUID.randomUUID(), "sc18-platform", listOf(
+            UUID.randomUUID(),
+            "sc18-platform",
+            listOf(
                 Zone(UUID.randomUUID(), "zone", serviceRegistry)
             )
         )

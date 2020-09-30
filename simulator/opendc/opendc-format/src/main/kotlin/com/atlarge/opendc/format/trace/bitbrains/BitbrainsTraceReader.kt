@@ -129,7 +129,9 @@ class BitbrainsTraceReader(
                     )
 
                 val vmWorkload = VmWorkload(
-                    uuid, "VM Workload $vmId", UnnamedUser,
+                    uuid,
+                    "VM Workload $vmId",
+                    UnnamedUser,
                     VmImage(
                         uuid,
                         vmId.toString(),

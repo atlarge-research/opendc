@@ -25,6 +25,7 @@
 package com.atlarge.opendc.compute.virt
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -33,8 +34,6 @@ import com.atlarge.opendc.compute.core.image.FlopsHistoryFragment
 import com.atlarge.opendc.compute.core.image.VmImage
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
 import com.atlarge.opendc.compute.virt.driver.VirtDriver
-import java.util.ServiceLoader
-import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -45,6 +44,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import java.util.ServiceLoader
+import java.util.UUID
 
 /**
  * Basic test-suite for the hypervisor.
@@ -62,6 +63,7 @@ internal class HypervisorTest {
         val root = system.newDomain("root")
 
         root.launch {
+            val clock = simulationContext.clock
             val vmm = HypervisorImage
             val workloadA = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 1)
             val workloadB = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 2_000, 1)
@@ -70,7 +72,7 @@ internal class HypervisorTest {
 
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
             val cpus = List(1) { ProcessingUnit(cpuNode, it, 2000.0) }
-            val metalDriver = SimpleBareMetalDriver(driverDom, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val metalDriver = SimpleBareMetalDriver(driverDom, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
 
             metalDriver.init()
             metalDriver.setImage(vmm)
@@ -108,26 +110,41 @@ internal class HypervisorTest {
         var overcommissionedBurst = 0L
 
         root.launch {
+            val clock = simulationContext.clock
             val vmm = HypervisorImage
             val duration = 5 * 60L
-            val vmImageA = VmImage(UUID.randomUUID(), "<unnamed>", emptyMap(), sequenceOf(
-                FlopsHistoryFragment(0, 28L * duration, duration * 1000, 28.0, 2),
-                FlopsHistoryFragment(0, 3500L * duration, duration * 1000, 3500.0, 2),
-                FlopsHistoryFragment(0, 0, duration * 1000, 0.0, 2),
-                FlopsHistoryFragment(0, 183L * duration, duration * 1000, 183.0, 2)
-            ), 2, 0)
-            val vmImageB = VmImage(UUID.randomUUID(), "<unnamed>", emptyMap(), sequenceOf(
-                FlopsHistoryFragment(0, 28L * duration, duration * 1000, 28.0, 2),
-                FlopsHistoryFragment(0, 3100L * duration, duration * 1000, 3100.0, 2),
-                FlopsHistoryFragment(0, 0, duration * 1000, 0.0, 2),
-                FlopsHistoryFragment(0, 73L * duration, duration * 1000, 73.0, 2)
-            ), 2, 0)
+            val vmImageA = VmImage(
+                UUID.randomUUID(),
+                "<unnamed>",
+                emptyMap(),
+                sequenceOf(
+                    FlopsHistoryFragment(0, 28L * duration, duration * 1000, 28.0, 2),
+                    FlopsHistoryFragment(0, 3500L * duration, duration * 1000, 3500.0, 2),
+                    FlopsHistoryFragment(0, 0, duration * 1000, 0.0, 2),
+                    FlopsHistoryFragment(0, 183L * duration, duration * 1000, 183.0, 2)
+                ),
+                2,
+                0
+            )
+            val vmImageB = VmImage(
+                UUID.randomUUID(),
+                "<unnamed>",
+                emptyMap(),
+                sequenceOf(
+                    FlopsHistoryFragment(0, 28L * duration, duration * 1000, 28.0, 2),
+                    FlopsHistoryFragment(0, 3100L * duration, duration * 1000, 3100.0, 2),
+                    FlopsHistoryFragment(0, 0, duration * 1000, 0.0, 2),
+                    FlopsHistoryFragment(0, 73L * duration, duration * 1000, 73.0, 2)
+                ),
+                2,
+                0
+            )
 
             val driverDom = root.newDomain("driver")
 
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
             val cpus = List(2) { ProcessingUnit(cpuNode, it, 3200.0) }
-            val metalDriver = SimpleBareMetalDriver(driverDom, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val metalDriver = SimpleBareMetalDriver(driverDom, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
 
             metalDriver.init()
             metalDriver.setImage(vmm)

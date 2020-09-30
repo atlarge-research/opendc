@@ -24,9 +24,7 @@
 
 package com.atlarge.opendc.workflows.service
 
-import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.flow.EventFlow
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
@@ -39,22 +37,23 @@ import com.atlarge.opendc.workflows.service.stage.resource.ResourceSelectionPoli
 import com.atlarge.opendc.workflows.service.stage.task.TaskEligibilityPolicy
 import com.atlarge.opendc.workflows.service.stage.task.TaskOrderPolicy
 import com.atlarge.opendc.workflows.workload.Job
-import java.util.PriorityQueue
-import java.util.Queue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.time.Clock
+import java.util.PriorityQueue
+import java.util.Queue
 
 /**
  * A [WorkflowService] that distributes work through a multi-stage process based on the Reference Architecture for
  * Topology Scheduling.
  */
 class StageWorkflowService(
-    private val domain: Domain,
+    internal val coroutineScope: CoroutineScope,
+    internal val clock: Clock,
     private val provisioningService: ProvisioningService,
     mode: WorkflowSchedulerMode,
     jobAdmissionPolicy: JobAdmissionPolicy,
@@ -63,7 +62,7 @@ class StageWorkflowService(
     taskOrderPolicy: TaskOrderPolicy,
     resourceFilterPolicy: ResourceFilterPolicy,
     resourceSelectionPolicy: ResourceSelectionPolicy
-) : WorkflowService, CoroutineScope by domain {
+) : WorkflowService {
 
     /**
      * The incoming jobs ready to be processed by the scheduler.
@@ -175,7 +174,7 @@ class StageWorkflowService(
     private val eventFlow = EventFlow<WorkflowEvent>()
 
     init {
-        domain.launch {
+        coroutineScope.launch {
             nodes = provisioningService.nodes().toList()
             available.addAll(nodes)
         }
@@ -191,9 +190,9 @@ class StageWorkflowService(
 
     override val events: Flow<WorkflowEvent> = eventFlow
 
-    override suspend fun submit(job: Job) = withContext(domain.coroutineContext) {
+    override suspend fun submit(job: Job) {
         // J1 Incoming Jobs
-        val jobInstance = JobState(job, simulationContext.clock.millis())
+        val jobInstance = JobState(job, clock.millis())
         val instances = job.tasks.associateWith {
             TaskState(jobInstance, it)
         }
@@ -241,7 +240,7 @@ class StageWorkflowService(
             iterator.remove()
             jobQueue.add(jobInstance)
             activeJobs += jobInstance
-            eventFlow.emit(WorkflowEvent.JobStarted(this, jobInstance.job, simulationContext.clock.millis()))
+            eventFlow.emit(WorkflowEvent.JobStarted(this, jobInstance.job, clock.millis()))
             rootListener.jobStarted(jobInstance)
         }
 
@@ -295,7 +294,7 @@ class StageWorkflowService(
                 taskByServer[server] = instance
                 server.events
                     .onEach { event -> if (event is ServerEvent.StateChanged) stateChanged(event.server) }
-                    .launchIn(this)
+                    .launchIn(coroutineScope)
 
                 activeTasks += instance
                 taskQueue.poll()
@@ -310,19 +309,19 @@ class StageWorkflowService(
         when (server.state) {
             ServerState.ACTIVE -> {
                 val task = taskByServer.getValue(server)
-                task.startedAt = simulationContext.clock.millis()
-                eventFlow.emit(WorkflowEvent.TaskStarted(this@StageWorkflowService, task.job.job, task.task, simulationContext.clock.millis()))
+                task.startedAt = clock.millis()
+                eventFlow.emit(WorkflowEvent.TaskStarted(this@StageWorkflowService, task.job.job, task.task, clock.millis()))
                 rootListener.taskStarted(task)
             }
             ServerState.SHUTOFF, ServerState.ERROR -> {
                 val task = taskByServer.remove(server) ?: throw IllegalStateException()
                 val job = task.job
                 task.state = TaskStatus.FINISHED
-                task.finishedAt = simulationContext.clock.millis()
+                task.finishedAt = clock.millis()
                 job.tasks.remove(task)
                 available += task.host!!
                 activeTasks -= task
-                eventFlow.emit(WorkflowEvent.TaskFinished(this@StageWorkflowService, task.job.job, task.task, simulationContext.clock.millis()))
+                eventFlow.emit(WorkflowEvent.TaskFinished(this@StageWorkflowService, task.job.job, task.task, clock.millis()))
                 rootListener.taskFinished(task)
 
                 // Add job roots to the scheduling queue
@@ -347,7 +346,7 @@ class StageWorkflowService(
 
     private suspend fun finishJob(job: JobState) {
         activeJobs -= job
-        eventFlow.emit(WorkflowEvent.JobFinished(this, job.job, simulationContext.clock.millis()))
+        eventFlow.emit(WorkflowEvent.JobFinished(this, job.job, clock.millis()))
         rootListener.jobFinished(job)
     }
 

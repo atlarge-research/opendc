@@ -42,8 +42,6 @@ import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
-import java.io.File
-import java.util.ServiceLoader
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -54,6 +52,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import java.io.File
+import java.util.ServiceLoader
 
 /**
  * An integration test suite for the SC20 experiments.

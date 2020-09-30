@@ -31,8 +31,6 @@ import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.ServerEvent
 import com.atlarge.opendc.compute.core.ServerState
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
-import java.util.ServiceLoader
-import java.util.UUID
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -41,6 +39,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.util.ServiceLoader
+import java.util.UUID
 
 internal class SimpleBareMetalDriverTest {
     /**
@@ -56,7 +56,7 @@ internal class SimpleBareMetalDriverTest {
             val dom = root.newDomain(name = "driver")
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
-            val driver = SimpleBareMetalDriver(dom, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val driver = SimpleBareMetalDriver(dom, simulationContext.clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1_000, 2)
 
             // Batch driver commands

@@ -24,10 +24,10 @@
 
 package com.atlarge.opendc.compute.core.image
 
-import java.util.UUID
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.util.UUID
 
 /**
  * Test suite for [FlopsApplicationImage]

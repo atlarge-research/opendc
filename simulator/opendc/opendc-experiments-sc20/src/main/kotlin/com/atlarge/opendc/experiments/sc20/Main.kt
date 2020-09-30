@@ -41,9 +41,9 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
+import mu.KotlinLogging
 import java.io.File
 import java.io.InputStream
-import mu.KotlinLogging
 
 /**
  * The logger for this experiment.

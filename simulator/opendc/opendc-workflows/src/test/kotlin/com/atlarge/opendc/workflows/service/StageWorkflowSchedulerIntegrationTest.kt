@@ -35,8 +35,6 @@ import com.atlarge.opendc.workflows.service.stage.resource.FirstFitResourceSelec
 import com.atlarge.opendc.workflows.service.stage.resource.FunctionalResourceFilterPolicy
 import com.atlarge.opendc.workflows.service.stage.task.NullTaskEligibilityPolicy
 import com.atlarge.opendc.workflows.service.stage.task.SubmissionTimeTaskOrderPolicy
-import java.util.ServiceLoader
-import kotlin.math.max
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
@@ -46,6 +44,8 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.util.ServiceLoader
+import kotlin.math.max
 
 /**
  * Integration test suite for the [StageWorkflowService].
@@ -68,11 +68,13 @@ internal class StageWorkflowSchedulerIntegrationTest {
 
         val schedulerDomain = system.newDomain(name = "scheduler")
         val schedulerAsync = schedulerDomain.async {
+            val clock = simulationContext.clock
             val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
-                .use { it.construct(system.newDomain("topology")) }
+                .use { it.construct(schedulerDomain) }
 
             StageWorkflowService(
                 schedulerDomain,
+                clock,
                 environment.platforms[0].zones[0].services[ProvisioningService],
                 mode = WorkflowSchedulerMode.Batch(100),
                 jobAdmissionPolicy = NullJobAdmissionPolicy,

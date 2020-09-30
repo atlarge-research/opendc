@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.format.environment.sc20
 
-import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -38,6 +38,7 @@ import com.atlarge.opendc.core.Platform
 import com.atlarge.opendc.core.Zone
 import com.atlarge.opendc.core.services.ServiceRegistry
 import com.atlarge.opendc.format.environment.EnvironmentReader
+import kotlinx.coroutines.CoroutineScope
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -56,7 +57,9 @@ class Sc20ClusterEnvironmentReader(
     constructor(file: File) : this(FileInputStream(file))
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun construct(dom: Domain): Environment {
+    override suspend fun construct(coroutineScope: CoroutineScope): Environment {
+        val clock = simulationContext.clock
+
         var clusterIdCol = 0
         var speedCol = 0
         var numberOfHostsCol = 0
@@ -105,7 +108,8 @@ class Sc20ClusterEnvironmentReader(
                     repeat(numberOfHosts) {
                         nodes.add(
                             SimpleBareMetalDriver(
-                                dom.newDomain("node-$clusterId-$it"),
+                                coroutineScope,
+                                clock,
                                 UUID(random.nextLong(), random.nextLong()),
                                 "node-$clusterId-$it",
                                 mapOf(NODE_CLUSTER to clusterId),
@@ -123,7 +127,7 @@ class Sc20ClusterEnvironmentReader(
                 }
         }
 
-        val provisioningService = SimpleProvisioningService(dom.newDomain("provisioner"))
+        val provisioningService = SimpleProvisioningService()
         for (node in nodes) {
             provisioningService.create(node)
         }
@@ -131,7 +135,9 @@ class Sc20ClusterEnvironmentReader(
         val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
 
         val platform = Platform(
-            UUID.randomUUID(), "sc20-platform", listOf(
+            UUID.randomUUID(),
+            "sc20-platform",
+            listOf(
                 Zone(UUID.randomUUID(), "zone", serviceRegistry)
             )
         )

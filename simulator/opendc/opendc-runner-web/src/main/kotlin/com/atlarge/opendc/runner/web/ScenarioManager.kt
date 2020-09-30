@@ -3,8 +3,8 @@ package com.atlarge.opendc.runner.web
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
-import java.time.Instant
 import org.bson.Document
+import java.time.Instant
 
 /**
  * Manages the queue of scenarios that need to be processed.

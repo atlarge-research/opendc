@@ -24,8 +24,6 @@
 
 package com.atlarge.opendc.compute.metal.driver
 
-import com.atlarge.odcsim.Domain
-import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.flow.EventFlow
 import com.atlarge.odcsim.flow.StateFlow
 import com.atlarge.opendc.compute.core.Flavor
@@ -46,14 +44,6 @@ import com.atlarge.opendc.compute.metal.power.ConstantPowerModel
 import com.atlarge.opendc.core.power.PowerModel
 import com.atlarge.opendc.core.services.ServiceKey
 import com.atlarge.opendc.core.services.ServiceRegistry
-import java.lang.Exception
-import java.time.Clock
-import java.util.UUID
-import kotlin.coroutines.ContinuationInterceptor
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.random.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.DisposableHandle
@@ -67,12 +57,20 @@ import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.SelectInstance
-import kotlinx.coroutines.withContext
+import java.lang.Exception
+import java.time.Clock
+import java.util.UUID
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.random.Random
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
  *
- * @param domain The simulation domain the driver runs in.
+ * @param coroutineScope The [CoroutineScope] the driver runs in.
+ * @param clock The virtual clock to keep track of time.
  * @param uid The unique identifier of the machine.
  * @param name An optional name of the machine.
  * @param metadata The initial metadata of the node.
@@ -82,7 +80,8 @@ import kotlinx.coroutines.withContext
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 public class SimpleBareMetalDriver(
-    private val domain: Domain,
+    private val coroutineScope: CoroutineScope,
+    private val clock: Clock,
     uid: UUID,
     name: String,
     metadata: Map<String, Any>,
@@ -129,14 +128,14 @@ public class SimpleBareMetalDriver(
      */
     private val random = Random(uid.leastSignificantBits xor uid.mostSignificantBits)
 
-    override suspend fun init(): Node = withContext(domain.coroutineContext) {
-        nodeState.value
+    override suspend fun init(): Node {
+        return nodeState.value
     }
 
-    override suspend fun start(): Node = withContext(domain.coroutineContext) {
+    override suspend fun start(): Node {
         val node = nodeState.value
         if (node.state != NodeState.SHUTOFF) {
-            return@withContext node
+            return node
         }
 
         val events = EventFlow<ServerEvent>()
@@ -153,13 +152,13 @@ public class SimpleBareMetalDriver(
 
         setNode(node.copy(state = NodeState.BOOT, server = server))
         serverContext = BareMetalServerContext(events)
-        return@withContext nodeState.value
+        return nodeState.value
     }
 
-    override suspend fun stop(): Node = withContext(domain.coroutineContext) {
+    override suspend fun stop(): Node {
         val node = nodeState.value
         if (node.state == NodeState.SHUTOFF) {
-            return@withContext node
+            return node
         }
 
         // We terminate the image running on the machine
@@ -167,20 +166,20 @@ public class SimpleBareMetalDriver(
         serverContext = null
 
         setNode(node.copy(state = NodeState.SHUTOFF, server = null))
-        return@withContext node
+        return node
     }
 
-    override suspend fun reboot(): Node = withContext(domain.coroutineContext) {
+    override suspend fun reboot(): Node {
         stop()
-        start()
+        return start()
     }
 
-    override suspend fun setImage(image: Image): Node = withContext(domain.coroutineContext) {
+    override suspend fun setImage(image: Image): Node {
         setNode(nodeState.value.copy(image = image))
-        return@withContext nodeState.value
+        return nodeState.value
     }
 
-    override suspend fun refresh(): Node = withContext(domain.coroutineContext) { nodeState.value }
+    override suspend fun refresh(): Node = nodeState.value
 
     private fun setNode(value: Node) {
         val field = nodeState.value
@@ -207,7 +206,10 @@ public class SimpleBareMetalDriver(
         override val server: Server
             get() = nodeState.value.server!!
 
-        private val job = domain.launch {
+        override val clock: Clock
+            get() = this@SimpleBareMetalDriver.clock
+
+        private val job = coroutineScope.launch {
             delay(1) // TODO Introduce boot time
             init()
             try {
@@ -265,18 +267,13 @@ public class SimpleBareMetalDriver(
         private var usageFlush: DisposableHandle? = null
 
         /**
-         * Cache the [Clock] for timing.
-         */
-        private val clock = domain.coroutineContext[SimulationContext]!!.clock
-
-        /**
          * Cache the [Delay] instance for timing.
          *
          * XXX We need to cache this before the call to [onRun] since doing this in [onRun] is too heavy.
          * XXX Note however that this is an ugly hack which may break in the future.
          */
         @OptIn(InternalCoroutinesApi::class)
-        private val delay = domain.coroutineContext[ContinuationInterceptor] as Delay
+        private val delay = coroutineScope.coroutineContext[ContinuationInterceptor] as Delay
 
         @OptIn(InternalCoroutinesApi::class)
         override fun onRun(
@@ -353,10 +350,10 @@ public class SimpleBareMetalDriver(
                             currentDisposable?.dispose()
 
                             // Schedule reset the usage of the machine since the call is returning
-                            usageFlush = delay.invokeOnTimeout(1, Runnable {
+                            usageFlush = delay.invokeOnTimeout(1) {
                                 usageState.value = 0.0
                                 usageFlush = null
-                            })
+                            }
                         }
 
                         select.disposeOnSelect(disposable)
@@ -458,7 +455,7 @@ public class SimpleBareMetalDriver(
     }
 
     override val scope: CoroutineScope
-        get() = domain
+        get() = coroutineScope
 
     override suspend fun fail() {
         serverContext?.unavailable = true

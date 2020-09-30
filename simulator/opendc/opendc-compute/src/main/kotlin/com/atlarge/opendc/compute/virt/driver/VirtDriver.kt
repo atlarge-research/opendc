@@ -29,8 +29,8 @@ import com.atlarge.opendc.compute.core.Server
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.virt.HypervisorEvent
 import com.atlarge.opendc.core.services.AbstractServiceKey
-import java.util.UUID
 import kotlinx.coroutines.flow.Flow
+import java.util.UUID
 
 /**
  * A driver interface for a hypervisor running on some host server and communicating with the central compute service to

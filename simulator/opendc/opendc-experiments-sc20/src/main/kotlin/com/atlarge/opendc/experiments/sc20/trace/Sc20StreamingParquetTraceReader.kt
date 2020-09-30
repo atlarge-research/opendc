@@ -32,14 +32,6 @@ import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.core.User
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
-import java.io.File
-import java.io.Serializable
-import java.util.SortedSet
-import java.util.TreeSet
-import java.util.UUID
-import java.util.concurrent.ArrayBlockingQueue
-import kotlin.concurrent.thread
-import kotlin.random.Random
 import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
@@ -49,6 +41,14 @@ import org.apache.parquet.filter2.predicate.FilterApi
 import org.apache.parquet.filter2.predicate.Statistics
 import org.apache.parquet.filter2.predicate.UserDefinedPredicate
 import org.apache.parquet.io.api.Binary
+import java.io.File
+import java.io.Serializable
+import java.util.SortedSet
+import java.util.TreeSet
+import java.util.UUID
+import java.util.concurrent.ArrayBlockingQueue
+import kotlin.concurrent.thread
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
@@ -82,11 +82,14 @@ class Sc20StreamingParquetTraceReader(
         if (selectedVms.isEmpty())
             null
         else
-            FilterCompat.get(FilterApi.userDefined(FilterApi.binaryColumn("id"),
-                SelectedVmFilter(
-                    TreeSet(selectedVms)
+            FilterCompat.get(
+                FilterApi.userDefined(
+                    FilterApi.binaryColumn("id"),
+                    SelectedVmFilter(
+                        TreeSet(selectedVms)
+                    )
                 )
-            ))
+            )
 
     /**
      * A poisonous fragment.
@@ -235,7 +238,8 @@ class Sc20StreamingParquetTraceReader(
                         Random(random.nextInt())
                     )
                 val vmWorkload = VmWorkload(
-                    uid, "VM Workload $id",
+                    uid,
+                    "VM Workload $id",
                     UnnamedUser,
                     VmImage(
                         uid,

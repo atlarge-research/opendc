@@ -1,6 +1,6 @@
 package com.atlarge.opendc.runner.web
 
-import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -20,9 +20,10 @@ import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Field
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
-import java.util.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.bson.Document
+import java.util.*
 
 /**
  * A helper class that converts the MongoDB topology into an OpenDC environment.
@@ -31,7 +32,8 @@ class TopologyParser(private val collection: MongoCollection<Document>, private 
     /**
      * Parse the topology with the specified [id].
      */
-    override suspend fun construct(dom: Domain): Environment {
+    override suspend fun construct(coroutineScope: CoroutineScope): Environment {
+        val clock = simulationContext.clock
         val nodes = mutableListOf<SimpleBareMetalDriver>()
         val random = Random(0)
 
@@ -59,7 +61,8 @@ class TopologyParser(private val collection: MongoCollection<Document>, private 
             }
             nodes.add(
                 SimpleBareMetalDriver(
-                    dom.newDomain(machineId),
+                    coroutineScope,
+                    clock,
                     UUID(random.nextLong(), random.nextLong()),
                     "node-$clusterId-$position",
                     mapOf(NODE_CLUSTER to clusterId),
@@ -73,8 +76,8 @@ class TopologyParser(private val collection: MongoCollection<Document>, private 
             )
         }
 
-        val provisioningService = SimpleProvisioningService(dom.newDomain("provisioner"))
-        dom.launch {
+        val provisioningService = SimpleProvisioningService()
+        coroutineScope.launch {
             for (node in nodes) {
                 provisioningService.create(node)
             }
@@ -83,7 +86,9 @@ class TopologyParser(private val collection: MongoCollection<Document>, private 
         val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
 
         val platform = Platform(
-            UUID.randomUUID(), "opendc-platform", listOf(
+            UUID.randomUUID(),
+            "opendc-platform",
+            listOf(
                 Zone(UUID.randomUUID(), "zone", serviceRegistry)
             )
         )

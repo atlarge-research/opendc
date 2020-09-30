@@ -28,13 +28,6 @@ import com.atlarge.odcsim.Domain
 import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.SimulationEngine
 import com.atlarge.odcsim.engine.omega.logging.LoggerImpl
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
-import java.util.PriorityQueue
-import java.util.UUID
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -48,6 +41,13 @@ import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
 import org.jetbrains.annotations.Async
 import org.slf4j.Logger
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
+import java.util.PriorityQueue
+import java.util.UUID
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 /**
  * The reference implementation of the [SimulationEngine] instance for the OpenDC simulation core.
@@ -71,12 +71,14 @@ public class OmegaSimulationEngine(override val name: String) : SimulationEngine
     /**
      * The event queue to process
      */
-    private val queue: PriorityQueue<Event> = PriorityQueue(Comparator<Event> { lhs, rhs ->
-        // Note that Comparator gives better performance than Comparable according to
-        // profiling
-        val cmp = lhs.time.compareTo(rhs.time)
-        if (cmp == 0) lhs.id.compareTo(rhs.id) else cmp
-    })
+    private val queue: PriorityQueue<Event> = PriorityQueue(
+        Comparator<Event> { lhs, rhs ->
+            // Note that Comparator gives better performance than Comparable according to
+// profiling
+            val cmp = lhs.time.compareTo(rhs.time)
+            if (cmp == 0) lhs.id.compareTo(rhs.id) else cmp
+        }
+    )
 
     /**
      * The active processes in the simulation engine.

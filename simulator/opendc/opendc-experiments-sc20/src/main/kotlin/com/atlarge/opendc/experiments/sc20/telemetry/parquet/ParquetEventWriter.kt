@@ -25,17 +25,17 @@
 package com.atlarge.opendc.experiments.sc20.telemetry.parquet
 
 import com.atlarge.opendc.experiments.sc20.telemetry.Event
-import java.io.Closeable
-import java.io.File
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.BlockingQueue
-import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import java.io.Closeable
+import java.io.File
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
+import kotlin.concurrent.thread
 
 /**
  * The logging instance to use.

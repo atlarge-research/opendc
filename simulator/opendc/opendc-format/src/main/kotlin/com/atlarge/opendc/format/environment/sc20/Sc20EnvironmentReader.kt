@@ -24,7 +24,7 @@
 
 package com.atlarge.opendc.format.environment.sc20
 
-import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.MemoryUnit
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
@@ -40,6 +40,7 @@ import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.CoroutineScope
 import java.io.InputStream
 import java.util.UUID
 
@@ -55,7 +56,8 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
      */
     private val setup: Setup = mapper.readValue(input)
 
-    override suspend fun construct(dom: Domain): Environment {
+    override suspend fun construct(coroutineScope: CoroutineScope): Environment {
+        val clock = simulationContext.clock
         var counter = 0
         val nodes = setup.rooms.flatMap { room ->
             room.objects.flatMap { roomObject ->
@@ -82,7 +84,8 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
                                 }
                             }
                             SimpleBareMetalDriver(
-                                dom.newDomain("node-$counter"),
+                                coroutineScope,
+                                clock,
                                 UUID.randomUUID(),
                                 "node-${counter++}",
                                 emptyMap(),
@@ -99,7 +102,7 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
             }
         }
 
-        val provisioningService = SimpleProvisioningService(dom.newDomain("provisioner"))
+        val provisioningService = SimpleProvisioningService()
         for (node in nodes) {
             provisioningService.create(node)
         }
@@ -107,7 +110,9 @@ class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonOb
         val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
 
         val platform = Platform(
-            UUID.randomUUID(), "sc20-platform", listOf(
+            UUID.randomUUID(),
+            "sc20-platform",
+            listOf(
                 Zone(UUID.randomUUID(), "zone", serviceRegistry)
             )
         )

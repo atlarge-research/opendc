@@ -28,8 +28,8 @@ import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.core.resource.Resource
 import com.atlarge.opendc.core.resource.TagContainer
 import com.atlarge.opendc.core.services.ServiceRegistry
-import java.util.UUID
 import kotlinx.coroutines.flow.Flow
+import java.util.UUID
 
 /**
  * A server instance that is running on some physical or virtual machine.

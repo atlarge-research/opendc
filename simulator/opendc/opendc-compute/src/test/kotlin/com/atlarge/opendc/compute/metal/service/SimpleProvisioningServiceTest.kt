@@ -25,17 +25,18 @@
 package com.atlarge.opendc.compute.metal.service
 
 import com.atlarge.odcsim.SimulationEngineProvider
+import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.ProcessingNode
 import com.atlarge.opendc.compute.core.ProcessingUnit
 import com.atlarge.opendc.compute.core.image.FlopsApplicationImage
 import com.atlarge.opendc.compute.metal.driver.SimpleBareMetalDriver
-import java.util.ServiceLoader
-import java.util.UUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.util.ServiceLoader
+import java.util.UUID
 
 /**
  * Test suite for the [SimpleProvisioningService].
@@ -50,14 +51,15 @@ internal class SimpleProvisioningServiceTest {
         val system = provider("sim")
         val root = system.newDomain(name = "root")
         root.launch {
+            val clock = simulationContext.clock
             val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
             val dom = root.newDomain("provisioner")
 
             val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
             val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
-            val driver = SimpleBareMetalDriver(dom.newDomain(), UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val driver = SimpleBareMetalDriver(dom.newDomain(), clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
 
-            val provisioner = SimpleProvisioningService(dom)
+            val provisioner = SimpleProvisioningService()
             provisioner.create(driver)
             delay(5)
             val nodes = provisioner.nodes()

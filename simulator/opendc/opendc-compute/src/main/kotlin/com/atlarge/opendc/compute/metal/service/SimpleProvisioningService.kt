@@ -24,44 +24,41 @@
 
 package com.atlarge.opendc.compute.metal.service
 
-import com.atlarge.odcsim.Domain
 import com.atlarge.opendc.compute.core.image.Image
 import com.atlarge.opendc.compute.metal.Node
 import com.atlarge.opendc.compute.metal.driver.BareMetalDriver
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.withContext
 
 /**
  * A very basic implementation of the [ProvisioningService].
  */
-public class SimpleProvisioningService(val domain: Domain) : ProvisioningService {
+public class SimpleProvisioningService : ProvisioningService {
     /**
      * The active nodes in this service.
      */
     private val nodes: MutableMap<Node, BareMetalDriver> = mutableMapOf()
 
-    override suspend fun create(driver: BareMetalDriver): Node = withContext(domain.coroutineContext) {
+    override suspend fun create(driver: BareMetalDriver): Node {
         val node = driver.init()
         nodes[node] = driver
-        return@withContext node
+        return node
     }
 
-    override suspend fun nodes(): Set<Node> = withContext(domain.coroutineContext) { nodes.keys }
+    override suspend fun nodes(): Set<Node> = nodes.keys
 
-    override suspend fun refresh(node: Node): Node = withContext(domain.coroutineContext) {
-        return@withContext nodes[node]!!.refresh()
+    override suspend fun refresh(node: Node): Node {
+        return nodes[node]!!.refresh()
     }
 
-    override suspend fun deploy(node: Node, image: Image): Node = withContext(domain.coroutineContext) {
+    override suspend fun deploy(node: Node, image: Image): Node {
         val driver = nodes[node]!!
         driver.setImage(image)
-        val newNode = driver.reboot()
-        return@withContext newNode
+        return driver.reboot()
     }
 
-    override suspend fun stop(node: Node): Node = withContext(domain.coroutineContext) {
+    override suspend fun stop(node: Node): Node {
         val driver = nodes[node]!!
-        try {
+        return try {
             driver.stop()
         } catch (e: CancellationException) {
             node

@@ -38,9 +38,6 @@ import com.atlarge.opendc.workflows.service.stage.resource.FirstFitResourceSelec
 import com.atlarge.opendc.workflows.service.stage.resource.FunctionalResourceFilterPolicy
 import com.atlarge.opendc.workflows.service.stage.task.NullTaskEligibilityPolicy
 import com.atlarge.opendc.workflows.service.stage.task.SubmissionTimeTaskOrderPolicy
-import java.io.File
-import java.util.ServiceLoader
-import kotlin.math.max
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -48,6 +45,9 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.io.File
+import java.util.ServiceLoader
+import kotlin.math.max
 
 /**
  * Main entry point of the experiment.
@@ -68,10 +68,11 @@ fun main(args: Array<String>) {
     val schedulerDomain = system.newDomain(name = "scheduler")
     val schedulerAsync = schedulerDomain.async {
         val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-test.json"))
-            .use { it.construct(system.newDomain("topology")) }
+            .use { it.construct(schedulerDomain) }
 
         StageWorkflowService(
             schedulerDomain,
+            simulationContext.clock,
             environment.platforms[0].zones[0].services[ProvisioningService],
             mode = WorkflowSchedulerMode.Batch(100),
             jobAdmissionPolicy = NullJobAdmissionPolicy,

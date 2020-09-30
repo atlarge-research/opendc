@@ -38,13 +38,13 @@ import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionC
 import com.atlarge.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
 import com.atlarge.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import com.atlarge.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
-import java.io.File
-import java.util.ServiceLoader
-import kotlin.random.Random
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import java.io.File
+import java.util.ServiceLoader
+import kotlin.random.Random
 
 /**
  * The logger for the experiment scenario.

@@ -30,8 +30,8 @@ import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionC
 import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionListener
 import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentExecutionResult
 import com.atlarge.opendc.experiments.sc20.runner.execution.ExperimentScheduler
-import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The default implementation of the [ExperimentRunner] interface.

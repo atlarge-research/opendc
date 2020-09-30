@@ -25,6 +25,7 @@
 package com.atlarge.opendc.experiments.sc20.experiment
 
 import com.atlarge.odcsim.Domain
+import com.atlarge.odcsim.SimulationContext
 import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.Flavor
 import com.atlarge.opendc.compute.core.ServerEvent
@@ -45,10 +46,6 @@ import com.atlarge.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
 import com.atlarge.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
 import com.atlarge.opendc.format.environment.EnvironmentReader
 import com.atlarge.opendc.format.trace.TraceReader
-import java.io.File
-import kotlin.math.ln
-import kotlin.math.max
-import kotlin.random.Random
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -59,6 +56,10 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import java.io.File
+import kotlin.math.ln
+import kotlin.math.max
+import kotlin.random.Random
 
 /**
  * The logger for this experiment.
@@ -85,7 +86,7 @@ suspend fun createFailureDomain(
             val injector =
                 injectors.getOrPut(cluster) {
                     createFaultInjector(
-                        simulationContext.domain,
+                        simulationContext,
                         random,
                         failureInterval
                     )
@@ -99,11 +100,12 @@ suspend fun createFailureDomain(
 /**
  * Obtain the [FaultInjector] to use for the experiments.
  */
-fun createFaultInjector(domain: Domain, random: Random, failureInterval: Double): FaultInjector {
+fun createFaultInjector(simulationContext: SimulationContext, random: Random, failureInterval: Double): FaultInjector {
     // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
     // GRID'5000
     return CorrelatedFaultInjector(
-        domain,
+        simulationContext.domain,
+        simulationContext.clock,
         iatScale = ln(failureInterval), iatShape = 1.03, // Hours
         sizeScale = ln(2.0), sizeShape = ln(1.0), // Expect 2 machines, with variation of 1
         dScale = ln(60.0), dShape = ln(60.0 * 8), // Minutes
@@ -137,7 +139,7 @@ suspend fun createProvisioner(
     // Wait for the bare metal nodes to be spawned
     delay(10)
 
-    val scheduler = SimpleVirtProvisioningService(allocationPolicy, simulationContext, bareMetalProvisioner)
+    val scheduler = SimpleVirtProvisioningService(simulationContext.domain, simulationContext.clock, bareMetalProvisioner, allocationPolicy)
 
     // Wait for the hypervisors to be spawned
     delay(10)
@@ -219,7 +221,8 @@ suspend fun processTrace(reader: TraceReader<VmWorkload>, scheduler: SimpleVirtP
             domain.launch {
                 chan.send(Unit)
                 val server = scheduler.deploy(
-                    workload.image.name, workload.image,
+                    workload.image.name,
+                    workload.image,
                     Flavor(workload.image.maxCores, workload.image.requiredMemory)
                 )
                 // Monitor server events

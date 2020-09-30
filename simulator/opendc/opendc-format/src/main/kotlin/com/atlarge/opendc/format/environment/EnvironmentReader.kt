@@ -24,8 +24,8 @@
 
 package com.atlarge.opendc.format.environment
 
-import com.atlarge.odcsim.Domain
 import com.atlarge.opendc.core.Environment
+import kotlinx.coroutines.CoroutineScope
 import java.io.Closeable
 
 /**
@@ -33,7 +33,7 @@ import java.io.Closeable
  */
 interface EnvironmentReader : Closeable {
     /**
-     * Construct an [Environment] in the specified domain.
+     * Construct an [Environment] in the specified [CoroutineScope].
      */
-    suspend fun construct(dom: Domain): Environment
+    suspend fun construct(coroutineScope: CoroutineScope): Environment
 }

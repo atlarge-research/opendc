@@ -30,12 +30,12 @@ import com.atlarge.opendc.compute.core.workload.VmWorkload
 import com.atlarge.opendc.core.User
 import com.atlarge.opendc.format.trace.TraceEntry
 import com.atlarge.opendc.format.trace.TraceReader
-import java.io.File
-import java.util.UUID
 import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
+import java.io.File
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -113,7 +113,8 @@ class Sc20RawParquetTraceReader(private val path: File) {
                 val vmFragments = fragments.getValue(id).asSequence()
                 val totalLoad = vmFragments.sumByDouble { it.usage } * 5 * 60 // avg MHz * duration = MFLOPs
                 val vmWorkload = VmWorkload(
-                    uid, id,
+                    uid,
+                    id,
                     UnnamedUser,
                     VmImage(
                         uid,

@@ -24,10 +24,10 @@
 
 package com.atlarge.odcsim
 
+import org.slf4j.Logger
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
-import org.slf4j.Logger
 
 /**
  * Represents the execution context of a simulation domain.

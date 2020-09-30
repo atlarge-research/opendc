@@ -1,6 +1,5 @@
 package com.atlarge.opendc.compute.core.image
 
-import com.atlarge.odcsim.simulationContext
 import com.atlarge.opendc.compute.core.execution.ServerContext
 import com.atlarge.opendc.core.resource.TagContainer
 import java.util.UUID
@@ -16,8 +15,7 @@ class VmImage(
 ) : Image {
 
     override suspend fun invoke(ctx: ServerContext) {
-        val clock = simulationContext.clock
-        var offset = clock.millis()
+        var offset = ctx.clock.millis()
 
         val batch = flopsHistory.map { fragment ->
             val cores = min(fragment.cores, ctx.server.flavor.cpuCount)

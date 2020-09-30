@@ -24,23 +24,20 @@
 
 package com.atlarge.opendc.core.failure
 
-import com.atlarge.odcsim.Domain
-import com.atlarge.odcsim.simulationContext
+import kotlinx.coroutines.*
+import java.time.Clock
 import kotlin.math.exp
 import kotlin.math.max
 import kotlin.random.Random
 import kotlin.random.asJavaRandom
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.launch
 
 /**
  * A [FaultInjector] that injects fault in the system which are correlated to each other. Failures do not occur in
  * isolation, but will trigger other faults.
  */
 public class CorrelatedFaultInjector(
-    private val domain: Domain,
+    private val coroutineScope: CoroutineScope,
+    private val clock: Clock,
     private val iatScale: Double,
     private val iatShape: Double,
     private val sizeScale: Double,
@@ -72,7 +69,7 @@ public class CorrelatedFaultInjector(
 
         // Clean up the domain if it finishes
         domain.scope.coroutineContext[Job]!!.invokeOnCompletion {
-            this@CorrelatedFaultInjector.domain.launch {
+            this@CorrelatedFaultInjector.coroutineScope.launch {
                 active -= domain
 
                 if (active.isEmpty()) {
@@ -86,7 +83,7 @@ public class CorrelatedFaultInjector(
             return
         }
 
-        job = this.domain.launch {
+        job = this.coroutineScope.launch {
             while (active.isNotEmpty()) {
                 ensureActive()
 
@@ -94,7 +91,7 @@ public class CorrelatedFaultInjector(
                 val d = lognvariate(iatScale, iatShape) * 3.6e6
 
                 // Handle long overflow
-                if (simulationContext.clock.millis() + d <= 0) {
+                if (clock.millis() + d <= 0) {
                     return@launch
                 }
 
@@ -111,7 +108,7 @@ public class CorrelatedFaultInjector(
                 val df = max(lognvariate(dScale, dShape) * 6e4, 15 * 6e4)
 
                 // Handle long overflow
-                if (simulationContext.clock.millis() + df <= 0) {
+                if (clock.millis() + df <= 0) {
                     return@launch
                 }
 
