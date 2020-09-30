@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2017 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +21,12 @@
  */
 rootProject.name = "opendc-simulator"
 
-include(":opendc:opendc-simulator")
-include(":opendc:opendc-utils")
-include(":opendc:opendc-core")
-include(":opendc:opendc-compute")
-include(":opendc:opendc-format")
-include(":opendc:opendc-workflows")
-include(":opendc:opendc-experiments-sc18")
-include(":opendc:opendc-experiments-sc20")
-include(":opendc:opendc-runner-web")
+include(":opendc-core")
+include(":opendc-compute")
+include(":opendc-workflows")
+include(":opendc-format")
+include(":opendc-experiments:opendc-experiments-sc18")
+include(":opendc-experiments:opendc-experiments-sc20")
+include(":opendc-runner-web")
+include(":opendc-simulator")
+include(":opendc-utils")

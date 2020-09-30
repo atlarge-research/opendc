@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the TPDS paper"
+description = "Experiment runner for OpenDC"
 
 /* Build configuration */
 plugins {
@@ -31,17 +29,25 @@ plugins {
 }
 
 application {
-    mainClassName = "com.atlarge.opendc.experiments.sc18.TestExperiment"
+    mainClassName = "com.atlarge.opendc.runner.web.MainKt"
 }
 
 dependencies {
-    api(project(":opendc:opendc-core"))
-    implementation(project(":opendc:opendc-format"))
-    implementation(project(":opendc:opendc-workflows"))
-    implementation(project(":opendc:opendc-simulator"))
-    implementation(kotlin("stdlib"))
+    api(project(":opendc-core"))
+    implementation(project(":opendc-compute"))
+    implementation(project(":opendc-format"))
+    implementation(project(":opendc-experiments:opendc-experiments-sc20"))
+    implementation(project(":opendc-simulator"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+    implementation("com.github.ajalt:clikt:2.8.0")
+    implementation("io.github.microutils:kotlin-logging:1.7.10")
+
+    implementation("org.mongodb:mongodb-driver-sync:4.0.5")
+    implementation("org.apache.spark:spark-sql_2.12:3.0.0") {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "log4j")
+    }
+
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
+    runtimeOnly("org.apache.logging.log4j:log4j-1.2-api:2.13.1")
 }

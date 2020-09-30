@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2019 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,36 +20,20 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the SC20 paper"
+description = "Workflow service for OpenDC"
 
 /* Build configuration */
 plugins {
     `kotlin-library-convention`
-    application
-}
-
-application {
-    mainClassName = "com.atlarge.opendc.experiments.sc20.MainKt"
-    applicationDefaultJvmArgs = listOf("-Xms2500M")
 }
 
 dependencies {
-    api(project(":opendc:opendc-core"))
-    implementation(project(":opendc:opendc-format"))
-    implementation(project(":opendc:opendc-simulator"))
+    api(project(":opendc-core"))
+    api(project(":opendc-compute"))
+    implementation(project(":opendc-utils"))
 
-    implementation("com.github.ajalt:clikt:2.6.0")
-    implementation("me.tongfei:progressbar:0.8.1")
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
-
-    implementation("org.apache.parquet:parquet-avro:1.11.0")
-    implementation("org.apache.hadoop:hadoop-client:3.2.1") {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
-
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
-
+    testImplementation(project(":opendc-simulator"))
+    testImplementation(project(":opendc-format"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
     testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")

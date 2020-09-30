@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2017 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,3 +19,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+description = "Base model for datacenter simulation"
+
+/* Build configuration */
+plugins {
+    `kotlin-library-convention`
+}
+
+dependencies {
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Library.KOTLINX_COROUTINES}")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
+    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+}

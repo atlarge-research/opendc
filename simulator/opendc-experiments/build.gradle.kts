@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +19,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-description = "Library for reading common data formats for topology simulation"
-
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-}
-
-dependencies {
-    api(project(":opendc:opendc-core"))
-    api(project(":opendc:opendc-compute"))
-    api(project(":opendc:opendc-workflows"))
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
-        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    implementation(kotlin("reflect"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
-}

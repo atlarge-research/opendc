@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2019 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Workflow service for OpenDC"
+description = "Library for reading common data formats for topology simulation"
 
 /* Build configuration */
 plugins {
@@ -30,12 +28,14 @@ plugins {
 }
 
 dependencies {
-    api(project(":opendc:opendc-core"))
-    api(project(":opendc:opendc-compute"))
-    implementation(project(":opendc:opendc-utils"))
+    api(project(":opendc-core"))
+    api(project(":opendc-compute"))
+    api(project(":opendc-workflows"))
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
+        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
+    implementation(kotlin("reflect"))
 
-    testImplementation(project(":opendc:opendc-simulator"))
-    testImplementation(project(":opendc:opendc-format"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
     testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")

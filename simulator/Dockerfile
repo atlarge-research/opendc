@@ -23,9 +23,9 @@ RUN ./gradlew clean build --no-daemon > /dev/null 2>&1 || true
 
 # Build project
 COPY ./ /app/
-RUN ./gradlew --no-daemon :opendc:opendc-runner-web:installDist
+RUN ./gradlew --no-daemon :opendc-runner-web:installDist
 
 FROM openjdk:14-slim
-COPY --from=builder /app/opendc/opendc-runner-web/build/install /app
+COPY --from=builder /app/opendc-runner-web/build/install /app
 WORKDIR /app
 CMD opendc-runner-web/bin/opendc-runner-web

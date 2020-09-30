@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2017 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +28,11 @@ plugins {
 }
 
 dependencies {
-    api(project(":opendc:opendc-core"))
-    implementation(project(":opendc:opendc-utils"))
+    api(project(":opendc-core"))
+    implementation(project(":opendc-utils"))
     implementation("io.github.microutils:kotlin-logging:1.7.9")
 
-    testImplementation(project(":opendc:opendc-simulator"))
+    testImplementation(project(":opendc-simulator"))
     testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")

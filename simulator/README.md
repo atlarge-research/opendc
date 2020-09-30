@@ -8,22 +8,34 @@
 <p align="center">
 Collaborative Datacenter Simulation and Exploration for Everybody
 </p>
-<p align="center">
-	<a href="https://travis-ci.org/atlarge-research/opendc-simulator">
-		<img src="https://travis-ci.org/atlarge-research/opendc-simulator.svg?branch=master" alt="Build Status">
-	</a>
+<p align="center">	
 	<a href="https://opensource.org/licenses/MIT">
-	    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
+	    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License">
 	</a>
 </p>
 
 ## Introduction
-This repository hosts the source code and development of the simulation component of the [OpenDC](https://opendc.org) project. This component is responsible for modelling and simulation of datacenters and their components. We have structured the repository into two individual subprojects:
-- **[odcsim](/odcsim)**  
-  A framework for discrete event simulation using the [Kotlin](https://kotlinlang.org/) language.
-- **[opendc](/opendc)**  
-  A collection of models for simulating clouds, datacenters and their components using the **odcsim** framework.
-
+This directory hosts the source code and development of the simulation component of the [OpenDC](https://opendc.org) project. 
+This component is responsible for modelling and simulation of datacenters and their components. We have structured the directory into several subprojects:
+- **[opendc-core](opendc-core)**  
+  This module establishes core concepts and terminology of datacenters that we share across the various modules. 
+  Other `opendc` modules build on these concepts and extend it in various directions (e.g. virtual machines or workflows).
+- **[opendc-compute](opendc-compute)**  
+  The [Infrastructure as a Service](https://en.wikipedia.org/wiki/Infrastructure_as_a_Service) (IaaS) component of OpenDC for computing infrastructure (similar to 
+  [Amazon EC2](https://aws.amazon.com/ec2/) and [Google Compute Engine](https://cloud.google.com/compute)).
+- **[opendc-workflows](opendc-workflows)**  
+  Workflow orchestration service built on top of OpenDC. 
+- **[opendc-format](opendc-format)**  
+  Collection of libraries for processing data formats related to (simulation of) cloud computing and datacenters. 
+- **[opendc-experiments](opendc-experiments)**  
+  Collection of experiments that use OpenDC to explore various concepts of cloud computing and datacenters.
+- **[opendc-runner-web](opendc-runner-web)**  
+  Experiment runner that integrates with the OpenDC web interface.
+- **[opendc-simulator](opendc-simulator)**  
+  Collection of libraries that enable simulation of various components of datacenters. 
+- **[opendc-utils](opendc-utils)**  
+  Collection of utilities that are shared across the OpenDC subprojects.
+  
 ## Documentation
 Check out the [Getting Started](#getting-started) section for a quick
 overview.
