@@ -50,7 +50,6 @@ dependencies {
         exclude(group = "log4j")
     }
 
-    runtimeOnly(project(":odcsim:odcsim-engine-omega"))
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
     runtimeOnly("org.apache.logging.log4j:log4j-1.2-api:2.13.1")
 }

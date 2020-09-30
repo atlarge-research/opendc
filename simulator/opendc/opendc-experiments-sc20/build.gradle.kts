@@ -51,7 +51,6 @@ dependencies {
     }
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
-    runtimeOnly(project(":odcsim:odcsim-engine-omega"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")

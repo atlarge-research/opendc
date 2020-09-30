@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-description = "Base model for topology simulation"
+description = "Base model for datacenter simulation"
 
 /* Build configuration */
 plugins {
@@ -30,7 +30,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":odcsim:odcsim-api"))
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Library.KOTLINX_COROUTINES}")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
