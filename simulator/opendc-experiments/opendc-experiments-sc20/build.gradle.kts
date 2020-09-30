@@ -29,7 +29,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com.atlarge.opendc.experiments.sc20.MainKt"
+    mainClassName = "org.opendc.experiments.sc20.MainKt"
     applicationDefaultJvmArgs = listOf("-Xms2500M")
 }
 

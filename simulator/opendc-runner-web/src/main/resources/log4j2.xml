@@ -26,17 +26,14 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%highlight{%-5level}] %logger{36} - %msg%n" disableAnsi="false" />
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%highlight{%-5level}] %logger{36} - %msg%n" disableAnsi="false"/>
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="com.atlarge.odcsim" level="info" additivity="false">
+        <Logger name="org.opendc" level="warn" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="com.atlarge.opendc" level="warn" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="com.atlarge.opendc.runner" level="info" additivity="false">
+        <Logger name="org.opendc.runner" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="org.apache.hadoop" level="warn" additivity="false">

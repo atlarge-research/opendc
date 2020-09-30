@@ -29,7 +29,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com.atlarge.opendc.experiments.sc18.TestExperiment"
+    mainClassName = "org.opendc.experiments.sc18.TestExperiment"
 }
 
 dependencies {

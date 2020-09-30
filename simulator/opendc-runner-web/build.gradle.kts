@@ -29,7 +29,7 @@ plugins {
 }
 
 application {
-    mainClassName = "com.atlarge.opendc.runner.web.MainKt"
+    mainClassName = "org.opendc.runner.web.MainKt"
 }
 
 dependencies {

@@ -25,6 +25,6 @@ plugins {
 }
 
 allprojects {
-    group = "com.atlarge.opendc"
+    group = "org.opendc"
     version = "2.0.0"
 }
