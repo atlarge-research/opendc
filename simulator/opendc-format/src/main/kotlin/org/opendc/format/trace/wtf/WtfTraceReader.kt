@@ -55,7 +55,7 @@ class WtfTraceReader(path: String) : TraceReader<Job> {
         val tasks = mutableMapOf<Long, Task>()
         val taskDependencies = mutableMapOf<Task, List<Long>>()
 
-        val reader = AvroParquetReader.builder<GenericRecord>(Path(path)).build()
+        val reader = AvroParquetReader.builder<GenericRecord>(Path(path, "tasks/schema-1.0")).build()
 
         while (true) {
             val nextRecord = reader.read() ?: break
