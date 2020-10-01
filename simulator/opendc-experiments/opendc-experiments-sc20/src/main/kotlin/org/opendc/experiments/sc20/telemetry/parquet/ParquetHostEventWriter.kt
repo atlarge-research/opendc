@@ -36,8 +36,8 @@ public class ParquetHostEventWriter(path: File, bufferSize: Int) :
 
     override fun toString(): String = "host-writer"
 
-    companion object {
-        val convert: (HostEvent, GenericData.Record) -> Unit = { event, record ->
+    public companion object {
+        private val convert: (HostEvent, GenericData.Record) -> Unit = { event, record ->
             // record.put("portfolio_id", event.run.parent.parent.id)
             // record.put("scenario_id", event.run.parent.id)
             // record.put("run_id", event.run.id)
@@ -56,7 +56,7 @@ public class ParquetHostEventWriter(path: File, bufferSize: Int) :
             record.put("cores", event.cores)
         }
 
-        val schema: Schema = SchemaBuilder
+        private val schema: Schema = SchemaBuilder
             .record("host_metrics")
             .namespace("org.opendc.experiments.sc20")
             .fields()

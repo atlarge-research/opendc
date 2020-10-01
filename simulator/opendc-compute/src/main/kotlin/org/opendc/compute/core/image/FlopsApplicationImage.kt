@@ -38,7 +38,7 @@ import kotlin.math.min
  * @property cores The number of cores that the image is able to utilize.
  * @property utilization A model of the CPU utilization of the application.
  */
-data class FlopsApplicationImage(
+public data class FlopsApplicationImage(
     public override val uid: UUID,
     public override val name: String,
     public override val tags: TagContainer,

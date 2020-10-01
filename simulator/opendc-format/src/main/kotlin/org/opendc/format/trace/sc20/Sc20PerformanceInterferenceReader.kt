@@ -38,7 +38,7 @@ import kotlin.random.Random
  * @param input The input stream to read from.
  * @param mapper The Jackson object mapper to use.
  */
-class Sc20PerformanceInterferenceReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) :
+public class Sc20PerformanceInterferenceReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) :
     PerformanceInterferenceModelReader {
     /**
      * The computed value from the file.

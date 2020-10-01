@@ -41,7 +41,7 @@ import kotlin.math.min
  *
  * @param path The path to the trace.
  */
-class WtfTraceReader(path: String) : TraceReader<Job> {
+public class WtfTraceReader(path: String) : TraceReader<Job> {
     /**
      * The internal iterator to use for this reader.
      */

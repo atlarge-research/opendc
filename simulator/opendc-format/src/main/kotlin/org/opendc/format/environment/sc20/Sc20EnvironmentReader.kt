@@ -48,7 +48,7 @@ import java.util.*
  * @param input The input stream to read from.
  * @param mapper The Jackson object mapper to use.
  */
-class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) : EnvironmentReader {
+public class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) : EnvironmentReader {
     /**
      * The environment that was read from the file.
      */

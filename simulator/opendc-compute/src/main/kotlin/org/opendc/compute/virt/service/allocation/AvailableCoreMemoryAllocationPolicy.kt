@@ -29,7 +29,7 @@ import org.opendc.compute.virt.service.HypervisorView
  *
  * @param reversed An option to reverse the order of the machines (lower amount of memory scores better).
  */
-public class AvailableCoreMemoryAllocationPolicy(val reversed: Boolean = false) : AllocationPolicy {
+public class AvailableCoreMemoryAllocationPolicy(private val reversed: Boolean = false) : AllocationPolicy {
     override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
         override val comparator: Comparator<HypervisorView> =
             compareBy<HypervisorView> { -it.availableMemory / it.server.flavor.cpuCount }

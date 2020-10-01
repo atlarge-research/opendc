@@ -27,7 +27,7 @@ import org.opendc.core.resource.TagContainer
 import java.util.*
 import kotlin.math.min
 
-class VmImage(
+public class VmImage(
     public override val uid: UUID,
     public override val name: String,
     public override val tags: TagContainer,

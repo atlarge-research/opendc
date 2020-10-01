@@ -28,8 +28,8 @@ import org.opendc.workflows.service.TaskState
 /**
  * A [TaskEligibilityPolicy] that limits the number of active tasks in the system based on the average system load.
  */
-data class LoadTaskEligibilityPolicy(val limit: Double) : TaskEligibilityPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = object : TaskEligibilityPolicy.Logic {
+public data class LoadTaskEligibilityPolicy(val limit: Double) : TaskEligibilityPolicy {
+    override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic = object : TaskEligibilityPolicy.Logic {
         override fun invoke(
             task: TaskState
         ): TaskEligibilityPolicy.Advice =

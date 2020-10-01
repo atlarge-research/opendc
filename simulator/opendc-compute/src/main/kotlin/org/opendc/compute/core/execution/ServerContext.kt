@@ -65,7 +65,7 @@ public interface ServerContext {
      * @param slice The representation of work to run on the processors.
      * @param triggerMode The trigger condition to resume execution.
      */
-    public suspend fun run(slice: Slice, triggerMode: TriggerMode = TriggerMode.FIRST) =
+    public suspend fun run(slice: Slice, triggerMode: TriggerMode = TriggerMode.FIRST): Unit =
         select<Unit> { onRun(slice, triggerMode).invoke {} }
 
     /**
@@ -88,7 +88,7 @@ public interface ServerContext {
         batch: Sequence<Slice>,
         triggerMode: TriggerMode = TriggerMode.FIRST,
         merge: (Slice, Slice) -> Slice = { _, r -> r }
-    ) = select<Unit> { onRun(batch, triggerMode, merge).invoke {} }
+    ): Unit = select<Unit> { onRun(batch, triggerMode, merge).invoke {} }
 
     /**
      * Ask the processor cores to run the specified [slice] and select when the trigger condition is met as specified
@@ -137,7 +137,7 @@ public interface ServerContext {
      * @param limit The maximum usage in terms of MHz that the processing core may use while running the burst.
      * @param deadline The instant at which this slice needs to be fulfilled.
      */
-    public class Slice(val burst: LongArray, val limit: DoubleArray, val deadline: Long) {
+    public class Slice(public val burst: LongArray, public val limit: DoubleArray, public val deadline: Long) {
         init {
             require(burst.size == limit.size) { "Incompatible array dimensions" }
         }

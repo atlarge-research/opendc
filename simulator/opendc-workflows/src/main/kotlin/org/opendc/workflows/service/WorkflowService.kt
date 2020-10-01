@@ -46,5 +46,5 @@ public interface WorkflowService {
     /**
      * The service key for the workflow scheduler.
      */
-    companion object Key : AbstractServiceKey<WorkflowService>(UUID.randomUUID(), "workflows")
+    public companion object Key : AbstractServiceKey<WorkflowService>(UUID.randomUUID(), "workflows")
 }

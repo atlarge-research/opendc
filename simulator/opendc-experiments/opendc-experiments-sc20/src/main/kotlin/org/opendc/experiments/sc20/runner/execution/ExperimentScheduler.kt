@@ -28,19 +28,19 @@ import java.io.Closeable
 /**
  * A interface for scheduling the execution of experiment trials over compute resources (threads/containers/vms)
  */
-interface ExperimentScheduler : Closeable {
+public interface ExperimentScheduler : Closeable {
     /**
      * Allocate a [Worker] for executing an experiment trial. This method may suspend in case no resources are directly
      * available at the moment.
      *
      * @return The available worker.
      */
-    suspend fun allocate(): ExperimentScheduler.Worker
+    public suspend fun allocate(): ExperimentScheduler.Worker
 
     /**
      * An isolated worker of an [ExperimentScheduler] that is responsible for executing a single experiment trial.
      */
-    interface Worker {
+    public interface Worker {
         /**
          * Dispatch the specified [ExperimentDescriptor] to execute some time in the future and return the results of
          * the trial.
@@ -48,7 +48,7 @@ interface ExperimentScheduler : Closeable {
          * @param descriptor The descriptor to execute.
          * @param context The context to execute the descriptor in.
          */
-        suspend operator fun invoke(
+        public suspend operator fun invoke(
             descriptor: ExperimentDescriptor,
             context: ExperimentExecutionContext
         )

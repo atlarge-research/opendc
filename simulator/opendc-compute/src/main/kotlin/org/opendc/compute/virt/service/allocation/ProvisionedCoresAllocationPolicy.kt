@@ -31,7 +31,7 @@ import org.opendc.compute.virt.service.HypervisorView
  * @param reversed A flag to reverse the order of the policy, such that the machine with the most provisioned cores
  * is selected.
  */
-class ProvisionedCoresAllocationPolicy(val reversed: Boolean = false) : AllocationPolicy {
+public class ProvisionedCoresAllocationPolicy(private val reversed: Boolean = false) : AllocationPolicy {
     override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
         override val comparator: Comparator<HypervisorView> =
             compareBy<HypervisorView> { it.provisionedCores / it.server.flavor.cpuCount }

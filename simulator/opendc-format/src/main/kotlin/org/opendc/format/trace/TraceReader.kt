@@ -32,4 +32,4 @@ import java.io.Closeable
  *
  * @param T The shape of the workloads supported by this reader.
  */
-interface TraceReader<T : Workload> : Iterator<TraceEntry<T>>, Closeable
+public interface TraceReader<T : Workload> : Iterator<TraceEntry<T>>, Closeable

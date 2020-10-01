@@ -22,16 +22,16 @@
 
 package org.opendc.workflows.service
 
-interface StageWorkflowSchedulerListener {
-    fun cycleStarted(scheduler: StageWorkflowService) {}
-    fun cycleFinished(scheduler: StageWorkflowService) {}
+public interface StageWorkflowSchedulerListener {
+    public fun cycleStarted(scheduler: StageWorkflowService) {}
+    public fun cycleFinished(scheduler: StageWorkflowService) {}
 
-    fun jobSubmitted(job: JobState) {}
-    fun jobStarted(job: JobState) {}
-    fun jobFinished(job: JobState) {}
+    public fun jobSubmitted(job: JobState) {}
+    public fun jobStarted(job: JobState) {}
+    public fun jobFinished(job: JobState) {}
 
-    fun taskReady(task: TaskState) {}
-    fun taskAssigned(task: TaskState) {}
-    fun taskStarted(task: TaskState) {}
-    fun taskFinished(task: TaskState) {}
+    public fun taskReady(task: TaskState) {}
+    public fun taskAssigned(task: TaskState) {}
+    public fun taskStarted(task: TaskState) {}
+    public fun taskFinished(task: TaskState) {}
 }

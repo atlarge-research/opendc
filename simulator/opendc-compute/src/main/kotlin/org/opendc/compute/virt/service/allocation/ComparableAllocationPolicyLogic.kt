@@ -29,7 +29,7 @@ import org.opendc.compute.virt.service.SimpleVirtProvisioningService
 /**
  * The logic for an [AllocationPolicy] that uses a [Comparator] to select the appropriate node.
  */
-interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
+public interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
     /**
      * The comparator to use.
      */

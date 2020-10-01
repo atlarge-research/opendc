@@ -27,4 +27,4 @@ package org.opendc.workflows.workload
 /**
  * Meta-data key for the deadline of a task.
  */
-const val WORKFLOW_TASK_DEADLINE = "workflow:task:deadline"
+public const val WORKFLOW_TASK_DEADLINE: String = "workflow:task:deadline"

@@ -27,7 +27,7 @@ import org.opendc.experiments.sc20.experiment.Run
 /**
  * A periodic report of the host machine metrics.
  */
-data class RunEvent(
-    val run: Run,
+public data class RunEvent(
+    public val run: Run,
     override val timestamp: Long
 ) : Event("run")

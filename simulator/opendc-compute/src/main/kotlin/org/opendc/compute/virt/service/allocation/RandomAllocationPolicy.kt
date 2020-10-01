@@ -30,7 +30,7 @@ import kotlin.random.Random
 /**
  * An [AllocationPolicy] that select a random node on which the server fits.
  */
-public class RandomAllocationPolicy(val random: Random = Random(0)) : AllocationPolicy {
+public class RandomAllocationPolicy(private val random: Random = Random(0)) : AllocationPolicy {
     @OptIn(ExperimentalStdlibApi::class)
     override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
         override fun select(

@@ -32,7 +32,7 @@ import org.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
 /**
  * A [JobOrderPolicy] that orders jobs based on its critical path length.
  */
-data class DurationJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
+public data class DurationJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<JobState> =
         object : Comparator<JobState>, StageWorkflowSchedulerListener {
             private val results = HashMap<Job, Long>()
@@ -70,7 +70,7 @@ data class DurationJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolic
  *
  * @return The list of tasks within the job topologically sorted.
  */
-fun Job.toposort(): List<Task> {
+public fun Job.toposort(): List<Task> {
     val res = mutableListOf<Task>()
     val visited = mutableSetOf<Task>()
     val adjacent = mutableMapOf<Task, MutableList<Task>>()

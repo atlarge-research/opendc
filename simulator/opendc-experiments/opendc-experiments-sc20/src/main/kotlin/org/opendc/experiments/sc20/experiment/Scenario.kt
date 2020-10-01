@@ -33,12 +33,12 @@ import org.opendc.experiments.sc20.runner.ExperimentDescriptor
  */
 public class Scenario(
     override val parent: Portfolio,
-    val id: Int,
-    val repetitions: Int,
-    val topology: Topology,
-    val workload: Workload,
-    val allocationPolicy: String,
-    val operationalPhenomena: OperationalPhenomena
+    public val id: Int,
+    public val repetitions: Int,
+    public val topology: Topology,
+    public val workload: Workload,
+    public val allocationPolicy: String,
+    public val operationalPhenomena: OperationalPhenomena
 ) : ContainerExperimentDescriptor() {
     override val children: Sequence<ExperimentDescriptor> = sequence {
         repeat(repetitions) { i -> yield(Run(this@Scenario, i, i)) }

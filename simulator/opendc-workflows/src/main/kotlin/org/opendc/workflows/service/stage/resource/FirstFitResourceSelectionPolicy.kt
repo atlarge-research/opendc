@@ -28,10 +28,9 @@ import org.opendc.workflows.service.StageWorkflowService
 /**
  * A [ResourceSelectionPolicy] that selects the first machine that is available.
  */
-object FirstFitResourceSelectionPolicy : ResourceSelectionPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = object : Comparator<Node> {
-        override fun compare(o1: Node, o2: Node): Int = 1
-    }
+public object FirstFitResourceSelectionPolicy : ResourceSelectionPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<Node> =
+        Comparator<Node> { _, _ -> 1 }
 
     override fun toString(): String = "First-Fit"
 }

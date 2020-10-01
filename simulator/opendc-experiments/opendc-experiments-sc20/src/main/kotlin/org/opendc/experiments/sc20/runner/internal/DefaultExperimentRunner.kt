@@ -36,12 +36,12 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @param scheduler The scheduler to use.
  */
-public class DefaultExperimentRunner(val scheduler: ExperimentScheduler) : ExperimentRunner {
+public class DefaultExperimentRunner(private val scheduler: ExperimentScheduler) : ExperimentRunner {
     override val id: String = "default"
 
     override val version: String? = "1.0"
 
-    override fun execute(root: ExperimentDescriptor, listener: ExperimentExecutionListener) = runBlocking {
+    override fun execute(root: ExperimentDescriptor, listener: ExperimentExecutionListener): Unit = runBlocking {
         val context = object : ExperimentExecutionContext {
             override val listener: ExperimentExecutionListener = listener
             override val scheduler: ExperimentScheduler = this@DefaultExperimentRunner.scheduler

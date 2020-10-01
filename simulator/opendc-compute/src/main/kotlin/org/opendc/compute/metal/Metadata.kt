@@ -31,4 +31,4 @@ package org.opendc.compute.metal
 /**
  * The cluster to which the node belongs.
  */
-const val NODE_CLUSTER = "bare-metal:cluster"
+public const val NODE_CLUSTER: String = "bare-metal:cluster"

@@ -42,12 +42,12 @@ import java.io.File
  * @param bufferSize The buffer size of the event reporters.
  */
 public abstract class Experiment(
-    val environments: File,
-    val traces: File,
-    val output: File,
-    val performanceInterferenceModel: PerformanceInterferenceModelReader?,
-    val vmPlacements: Map<String, String>,
-    val bufferSize: Int
+    public val environments: File,
+    public val traces: File,
+    public val output: File,
+    public val performanceInterferenceModel: PerformanceInterferenceModelReader?,
+    public val vmPlacements: Map<String, String>,
+    public val bufferSize: Int
 ) : ContainerExperimentDescriptor() {
     override val parent: ExperimentDescriptor? = null
 

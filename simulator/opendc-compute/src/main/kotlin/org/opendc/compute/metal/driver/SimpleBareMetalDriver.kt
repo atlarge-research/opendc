@@ -83,8 +83,8 @@ public class SimpleBareMetalDriver(
     uid: UUID,
     name: String,
     metadata: Map<String, Any>,
-    val cpus: List<ProcessingUnit>,
-    val memoryUnits: List<MemoryUnit>,
+    private val cpus: List<ProcessingUnit>,
+    private val memoryUnits: List<MemoryUnit>,
     powerModel: PowerModel<SimpleBareMetalDriver> = ConstantPowerModel(
         0.0
     )

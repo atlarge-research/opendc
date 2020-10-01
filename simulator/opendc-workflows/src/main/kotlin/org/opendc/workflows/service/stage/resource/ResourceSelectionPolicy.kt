@@ -29,4 +29,4 @@ import org.opendc.workflows.service.stage.StagePolicy
  * This interface represents the **R5** stage of the Reference Architecture for Schedulers and matches the the selected
  * task with a (set of) resource(s), using policies such as First-Fit, Worst-Fit, and Best-Fit.
  */
-interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>
+public interface ResourceSelectionPolicy : StagePolicy<Comparator<Node>>

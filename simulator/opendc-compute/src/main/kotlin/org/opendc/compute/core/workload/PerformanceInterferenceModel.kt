@@ -29,26 +29,26 @@ import kotlin.random.Random
 /**
  * Meta-data key for the [PerformanceInterferenceModel] of an image.
  */
-const val IMAGE_PERF_INTERFERENCE_MODEL = "image:performance-interference"
+public const val IMAGE_PERF_INTERFERENCE_MODEL: String = "image:performance-interference"
 
 /**
  * Performance Interference Model describing the variability incurred by different sets of workloads if colocated.
  *
  * @param items The [PerformanceInterferenceModelItem]s that make up this model.
  */
-class PerformanceInterferenceModel(
-    val items: SortedSet<PerformanceInterferenceModelItem>,
-    val random: Random = Random(0)
+public class PerformanceInterferenceModel(
+    public val items: SortedSet<PerformanceInterferenceModelItem>,
+    private val random: Random = Random(0)
 ) {
     private var intersectingItems: List<PerformanceInterferenceModelItem> = emptyList()
     private val colocatedWorkloads = TreeMap<String, Int>()
 
-    fun vmStarted(server: Server) {
+    internal fun vmStarted(server: Server) {
         colocatedWorkloads.merge(server.image.name, 1, Int::plus)
         intersectingItems = items.filter { item -> doesMatch(item) }
     }
 
-    fun vmStopped(server: Server) {
+    internal fun vmStopped(server: Server) {
         colocatedWorkloads.computeIfPresent(server.image.name) { _, v -> (v - 1).takeUnless { it == 0 } }
         intersectingItems = items.filter { item -> doesMatch(item) }
     }
@@ -68,7 +68,7 @@ class PerformanceInterferenceModel(
         return false
     }
 
-    fun apply(currentServerLoad: Double): Double {
+    internal fun apply(currentServerLoad: Double): Double {
         if (intersectingItems.isEmpty()) {
             return 1.0
         }
@@ -92,10 +92,10 @@ class PerformanceInterferenceModel(
  * @param performanceScore The performance score that should be applied to each workload's performance. 1 means no
  * influence, <1 means that performance degrades, and >1 means that performance improves.
  */
-data class PerformanceInterferenceModelItem(
-    val workloadNames: SortedSet<String>,
-    val minServerLoad: Double,
-    val performanceScore: Double
+public data class PerformanceInterferenceModelItem(
+    public val workloadNames: SortedSet<String>,
+    public val minServerLoad: Double,
+    public val performanceScore: Double
 ) : Comparable<PerformanceInterferenceModelItem> {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

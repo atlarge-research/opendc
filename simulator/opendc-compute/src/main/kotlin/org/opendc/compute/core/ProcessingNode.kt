@@ -32,9 +32,9 @@ package org.opendc.compute.core
  * @property arch The micro-architecture of the processor node.
  * @property coreCount The number of logical CPUs in the processor node.
  */
-data class ProcessingNode(
-    val vendor: String,
-    val arch: String,
-    val modelName: String,
-    val coreCount: Int
+public data class ProcessingNode(
+    public val vendor: String,
+    public val arch: String,
+    public val modelName: String,
+    public val coreCount: Int
 )

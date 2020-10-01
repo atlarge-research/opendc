@@ -31,12 +31,12 @@ public interface ExperimentRunner {
     /**
      * The unique identifier of this runner.
      */
-    val id: String
+    public val id: String
 
     /**
      * The version of this runner.
      */
-    val version: String?
+    public val version: String?
         get() = null
 
     /**

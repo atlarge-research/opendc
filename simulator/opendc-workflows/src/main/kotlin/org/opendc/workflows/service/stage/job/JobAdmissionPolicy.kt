@@ -28,15 +28,15 @@ import org.opendc.workflows.service.stage.StagePolicy
 /**
  * A policy interface for admitting [JobState]s to a scheduling cycle.
  */
-interface JobAdmissionPolicy : StagePolicy<JobAdmissionPolicy.Logic> {
-    interface Logic {
+public interface JobAdmissionPolicy : StagePolicy<JobAdmissionPolicy.Logic> {
+    public interface Logic {
         /**
          * Determine whether the specified [JobState] should be admitted to the scheduling cycle.
          *
          * @param job The workflow that has been submitted.
          * @return The advice for admitting the job.
          */
-        operator fun invoke(job: JobState): Advice
+        public operator fun invoke(job: JobState): Advice
     }
 
     /**
@@ -46,7 +46,7 @@ interface JobAdmissionPolicy : StagePolicy<JobAdmissionPolicy.Logic> {
      * @property stop A flag to indicate the scheduler should immediately stop admitting jobs to the scheduling queue and wait
      * for the next scheduling cycle.
      */
-    enum class Advice(val admit: Boolean, val stop: Boolean) {
+    public enum class Advice(public val admit: Boolean, public val stop: Boolean) {
         /**
          * Admit the current job to the scheduling queue and continue admitting jobs.
          */

@@ -43,7 +43,7 @@ private val logger = KotlinLogging.logger {}
  * @param path The directory of the traces.
  */
 @OptIn(ExperimentalStdlibApi::class)
-class Sc20RawParquetTraceReader(private val path: File) {
+public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * Read the fragments into memory.
      */

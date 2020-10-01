@@ -30,7 +30,7 @@ import org.opendc.workflows.service.TaskState
 /**
  * A [TaskOrderPolicy] that orders tasks based on the number of active relative tasks (w.r.t. its job) in the system.
  */
-data class ActiveTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
+public data class ActiveTaskOrderPolicy(public val ascending: Boolean = true) : TaskOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =
         object : Comparator<TaskState>, StageWorkflowSchedulerListener {
             private val active = mutableMapOf<JobState, Int>()

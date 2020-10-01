@@ -32,11 +32,11 @@ import java.io.File
 /**
  * A helper class for processing the experiment results using Apache Spark.
  */
-class ResultProcessor(private val master: String, private val outputPath: File) {
+public class ResultProcessor(private val master: String, private val outputPath: File) {
     /**
      * Process the results of the scenario with the given [id].
      */
-    fun process(id: String): Result {
+    public fun process(id: String): Result {
         val spark = SparkSession.builder()
             .master(master)
             .appName("opendc-simulator-$id")
@@ -70,22 +70,22 @@ class ResultProcessor(private val master: String, private val outputPath: File) 
         }
     }
 
-    data class Result(
-        val totalRequestedBurst: List<Long>,
-        val totalGrantedBurst: List<Long>,
-        val totalOvercommittedBurst: List<Long>,
-        val totalInterferedBurst: List<Long>,
-        val meanCpuUsage: List<Double>,
-        val meanCpuDemand: List<Double>,
-        val meanNumDeployedImages: List<Double>,
-        val maxNumDeployedImages: List<Int>,
-        val totalPowerDraw: List<Long>,
-        val totalFailureSlices: List<Long>,
-        val totalFailureVmSlices: List<Long>,
-        val totalVmsSubmitted: List<Int>,
-        val totalVmsQueued: List<Int>,
-        val totalVmsFinished: List<Int>,
-        val totalVmsFailed: List<Int>
+    public data class Result(
+        public val totalRequestedBurst: List<Long>,
+        public val totalGrantedBurst: List<Long>,
+        public val totalOvercommittedBurst: List<Long>,
+        public val totalInterferedBurst: List<Long>,
+        public val meanCpuUsage: List<Double>,
+        public val meanCpuDemand: List<Double>,
+        public val meanNumDeployedImages: List<Double>,
+        public val maxNumDeployedImages: List<Int>,
+        public val totalPowerDraw: List<Long>,
+        public val totalFailureSlices: List<Long>,
+        public val totalFailureVmSlices: List<Long>,
+        public val totalVmsSubmitted: List<Int>,
+        public val totalVmsQueued: List<Int>,
+        public val totalVmsFinished: List<Int>,
+        public val totalVmsFailed: List<Int>
     )
 
     /**
@@ -191,12 +191,12 @@ class ResultProcessor(private val master: String, private val outputPath: File) 
     }
 
     // Spark helper functions
-    operator fun Column.times(other: Column): Column = `$times`(other)
-    operator fun Column.div(other: Column): Column = `$div`(other)
-    operator fun Column.get(other: Column): Column = this.apply(other)
+    private operator fun Column.times(other: Column): Column = `$times`(other)
+    private operator fun Column.div(other: Column): Column = `$div`(other)
+    private operator fun Column.get(other: Column): Column = this.apply(other)
 
-    val sliceLength = 5 * 60 * 1000
-    val states = map(
+    private val sliceLength = 5 * 60 * 1000
+    private val states = map(
         lit("ERROR"),
         lit(1),
         lit("ACTIVE"),
@@ -204,7 +204,7 @@ class ResultProcessor(private val master: String, private val outputPath: File) 
         lit("SHUTOFF"),
         lit(0)
     )
-    val oppositeStates = map(
+    private val oppositeStates = map(
         lit("ERROR"),
         lit(0),
         lit("ACTIVE"),

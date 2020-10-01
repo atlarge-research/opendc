@@ -47,7 +47,7 @@ import kotlin.math.max
  * Main entry point of the experiment.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-fun main(args: Array<String>) {
+public fun main(args: Array<String>) {
     if (args.isEmpty()) {
         println("error: Please provide path to GWF trace")
         return

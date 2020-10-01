@@ -30,8 +30,8 @@ import org.opendc.workflows.service.TaskState
 /**
  * A [TaskOrderPolicy] that orders tasks based on the order of arrival in the queue.
  */
-data class SubmissionTimeTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = compareBy<TaskState> {
+public data class SubmissionTimeTaskOrderPolicy(public val ascending: Boolean = true) : TaskOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> = compareBy<TaskState> {
         it.job.submittedAt.let { if (ascending) it else -it }
     }
 

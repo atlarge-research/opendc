@@ -24,14 +24,14 @@ package org.opendc.workflows.service
 
 import org.opendc.workflows.workload.Job
 
-class JobState(val job: Job, val submittedAt: Long) {
+public class JobState(public val job: Job, public val submittedAt: Long) {
     /**
      * A flag to indicate whether this job is finished.
      */
-    val isFinished: Boolean
+    public val isFinished: Boolean
         get() = tasks.isEmpty()
 
-    val tasks: MutableSet<TaskState> = mutableSetOf()
+    internal val tasks: MutableSet<TaskState> = mutableSetOf()
 
     override fun equals(other: Any?): Boolean = other is JobState && other.job == job
 

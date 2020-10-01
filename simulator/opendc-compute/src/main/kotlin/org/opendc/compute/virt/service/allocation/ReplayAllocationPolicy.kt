@@ -34,7 +34,7 @@ private val logger = KotlinLogging.logger {}
  * Within each cluster, the active servers on each node determine which node gets
  * assigned the VM image.
  */
-class ReplayAllocationPolicy(val vmPlacements: Map<String, String>) : AllocationPolicy {
+public class ReplayAllocationPolicy(private val vmPlacements: Map<String, String>) : AllocationPolicy {
     override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
         override fun select(
             hypervisors: Set<HypervisorView>,

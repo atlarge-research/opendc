@@ -36,7 +36,7 @@ public sealed class VirtProvisioningEvent {
     /**
      * An event emitted for writing metrics.
      */
-    data class MetricsAvailable(
+    public data class MetricsAvailable(
         override val provisioner: VirtProvisioningService,
         public val totalHostCount: Int,
         public val availableHostCount: Int,

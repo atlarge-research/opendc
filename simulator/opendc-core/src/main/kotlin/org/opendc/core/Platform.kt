@@ -31,4 +31,4 @@ import java.util.*
  * @property name the name of the platform.
  * @property zones The availability zones available on this platform.
  */
-data class Platform(override val uid: UUID, override val name: String, val zones: List<Zone>) : Identity
+public data class Platform(override val uid: UUID, override val name: String, val zones: List<Zone>) : Identity

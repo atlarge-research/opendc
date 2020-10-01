@@ -35,7 +35,7 @@ import kotlin.math.max
  * @property tolerance The maximum difference from the average number of tasks per job in the system as a fraction of
  * the average.
  */
-data class BalancingTaskEligibilityPolicy(val tolerance: Double = 1.5) : TaskEligibilityPolicy {
+public data class BalancingTaskEligibilityPolicy(public val tolerance: Double = 1.5) : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic =
         object : TaskEligibilityPolicy.Logic, StageWorkflowSchedulerListener {
             private val active = mutableMapOf<JobState, Int>()

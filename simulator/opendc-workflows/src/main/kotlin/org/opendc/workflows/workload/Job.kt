@@ -35,12 +35,12 @@ import java.util.*
  * @property tasks The tasks that are part of this workflow.
  * @property metadata Additional metadata for the job.
  */
-data class Job(
+public data class Job(
     override val uid: UUID,
     override val name: String,
     override val owner: User,
-    val tasks: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
+    public val tasks: Set<Task>,
+    public val metadata: Map<String, Any> = emptyMap()
 ) : Workload {
     override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
 

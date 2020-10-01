@@ -37,7 +37,7 @@ private val logger = KotlinLogging.logger {}
 /**
  * Sample the workload for the specified [run].
  */
-fun sampleWorkload(
+public fun sampleWorkload(
     trace: List<TraceEntry<VmWorkload>>,
     workload: Workload,
     subWorkload: Workload,
@@ -57,7 +57,7 @@ fun sampleWorkload(
 /**
  * Sample a regular (non-HPC) workload.
  */
-fun sampleRegularWorkload(
+public fun sampleRegularWorkload(
     trace: List<TraceEntry<VmWorkload>>,
     workload: Workload,
     subWorkload: Workload,
@@ -92,7 +92,7 @@ fun sampleRegularWorkload(
 /**
  * Sample a HPC workload.
  */
-fun sampleHpcWorkload(
+public fun sampleHpcWorkload(
     trace: List<TraceEntry<VmWorkload>>,
     workload: Workload,
     seed: Int,

@@ -50,7 +50,7 @@ import java.util.*
 /**
  * A helper class that converts the MongoDB topology into an OpenDC environment.
  */
-class TopologyParser(private val collection: MongoCollection<Document>, private val id: String) : EnvironmentReader {
+public class TopologyParser(private val collection: MongoCollection<Document>, private val id: String) : EnvironmentReader {
     /**
      * Parse the topology with the specified [id].
      */

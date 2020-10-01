@@ -36,7 +36,7 @@ import java.util.*
  * @property name The name of the zone within its platform.
  * @property services The service registry containing the services of the zone.
  */
-data class Zone(
+public data class Zone(
     override val uid: UUID,
     override val name: String,
     val services: ServiceRegistry

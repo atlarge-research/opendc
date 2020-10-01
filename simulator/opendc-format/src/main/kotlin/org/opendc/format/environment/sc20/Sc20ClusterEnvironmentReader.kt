@@ -47,11 +47,11 @@ import java.util.*
  *
  * @param environmentFile The file describing the physical cluster.
  */
-class Sc20ClusterEnvironmentReader(
+public class Sc20ClusterEnvironmentReader(
     private val input: InputStream
 ) : EnvironmentReader {
 
-    constructor(file: File) : this(FileInputStream(file))
+    public constructor(file: File) : this(FileInputStream(file))
 
     @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment {

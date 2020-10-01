@@ -63,7 +63,7 @@ import kotlin.math.min
  *
  * @param reader The buffered reader to read the trace with.
  */
-class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
+public class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
     /**
      * The internal iterator to use for this reader.
      */
@@ -74,14 +74,14 @@ class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
      *
      * @param file The file to read from.
      */
-    constructor(file: File) : this(file.bufferedReader())
+    public constructor(file: File) : this(file.bufferedReader())
 
     /**
      * Create a [GwfTraceReader] instance from the specified [InputStream].
      *
      * @param input The input stream to read from.
      */
-    constructor(input: InputStream) : this(input.bufferedReader())
+    public constructor(input: InputStream) : this(input.bufferedReader())
 
     /**
      * Initialize the reader.

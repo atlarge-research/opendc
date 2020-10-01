@@ -30,7 +30,7 @@ import org.opendc.workflows.service.TaskState
  * A [ResourceFilterPolicy] based on the amount of cores available on the machine and the cores required for
  * the task.
  */
-object FunctionalResourceFilterPolicy : ResourceFilterPolicy {
+public object FunctionalResourceFilterPolicy : ResourceFilterPolicy {
     override fun invoke(scheduler: StageWorkflowService): ResourceFilterPolicy.Logic =
         object : ResourceFilterPolicy.Logic {
             override fun invoke(hosts: Sequence<Node>, task: TaskState): Sequence<Node> =

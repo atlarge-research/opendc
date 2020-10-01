@@ -82,5 +82,5 @@ public interface BareMetalDriver : Powerable, FailureDomain {
     /**
      * A key that allows access to the [BareMetalDriver] instance from a [Server] that runs on the bare-metal machine.
      */
-    companion object Key : AbstractServiceKey<BareMetalDriver>(UUID.randomUUID(), "bare-metal:driver")
+    public companion object Key : AbstractServiceKey<BareMetalDriver>(UUID.randomUUID(), "bare-metal:driver")
 }

@@ -65,7 +65,7 @@ private val logger = KotlinLogging.logger {}
 /**
  * Construct the failure domain for the experiments.
  */
-suspend fun createFailureDomain(
+public suspend fun createFailureDomain(
     coroutineScope: CoroutineScope,
     clock: Clock,
     seed: Int,
@@ -97,7 +97,7 @@ suspend fun createFailureDomain(
 /**
  * Obtain the [FaultInjector] to use for the experiments.
  */
-fun createFaultInjector(
+public fun createFaultInjector(
     coroutineScope: CoroutineScope,
     clock: Clock,
     random: Random,
@@ -118,7 +118,7 @@ fun createFaultInjector(
 /**
  * Create the trace reader from which the VM workloads are read.
  */
-fun createTraceReader(
+public fun createTraceReader(
     path: File,
     performanceInterferenceModel: PerformanceInterferenceModel,
     vms: List<String>,
@@ -135,7 +135,7 @@ fun createTraceReader(
 /**
  * Construct the environment for a VM provisioner and return the provisioner instance.
  */
-suspend fun createProvisioner(
+public suspend fun createProvisioner(
     coroutineScope: CoroutineScope,
     clock: Clock,
     environmentReader: EnvironmentReader,
@@ -159,12 +159,13 @@ suspend fun createProvisioner(
  * Attach the specified monitor to the VM provisioner.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun attachMonitor(
+public suspend fun attachMonitor(
     coroutineScope: CoroutineScope,
     clock: Clock,
     scheduler: SimpleVirtProvisioningService,
     monitor: ExperimentMonitor
 ) {
+
     val hypervisors = scheduler.drivers()
 
     // Monitor hypervisor events
@@ -218,7 +219,7 @@ suspend fun attachMonitor(
 /**
  * Process the trace.
  */
-suspend fun processTrace(
+public suspend fun processTrace(
     coroutineScope: CoroutineScope,
     clock: Clock,
     reader: TraceReader<VmWorkload>,

@@ -41,7 +41,7 @@ import java.util.*
  * @param traceDirectory The directory of the traces.
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
-class BitbrainsTraceReader(
+public class BitbrainsTraceReader(
     traceDirectory: File,
     performanceInterferenceModel: PerformanceInterferenceModel
 ) : TraceReader<VmWorkload> {

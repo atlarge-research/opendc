@@ -28,9 +28,9 @@ import org.opendc.workflows.service.StageWorkflowService
 /**
  * A [SizeJobOrderPolicy] that orders jobs based on the number of tasks it has.
  */
-data class SizeJobOrderPolicy(val ascending: Boolean = true) : JobOrderPolicy {
-    override fun invoke(scheduler: StageWorkflowService) =
-        compareBy<JobState> { it.tasks.size.let { if (ascending) it else -it } }
+public data class SizeJobOrderPolicy(public val ascending: Boolean = true) : JobOrderPolicy {
+    override fun invoke(scheduler: StageWorkflowService): Comparator<JobState> =
+        compareBy { it.tasks.size.let { if (ascending) it else -it } }
 
     override fun toString(): String {
         return "Job-Size(${if (ascending) "asc" else "desc"})"

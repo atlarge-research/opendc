@@ -30,9 +30,11 @@ import org.opendc.workflows.service.StageWorkflowService
  *
  * @property limit The maximum load before stopping admission.
  */
-data class LoadJobAdmissionPolicy(val limit: Double) : JobAdmissionPolicy {
-    override fun invoke(scheduler: StageWorkflowService) = object : JobAdmissionPolicy.Logic {
-        override fun invoke(job: JobState): JobAdmissionPolicy.Advice =
+public data class LoadJobAdmissionPolicy(public val limit: Double) : JobAdmissionPolicy {
+    override fun invoke(scheduler: StageWorkflowService): JobAdmissionPolicy.Logic = object : JobAdmissionPolicy.Logic {
+        override fun invoke(
+            job: JobState
+        ): JobAdmissionPolicy.Advice =
             if (scheduler.load < limit)
                 JobAdmissionPolicy.Advice.ADMIT
             else

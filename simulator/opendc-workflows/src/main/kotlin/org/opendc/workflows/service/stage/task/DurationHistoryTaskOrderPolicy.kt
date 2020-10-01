@@ -30,8 +30,7 @@ import org.opendc.workflows.service.TaskState
 /**
  * A [TaskOrderPolicy] that orders tasks based on the average duration of the preceding tasks in the job.
  */
-data class DurationHistoryTaskOrderPolicy(val ascending: Boolean = true) : TaskOrderPolicy {
-
+public data class DurationHistoryTaskOrderPolicy(public val ascending: Boolean = true) : TaskOrderPolicy {
     override fun invoke(scheduler: StageWorkflowService): Comparator<TaskState> =
         object : Comparator<TaskState>, StageWorkflowSchedulerListener {
             private val results = HashMap<JobState, MutableList<Long>>()

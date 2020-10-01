@@ -30,15 +30,15 @@ import org.opendc.workflows.service.stage.StagePolicy
 /**
  * A policy interface for determining the eligibility of tasks in a scheduling cycle.
  */
-interface TaskEligibilityPolicy : StagePolicy<TaskEligibilityPolicy.Logic> {
-    interface Logic {
+public interface TaskEligibilityPolicy : StagePolicy<TaskEligibilityPolicy.Logic> {
+    public interface Logic {
         /**
          * Determine whether the specified [TaskState] is eligible to be scheduled.
          *
          * @param task The task instance to schedule.
          * @return The advice for marking the task.
          */
-        operator fun invoke(task: TaskState): Advice
+        public operator fun invoke(task: TaskState): Advice
     }
 
     /**
@@ -48,7 +48,7 @@ interface TaskEligibilityPolicy : StagePolicy<TaskEligibilityPolicy.Logic> {
      * @property stop A flag to indicate the scheduler should immediately stop admitting jobs to the scheduling queue and wait
      * for the next scheduling cycle.
      */
-    enum class Advice(val admit: Boolean, val stop: Boolean) {
+    public enum class Advice(public val admit: Boolean, public val stop: Boolean) {
         /**
          * Admit the current job to the scheduling queue and continue admitting jobs.
          */

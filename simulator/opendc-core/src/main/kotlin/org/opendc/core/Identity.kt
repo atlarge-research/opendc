@@ -27,14 +27,14 @@ import java.util.*
 /**
  * An object that has a unique identity.
  */
-interface Identity {
+public interface Identity {
     /**
      * A unique, opaque, system-generated value, representing the object.
      */
-    val uid: UUID
+    public val uid: UUID
 
     /**
      * A non-empty, human-readable string representing the object.
      */
-    val name: String
+    public val name: String
 }

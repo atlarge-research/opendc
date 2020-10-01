@@ -31,4 +31,4 @@ import org.opendc.workflows.service.stage.StagePolicy
  * This interface represents the **T2** stage of the Reference Architecture for Topology Schedulers and provides the
  * scheduler with a sorted list of tasks to schedule.
  */
-interface TaskOrderPolicy : StagePolicy<Comparator<TaskState>>
+public interface TaskOrderPolicy : StagePolicy<Comparator<TaskState>>

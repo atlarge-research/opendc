@@ -31,4 +31,4 @@ package org.opendc.core
  * @property description A small textual description about the environment that is being modeled.
  * @property platforms The cloud platforms (such as AWS or GCE) in this environment.
  */
-data class Environment(val name: String, val description: String?, val platforms: List<Platform>)
+public data class Environment(val name: String, val description: String?, val platforms: List<Platform>)

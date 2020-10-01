@@ -29,9 +29,9 @@ import org.opendc.core.User
  * A high-level abstraction that represents the actual work that a set of compute resources perform, such
  * as running an application on a machine or a whole workflow running multiple tasks on numerous machines.
  */
-interface Workload : Identity {
+public interface Workload : Identity {
     /**
      * The owner of this workload.
      */
-    val owner: User
+    public val owner: User
 }

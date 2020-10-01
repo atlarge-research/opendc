@@ -25,34 +25,34 @@ package org.opendc.workflows.service
 import org.opendc.compute.metal.Node
 import org.opendc.workflows.workload.Task
 
-class TaskState(val job: JobState, val task: Task) {
+public class TaskState(public val job: JobState, public val task: Task) {
     /**
      * The moment in time the task was started.
      */
-    var startedAt: Long = Long.MIN_VALUE
+    public var startedAt: Long = Long.MIN_VALUE
 
     /**
      * The moment in time the task was finished.
      */
-    var finishedAt: Long = Long.MIN_VALUE
+    public var finishedAt: Long = Long.MIN_VALUE
 
     /**
      * The dependencies of this task.
      */
-    val dependencies = HashSet<TaskState>()
+    public val dependencies: HashSet<TaskState> = HashSet<TaskState>()
 
     /**
      * The dependents of this task.
      */
-    val dependents = HashSet<TaskState>()
+    public val dependents: HashSet<TaskState> = HashSet<TaskState>()
 
     /**
      * A flag to indicate whether this workflow task instance is a workflow root.
      */
-    val isRoot: Boolean
+    public val isRoot: Boolean
         get() = dependencies.isEmpty()
 
-    var state: TaskStatus = TaskStatus.CREATED
+    public var state: TaskStatus = TaskStatus.CREATED
         set(value) {
             field = value
 
@@ -62,7 +62,7 @@ class TaskState(val job: JobState, val task: Task) {
             }
         }
 
-    var host: Node? = null
+    public var host: Node? = null
 
     /**
      * Mark the specified [TaskView] as terminated.

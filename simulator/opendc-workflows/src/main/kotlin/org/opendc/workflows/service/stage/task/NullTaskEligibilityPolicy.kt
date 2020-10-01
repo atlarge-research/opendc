@@ -28,7 +28,7 @@ import org.opendc.workflows.service.TaskState
 /**
  * A [TaskEligibilityPolicy] that always allows new tasks to enter.
  */
-object NullTaskEligibilityPolicy : TaskEligibilityPolicy {
+public object NullTaskEligibilityPolicy : TaskEligibilityPolicy {
     override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic = Logic
 
     private object Logic : TaskEligibilityPolicy.Logic {

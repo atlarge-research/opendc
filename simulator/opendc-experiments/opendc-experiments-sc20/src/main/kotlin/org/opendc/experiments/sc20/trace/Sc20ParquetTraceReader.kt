@@ -40,7 +40,7 @@ import java.util.TreeSet
  * @param run The run to which this reader belongs.
  */
 @OptIn(ExperimentalStdlibApi::class)
-class Sc20ParquetTraceReader(
+public class Sc20ParquetTraceReader(
     rawReaders: List<Sc20RawParquetTraceReader>,
     performanceInterferenceModel: Map<String, PerformanceInterferenceModel>,
     workload: Workload,
