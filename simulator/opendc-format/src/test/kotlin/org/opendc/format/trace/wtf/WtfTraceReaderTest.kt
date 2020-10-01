@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,27 @@
  * SOFTWARE.
  */
 
-description = "Library for reading common data formats for topology simulation"
+package org.opendc.format.trace.wtf
 
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-}
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
-dependencies {
-    api(project(":opendc-core"))
-    api(project(":opendc-compute"))
-    api(project(":opendc-workflows"))
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
-        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
+/**
+ * Test suite for the [WtfTraceReader] class.
+ */
+class WtfTraceReaderTest {
+    /**
+     * Smoke test for parsing WTF traces.
+     */
+    @Test
+    fun testParseWtf() {
+        val reader = WtfTraceReader("src/test/resources/wtf-trace")
+        var entry = reader.next()
+        assertEquals(0, entry.submissionTime)
+        assertEquals(23, entry.workload.tasks.size)
+
+        entry = reader.next()
+        assertEquals(333387, entry.submissionTime)
+        assertEquals(23, entry.workload.tasks.size)
     }
-    implementation(kotlin("reflect"))
-
-    implementation("org.apache.parquet:parquet-avro:1.11.0")
-    implementation("org.apache.hadoop:hadoop-client:3.2.1") {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
 }
