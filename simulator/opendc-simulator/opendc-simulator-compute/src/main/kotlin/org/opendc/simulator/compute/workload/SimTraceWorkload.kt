@@ -20,34 +20,34 @@
  * SOFTWARE.
  */
 
-description = "Experiment runner for OpenDC"
+package org.opendc.simulator.compute.workload
 
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-    application
-}
+import org.opendc.simulator.compute.SimExecutionContext
+import kotlin.math.min
 
-application {
-    mainClassName = "org.opendc.runner.web.MainKt"
-}
+/**
+ * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
+ * consumption for some period of time.
+ */
+public class SimTraceWorkload(private val trace: Sequence<Fragment>) : SimWorkload {
+    override suspend fun run(ctx: SimExecutionContext) {
+        var offset = ctx.clock.millis()
 
-dependencies {
-    api(project(":opendc-core"))
-    implementation(project(":opendc-compute"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-experiments:opendc-experiments-sc20"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
+        val batch = trace.map { fragment ->
+            val cores = min(fragment.cores, ctx.machine.cpus.size)
+            val burst = LongArray(cores) { fragment.flops / cores }
+            val usage = DoubleArray(cores) { fragment.usage / cores }
+            offset += fragment.duration
+            SimExecutionContext.Slice(burst, usage, offset)
+        }
 
-    implementation("com.github.ajalt:clikt:2.8.0")
-    implementation("io.github.microutils:kotlin-logging:1.7.10")
-
-    implementation("org.mongodb:mongodb-driver-sync:4.0.5")
-    implementation("org.apache.spark:spark-sql_2.12:3.0.0") {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
+        ctx.run(batch)
     }
 
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
-    runtimeOnly("org.apache.logging.log4j:log4j-1.2-api:2.13.1")
+    override fun toString(): String = "SimTraceWorkload"
+
+    /**
+     * A fragment of the workload.
+     */
+    public data class Fragment(val time: Long, val flops: Long, val duration: Long, val usage: Double, val cores: Int)
 }

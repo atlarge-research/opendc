@@ -36,7 +36,7 @@ dependencies {
     api(project(":opendc-core"))
     implementation(project(":opendc-format"))
     implementation(project(":opendc-workflows"))
-    implementation(project(":opendc-simulator"))
+    implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(kotlin("stdlib"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")

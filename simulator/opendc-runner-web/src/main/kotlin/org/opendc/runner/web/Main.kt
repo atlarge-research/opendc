@@ -50,7 +50,6 @@ import org.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.io.File
-import java.util.*
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}

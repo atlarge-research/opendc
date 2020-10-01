@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,15 +19,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":opendc-core")
-include(":opendc-compute")
-include(":opendc-workflows")
-include(":opendc-format")
-include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-sc20")
-include(":opendc-runner-web")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-utils")
+package org.opendc.simulator.compute.model
+
+/**
+ * A memory unit of a compute resource, either virtual or physical.
+ *
+ * @property vendor The vendor string of the memory.
+ * @property modelName The name of the memory model.
+ * @property speed The access speed of the memory in MHz.
+ * @property size The size of the memory unit in MBs.
+ */
+public data class MemoryUnit(
+    public val vendor: String,
+    public val modelName: String,
+    public val speed: Double,
+    public val size: Long
+)
