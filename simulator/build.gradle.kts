@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2017 atlarge-research
+ * Copyright (c) 2017 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +25,6 @@ plugins {
 }
 
 allprojects {
-    group = "com.atlarge.opendc"
+    group = "org.opendc"
     version = "2.0.0"
 }

@@ -41,6 +41,6 @@ repositories {
 
 dependencies {
     implementation(kotlin("gradle-plugin", version = "1.4.10"))
-    implementation("org.jlleitschuh.gradle:ktlint-gradle:9.2.1")
+    implementation("org.jlleitschuh.gradle:ktlint-gradle:9.4.0")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
 }
