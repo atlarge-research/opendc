@@ -28,6 +28,7 @@ plugins {
     `java-library`
     kotlin("jvm")
     id("org.jlleitschuh.gradle.ktlint")
+    id("dokka-conventions")
 }
 
 /* Project configuration */

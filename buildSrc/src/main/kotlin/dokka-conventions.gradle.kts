@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2021 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +20,10 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.dokka.gradle.DokkaTask
-
 plugins {
     id("org.jetbrains.dokka")
 }
 
-tasks.getting(DokkaTask::class) {
-    outputFormat = "html"
+repositories {
+    mavenCentral()
 }
