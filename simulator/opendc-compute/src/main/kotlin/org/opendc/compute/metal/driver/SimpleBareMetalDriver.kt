@@ -92,7 +92,8 @@ public class SimpleBareMetalDriver(
     /**
      * The flavor that corresponds to this machine.
      */
-    private val flavor = Flavor(cpus.size, memoryUnits.map { it.size }.sum())
+    private val flavor =
+        Flavor(cpus.size, memoryUnits.map { it.size }.sum())
 
     /**
      * The current active server context.

@@ -51,7 +51,7 @@ public interface VirtDriver {
     public suspend fun spawn(
         name: String,
         image: Image,
-        flavor: Flavor
+        flavor: org.opendc.compute.core.Flavor
     ): Server
 
     public companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")

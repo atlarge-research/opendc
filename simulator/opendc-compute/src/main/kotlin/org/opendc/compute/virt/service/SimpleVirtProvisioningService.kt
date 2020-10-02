@@ -119,7 +119,7 @@ public class SimpleVirtProvisioningService(
     override suspend fun deploy(
         name: String,
         image: Image,
-        flavor: Flavor
+        flavor: org.opendc.compute.core.Flavor
     ): Server {
         eventFlow.emit(
             VirtProvisioningEvent.MetricsAvailable(
@@ -373,7 +373,7 @@ public class SimpleVirtProvisioningService(
     public data class ImageView(
         public val name: String,
         public val image: Image,
-        public val flavor: Flavor,
+        public val flavor: org.opendc.compute.core.Flavor,
         public val continuation: Continuation<Server>,
         public var server: Server? = null
     )

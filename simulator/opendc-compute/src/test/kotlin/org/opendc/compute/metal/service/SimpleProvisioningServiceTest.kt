@@ -27,11 +27,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.opendc.compute.core.ProcessingNode
-import org.opendc.compute.core.ProcessingUnit
-import org.opendc.compute.core.image.FlopsApplicationImage
-import org.opendc.compute.metal.driver.SimpleBareMetalDriver
+import org.opendc.compute.core.image.SimWorkloadImage
+import org.opendc.compute.metal.driver.SimBareMetalDriver
+import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.util.UUID
 
@@ -40,20 +44,29 @@ import java.util.UUID
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimpleProvisioningServiceTest {
+    private lateinit var machineModel: SimMachineModel
+
+    @BeforeEach
+    fun setUp() {
+        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
+
+        machineModel = SimMachineModel(
+            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 2000.0) },
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+        )
+    }
+
     /**
      * A basic smoke test.
      */
     @Test
-    fun smoke() {
+    fun testSmoke() {
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
 
         testScope.launch {
-            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 1000, 2)
-
-            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
-            val cpus = List(4) { ProcessingUnit(cpuNode, it, 2400.0) }
-            val driver = SimpleBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
+            val image = SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(1000, 2))
+            val driver = SimBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), machineModel)
 
             val provisioner = SimpleProvisioningService()
             provisioner.create(driver)

@@ -66,7 +66,7 @@ public interface ServerContext {
      * @param triggerMode The trigger condition to resume execution.
      */
     public suspend fun run(slice: Slice, triggerMode: TriggerMode = TriggerMode.FIRST): Unit =
-        select<Unit> { onRun(slice, triggerMode).invoke {} }
+        select { onRun(slice, triggerMode).invoke {} }
 
     /**
      * Ask the processors cores to run the specified [batch] of work slices and suspend execution until the trigger
@@ -88,7 +88,7 @@ public interface ServerContext {
         batch: Sequence<Slice>,
         triggerMode: TriggerMode = TriggerMode.FIRST,
         merge: (Slice, Slice) -> Slice = { _, r -> r }
-    ): Unit = select<Unit> { onRun(batch, triggerMode, merge).invoke {} }
+    ): Unit = select { onRun(batch, triggerMode, merge).invoke {} }
 
     /**
      * Ask the processor cores to run the specified [slice] and select when the trigger condition is met as specified

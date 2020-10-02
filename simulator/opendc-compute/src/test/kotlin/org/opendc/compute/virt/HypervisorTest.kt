@@ -75,7 +75,7 @@ internal class HypervisorTest {
 
             delay(5)
 
-            val flavor = Flavor(1, 0)
+            val flavor = org.opendc.compute.core.Flavor(1, 0)
             val vmDriver = metalDriver.refresh().server!!.services[VirtDriver]
             vmDriver.events.onEach { println(it) }.launchIn(this)
             val vmA = vmDriver.spawn("a", workloadA, flavor)
@@ -140,7 +140,7 @@ internal class HypervisorTest {
 
             delay(5)
 
-            val flavor = Flavor(2, 0)
+            val flavor = org.opendc.compute.core.Flavor(2, 0)
             val vmDriver = metalDriver.refresh().server!!.services[VirtDriver]
             vmDriver.events
                 .onEach { event ->

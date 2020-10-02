@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,26 @@
  * SOFTWARE.
  */
 
-description = "Cloud computing fabric simulation model"
+package org.opendc.compute.core.image
 
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-}
+import org.opendc.compute.core.execution.ServerContext
+import org.opendc.core.resource.TagContainer
+import org.opendc.simulator.compute.workload.SimWorkload
+import java.util.*
 
-dependencies {
-    api(project(":opendc-core"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
-    implementation(project(":opendc-simulator:opendc-simulator-compute"))
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+/**
+ * An application [Image] that runs a [SimWorkload].
+ *
+ * @property uid The unique identifier of this image.
+ * @property name The name of this image.
+ * @property tags The tags attached to the image.
+ * @property workload The workload to run for this image.
+ */
+public data class SimWorkloadImage(
+    public override val uid: UUID,
+    public override val name: String,
+    public override val tags: TagContainer,
+    public val workload: SimWorkload
+) : Image {
+    override suspend fun invoke(ctx: ServerContext): Unit = TODO()
 }

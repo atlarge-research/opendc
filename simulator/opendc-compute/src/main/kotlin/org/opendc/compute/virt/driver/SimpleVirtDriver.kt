@@ -105,7 +105,7 @@ public class SimpleVirtDriver(
     override suspend fun spawn(
         name: String,
         image: Image,
-        flavor: Flavor
+        flavor: org.opendc.compute.core.Flavor
     ): Server {
         val requiredMemory = flavor.memorySize
         if (availableMemory - requiredMemory < 0) {

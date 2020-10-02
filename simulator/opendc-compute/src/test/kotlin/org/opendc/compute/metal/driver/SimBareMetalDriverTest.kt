@@ -24,51 +24,59 @@ package org.opendc.compute.metal.driver
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.opendc.compute.core.ProcessingNode
-import org.opendc.compute.core.ProcessingUnit
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
-import org.opendc.compute.core.image.FlopsApplicationImage
+import org.opendc.compute.core.image.SimWorkloadImage
+import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class SimpleBareMetalDriverTest {
-    /**
-     * A smoke test for the bare-metal driver.
-     */
+internal class SimBareMetalDriverTest {
+    private lateinit var machineModel: SimMachineModel
+
+    @BeforeEach
+    fun setUp() {
+        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
+
+        machineModel = SimMachineModel(
+            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 2000.0) },
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+        )
+    }
+
     @Test
-    fun smoke() {
+    fun testFlopsWorkload() {
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
 
         var finalState: ServerState = ServerState.BUILD
+        var finalTime = 0L
+
         testScope.launch {
-            val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 4)
-            val cpus = List(4) { ProcessingUnit(cpuNode, it, 2000.0) }
-            val driver = SimpleBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), cpus, emptyList())
-            val image = FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), 4_000, 2, utilization = 1.0)
+            val driver = SimBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), machineModel)
+            val image = SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(4_000, 2, utilization = 1.0))
 
             // Batch driver commands
             withContext(coroutineContext) {
                 driver.init()
                 driver.setImage(image)
                 val server = driver.start().server!!
-                driver.usage
-                    .onEach { println("${clock.millis()} $it") }
-                    .launchIn(this)
                 server.events.collect { event ->
                     when (event) {
                         is ServerEvent.StateChanged -> {
-                            println("${clock.millis()} $event")
                             finalState = event.server.state
+                            finalTime = clock.millis()
                         }
                     }
                 }
@@ -77,5 +85,6 @@ internal class SimpleBareMetalDriverTest {
 
         testScope.advanceUntilIdle()
         assertEquals(ServerState.SHUTOFF, finalState)
+        assertEquals(1001, finalTime)
     }
 }

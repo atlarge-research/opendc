@@ -58,7 +58,7 @@ public interface VirtProvisioningService {
     public suspend fun deploy(
         name: String,
         image: Image,
-        flavor: Flavor
+        flavor: org.opendc.compute.core.Flavor
     ): Server
 
     /**
