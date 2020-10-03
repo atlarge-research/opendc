@@ -20,22 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload
+package org.opendc.compute.virt.driver
 
+import kotlinx.coroutines.coroutineScope
 import org.opendc.simulator.compute.SimExecutionContext
+import org.opendc.simulator.compute.workload.SimWorkload
 
-/**
- * A model that characterizes the runtime behavior of some particular workload.
- *
- * Workloads are stateful objects that may be paused and resumed at a later moment. As such, be careful when using the
- * same [SimWorkload] from multiple contexts as only a single concurrent [run] call is expected.
- */
-public interface SimWorkload {
-    /**
-     * Launch the workload in the specified [SimExecutionContext].
-     *
-     * This method should encapsulate and characterize the runtime behavior of the instance resulting from launching
-     * the workload on some machine, in terms of the resource consumption on the machine.
-     */
-    public suspend fun run(ctx: SimExecutionContext)
+public class SimVirtDriverWorkload : SimWorkload {
+    public lateinit var driver: SimVirtDriver
+
+    override suspend fun run(ctx: SimExecutionContext) {
+        coroutineScope {
+            driver = SimVirtDriver(this, ctx.clock, ctx)
+            driver.run()
+        }
+    }
 }

@@ -28,6 +28,7 @@ import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
+import org.opendc.compute.core.execution.ComputeSimExecutionContext
 import org.opendc.compute.core.execution.ShutdownException
 import org.opendc.compute.core.image.EmptyImage
 import org.opendc.compute.core.image.Image
@@ -38,8 +39,10 @@ import org.opendc.compute.metal.NodeState
 import org.opendc.compute.metal.power.ConstantPowerModel
 import org.opendc.core.power.PowerModel
 import org.opendc.core.services.ServiceRegistry
-import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.SimBareMetalMachine
+import org.opendc.simulator.compute.SimExecutionContext
 import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.utils.flow.EventFlow
 import org.opendc.utils.flow.StateFlow
 import java.time.Clock
@@ -99,9 +102,9 @@ public class SimBareMetalDriver(
     private val random = Random(uid.leastSignificantBits xor uid.mostSignificantBits)
 
     /**
-     * The [SimMachine] we use to run the workload.
+     * The [SimBareMetalMachine] we use to run the workload.
      */
-    private val machine = SimMachine(coroutineScope, clock, machine)
+    private val machine = SimBareMetalMachine(coroutineScope, clock, machine)
 
     /**
      * The [Job] that runs the simulated workload.
@@ -136,11 +139,22 @@ public class SimBareMetalDriver(
             events
         )
 
+        // Wrap the workload to pass in a ComputeSimExecutionContext
+        val workload = object : SimWorkload {
+            override suspend fun run(ctx: SimExecutionContext) {
+                val wrappedCtx = object : ComputeSimExecutionContext, SimExecutionContext by ctx {
+                    override val server: Server
+                        get() = nodeState.value.server!!
+                }
+                (node.image as SimWorkloadImage).workload.run(wrappedCtx)
+            }
+        }
+
         job = coroutineScope.launch {
             delay(1) // TODO Introduce boot time
             initMachine()
             try {
-                machine.run((node.image as SimWorkloadImage).workload)
+                machine.run(workload)
                 exitMachine(null)
             } catch (_: CancellationException) {
                 // Ignored

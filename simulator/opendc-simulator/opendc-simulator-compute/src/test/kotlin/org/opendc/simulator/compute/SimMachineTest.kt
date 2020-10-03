@@ -35,7 +35,7 @@ import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 
 /**
- * Test suite for the [SimMachine] class.
+ * Test suite for the [SimBareMetalMachine] class.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineTest {
@@ -55,7 +55,7 @@ class SimMachineTest {
     fun testFlopsWorkload() {
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimMachine(testScope, clock, machineModel)
+        val machine = SimBareMetalMachine(testScope, clock, machineModel)
 
         testScope.runBlockingTest {
             machine.run(SimFlopsWorkload(2_000, 2, utilization = 1.0))
@@ -69,7 +69,7 @@ class SimMachineTest {
     fun testUsage() {
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimMachine(testScope, clock, machineModel)
+        val machine = SimBareMetalMachine(testScope, clock, machineModel)
 
         testScope.runBlockingTest {
             machine.run(SimFlopsWorkload(2_000, 2, utilization = 1.0))

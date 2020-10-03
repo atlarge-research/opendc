@@ -20,22 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload
+package org.opendc.compute.core.execution
 
+import org.opendc.compute.core.Server
 import org.opendc.simulator.compute.SimExecutionContext
 
 /**
- * A model that characterizes the runtime behavior of some particular workload.
- *
- * Workloads are stateful objects that may be paused and resumed at a later moment. As such, be careful when using the
- * same [SimWorkload] from multiple contexts as only a single concurrent [run] call is expected.
+ * Extended [SimExecutionContext] in which workloads within the OpenDC Compute module run.
  */
-public interface SimWorkload {
+public interface ComputeSimExecutionContext : SimExecutionContext {
     /**
-     * Launch the workload in the specified [SimExecutionContext].
-     *
-     * This method should encapsulate and characterize the runtime behavior of the instance resulting from launching
-     * the workload on some machine, in terms of the resource consumption on the machine.
+     * The server on which the image runs.
      */
-    public suspend fun run(ctx: SimExecutionContext)
+    public val server: Server
 }

@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.Flavor
@@ -53,7 +52,6 @@ internal class HypervisorTest {
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    @Disabled
     fun smoke() {
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
@@ -75,7 +73,7 @@ internal class HypervisorTest {
 
             delay(5)
 
-            val flavor = org.opendc.compute.core.Flavor(1, 0)
+            val flavor = Flavor(1, 0)
             val vmDriver = metalDriver.refresh().server!!.services[VirtDriver]
             vmDriver.events.onEach { println(it) }.launchIn(this)
             val vmA = vmDriver.spawn("a", workloadA, flavor)
@@ -140,7 +138,7 @@ internal class HypervisorTest {
 
             delay(5)
 
-            val flavor = org.opendc.compute.core.Flavor(2, 0)
+            val flavor = Flavor(2, 0)
             val vmDriver = metalDriver.refresh().server!!.services[VirtDriver]
             vmDriver.events
                 .onEach { event ->
