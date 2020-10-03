@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.sc20.trace
 
-import org.opendc.compute.core.image.VmImage
+import org.opendc.compute.core.image.SimWorkloadImage
 import org.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.compute.core.workload.PerformanceInterferenceModel
 import org.opendc.compute.core.workload.VmWorkload
@@ -73,13 +73,11 @@ public class Sc20ParquetTraceReader(
                             performanceInterferenceModel[id] ?: PerformanceInterferenceModel(TreeSet())
 
                         val newImage =
-                            VmImage(
+                            SimWorkloadImage(
                                 image.uid,
                                 image.name,
-                                mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
-                                image.flopsHistory,
-                                image.maxCores,
-                                image.requiredMemory
+                                image.tags + mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
+                                (image as SimWorkloadImage).workload
                             )
                         val newWorkload = entry.workload.copy(image = newImage)
                         Sc20RawParquetTraceReader.TraceEntryImpl(entry.submissionTime, newWorkload)

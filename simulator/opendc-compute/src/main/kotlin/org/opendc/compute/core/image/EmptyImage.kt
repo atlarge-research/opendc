@@ -22,7 +22,6 @@
 
 package org.opendc.compute.core.image
 
-import org.opendc.compute.core.execution.ServerContext
 import org.opendc.core.resource.TagContainer
 import java.util.UUID
 
@@ -33,6 +32,4 @@ public object EmptyImage : Image {
     override val uid: UUID = UUID.randomUUID()
     override val name: String = "empty"
     override val tags: TagContainer = emptyMap()
-
-    override suspend fun invoke(ctx: ServerContext) {}
 }

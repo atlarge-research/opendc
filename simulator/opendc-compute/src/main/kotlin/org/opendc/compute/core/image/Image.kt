@@ -22,7 +22,6 @@
 
 package org.opendc.compute.core.image
 
-import org.opendc.compute.core.execution.ServerContext
 import org.opendc.core.resource.Resource
 
 /**
@@ -33,12 +32,4 @@ import org.opendc.core.resource.Resource
  * useful for backup purposes or for producing “gold” server images if you plan to deploy a particular server
  * configuration frequently.
  */
-public interface Image : Resource {
-    /**
-     * Launch the machine image in the specified [ServerContext].
-     *
-     * This method should encapsulate and characterize the runtime behavior of the instance resulting from launching
-     * the image on some machine, in terms of the resource consumption on the machine.
-     */
-    public suspend operator fun invoke(ctx: ServerContext)
-}
+public interface Image : Resource

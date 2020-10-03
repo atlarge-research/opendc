@@ -31,14 +31,14 @@ import org.apache.parquet.filter2.predicate.FilterApi
 import org.apache.parquet.filter2.predicate.Statistics
 import org.apache.parquet.filter2.predicate.UserDefinedPredicate
 import org.apache.parquet.io.api.Binary
-import org.opendc.compute.core.image.FlopsHistoryFragment
-import org.opendc.compute.core.image.VmImage
+import org.opendc.compute.core.image.SimWorkloadImage
 import org.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.compute.core.workload.PerformanceInterferenceModel
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.File
 import java.io.Serializable
 import java.util.SortedSet
@@ -71,7 +71,7 @@ public class Sc20StreamingParquetTraceReader(
     /**
      * The intermediate buffer to store the read records in.
      */
-    private val queue = ArrayBlockingQueue<Pair<String, FlopsHistoryFragment>>(1024)
+    private val queue = ArrayBlockingQueue<Pair<String, SimTraceWorkload.Fragment>>(1024)
 
     /**
      * An optional filter for filtering the selected VMs
@@ -92,7 +92,7 @@ public class Sc20StreamingParquetTraceReader(
     /**
      * A poisonous fragment.
      */
-    private val poison = Pair("\u0000", FlopsHistoryFragment(0, 0, 0, 0.0, 0))
+    private val poison = Pair("\u0000", SimTraceWorkload.Fragment(0, 0, 0, 0.0, 0))
 
     /**
      * The thread to read the records in.
@@ -119,7 +119,7 @@ public class Sc20StreamingParquetTraceReader(
                 val cpuUsage = record["cpuUsage"] as Double
                 val flops = record["flops"] as Long
 
-                val fragment = FlopsHistoryFragment(
+                val fragment = SimTraceWorkload.Fragment(
                     tick,
                     flops,
                     duration,
@@ -139,12 +139,12 @@ public class Sc20StreamingParquetTraceReader(
     /**
      * Fill the buffers with the VMs
      */
-    private fun pull(buffers: Map<String, List<MutableList<FlopsHistoryFragment>>>) {
+    private fun pull(buffers: Map<String, List<MutableList<SimTraceWorkload.Fragment>>>) {
         if (!hasNext) {
             return
         }
 
-        val fragments = mutableListOf<Pair<String, FlopsHistoryFragment>>()
+        val fragments = mutableListOf<Pair<String, SimTraceWorkload.Fragment>>()
         queue.drainTo(fragments)
 
         for ((id, fragment) in fragments) {
@@ -167,7 +167,7 @@ public class Sc20StreamingParquetTraceReader(
     init {
         val takenIds = mutableSetOf<UUID>()
         val entries = mutableMapOf<String, GenericData.Record>()
-        val buffers = mutableMapOf<String, MutableList<MutableList<FlopsHistoryFragment>>>()
+        val buffers = mutableMapOf<String, MutableList<MutableList<SimTraceWorkload.Fragment>>>()
 
         val metaReader = AvroParquetReader.builder<GenericData.Record>(Path(traceFile.absolutePath, "meta.parquet"))
             .disableCompatibility()
@@ -200,10 +200,10 @@ public class Sc20StreamingParquetTraceReader(
 
                 logger.info("Processing VM $id")
 
-                val internalBuffer = mutableListOf<FlopsHistoryFragment>()
-                val externalBuffer = mutableListOf<FlopsHistoryFragment>()
+                val internalBuffer = mutableListOf<SimTraceWorkload.Fragment>()
+                val externalBuffer = mutableListOf<SimTraceWorkload.Fragment>()
                 buffers.getOrPut(id) { mutableListOf() }.add(externalBuffer)
-                val fragments = sequence<FlopsHistoryFragment> {
+                val fragments = sequence {
                     repeat@ while (true) {
                         if (externalBuffer.isEmpty()) {
                             if (hasNext) {
@@ -220,7 +220,7 @@ public class Sc20StreamingParquetTraceReader(
                         for (fragment in internalBuffer) {
                             yield(fragment)
 
-                            if (fragment.tick >= endTime) {
+                            if (fragment.time >= endTime) {
                                 break@repeat
                             }
                         }
@@ -239,13 +239,15 @@ public class Sc20StreamingParquetTraceReader(
                     uid,
                     "VM Workload $id",
                     UnnamedUser,
-                    VmImage(
+                    SimWorkloadImage(
                         uid,
                         id,
-                        mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
-                        fragments,
-                        maxCores,
-                        requiredMemory
+                        mapOf(
+                            IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
+                            "cores" to maxCores,
+                            "required-memory" to requiredMemory
+                        ),
+                        SimTraceWorkload(fragments),
                     )
                 )
 

@@ -22,7 +22,6 @@
 
 package org.opendc.compute.virt.service.allocation
 
-import org.opendc.compute.core.image.VmImage
 import org.opendc.compute.virt.service.HypervisorView
 import org.opendc.compute.virt.service.SimpleVirtProvisioningService
 
@@ -41,7 +40,7 @@ public interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
     ): HypervisorView? {
         return hypervisors.asSequence()
             .filter { hv ->
-                val fitsMemory = hv.availableMemory >= (image.image as VmImage).requiredMemory
+                val fitsMemory = hv.availableMemory >= (image.image.tags["required-memory"] as Long)
                 val fitsCpu = hv.server.flavor.cpuCount >= image.flavor.cpuCount
                 fitsMemory && fitsCpu
             }

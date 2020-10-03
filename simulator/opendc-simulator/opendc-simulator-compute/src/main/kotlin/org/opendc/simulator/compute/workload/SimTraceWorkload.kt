@@ -29,7 +29,7 @@ import kotlin.math.min
  * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
  * consumption for some period of time.
  */
-public class SimTraceWorkload(private val trace: Sequence<Fragment>) : SimWorkload {
+public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkload {
     override suspend fun run(ctx: SimExecutionContext) {
         var offset = ctx.clock.millis()
 

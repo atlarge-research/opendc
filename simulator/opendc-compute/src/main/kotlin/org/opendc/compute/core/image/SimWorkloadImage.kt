@@ -22,7 +22,6 @@
 
 package org.opendc.compute.core.image
 
-import org.opendc.compute.core.execution.ServerContext
 import org.opendc.core.resource.TagContainer
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.util.*
@@ -40,6 +39,4 @@ public data class SimWorkloadImage(
     public override val name: String,
     public override val tags: TagContainer,
     public val workload: SimWorkload
-) : Image {
-    override suspend fun invoke(ctx: ServerContext): Unit = TODO()
-}
+) : Image

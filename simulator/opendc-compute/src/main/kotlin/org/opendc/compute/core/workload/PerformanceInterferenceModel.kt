@@ -22,7 +22,6 @@
 
 package org.opendc.compute.core.workload
 
-import org.opendc.compute.core.Server
 import java.util.*
 import kotlin.random.Random
 
@@ -43,14 +42,38 @@ public class PerformanceInterferenceModel(
     private var intersectingItems: List<PerformanceInterferenceModelItem> = emptyList()
     private val colocatedWorkloads = TreeMap<String, Int>()
 
-    internal fun vmStarted(server: Server) {
-        colocatedWorkloads.merge(server.image.name, 1, Int::plus)
+    /**
+     * Indicate that a VM has started.
+     */
+    public fun onStart(name: String) {
+        colocatedWorkloads.merge(name, 1, Int::plus)
         intersectingItems = items.filter { item -> doesMatch(item) }
     }
 
-    internal fun vmStopped(server: Server) {
-        colocatedWorkloads.computeIfPresent(server.image.name) { _, v -> (v - 1).takeUnless { it == 0 } }
+    /**
+     * Indicate that a VM has stopped.
+     */
+    public fun onStop(name: String) {
+        colocatedWorkloads.computeIfPresent(name) { _, v -> (v - 1).takeUnless { it == 0 } }
         intersectingItems = items.filter { item -> doesMatch(item) }
+    }
+
+    /**
+     * Compute the performance interference based on the current server load.
+     */
+    public fun apply(currentServerLoad: Double): Double {
+        if (intersectingItems.isEmpty()) {
+            return 1.0
+        }
+        val score = intersectingItems
+            .firstOrNull { it.minServerLoad <= currentServerLoad }
+
+        // Apply performance penalty to (on average) only one of the VMs
+        return if (score != null && random.nextInt(score.workloadNames.size) == 0) {
+            score.performanceScore
+        } else {
+            1.0
+        }
     }
 
     private fun doesMatch(item: PerformanceInterferenceModelItem): Boolean {
@@ -66,21 +89,6 @@ public class PerformanceInterferenceModel(
                 return true
         }
         return false
-    }
-
-    internal fun apply(currentServerLoad: Double): Double {
-        if (intersectingItems.isEmpty()) {
-            return 1.0
-        }
-        val score = intersectingItems
-            .firstOrNull { it.minServerLoad <= currentServerLoad }
-
-        // Apply performance penalty to (on average) only one of the VMs
-        return if (score != null && random.nextInt(score.workloadNames.size) == 0) {
-            score.performanceScore
-        } else {
-            1.0
-        }
     }
 }
 

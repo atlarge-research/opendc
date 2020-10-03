@@ -29,7 +29,6 @@ import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.execution.ComputeSimExecutionContext
-import org.opendc.compute.core.execution.ShutdownException
 import org.opendc.compute.core.image.EmptyImage
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.image.SimWorkloadImage
@@ -89,6 +88,11 @@ public class SimBareMetalDriver(
     private val nodeState =
         StateFlow(Node(uid, name, metadata + ("driver" to this), NodeState.SHUTOFF, EmptyImage, null, events))
 
+    /**
+     * The [SimBareMetalMachine] we use to run the workload.
+     */
+    private val machine = SimBareMetalMachine(coroutineScope, clock, machine)
+
     override val node: Flow<Node> = nodeState
 
     override val usage: Flow<Double>
@@ -100,11 +104,6 @@ public class SimBareMetalDriver(
      * The internal random instance.
      */
     private val random = Random(uid.leastSignificantBits xor uid.mostSignificantBits)
-
-    /**
-     * The [SimBareMetalMachine] we use to run the workload.
-     */
-    private val machine = SimBareMetalMachine(coroutineScope, clock, machine)
 
     /**
      * The [Job] that runs the simulated workload.
@@ -174,12 +173,12 @@ public class SimBareMetalDriver(
 
     private fun exitMachine(cause: Throwable?) {
         val newServerState =
-            if (cause == null || (cause is ShutdownException && cause.cause == null))
+            if (cause == null)
                 ServerState.SHUTOFF
             else
                 ServerState.ERROR
         val newNodeState =
-            if (cause == null || (cause is ShutdownException && cause.cause != null))
+            if (cause == null)
                 nodeState.value.state
             else
                 NodeState.ERROR

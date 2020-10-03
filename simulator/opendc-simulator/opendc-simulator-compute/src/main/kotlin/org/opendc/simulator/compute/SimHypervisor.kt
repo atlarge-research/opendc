@@ -103,14 +103,15 @@ public class SimHypervisor(
      * Run the scheduling process of the hypervisor.
      */
     override suspend fun run(ctx: SimExecutionContext) {
-        val maxUsage = ctx.machine.cpus.sumByDouble { it.frequency }
-        val pCPUs = ctx.machine.cpus.indices.sortedBy { ctx.machine.cpus[it].frequency }
+        val model = ctx.machine
+        val maxUsage = model.cpus.sumByDouble { it.frequency }
+        val pCPUs = model.cpus.indices.sortedBy { model.cpus[it].frequency }
 
         val vms = mutableSetOf<VmSession>()
         val vcpus = mutableListOf<VCpu>()
 
-        val usage = DoubleArray(ctx.machine.cpus.size)
-        val burst = LongArray(ctx.machine.cpus.size)
+        val usage = DoubleArray(model.cpus.size)
+        val burst = LongArray(model.cpus.size)
 
         fun process(command: SchedulerCommand) {
             when (command) {
@@ -180,13 +181,16 @@ public class SimHypervisor(
                 duration = min(duration, req.burst / grantedUsage)
             }
 
+            // XXX We set the minimum duration to 5 minutes here to prevent the rounding issues that are occurring with the FLOPs.
+            duration = 300.0
+
             val totalAllocatedUsage = maxUsage - availableUsage
             var totalAllocatedBurst = 0L
             availableUsage = totalAllocatedUsage
 
             // Divide the requests over the available capacity of the pCPUs fairly
             for (i in pCPUs) {
-                val maxCpuUsage = ctx.machine.cpus[i].frequency
+                val maxCpuUsage = model.cpus[i].frequency
                 val fraction = maxCpuUsage / maxUsage
                 val grantedUsage = min(maxCpuUsage, totalAllocatedUsage * fraction)
                 val grantedBurst = ceil(duration * grantedUsage).toLong()

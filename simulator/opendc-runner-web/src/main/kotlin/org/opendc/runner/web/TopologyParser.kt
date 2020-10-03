@@ -31,11 +31,8 @@ import com.mongodb.client.model.Projections
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.bson.Document
-import org.opendc.compute.core.MemoryUnit
-import org.opendc.compute.core.ProcessingNode
-import org.opendc.compute.core.ProcessingUnit
 import org.opendc.compute.metal.NODE_CLUSTER
-import org.opendc.compute.metal.driver.SimpleBareMetalDriver
+import org.opendc.compute.metal.driver.SimBareMetalDriver
 import org.opendc.compute.metal.power.LinearLoadPowerModel
 import org.opendc.compute.metal.service.ProvisioningService
 import org.opendc.compute.metal.service.SimpleProvisioningService
@@ -44,6 +41,10 @@ import org.opendc.core.Platform
 import org.opendc.core.Zone
 import org.opendc.core.services.ServiceRegistry
 import org.opendc.format.environment.EnvironmentReader
+import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import java.time.Clock
 import java.util.*
 
@@ -55,7 +56,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
      * Parse the topology with the specified [id].
      */
     override suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment {
-        val nodes = mutableListOf<SimpleBareMetalDriver>()
+        val nodes = mutableListOf<SimBareMetalDriver>()
         val random = Random(0)
 
         for (machine in fetchMachines(id)) {
@@ -81,14 +82,13 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
                 )
             }
             nodes.add(
-                SimpleBareMetalDriver(
+                SimBareMetalDriver(
                     coroutineScope,
                     clock,
                     UUID(random.nextLong(), random.nextLong()),
                     "node-$clusterId-$position",
                     mapOf(NODE_CLUSTER to clusterId),
-                    processors,
-                    memoryUnits,
+                    SimMachineModel(processors, memoryUnits),
                     // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
                     // power draw of 350W.
                     // Source: https://stackoverflow.com/questions/6128960

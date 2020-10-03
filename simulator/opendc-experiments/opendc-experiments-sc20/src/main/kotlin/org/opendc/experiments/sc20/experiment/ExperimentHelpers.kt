@@ -40,7 +40,7 @@ import org.opendc.compute.metal.NODE_CLUSTER
 import org.opendc.compute.metal.driver.BareMetalDriver
 import org.opendc.compute.metal.service.ProvisioningService
 import org.opendc.compute.virt.HypervisorEvent
-import org.opendc.compute.virt.driver.SimpleVirtDriver
+import org.opendc.compute.virt.driver.SimVirtDriver
 import org.opendc.compute.virt.service.SimpleVirtProvisioningService
 import org.opendc.compute.virt.service.VirtProvisioningEvent
 import org.opendc.compute.virt.service.allocation.AllocationPolicy
@@ -171,8 +171,9 @@ public suspend fun attachMonitor(
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
         // TODO Do not expose VirtDriver directly but use Hypervisor class.
-        monitor.reportHostStateChange(clock.millis(), hypervisor, (hypervisor as SimpleVirtDriver).server)
-        hypervisor.server.events
+        val server = (hypervisor as SimVirtDriver).server
+        monitor.reportHostStateChange(clock.millis(), hypervisor, server)
+        server.events
             .onEach { event ->
                 val time = clock.millis()
                 when (event) {
@@ -242,8 +243,8 @@ public suspend fun processTrace(
                     workload.image.name,
                     workload.image,
                     Flavor(
-                        workload.image.maxCores,
-                        workload.image.requiredMemory
+                        workload.image.tags["cores"] as Int,
+                        workload.image.tags["required-memory"] as Long
                     )
                 )
                 // Monitor server events

@@ -22,7 +22,7 @@
 
 package org.opendc.compute.core.workload
 
-import org.opendc.compute.core.image.VmImage
+import org.opendc.compute.core.image.Image
 import org.opendc.core.User
 import org.opendc.core.workload.Workload
 import java.util.UUID
@@ -39,7 +39,7 @@ public data class VmWorkload(
     override val uid: UUID,
     override val name: String,
     override val owner: User,
-    val image: VmImage
+    val image: Image
 ) : Workload {
     override fun equals(other: Any?): Boolean = other is VmWorkload && uid == other.uid
 

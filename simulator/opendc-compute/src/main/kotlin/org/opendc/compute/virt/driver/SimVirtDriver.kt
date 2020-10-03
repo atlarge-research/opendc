@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.opendc.compute.core.*
 import org.opendc.compute.core.execution.ComputeSimExecutionContext
-import org.opendc.compute.core.execution.ShutdownException
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.image.SimWorkloadImage
 import org.opendc.compute.virt.HypervisorEvent
@@ -49,6 +48,12 @@ public class SimVirtDriver(
     clock: Clock,
     private val ctx: SimExecutionContext
 ) : VirtDriver {
+
+    /**
+     * The server hosting this hypervisor.
+     */
+    public val server: Server
+        get() = (ctx as ComputeSimExecutionContext).server
 
     /**
      * The [EventFlow] to emit the events.
@@ -164,7 +169,7 @@ public class SimVirtDriver(
 
         private fun exit(cause: Throwable?) {
             val serverState =
-                if (cause == null || (cause is ShutdownException && cause.cause == null))
+                if (cause == null)
                     ServerState.SHUTOFF
                 else
                     ServerState.ERROR

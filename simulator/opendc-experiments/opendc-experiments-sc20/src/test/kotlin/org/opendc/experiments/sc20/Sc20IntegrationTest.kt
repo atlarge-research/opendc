@@ -142,12 +142,14 @@ class Sc20IntegrationTest {
         runSimulation()
 
         // Note that these values have been verified beforehand
-        assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs")
-        assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run")
-        assertEquals(207379117949, monitor.totalRequestedBurst)
-        assertEquals(203388071813, monitor.totalGrantedBurst)
-        assertEquals(3991046136, monitor.totalOvercommissionedBurst)
-        assertEquals(0, monitor.totalInterferedBurst)
+        assertAll(
+            { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
+            { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
+            { assertEquals(207379117949, monitor.totalRequestedBurst) },
+            { assertEquals(203388071813, monitor.totalGrantedBurst) },
+            { assertEquals(3991046136, monitor.totalOvercommissionedBurst) },
+            { assertEquals(0, monitor.totalInterferedBurst) }
+        )
     }
 
     @Test

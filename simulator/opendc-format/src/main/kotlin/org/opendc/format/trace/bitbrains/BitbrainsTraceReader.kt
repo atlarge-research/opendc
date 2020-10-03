@@ -22,14 +22,14 @@
 
 package org.opendc.format.trace.bitbrains
 
-import org.opendc.compute.core.image.FlopsHistoryFragment
-import org.opendc.compute.core.image.VmImage
+import org.opendc.compute.core.image.SimWorkloadImage
 import org.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.compute.core.workload.PerformanceInterferenceModel
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -66,7 +66,7 @@ public class BitbrainsTraceReader(
             .filterNot { it.isDirectory }
             .forEach { vmFile ->
                 println(vmFile)
-                val flopsHistory = mutableListOf<FlopsHistoryFragment>()
+                val flopsHistory = mutableListOf<SimTraceWorkload.Fragment>()
                 var vmId = -1L
                 var cores = -1
                 var requiredMemory = -1L
@@ -99,11 +99,11 @@ public class BitbrainsTraceReader(
                             val flops: Long = (cpuUsage * 5 * 60 * cores).toLong()
 
                             if (flopsHistory.isEmpty()) {
-                                flopsHistory.add(FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage, cores))
+                                flopsHistory.add(SimTraceWorkload.Fragment(timestamp, flops, traceInterval, cpuUsage, cores))
                             } else {
                                 if (flopsHistory.last().flops != flops) {
                                     flopsHistory.add(
-                                        FlopsHistoryFragment(
+                                        SimTraceWorkload.Fragment(
                                             timestamp,
                                             flops,
                                             traceInterval,
@@ -114,8 +114,8 @@ public class BitbrainsTraceReader(
                                 } else {
                                     val oldFragment = flopsHistory.removeAt(flopsHistory.size - 1)
                                     flopsHistory.add(
-                                        FlopsHistoryFragment(
-                                            oldFragment.tick,
+                                        SimTraceWorkload.Fragment(
+                                            oldFragment.time,
                                             oldFragment.flops + flops,
                                             oldFragment.duration + traceInterval,
                                             cpuUsage,
@@ -139,17 +139,19 @@ public class BitbrainsTraceReader(
                     uuid,
                     "VM Workload $vmId",
                     UnnamedUser,
-                    VmImage(
+                    SimWorkloadImage(
                         uuid,
                         vmId.toString(),
-                        mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
-                        flopsHistory.asSequence(),
-                        cores,
-                        requiredMemory
+                        mapOf(
+                            IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
+                            "cores" to cores,
+                            "required-memory" to requiredMemory
+                        ),
+                        SimTraceWorkload(flopsHistory.asSequence())
                     )
                 )
                 entries[vmId] = TraceEntryImpl(
-                    flopsHistory.firstOrNull()?.tick ?: -1,
+                    flopsHistory.firstOrNull()?.time ?: -1,
                     vmWorkload
                 )
             }

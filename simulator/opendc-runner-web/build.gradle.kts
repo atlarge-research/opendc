@@ -38,6 +38,7 @@ dependencies {
     implementation(project(":opendc-format"))
     implementation(project(":opendc-experiments:opendc-experiments-sc20"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
+    implementation(project(":opendc-simulator:opendc-simulator-compute"))
 
     implementation("com.github.ajalt:clikt:2.8.0")
     implementation("io.github.microutils:kotlin-logging:1.7.10")

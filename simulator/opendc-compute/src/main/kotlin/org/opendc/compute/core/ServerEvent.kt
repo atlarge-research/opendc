@@ -22,8 +22,6 @@
 
 package org.opendc.compute.core
 
-import org.opendc.core.services.ServiceKey
-
 /**
  * An event that is emitted by a [Server].
  */
@@ -40,12 +38,4 @@ public sealed class ServerEvent {
      * @property previousState The previous state of the server.
      */
     public data class StateChanged(override val server: Server, val previousState: ServerState) : ServerEvent()
-
-    /**
-     * This event is emitted when a server publishes a service.
-     *
-     * @property server The server that published the service.
-     * @property key The service key of the service that was published.
-     */
-    public data class ServicePublished(override val server: Server, val key: ServiceKey<*>) : ServerEvent()
 }

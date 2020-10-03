@@ -22,7 +22,6 @@
 
 package org.opendc.compute.virt.service.allocation
 
-import org.opendc.compute.core.image.VmImage
 import org.opendc.compute.virt.service.HypervisorView
 import org.opendc.compute.virt.service.SimpleVirtProvisioningService
 import kotlin.random.Random
@@ -39,7 +38,7 @@ public class RandomAllocationPolicy(private val random: Random = Random(0)) : Al
         ): HypervisorView? {
             return hypervisors.asIterable()
                 .filter { hv ->
-                    val fitsMemory = hv.availableMemory >= (image.image as VmImage).requiredMemory
+                    val fitsMemory = hv.availableMemory >= (image.image.tags["required-memory"] as Long)
                     val fitsCpu = hv.server.flavor.cpuCount >= image.flavor.cpuCount
                     fitsMemory && fitsCpu
                 }

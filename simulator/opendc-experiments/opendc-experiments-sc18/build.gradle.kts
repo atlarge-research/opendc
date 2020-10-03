@@ -37,7 +37,10 @@ dependencies {
     implementation(project(":opendc-format"))
     implementation(project(":opendc-workflows"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(kotlin("stdlib"))
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
+        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
+    implementation(kotlin("reflect"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")

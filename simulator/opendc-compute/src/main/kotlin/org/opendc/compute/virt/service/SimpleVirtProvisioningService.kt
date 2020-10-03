@@ -32,16 +32,17 @@ import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.image.Image
-import org.opendc.compute.core.image.VmImage
+import org.opendc.compute.core.image.SimWorkloadImage
 import org.opendc.compute.metal.service.ProvisioningService
 import org.opendc.compute.virt.HypervisorEvent
-import org.opendc.compute.virt.HypervisorImage
 import org.opendc.compute.virt.driver.InsufficientMemoryOnServerException
+import org.opendc.compute.virt.driver.SimVirtDriver
+import org.opendc.compute.virt.driver.SimVirtDriverWorkload
 import org.opendc.compute.virt.driver.VirtDriver
 import org.opendc.compute.virt.service.allocation.AllocationPolicy
-import org.opendc.core.services.ServiceKey
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
+import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.math.max
@@ -100,14 +101,25 @@ public class SimpleVirtProvisioningService(
         coroutineScope.launch {
             val provisionedNodes = provisioningService.nodes()
             provisionedNodes.forEach { node ->
-                val hypervisorImage = HypervisorImage
-                val node = provisioningService.deploy(node, hypervisorImage)
-                node.server!!.events.onEach { event ->
-                    when (event) {
-                        is ServerEvent.StateChanged -> stateChanged(event.server)
-                        is ServerEvent.ServicePublished -> servicePublished(event.server, event.key)
-                    }
-                }.launchIn(this)
+                val workload = SimVirtDriverWorkload()
+                val hypervisorImage = SimWorkloadImage(UUID.randomUUID(), "vmm", emptyMap(), workload)
+                launch {
+                    var init = false
+                    val deployedNode = provisioningService.deploy(node, hypervisorImage)
+                    deployedNode.server!!.events.onEach { event ->
+                        when (event) {
+                            is ServerEvent.StateChanged -> {
+                                if (!init) {
+                                    init = true
+                                }
+                                stateChanged(event.server)
+                            }
+                        }
+                    }.launchIn(this)
+
+                    delay(1)
+                    onHypervisorAvailable(deployedNode.server, workload.driver)
+                }
             }
         }
     }
@@ -119,7 +131,7 @@ public class SimpleVirtProvisioningService(
     override suspend fun deploy(
         name: String,
         image: Image,
-        flavor: org.opendc.compute.core.Flavor
+        flavor: Flavor
     ): Server {
         eventFlow.emit(
             VirtProvisioningEvent.MetricsAvailable(
@@ -171,7 +183,7 @@ public class SimpleVirtProvisioningService(
         val imagesToBeScheduled = incomingImages.toSet()
 
         for (imageInstance in imagesToBeScheduled) {
-            val requiredMemory = (imageInstance.image as VmImage).requiredMemory
+            val requiredMemory = imageInstance.image.tags["required-memory"] as Long
             val selectedHv = allocationLogic.select(availableHypervisors, imageInstance)
 
             if (selectedHv == null) {
@@ -339,41 +351,39 @@ public class SimpleVirtProvisioningService(
         }
     }
 
-    private fun servicePublished(server: Server, key: ServiceKey<*>) {
-        if (key == VirtDriver.Key) {
-            val hv = hypervisors[server] ?: return
-            hv.driver = server.services[VirtDriver]
-            availableHypervisors += hv
+    private fun onHypervisorAvailable(server: Server, hypervisor: SimVirtDriver) {
+        val hv = hypervisors[server] ?: return
+        hv.driver = hypervisor
+        availableHypervisors += hv
 
-            eventFlow.emit(
-                VirtProvisioningEvent.MetricsAvailable(
-                    this@SimpleVirtProvisioningService,
-                    hypervisors.size,
-                    availableHypervisors.size,
-                    submittedVms,
-                    runningVms,
-                    finishedVms,
-                    queuedVms,
-                    unscheduledVms
-                )
+        eventFlow.emit(
+            VirtProvisioningEvent.MetricsAvailable(
+                this@SimpleVirtProvisioningService,
+                hypervisors.size,
+                availableHypervisors.size,
+                submittedVms,
+                runningVms,
+                finishedVms,
+                queuedVms,
+                unscheduledVms
             )
+        )
 
-            hv.driver.events
-                .onEach { event ->
-                    if (event is HypervisorEvent.VmsUpdated) {
-                        hv.numberOfActiveServers = event.numberOfActiveServers
-                        hv.availableMemory = event.availableMemory
-                    }
-                }.launchIn(coroutineScope)
+        hv.driver.events
+            .onEach { event ->
+                if (event is HypervisorEvent.VmsUpdated) {
+                    hv.numberOfActiveServers = event.numberOfActiveServers
+                    hv.availableMemory = event.availableMemory
+                }
+            }.launchIn(coroutineScope)
 
-            requestCycle()
-        }
+        requestCycle()
     }
 
     public data class ImageView(
         public val name: String,
         public val image: Image,
-        public val flavor: org.opendc.compute.core.Flavor,
+        public val flavor: Flavor,
         public val continuation: Continuation<Server>,
         public var server: Server? = null
     )
