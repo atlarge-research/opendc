@@ -34,7 +34,6 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.ServerEvent
-import org.opendc.compute.core.workload.PerformanceInterferenceModel
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.compute.metal.NODE_CLUSTER
 import org.opendc.compute.metal.driver.BareMetalDriver
@@ -51,6 +50,7 @@ import org.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
 import org.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import java.io.File
 import java.time.Clock
 import kotlin.math.ln

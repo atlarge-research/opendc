@@ -32,12 +32,12 @@ import org.apache.parquet.filter2.predicate.Statistics
 import org.apache.parquet.filter2.predicate.UserDefinedPredicate
 import org.apache.parquet.io.api.Binary
 import org.opendc.compute.core.image.SimWorkloadImage
-import org.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
-import org.opendc.compute.core.workload.PerformanceInterferenceModel
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
+import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.File
 import java.io.Serializable

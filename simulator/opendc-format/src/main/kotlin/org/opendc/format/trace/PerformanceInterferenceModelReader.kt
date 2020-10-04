@@ -22,7 +22,7 @@
 
 package org.opendc.format.trace
 
-import org.opendc.compute.core.workload.PerformanceInterferenceModel
+import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import java.io.Closeable
 import kotlin.random.Random
 

@@ -30,6 +30,7 @@ import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import kotlinx.coroutines.selects.SelectClause0
 import kotlinx.coroutines.selects.SelectInstance
 import kotlinx.coroutines.selects.select
+import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.Clock
@@ -69,15 +70,16 @@ public class SimHypervisor(
      *
      * @param model The machine to create.
      */
-    public fun createMachine(model: SimMachineModel): SimMachine {
-        val vmCtx = VmExecutionContext(model)
+    public fun createMachine(model: SimMachineModel, performanceInterferenceModel: PerformanceInterferenceModel? = null): SimMachine {
+        val vm = VmSession(model, performanceInterferenceModel)
+        val vmCtx = VmExecutionContext(vm)
 
         return object : SimMachine {
             override val model: SimMachineModel
                 get() = vmCtx.machine
 
             override val usage: StateFlow<Double>
-                get() = vmCtx.session.usage
+                get() = vm.usage
 
             /**
              * The current active workload.
@@ -187,6 +189,7 @@ public class SimHypervisor(
             val totalAllocatedUsage = maxUsage - availableUsage
             var totalAllocatedBurst = 0L
             availableUsage = totalAllocatedUsage
+            val serverLoad = totalAllocatedUsage / maxUsage
 
             // Divide the requests over the available capacity of the pCPUs fairly
             for (i in pCPUs) {
@@ -232,7 +235,7 @@ public class SimHypervisor(
                 val vm = vmIterator.next()
 
                 // Apply performance interference model
-                val performanceScore = 1.0 // TODO Performance interference
+                val performanceScore = vm.performanceInterferenceModel?.apply(serverLoad) ?: 1.0
                 var hasFinished = false
 
                 for (vcpu in vm.vcpus) {
@@ -330,6 +333,7 @@ public class SimHypervisor(
     @OptIn(InternalCoroutinesApi::class)
     private data class VmSession(
         val model: SimMachineModel,
+        val performanceInterferenceModel: PerformanceInterferenceModel? = null,
         var triggerMode: SimExecutionContext.TriggerMode = SimExecutionContext.TriggerMode.FIRST,
         var merge: (SimExecutionContext.Slice, SimExecutionContext.Slice) -> SimExecutionContext.Slice = { _, r -> r },
         var select: () -> Unit = {}
@@ -491,12 +495,10 @@ public class SimHypervisor(
      * The execution context in which a VM runs.
      *
      */
-    private inner class VmExecutionContext(override val machine: SimMachineModel) :
-        SimExecutionContext,
-        DisposableHandle {
-        private var finalized: Boolean = false
-        private var initialized: Boolean = false
-        val session: VmSession = VmSession(machine)
+    private inner class VmExecutionContext(val session: VmSession) :
+        SimExecutionContext, DisposableHandle {
+        override val machine: SimMachineModel
+            get() = session.model
 
         override val clock: Clock
             get() = this@SimHypervisor.clock

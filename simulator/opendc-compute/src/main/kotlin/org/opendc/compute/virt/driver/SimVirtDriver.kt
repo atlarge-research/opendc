@@ -35,6 +35,8 @@ import org.opendc.core.services.ServiceRegistry
 import org.opendc.simulator.compute.SimExecutionContext
 import org.opendc.simulator.compute.SimHypervisor
 import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
+import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
@@ -124,15 +126,31 @@ public class SimVirtDriver(
             events
         )
         availableMemory -= requiredMemory
-        vms.add(VirtualMachine(server, events, hypervisor.createMachine(ctx.machine)))
+        val vm = VirtualMachine(server, events, hypervisor.createMachine(ctx.machine))
+        vms.add(vm)
+        vmStarted(vm)
         eventFlow.emit(HypervisorEvent.VmsUpdated(this, vms.size, availableMemory))
         return server
+    }
+
+    private fun vmStarted(vm: VirtualMachine) {
+        vms.forEach { it ->
+            vm.performanceInterferenceModel?.onStart(it.server.image.name)
+        }
+    }
+
+    private fun vmStopped(vm: VirtualMachine) {
+        vms.forEach { it ->
+            vm.performanceInterferenceModel?.onStop(it.server.image.name)
+        }
     }
 
     /**
      * A virtual machine instance that the driver manages.
      */
     private inner class VirtualMachine(server: Server, val events: EventFlow<ServerEvent>, machine: SimMachine) {
+        val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+
         val job = coroutineScope.launch {
             val workload = object : SimWorkload {
                 override suspend fun run(ctx: SimExecutionContext) {
@@ -176,6 +194,7 @@ public class SimVirtDriver(
             server = server.copy(state = serverState)
             availableMemory += server.flavor.memorySize
             vms.remove(this)
+            vmStopped(this)
             eventFlow.emit(HypervisorEvent.VmsUpdated(this@SimVirtDriver, vms.size, availableMemory))
             events.close()
         }

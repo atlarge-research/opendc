@@ -36,7 +36,6 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.time.Clock
-import java.util.*
 
 /**
  * Test suite for the [SimHypervisor] class.

@@ -25,9 +25,8 @@ package org.opendc.format.trace.sc20
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.opendc.compute.core.workload.PerformanceInterferenceModel
-import org.opendc.compute.core.workload.PerformanceInterferenceModelItem
 import org.opendc.format.trace.PerformanceInterferenceModelReader
+import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import java.io.InputStream
 import java.util.*
 import kotlin.random.Random
@@ -43,13 +42,13 @@ public class Sc20PerformanceInterferenceReader(input: InputStream, mapper: Objec
     /**
      * The computed value from the file.
      */
-    private val items: Map<String, TreeSet<PerformanceInterferenceModelItem>>
+    private val items: Map<String, TreeSet<PerformanceInterferenceModel.Item>>
 
     init {
         val entries: List<PerformanceInterferenceEntry> = mapper.readValue(input)
-        val res = mutableMapOf<String, TreeSet<PerformanceInterferenceModelItem>>()
+        val res = mutableMapOf<String, TreeSet<PerformanceInterferenceModel.Item>>()
         for (entry in entries) {
-            val item = PerformanceInterferenceModelItem(TreeSet(entry.vms), entry.minServerLoad, entry.performanceScore)
+            val item = PerformanceInterferenceModel.Item(TreeSet(entry.vms), entry.minServerLoad, entry.performanceScore)
             for (workload in entry.vms) {
                 res.computeIfAbsent(workload) { TreeSet() }.add(item)
             }

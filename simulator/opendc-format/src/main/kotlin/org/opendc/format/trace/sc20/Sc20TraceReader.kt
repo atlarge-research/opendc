@@ -23,12 +23,12 @@
 package org.opendc.format.trace.sc20
 
 import org.opendc.compute.core.image.SimWorkloadImage
-import org.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
-import org.opendc.compute.core.workload.PerformanceInterferenceModel
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
+import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.BufferedReader
 import java.io.File
