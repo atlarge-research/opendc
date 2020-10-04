@@ -34,8 +34,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.virt.service.SimpleVirtProvisioningService
-import org.opendc.compute.virt.service.allocation.AvailableCoreMemoryAllocationPolicy
+import org.opendc.compute.simulator.SimVirtProvisioningService
+import org.opendc.compute.simulator.allocation.AvailableCoreMemoryAllocationPolicy
 import org.opendc.experiments.sc20.experiment.attachMonitor
 import org.opendc.experiments.sc20.experiment.createFailureDomain
 import org.opendc.experiments.sc20.experiment.createProvisioner
@@ -96,7 +96,7 @@ class Sc20IntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader()
         val environmentReader = createTestEnvironmentReader()
-        lateinit var scheduler: SimpleVirtProvisioningService
+        lateinit var scheduler: SimVirtProvisioningService
 
         testScope.launch {
             val res = createProvisioner(
@@ -159,7 +159,7 @@ class Sc20IntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader(0.5, seed)
         val environmentReader = createTestEnvironmentReader("single")
-        lateinit var scheduler: SimpleVirtProvisioningService
+        lateinit var scheduler: SimVirtProvisioningService
 
         testScope.launch {
             val res = createProvisioner(

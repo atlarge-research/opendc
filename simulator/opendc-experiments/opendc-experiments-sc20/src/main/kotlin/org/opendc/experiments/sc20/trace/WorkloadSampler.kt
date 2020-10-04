@@ -23,8 +23,8 @@
 package org.opendc.experiments.sc20.trace
 
 import mu.KotlinLogging
-import org.opendc.compute.core.image.SimWorkloadImage
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import org.opendc.experiments.sc20.experiment.model.SamplingStrategy
 import org.opendc.experiments.sc20.experiment.model.Workload

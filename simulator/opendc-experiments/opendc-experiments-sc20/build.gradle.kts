@@ -38,6 +38,7 @@ dependencies {
     implementation(project(":opendc-format"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-simulator:opendc-simulator-compute"))
+    implementation(project(":opendc-compute:opendc-compute-simulator"))
 
     implementation("com.github.ajalt:clikt:2.6.0")
     implementation("me.tongfei:progressbar:0.8.1")

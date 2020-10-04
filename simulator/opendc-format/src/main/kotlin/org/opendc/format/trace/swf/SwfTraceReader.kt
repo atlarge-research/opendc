@@ -22,8 +22,8 @@
 
 package org.opendc.format.trace.swf
 
-import org.opendc.compute.core.image.SimWorkloadImage
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader

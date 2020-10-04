@@ -38,7 +38,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
 import org.bson.Document
-import org.opendc.compute.virt.service.allocation.*
+import org.opendc.compute.simulator.allocation.*
 import org.opendc.experiments.sc20.experiment.attachMonitor
 import org.opendc.experiments.sc20.experiment.createFailureDomain
 import org.opendc.experiments.sc20.experiment.createProvisioner

@@ -34,15 +34,15 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.ServerEvent
+import org.opendc.compute.core.metal.NODE_CLUSTER
+import org.opendc.compute.core.metal.driver.BareMetalDriver
+import org.opendc.compute.core.metal.service.ProvisioningService
+import org.opendc.compute.core.virt.HypervisorEvent
+import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.metal.NODE_CLUSTER
-import org.opendc.compute.metal.driver.BareMetalDriver
-import org.opendc.compute.metal.service.ProvisioningService
-import org.opendc.compute.virt.HypervisorEvent
-import org.opendc.compute.virt.driver.SimVirtDriver
-import org.opendc.compute.virt.service.SimpleVirtProvisioningService
-import org.opendc.compute.virt.service.VirtProvisioningEvent
-import org.opendc.compute.virt.service.allocation.AllocationPolicy
+import org.opendc.compute.simulator.SimVirtDriver
+import org.opendc.compute.simulator.SimVirtProvisioningService
+import org.opendc.compute.simulator.allocation.AllocationPolicy
 import org.opendc.core.failure.CorrelatedFaultInjector
 import org.opendc.core.failure.FailureDomain
 import org.opendc.core.failure.FaultInjector
@@ -140,14 +140,14 @@ public suspend fun createProvisioner(
     clock: Clock,
     environmentReader: EnvironmentReader,
     allocationPolicy: AllocationPolicy
-): Pair<ProvisioningService, SimpleVirtProvisioningService> {
+): Pair<ProvisioningService, SimVirtProvisioningService> {
     val environment = environmentReader.use { it.construct(coroutineScope, clock) }
     val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService]
 
     // Wait for the bare metal nodes to be spawned
     delay(10)
 
-    val scheduler = SimpleVirtProvisioningService(coroutineScope, clock, bareMetalProvisioner, allocationPolicy)
+    val scheduler = SimVirtProvisioningService(coroutineScope, clock, bareMetalProvisioner, allocationPolicy)
 
     // Wait for the hypervisors to be spawned
     delay(10)
@@ -162,7 +162,7 @@ public suspend fun createProvisioner(
 public suspend fun attachMonitor(
     coroutineScope: CoroutineScope,
     clock: Clock,
-    scheduler: SimpleVirtProvisioningService,
+    scheduler: SimVirtProvisioningService,
     monitor: ExperimentMonitor
 ) {
 
@@ -224,7 +224,7 @@ public suspend fun processTrace(
     coroutineScope: CoroutineScope,
     clock: Clock,
     reader: TraceReader<VmWorkload>,
-    scheduler: SimpleVirtProvisioningService,
+    scheduler: SimVirtProvisioningService,
     chan: Channel<Unit>,
     monitor: ExperimentMonitor,
     vmPlacements: Map<String, String> = emptyMap()

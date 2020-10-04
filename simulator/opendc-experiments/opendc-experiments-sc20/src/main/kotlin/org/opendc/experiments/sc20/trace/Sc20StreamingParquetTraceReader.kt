@@ -31,8 +31,8 @@ import org.apache.parquet.filter2.predicate.FilterApi
 import org.apache.parquet.filter2.predicate.Statistics
 import org.apache.parquet.filter2.predicate.UserDefinedPredicate
 import org.apache.parquet.io.api.Binary
-import org.opendc.compute.core.image.SimWorkloadImage
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader

@@ -34,7 +34,7 @@ application {
 
 dependencies {
     api(project(":opendc-core"))
-    implementation(project(":opendc-compute"))
+    implementation(project(":opendc-compute:opendc-compute-simulator"))
     implementation(project(":opendc-format"))
     implementation(project(":opendc-experiments:opendc-experiments-sc20"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))

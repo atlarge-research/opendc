@@ -27,7 +27,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.TestCoroutineScope
-import org.opendc.compute.metal.service.ProvisioningService
+import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter

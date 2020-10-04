@@ -22,7 +22,7 @@
 
 package org.opendc.workflows.service.stage.resource
 
-import org.opendc.compute.metal.Node
+import org.opendc.compute.core.metal.Node
 import org.opendc.workflows.service.StageWorkflowService
 import java.util.*
 

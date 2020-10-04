@@ -22,7 +22,7 @@
 
 package org.opendc.workflows.service
 
-import org.opendc.compute.metal.Node
+import org.opendc.compute.core.metal.Node
 import org.opendc.workflows.workload.Task
 
 public class TaskState(public val job: JobState, public val task: Task) {

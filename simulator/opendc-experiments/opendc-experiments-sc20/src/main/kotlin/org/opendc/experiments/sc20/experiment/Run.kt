@@ -28,7 +28,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
-import org.opendc.compute.virt.service.allocation.*
+import org.opendc.compute.simulator.allocation.*
 import org.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import org.opendc.experiments.sc20.experiment.monitor.ParquetExperimentMonitor
 import org.opendc.experiments.sc20.runner.TrialExperimentDescriptor

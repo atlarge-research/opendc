@@ -24,7 +24,7 @@ package org.opendc.format.trace.swf
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.compute.core.image.SimWorkloadImage
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.File
 

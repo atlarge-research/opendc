@@ -29,7 +29,7 @@ plugins {
 
 dependencies {
     api(project(":opendc-core"))
-    api(project(":opendc-compute"))
+    api(project(":opendc-compute:opendc-compute-core"))
     implementation(project(":opendc-utils"))
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))

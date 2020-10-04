@@ -23,11 +23,11 @@
 package org.opendc.format.environment.sc20
 
 import kotlinx.coroutines.CoroutineScope
-import org.opendc.compute.metal.NODE_CLUSTER
-import org.opendc.compute.metal.driver.SimBareMetalDriver
-import org.opendc.compute.metal.power.LinearLoadPowerModel
-import org.opendc.compute.metal.service.ProvisioningService
-import org.opendc.compute.metal.service.SimpleProvisioningService
+import org.opendc.compute.core.metal.NODE_CLUSTER
+import org.opendc.compute.core.metal.service.ProvisioningService
+import org.opendc.compute.core.metal.service.SimpleProvisioningService
+import org.opendc.compute.simulator.SimBareMetalDriver
+import org.opendc.compute.simulator.power.LinearLoadPowerModel
 import org.opendc.core.Environment
 import org.opendc.core.Platform
 import org.opendc.core.Zone
