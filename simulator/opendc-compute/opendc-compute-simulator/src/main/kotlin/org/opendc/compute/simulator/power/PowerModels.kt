@@ -25,7 +25,6 @@ package org.opendc.compute.simulator.power
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import org.opendc.compute.core.metal.driver.BareMetalDriver
-import org.opendc.core.power.PowerModel
 
 /**
  * A power model which emits a single value.

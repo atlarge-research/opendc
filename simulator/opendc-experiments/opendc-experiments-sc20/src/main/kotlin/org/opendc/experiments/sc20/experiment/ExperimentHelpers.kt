@@ -40,6 +40,7 @@ import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.core.virt.HypervisorEvent
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.simulator.SimBareMetalDriver
 import org.opendc.compute.simulator.SimVirtDriver
 import org.opendc.compute.simulator.SimVirtProvisioningService
 import org.opendc.compute.simulator.allocation.AllocationPolicy
@@ -201,7 +202,7 @@ public suspend fun attachMonitor(
             }
             .launchIn(coroutineScope)
 
-        val driver = hypervisor.server.services[BareMetalDriver.Key]
+        val driver = hypervisor.server.services[BareMetalDriver.Key] as SimBareMetalDriver
         driver.powerDraw
             .onEach { monitor.reportPowerConsumption(hypervisor.server, it) }
             .launchIn(coroutineScope)

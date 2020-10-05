@@ -35,7 +35,8 @@ import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.NodeState
 import org.opendc.compute.core.metal.driver.BareMetalDriver
 import org.opendc.compute.simulator.power.ConstantPowerModel
-import org.opendc.core.power.PowerModel
+import org.opendc.compute.simulator.power.PowerModel
+import org.opendc.compute.simulator.power.Powerable
 import org.opendc.core.services.ServiceRegistry
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimExecutionContext
@@ -68,7 +69,7 @@ public class SimBareMetalDriver(
     metadata: Map<String, Any>,
     machine: SimMachineModel,
     powerModel: PowerModel<SimBareMetalDriver> = ConstantPowerModel(0.0)
-) : BareMetalDriver, FailureDomain {
+) : BareMetalDriver, FailureDomain, Powerable {
     /**
      * The flavor that corresponds to this machine.
      */
