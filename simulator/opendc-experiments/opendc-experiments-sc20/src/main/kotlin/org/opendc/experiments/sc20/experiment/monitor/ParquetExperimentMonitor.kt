@@ -57,7 +57,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
             startTime = time
 
             // Update timestamp of initial event
-            currentHostEvent.replaceAll { k, v -> v.copy(timestamp = startTime) }
+            currentHostEvent.replaceAll { _, v -> v.copy(timestamp = startTime) }
         }
     }
 

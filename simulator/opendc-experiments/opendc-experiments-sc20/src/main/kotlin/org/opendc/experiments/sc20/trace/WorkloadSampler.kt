@@ -143,7 +143,6 @@ public fun sampleHpcWorkload(
 
     if (sampleOnLoad) {
         var currentLoad = 0.0
-        var i = 0
         for (entry in hpcSequence) {
             val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
             if ((currentLoad + entryLoad) / totalLoad > fraction) {

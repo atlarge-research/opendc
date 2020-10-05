@@ -277,8 +277,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 trace,
                 scheduler,
                 chan,
-                monitor,
-                emptyMap()
+                monitor
             )
 
             logger.debug("SUBMIT=${scheduler.submittedVms}")

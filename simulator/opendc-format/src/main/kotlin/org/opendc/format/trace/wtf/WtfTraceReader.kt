@@ -70,8 +70,6 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
             val dependencies = (nextRecord.get("parents") as ArrayList<GenericRecord>).map {
                 it.get("item") as Long
             }
-            val inputSize: Long = 0
-            val outputSize: Long = 0
 
             val flops: Long = 4100 * (runtime / 1000) * cores
 

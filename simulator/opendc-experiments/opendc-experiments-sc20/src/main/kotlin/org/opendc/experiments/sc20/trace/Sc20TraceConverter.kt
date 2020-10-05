@@ -187,11 +187,11 @@ public class SolvinityConversion : TraceConversion("Solvinity") {
             .filterNot { it.isDirectory }
             .filter { it.extension == "csv" || it.extension == "txt" }
             .toList()
-            .forEach { vmFile ->
+            .forEach file@{ vmFile ->
                 BufferedReader(FileReader(vmFile)).use { reader ->
                     reader.lineSequence()
                         .chunked(128)
-                        .forEachIndexed { idx, lines ->
+                        .forEach { lines ->
                             for (line in lines) {
                                 // Ignore comments in the trace
                                 if (line.startsWith("#") || line.isBlank()) {
@@ -212,7 +212,7 @@ public class SolvinityConversion : TraceConversion("Solvinity") {
                                 if (timestamp < minTimestamp) {
                                     minTimestamp = timestamp
                                 }
-                                return@forEach
+                                return@file
                             }
                         }
                 }
@@ -229,13 +229,13 @@ public class SolvinityConversion : TraceConversion("Solvinity") {
             .filterNot { it.isDirectory }
             .filter { it.extension == "csv" || it.extension == "txt" }
             .toList()
-            .forEachIndexed { idx, vmFile ->
+            .forEach { vmFile ->
                 println(vmFile)
 
                 var vmId = ""
                 var maxCores = -1
                 var requiredMemory = -1L
-                var cores = -1
+                var cores: Int
                 var minTime = Long.MAX_VALUE
 
                 val flopsFragments = sequence {
@@ -353,13 +353,13 @@ public class BitbrainsConversion : TraceConversion("Bitbrains") {
             .filterNot { it.isDirectory }
             .filter { it.extension == "csv" || it.extension == "txt" }
             .toList()
-            .forEachIndexed { idx, vmFile ->
+            .forEach { vmFile ->
                 println(vmFile)
 
                 var vmId = ""
                 var maxCores = -1
                 var requiredMemory = -1L
-                var cores = -1
+                var cores: Int
                 var minTime = Long.MAX_VALUE
 
                 val flopsFragments = sequence {

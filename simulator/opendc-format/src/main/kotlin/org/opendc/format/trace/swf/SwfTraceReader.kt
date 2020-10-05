@@ -64,17 +64,17 @@ public class SwfTraceReader(
 
         val sliceDuration = 5 * 60L
 
-        var jobNumber = -1L
-        var submitTime = -1L
-        var waitTime = -1L
-        var runTime = -1L
-        var cores = -1
-        var memory = -1L
-        var slicedWaitTime = -1L
-        var flopsPerSecond = -1L
-        var flopsPartialSlice = -1L
-        var flopsFullSlice = -1L
-        var runtimePartialSliceRemainder = -1L
+        var jobNumber: Long
+        var submitTime: Long
+        var waitTime: Long
+        var runTime: Long
+        var cores: Int
+        var memory: Long
+        var slicedWaitTime: Long
+        var flopsPerSecond: Long
+        var flopsPartialSlice: Long
+        var flopsFullSlice: Long
+        var runtimePartialSliceRemainder: Long
 
         BufferedReader(FileReader(file)).use { reader ->
             reader.lineSequence()

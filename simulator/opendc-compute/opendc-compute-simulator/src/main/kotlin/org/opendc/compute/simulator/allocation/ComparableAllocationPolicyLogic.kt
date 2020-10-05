@@ -44,6 +44,6 @@ public interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
                 val fitsCpu = hv.server.flavor.cpuCount >= image.flavor.cpuCount
                 fitsMemory && fitsCpu
             }
-            .minWith(comparator.thenBy { it.server.uid })
+            .minWithOrNull(comparator.thenBy { it.server.uid })
     }
 }

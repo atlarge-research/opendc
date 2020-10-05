@@ -46,10 +46,10 @@ public class ReplayAllocationPolicy(private val vmPlacements: Map<String, String
 
             if (machinesInCluster.isEmpty()) {
                 logger.info { "Could not find any machines belonging to cluster $clusterName for image ${image.name}, assigning randomly." }
-                return hypervisors.maxBy { it.availableMemory }
+                return hypervisors.maxByOrNull { it.availableMemory }
             }
 
-            return machinesInCluster.maxBy { it.availableMemory }
+            return machinesInCluster.maxByOrNull { it.availableMemory }
                 ?: throw IllegalStateException("Cloud not find any machine and could not randomly assign")
         }
     }

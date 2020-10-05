@@ -227,8 +227,7 @@ public suspend fun processTrace(
     reader: TraceReader<VmWorkload>,
     scheduler: SimVirtProvisioningService,
     chan: Channel<Unit>,
-    monitor: ExperimentMonitor,
-    vmPlacements: Map<String, String> = emptyMap()
+    monitor: ExperimentMonitor
 ) {
     try {
         var submitted = 0

@@ -64,7 +64,6 @@ public class Sc20TraceReader(
         val timestampCol = 0
         val cpuUsageCol = 1
         val coreCol = 12
-        val vmIdCol = 19
         val provisionedMemoryCol = 20
         val traceInterval = 5 * 60 * 1000L
 

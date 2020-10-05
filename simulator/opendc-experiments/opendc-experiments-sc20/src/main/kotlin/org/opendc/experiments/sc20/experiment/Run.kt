@@ -131,8 +131,7 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
                 trace,
                 scheduler,
                 chan,
-                monitor,
-                experiment.vmPlacements
+                monitor
             )
 
             logger.debug("SUBMIT=${scheduler.submittedVms}")

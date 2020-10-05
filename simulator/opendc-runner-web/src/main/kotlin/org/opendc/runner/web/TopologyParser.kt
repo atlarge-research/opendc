@@ -60,7 +60,6 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
         val random = Random(0)
 
         for (machine in fetchMachines(id)) {
-            val machineId = machine.getString("_id")
             val clusterId = machine.getString("rack_id")
             val position = machine.getInteger("position")
 
