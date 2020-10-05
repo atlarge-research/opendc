@@ -1,5 +1,3 @@
-#!/Users/jacobburley/thesis-src/opendc/mongodb/opendc_testing/bin/python3
-#Change shebang to /usr/bin/python3 before using with docker
 # encoding: utf-8
 """
 prefabs
@@ -69,7 +67,7 @@ def clone(prefab_name, new_name):
 	bson = prefabs_collection.find_one({'name': prefab_name})
 	json_string = dumps(bson) #convert BSON representation to JSON
 	chosen_prefab = json.loads(json_string) #load as a JSON object
-	
+
 	chosen_prefab.pop("_id") # clean out our _id field from the export: mongo will generate a new one if this is imported back in
 
 	if new_name != None:
@@ -90,7 +88,7 @@ def export(prefab_name, type):
 	bson = prefabs_collection.find_one({'name': prefab_name})
 	json_string = dumps(bson) #convert BSON representation to JSON
 	chosen_prefab = json.loads(json_string) #load as a JSON object
-	
+
 	chosen_prefab.pop("_id") # clean out our _id field from the export: mongo will generate a new one if this is imported back in
 
 	with open(f'{prefab_name}.json', 'w', encoding='utf8') as f:
@@ -108,7 +106,7 @@ def list():
 		#print(record)
 		json_string = dumps(record, json_options=RELAXED_JSON_OPTIONS) ##pymongo retrieves BSON objects, which need to be converted to json for pythons json module
 		prefabs.append(json.loads(json_string))
-	
+
 	#print(f'There are {str(len(prefabs))} prefabs in the database. They are:')
 	print("Name 			Author")
 	for prefab in prefabs:
