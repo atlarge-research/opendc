@@ -30,7 +30,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="org.opendc" level="warn" additivity="false">
+        <Logger name="org.opendc" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="org.opendc.experiments.sc20" level="info" additivity="false">

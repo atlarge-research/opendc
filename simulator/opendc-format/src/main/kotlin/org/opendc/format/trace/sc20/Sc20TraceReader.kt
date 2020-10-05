@@ -22,14 +22,14 @@
 
 package org.opendc.format.trace.sc20
 
-import org.opendc.compute.core.image.FlopsHistoryFragment
-import org.opendc.compute.core.image.VmImage
-import org.opendc.compute.core.workload.IMAGE_PERF_INTERFERENCE_MODEL
-import org.opendc.compute.core.workload.PerformanceInterferenceModel
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
+import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -64,7 +64,6 @@ public class Sc20TraceReader(
         val timestampCol = 0
         val cpuUsageCol = 1
         val coreCol = 12
-        val vmIdCol = 19
         val provisionedMemoryCol = 20
         val traceInterval = 5 * 60 * 1000L
 
@@ -109,7 +108,7 @@ public class Sc20TraceReader(
                 }
 
                 val flopsFragments = sequence {
-                    var last: FlopsHistoryFragment? = null
+                    var last: SimTraceWorkload.Fragment? = null
 
                     BufferedReader(FileReader(vmFile)).use { reader ->
                         reader.lineSequence()
@@ -130,8 +129,8 @@ public class Sc20TraceReader(
 
                                     last = if (last != null && last!!.flops == 0L && flops == 0L) {
                                         val oldFragment = last!!
-                                        FlopsHistoryFragment(
-                                            oldFragment.tick,
+                                        SimTraceWorkload.Fragment(
+                                            oldFragment.time,
                                             oldFragment.flops + flops,
                                             oldFragment.duration + traceInterval,
                                             cpuUsage,
@@ -139,7 +138,7 @@ public class Sc20TraceReader(
                                         )
                                     } else {
                                         val fragment =
-                                            FlopsHistoryFragment(timestamp, flops, traceInterval, cpuUsage, cores)
+                                            SimTraceWorkload.Fragment(timestamp, flops, traceInterval, cpuUsage, cores)
                                         if (last != null) {
                                             yield(last!!)
                                         }
@@ -165,13 +164,15 @@ public class Sc20TraceReader(
                     uuid,
                     "VM Workload $vmId",
                     UnnamedUser,
-                    VmImage(
+                    SimWorkloadImage(
                         uuid,
                         vmId,
-                        mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
-                        flopsFragments.asSequence(),
-                        maxCores,
-                        requiredMemory
+                        mapOf(
+                            IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
+                            "cores" to cores,
+                            "required-memory" to requiredMemory
+                        ),
+                        SimTraceWorkload(flopsFragments.asSequence())
                     )
                 )
                 entries[uuid] = TraceEntryImpl(

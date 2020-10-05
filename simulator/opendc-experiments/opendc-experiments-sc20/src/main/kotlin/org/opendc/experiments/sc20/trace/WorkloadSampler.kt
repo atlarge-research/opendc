@@ -23,8 +23,8 @@
 package org.opendc.experiments.sc20.trace
 
 import mu.KotlinLogging
-import org.opendc.compute.core.image.VmImage
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import org.opendc.experiments.sc20.experiment.model.SamplingStrategy
 import org.opendc.experiments.sc20.experiment.model.Workload
@@ -143,7 +143,6 @@ public fun sampleHpcWorkload(
 
     if (sampleOnLoad) {
         var currentLoad = 0.0
-        var i = 0
         for (entry in hpcSequence) {
             val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
             if ((currentLoad + entryLoad) / totalLoad > fraction) {
@@ -197,13 +196,11 @@ public fun sampleHpcWorkload(
  */
 private fun sample(entry: TraceEntry<VmWorkload>, i: Int): TraceEntry<VmWorkload> {
     val id = UUID.nameUUIDFromBytes("${entry.workload.image.uid}-$i".toByteArray())
-    val image = VmImage(
+    val image = SimWorkloadImage(
         id,
         entry.workload.image.name,
         entry.workload.image.tags,
-        entry.workload.image.flopsHistory,
-        entry.workload.image.maxCores,
-        entry.workload.image.requiredMemory
+        (entry.workload.image as SimWorkloadImage).workload
     )
     val vmWorkload = entry.workload.copy(uid = id, image = image, name = entry.workload.name)
     return VmTraceEntry(vmWorkload, entry.submissionTime)

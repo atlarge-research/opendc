@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,4 @@
  * SOFTWARE.
  */
 
-description = "Cloud computing fabric simulation model"
-
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-}
-
-dependencies {
-    api(project(":opendc-core"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
-
-    testImplementation(project(":opendc-simulator"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
-}
+description = "Cloud computing fabric controller of OpenDC"

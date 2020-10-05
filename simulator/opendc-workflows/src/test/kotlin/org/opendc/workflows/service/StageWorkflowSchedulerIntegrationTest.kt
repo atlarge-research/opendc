@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.opendc.compute.metal.service.ProvisioningService
+import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter

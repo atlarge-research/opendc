@@ -26,18 +26,19 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.CoroutineScope
-import org.opendc.compute.core.MemoryUnit
-import org.opendc.compute.core.ProcessingNode
-import org.opendc.compute.core.ProcessingUnit
-import org.opendc.compute.metal.driver.SimpleBareMetalDriver
-import org.opendc.compute.metal.power.LinearLoadPowerModel
-import org.opendc.compute.metal.service.ProvisioningService
-import org.opendc.compute.metal.service.SimpleProvisioningService
+import org.opendc.compute.core.metal.service.ProvisioningService
+import org.opendc.compute.core.metal.service.SimpleProvisioningService
+import org.opendc.compute.simulator.SimBareMetalDriver
+import org.opendc.compute.simulator.power.LinearLoadPowerModel
 import org.opendc.core.Environment
 import org.opendc.core.Platform
 import org.opendc.core.Zone
 import org.opendc.core.services.ServiceRegistry
 import org.opendc.format.environment.EnvironmentReader
+import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import java.io.InputStream
 import java.time.Clock
 import java.util.*
@@ -80,17 +81,16 @@ public class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            SimpleBareMetalDriver(
+                            SimBareMetalDriver(
                                 coroutineScope,
                                 clock,
                                 UUID.randomUUID(),
                                 "node-${counter++}",
                                 emptyMap(),
-                                cores,
+                                SimMachineModel(cores, memories),
                                 // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
                                 // power draw of 350W.
                                 // Source: https://stackoverflow.com/questions/6128960
-                                memories,
                                 LinearLoadPowerModel(200.0, 350.0)
                             )
                         }

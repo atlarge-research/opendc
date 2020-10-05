@@ -31,8 +31,8 @@ import kotlinx.coroutines.launch
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
-import org.opendc.compute.metal.Node
-import org.opendc.compute.metal.service.ProvisioningService
+import org.opendc.compute.core.metal.Node
+import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.utils.flow.EventFlow
 import org.opendc.workflows.service.stage.job.JobAdmissionPolicy
 import org.opendc.workflows.service.stage.job.JobOrderPolicy

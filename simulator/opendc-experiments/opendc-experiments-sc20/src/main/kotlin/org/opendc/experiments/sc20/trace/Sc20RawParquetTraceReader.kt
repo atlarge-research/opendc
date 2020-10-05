@@ -26,12 +26,12 @@ import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
-import org.opendc.compute.core.image.FlopsHistoryFragment
-import org.opendc.compute.core.image.VmImage
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.File
 import java.util.UUID
 
@@ -47,12 +47,12 @@ public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * Read the fragments into memory.
      */
-    private fun parseFragments(path: File): Map<String, List<FlopsHistoryFragment>> {
+    private fun parseFragments(path: File): Map<String, List<SimTraceWorkload.Fragment>> {
         val reader = AvroParquetReader.builder<GenericData.Record>(Path(path.absolutePath, "trace.parquet"))
             .disableCompatibility()
             .build()
 
-        val fragments = mutableMapOf<String, MutableList<FlopsHistoryFragment>>()
+        val fragments = mutableMapOf<String, MutableList<SimTraceWorkload.Fragment>>()
 
         return try {
             while (true) {
@@ -65,7 +65,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
                 val cpuUsage = record["cpuUsage"] as Double
                 val flops = record["flops"] as Long
 
-                val fragment = FlopsHistoryFragment(
+                val fragment = SimTraceWorkload.Fragment(
                     tick,
                     flops,
                     duration,
@@ -85,7 +85,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * Read the metadata into a workload.
      */
-    private fun parseMeta(path: File, fragments: Map<String, List<FlopsHistoryFragment>>): List<TraceEntryImpl> {
+    private fun parseMeta(path: File, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<TraceEntryImpl> {
         val metaReader = AvroParquetReader.builder<GenericData.Record>(Path(path.absolutePath, "meta.parquet"))
             .disableCompatibility()
             .build()
@@ -114,17 +114,17 @@ public class Sc20RawParquetTraceReader(private val path: File) {
                     uid,
                     id,
                     UnnamedUser,
-                    VmImage(
+                    SimWorkloadImage(
                         uid,
                         id,
                         mapOf(
                             "submit-time" to submissionTime,
                             "end-time" to endTime,
-                            "total-load" to totalLoad
+                            "total-load" to totalLoad,
+                            "cores" to maxCores,
+                            "required-memory" to requiredMemory
                         ),
-                        vmFragments,
-                        maxCores,
-                        requiredMemory
+                        SimTraceWorkload(vmFragments)
                     )
                 )
                 entries.add(TraceEntryImpl(submissionTime, vmWorkload))

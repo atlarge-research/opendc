@@ -29,9 +29,11 @@ plugins {
 
 dependencies {
     api(project(":opendc-core"))
-    api(project(":opendc-compute"))
+    api(project(":opendc-compute:opendc-compute-core"))
     api(project(":opendc-workflows"))
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
+    implementation(project(":opendc-simulator:opendc-simulator-compute"))
+    implementation(project(":opendc-compute:opendc-compute-simulator"))
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
         exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
     }
     implementation(kotlin("reflect"))

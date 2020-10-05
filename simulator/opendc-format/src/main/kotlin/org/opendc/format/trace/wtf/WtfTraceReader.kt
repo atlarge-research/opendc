@@ -25,10 +25,11 @@ package org.opendc.format.trace.wtf
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
-import org.opendc.compute.core.image.FlopsApplicationImage
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.workflows.workload.Job
 import org.opendc.workflows.workload.Task
 import org.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
@@ -69,8 +70,6 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
             val dependencies = (nextRecord.get("parents") as ArrayList<GenericRecord>).map {
                 it.get("item") as Long
             }
-            val inputSize: Long = 0
-            val outputSize: Long = 0
 
             val flops: Long = 4100 * (runtime / 1000) * cores
 
@@ -81,7 +80,7 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
             val task = Task(
                 UUID(0L, taskId),
                 "<unnamed>",
-                FlopsApplicationImage(UUID.randomUUID(), "<unnamed>", emptyMap(), flops, cores),
+                SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(flops, cores)),
                 HashSet(),
                 mapOf(WORKFLOW_TASK_DEADLINE to runtime)
             )

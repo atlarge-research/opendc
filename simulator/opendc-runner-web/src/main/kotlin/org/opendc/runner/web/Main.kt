@@ -38,7 +38,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
 import org.bson.Document
-import org.opendc.compute.virt.service.allocation.*
+import org.opendc.compute.simulator.allocation.*
 import org.opendc.experiments.sc20.experiment.attachMonitor
 import org.opendc.experiments.sc20.experiment.createFailureDomain
 import org.opendc.experiments.sc20.experiment.createProvisioner
@@ -50,7 +50,6 @@ import org.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.io.File
-import java.util.*
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
@@ -278,8 +277,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 trace,
                 scheduler,
                 chan,
-                monitor,
-                emptyMap()
+                monitor
             )
 
             logger.debug("SUBMIT=${scheduler.submittedVms}")

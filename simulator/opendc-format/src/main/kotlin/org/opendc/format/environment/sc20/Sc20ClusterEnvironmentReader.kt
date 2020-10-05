@@ -23,19 +23,20 @@
 package org.opendc.format.environment.sc20
 
 import kotlinx.coroutines.CoroutineScope
-import org.opendc.compute.core.MemoryUnit
-import org.opendc.compute.core.ProcessingNode
-import org.opendc.compute.core.ProcessingUnit
-import org.opendc.compute.metal.NODE_CLUSTER
-import org.opendc.compute.metal.driver.SimpleBareMetalDriver
-import org.opendc.compute.metal.power.LinearLoadPowerModel
-import org.opendc.compute.metal.service.ProvisioningService
-import org.opendc.compute.metal.service.SimpleProvisioningService
+import org.opendc.compute.core.metal.NODE_CLUSTER
+import org.opendc.compute.core.metal.service.ProvisioningService
+import org.opendc.compute.core.metal.service.SimpleProvisioningService
+import org.opendc.compute.simulator.SimBareMetalDriver
+import org.opendc.compute.simulator.power.LinearLoadPowerModel
 import org.opendc.core.Environment
 import org.opendc.core.Platform
 import org.opendc.core.Zone
 import org.opendc.core.services.ServiceRegistry
 import org.opendc.format.environment.EnvironmentReader
+import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -68,7 +69,7 @@ public class Sc20ClusterEnvironmentReader(
         var memoryPerHost: Long
         var coresPerHost: Int
 
-        val nodes = mutableListOf<SimpleBareMetalDriver>()
+        val nodes = mutableListOf<SimBareMetalDriver>()
         val random = Random(0)
 
         input.bufferedReader().use { reader ->
@@ -102,19 +103,21 @@ public class Sc20ClusterEnvironmentReader(
 
                     repeat(numberOfHosts) {
                         nodes.add(
-                            SimpleBareMetalDriver(
+                            SimBareMetalDriver(
                                 coroutineScope,
                                 clock,
                                 UUID(random.nextLong(), random.nextLong()),
                                 "node-$clusterId-$it",
                                 mapOf(NODE_CLUSTER to clusterId),
-                                List(coresPerHost) { coreId ->
-                                    ProcessingUnit(unknownProcessingNode, coreId, speed)
-                                },
+                                SimMachineModel(
+                                    List(coresPerHost) { coreId ->
+                                        ProcessingUnit(unknownProcessingNode, coreId, speed)
+                                    },
+                                    listOf(unknownMemoryUnit)
+                                ),
                                 // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
                                 // power draw of 350W.
                                 // Source: https://stackoverflow.com/questions/6128960
-                                listOf(unknownMemoryUnit),
                                 LinearLoadPowerModel(200.0, 350.0)
                             )
                         )

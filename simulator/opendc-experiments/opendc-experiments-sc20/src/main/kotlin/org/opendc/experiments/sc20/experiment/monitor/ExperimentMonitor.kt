@@ -23,8 +23,8 @@
 package org.opendc.experiments.sc20.experiment.monitor
 
 import org.opendc.compute.core.Server
-import org.opendc.compute.virt.driver.VirtDriver
-import org.opendc.compute.virt.service.VirtProvisioningEvent
+import org.opendc.compute.core.virt.driver.VirtDriver
+import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import java.io.Closeable
 
 /**

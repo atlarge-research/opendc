@@ -22,12 +22,12 @@
 
 package org.opendc.format.trace.swf
 
-import org.opendc.compute.core.image.FlopsHistoryFragment
-import org.opendc.compute.core.image.VmImage
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -64,17 +64,17 @@ public class SwfTraceReader(
 
         val sliceDuration = 5 * 60L
 
-        var jobNumber = -1L
-        var submitTime = -1L
-        var waitTime = -1L
-        var runTime = -1L
-        var cores = -1
-        var memory = -1L
-        var slicedWaitTime = -1L
-        var flopsPerSecond = -1L
-        var flopsPartialSlice = -1L
-        var flopsFullSlice = -1L
-        var runtimePartialSliceRemainder = -1L
+        var jobNumber: Long
+        var submitTime: Long
+        var waitTime: Long
+        var runTime: Long
+        var cores: Int
+        var memory: Long
+        var slicedWaitTime: Long
+        var flopsPerSecond: Long
+        var flopsPartialSlice: Long
+        var flopsFullSlice: Long
+        var runtimePartialSliceRemainder: Long
 
         BufferedReader(FileReader(file)).use { reader ->
             reader.lineSequence()
@@ -103,7 +103,7 @@ public class SwfTraceReader(
                         memory /= 1000 // convert KB to MB
                     }
 
-                    val flopsHistory = mutableListOf<FlopsHistoryFragment>()
+                    val flopsHistory = mutableListOf<SimTraceWorkload.Fragment>()
 
                     // Insert waiting time slices
 
@@ -112,7 +112,7 @@ public class SwfTraceReader(
                     if (waitTime >= sliceDuration) {
                         for (tick in submitTime until (submitTime + waitTime - sliceDuration) step sliceDuration) {
                             flopsHistory.add(
-                                FlopsHistoryFragment(
+                                SimTraceWorkload.Fragment(
                                     tick * 1000L,
                                     0L,
                                     sliceDuration * 1000L,
@@ -137,7 +137,7 @@ public class SwfTraceReader(
                             step sliceDuration
                     ) {
                         flopsHistory.add(
-                            FlopsHistoryFragment(
+                            SimTraceWorkload.Fragment(
                                 tick * 1000L,
                                 flopsFullSlice / sliceDuration,
                                 sliceDuration * 1000L,
@@ -149,7 +149,7 @@ public class SwfTraceReader(
 
                     if (runtimePartialSliceRemainder > 0) {
                         flopsHistory.add(
-                            FlopsHistoryFragment(
+                            SimTraceWorkload.Fragment(
                                 submitTime + (slicedWaitTime + runTime - runtimePartialSliceRemainder),
                                 flopsPartialSlice,
                                 sliceDuration,
@@ -164,13 +164,14 @@ public class SwfTraceReader(
                         uuid,
                         "SWF Workload $jobNumber",
                         UnnamedUser,
-                        VmImage(
+                        SimWorkloadImage(
                             uuid,
                             jobNumber.toString(),
-                            emptyMap(),
-                            flopsHistory.asSequence(),
-                            cores,
-                            memory
+                            mapOf(
+                                "cores" to cores,
+                                "required-memory" to memory
+                            ),
+                            SimTraceWorkload(flopsHistory.asSequence())
                         )
                     )
 

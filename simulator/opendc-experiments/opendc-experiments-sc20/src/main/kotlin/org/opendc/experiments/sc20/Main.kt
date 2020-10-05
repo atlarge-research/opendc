@@ -41,7 +41,6 @@ import org.opendc.experiments.sc20.runner.internal.DefaultExperimentRunner
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import org.opendc.format.trace.sc20.Sc20VmPlacementReader
 import java.io.File
-import java.io.InputStream
 
 /**
  * The logger for this experiment.
@@ -74,7 +73,7 @@ public class ExperimentCli : CliktCommand(name = "sc20-experiment") {
         help = "path to the performance interference file"
     )
         .file(canBeDir = false)
-        .convert { it.inputStream() as InputStream }
+        .convert { it.inputStream() }
 
     /**
      * The path to the original VM placements file.

@@ -24,8 +24,8 @@ package org.opendc.experiments.sc20.experiment.monitor
 
 import mu.KotlinLogging
 import org.opendc.compute.core.Server
-import org.opendc.compute.virt.driver.VirtDriver
-import org.opendc.compute.virt.service.VirtProvisioningEvent
+import org.opendc.compute.core.virt.driver.VirtDriver
+import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.experiments.sc20.telemetry.HostEvent
 import org.opendc.experiments.sc20.telemetry.ProvisionerEvent
 import org.opendc.experiments.sc20.telemetry.parquet.ParquetHostEventWriter
@@ -57,7 +57,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
             startTime = time
 
             // Update timestamp of initial event
-            currentHostEvent.replaceAll { k, v -> v.copy(timestamp = startTime) }
+            currentHostEvent.replaceAll { _, v -> v.copy(timestamp = startTime) }
         }
     }
 

@@ -34,8 +34,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.virt.service.SimpleVirtProvisioningService
-import org.opendc.compute.virt.service.allocation.AvailableCoreMemoryAllocationPolicy
+import org.opendc.compute.simulator.SimVirtProvisioningService
+import org.opendc.compute.simulator.allocation.AvailableCoreMemoryAllocationPolicy
 import org.opendc.experiments.sc20.experiment.attachMonitor
 import org.opendc.experiments.sc20.experiment.createFailureDomain
 import org.opendc.experiments.sc20.experiment.createProvisioner
@@ -96,7 +96,7 @@ class Sc20IntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader()
         val environmentReader = createTestEnvironmentReader()
-        lateinit var scheduler: SimpleVirtProvisioningService
+        lateinit var scheduler: SimVirtProvisioningService
 
         testScope.launch {
             val res = createProvisioner(
@@ -142,12 +142,14 @@ class Sc20IntegrationTest {
         runSimulation()
 
         // Note that these values have been verified beforehand
-        assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs")
-        assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run")
-        assertEquals(207379117949, monitor.totalRequestedBurst)
-        assertEquals(203388071813, monitor.totalGrantedBurst)
-        assertEquals(3991046136, monitor.totalOvercommissionedBurst)
-        assertEquals(0, monitor.totalInterferedBurst)
+        assertAll(
+            { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
+            { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
+            { assertEquals(207379117949, monitor.totalRequestedBurst) },
+            { assertEquals(203388071813, monitor.totalGrantedBurst) },
+            { assertEquals(3991046136, monitor.totalOvercommissionedBurst) },
+            { assertEquals(0, monitor.totalInterferedBurst) }
+        )
     }
 
     @Test
@@ -157,7 +159,7 @@ class Sc20IntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader(0.5, seed)
         val environmentReader = createTestEnvironmentReader("single")
-        lateinit var scheduler: SimpleVirtProvisioningService
+        lateinit var scheduler: SimVirtProvisioningService
 
         testScope.launch {
             val res = createProvisioner(
