@@ -1,4 +1,4 @@
-#!/Users/jacobburley/thesis-src/opendc/mongodb/opendc_testing/bin/python3
+#!/usr/bin/env python3
 #Change shebang to /usr/bin/python3 before using with docker
 # encoding: utf-8
 """
@@ -17,7 +17,7 @@ def usage():
 	print("	      clone <prefab> [new prefab name]:   clones the specified prefab, giving the new prefab a name if specified")
 	print("	      remove <prefab>:   removes the specified prefab from the database")
 
-def interactive(): #interactive CLI mode: recommended 
+def interactive(): #interactive CLI mode: recommended
 	print("OpenDC Prefab CLI")
 	running = True
 	while(exit):
@@ -105,7 +105,7 @@ def main():
 
 	else:
 	#	print "Incorrect number of arguments!\n"
-		print("prefabs: try 'prefabs help' for more information\n")	
+		print("prefabs: try 'prefabs help' for more information\n")
 
 
 if __name__ == "__main__":
