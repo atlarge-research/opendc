@@ -43,14 +43,14 @@ import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.compute.simulator.SimVirtDriver
 import org.opendc.compute.simulator.SimVirtProvisioningService
 import org.opendc.compute.simulator.allocation.AllocationPolicy
-import org.opendc.core.failure.CorrelatedFaultInjector
-import org.opendc.core.failure.FailureDomain
-import org.opendc.core.failure.FaultInjector
 import org.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
 import org.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.failures.CorrelatedFaultInjector
+import org.opendc.simulator.failures.FailureDomain
+import org.opendc.simulator.failures.FaultInjector
 import java.io.File
 import java.time.Clock
 import kotlin.math.ln

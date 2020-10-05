@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +20,12 @@
  * SOFTWARE.
  */
 
-package org.opendc.core.failure
+description = "Failure models for OpenDC"
 
-import kotlinx.coroutines.CoroutineScope
+plugins {
+    `kotlin-library-convention`
+}
 
-/**
- * A logical or physical component in a computing environment which may fail.
- */
-public interface FailureDomain {
-    /**
-     * The lifecycle of the failure domain to which a [FaultInjector] will attach.
-     */
-    public val scope: CoroutineScope
-
-    /**
-     * Fail the domain externally.
-     */
-    public suspend fun fail()
-
-    /**
-     * Resume the failure domain.
-     */
-    public suspend fun recover()
+dependencies {
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Library.KOTLINX_COROUTINES}")
 }

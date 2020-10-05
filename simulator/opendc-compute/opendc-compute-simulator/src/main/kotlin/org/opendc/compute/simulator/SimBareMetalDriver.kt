@@ -41,6 +41,7 @@ import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimExecutionContext
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.failures.FailureDomain
 import org.opendc.utils.flow.EventFlow
 import org.opendc.utils.flow.StateFlow
 import java.time.Clock
@@ -67,7 +68,7 @@ public class SimBareMetalDriver(
     metadata: Map<String, Any>,
     machine: SimMachineModel,
     powerModel: PowerModel<SimBareMetalDriver> = ConstantPowerModel(0.0)
-) : BareMetalDriver {
+) : BareMetalDriver, FailureDomain {
     /**
      * The flavor that corresponds to this machine.
      */

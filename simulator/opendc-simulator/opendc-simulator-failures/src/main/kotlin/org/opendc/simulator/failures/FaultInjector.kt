@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.core.failure
+package org.opendc.simulator.failures
 
 /**
  * An interface for stochastically injecting faults into a running system.

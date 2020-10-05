@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.metal.Node
-import org.opendc.core.failure.FailureDomain
 import org.opendc.core.power.Powerable
 import org.opendc.core.services.AbstractServiceKey
 import java.util.UUID
@@ -34,7 +33,7 @@ import java.util.UUID
 /**
  * A driver interface for the management interface of a bare-metal compute node.
  */
-public interface BareMetalDriver : Powerable, FailureDomain {
+public interface BareMetalDriver : Powerable {
     /**
      * The [Node] that is controlled by this driver.
      */

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.core.failure
+package org.opendc.simulator.failures
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
