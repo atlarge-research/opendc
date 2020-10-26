@@ -58,7 +58,7 @@ def DELETE(request):
 
     user = User.from_google_id(request.google_id)
     user.obj['authorizations'] = list(
-        filter(lambda x: str(x['projectId']) != request.params_path['projectId'], user.obj['authorizations']))
+        filter(lambda x: x['projectId'] != project.get_id(), user.obj['authorizations']))
     user.update()
 
     old_object = project.delete()

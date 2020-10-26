@@ -24,7 +24,7 @@ def POST(request):
 
     portfolio = Portfolio(request.params_body['portfolio'])
 
-    portfolio.set_property('projectId', request.params_path['projectId'])
+    portfolio.set_property('projectId', project.get_id())
     portfolio.set_property('scenarioIds', [])
 
     portfolio.insert()

@@ -54,10 +54,12 @@ def DELETE(request):
     portfolio.check_exists()
     portfolio.check_user_access(request.google_id, True)
 
+    portfolio_id = portfolio.get_id()
+
     project = Project.from_id(portfolio.obj['projectId'])
     project.check_exists()
-    if request.params_path['portfolioId'] in project.obj['portfolioIds']:
-        project.obj['portfolioIds'].remove(request.params_path['portfolioId'])
+    if portfolio_id in project.obj['portfolioIds']:
+        project.obj['portfolioIds'].remove(portfolio_id)
     project.update()
 
     old_object = portfolio.delete()

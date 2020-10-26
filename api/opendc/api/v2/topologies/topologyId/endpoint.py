@@ -45,10 +45,12 @@ def DELETE(request):
     topology.check_exists()
     topology.check_user_access(request.google_id, True)
 
+    topology_id = topology.get_id()
+
     project = Project.from_id(topology.obj['projectId'])
     project.check_exists()
-    if request.params_path['topologyId'] in project.obj['topologyIds']:
-        project.obj['topologyIds'].remove(request.params_path['topologyId'])
+    if topology_id in project.obj['topologyIds']:
+        project.obj['topologyIds'].remove(topology_id)
     project.update()
 
     old_object = topology.delete()

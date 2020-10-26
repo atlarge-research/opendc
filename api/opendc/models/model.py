@@ -25,7 +25,7 @@ class Model:
 
     def get_id(self):
         """Returns the ID of the enclosed object."""
-        return str(self.obj['_id'])
+        return self.obj['_id']
 
     def check_exists(self):
         """Raises an error if the enclosed object does not exist."""

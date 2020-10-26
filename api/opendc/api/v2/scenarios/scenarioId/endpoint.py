@@ -46,10 +46,12 @@ def DELETE(request):
     scenario.check_exists()
     scenario.check_user_access(request.google_id, True)
 
+    scenario_id = scenario.get_id()
+
     portfolio = Portfolio.from_id(scenario.obj['portfolioId'])
     portfolio.check_exists()
-    if request.params_path['scenarioId'] in portfolio.obj['scenarioIds']:
-        portfolio.obj['scenarioIds'].remove(request.params_path['scenarioId'])
+    if scenario_id in portfolio.obj['scenarioIds']:
+        portfolio.obj['scenarioIds'].remove(scenario_id)
     portfolio.update()
 
     old_object = scenario.delete()
