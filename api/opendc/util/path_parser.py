@@ -31,9 +31,6 @@ def parse(version, endpoint_path):
 
     for (name, value) in zip(path, endpoint_path_parts):
         if name.startswith('{'):
-            try:
-                parameters[name.strip('{}')] = int(value)
-            except:
-                parameters[name.strip('{}')] = value
+            parameters[name.strip('{}')] = value
 
     return '{}/{}'.format(version, '/'.join(path)), parameters

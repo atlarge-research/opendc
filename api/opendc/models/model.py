@@ -1,4 +1,4 @@
-from uuid import uuid4
+from bson.objectid import ObjectId
 
 from opendc.util.database import DB
 from opendc.util.exceptions import ClientError
@@ -13,6 +13,11 @@ class Model:
     @classmethod
     def from_id(cls, _id):
         """Fetches the document with given ID from the collection."""
+        if isinstance(_id, str) and len(_id) == 24:
+            _id = ObjectId(_id)
+        elif not isinstance(_id, ObjectId):
+            return cls(None)
+
         return cls(DB.fetch_one({'_id': _id}, cls.collection_name))
 
     @classmethod
@@ -42,7 +47,7 @@ class Model:
 
     def insert(self):
         """Inserts the enclosed object and generates a UUID for it."""
-        self.obj['_id'] = str(uuid4())
+        self.obj['_id'] = ObjectId()
         DB.insert(self.obj, self.collection_name)
 
     def update(self):

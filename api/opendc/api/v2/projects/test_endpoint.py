@@ -1,16 +1,18 @@
 from opendc.util.database import DB
 
+test_id = 24 * '1'
+
 
 def test_add_project_missing_parameter(client):
     assert '400' in client.post('/api/v2/projects').status
 
 
 def test_add_project(client, mocker):
-    mocker.patch.object(DB, 'fetch_one', return_value={'_id': '1', 'authorizations': []})
+    mocker.patch.object(DB, 'fetch_one', return_value={'_id': test_id, 'authorizations': []})
     mocker.patch.object(DB,
                         'insert',
                         return_value={
-                            '_id': '1',
+                            '_id': test_id,
                             'datetimeCreated': '000',
                             'datetimeLastEdited': '000',
                             'topologyIds': []

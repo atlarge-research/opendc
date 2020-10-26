@@ -138,4 +138,4 @@ class Response:
         if self.content is not None:
             data['content'] = self.content
 
-        return json.dumps(data)
+        return json.dumps(data, default=str)

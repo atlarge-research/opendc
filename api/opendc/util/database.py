@@ -1,8 +1,6 @@
-import json
 import urllib.parse
 from datetime import datetime
 
-from bson.json_util import dumps
 from pymongo import MongoClient
 
 DATETIME_STRING_FORMAT = '%Y-%m-%dT%H:%M:%S'
@@ -31,32 +29,25 @@ class Database:
 
         The query needs to be in json format, i.e.: `{'name': prefab_name}`.
         """
-        bson = getattr(self.opendc_db, collection).find_one(query)
-
-        return self.convert_bson_to_json(bson)
+        return getattr(self.opendc_db, collection).find_one(query)
 
     def fetch_all(self, query, collection):
         """Uses existing mongo connection to return all documents matching a given query, as a list of JSON objects.
 
         The query needs to be in json format, i.e.: `{'name': prefab_name}`.
         """
-        results = []
         cursor = getattr(self.opendc_db, collection).find(query)
-        for doc in cursor:
-            results.append(self.convert_bson_to_json(doc))
-        return results
+        return list(cursor)
 
     def insert(self, obj, collection):
         """Updates an existing object."""
         bson = getattr(self.opendc_db, collection).insert(obj)
 
-        return self.convert_bson_to_json(bson)
+        return bson
 
     def update(self, _id, obj, collection):
         """Updates an existing object."""
-        bson = getattr(self.opendc_db, collection).update({'_id': _id}, obj)
-
-        return self.convert_bson_to_json(bson)
+        return getattr(self.opendc_db, collection).update({'_id': _id}, obj)
 
     def delete_one(self, query, collection):
         """Deletes one object matching the given query.
@@ -71,12 +62,6 @@ class Database:
         The query needs to be in json format, i.e.: `{'name': prefab_name}`.
         """
         getattr(self.opendc_db, collection).delete_many(query)
-
-    @staticmethod
-    def convert_bson_to_json(bson):
-        """Converts a BSON representation to JSON and returns the JSON representation."""
-        json_string = dumps(bson)
-        return json.loads(json_string)
 
     @staticmethod
     def datetime_to_string(datetime_to_convert):

@@ -1,5 +1,7 @@
 from opendc.util.database import DB
 
+test_id = 24 * '1'
+
 
 def test_add_scenario_missing_parameter(client):
     assert '400' in client.post('/api/v2/portfolios/1/scenarios').status
@@ -7,16 +9,16 @@ def test_add_scenario_missing_parameter(client):
 
 def test_add_scenario_non_existing_portfolio(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.post('/api/v2/portfolios/1/scenarios',
+    assert '404' in client.post(f'/api/v2/portfolios/{test_id}/scenarios',
                                 json={
                                     'scenario': {
                                         'name': 'test',
                                         'trace': {
-                                            'traceId': '1',
+                                            'traceId': test_id,
                                             'loadSamplingFraction': 1.0,
                                         },
                                         'topology': {
-                                            'topologyId': '1',
+                                            'topologyId': test_id,
                                         },
                                         'operational': {
                                             'failuresEnabled': True,
@@ -31,24 +33,24 @@ def test_add_scenario_not_authorized(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
-                            '_id': '1',
-                            'projectId': '1',
-                            'portfolioId': '1',
+                            '_id': test_id,
+                            'projectId': test_id,
+                            'portfolioId': test_id,
                             'authorizations': [{
-                                'projectId': '1',
+                                'projectId': test_id,
                                 'authorizationLevel': 'VIEW'
                             }]
                         })
-    assert '403' in client.post('/api/v2/portfolios/1/scenarios',
+    assert '403' in client.post(f'/api/v2/portfolios/{test_id}/scenarios',
                                 json={
                                     'scenario': {
                                         'name': 'test',
                                         'trace': {
-                                            'traceId': '1',
+                                            'traceId': test_id,
                                             'loadSamplingFraction': 1.0,
                                         },
                                         'topology': {
-                                            'topologyId': '1',
+                                            'topologyId': test_id,
                                         },
                                         'operational': {
                                             'failuresEnabled': True,
@@ -63,13 +65,13 @@ def test_add_scenario(client, mocker):
     mocker.patch.object(DB,
                         'fetch_one',
                         return_value={
-                            '_id': '1',
-                            'projectId': '1',
-                            'portfolioId': '1',
-                            'portfolioIds': ['1'],
-                            'scenarioIds': ['1'],
+                            '_id': test_id,
+                            'projectId': test_id,
+                            'portfolioId': test_id,
+                            'portfolioIds': [test_id],
+                            'scenarioIds': [test_id],
                             'authorizations': [{
-                                'projectId': '1',
+                                'projectId': test_id,
                                 'authorizationLevel': 'EDIT'
                             }],
                             'simulation': {
@@ -79,37 +81,37 @@ def test_add_scenario(client, mocker):
     mocker.patch.object(DB,
                         'insert',
                         return_value={
-                            '_id': '1',
+                            '_id': test_id,
                             'name': 'test',
                             'trace': {
-                                'traceId': '1',
+                                'traceId': test_id,
                                 'loadSamplingFraction': 1.0,
                             },
                             'topology': {
-                                'topologyId': '1',
+                                'topologyId': test_id,
                             },
                             'operational': {
                                 'failuresEnabled': True,
                                 'performanceInterferenceEnabled': False,
                                 'schedulerName': 'DEFAULT',
                             },
-                            'portfolioId': '1',
+                            'portfolioId': test_id,
                             'simulationState': {
                                 'state': 'QUEUED',
                             },
                         })
     mocker.patch.object(DB, 'update', return_value=None)
     res = client.post(
-        '/api/v2/portfolios/1/scenarios',
+        f'/api/v2/portfolios/{test_id}/scenarios',
         json={
             'scenario': {
                 'name': 'test',
                 'trace': {
-                    'traceId': '1',
+                    'traceId': test_id,
                     'loadSamplingFraction': 1.0,
                 },
                 'topology': {
-                    'topologyId': '1',
+                    'topologyId': test_id,
                 },
                 'operational': {
                     'failuresEnabled': True,
