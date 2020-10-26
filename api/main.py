@@ -15,6 +15,7 @@ from oauth2client import client, crypt
 from opendc.models.user import User
 from opendc.util import rest, path_parser, database
 from opendc.util.exceptions import AuthorizationTokenError, RequestInitializationError
+from opendc.util.json import JSONEncoder
 
 load_dotenv()
 
@@ -31,6 +32,7 @@ if not TEST_MODE:
 # Set up the core app
 FLASK_CORE_APP = Flask(__name__)
 FLASK_CORE_APP.config['SECRET_KEY'] = os.environ['OPENDC_FLASK_SECRET']
+FLASK_CORE_APP.json_encoder = JSONEncoder
 
 # Set up CORS support for local setups
 if 'localhost' in os.environ['OPENDC_SERVER_BASE_URL']:
