@@ -19,7 +19,9 @@ Users can construct datacenters (see above) and define portfolios of scenarios (
 
 The simulator is accessible both as a ready-to-use website hosted by us at [opendc.org](https://opendc.org), and as source code that users can run locally on their own machine, through Docker.
 
-OpenDC is a project by the [@Large Research Group](https://atlarge-research.com).
+🛠 OpenDC is a project by the [@Large Research Group](https://atlarge-research.com).
+
+🐟 OpenDC comes bundled with [Capelin](https://repository.tudelft.nl/islandora/object/uuid:d6d50861-86a3-4dd3-a13f-42d84db7af66?collection=education), the capacity planning tool for cloud datacenters based on portfolios of what-if scenarios. More information on how to use and extend Capelin coming soon!
 
 ## Architecture
 
