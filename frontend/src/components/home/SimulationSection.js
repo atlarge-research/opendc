@@ -5,7 +5,7 @@ const ModelingSection = () => (
     <ScreenshotSection
         name="simulation"
         title="Datacenter Simulation"
-        imageUrl="https://github.com/atlarge-research/opendc/raw/master/images/opendc-frontend-simulation-zoom.PNG"
+        imageUrl="/img/screenshot-simulation-zoom.png"
         caption="Running an experiment in OpenDC"
         imageIsRight={false}
     >
