@@ -4,7 +4,7 @@ test_id = 24 * '1'
 
 
 def test_add_topology_missing_parameter(client):
-    assert '400' in client.post(f'/api/v2/projects/{test_id}/topologies').status
+    assert '400' in client.post(f'/v2/projects/{test_id}/topologies').status
 
 
 def test_add_topology(client, mocker):
@@ -27,7 +27,7 @@ def test_add_topology(client, mocker):
                             'topologyIds': []
                         })
     mocker.patch.object(DB, 'update', return_value={})
-    res = client.post(f'/api/v2/projects/{test_id}/topologies', json={'topology': {'name': 'test project', 'rooms': []}})
+    res = client.post(f'/v2/projects/{test_id}/topologies', json={'topology': {'name': 'test project', 'rooms': []}})
     assert 'rooms' in res.json['content']
     assert '200' in res.status
 
@@ -43,7 +43,7 @@ def test_add_topology_not_authorized(client, mocker):
                                 'authorizationLevel': 'VIEW'
                             }]
                         })
-    assert '403' in client.post(f'/api/v2/projects/{test_id}/topologies',
+    assert '403' in client.post(f'/v2/projects/{test_id}/topologies',
                                 json={
                                     'topology': {
                                         'name': 'test_topology',

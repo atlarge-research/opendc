@@ -79,7 +79,7 @@ def sign_in():
     return jsonify(**data)
 
 
-@FLASK_CORE_APP.route('/api/<string:version>/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@FLASK_CORE_APP.route('/<string:version>/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_call(version, endpoint_path):
     """Call an API endpoint directly over HTTP."""
 

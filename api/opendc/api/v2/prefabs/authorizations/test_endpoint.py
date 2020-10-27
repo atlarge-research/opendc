@@ -66,6 +66,6 @@ def test_get_authorizations(client, mocker):
                         }]
                         ]
     mocker.patch.object(DB, 'fetch_one', return_value={'_id': test_id})
-    res = client.get('/api/v2/prefabs/authorizations')
+    res = client.get('/v2/prefabs/authorizations')
     assert '200' in res.status
 
