@@ -4,7 +4,8 @@ services:
     build:
       context: ./frontend
       args:
-        - REACT_APP_OAUTH_CLIENT_ID=${OPENDC_OAUTH_CLIENT_ID}
+        - OPENDC_OAUTH_CLIENT_ID=${OPENDC_OAUTH_CLIENT_ID}
+        - OPENDC_API_BASE_URL=${OPENDC_SERVER_BASE_URL}
     image: frontend
     restart: on-failure
     networks:

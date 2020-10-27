@@ -6,7 +6,7 @@ let requestIdCounter = 0
 const callbacks = {}
 
 export function setupSocketConnection(onConnect) {
-    const apiUrl = process.env.REACT_APP_API_URL || window.location.hostname + ':' + window.location.port
+    const apiUrl = process.env.REACT_APP_API_BASE_URL || window.location.hostname + ':' + window.location.port
 
     socket = io.connect(window.location.protocol + '//' + apiUrl)
     socket.on('connect', onConnect)
