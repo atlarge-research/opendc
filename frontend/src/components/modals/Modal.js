@@ -1,124 +1,51 @@
-import classNames from 'classnames'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import React from 'react'
-import jQuery from '../../util/jquery'
+import { Modal as RModal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap'
 
-class Modal extends React.Component {
-    static propTypes = {
-        title: PropTypes.string.isRequired,
-        show: PropTypes.bool.isRequired,
-        onSubmit: PropTypes.func.isRequired,
-        onCancel: PropTypes.func.isRequired,
-        submitButtonType: PropTypes.string,
-        submitButtonText: PropTypes.string,
+function Modal({ children, title, show, onSubmit, onCancel, submitButtonType, submitButtonText }) {
+    const [modal, setModal] = useState(show)
+
+    useEffect(() => setModal(show), [show])
+
+    const toggle = () => setModal(!modal)
+    const cancel = () => {
+        toggle()
+        onCancel()
     }
-    static defaultProps = {
-        submitButtonType: 'primary',
-        submitButtonText: 'Save',
-    }
-    static idCounter = 0
-
-    // Local, up-to-date copy of modal visibility for time between close event and a props update (to prevent duplicate
-    // 'close' triggers)
-    visible = false
-
-    constructor(props) {
-        super(props)
-        this.id = 'modal-' + Modal.idCounter++
+    const submit = () => {
+        toggle()
+        onSubmit()
     }
 
-    componentDidMount() {
-        this.visible = this.props.show
-        this.openOrCloseModal()
+    return (
+        <RModal isOpen={modal} toggle={toggle}>
+            <ModalHeader toggle={toggle}>{title}</ModalHeader>
+            <ModalBody>{children}</ModalBody>
+            <ModalFooter>
+                <Button color="secondary" onClick={cancel}>
+                    Close
+                </Button>
+                <Button color={submitButtonType} onClick={submit}>
+                    {submitButtonText}
+                </Button>
+            </ModalFooter>
+        </RModal>
+    )
+}
 
-        // Trigger auto-focus
-        jQuery('#' + this.id)
-            .on('shown.bs.modal', function () {
-                jQuery(this).find('input').first().focus()
-            })
-            .on('hide.bs.modal', () => {
-                if (this.visible) {
-                    this.props.onCancel()
-                }
-            })
-            .on('keydown', (e) => {
-                e.stopPropagation()
-            })
-    }
+Modal.propTypes = {
+    title: PropTypes.string.isRequired,
+    show: PropTypes.bool.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
+    submitButtonType: PropTypes.string,
+    submitButtonText: PropTypes.string,
+}
 
-    componentDidUpdate() {
-        if (this.visible !== this.props.show) {
-            this.visible = this.props.show
-            this.openOrCloseModal()
-        }
-    }
-
-    onSubmit() {
-        if (this.visible) {
-            this.props.onSubmit()
-            this.visible = false
-            this.closeModal()
-        }
-    }
-
-    onCancel() {
-        if (this.visible) {
-            this.props.onCancel()
-            this.visible = false
-            this.closeModal()
-        }
-    }
-
-    openModal() {
-        jQuery('#' + this.id).modal('show')
-    }
-
-    closeModal() {
-        jQuery('#' + this.id).modal('hide')
-    }
-
-    openOrCloseModal() {
-        if (this.visible) {
-            this.openModal()
-        } else {
-            this.closeModal()
-        }
-    }
-
-    render() {
-        return (
-            <div className="modal fade" id={this.id} role="dialog">
-                <div className="modal-dialog" role="document">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">{this.props.title}</h5>
-                            <button
-                                type="button"
-                                className="close"
-                                onClick={this.onCancel.bind(this)}
-                                aria-label="Close"
-                            >
-                                <span>&times;</span>
-                            </button>
-                        </div>
-                        <div className="modal-body">{this.props.children}</div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={this.onCancel.bind(this)}>
-                                Close
-                            </button>
-                            <button
-                                type="button"
-                                className={classNames('btn', 'btn-' + this.props.submitButtonType)}
-                                onClick={this.onSubmit.bind(this)}
-                            >
-                                {this.props.submitButtonText}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )
-    }
+Modal.defaultProps = {
+    submitButtonType: 'primary',
+    submitButtonText: 'Save',
+    show: false,
 }
 
 export default Modal

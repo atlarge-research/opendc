@@ -19,21 +19,25 @@ class NewScenarioModalComponent extends React.Component {
     }
 
     componentDidUpdate() {
-        if (this.props.currentPortfolioScenarioIds.length === 0) {
-            this.textInput.value = 'Base scenario'
-        } else if (this.textInput.value === 'Base scenario') {
-            this.textInput.value = ''
+        if (this.textInput) {
+            if (this.props.currentPortfolioScenarioIds.length === 0) {
+                this.textInput.value = 'Base scenario'
+            } else if (this.textInput.value === 'Base scenario') {
+                this.textInput.value = ''
+            }
         }
     }
 
     reset() {
-        this.textInput.value = this.props.currentPortfolioScenarioIds.length === 0 ? 'Base scenario' : ''
-        this.traceSelect.selectedIndex = 0
-        this.traceLoadInput.value = 1.0
-        this.topologySelect.selectedIndex = 0
-        this.failuresCheckbox.checked = false
-        this.performanceInterferenceCheckbox.checked = false
-        this.schedulerSelect.selectedIndex = 0
+        if (this.textInput) {
+            this.textInput.value = this.props.currentPortfolioScenarioIds.length === 0 ? 'Base scenario' : ''
+            this.traceSelect.selectedIndex = 0
+            this.traceLoadInput.value = 1.0
+            this.topologySelect.selectedIndex = 0
+            this.failuresCheckbox.checked = false
+            this.performanceInterferenceCheckbox.checked = false
+            this.schedulerSelect.selectedIndex = 0
+        }
     }
 
     onSubmit() {

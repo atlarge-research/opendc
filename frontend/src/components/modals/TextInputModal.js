@@ -12,7 +12,7 @@ class TextInputModal extends React.Component {
     }
 
     componentDidUpdate() {
-        if (this.props.initialValue) {
+        if (this.props.initialValue && this.textInput) {
             this.textInput.value = this.props.initialValue
         }
     }
