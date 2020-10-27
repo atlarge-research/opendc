@@ -17,7 +17,7 @@ def POST(request):
     project.check_user_access(request.google_id, True)
 
     topology = Topology({
-        'projectId': request.params_path['projectId'],
+        'projectId': project.get_id(),
         'name': request.params_body['topology']['name'],
         'rooms': request.params_body['topology']['rooms'],
     })

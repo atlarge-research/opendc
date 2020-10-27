@@ -32,7 +32,7 @@ def POST(request):
 
     scenario = Scenario(request.params_body['scenario'])
 
-    scenario.set_property('portfolioId', request.params_path['portfolioId'])
+    scenario.set_property('portfolioId', portfolio.get_id())
     scenario.set_property('simulation', {'state': 'QUEUED'})
 
     scenario.insert()
