@@ -27,24 +27,20 @@ if not TEST_MODE:
         user=os.environ['OPENDC_DB_USERNAME'],
         password=os.environ['OPENDC_DB_PASSWORD'],
         database=os.environ['OPENDC_DB'],
-        host=os.environ['OPENDC_DB_HOST'] if 'OPENDC_DB_HOST' in os.environ else 'localhost')
+        host=os.environ.get('OPENDC_DB_HOST', 'localhost'))
 
 # Set up the core app
 FLASK_CORE_APP = Flask(__name__)
 FLASK_CORE_APP.config['SECRET_KEY'] = os.environ['OPENDC_FLASK_SECRET']
 FLASK_CORE_APP.json_encoder = JSONEncoder
 
-# Set up CORS support for local setups
-if 'localhost' in os.environ['OPENDC_SERVER_BASE_URL']:
-    CORS(FLASK_CORE_APP)
+# Set up CORS support
+CORS(FLASK_CORE_APP)
 
 compress = Compress()
 compress.init_app(FLASK_CORE_APP)
 
-if 'OPENDC_SERVER_BASE_URL' in os.environ or 'localhost' in os.environ['OPENDC_SERVER_BASE_URL']:
-    SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP, cors_allowed_origins="*")
-else:
-    SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP)
+SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP, cors_allowed_origins="*")
 
 
 @FLASK_CORE_APP.route('/tokensignin', methods=['POST'])
