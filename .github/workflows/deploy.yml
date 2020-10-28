@@ -1,0 +1,27 @@
+name: Deploy to opendc.org
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ../opendc.key
+          sudo chmod 600 ../opendc.key
+          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+          SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
+      - name: Pull Changes
+        run: ssh -i ../opendc.key opendc.org 'cd opendc && git pull origin'
+      - name: Rebuild Images
+        run: ssh -i ../opendc.key opendc.org 'cd opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml build frontend api simulator'
+      - name: Deploy Images
+        run: ssh -i ../opendc.key opendc.org 'cd opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d'
