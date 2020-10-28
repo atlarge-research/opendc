@@ -1,12 +1,12 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import MachineListComponent from '../../../../../components/app/sidebars/topology/rack/MachineListComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        machineIds: state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].machineIds,
-    }
+const MachineListContainer = (props) => {
+    const machineIds = useSelector(
+        (state) => state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].machineIds
+    )
+    return <MachineListComponent {...props} machineIds={machineIds} />
 }
-
-const MachineListContainer = connect(mapStateToProps)(MachineListComponent)
 
 export default MachineListContainer

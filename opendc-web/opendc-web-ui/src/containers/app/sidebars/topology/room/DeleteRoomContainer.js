@@ -1,13 +1,12 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch } from 'react-redux'
 import { openDeleteRoomModal } from '../../../../../actions/modals/topology'
 import DeleteRoomComponent from '../../../../../components/app/sidebars/topology/room/DeleteRoomComponent'
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onClick: () => dispatch(openDeleteRoomModal()),
-    }
+const DeleteRoomContainer = (props) => {
+    const dispatch = useDispatch()
+    const onClick = () => dispatch(openDeleteRoomModal())
+    return <DeleteRoomComponent {...props} onClick={onClick} />
 }
-
-const DeleteRoomContainer = connect(undefined, mapDispatchToProps)(DeleteRoomComponent)
 
 export default DeleteRoomContainer

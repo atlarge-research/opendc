@@ -1,35 +1,27 @@
 import React from 'react'
-import { connect } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { closeDeleteRackModal } from '../../actions/modals/topology'
 import { deleteRack } from '../../actions/topology/rack'
 import ConfirmationModal from '../../components/modals/ConfirmationModal'
 
-const DeleteRackModalComponent = ({ visible, callback }) => (
-    <ConfirmationModal
-        title="Delete this rack"
-        message="Are you sure you want to delete this rack?"
-        show={visible}
-        callback={callback}
-    />
-)
-
-const mapStateToProps = (state) => {
-    return {
-        visible: state.modals.deleteRackModalVisible,
+const DeleteRackModal = (props) => {
+    const visible = useSelector((state) => state.modals.deleteRackModalVisible)
+    const dispatch = useDispatch()
+    const callback = (isConfirmed) => {
+        if (isConfirmed) {
+            dispatch(deleteRack())
+        }
+        dispatch(closeDeleteRackModal())
     }
+    return (
+        <ConfirmationModal
+            title="Delete this rack"
+            message="Are you sure you want to delete this rack?"
+            show={visible}
+            callback={callback}
+            {...props}
+        />
+    )
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        callback: (isConfirmed) => {
-            if (isConfirmed) {
-                dispatch(deleteRack())
-            }
-            dispatch(closeDeleteRackModal())
-        },
-    }
-}
-
-const DeleteRackModal = connect(mapStateToProps, mapDispatchToProps)(DeleteRackModalComponent)
 
 export default DeleteRackModal

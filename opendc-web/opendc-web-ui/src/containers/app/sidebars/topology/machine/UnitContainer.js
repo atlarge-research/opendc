@@ -1,20 +1,14 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { deleteUnit } from '../../../../../actions/topology/machine'
 import UnitComponent from '../../../../../components/app/sidebars/topology/machine/UnitComponent'
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        unit: state.objects[ownProps.unitType][ownProps.unitId],
-        index: ownProps.unitId,
-    }
-}
+const UnitContainer = ({ unitId, unitType }) => {
+    const dispatch = useDispatch()
+    const unit = useSelector((state) => state.objects[unitType][unitId])
+    const onDelete = () => dispatch(deleteUnit(unitType, unitId))
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
-        onDelete: () => dispatch(deleteUnit(ownProps.unitType, ownProps.index)),
-    }
+    return <UnitComponent index={unitId} unit={unit} unitType={unitType} onDelete={onDelete} />
 }
-
-const UnitContainer = connect(mapStateToProps, mapDispatchToProps)(UnitComponent)
 
 export default UnitContainer

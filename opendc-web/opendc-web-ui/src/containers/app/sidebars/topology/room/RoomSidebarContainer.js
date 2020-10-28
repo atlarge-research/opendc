@@ -1,12 +1,10 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import RoomSidebarComponent from '../../../../../components/app/sidebars/topology/room/RoomSidebarComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        roomId: state.interactionLevel.roomId,
-    }
+const RoomSidebarContainer = (props) => {
+    const roomId = useSelector((state) => state.interactionLevel.roomId)
+    return <RoomSidebarComponent {...props} roomId={roomId} />
 }
-
-const RoomSidebarContainer = connect(mapStateToProps)(RoomSidebarComponent)
 
 export default RoomSidebarContainer

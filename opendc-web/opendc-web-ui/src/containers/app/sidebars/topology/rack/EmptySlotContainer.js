@@ -1,13 +1,12 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch } from 'react-redux'
 import { addMachine } from '../../../../../actions/topology/rack'
 import EmptySlotComponent from '../../../../../components/app/sidebars/topology/rack/EmptySlotComponent'
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
-        onAdd: () => dispatch(addMachine(ownProps.position)),
-    }
+const EmptySlotContainer = (props) => {
+    const dispatch = useDispatch()
+    const onAdd = () => dispatch(addMachine(props.position))
+    return <EmptySlotComponent {...props} onAdd={onAdd} />
 }
-
-const EmptySlotContainer = connect(undefined, mapDispatchToProps)(EmptySlotComponent)
 
 export default EmptySlotContainer

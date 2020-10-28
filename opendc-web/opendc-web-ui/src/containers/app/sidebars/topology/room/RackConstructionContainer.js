@@ -1,21 +1,24 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { startRackConstruction, stopRackConstruction } from '../../../../../actions/topology/room'
 import RackConstructionComponent from '../../../../../components/app/sidebars/topology/room/RackConstructionComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        inRackConstructionMode: state.construction.inRackConstructionMode,
-        isEditingRoom: state.construction.currentRoomInConstruction !== '-1',
-    }
-}
+const RackConstructionContainer = (props) => {
+    const isRackConstructionMode = useSelector((state) => state.construction.inRackConstructionMode)
+    const isEditingRoom = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onStart: () => dispatch(startRackConstruction()),
-        onStop: () => dispatch(stopRackConstruction()),
-    }
+    const dispatch = useDispatch()
+    const onStart = () => dispatch(startRackConstruction())
+    const onStop = () => dispatch(stopRackConstruction())
+    return (
+        <RackConstructionComponent
+            {...props}
+            inRackConstructionMode={isRackConstructionMode}
+            isEditingRoom={isEditingRoom}
+            onStart={onStart}
+            onStop={onStop}
+        />
+    )
 }
-
-const RackConstructionContainer = connect(mapStateToProps, mapDispatchToProps)(RackConstructionComponent)
 
 export default RackConstructionContainer

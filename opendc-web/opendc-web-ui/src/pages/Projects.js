@@ -1,7 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import DocumentTitle from 'react-document-title'
-import { connect } from 'react-redux'
-import { openNewProjectModal } from '../actions/modals/projects'
+import { useDispatch } from 'react-redux'
 import { fetchAuthorizationsOfCurrentUser } from '../actions/users'
 import ProjectFilterPanel from '../components/projects/FilterPanel'
 import NewProjectModal from '../containers/modals/NewProjectModal'
@@ -9,35 +8,24 @@ import NewProjectButtonContainer from '../containers/projects/NewProjectButtonCo
 import VisibleProjectList from '../containers/projects/VisibleProjectAuthList'
 import AppNavbarContainer from '../containers/navigation/AppNavbarContainer'
 
-class ProjectsContainer extends React.Component {
-    componentDidMount() {
-        this.props.fetchAuthorizationsOfCurrentUser()
-    }
+function Projects() {
+    const dispatch = useDispatch()
 
-    render() {
-        return (
-            <DocumentTitle title="My Projects - OpenDC">
-                <div className="full-height">
-                    <AppNavbarContainer fullWidth={false} />
-                    <div className="container text-page-container full-height">
-                        <ProjectFilterPanel />
-                        <VisibleProjectList />
-                        <NewProjectButtonContainer />
-                    </div>
-                    <NewProjectModal />
+    useEffect(() => dispatch(fetchAuthorizationsOfCurrentUser()))
+
+    return (
+        <DocumentTitle title="My Projects - OpenDC">
+            <div className="full-height">
+                <AppNavbarContainer fullWidth={false} />
+                <div className="container text-page-container full-height">
+                    <ProjectFilterPanel />
+                    <VisibleProjectList />
+                    <NewProjectButtonContainer />
                 </div>
-            </DocumentTitle>
-        )
-    }
+                <NewProjectModal />
+            </div>
+        </DocumentTitle>
+    )
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        fetchAuthorizationsOfCurrentUser: () => dispatch(fetchAuthorizationsOfCurrentUser()),
-        openNewProjectModal: () => dispatch(openNewProjectModal()),
-    }
-}
-
-const Projects = connect(undefined, mapDispatchToProps)(ProjectsContainer)
 
 export default Projects

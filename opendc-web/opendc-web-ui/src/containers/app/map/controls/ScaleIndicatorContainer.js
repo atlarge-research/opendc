@@ -1,12 +1,10 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import ScaleIndicatorComponent from '../../../../components/app/map/controls/ScaleIndicatorComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        scale: state.map.scale,
-    }
+const ScaleIndicatorContainer = (props) => {
+    const scale = useSelector((state) => state.map.scale)
+    return <ScaleIndicatorComponent {...props} scale={scale} />
 }
-
-const ScaleIndicatorContainer = connect(mapStateToProps)(ScaleIndicatorComponent)
 
 export default ScaleIndicatorContainer

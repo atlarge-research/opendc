@@ -1,18 +1,16 @@
-import PropTypes from 'prop-types'
 import React from 'react'
 import GoogleLogin from 'react-google-login'
-import { connect } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { logIn } from '../../actions/auth'
 import config from '../../config'
 
-class LoginContainer extends React.Component {
-    static propTypes = {
-        visible: PropTypes.bool.isRequired,
-        onLogin: PropTypes.func.isRequired,
-    }
+const Login = (props) => {
+    const { visible } = props
+    const dispatch = useDispatch()
 
-    onAuthResponse(response) {
-        this.props.onLogin({
+    const onLogin = (payload) => dispatch(logIn(payload))
+    const onAuthResponse = (response) => {
+        onLogin({
             email: response.getBasicProfile().getEmail(),
             givenName: response.getBasicProfile().getGivenName(),
             familyName: response.getBasicProfile().getFamilyName(),
@@ -21,43 +19,27 @@ class LoginContainer extends React.Component {
             expiresAt: response.getAuthResponse().expires_at,
         })
     }
-
-    onAuthFailure(error) {
+    const onAuthFailure = (error) => {
+        // TODO Show error alert
         console.error(error)
     }
 
-    render() {
-        if (!this.props.visible) {
-            return <span />
-        }
-
-        return (
-            <GoogleLogin
-                clientId={config['OAUTH_CLIENT_ID']}
-                onSuccess={this.onAuthResponse.bind(this)}
-                onFailure={this.onAuthFailure.bind(this)}
-                render={(renderProps) => (
-                    <span onClick={renderProps.onClick} className="login btn btn-primary">
-                        <span className="fa fa-google" /> Login with Google
-                    </span>
-                )}
-            />
-        )
+    if (!visible) {
+        return <span />
     }
-}
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        visible: ownProps.visible,
-    }
+    return (
+        <GoogleLogin
+            clientId={config.OAUTH_CLIENT_ID}
+            onSuccess={onAuthResponse}
+            onFailure={onAuthFailure}
+            render={(renderProps) => (
+                <span onClick={renderProps.onClick} className="login btn btn-primary">
+                    <span className="fa fa-google" /> Login with Google
+                </span>
+            )}
+        />
+    )
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onLogin: (payload) => dispatch(logIn(payload)),
-    }
-}
-
-const Login = connect(mapStateToProps, mapDispatchToProps)(LoginContainer)
 
 export default Login

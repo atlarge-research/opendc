@@ -1,4 +1,5 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {
     cancelNewRoomConstruction,
     finishNewRoomConstruction,
@@ -6,20 +7,22 @@ import {
 } from '../../../../../actions/topology/building'
 import StartNewRoomConstructionComponent from '../../../../../components/app/sidebars/topology/building/NewRoomConstructionComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        currentRoomInConstruction: state.construction.currentRoomInConstruction,
-    }
-}
+const NewRoomConstructionButton = (props) => {
+    const currentRoomInConstruction = useSelector((state) => state.construction.currentRoomInConstruction)
 
-const mapDispatchToProps = (dispatch) => {
-    return {
+    const dispatch = useDispatch()
+    const actions = {
         onStart: () => dispatch(startNewRoomConstruction()),
         onFinish: () => dispatch(finishNewRoomConstruction()),
         onCancel: () => dispatch(cancelNewRoomConstruction()),
     }
+    return (
+        <StartNewRoomConstructionComponent
+            {...props}
+            {...actions}
+            currentRoomInConstruction={currentRoomInConstruction}
+        />
+    )
 }
-
-const NewRoomConstructionButton = connect(mapStateToProps, mapDispatchToProps)(StartNewRoomConstructionComponent)
 
 export default NewRoomConstructionButton

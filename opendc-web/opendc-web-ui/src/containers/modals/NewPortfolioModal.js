@@ -1,30 +1,24 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { closeNewPortfolioModal } from '../../actions/modals/portfolios'
 import NewPortfolioModalComponent from '../../components/modals/custom-components/NewPortfolioModalComponent'
 import { addPortfolio } from '../../actions/portfolios'
-import { closeNewPortfolioModal } from '../../actions/modals/portfolios'
 
-const mapStateToProps = (state) => {
-    return {
-        show: state.modals.newPortfolioModalVisible,
+const NewPortfolioModal = (props) => {
+    const show = useSelector((state) => state.modals.newPortfolioModalVisible)
+    const dispatch = useDispatch()
+    const callback = (name, targets) => {
+        if (name) {
+            dispatch(
+                addPortfolio({
+                    name,
+                    targets,
+                })
+            )
+        }
+        dispatch(closeNewPortfolioModal())
     }
+    return <NewPortfolioModalComponent {...props} callback={callback} show={show} />
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        callback: (name, targets) => {
-            if (name) {
-                dispatch(
-                    addPortfolio({
-                        name,
-                        targets,
-                    })
-                )
-            }
-            dispatch(closeNewPortfolioModal())
-        },
-    }
-}
-
-const NewPortfolioModal = connect(mapStateToProps, mapDispatchToProps)(NewPortfolioModalComponent)
 
 export default NewPortfolioModal

@@ -1,12 +1,10 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import RackGroup from '../../../components/app/map/groups/RackGroup'
 
-const mapStateToProps = (state) => {
-    return {
-        interactionLevel: state.interactionLevel,
-    }
+const RackContainer = ({ tile }) => {
+    const interactionLevel = useSelector((state) => state.interactionLevel)
+    return <RackGroup interactionLeve={interactionLevel} tile={tile} />
 }
-
-const RackContainer = connect(mapStateToProps)(RackGroup)
 
 export default RackContainer

@@ -1,35 +1,27 @@
 import React from 'react'
-import { connect } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { closeDeleteProfileModal } from '../../actions/modals/profile'
 import { deleteCurrentUser } from '../../actions/users'
 import ConfirmationModal from '../../components/modals/ConfirmationModal'
 
-const DeleteProfileModalComponent = ({ visible, callback }) => (
-    <ConfirmationModal
-        title="Delete my account"
-        message="Are you sure you want to delete your OpenDC account?"
-        show={visible}
-        callback={callback}
-    />
-)
+const DeleteProfileModal = () => {
+    const visible = useSelector((state) => state.modals.deleteProfileModalVisible)
 
-const mapStateToProps = (state) => {
-    return {
-        visible: state.modals.deleteProfileModalVisible,
+    const dispatch = useDispatch()
+    const callback = (isConfirmed) => {
+        if (isConfirmed) {
+            dispatch(deleteCurrentUser())
+        }
+        dispatch(closeDeleteProfileModal())
     }
+    return (
+        <ConfirmationModal
+            title="Delete my account"
+            message="Are you sure you want to delete your OpenDC account?"
+            show={visible}
+            callback={callback}
+        />
+    )
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        callback: (isConfirmed) => {
-            if (isConfirmed) {
-                dispatch(deleteCurrentUser())
-            }
-            dispatch(closeDeleteProfileModal())
-        },
-    }
-}
-
-const DeleteProfileModal = connect(mapStateToProps, mapDispatchToProps)(DeleteProfileModalComponent)
 
 export default DeleteProfileModal

@@ -1,19 +1,14 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { goFromRackToMachine } from '../../../../../actions/interaction-level'
 import MachineComponent from '../../../../../components/app/sidebars/topology/rack/MachineComponent'
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        machine: state.objects.machine[ownProps.machineId],
-    }
+const MachineContainer = (props) => {
+    const machine = useSelector((state) => state.objects.machine[props.machineId])
+    const dispatch = useDispatch()
+    return (
+        <MachineComponent {...props} onClick={() => dispatch(goFromRackToMachine(props.position))} machine={machine} />
+    )
 }
-
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
-        onClick: () => dispatch(goFromRackToMachine(ownProps.position)),
-    }
-}
-
-const MachineContainer = connect(mapStateToProps, mapDispatchToProps)(MachineComponent)
 
 export default MachineContainer

@@ -1,14 +1,9 @@
 import React from 'react'
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 
-const mapStateToProps = (state) => {
-    return {
-        text: state.auth.givenName + ' ' + state.auth.familyName,
-    }
+function ProfileName() {
+    const name = useSelector((state) => `${state.auth.givenName} ${state.auth.familyName}`)
+    return <span>{name}</span>
 }
-
-const SpanElement = ({ text }) => <span>{text}</span>
-
-const ProfileName = connect(mapStateToProps)(SpanElement)
 
 export default ProfileName

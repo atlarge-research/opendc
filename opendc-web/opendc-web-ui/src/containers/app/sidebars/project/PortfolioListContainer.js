@@ -1,28 +1,31 @@
-import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import PortfolioListComponent from '../../../../components/app/sidebars/project/PortfolioListComponent'
 import { deletePortfolio, setCurrentPortfolio } from '../../../../actions/portfolios'
 import { openNewPortfolioModal } from '../../../../actions/modals/portfolios'
 import { getState } from '../../../../util/state-utils'
 import { setCurrentTopology } from '../../../../actions/topology/building'
 
-const mapStateToProps = (state) => {
-    let portfolios = state.objects.project[state.currentProjectId]
-        ? state.objects.project[state.currentProjectId].portfolioIds.map((t) => state.objects.portfolio[t])
-        : []
-    if (portfolios.filter((t) => !t).length > 0) {
-        portfolios = []
-    }
+const PortfolioListContainer = (props) => {
+    const state = useSelector((state) => {
+        let portfolios = state.objects.project[state.currentProjectId]
+            ? state.objects.project[state.currentProjectId].portfolioIds.map((t) => state.objects.portfolio[t])
+            : []
+        if (portfolios.filter((t) => !t).length > 0) {
+            portfolios = []
+        }
 
-    return {
-        currentProjectId: state.currentProjectId,
-        currentPortfolioId: state.currentPortfolioId,
-        portfolios,
-    }
-}
+        return {
+            currentProjectId: state.currentProjectId,
+            currentPortfolioId: state.currentPortfolioId,
+            portfolios,
+        }
+    })
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
+    const dispatch = useDispatch()
+    const history = useHistory()
+    const actions = {
         onNewPortfolio: () => {
             dispatch(openNewPortfolioModal())
         },
@@ -34,12 +37,11 @@ const mapDispatchToProps = (dispatch, ownProps) => {
                 const state = await getState(dispatch)
                 dispatch(deletePortfolio(id))
                 dispatch(setCurrentTopology(state.objects.project[state.currentProjectId].topologyIds[0]))
-                ownProps.history.push(`/projects/${state.currentProjectId}`)
+                history.push(`/projects/${state.currentProjectId}`)
             }
         },
     }
+    return <PortfolioListComponent {...props} {...state} {...actions} />
 }
-
-const PortfolioListContainer = withRouter(connect(mapStateToProps, mapDispatchToProps)(PortfolioListComponent))
 
 export default PortfolioListContainer

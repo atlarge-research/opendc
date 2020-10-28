@@ -1,26 +1,19 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { goFromRoomToRack } from '../../../actions/interaction-level'
 import TileGroup from '../../../components/app/map/groups/TileGroup'
 
-const mapStateToProps = (state, ownProps) => {
-    const tile = state.objects.tile[ownProps.tileId]
+const TileContainer = (props) => {
+    const interactionLevel = useSelector((state) => state.interactionLevel)
+    const tile = useSelector((state) => state.objects.tile[props.tileId])
 
-    return {
-        interactionLevel: state.interactionLevel,
-        tile,
+    const dispatch = useDispatch()
+    const onClick = (tile) => {
+        if (tile.rackId) {
+            dispatch(goFromRoomToRack(tile._id))
+        }
     }
+    return <TileGroup {...props} onClick={onClick} tile={tile} interactionLevel={interactionLevel} />
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onClick: (tile) => {
-            if (tile.rackId) {
-                dispatch(goFromRoomToRack(tile._id))
-            }
-        },
-    }
-}
-
-const TileContainer = connect(mapStateToProps, mapDispatchToProps)(TileGroup)
 
 export default TileContainer

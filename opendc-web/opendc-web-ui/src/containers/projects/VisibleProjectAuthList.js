@@ -1,4 +1,5 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import ProjectList from '../../components/projects/ProjectAuthList'
 
 const getVisibleProjectAuths = (projectAuths, filter) => {
@@ -14,19 +15,18 @@ const getVisibleProjectAuths = (projectAuths, filter) => {
     }
 }
 
-const mapStateToProps = (state) => {
-    const denormalizedAuthorizations = state.projectList.authorizationsOfCurrentUser.map((authorizationIds) => {
-        const authorization = state.objects.authorization[authorizationIds]
-        authorization.user = state.objects.user[authorization.userId]
-        authorization.project = state.objects.project[authorization.projectId]
-        return authorization
+const VisibleProjectAuthList = (props) => {
+    const authorizations = useSelector((state) => {
+        const denormalizedAuthorizations = state.projectList.authorizationsOfCurrentUser.map((authorizationIds) => {
+            const authorization = state.objects.authorization[authorizationIds]
+            authorization.user = state.objects.user[authorization.userId]
+            authorization.project = state.objects.project[authorization.projectId]
+            return authorization
+        })
+
+        return getVisibleProjectAuths(denormalizedAuthorizations, state.projectList.authVisibilityFilter)
     })
-
-    return {
-        authorizations: getVisibleProjectAuths(denormalizedAuthorizations, state.projectList.authVisibilityFilter),
-    }
+    return <ProjectList {...props} authorizations={authorizations} />
 }
-
-const VisibleProjectAuthList = connect(mapStateToProps)(ProjectList)
 
 export default VisibleProjectAuthList

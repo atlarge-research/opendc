@@ -1,19 +1,13 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { setAuthVisibilityFilter } from '../../actions/projects'
 import FilterButton from '../../components/projects/FilterButton'
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        active: state.projectList.authVisibilityFilter === ownProps.filter,
-    }
-}
+const FilterLink = (props) => {
+    const active = useSelector((state) => state.projectList.authVisibilityFilter === props.filter)
+    const dispatch = useDispatch()
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
-        onClick: () => dispatch(setAuthVisibilityFilter(ownProps.filter)),
-    }
+    return <FilterButton {...props} onClick={() => dispatch(setAuthVisibilityFilter(props.filter))} active={active} />
 }
-
-const FilterLink = connect(mapStateToProps, mapDispatchToProps)(FilterButton)
 
 export default FilterLink

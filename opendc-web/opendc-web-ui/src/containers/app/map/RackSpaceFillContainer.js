@@ -1,14 +1,16 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import RackFillBar from '../../../components/app/map/elements/RackFillBar'
 
-const mapStateToProps = (state, ownProps) => {
-    const machineIds = state.objects.rack[state.objects.tile[ownProps.tileId].rackId].machineIds
-    return {
-        type: 'space',
-        fillFraction: machineIds.filter((id) => id !== null).length / machineIds.length,
-    }
+const RackSpaceFillContainer = (props) => {
+    const state = useSelector((state) => {
+        const machineIds = state.objects.rack[state.objects.tile[props.tileId].rackId].machineIds
+        return {
+            type: 'space',
+            fillFraction: machineIds.filter((id) => id !== null).length / machineIds.length,
+        }
+    })
+    return <RackFillBar {...props} {...state} />
 }
-
-const RackSpaceFillContainer = connect(mapStateToProps)(RackFillBar)
 
 export default RackSpaceFillContainer
