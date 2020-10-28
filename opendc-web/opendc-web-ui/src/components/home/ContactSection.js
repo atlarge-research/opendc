@@ -1,42 +1,44 @@
 import React from 'react'
 import FontAwesome from 'react-fontawesome'
-import './ContactSection.sass'
+import { Row, Col } from 'reactstrap'
 import ContentSection from './ContentSection'
 
+import './ContactSection.sass'
+
 const ContactSection = () => (
-    <ContentSection name="contact" title="Contact">
-        <div className="row justify-content-center">
-            <div className="col-4">
+    <ContentSection name="contact" title="Contact" className="contact-section">
+        <Row className="justify-content-center">
+            <Col md="4">
                 <a href="https://github.com/atlarge-research/opendc">
                     <FontAwesome name="github" size="3x" className="mb-2" />
                     <div className="w-100" />
                     atlarge-research/opendc
                 </a>
-            </div>
-            <div className="col-4">
+            </Col>
+            <Col md="4">
                 <a href="mailto:opendc@atlarge-research.com">
                     <FontAwesome name="envelope" size="3x" className="mb-2" />
                     <div className="w-100" />
                     opendc@atlarge-research.com
                 </a>
-            </div>
-        </div>
-        <div className="row">
-            <div className="col text-center">
-                <img src="img/tudelft-icon.png" className="img-fluid tudelft-icon" alt="TU Delft" />
-            </div>
-        </div>
-        <div className="row">
-            <div className="col text-center">
+            </Col>
+        </Row>
+        <Row>
+            <Col className="text-center">
+                <img src="img/tudelft-icon.png" className="img-fluid tudelft-icon" height="100" alt="TU Delft" />
+            </Col>
+        </Row>
+        <Row>
+            <Col className="text-center">
                 A project by the &nbsp;
                 <a href="http://atlarge.science" target="_blank" rel="noopener noreferrer">
                     <strong>@Large Research Group</strong>
                 </a>
                 .
-            </div>
-        </div>
-        <div className="row">
-            <div className="col text-center disclaimer mt-5 small">
+            </Col>
+        </Row>
+        <Row>
+            <Col className="text-center disclaimer mt-5 small">
                 <FontAwesome name="exclamation-triangle" size="2x" className="mr-2" />
                 <br />
                 <strong>Disclaimer: </strong>
@@ -47,8 +49,8 @@ const ContactSection = () => (
                     <a href="https://github.com/atlarge-research/opendc/blob/master/LICENSE.txt">license</a>
                 </strong>
                 ). Sorry for the inconvenience.
-            </div>
-        </div>
+            </Col>
+        </Row>
     </ContentSection>
 )
 
