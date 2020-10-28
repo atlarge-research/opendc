@@ -4,12 +4,12 @@ test_id = 24 * '1'
 
 
 def test_add_scenario_missing_parameter(client):
-    assert '400' in client.post('/api/v2/portfolios/1/scenarios').status
+    assert '400' in client.post('/v2/portfolios/1/scenarios').status
 
 
 def test_add_scenario_non_existing_portfolio(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.post(f'/api/v2/portfolios/{test_id}/scenarios',
+    assert '404' in client.post(f'/v2/portfolios/{test_id}/scenarios',
                                 json={
                                     'scenario': {
                                         'name': 'test',
@@ -41,7 +41,7 @@ def test_add_scenario_not_authorized(client, mocker):
                                 'authorizationLevel': 'VIEW'
                             }]
                         })
-    assert '403' in client.post(f'/api/v2/portfolios/{test_id}/scenarios',
+    assert '403' in client.post(f'/v2/portfolios/{test_id}/scenarios',
                                 json={
                                     'scenario': {
                                         'name': 'test',
@@ -102,7 +102,7 @@ def test_add_scenario(client, mocker):
                         })
     mocker.patch.object(DB, 'update', return_value=None)
     res = client.post(
-        f'/api/v2/portfolios/{test_id}/scenarios',
+        f'/v2/portfolios/{test_id}/scenarios',
         json={
             'scenario': {
                 'name': 'test',

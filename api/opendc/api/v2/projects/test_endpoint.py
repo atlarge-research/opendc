@@ -4,7 +4,7 @@ test_id = 24 * '1'
 
 
 def test_add_project_missing_parameter(client):
-    assert '400' in client.post('/api/v2/projects').status
+    assert '400' in client.post('/v2/projects').status
 
 
 def test_add_project(client, mocker):
@@ -18,7 +18,7 @@ def test_add_project(client, mocker):
                             'topologyIds': []
                         })
     mocker.patch.object(DB, 'update', return_value={})
-    res = client.post('/api/v2/projects', json={'project': {'name': 'test project'}})
+    res = client.post('/v2/projects', json={'project': {'name': 'test project'}})
     assert 'datetimeCreated' in res.json['content']
     assert 'datetimeLastEdited' in res.json['content']
     assert 'topologyIds' in res.json['content']

@@ -4,7 +4,7 @@ test_id = 24 * '1'
 
 
 def test_add_prefab_missing_parameter(client):
-    assert '400' in client.post('/api/v2/prefabs').status
+    assert '400' in client.post('/v2/prefabs').status
 
 
 def test_add_prefab(client, mocker):
@@ -17,7 +17,7 @@ def test_add_prefab(client, mocker):
                             'datetimeLastEdited': '000',
                             'authorId': test_id
                         })
-    res = client.post('/api/v2/prefabs', json={'prefab': {'name': 'test prefab'}})
+    res = client.post('/v2/prefabs', json={'prefab': {'name': 'test prefab'}})
     assert 'datetimeCreated' in res.json['content']
     assert 'datetimeLastEdited' in res.json['content']
     assert 'authorId' in res.json['content']

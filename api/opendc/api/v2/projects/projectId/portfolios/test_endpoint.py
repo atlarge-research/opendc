@@ -4,12 +4,12 @@ test_id = 24 * '1'
 
 
 def test_add_portfolio_missing_parameter(client):
-    assert '400' in client.post(f'/api/v2/projects/{test_id}/portfolios').status
+    assert '400' in client.post(f'/v2/projects/{test_id}/portfolios').status
 
 
 def test_add_portfolio_non_existing_project(client, mocker):
     mocker.patch.object(DB, 'fetch_one', return_value=None)
-    assert '404' in client.post(f'/api/v2/projects/{test_id}/portfolios',
+    assert '404' in client.post(f'/v2/projects/{test_id}/portfolios',
                                 json={
                                     'portfolio': {
                                         'name': 'test',
@@ -32,7 +32,7 @@ def test_add_portfolio_not_authorized(client, mocker):
                                 'authorizationLevel': 'VIEW'
                             }]
                         })
-    assert '403' in client.post(f'/api/v2/projects/{test_id}/portfolios',
+    assert '403' in client.post(f'/v2/projects/{test_id}/portfolios',
                                 json={
                                     'portfolio': {
                                         'name': 'test',
@@ -70,7 +70,7 @@ def test_add_portfolio(client, mocker):
                         })
     mocker.patch.object(DB, 'update', return_value=None)
     res = client.post(
-        f'/api/v2/projects/{test_id}/portfolios',
+        f'/v2/projects/{test_id}/portfolios',
         json={
             'portfolio': {
                 'name': 'test',

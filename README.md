@@ -45,7 +45,7 @@ The simulator monitors the database for `QUEUED` scenarios, and simulates them a
 
 The official way to run OpenDC is using Docker. Other options include building and running locally, and building and running to deploy on a server.
 
-For all of these options, you have to create a Google API Console project and client ID, which the OpenDC frontend and web server will use to authenticate users and requests. Follow [these steps](https://developers.google.com/identity/sign-in/web/sign-in) to make such a project. In the 'Authorized JavaScript origins' and 'Authorized redirect URI' fields, be sure to add `http://localhost:8081` and `https://localhost:3000`. Download the JSON of the OAuth 2.0 client ID you created from the Credentials tab, and specifically note the `client_id`, which you'll need to build OpenDC.
+For all of these options, you have to create a Google API Console project and client ID, which the OpenDC frontend and web server will use to authenticate users and requests. Follow [these steps](https://developers.google.com/identity/sign-in/web/sign-in) to make such a project. In the 'Authorized JavaScript origins' and 'Authorized redirect URI' fields, be sure to add `http://localhost:8080` (frontend), `http://localhost:8081` (api) and `https://localhost:3000` (frontend dev). Download the JSON of the OAuth 2.0 client ID you created from the Credentials tab, and specifically note the `client_id`, which you'll need to build OpenDC.
 
 ### Installing Docker
 
@@ -57,7 +57,7 @@ Users of Windows 10 Home and previous editions of Windows can use [Docker Toolbo
 
 _Skip this if you have GNU/Linux, Mac OS X and Windows 10 Professional._
 
-Open VirtualBox, navigate to the settings of your default docker VM, and go to the 'Network' tab. There, hidden in the 'Advanced' panel, is the 'Port forwarding' feature, where you can set a rule for exposing a port of the VM to the host OS. Add one from guest IP `10.0.2.15` to host IP `127.0.0.1`, both on port `8081`. This enables you to open a browser on your host OS and navigate to `http://localhost:8081`, once the server is running.
+Open VirtualBox, navigate to the settings of your default docker VM, and go to the 'Network' tab. There, hidden in the 'Advanced' panel, is the 'Port forwarding' feature, where you can set a rule for exposing a port of the VM to the host OS. Add one from guest IP `10.0.2.15` to host IP `127.0.0.1`, both on port `8080` and `8081`. This enables you to open a browser on your host OS and navigate to `http://localhost:8080`, once the server is running.
 
 ### Running OpenDC
 
@@ -82,8 +82,7 @@ OPENDC_DB_USERNAME=opendc
 OPENDC_DB_PASSWORD=opendcpassword
 OPENDC_FLASK_SECRET="This is a secret flask key, please change"
 OPENDC_OAUTH_CLIENT_ID=your-google-oauth-client-id
-OPENDC_ROOT_DIR=/your/path/to/opendc
-OPENDC_SERVER_BASE_URL=http://localhost:8081
+OPENDC_API_BASE_URL=http://localhost:8081
 ```
 
 We provide a list of default traces for you to experiment with. If you want to add others, place them in the `traces` directory and add entries to the database (see also [the database folder](database/mongo-init-opendc-db.sh))
@@ -100,4 +99,4 @@ docker-compose build
 docker-compose up
 ```
 
-Wait a few seconds and open `http://localhost:8081` in your browser to use OpenDC. We recommend Google Chrome for the best development experience.
+Wait a few seconds and open `http://localhost:8080` in your browser to use OpenDC. We recommend Google Chrome for the best development experience.

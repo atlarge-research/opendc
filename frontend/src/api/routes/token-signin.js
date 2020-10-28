@@ -1,5 +1,10 @@
 export function performTokenSignIn(token) {
-    return new Promise((resolve) => {
-        window['jQuery'].post('/tokensignin', { idtoken: token }, (data) => resolve(data))
-    })
+    const apiUrl = process.env.REACT_APP_API_BASE_URL || ''
+
+    return fetch(`${apiUrl}/tokensignin`, {
+        method: 'POST',
+        body: new URLSearchParams({
+            idtoken: token,
+        }),
+    }).then((res) => res.json())
 }
