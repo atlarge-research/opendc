@@ -46,7 +46,6 @@ class MapStageComponent extends React.Component {
     }
 
     updateScale(e) {
-        e.preventDefault()
         this.props.zoomInOnPosition(e.deltaY < 0, this.state.mouseX, this.state.mouseY)
     }
 
