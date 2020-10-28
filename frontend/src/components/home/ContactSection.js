@@ -1,6 +1,6 @@
 import React from 'react'
 import FontAwesome from 'react-fontawesome'
-import './ContactSection.css'
+import './ContactSection.sass'
 import ContentSection from './ContentSection'
 
 const ContactSection = () => (

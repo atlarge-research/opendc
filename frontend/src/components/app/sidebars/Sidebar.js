@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import React from 'react'
-import './Sidebar.css'
+import './Sidebar.sass'
 
 class Sidebar extends React.Component {
     static propTypes = {

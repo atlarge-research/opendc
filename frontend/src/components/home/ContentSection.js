@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 import React from 'react'
-import './ContentSection.css'
+import './ContentSection.sass'
 
 const ContentSection = ({ name, title, children }) => (
     <div id={name} className={classNames(name + '-section', 'content-section')}>

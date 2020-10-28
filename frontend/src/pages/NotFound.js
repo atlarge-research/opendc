@@ -1,7 +1,7 @@
 import React from 'react'
 import DocumentTitle from 'react-document-title'
 import TerminalWindow from '../components/not-found/TerminalWindow'
-import './NotFound.css'
+import './NotFound.sass'
 
 const NotFound = () => (
     <DocumentTitle title="Page Not Found - OpenDC">

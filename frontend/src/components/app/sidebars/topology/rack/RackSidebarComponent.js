@@ -3,7 +3,7 @@ import BackToRoomContainer from '../../../../../containers/app/sidebars/topology
 import DeleteRackContainer from '../../../../../containers/app/sidebars/topology/rack/DeleteRackContainer'
 import MachineListContainer from '../../../../../containers/app/sidebars/topology/rack/MachineListContainer'
 import RackNameContainer from '../../../../../containers/app/sidebars/topology/rack/RackNameContainer'
-import './RackSidebarComponent.css'
+import './RackSidebarComponent.sass'
 import AddPrefabContainer from '../../../../../containers/app/sidebars/topology/rack/AddPrefabContainer'
 
 const RackSidebarComponent = () => {

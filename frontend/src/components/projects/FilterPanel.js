@@ -1,6 +1,6 @@
 import React from 'react'
 import FilterLink from '../../containers/projects/FilterLink'
-import './FilterPanel.css'
+import './FilterPanel.sass'
 
 const FilterPanel = () => (
     <div className="btn-group filter-panel mb-2">

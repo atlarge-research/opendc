@@ -5,7 +5,7 @@ import { userIsLoggedIn } from '../../auth/index'
 import Login from '../../containers/auth/Login'
 import Logout from '../../containers/auth/Logout'
 import ProfileName from '../../containers/auth/ProfileName'
-import './Navbar.css'
+import './Navbar.sass'
 
 export const NAVBAR_HEIGHT = 60
 

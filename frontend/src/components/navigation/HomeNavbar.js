@@ -1,6 +1,6 @@
 import React from 'react'
 import Navbar from './Navbar'
-import './Navbar.css'
+import './Navbar.sass'
 
 const ScrollNavItem = ({ id, name }) => (
     <li className="nav-item">
