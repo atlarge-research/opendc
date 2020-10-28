@@ -19,6 +19,7 @@
     "proxy": "http://localhost:8082",
     "dependencies": {
         "approximate-number": "~2.0.0",
+        "bootstrap": "4.5.3",
         "classnames": "~2.2.5",
         "husky": "~4.2.5",
         "konva": "~6.0.0",
