@@ -3,7 +3,7 @@ import ScreenshotSection from './ScreenshotSection'
 
 const ModelingSection = () => (
     <ScreenshotSection
-        name="simulation"
+        name="project"
         title="Datacenter Simulation"
         imageUrl="/img/screenshot-simulation-zoom.png"
         caption="Running an experiment in OpenDC"

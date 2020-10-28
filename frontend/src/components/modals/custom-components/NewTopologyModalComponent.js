@@ -13,8 +13,10 @@ class NewTopologyModalComponent extends React.Component {
     }
 
     reset() {
-        this.textInput.value = ''
-        this.originTopology.selectedIndex = 0
+        if (this.textInput) {
+            this.textInput.value = ''
+            this.originTopology.selectedIndex = 0
+        }
     }
 
     onSubmit() {

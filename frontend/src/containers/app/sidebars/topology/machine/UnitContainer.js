@@ -5,6 +5,7 @@ import UnitComponent from '../../../../../components/app/sidebars/topology/machi
 const mapStateToProps = (state, ownProps) => {
     return {
         unit: state.objects[ownProps.unitType][ownProps.unitId],
+        index: ownProps.unitId,
     }
 }
 

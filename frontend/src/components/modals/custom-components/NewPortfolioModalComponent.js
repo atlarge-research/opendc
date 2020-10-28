@@ -19,11 +19,13 @@ class NewPortfolioModalComponent extends React.Component {
     }
 
     reset() {
-        this.textInput.value = ''
-        AVAILABLE_METRICS.forEach((metric) => {
-            this.metricCheckboxes[metric].checked = true
-        })
-        this.repeatsInput.value = 1
+        if (this.textInput) {
+            this.textInput.value = ''
+            AVAILABLE_METRICS.forEach((metric) => {
+                this.metricCheckboxes[metric].checked = true
+            })
+            this.repeatsInput.value = 1
+        }
     }
 
     onSubmit() {
