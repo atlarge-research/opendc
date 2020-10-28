@@ -4,7 +4,6 @@ import { Shortcuts } from 'react-shortcuts'
 import MapLayer from '../../../containers/app/map/layers/MapLayer'
 import ObjectHoverLayer from '../../../containers/app/map/layers/ObjectHoverLayer'
 import RoomHoverLayer from '../../../containers/app/map/layers/RoomHoverLayer'
-import jQuery from '../../../util/jquery'
 import { NAVBAR_HEIGHT } from '../../navigation/Navbar'
 import { MAP_MOVE_PIXELS_PER_EVENT } from './MapConstants'
 import { Provider } from 'react-redux'
@@ -43,7 +42,7 @@ class MapStageComponent extends React.Component {
     }
 
     updateDimensions() {
-        this.props.setMapDimensions(jQuery(window).width(), jQuery(window).height() - NAVBAR_HEIGHT)
+        this.props.setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
     }
 
     updateScale(e) {
