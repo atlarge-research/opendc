@@ -45,7 +45,7 @@ The simulator monitors the database for `QUEUED` scenarios, and simulates them a
 
 The official way to run OpenDC is using Docker. Other options include building and running locally, and building and running to deploy on a server.
 
-For all of these options, you have to create a Google API Console project and client ID, which the OpenDC frontend and web server will use to authenticate users and requests. Follow [these steps](https://developers.google.com/identity/sign-in/web/sign-in) to make such a project. In the 'Authorized JavaScript origins' and 'Authorized redirect URI' fields, be sure to add `http://localhost:8080`, `http://localhost:8081` and `https://localhost:3000`. Download the JSON of the OAuth 2.0 client ID you created from the Credentials tab, and specifically note the `client_id`, which you'll need to build OpenDC.
+For all of these options, you have to create a Google API Console project and client ID, which the OpenDC frontend and web server will use to authenticate users and requests. Follow [these steps](https://developers.google.com/identity/sign-in/web/sign-in) to make such a project. In the 'Authorized JavaScript origins' and 'Authorized redirect URI' fields, be sure to add `http://localhost:8080` (frontend), `http://localhost:8081` (api) and `https://localhost:3000` (frontend dev). Download the JSON of the OAuth 2.0 client ID you created from the Credentials tab, and specifically note the `client_id`, which you'll need to build OpenDC.
 
 ### Installing Docker
 
