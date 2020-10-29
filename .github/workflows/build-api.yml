@@ -1,9 +1,11 @@
-name: REST API
+name: Build API
 
 on:
   push:
     paths:
       - 'api/**'
+  pull_request:
+    branches: [master]
 
 defaults:
   run:
