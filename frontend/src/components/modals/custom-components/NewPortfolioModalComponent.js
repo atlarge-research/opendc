@@ -1,98 +1,69 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useRef } from 'react'
+import { Form, FormGroup, Input, Label } from 'reactstrap'
 import Modal from '../Modal'
 import { AVAILABLE_METRICS } from '../../../util/available-metrics'
 
-class NewPortfolioModalComponent extends React.Component {
-    static propTypes = {
-        show: PropTypes.bool.isRequired,
-        callback: PropTypes.func.isRequired,
-    }
+const NewPortfolioModalComponent = ({ show, callback }) => {
+    const textInput = useRef(null)
+    const repeatsInput = useRef(null)
+    const metricCheckboxes = useRef({})
 
-    constructor(props) {
-        super(props)
-        this.metricCheckboxes = {}
-    }
-
-    componentDidMount() {
-        this.reset()
-    }
-
-    reset() {
-        if (this.textInput) {
-            this.textInput.value = ''
-            AVAILABLE_METRICS.forEach((metric) => {
-                this.metricCheckboxes[metric].checked = true
-            })
-            this.repeatsInput.value = 1
-        }
-    }
-
-    onSubmit() {
-        this.props.callback(this.textInput.value, {
-            enabledMetrics: AVAILABLE_METRICS.filter((metric) => this.metricCheckboxes[metric].checked),
-            repeatsPerScenario: parseInt(this.repeatsInput.value),
+    const onSubmit = () =>
+        callback(textInput.current.value, {
+            enabledMetrics: AVAILABLE_METRICS.filter((metric) => metricCheckboxes.current[metric].checked),
+            repeatsPerScenario: parseInt(repeatsInput.current.value),
         })
-        this.reset()
-    }
+    const onCancel = () => callback(undefined)
 
-    onCancel() {
-        this.props.callback(undefined)
-        this.reset()
-    }
-
-    render() {
-        return (
-            <Modal
-                title="New Portfolio"
-                show={this.props.show}
-                onSubmit={this.onSubmit.bind(this)}
-                onCancel={this.onCancel.bind(this)}
+    return (
+        <Modal title="New Portfolio" show={show} onSubmit={onSubmit} onCancel={onCancel}>
+            <Form
+                onSubmit={(e) => {
+                    e.preventDefault()
+                    this.onSubmit()
+                }}
             >
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault()
-                        this.onSubmit()
-                    }}
-                >
-                    <div className="form-group">
-                        <label className="form-control-label">Name</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            required
-                            ref={(textInput) => (this.textInput = textInput)}
-                        />
-                    </div>
-                    <h4>Targets</h4>
-                    <h5>Metrics</h5>
-                    <div className="form-group">
-                        {AVAILABLE_METRICS.map((metric) => (
-                            <div className="form-check" key={metric}>
-                                <label className="form-check-label">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        ref={(checkbox) => (this.metricCheckboxes[metric] = checkbox)}
-                                    />
-                                    <code>{metric}</code>
-                                </label>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="form-group">
-                        <label className="form-control-label">Repeats per scenario</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            required
-                            ref={(repeatsInput) => (this.repeatsInput = repeatsInput)}
-                        />
-                    </div>
-                </form>
-            </Modal>
-        )
-    }
+                <FormGroup>
+                    <Label for="name">Name</Label>
+                    <Input name="name" type="text" required innerRef={textInput} placeholder="My Portfolio" />
+                </FormGroup>
+                <h4>Targets</h4>
+                <h5>Metrics</h5>
+                <FormGroup>
+                    {AVAILABLE_METRICS.map((metric) => (
+                        <FormGroup check key={metric}>
+                            <Label for={metric} check>
+                                <Input
+                                    name={metric}
+                                    type="checkbox"
+                                    innerRef={(ref) => (metricCheckboxes.current[metric] = ref)}
+                                />
+                                <code>{metric}</code>
+                            </Label>
+                        </FormGroup>
+                    ))}
+                </FormGroup>
+                <FormGroup>
+                    <Label for="repeats">Repeats per scenario</Label>
+                    <Input
+                        name="repeats"
+                        type="number"
+                        required
+                        innerRef={repeatsInput}
+                        defaultValue="1"
+                        min="1"
+                        step="1"
+                    />
+                </FormGroup>
+            </Form>
+        </Modal>
+    )
+}
+
+NewPortfolioModalComponent.propTypes = {
+    show: PropTypes.bool.isRequired,
+    callback: PropTypes.func.isRequired,
 }
 
 export default NewPortfolioModalComponent
