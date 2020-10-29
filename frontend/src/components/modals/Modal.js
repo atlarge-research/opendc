@@ -18,8 +18,8 @@ function Modal({ children, title, show, onSubmit, onCancel, submitButtonType, su
     }
 
     return (
-        <RModal isOpen={modal} toggle={toggle}>
-            <ModalHeader toggle={toggle}>{title}</ModalHeader>
+        <RModal isOpen={modal} toggle={cancel}>
+            <ModalHeader toggle={cancel}>{title}</ModalHeader>
             <ModalBody>{children}</ModalBody>
             <ModalFooter>
                 <Button color="secondary" onClick={cancel}>
