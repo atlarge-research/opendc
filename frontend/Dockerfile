@@ -1,15 +1,16 @@
 FROM node:14 AS staging
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
-ARG OPENDC_OAUTH_CLIENT_ID
-ARG OPENDC_API_BASE_URL
-
 # Copy package details
 COPY ./package.json ./yarn.lock /opendc/
 RUN cd /opendc && yarn
 
 # Build frontend
 FROM node:14 AS build
+
+ARG OPENDC_OAUTH_CLIENT_ID
+ARG OPENDC_API_BASE_URL
+
 COPY ./ /opendc
 COPY --from=staging /opendc/node_modules /opendc/node_modules
 RUN cd /opendc/ \
