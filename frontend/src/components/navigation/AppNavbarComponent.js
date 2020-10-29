@@ -2,7 +2,7 @@ import React from 'react'
 import FontAwesome from 'react-fontawesome'
 import { Link } from 'react-router-dom'
 import Navbar, { NavItem } from './Navbar'
-import './Navbar.css'
+import './Navbar.sass'
 
 const AppNavbarComponent = ({ project, fullWidth }) => (
     <Navbar fullWidth={fullWidth}>

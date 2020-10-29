@@ -1,50 +1,78 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
 import UnitAddContainer from '../../../../../containers/app/sidebars/topology/machine/UnitAddContainer'
 import UnitListContainer from '../../../../../containers/app/sidebars/topology/machine/UnitListContainer'
 
-const UnitTabsComponent = () => (
-    <div>
-        <ul className="nav nav-tabs mt-2 mb-1" role="tablist">
-            <li className="nav-item">
-                <a className="nav-link active" data-toggle="tab" href="#cpu-units" role="tab">
-                    CPU
-                </a>
-            </li>
-            <li className="nav-item">
-                <a className="nav-link" data-toggle="tab" href="#gpu-units" role="tab">
-                    GPU
-                </a>
-            </li>
-            <li className="nav-item">
-                <a className="nav-link" data-toggle="tab" href="#memory-units" role="tab">
-                    Memory
-                </a>
-            </li>
-            <li className="nav-item">
-                <a className="nav-link" data-toggle="tab" href="#storage-units" role="tab">
-                    Stor.
-                </a>
-            </li>
-        </ul>
-        <div className="tab-content">
-            <div className="tab-pane active" id="cpu-units" role="tabpanel">
-                <UnitAddContainer unitType="cpu" />
-                <UnitListContainer unitType="cpu" />
-            </div>
-            <div className="tab-pane" id="gpu-units" role="tabpanel">
-                <UnitAddContainer unitType="gpu" />
-                <UnitListContainer unitType="gpu" />
-            </div>
-            <div className="tab-pane" id="memory-units" role="tabpanel">
-                <UnitAddContainer unitType="memory" />
-                <UnitListContainer unitType="memory" />
-            </div>
-            <div className="tab-pane" id="storage-units" role="tabpanel">
-                <UnitAddContainer unitType="storage" />
-                <UnitListContainer unitType="storage" />
-            </div>
+const UnitTabsComponent = () => {
+    const [activeTab, setActiveTab] = useState('cpu-units')
+    const toggle = (tab) => {
+        if (activeTab !== tab) setActiveTab(tab)
+    }
+
+    return (
+        <div>
+            <Nav tabs>
+                <NavItem>
+                    <NavLink
+                        className={activeTab === 'cpu-units' && 'active'}
+                        onClick={() => {
+                            toggle('cpu-units')
+                        }}
+                    >
+                        CPU
+                    </NavLink>
+                </NavItem>
+                <NavItem>
+                    <NavLink
+                        className={activeTab === 'gpu-units' && 'active'}
+                        onClick={() => {
+                            toggle('gpu-units')
+                        }}
+                    >
+                        GPU
+                    </NavLink>
+                </NavItem>
+                <NavItem>
+                    <NavLink
+                        className={activeTab === 'memory-units' && 'active'}
+                        onClick={() => {
+                            toggle('memory-units')
+                        }}
+                    >
+                        Memory
+                    </NavLink>
+                </NavItem>
+                <NavItem>
+                    <NavLink
+                        className={activeTab === 'storage-units' && 'active'}
+                        onClick={() => {
+                            toggle('storage-units')
+                        }}
+                    >
+                        Stor.
+                    </NavLink>
+                </NavItem>
+            </Nav>
+            <TabContent activeTab={activeTab}>
+                <TabPane tabId="cpu-units">
+                    <UnitAddContainer unitType="cpu" />
+                    <UnitListContainer unitType="cpu" />
+                </TabPane>
+                <TabPane tabId="gpu-units">
+                    <UnitAddContainer unitType="gpu" />
+                    <UnitListContainer unitType="gpu" />
+                </TabPane>
+                <TabPane tabId="memory-units">
+                    <UnitAddContainer unitType="memory" />
+                    <UnitListContainer unitType="memory" />
+                </TabPane>
+                <TabPane tabId="storage-units">
+                    <UnitAddContainer unitType="storage" />
+                    <UnitListContainer unitType="storage" />
+                </TabPane>
+            </TabContent>
         </div>
-    </div>
-)
+    )
+}
 
 export default UnitTabsComponent

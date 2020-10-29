@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import React from 'react'
 import ContentSection from './ContentSection'
-import './ScreenshotSection.css'
+import './ScreenshotSection.sass'
 
 const ScreenshotSection = ({ name, title, imageUrl, caption, imageIsRight, children }) => (
     <ContentSection name={name} title={title}>

@@ -1,7 +1,7 @@
 import React from 'react'
 import EmptySlotContainer from '../../../../../containers/app/sidebars/topology/rack/EmptySlotContainer'
 import MachineContainer from '../../../../../containers/app/sidebars/topology/rack/MachineContainer'
-import './MachineListComponent.css'
+import './MachineListComponent.sass'
 
 const MachineListComponent = ({ machineIds }) => {
     return (

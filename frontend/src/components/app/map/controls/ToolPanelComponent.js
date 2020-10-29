@@ -1,7 +1,7 @@
 import React from 'react'
 import ZoomControlContainer from '../../../../containers/app/map/controls/ZoomControlContainer'
 import ExportCanvasComponent from './ExportCanvasComponent'
-import './ToolPanelComponent.css'
+import './ToolPanelComponent.sass'
 
 const ToolPanelComponent = () => (
     <div className="tool-panel">

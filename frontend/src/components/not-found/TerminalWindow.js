@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import BlinkingCursor from './BlinkingCursor'
 import CodeBlock from './CodeBlock'
-import './TerminalWindow.css'
+import './TerminalWindow.sass'
 
 const TerminalWindow = () => (
     <div className="terminal-window">

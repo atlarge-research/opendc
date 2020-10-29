@@ -1,5 +1,5 @@
 import React from 'react'
-import './JumbotronHeader.css'
+import './JumbotronHeader.sass'
 
 const JumbotronHeader = () => (
     <section className="jumbotron-header">

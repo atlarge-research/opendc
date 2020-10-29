@@ -1,5 +1,5 @@
 import React from 'react'
-import './BlinkingCursor.css'
+import './BlinkingCursor.sass'
 
 const BlinkingCursor = () => <span className="blinking-cursor">_</span>
 

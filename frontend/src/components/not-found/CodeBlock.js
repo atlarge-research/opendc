@@ -1,5 +1,5 @@
 import React from 'react'
-import './CodeBlock.css'
+import './CodeBlock.sass'
 
 const CodeBlock = () => {
     const textBlock =

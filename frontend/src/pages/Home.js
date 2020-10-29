@@ -9,7 +9,7 @@ import StakeholderSection from '../components/home/StakeholderSection'
 import TeamSection from '../components/home/TeamSection'
 import TechnologiesSection from '../components/home/TechnologiesSection'
 import HomeNavbar from '../components/navigation/HomeNavbar'
-import './Home.css'
+import './Home.sass'
 
 function Home() {
     return (
