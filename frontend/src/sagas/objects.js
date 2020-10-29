@@ -36,8 +36,8 @@ function* fetchAndStoreObject(objectType, id, apiCall) {
 
 function* fetchAndStoreObjects(objectType, apiCall) {
     const objects = yield apiCall
-    for (let index in objects) {
-        yield put(addToStore(objectType, objects[index]))
+    for (let object of objects) {
+        yield put(addToStore(objectType, object))
     }
     return objects
 }
@@ -161,11 +161,11 @@ export const getAllRooms = function* (roomIds, keepIds) {
 
     let rooms = []
 
-    for (let i in roomIds) {
-        let tiles = yield getAllRoomTiles(roomStore[roomIds[i]], keepIds)
+    for (let id of roomIds) {
+        let tiles = yield getAllRoomTiles(roomStore[id], keepIds)
         rooms.push({
-            _id: keepIds ? i : undefined,
-            name: roomStore[roomIds[i]].name,
+            _id: keepIds ? id : undefined,
+            name: roomStore[id].name,
             tiles: tiles,
         })
     }
@@ -175,8 +175,8 @@ export const getAllRooms = function* (roomIds, keepIds) {
 export const getAllRoomTiles = function* (roomStore, keepIds) {
     let tiles = []
 
-    for (let i in roomStore.tileIds) {
-        tiles.push(yield getTileById(roomStore.tileIds[i], keepIds))
+    for (let id of roomStore.tileIds) {
+        tiles.push(yield getTileById(id, keepIds))
     }
     return tiles
 }
@@ -221,9 +221,9 @@ export const fetchAndStoreAllTraces = () => fetchAndStoreObjects('trace', call(g
 
 export const fetchAndStoreAllSchedulers = function* () {
     const objects = yield call(getAllSchedulers)
-    for (let index in objects) {
-        objects[index]._id = objects[index].name
-        yield put(addToStore('scheduler', objects[index]))
+    for (let object of objects) {
+        object._id = object.name
+        yield put(addToStore('scheduler', object))
     }
     return objects
 }

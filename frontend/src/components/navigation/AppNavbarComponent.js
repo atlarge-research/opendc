@@ -1,22 +1,23 @@
 import React from 'react'
 import FontAwesome from 'react-fontawesome'
 import { Link } from 'react-router-dom'
+import { NavLink } from 'reactstrap'
 import Navbar, { NavItem } from './Navbar'
 import './Navbar.sass'
 
 const AppNavbarComponent = ({ project, fullWidth }) => (
     <Navbar fullWidth={fullWidth}>
         <NavItem route="/projects">
-            <Link className="nav-link" title="My Projects" to="/projects">
+            <NavLink tag={Link} title="My Projects" to="/projects">
                 <FontAwesome name="list" className="mr-2" />
                 My Projects
-            </Link>
+            </NavLink>
         </NavItem>
         {project ? (
             <NavItem>
-                <Link className="nav-link" title="Current Project" to={`/projects/${project._id}`}>
+                <NavLink tag={Link} title="Current Project" to={`/projects/${project._id}`}>
                     <span>{project.name}</span>
-                </Link>
+                </NavLink>
             </NavItem>
         ) : undefined}
     </Navbar>

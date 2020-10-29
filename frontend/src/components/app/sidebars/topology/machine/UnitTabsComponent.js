@@ -14,7 +14,7 @@ const UnitTabsComponent = () => {
             <Nav tabs>
                 <NavItem>
                     <NavLink
-                        className={activeTab === 'cpu-units' && 'active'}
+                        className={activeTab === 'cpu-units' ? 'active' : ''}
                         onClick={() => {
                             toggle('cpu-units')
                         }}
@@ -24,7 +24,7 @@ const UnitTabsComponent = () => {
                 </NavItem>
                 <NavItem>
                     <NavLink
-                        className={activeTab === 'gpu-units' && 'active'}
+                        className={activeTab === 'gpu-units' ? 'active' : ''}
                         onClick={() => {
                             toggle('gpu-units')
                         }}
@@ -34,7 +34,7 @@ const UnitTabsComponent = () => {
                 </NavItem>
                 <NavItem>
                     <NavLink
-                        className={activeTab === 'memory-units' && 'active'}
+                        className={activeTab === 'memory-units' ? 'active' : ''}
                         onClick={() => {
                             toggle('memory-units')
                         }}
@@ -44,7 +44,7 @@ const UnitTabsComponent = () => {
                 </NavItem>
                 <NavItem>
                     <NavLink
-                        className={activeTab === 'storage-units' && 'active'}
+                        className={activeTab === 'storage-units' ? 'active' : ''}
                         onClick={() => {
                             toggle('storage-units')
                         }}

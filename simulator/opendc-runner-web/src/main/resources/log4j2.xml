@@ -36,12 +36,6 @@
         <Logger name="org.opendc.runner" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="org.apache.hadoop" level="warn" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="org.apache.spark" level="info" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
         <Root level="error">
             <AppenderRef ref="Console"/>
         </Root>

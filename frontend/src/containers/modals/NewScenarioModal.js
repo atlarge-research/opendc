@@ -39,6 +39,7 @@ const mapDispatchToProps = (dispatch) => {
                     })
                 )
             }
+
             dispatch(closeNewScenarioModal())
         },
     }

@@ -1,13 +1,12 @@
 import React from 'react'
+import { NavItem, NavLink } from 'reactstrap'
 import Navbar from './Navbar'
 import './Navbar.sass'
 
 const ScrollNavItem = ({ id, name }) => (
-    <li className="nav-item">
-        <a className="nav-link" href={id}>
-            {name}
-        </a>
-    </li>
+    <NavItem>
+        <NavLink href={id}>{name}</NavLink>
+    </NavItem>
 )
 
 const HomeNavbar = () => (
