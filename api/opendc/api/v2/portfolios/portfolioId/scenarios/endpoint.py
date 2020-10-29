@@ -1,5 +1,6 @@
 from opendc.models.portfolio import Portfolio
 from opendc.models.scenario import Scenario
+from opendc.models.topology import Topology
 from opendc.util.rest import Response
 
 
@@ -32,8 +33,13 @@ def POST(request):
 
     scenario = Scenario(request.params_body['scenario'])
 
+    topology = Topology.from_id(scenario.obj['topology']['topologyId'])
+    topology.check_exists()
+    topology.check_user_access(request.google_id, True)
+
     scenario.set_property('portfolioId', portfolio.get_id())
     scenario.set_property('simulation', {'state': 'QUEUED'})
+    scenario.set_property('topology.topologyId', topology.get_id())
 
     scenario.insert()
 
