@@ -88,28 +88,27 @@ public class ScenarioManager(private val collection: MongoCollection<Document>) 
     /**
      * Persist the specified results.
      */
-    public fun finish(id: ObjectId, result: ResultProcessor.Result) {
+    public fun finish(id: ObjectId, results: List<WebExperimentMonitor.Result>) {
         collection.findOneAndUpdate(
             Filters.eq("_id", id),
             Updates.combine(
                 Updates.set("simulation.state", "FINISHED"),
                 Updates.unset("simulation.time"),
-                Updates.set("results.total_requested_burst", result.totalRequestedBurst),
-                Updates.set("results.total_granted_burst", result.totalGrantedBurst),
-                Updates.set("results.total_overcommitted_burst", result.totalOvercommittedBurst),
-                Updates.set("results.total_interfered_burst", result.totalInterferedBurst),
-                Updates.set("results.mean_cpu_usage", result.meanCpuUsage),
-                Updates.set("results.mean_cpu_demand", result.meanCpuDemand),
-                Updates.set("results.mean_num_deployed_images", result.meanNumDeployedImages),
-                Updates.set("results.max_num_deployed_images", result.maxNumDeployedImages),
-                Updates.set("results.max_num_deployed_images", result.maxNumDeployedImages),
-                Updates.set("results.total_power_draw", result.totalPowerDraw),
-                Updates.set("results.total_failure_slices", result.totalFailureSlices),
-                Updates.set("results.total_failure_vm_slices", result.totalFailureVmSlices),
-                Updates.set("results.total_vms_submitted", result.totalVmsSubmitted),
-                Updates.set("results.total_vms_queued", result.totalVmsQueued),
-                Updates.set("results.total_vms_finished", result.totalVmsFinished),
-                Updates.set("results.total_vms_failed", result.totalVmsFailed)
+                Updates.set("results.total_requested_burst", results.map { it.totalRequestedBurst }),
+                Updates.set("results.total_granted_burst", results.map { it.totalGrantedBurst }),
+                Updates.set("results.total_overcommitted_burst", results.map { it.totalOvercommittedBurst }),
+                Updates.set("results.total_interfered_burst", results.map { it.totalInterferedBurst }),
+                Updates.set("results.mean_cpu_usage", results.map { it.meanCpuUsage }),
+                Updates.set("results.mean_cpu_demand", results.map { it.meanCpuDemand }),
+                Updates.set("results.mean_num_deployed_images", results.map { it.meanNumDeployedImages }),
+                Updates.set("results.max_num_deployed_images", results.map { it.maxNumDeployedImages }),
+                Updates.set("results.total_power_draw", results.map { it.totalPowerDraw }),
+                Updates.set("results.total_failure_slices", results.map { it.totalFailureSlices }),
+                Updates.set("results.total_failure_vm_slices", results.map { it.totalFailureVmSlices }),
+                Updates.set("results.total_vms_submitted", results.map { it.totalVmsSubmitted }),
+                Updates.set("results.total_vms_queued", results.map { it.totalVmsQueued }),
+                Updates.set("results.total_vms_finished", results.map { it.totalVmsFinished }),
+                Updates.set("results.total_vms_failed", results.map { it.totalVmsFailed })
             )
         )
     }

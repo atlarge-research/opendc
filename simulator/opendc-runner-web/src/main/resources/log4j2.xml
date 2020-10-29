@@ -30,16 +30,10 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="org.opendc" level="info" additivity="false">
+        <Logger name="org.opendc" level="warn" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="org.opendc.runner" level="info" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="org.apache.hadoop" level="warn" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="org.apache.spark" level="warn" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Root level="error">
