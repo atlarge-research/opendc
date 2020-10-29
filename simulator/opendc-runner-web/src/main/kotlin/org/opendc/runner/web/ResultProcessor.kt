@@ -47,25 +47,46 @@ public class ResultProcessor(private val master: String, private val outputPath:
         try {
             val hostMetrics = spark.read().parquet(File(outputPath, "host-metrics/scenario_id=$id").path)
             val provisionerMetrics = spark.read().parquet(File(outputPath, "provisioner-metrics/scenario_id=$id").path)
-            val res = aggregate(hostMetrics, provisionerMetrics).first()
+            val res = aggregate(hostMetrics, provisionerMetrics).collectAsList()
 
-            return Result(
-                res.getList<Long>(1),
-                res.getList<Long>(2),
-                res.getList<Long>(3),
-                res.getList<Long>(4),
-                res.getList<Double>(5),
-                res.getList<Double>(6),
-                res.getList<Double>(7),
-                res.getList<Int>(8),
-                res.getList<Long>(9),
-                res.getList<Long>(10),
-                res.getList<Long>(11),
-                res.getList<Int>(12),
-                res.getList<Int>(13),
-                res.getList<Int>(14),
-                res.getList<Int>(15)
-            )
+            if (res.isEmpty()) {
+                return Result(
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList()
+                )
+            } else {
+                val head = res.first()
+                return Result(
+                    head.getList<Long>(1),
+                    head.getList<Long>(2),
+                    head.getList<Long>(3),
+                    head.getList<Long>(4),
+                    head.getList<Double>(5),
+                    head.getList<Double>(6),
+                    head.getList<Double>(7),
+                    head.getList<Int>(8),
+                    head.getList<Long>(9),
+                    head.getList<Long>(10),
+                    head.getList<Long>(11),
+                    head.getList<Int>(12),
+                    head.getList<Int>(13),
+                    head.getList<Int>(14),
+                    head.getList<Int>(15)
+                )
+            }
         } finally {
             spark.close()
         }

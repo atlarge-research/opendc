@@ -61,7 +61,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
         val random = Random(0)
 
         for (machine in fetchMachines(id)) {
-            val clusterId = machine.getObjectId("rack_id")
+            val clusterId = machine.get("rack_id").toString()
             val position = machine.getInteger("position")
 
             val processors = machine.getList("cpus", Document::class.java).flatMap { cpu ->

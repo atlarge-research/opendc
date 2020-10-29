@@ -293,6 +293,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
 
         try {
             testScope.advanceUntilIdle()
+            testScope.uncaughtExceptions.forEach { it.printStackTrace() }
         } finally {
             monitor.close()
         }
