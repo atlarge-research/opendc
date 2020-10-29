@@ -38,6 +38,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
 import org.bson.Document
+import org.bson.types.ObjectId
 import org.opendc.compute.simulator.allocation.*
 import org.opendc.experiments.sc20.experiment.attachMonitor
 import org.opendc.experiments.sc20.experiment.createFailureDomain
@@ -165,7 +166,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
      * Run a single scenario.
      */
     private suspend fun runScenario(portfolio: Document, scenario: Document, topologies: MongoCollection<Document>) {
-        val id = scenario.getString("_id")
+        val id = scenario.getObjectId("_id")
 
         logger.info { "Constructing performance interference model" }
 
@@ -206,7 +207,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
         traceReader: Sc20RawParquetTraceReader,
         performanceInterferenceReader: Sc20PerformanceInterferenceReader?
     ) {
-        val id = scenario.getString("_id")
+        val id = scenario.getObjectId("_id")
         val seed = repeat
         val traceDocument = scenario.get("trace", Document::class.java)
         val workloadName = traceDocument.getString("traceId")
@@ -240,7 +241,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
             Workload(workloadName, workloadFraction),
             seed
         )
-        val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), String::class.java)
+        val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), ObjectId::class.java)
         val environment = TopologyParser(topologies, topologyId)
         val monitor = ParquetExperimentMonitor(
             outputPath,
@@ -321,7 +322,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 continue
             }
 
-            val id = scenario.getString("_id")
+            val id = scenario.getObjectId("_id")
 
             logger.info { "Found queued scenario $id: attempting to claim" }
 
@@ -340,7 +341,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 }
 
                 try {
-                    val portfolio = portfolios.find(Filters.eq("_id", scenario.getString("portfolioId"))).first()!!
+                    val portfolio = portfolios.find(Filters.eq("_id", scenario.getObjectId("portfolioId"))).first()!!
                     runScenario(portfolio, scenario, topologies)
 
                     logger.info { "Starting result processing" }

@@ -27,6 +27,7 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.*
+import org.bson.types.ObjectId
 import java.io.File
 
 /**
@@ -36,7 +37,7 @@ public class ResultProcessor(private val master: String, private val outputPath:
     /**
      * Process the results of the scenario with the given [id].
      */
-    public fun process(id: String): Result {
+    public fun process(id: ObjectId): Result {
         val spark = SparkSession.builder()
             .master(master)
             .appName("opendc-simulator-$id")

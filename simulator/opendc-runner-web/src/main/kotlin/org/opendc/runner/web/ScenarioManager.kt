@@ -26,6 +26,7 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import org.bson.Document
+import org.bson.types.ObjectId
 import java.time.Instant
 
 /**
@@ -44,7 +45,7 @@ public class ScenarioManager(private val collection: MongoCollection<Document>) 
     /**
      * Claim the scenario in the database with the specified id.
      */
-    public fun claim(id: String): Boolean {
+    public fun claim(id: ObjectId): Boolean {
         val res = collection.findOneAndUpdate(
             Filters.and(
                 Filters.eq("_id", id),
@@ -61,7 +62,7 @@ public class ScenarioManager(private val collection: MongoCollection<Document>) 
     /**
      * Update the heartbeat of the specified scenario.
      */
-    public fun heartbeat(id: String) {
+    public fun heartbeat(id: ObjectId) {
         collection.findOneAndUpdate(
             Filters.and(
                 Filters.eq("_id", id),
@@ -74,7 +75,7 @@ public class ScenarioManager(private val collection: MongoCollection<Document>) 
     /**
      * Mark the scenario as failed.
      */
-    public fun fail(id: String) {
+    public fun fail(id: ObjectId) {
         collection.findOneAndUpdate(
             Filters.eq("_id", id),
             Updates.combine(
@@ -87,7 +88,7 @@ public class ScenarioManager(private val collection: MongoCollection<Document>) 
     /**
      * Persist the specified results.
      */
-    public fun finish(id: String, result: ResultProcessor.Result) {
+    public fun finish(id: ObjectId, result: ResultProcessor.Result) {
         collection.findOneAndUpdate(
             Filters.eq("_id", id),
             Updates.combine(

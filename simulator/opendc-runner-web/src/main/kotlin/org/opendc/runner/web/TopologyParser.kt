@@ -31,6 +31,7 @@ import com.mongodb.client.model.Projections
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.bson.Document
+import org.bson.types.ObjectId
 import org.opendc.compute.core.metal.NODE_CLUSTER
 import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.core.metal.service.SimpleProvisioningService
@@ -51,7 +52,7 @@ import java.util.*
 /**
  * A helper class that converts the MongoDB topology into an OpenDC environment.
  */
-public class TopologyParser(private val collection: MongoCollection<Document>, private val id: String) : EnvironmentReader {
+public class TopologyParser(private val collection: MongoCollection<Document>, private val id: ObjectId) : EnvironmentReader {
     /**
      * Parse the topology with the specified [id].
      */
@@ -60,7 +61,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
         val random = Random(0)
 
         for (machine in fetchMachines(id)) {
-            val clusterId = machine.getString("rack_id")
+            val clusterId = machine.getObjectId("rack_id")
             val position = machine.getInteger("position")
 
             val processors = machine.getList("cpus", Document::class.java).flatMap { cpu ->
@@ -121,7 +122,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
     /**
      * Fetch the metadata of the topology.
      */
-    private fun fetchName(id: String): String {
+    private fun fetchName(id: ObjectId): String {
         return collection.aggregate(
             listOf(
                 Aggregates.match(Filters.eq("_id", id)),
@@ -135,7 +136,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
     /**
      * Fetch a topology from the database with the specified [id].
      */
-    private fun fetchMachines(id: String): AggregateIterable<Document> {
+    private fun fetchMachines(id: ObjectId): AggregateIterable<Document> {
         return collection.aggregate(
             listOf(
                 Aggregates.match(Filters.eq("_id", id)),
