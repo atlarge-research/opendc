@@ -44,6 +44,10 @@ kotlin {
     explicitApi()
 }
 
+jacoco {
+    toolVersion = "0.8.6"
+}
+
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"

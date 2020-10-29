@@ -6,5 +6,5 @@
 .idea_modules/
 
 .gradle
-**/build/
+**/build
 
