@@ -16,7 +16,7 @@
     "author": "Georgios Andreadis <g.andreadis@atlarge-research.com> (https://gandreadis.com/)",
     "license": "MIT",
     "private": true,
-    "proxy": "http://localhost:8082",
+    "proxy": "http://localhost:8081",
     "dependencies": {
         "approximate-number": "~2.0.0",
         "bootstrap": "4.5.3",
