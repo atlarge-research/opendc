@@ -1,6 +1,16 @@
 from opendc.util.rest import Response
 
-SCHEDULERS = ['core-mem']
+SCHEDULERS = [
+    'mem',
+    'mem-inv',
+    'core-mem',
+    'core-mem-inv',
+    'active-servers',
+    'active-server-inv',
+    'provisioned-cores',
+    'provisioned-cores-inv',
+    'random'
+]
 
 
 def GET(_):
