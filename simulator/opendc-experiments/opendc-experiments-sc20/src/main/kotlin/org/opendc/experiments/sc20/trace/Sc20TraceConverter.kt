@@ -383,8 +383,8 @@ public class BitbrainsConversion : TraceConversion("Bitbrains") {
                                     val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
 
                                     cores = values[coreCol].trim().toInt()
-                                    requiredMemory =
-                                        max(requiredMemory, values[provisionedMemoryCol].trim().toDouble().toLong())
+                                    val provisionedMemory = values[provisionedMemoryCol].trim().toDouble() // KB
+                                    requiredMemory = max(requiredMemory, (provisionedMemory / 1000).toLong())
                                     maxCores = max(maxCores, cores)
                                     minTime = min(minTime, timestamp)
                                     val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
