@@ -15,7 +15,7 @@ export const AVAILABLE_METRICS = [
     'total_vms_failed',
 ]
 
-export const METRIC_NAMES = {
+export const METRIC_NAMES_SHORT = {
     total_overcommitted_burst: 'Overcomm. CPU Cycles',
     total_granted_burst: 'Granted CPU Cycles',
     total_requested_burst: 'Requested CPU Cycles',
@@ -30,6 +30,23 @@ export const METRIC_NAMES = {
     total_vms_queued: 'Max. Num. VMs Queued',
     total_vms_finished: 'Max. Num. VMs Finished',
     total_vms_failed: 'Max. Num. VMs Failed',
+}
+
+export const METRIC_NAMES = {
+    total_overcommitted_burst: 'Overcommitted CPU Cycles',
+    total_granted_burst: 'Granted CPU Cycles',
+    total_requested_burst: 'Requested CPU Cycles',
+    total_interfered_burst: 'Interfered CPU Cycles',
+    total_power_draw: 'Total Power Consumption',
+    mean_cpu_usage: 'Mean Host CPU Usage',
+    mean_cpu_demand: 'Mean Host CPU Demand',
+    mean_num_deployed_images: 'Mean Number of Deployed Images Per Host',
+    max_num_deployed_images: 'Maximum Number Deployed Images Per Host',
+    total_failure_vm_slices: 'Total Number Failed VM Slices',
+    total_vms_submitted: 'Total Number VMs Submitted',
+    total_vms_queued: 'Maximum Number VMs Queued',
+    total_vms_finished: 'Maximum Number VMs Finished',
+    total_vms_failed: 'Maximum Number VMs Failed',
 }
 
 export const METRIC_UNITS = {

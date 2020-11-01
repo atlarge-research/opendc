@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React, { useRef } from 'react'
 import { Form, FormGroup, Input, Label } from 'reactstrap'
 import Modal from '../Modal'
-import { AVAILABLE_METRICS } from '../../../util/available-metrics'
+import { AVAILABLE_METRICS, METRIC_NAMES } from '../../../util/available-metrics'
 
 const NewPortfolioModalComponent = ({ show, callback }) => {
     const textInput = useRef(null)
@@ -39,7 +39,7 @@ const NewPortfolioModalComponent = ({ show, callback }) => {
                                     type="checkbox"
                                     innerRef={(ref) => (metricCheckboxes.current[metric] = ref)}
                                 />
-                                <code>{metric}</code>
+                                {METRIC_NAMES[metric]}
                             </Label>
                         </FormGroup>
                     ))}
