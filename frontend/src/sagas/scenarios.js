@@ -52,7 +52,7 @@ export function* onDeleteScenario(action) {
         yield call(deleteScenario, action.id)
 
         const currentPortfolioId = yield select((state) => state.currentPortfolioId)
-        const scenarioIds = yield select((state) => state.objects.project[currentPortfolioId].scenarioIds)
+        const scenarioIds = yield select((state) => state.objects.portfolio[currentPortfolioId].scenarioIds)
 
         yield put(
             addPropToStoreObject('scenario', currentPortfolioId, {

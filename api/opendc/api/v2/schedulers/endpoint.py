@@ -6,7 +6,7 @@ SCHEDULERS = [
     'core-mem',
     'core-mem-inv',
     'active-servers',
-    'active-server-inv',
+    'active-servers-inv',
     'provisioned-cores',
     'provisioned-cores-inv',
     'random'

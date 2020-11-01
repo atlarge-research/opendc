@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Bar, CartesianGrid, ComposedChart, ErrorBar, ResponsiveContainer, Scatter, XAxis, YAxis } from 'recharts'
-import { AVAILABLE_METRICS, METRIC_NAMES, METRIC_UNITS } from '../../../util/available-metrics'
+import { AVAILABLE_METRICS, METRIC_NAMES_SHORT, METRIC_UNITS } from '../../../util/available-metrics'
 import { mean, std } from 'mathjs'
 import Shapes from '../../../shapes/index'
 import approx from 'approximate-number'
@@ -52,7 +52,7 @@ const PortfolioResultsComponent = ({ portfolio, scenarios }) => {
             <div className="row">
                 {AVAILABLE_METRICS.map((metric) => (
                     <div className="col-6 mb-2" key={metric}>
-                        <h4>{METRIC_NAMES[metric]}</h4>
+                        <h4>{METRIC_NAMES_SHORT[metric]}</h4>
                         <ResponsiveContainer aspect={16 / 9} width="100%">
                             <ComposedChart
                                 data={dataPerMetric[metric]}
