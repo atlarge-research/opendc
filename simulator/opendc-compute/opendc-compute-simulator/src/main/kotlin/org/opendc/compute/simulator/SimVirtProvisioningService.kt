@@ -38,7 +38,9 @@ import org.opendc.compute.core.virt.driver.InsufficientMemoryOnServerException
 import org.opendc.compute.core.virt.driver.VirtDriver
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.compute.core.virt.service.VirtProvisioningService
+import org.opendc.compute.core.virt.service.events.*
 import org.opendc.compute.simulator.allocation.AllocationPolicy
+import org.opendc.trace.core.EventTracer
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
 import java.util.*
@@ -51,7 +53,8 @@ public class SimVirtProvisioningService(
     private val coroutineScope: CoroutineScope,
     private val clock: Clock,
     private val provisioningService: ProvisioningService,
-    public val allocationPolicy: AllocationPolicy
+    public val allocationPolicy: AllocationPolicy,
+    private val tracer: EventTracer
 ) : VirtProvisioningService {
     /**
      * The logger instance to use.
@@ -136,6 +139,8 @@ public class SimVirtProvisioningService(
         image: Image,
         flavor: Flavor
     ): Server {
+        tracer.commit(VmSubmissionEvent(name, image, flavor))
+
         eventFlow.emit(
             VirtProvisioningEvent.MetricsAvailable(
                 this@SimVirtProvisioningService,
@@ -191,6 +196,8 @@ public class SimVirtProvisioningService(
 
             if (selectedHv == null) {
                 if (requiredMemory > maxMemory || imageInstance.flavor.cpuCount > maxCores) {
+                    tracer.commit(VmSubmissionInvalidEvent(imageInstance.name))
+
                     eventFlow.emit(
                         VirtProvisioningEvent.MetricsAvailable(
                             this@SimVirtProvisioningService,
@@ -231,6 +238,8 @@ public class SimVirtProvisioningService(
                 imageInstance.server = server
                 imageInstance.continuation.resume(server)
 
+                tracer.commit(VmScheduledEvent(imageInstance.name))
+
                 eventFlow.emit(
                     VirtProvisioningEvent.MetricsAvailable(
                         this@SimVirtProvisioningService,
@@ -251,6 +260,8 @@ public class SimVirtProvisioningService(
                             is ServerEvent.StateChanged -> {
                                 if (event.server.state == ServerState.SHUTOFF) {
                                     logger.info { "[${clock.millis()}] Server ${event.server.uid} ${event.server.name} ${event.server.flavor} finished." }
+
+                                    tracer.commit(VmStoppedEvent(event.server.name))
 
                                     eventFlow.emit(
                                         VirtProvisioningEvent.MetricsAvailable(
@@ -310,6 +321,8 @@ public class SimVirtProvisioningService(
                     hypervisors[server] = hv
                 }
 
+                tracer.commit(HypervisorAvailableEvent(server.uid))
+
                 eventFlow.emit(
                     VirtProvisioningEvent.MetricsAvailable(
                         this@SimVirtProvisioningService,
@@ -332,6 +345,8 @@ public class SimVirtProvisioningService(
                 logger.debug { "[${clock.millis()}] Server ${server.uid} unavailable: ${server.state}" }
                 val hv = hypervisors[server] ?: return
                 availableHypervisors -= hv
+
+                tracer.commit(HypervisorUnavailableEvent(hv.uid))
 
                 eventFlow.emit(
                     VirtProvisioningEvent.MetricsAvailable(
@@ -358,6 +373,8 @@ public class SimVirtProvisioningService(
         val hv = hypervisors[server] ?: return
         hv.driver = hypervisor
         availableHypervisors += hv
+
+        tracer.commit(HypervisorAvailableEvent(hv.uid))
 
         eventFlow.emit(
             VirtProvisioningEvent.MetricsAvailable(

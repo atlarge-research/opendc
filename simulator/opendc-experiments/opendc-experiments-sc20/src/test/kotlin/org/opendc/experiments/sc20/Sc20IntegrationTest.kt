@@ -48,6 +48,7 @@ import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.trace.core.EventTracer
 import java.io.File
 import java.time.Clock
 
@@ -97,13 +98,15 @@ class Sc20IntegrationTest {
         val traceReader = createTestTraceReader()
         val environmentReader = createTestEnvironmentReader()
         lateinit var scheduler: SimVirtProvisioningService
+        val tracer = EventTracer(clock)
 
         testScope.launch {
             val res = createProvisioner(
                 this,
                 clock,
                 environmentReader,
-                allocationPolicy
+                allocationPolicy,
+                tracer
             )
             val bareMetalProvisioner = res.first
             scheduler = res.second
@@ -160,13 +163,15 @@ class Sc20IntegrationTest {
         val traceReader = createTestTraceReader(0.5, seed)
         val environmentReader = createTestEnvironmentReader("single")
         lateinit var scheduler: SimVirtProvisioningService
+        val tracer = EventTracer(clock)
 
         testScope.launch {
             val res = createProvisioner(
                 this,
                 clock,
                 environmentReader,
-                allocationPolicy
+                allocationPolicy,
+                tracer
             )
             scheduler = res.second
 
