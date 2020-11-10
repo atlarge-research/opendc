@@ -81,6 +81,9 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
                     memory.get("sizeMb", Number::class.java).toLong()
                 )
             }
+
+            val energyConsumptionW = machine.getList("cpus", Document::class.java).sumBy { it.getInteger("energyConsumptionW") }.toDouble()
+
             nodes.add(
                 SimBareMetalDriver(
                     coroutineScope,
@@ -89,10 +92,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
                     "node-$clusterId-$position",
                     mapOf(NODE_CLUSTER to clusterId),
                     SimMachineModel(processors, memoryUnits),
-                    // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
-                    // power draw of 350W.
-                    // Source: https://stackoverflow.com/questions/6128960
-                    LinearLoadPowerModel(200.0, 350.0)
+                    LinearLoadPowerModel(energyConsumptionW, 2 * energyConsumptionW)
                 )
             )
         }
