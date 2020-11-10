@@ -325,7 +325,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
 
                     logger.info { "Successfully finished scenario $id" }
                 } catch (e: Exception) {
-                    logger.warn(e) { "Scenario failed to finish" }
+                    logger.error(e) { "Scenario failed to finish" }
                     manager.fail(id)
                 } finally {
                     heartbeat.cancel()

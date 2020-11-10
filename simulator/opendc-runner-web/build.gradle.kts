@@ -29,7 +29,7 @@ plugins {
 }
 
 application {
-    mainClassName = "org.opendc.runner.web.MainKt"
+    mainClass.set("org.opendc.runner.web.MainKt")
 }
 
 dependencies {
@@ -45,7 +45,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
         exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
     }
-
+    implementation("io.sentry:sentry-log4j2:3.1.1")
     implementation("org.mongodb:mongodb-driver-sync:4.0.5")
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.1")
