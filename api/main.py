@@ -21,6 +21,16 @@ load_dotenv()
 
 TEST_MODE = "OPENDC_FLASK_TESTING" in os.environ
 
+# Setup Sentry if DSN is specified
+if 'SENTRY_DSN' in os.environ:
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+
+    sentry_sdk.init(
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=0.5
+    )
+
 # Set up database if not testing
 if not TEST_MODE:
     database.DB.initialize_database(
@@ -31,6 +41,7 @@ if not TEST_MODE:
 
 # Set up the core app
 FLASK_CORE_APP = Flask(__name__)
+FLASK_CORE_APP.testing = TEST_MODE
 FLASK_CORE_APP.config['SECRET_KEY'] = os.environ['OPENDC_FLASK_SECRET']
 FLASK_CORE_APP.json_encoder = JSONEncoder
 
@@ -168,4 +179,4 @@ def _process_message(message):
 
 if __name__ == '__main__':
     print("Web server started on 8081")
-    SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081)
+    SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081, use_reloader=False)

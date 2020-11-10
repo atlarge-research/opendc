@@ -29,6 +29,8 @@ services:
       - OPENDC_DB_HOST=mongo
       - OPENDC_FLASK_SECRET
       - OPENDC_OAUTH_CLIENT_ID
+      - SENTRY_DSN=${OPENDC_API_SENTRY_DSN}
+      - SENTRY_ENVIRONMENT
 
   simulator:
     build: ./simulator
