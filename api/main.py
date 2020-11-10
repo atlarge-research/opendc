@@ -53,6 +53,8 @@ compress.init_app(FLASK_CORE_APP)
 
 SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP, cors_allowed_origins="*")
 
+API_VERSIONS = {'v2'}
+
 
 @FLASK_CORE_APP.route('/tokensignin', methods=['POST'])
 def sign_in():
@@ -93,6 +95,10 @@ def sign_in():
 @FLASK_CORE_APP.route('/<string:version>/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_call(version, endpoint_path):
     """Call an API endpoint directly over HTTP."""
+
+    # Check whether given version is valid
+    if version not in API_VERSIONS:
+        return jsonify(error='API version not found'), 404
 
     # Get path and parameters
     (path, path_parameters) = path_parser.parse(version, endpoint_path)
