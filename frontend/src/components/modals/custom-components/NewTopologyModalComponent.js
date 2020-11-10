@@ -5,6 +5,7 @@ import Shapes from '../../../shapes'
 import Modal from '../Modal'
 
 const NewTopologyModalComponent = ({ show, onCreateTopology, onDuplicateTopology, onCancel, topologies }) => {
+    const form = useRef(null)
     const textInput = useRef(null)
     const originTopology = useRef(null)
 
@@ -17,11 +18,15 @@ const NewTopologyModalComponent = ({ show, onCreateTopology, onDuplicateTopology
     }
 
     const onSubmit = () => {
-        if (originTopology.current.selectedIndex === 0) {
+        if (!form.current.reportValidity()) {
+            return false
+        } else if (originTopology.current.selectedIndex === 0) {
             onCreate()
         } else {
             onDuplicate()
         }
+
+        return true
     }
 
     return (
@@ -31,6 +36,7 @@ const NewTopologyModalComponent = ({ show, onCreateTopology, onDuplicateTopology
                     e.preventDefault()
                     onSubmit()
                 }}
+                innerRef={form}
             >
                 <FormGroup>
                     <Label for="name">Name</Label>
