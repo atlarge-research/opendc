@@ -12,3 +12,9 @@ services:
   api:
     ports:
       - "8081:8081"
+    environment:
+      SENTRY_ENVIRONMENT: "production"
+
+  simulator:
+    environment:
+      SENTRY_ENVIRONMENT: "production"

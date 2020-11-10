@@ -5,15 +5,23 @@ import Modal from '../Modal'
 import { AVAILABLE_METRICS, METRIC_NAMES } from '../../../util/available-metrics'
 
 const NewPortfolioModalComponent = ({ show, callback }) => {
+    const form = useRef(null)
     const textInput = useRef(null)
     const repeatsInput = useRef(null)
     const metricCheckboxes = useRef({})
 
-    const onSubmit = () =>
-        callback(textInput.current.value, {
-            enabledMetrics: AVAILABLE_METRICS.filter((metric) => metricCheckboxes.current[metric].checked),
-            repeatsPerScenario: parseInt(repeatsInput.current.value),
-        })
+    const onSubmit = () => {
+        if (form.current.reportValidity()) {
+            callback(textInput.current.value, {
+                enabledMetrics: AVAILABLE_METRICS.filter((metric) => metricCheckboxes.current[metric].checked),
+                repeatsPerScenario: parseInt(repeatsInput.current.value),
+            })
+
+            return true
+        } else {
+            return false
+        }
+    }
     const onCancel = () => callback(undefined)
 
     return (
@@ -23,6 +31,7 @@ const NewPortfolioModalComponent = ({ show, callback }) => {
                     e.preventDefault()
                     this.onSubmit()
                 }}
+                innerRef={form}
             >
                 <FormGroup>
                     <Label for="name">Name</Label>

@@ -13,3 +13,4 @@ _mailinglist
 .idea/
 config.json
 test.json
+.env*

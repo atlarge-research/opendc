@@ -5,6 +5,7 @@ services:
       context: ./frontend
       args:
         OPENDC_OAUTH_CLIENT_ID: ${OPENDC_OAUTH_CLIENT_ID}
+        OPENDC_FRONTEND_SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN}
     image: frontend
     restart: on-failure
     networks:
@@ -28,6 +29,8 @@ services:
       - OPENDC_DB_HOST=mongo
       - OPENDC_FLASK_SECRET
       - OPENDC_OAUTH_CLIENT_ID
+      - SENTRY_DSN=${OPENDC_API_SENTRY_DSN}
+      - SENTRY_ENVIRONMENT
 
   simulator:
     build: ./simulator
@@ -46,6 +49,8 @@ services:
      - OPENDC_DB_USERNAME
      - OPENDC_DB_PASSWORD
      - OPENDC_DB_HOST=mongo
+     - SENTRY_DSN=${OPENDC_SIMULATOR_SENTRY_DSN}
+     - SENTRY_ENVIRONMENT
 
   mongo:
     build:

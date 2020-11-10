@@ -9,12 +9,14 @@ function Modal({ children, title, show, onSubmit, onCancel, submitButtonType, su
 
     const toggle = () => setModal(!modal)
     const cancel = () => {
-        toggle()
-        onCancel()
+        if (onCancel() !== false) {
+            toggle()
+        }
     }
     const submit = () => {
-        toggle()
-        onSubmit()
+        if (onSubmit() !== false) {
+            toggle()
+        }
     }
 
     return (

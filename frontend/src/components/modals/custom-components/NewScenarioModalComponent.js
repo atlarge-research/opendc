@@ -13,6 +13,7 @@ const NewScenarioModalComponent = ({
     topologies,
     schedulers,
 }) => {
+    const form = useRef(null)
     const textInput = useRef(null)
     const traceSelect = useRef(null)
     const traceLoadInput = useRef(null)
@@ -22,6 +23,9 @@ const NewScenarioModalComponent = ({
     const schedulerSelect = useRef(null)
 
     const onSubmit = () => {
+        if (!form.current.reportValidity()) {
+            return false
+        }
         callback(
             textInput.current.value,
             currentPortfolioId,
@@ -38,6 +42,7 @@ const NewScenarioModalComponent = ({
                 schedulerName: schedulerSelect.current.value,
             }
         )
+        return true
     }
     const onCancel = () => {
         callback(undefined)
@@ -50,6 +55,7 @@ const NewScenarioModalComponent = ({
                     e.preventDefault()
                     onSubmit()
                 }}
+                innerRef={form}
             >
                 <FormGroup>
                     <Label for="name">Name</Label>

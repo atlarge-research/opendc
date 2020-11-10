@@ -23,21 +23,26 @@
   ~ SOFTWARE.
   -->
 
-<Configuration status="WARN">
+<Configuration status="WARN" packages="org.apache.logging.log4j.core,io.sentry.log4j2">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%highlight{%-5level}] %logger{36} - %msg%n" disableAnsi="false"/>
         </Console>
+
+        <Sentry name="Sentry" />
     </Appenders>
     <Loggers>
         <Logger name="org.opendc" level="warn" additivity="false">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="Sentry"/>
         </Logger>
         <Logger name="org.opendc.runner" level="info" additivity="false">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="Sentry"/>
         </Logger>
-        <Root level="error">
-            <AppenderRef ref="Console"/>
+        <Root level="info">
+            <AppenderRef level="error" ref="Console"/>
+            <AppenderRef ref="Sentry"/>
         </Root>
     </Loggers>
 </Configuration>
