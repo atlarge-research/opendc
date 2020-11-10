@@ -5,6 +5,7 @@ services:
       context: ./frontend
       args:
         OPENDC_OAUTH_CLIENT_ID: ${OPENDC_OAUTH_CLIENT_ID}
+        OPENDC_FRONTEND_SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN}
     image: frontend
     restart: on-failure
     networks:
