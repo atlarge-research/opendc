@@ -28,7 +28,7 @@ if 'SENTRY_DSN' in os.environ:
 
     sentry_sdk.init(
         integrations=[FlaskIntegration()],
-        traces_sample_rate=0.5
+        traces_sample_rate=0.1
     )
 
 # Set up database if not testing
