@@ -17,7 +17,7 @@ setupSocketConnection(() => {
             environment: process.env.NODE_ENV,
             dsn: process.env.REACT_APP_SENTRY_DSN,
             integrations: [new Integrations.BrowserTracing()],
-            tracesSampleRate: 0.5,
+            tracesSampleRate: 0.1,
         })
     }
 
