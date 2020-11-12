@@ -26,6 +26,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.long
 import com.mongodb.MongoClientSettings
 import com.mongodb.MongoCredential
 import com.mongodb.ServerAddress
@@ -50,6 +51,7 @@ import org.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.io.File
+import kotlin.coroutines.coroutineContext
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
@@ -123,6 +125,17 @@ public class RunnerCli : CliktCommand(name = "runner") {
         .defaultLazy { File("traces/") }
 
     /**
+     * The maximum duration of a single experiment run.
+     */
+    private val runTimeout by option(
+        "--run-timeout",
+        help = "maximum duration of experiment in seconds",
+        envvar = "OPENDC_RUN_TIMEOUT"
+    )
+        .long()
+        .default(60 * 3) // Experiment may run for a maximum of three minutes
+
+    /**
      * Connect to the user-specified database.
      */
     private fun createDatabase(): MongoDatabase {
@@ -167,9 +180,11 @@ public class RunnerCli : CliktCommand(name = "runner") {
 
         val targets = portfolio.get("targets", Document::class.java)
 
-        val results = (0..targets.getInteger("repeatsPerScenario") - 1).map {
+        val results = (0 until targets.getInteger("repeatsPerScenario")).map {
             logger.info { "Starting repeat $it" }
-            runRepeat(scenario, it, topologies, traceReader, performanceInterferenceReader)
+            withTimeout(runTimeout * 1000) {
+                runRepeat(scenario, it, topologies, traceReader, performanceInterferenceReader)
+            }
         }
 
         logger.info { "Finished simulation for scenario $id" }
@@ -193,7 +208,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
         val workloadFraction = traceDocument.get("loadSamplingFraction", Number::class.java).toDouble()
 
         val seeder = Random(seed)
-        val testScope = TestCoroutineScope()
+        val testScope = TestCoroutineScope(Job(parent = coroutineContext[Job]))
         val clock = DelayControllerClockAdapter(testScope)
 
         val chan = Channel<Unit>(Channel.CONFLATED)
@@ -271,6 +286,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
             testScope.uncaughtExceptions.forEach { it.printStackTrace() }
         } finally {
             monitor.close()
+            testScope.cancel()
         }
 
         return monitor.getResult()
