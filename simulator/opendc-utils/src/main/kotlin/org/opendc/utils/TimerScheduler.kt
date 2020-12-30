@@ -51,7 +51,7 @@ public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, priva
     private val timers = mutableMapOf<T, Timer>()
 
     /**
-     * The channel to communicate with the
+     * The channel to communicate with the scheduling job.
      */
     private val channel = Channel<Long?>(Channel.CONFLATED)
 

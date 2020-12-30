@@ -30,9 +30,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.model.SimMemoryUnit
+import org.opendc.simulator.compute.model.SimProcessingNode
+import org.opendc.simulator.compute.model.SimProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.time.Clock
@@ -51,10 +51,10 @@ internal class SimHypervisorTest {
         scope = TestCoroutineScope()
         clock = DelayControllerClockAdapter(scope)
 
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
+        val cpuNode = SimProcessingNode("Intel", "Xeon", "amd64", 1)
         machineModel = SimMachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            cpus = List(cpuNode.coreCount) { SimProcessingUnit(cpuNode, it, 3200.0) },
+            memory = List(4) { SimMemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 

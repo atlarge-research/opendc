@@ -34,9 +34,9 @@ import org.opendc.compute.simulator.power.models.LinearPowerModel
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.model.SimMemoryUnit
+import org.opendc.simulator.compute.model.SimProcessingNode
+import org.opendc.simulator.compute.model.SimProcessingUnit
 import java.util.*
 
 /**
@@ -56,13 +56,13 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
                 val cores = cpu.getInteger("numberOfCores")
                 val speed = cpu.get("clockRateMhz", Number::class.java).toDouble()
                 // TODO Remove hardcoding of vendor
-                val node = ProcessingNode("Intel", "amd64", cpu.getString("name"), cores)
+                val node = SimProcessingNode("Intel", "amd64", cpu.getString("name"), cores)
                 List(cores) { coreId ->
-                    ProcessingUnit(node, coreId, speed)
+                    SimProcessingUnit(node, coreId, speed)
                 }
             }
             val memoryUnits = machine.getList("memories", Document::class.java).map { memory ->
-                MemoryUnit(
+                SimMemoryUnit(
                     "Samsung",
                     memory.getString("name"),
                     memory.get("speedMbPerS", Number::class.java).toDouble(),

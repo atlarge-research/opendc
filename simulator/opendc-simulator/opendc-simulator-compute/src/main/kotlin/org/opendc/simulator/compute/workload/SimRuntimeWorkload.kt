@@ -22,7 +22,11 @@
 
 package org.opendc.simulator.compute.workload
 
-import org.opendc.simulator.compute.SimExecutionContext
+import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.resources.SimResourceCommand
+import org.opendc.simulator.resources.SimResourceConsumer
+import org.opendc.simulator.resources.SimResourceContext
 
 /**
  * A [SimWorkload] that models application execution as a single duration.
@@ -39,20 +43,26 @@ public class SimRuntimeWorkload(
         require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
 
-    override fun onStart(ctx: SimExecutionContext) {}
+    override fun onStart(ctx: SimMachineContext) {}
 
-    override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-        val limit = ctx.machine.cpus[cpu].frequency * utilization
-        val work = (limit / 1000) * duration
-        return SimResourceCommand.Consume(work, limit)
+    override fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit> {
+        return CpuConsumer()
     }
 
-    override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
-        return if (remainingWork > 0.0) {
-            val limit = ctx.machine.cpus[cpu].frequency * utilization
-            SimResourceCommand.Consume(remainingWork, limit)
-        } else {
-            SimResourceCommand.Exit
+    private inner class CpuConsumer : SimResourceConsumer<SimProcessingUnit> {
+        override fun onStart(ctx: SimResourceContext<SimProcessingUnit>): SimResourceCommand {
+            val limit = ctx.resource.frequency * utilization
+            val work = (limit / 1000) * duration
+            return SimResourceCommand.Consume(work, limit)
+        }
+
+        override fun onNext(ctx: SimResourceContext<SimProcessingUnit>, remainingWork: Double): SimResourceCommand {
+            return if (remainingWork > 0.0) {
+                val limit = ctx.resource.frequency * utilization
+                SimResourceCommand.Consume(remainingWork, limit)
+            } else {
+                SimResourceCommand.Exit
+            }
         }
     }
 

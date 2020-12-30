@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.model
 
+import org.opendc.simulator.resources.SimResource
+
 /**
  * A single logical compute unit of processor node, either virtual or physical.
  *
@@ -29,8 +31,11 @@ package org.opendc.simulator.compute.model
  * @property id The identifier of the CPU core within the processing node.
  * @property frequency The clock rate of the CPU in MHz.
  */
-public data class ProcessingUnit(
-    public val node: ProcessingNode,
+public data class SimProcessingUnit(
+    public val node: SimProcessingNode,
     public val id: Int,
     public val frequency: Double
-)
+) : SimResource {
+    override val capacity: Double
+        get() = frequency
+}

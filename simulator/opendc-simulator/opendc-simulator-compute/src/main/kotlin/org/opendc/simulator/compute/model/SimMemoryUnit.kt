@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.model
 
+import org.opendc.simulator.resources.SimResource
+
 /**
  * A memory unit of a compute resource, either virtual or physical.
  *
@@ -30,9 +32,12 @@ package org.opendc.simulator.compute.model
  * @property speed The access speed of the memory in MHz.
  * @property size The size of the memory unit in MBs.
  */
-public data class MemoryUnit(
+public data class SimMemoryUnit(
     public val vendor: String,
     public val modelName: String,
     public val speed: Double,
     public val size: Long
-)
+) : SimResource {
+    override val capacity: Double
+        get() = speed
+}

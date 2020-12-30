@@ -26,10 +26,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
-import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.workload.SimResourceCommand
+import org.opendc.simulator.compute.model.SimMemoryUnit
+import org.opendc.simulator.compute.model.SimProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.SimWorkloadBarrier
+import org.opendc.simulator.resources.*
 import java.time.Clock
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -44,22 +45,22 @@ import kotlin.math.min
  *
  * @param listener The hypervisor listener to use.
  */
-public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener? = null) : SimHypervisor {
+public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener? = null) : SimHypervisor, SimResourceConsumer<SimProcessingUnit> {
 
-    override fun onStart(ctx: SimExecutionContext) {
-        val model = ctx.machine
+    override fun onStart(ctx: SimMachineContext) {
         this.ctx = ctx
-        this.commands = Array(model.cpus.size) { SimResourceCommand.Idle() }
-        this.pCpus = model.cpus.indices.sortedBy { model.cpus[it].frequency }.toIntArray()
-        this.maxUsage = model.cpus.sumByDouble { it.frequency }
-        this.barrier = SimWorkloadBarrier(model.cpus.size)
+        this.commands = Array(ctx.cpus.size) { SimResourceCommand.Idle() }
+        this.pCpus = ctx.cpus.indices.sortedBy { ctx.cpus[it].frequency }.toIntArray()
+        this.maxUsage = ctx.cpus.sumByDouble { it.frequency }
+        this.barrier = SimWorkloadBarrier(ctx.cpus.size)
     }
 
-    override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-        return commands[cpu]
+    override fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit> {
+        return this
     }
 
-    override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext<SimProcessingUnit>, remainingWork: Double): SimResourceCommand {
+        val cpu = ctx.resource.id
         totalRemainingWork += remainingWork
         val isLast = barrier.enter()
 
@@ -82,6 +83,10 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
         }
     }
 
+    override fun onStart(ctx: SimResourceContext<SimProcessingUnit>): SimResourceCommand {
+        return commands[ctx.resource.id]
+    }
+
     override fun canFit(model: SimMachineModel): Boolean = true
 
     override fun createMachine(
@@ -92,7 +97,7 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
     /**
      * The execution context in which the hypervisor runs.
      */
-    private lateinit var ctx: SimExecutionContext
+    private lateinit var ctx: SimMachineContext
 
     /**
      * The commands to submit to the underlying host.
@@ -199,7 +204,7 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
             val vcpu = vcpuIterator.next()
             val availableShare = availableSpeed / remaining--
 
-            when (val command = vcpu.command) {
+            when (val command = vcpu.activeCommand) {
                 is SimResourceCommand.Idle -> {
                     // Take into account the minimum deadline of this slice before we possible continue
                     deadline = min(deadline, command.deadline)
@@ -246,7 +251,7 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
 
         // Divide the requests over the available capacity of the pCPUs fairly
         for (i in pCpus) {
-            val maxCpuUsage = ctx.machine.cpus[i].frequency
+            val maxCpuUsage = ctx.cpus[i].frequency
             val fraction = maxCpuUsage / maxUsage
             val grantedSpeed = min(maxCpuUsage, totalAllocatedSpeed * fraction)
             val grantedWork = duration * grantedSpeed
@@ -275,7 +280,7 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
     private fun flushGuests() {
         // Flush all the vCPUs work
         for (vcpu in vcpus) {
-            vcpu.flush(interrupt = false)
+            vcpu.flush(isIntermediate = true)
         }
 
         // Report metrics
@@ -299,9 +304,9 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
     /**
      * Interrupt all host CPUs.
      */
-    private fun SimExecutionContext.interruptAll() {
-        for (i in machine.cpus.indices) {
-            interrupt(i)
+    private fun SimMachineContext.interruptAll() {
+        for (cpu in ctx.cpus) {
+            interrupt(cpu)
         }
     }
 
@@ -336,33 +341,38 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
         private var cpus: List<VCpu> = emptyList()
 
         /**
+         * The execution context in which the workload runs.
+         */
+        inner class Context(override val meta: Map<String, Any>) : SimMachineContext {
+            override val cpus: List<SimProcessingUnit>
+                get() = model.cpus
+
+            override val memory: List<SimMemoryUnit>
+                get() = model.memory
+
+            override val clock: Clock
+                get() = this@SimFairShareHypervisor.ctx.clock
+
+            override fun interrupt(resource: SimResource) {
+                TODO()
+            }
+        }
+
+        lateinit var ctx: SimMachineContext
+
+        /**
          * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
          */
         override suspend fun run(workload: SimWorkload, meta: Map<String, Any>) {
             require(!isTerminated) { "Machine is terminated" }
             require(cont == null) { "Run should not be called concurrently" }
 
-            val ctx = object : SimExecutionContext {
-                override val machine: SimMachineModel
-                    get() = model
-
-                override val clock: Clock
-                    get() = this@SimFairShareHypervisor.ctx.clock
-
-                override val meta: Map<String, Any>
-                    get() = meta
-
-                override fun interrupt(cpu: Int) {
-                    require(cpu < cpus.size) { "Invalid CPU identifier" }
-                    cpus[cpu].interrupt()
-                }
-            }
-
+            ctx = Context(meta)
             workload.onStart(ctx)
 
             return suspendCancellableCoroutine { cont ->
                 this.cont = cont
-                this.cpus = model.cpus.map { VCpu(this, ctx, it, workload) }
+                this.cpus = model.cpus.map { VCpu(this, it, workload.getConsumer(ctx, it), ctx.clock) }
 
                 for (cpu in cpus) {
                     // Register vCPU to scheduler
@@ -387,13 +397,13 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
          * Update the usage of the VM.
          */
         fun updateUsage() {
-            usage.value = cpus.sumByDouble { it.actualSpeed } / cpus.sumByDouble { it.model.frequency }
+            usage.value = cpus.sumByDouble { it.actualSpeed } / cpus.sumByDouble { it.resource.frequency }
         }
 
         /**
          * This method is invoked when one of the CPUs has exited.
          */
-        fun onCpuExit(cpu: Int) {
+        fun onCpuExit() {
             // Check whether all other CPUs have finished
             if (cpus.all { it.hasExited }) {
                 val cont = cont
@@ -419,19 +429,14 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
      */
     private inner class VCpu(
         val vm: SimVm,
-        val ctx: SimExecutionContext,
-        val model: ProcessingUnit,
-        val workload: SimWorkload
-    ) : Comparable<VCpu> {
+        resource: SimProcessingUnit,
+        consumer: SimResourceConsumer<SimProcessingUnit>,
+        clock: Clock
+    ) : SimAbstractResourceContext<SimProcessingUnit>(resource, clock, consumer), Comparable<VCpu> {
         /**
-         * The latest command processed by the CPU.
+         * The current command that is processed by the vCPU.
          */
-        var command: SimResourceCommand = SimResourceCommand.Idle()
-
-        /**
-         * The latest timestamp at which the vCPU was flushed.
-         */
-        var latestFlush: Long = 0
+        var activeCommand: SimResourceCommand = SimResourceCommand.Idle()
 
         /**
          * The processing speed that is allowed by the model constraints.
@@ -448,146 +453,72 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
             }
 
         /**
-         * A flag to indicate that the CPU is currently processing a command.
-         */
-        var isIntermediate: Boolean = false
-
-        /**
          * A flag to indicate that the CPU has exited.
          */
-        val hasExited: Boolean
-            get() = command is SimResourceCommand.Exit
+        var hasExited: Boolean = false
 
-        /**
-         * Process the specified [SimResourceCommand] for this CPU.
-         */
-        fun process(command: SimResourceCommand) {
-            // Assign command as the most recent executed command
-            this.command = command
-
-            when (command) {
-                is SimResourceCommand.Idle -> {
-                    require(command.deadline >= ctx.clock.millis()) { "Deadline already passed" }
-
-                    allowedSpeed = 0.0
-                }
-                is SimResourceCommand.Consume -> {
-                    require(command.deadline >= ctx.clock.millis()) { "Deadline already passed" }
-
-                    allowedSpeed = min(model.frequency, command.limit)
-                }
-                is SimResourceCommand.Exit -> {
-                    allowedSpeed = 0.0
-                    actualSpeed = 0.0
-
-                    vm.onCpuExit(model.id)
-                }
-            }
+        override fun onIdle(deadline: Long) {
+            allowedSpeed = 0.0
+            activeCommand = SimResourceCommand.Idle(deadline)
         }
 
-        /**
-         * Start the CPU.
-         */
-        fun start() {
-            try {
-                isIntermediate = true
-                latestFlush = ctx.clock.millis()
-
-                process(workload.onStart(ctx, model.id))
-            } catch (e: Throwable) {
-                fail(e)
-            } finally {
-                isIntermediate = false
-            }
+        override fun onConsume(work: Double, limit: Double, deadline: Long) {
+            allowedSpeed = getSpeed(limit)
+            activeCommand = SimResourceCommand.Consume(work, limit, deadline)
         }
 
-        /**
-         * Flush the work performed by the CPU.
-         */
-        fun flush(interrupt: Boolean) {
-            val now = ctx.clock.millis()
-
-            // Fast path: if the CPU was already flushed at at the current instant, no need to flush the progress.
-            if (latestFlush >= now) {
-                return
-            }
-
-            try {
-                isIntermediate = true
-                when (val command = command) {
-                    is SimResourceCommand.Idle -> {
-                        // Act like nothing has happened in case the vCPU did not reach its deadline or was not
-                        // interrupted by the user.
-                        if (interrupt || command.deadline <= now) {
-                            process(workload.onNext(ctx, model.id, 0.0))
-                        }
-                    }
-                    is SimResourceCommand.Consume -> {
-                        // Apply performance interference model
-                        val performanceScore = vm.performanceInterferenceModel?.apply(load) ?: 1.0
-
-                        // Compute the remaining amount of work
-                        val remainingWork = if (command.work > 0.0) {
-                            // Compute the fraction of compute time allocated to the VM
-                            val fraction = actualSpeed / totalAllocatedSpeed
-
-                            // Compute the work that was actually granted to the VM.
-                            val processingAvailable = max(0.0, totalAllocatedWork - totalRemainingWork) * fraction
-                            val processed = processingAvailable * performanceScore
-
-                            val interferedWork = processingAvailable - processed
-                            totalInterferedWork += interferedWork
-
-                            max(0.0, command.work - processed)
-                        } else {
-                            0.0
-                        }
-
-                        // Act like nothing has happened in case the vCPU did not finish yet or was not interrupted by
-                        // the user.
-                        if (interrupt || remainingWork == 0.0 || command.deadline <= now) {
-                            if (!interrupt) {
-                                totalOvercommittedWork += remainingWork
-                            }
-
-                            process(workload.onNext(ctx, model.id, remainingWork))
-                        } else {
-                            process(SimResourceCommand.Consume(remainingWork, command.limit, command.deadline))
-                        }
-                    }
-                    SimResourceCommand.Exit ->
-                        throw IllegalStateException()
-                }
-            } catch (e: Throwable) {
-                fail(e)
-            } finally {
-                latestFlush = now
-                isIntermediate = false
-            }
+        override fun onFinish() {
+            hasExited = true
+            activeCommand = SimResourceCommand.Exit
+            vm.onCpuExit()
         }
 
-        /**
-         * Interrupt the CPU.
-         */
-        fun interrupt() {
+        override fun onFailure(cause: Throwable) {
+            hasExited = true
+            activeCommand = SimResourceCommand.Exit
+            vm.onCpuFailure(cause)
+        }
+
+        override fun getRemainingWork(work: Double, speed: Double, duration: Long, isInterrupted: Boolean): Double {
+            // Apply performance interference model
+            val performanceScore = vm.performanceInterferenceModel?.apply(load) ?: 1.0
+
+            // Compute the remaining amount of work
+            val remainingWork = if (work > 0.0) {
+                // Compute the fraction of compute time allocated to the VM
+                val fraction = actualSpeed / totalAllocatedSpeed
+
+                // Compute the work that was actually granted to the VM.
+                val processingAvailable = max(0.0, totalAllocatedWork - totalRemainingWork) * fraction
+                val processed = processingAvailable * performanceScore
+
+                val interferedWork = processingAvailable - processed
+
+                totalInterferedWork += interferedWork
+
+                max(0.0, work - processed)
+            } else {
+                0.0
+            }
+
+            if (!isInterrupted) {
+                totalOvercommittedWork += remainingWork
+            }
+
+            return remainingWork
+        }
+
+        override fun interrupt() {
             // Prevent users from interrupting the CPU while it is constructing its next command, this will only lead
             // to infinite recursion.
-            if (isIntermediate) {
+            if (isProcessing) {
                 return
             }
 
-            flush(interrupt = true)
+            super.interrupt()
 
             // Force the scheduler to re-schedule
             shouldSchedule()
-        }
-
-        /**
-         * Fail the CPU.
-         */
-        fun fail(e: Throwable) {
-            command = SimResourceCommand.Exit
-            vm.onCpuFailure(e)
         }
 
         override fun compareTo(other: VCpu): Int = allowedSpeed.compareTo(other.allowedSpeed)

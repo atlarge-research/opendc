@@ -20,36 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
-
-import java.time.Clock
+package org.opendc.simulator.compute.model
 
 /**
- * A simulated execution context in which a bootable image runs. This interface represents the
- * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
- * which the image runs.
+ * A processing node/package/socket containing possibly several CPU cores.
+ *
+ * @property vendor The vendor string of the processor node.
+ * @property modelName The name of the processor node.
+ * @property arch The micro-architecture of the processor node.
+ * @property coreCount The number of logical CPUs in the processor node.
  */
-public interface SimExecutionContext {
-    /**
-     * The virtual clock tracking simulation time.
-     */
-    public val clock: Clock
-
-    /**
-     * The machine model of the machine that is running the image.
-     */
-    public val machine: SimMachineModel
-
-    /**
-     * The metadata associated with the context.
-     */
-    public val meta: Map<String, Any>
-
-    /**
-     * Ask the host machine to interrupt the specified vCPU.
-     *
-     * @param cpu The id of the vCPU to interrupt.
-     * @throws IllegalArgumentException if the identifier points to a non-existing vCPU.
-     */
-    public fun interrupt(cpu: Int)
-}
+public data class SimProcessingNode(
+    public val vendor: String,
+    public val arch: String,
+    public val modelName: String,
+    public val coreCount: Int
+)

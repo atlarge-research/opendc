@@ -20,26 +20,43 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload
+package org.opendc.simulator.compute
 
-import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.model.SimMemoryUnit
 import org.opendc.simulator.compute.model.SimProcessingUnit
-import org.opendc.simulator.resources.SimResourceConsumer
+import org.opendc.simulator.resources.SimResource
+import java.time.Clock
 
 /**
- * A model that characterizes the runtime behavior of some particular workload.
- *
- * Workloads are stateful objects that may be paused and resumed at a later moment. As such, be careful when using the
- * same [SimWorkload] from multiple contexts.
+ * A simulated execution context in which a bootable image runs. This interface represents the
+ * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
+ * which the image runs.
  */
-public interface SimWorkload {
+public interface SimMachineContext {
     /**
-     * This method is invoked when the workload is started.
+     * The virtual clock tracking simulation time.
      */
-    public fun onStart(ctx: SimMachineContext)
+    public val clock: Clock
+    
+    /**
+     * The metadata associated with the context.
+     */
+    public val meta: Map<String, Any>
 
     /**
-     * Obtain the resource consumer for the specified processing unit.
+     * The CPUs available on the machine.
      */
-    public fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit>
+    public val cpus: List<SimProcessingUnit>
+
+    /**
+     * The memory available on the machine
+     */
+    public val memory: List<SimMemoryUnit>
+
+    /**
+     * Interrupt the specified [resource].
+     *
+     * @throws IllegalArgumentException if the resource does not belong to this execution context.
+     */
+    public fun interrupt(resource: SimResource)
 }

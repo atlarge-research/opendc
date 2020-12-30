@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.model.SimMemoryUnit
+import org.opendc.simulator.compute.model.SimProcessingUnit
 
 /**
  * A description of the physical or virtual machine on which a bootable image runs.
@@ -31,4 +31,4 @@ import org.opendc.simulator.compute.model.ProcessingUnit
  * @property cpus The list of processing units available to the image.
  * @property memory The list of memory units available to the image.
  */
-public data class SimMachineModel(public val cpus: List<ProcessingUnit>, public val memory: List<MemoryUnit>)
+public data class SimMachineModel(public val cpus: List<SimProcessingUnit>, public val memory: List<SimMemoryUnit>)
