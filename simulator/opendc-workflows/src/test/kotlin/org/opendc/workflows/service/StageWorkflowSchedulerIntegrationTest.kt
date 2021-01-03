@@ -35,10 +35,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.trace.core.EventTracer
 import org.opendc.workflows.service.stage.job.NullJobAdmissionPolicy
 import org.opendc.workflows.service.stage.job.SubmissionTimeJobOrderPolicy
 import org.opendc.workflows.service.stage.resource.FirstFitResourceSelectionPolicy
@@ -66,6 +68,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
 
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
+        val tracer = EventTracer(clock)
 
         val schedulerAsync = testScope.async {
             val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
@@ -74,6 +77,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
             StageWorkflowService(
                 testScope,
                 clock,
+                tracer,
                 environment.platforms[0].zones[0].services[ProvisioningService],
                 mode = WorkflowSchedulerMode.Batch(100),
                 jobAdmissionPolicy = NullJobAdmissionPolicy,
@@ -113,9 +117,11 @@ internal class StageWorkflowSchedulerIntegrationTest {
 
         testScope.advanceUntilIdle()
 
-        assertNotEquals(0, jobsSubmitted, "No jobs submitted")
-        assertEquals(jobsSubmitted, jobsStarted, "Not all submitted jobs started")
-        assertEquals(jobsSubmitted, jobsFinished, "Not all started jobs finished")
-        assertEquals(tasksStarted, tasksFinished, "Not all started tasks finished")
+        assertAll(
+            { assertNotEquals(0, jobsSubmitted, "No jobs submitted") },
+            { assertEquals(jobsSubmitted, jobsStarted, "Not all submitted jobs started") },
+            { assertEquals(jobsSubmitted, jobsFinished, "Not all started jobs finished") },
+            { assertEquals(tasksStarted, tasksFinished, "Not all started tasks finished") }
+        )
     }
 }

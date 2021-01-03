@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.opendc.compute.core.Server
@@ -33,7 +34,9 @@ import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.utils.flow.EventFlow
+import org.opendc.trace.core.EventTracer
+import org.opendc.trace.core.consumeAsFlow
+import org.opendc.trace.core.enable
 import org.opendc.workflows.service.stage.job.JobAdmissionPolicy
 import org.opendc.workflows.service.stage.job.JobOrderPolicy
 import org.opendc.workflows.service.stage.resource.ResourceFilterPolicy
@@ -51,6 +54,7 @@ import java.util.*
 public class StageWorkflowService(
     internal val coroutineScope: CoroutineScope,
     internal val clock: Clock,
+    internal val tracer: EventTracer,
     private val provisioningService: ProvisioningService,
     mode: WorkflowSchedulerMode,
     jobAdmissionPolicy: JobAdmissionPolicy,
@@ -168,7 +172,6 @@ public class StageWorkflowService(
     private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic
     private val resourceFilterPolicy: ResourceFilterPolicy.Logic
     private val resourceSelectionPolicy: Comparator<Node>
-    private val eventFlow = EventFlow<WorkflowEvent>()
 
     init {
         coroutineScope.launch {
@@ -185,7 +188,14 @@ public class StageWorkflowService(
         this.resourceSelectionPolicy = resourceSelectionPolicy(this)
     }
 
-    override val events: Flow<WorkflowEvent> = eventFlow
+    override val events: Flow<WorkflowEvent> = tracer.openRecording().let {
+        it.enable<WorkflowEvent.JobSubmitted>()
+        it.enable<WorkflowEvent.JobStarted>()
+        it.enable<WorkflowEvent.JobFinished>()
+        it.enable<WorkflowEvent.TaskStarted>()
+        it.enable<WorkflowEvent.TaskFinished>()
+        it.consumeAsFlow().map { event -> event as WorkflowEvent }
+    }
 
     override suspend fun submit(job: Job) {
         // J1 Incoming Jobs
@@ -209,6 +219,7 @@ public class StageWorkflowService(
         instances.values.toCollection(jobInstance.tasks)
         incomingJobs += jobInstance
         rootListener.jobSubmitted(jobInstance)
+        tracer.commit(WorkflowEvent.JobSubmitted(this, jobInstance.job))
 
         requestCycle()
     }
@@ -237,7 +248,7 @@ public class StageWorkflowService(
             iterator.remove()
             jobQueue.add(jobInstance)
             activeJobs += jobInstance
-            eventFlow.emit(WorkflowEvent.JobStarted(this, jobInstance.job, clock.millis()))
+            tracer.commit(WorkflowEvent.JobStarted(this, jobInstance.job))
             rootListener.jobStarted(jobInstance)
         }
 
@@ -307,12 +318,11 @@ public class StageWorkflowService(
             ServerState.ACTIVE -> {
                 val task = taskByServer.getValue(server)
                 task.startedAt = clock.millis()
-                eventFlow.emit(
+                tracer.commit(
                     WorkflowEvent.TaskStarted(
                         this@StageWorkflowService,
                         task.job.job,
-                        task.task,
-                        clock.millis()
+                        task.task
                     )
                 )
                 rootListener.taskStarted(task)
@@ -325,12 +335,11 @@ public class StageWorkflowService(
                 job.tasks.remove(task)
                 available += task.host!!
                 activeTasks -= task
-                eventFlow.emit(
+                tracer.commit(
                     WorkflowEvent.TaskFinished(
                         this@StageWorkflowService,
                         task.job.job,
-                        task.task,
-                        clock.millis()
+                        task.task
                     )
                 )
                 rootListener.taskFinished(task)
@@ -357,7 +366,7 @@ public class StageWorkflowService(
 
     private suspend fun finishJob(job: JobState) {
         activeJobs -= job
-        eventFlow.emit(WorkflowEvent.JobFinished(this, job.job, clock.millis()))
+        tracer.commit(WorkflowEvent.JobFinished(this, job.job))
         rootListener.jobFinished(job)
     }
 
