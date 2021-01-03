@@ -95,6 +95,8 @@ public class SimBareMetalMachine(
             return object : SelectClause0 {
                 @InternalCoroutinesApi
                 override fun <R> registerSelectClause0(select: SelectInstance<R>, block: suspend () -> R) {
+                    val context = select.completion.context
+
                     // Do not reset the usage state: we will set it ourselves
                     usageFlush?.dispose()
                     usageFlush = null
@@ -139,7 +141,7 @@ public class SimBareMetalMachine(
                         }
 
                         // Schedule the flush after the entire slice has finished
-                        currentDisposable = delay.invokeOnTimeout(duration, action)
+                        currentDisposable = delay.invokeOnTimeout(duration, action, context)
 
                         // Start the slice work
                         currentWork = work
@@ -158,11 +160,13 @@ public class SimBareMetalMachine(
                             currentWork?.stop(duration)
                             currentDisposable?.dispose()
 
-                            // Schedule reset the usage of the machine since the call is returning
-                            usageFlush = delay.invokeOnTimeout(1) {
+                            val action = {
                                 usageState.value = 0.0
                                 usageFlush = null
                             }
+
+                            // Schedule reset the usage of the machine since the call is returning
+                            usageFlush = delay.invokeOnTimeout(1, action, context)
                         }
 
                         select.disposeOnSelect(disposable)
