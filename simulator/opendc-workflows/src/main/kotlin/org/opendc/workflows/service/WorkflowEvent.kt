@@ -22,25 +22,33 @@
 
 package org.opendc.workflows.service
 
+import org.opendc.trace.core.Event
 import org.opendc.workflows.workload.Job
 import org.opendc.workflows.workload.Task
 
 /**
  * An event emitted by the [WorkflowService].
  */
-public sealed class WorkflowEvent {
+public sealed class WorkflowEvent : Event() {
     /**
      * The [WorkflowService] that emitted the event.
      */
     public abstract val service: WorkflowService
 
     /**
+     * This event is emitted when a job was submitted to the scheduler.
+     */
+    public data class JobSubmitted(
+        override val service: WorkflowService,
+        public val job: Job
+    ) : WorkflowEvent()
+
+    /**
      * This event is emitted when a job has become active.
      */
     public data class JobStarted(
         override val service: WorkflowService,
-        public val job: Job,
-        public val time: Long
+        public val job: Job
     ) : WorkflowEvent()
 
     /**
@@ -48,8 +56,7 @@ public sealed class WorkflowEvent {
      */
     public data class JobFinished(
         override val service: WorkflowService,
-        public val job: Job,
-        public val time: Long
+        public val job: Job
     ) : WorkflowEvent()
 
     /**
@@ -58,8 +65,7 @@ public sealed class WorkflowEvent {
     public data class TaskStarted(
         override val service: WorkflowService,
         public val job: Job,
-        public val task: Task,
-        public val time: Long
+        public val task: Task
     ) : WorkflowEvent()
 
     /**
@@ -68,7 +74,6 @@ public sealed class WorkflowEvent {
     public data class TaskFinished(
         override val service: WorkflowService,
         public val job: Job,
-        public val task: Task,
-        public val time: Long
+        public val task: Task
     ) : WorkflowEvent()
 }

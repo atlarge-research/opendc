@@ -52,6 +52,7 @@ import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.failures.CorrelatedFaultInjector
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.simulator.failures.FaultInjector
+import org.opendc.trace.core.EventTracer
 import java.io.File
 import java.time.Clock
 import kotlin.math.ln
@@ -140,7 +141,8 @@ public suspend fun createProvisioner(
     coroutineScope: CoroutineScope,
     clock: Clock,
     environmentReader: EnvironmentReader,
-    allocationPolicy: AllocationPolicy
+    allocationPolicy: AllocationPolicy,
+    eventTracer: EventTracer
 ): Pair<ProvisioningService, SimVirtProvisioningService> {
     val environment = environmentReader.use { it.construct(coroutineScope, clock) }
     val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService]
@@ -148,7 +150,7 @@ public suspend fun createProvisioner(
     // Wait for the bare metal nodes to be spawned
     delay(10)
 
-    val scheduler = SimVirtProvisioningService(coroutineScope, clock, bareMetalProvisioner, allocationPolicy)
+    val scheduler = SimVirtProvisioningService(coroutineScope, clock, bareMetalProvisioner, allocationPolicy, eventTracer)
 
     // Wait for the hypervisors to be spawned
     delay(10)

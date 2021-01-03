@@ -20,23 +20,25 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.trace.core.internal
 
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-}
+import org.opendc.trace.core.Event
 
-dependencies {
-    api(project(":opendc-core"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
+/**
+ * A dispatcher responsible for conditionally dispatching an event.
+ */
+internal class EventDispatcher(val type: Class<out Event>?, val action: (Event) -> Unit) {
+    /**
+     * Determine whether this dispatcher accepts the specified event.
+     */
+    fun accepts(event: Event): Boolean {
+        return type == null || type.isAssignableFrom(event.javaClass)
+    }
 
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testImplementation(project(":opendc-compute:opendc-compute-simulator"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+    /**
+     * Invoke the specified [event] on this action.
+     */
+    operator fun invoke(event: Event) {
+        action(event)
+    }
 }

@@ -34,7 +34,7 @@ import java.util.*
  */
 public interface WorkflowService {
     /**
-     * Thie events emitted by the workflow scheduler.
+     * The events emitted by the workflow scheduler.
      */
     public val events: Flow<WorkflowEvent>
 

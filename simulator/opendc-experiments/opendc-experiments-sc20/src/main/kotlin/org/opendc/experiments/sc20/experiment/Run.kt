@@ -37,6 +37,7 @@ import org.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
 import org.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
 import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.trace.core.EventTracer
 import java.io.File
 import kotlin.random.Random
 
@@ -102,12 +103,15 @@ public data class Run(override val parent: Scenario, val id: Int, val seed: Int)
             parent.parent.parent.bufferSize
         )
 
+        val tracer = EventTracer(clock)
+
         testScope.launch {
             val (bareMetalProvisioner, scheduler) = createProvisioner(
                 this,
                 clock,
                 environment,
-                allocationPolicy
+                allocationPolicy,
+                tracer
             )
 
             val failureDomain = if (parent.operationalPhenomena.failureFrequency > 0) {

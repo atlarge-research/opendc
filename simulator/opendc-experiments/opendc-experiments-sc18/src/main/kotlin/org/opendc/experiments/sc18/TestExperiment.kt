@@ -31,6 +31,7 @@ import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.trace.core.EventTracer
 import org.opendc.workflows.service.StageWorkflowService
 import org.opendc.workflows.service.WorkflowEvent
 import org.opendc.workflows.service.WorkflowSchedulerMode
@@ -59,6 +60,7 @@ public fun main(args: Array<String>) {
     val token = Channel<Boolean>()
     val testScope = TestCoroutineScope()
     val clock = DelayControllerClockAdapter(testScope)
+    val tracer = EventTracer(clock)
 
     val schedulerAsync = testScope.async {
         val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-test.json"))
@@ -67,6 +69,7 @@ public fun main(args: Array<String>) {
         StageWorkflowService(
             this,
             clock,
+            tracer,
             environment.platforms[0].zones[0].services[ProvisioningService],
             mode = WorkflowSchedulerMode.Batch(100),
             jobAdmissionPolicy = NullJobAdmissionPolicy,

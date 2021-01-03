@@ -20,23 +20,11 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.trace.core.internal
 
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-}
-
-dependencies {
-    api(project(":opendc-core"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testImplementation(project(":opendc-compute:opendc-compute-simulator"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+/**
+ * The state of a [Stream].
+ */
+internal enum class StreamState {
+    Pending, Started, Closed
 }

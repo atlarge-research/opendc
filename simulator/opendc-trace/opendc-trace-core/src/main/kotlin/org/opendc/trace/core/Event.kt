@@ -20,23 +20,15 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.trace.core
 
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-}
-
-dependencies {
-    api(project(":opendc-core"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testImplementation(project(":opendc-compute:opendc-compute-simulator"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+/**
+ * Base class for events reported by the OpenDC tracing library.
+ */
+public abstract class Event(timestamp: Long = Long.MIN_VALUE) {
+    /**
+     * The timestamp at which the event has occurred.
+     */
+    public var timestamp: Long = timestamp
+        internal set
 }

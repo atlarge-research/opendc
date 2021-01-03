@@ -20,23 +20,33 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.trace.core
 
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
+/**
+ * A recording stream that produces events from an [EventTracer].
+ */
+public interface RecordingStream : EventStream {
+    /**
+     * Enable recording of the specified event [type].
+     */
+    public fun enable(type: Class<out Event>)
+
+    /**
+     * Disable recording of the specified event [type]
+     */
+    public fun disable(type: Class<out Event>)
 }
 
-dependencies {
-    api(project(":opendc-core"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
+/**
+ * Enable recording of events of type [E].
+ */
+public inline fun <reified E : Event> RecordingStream.enable() {
+    enable(E::class.java)
+}
 
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testImplementation(project(":opendc-compute:opendc-compute-simulator"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+/**
+ * Disable recording of events of type [E].
+ */
+public inline fun <reified E : Event> RecordingStream.disable() {
+    enable(E::class.java)
 }
