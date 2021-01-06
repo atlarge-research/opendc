@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,19 +19,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":opendc-core")
-include(":opendc-compute:opendc-compute-core")
-include(":opendc-compute:opendc-compute-simulator")
-include(":opendc-workflows")
-include(":opendc-format")
-include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-sc20")
-include(":opendc-runner-web")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-simulator:opendc-simulator-failures")
-include(":opendc-trace:opendc-trace-core")
-include(":opendc-harness")
-include(":opendc-utils")
+package org.opendc.harness.engine.strategy
+
+import org.opendc.harness.api.ExperimentDefinition
+import org.opendc.harness.api.Scenario
+
+/**
+ * The [ExperimentStrategy] is responsible for traversing the design space of an [ExperimentDefinition] based on its
+ * parameters, generating concrete points in the space represented as [Scenario]s.
+ */
+public interface ExperimentStrategy {
+    /**
+     * Generate the points in the design space of the specified [experiment] to explore.
+     *
+     * @param experiment The experiment design space to explore.
+     * @return A sequence of [Scenario]s which may be explored by the [ExperimentEngine].
+     */
+    public fun generate(experiment: ExperimentDefinition): Sequence<Scenario>
+}
