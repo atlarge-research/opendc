@@ -38,33 +38,27 @@ public class ParquetRunEventWriter(path: File, bufferSize: Int) :
 
     public companion object {
         private val convert: (RunEvent, GenericData.Record) -> Unit = { event, record ->
-            val run = event.run
-            val scenario = run.parent
-            val portfolio = scenario.parent
-            record.put("portfolio_id", portfolio.id)
+            val portfolio = event.portfolio
             record.put("portfolio_name", portfolio.name)
-            record.put("scenario_id", scenario.id)
-            record.put("run_id", run.id)
-            record.put("repetitions", scenario.repetitions)
-            record.put("topology", scenario.topology.name)
-            record.put("workload_name", scenario.workload.name)
-            record.put("workload_fraction", scenario.workload.fraction)
-            record.put("workload_sampler", scenario.workload.samplingStrategy)
-            record.put("allocation_policy", scenario.allocationPolicy)
-            record.put("failure_frequency", scenario.operationalPhenomena.failureFrequency)
-            record.put("interference", scenario.operationalPhenomena.hasInterference)
-            record.put("seed", run.seed)
+            record.put("scenario_id", portfolio.id)
+            record.put("run_id", event.repeat)
+            record.put("topology", portfolio.topology.name)
+            record.put("workload_name", portfolio.workload.name)
+            record.put("workload_fraction", portfolio.workload.fraction)
+            record.put("workload_sampler", portfolio.workload.samplingStrategy)
+            record.put("allocation_policy", portfolio.allocationPolicy)
+            record.put("failure_frequency", portfolio.operationalPhenomena.failureFrequency)
+            record.put("interference", portfolio.operationalPhenomena.hasInterference)
+            record.put("seed", event.repeat)
         }
 
         private val schema: Schema = SchemaBuilder
             .record("runs")
             .namespace("org.opendc.experiments.sc20")
             .fields()
-            .name("portfolio_id").type().intType().noDefault()
             .name("portfolio_name").type().stringType().noDefault()
             .name("scenario_id").type().intType().noDefault()
             .name("run_id").type().intType().noDefault()
-            .name("repetitions").type().intType().noDefault()
             .name("topology").type().stringType().noDefault()
             .name("workload_name").type().stringType().noDefault()
             .name("workload_fraction").type().doubleType().noDefault()

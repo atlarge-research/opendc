@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,22 +25,37 @@ package org.opendc.experiments.sc20.experiment
 import org.opendc.experiments.sc20.experiment.model.OperationalPhenomena
 import org.opendc.experiments.sc20.experiment.model.Topology
 import org.opendc.experiments.sc20.experiment.model.Workload
-import org.opendc.experiments.sc20.runner.ContainerExperimentDescriptor
-import org.opendc.experiments.sc20.runner.ExperimentDescriptor
+import org.opendc.harness.dsl.anyOf
 
 /**
- * A scenario represents a single point in the design space (a unique combination of parameters).
+ * A [Portfolio] that explores the effect of operational phenomena on metrics.
  */
-public class Scenario(
-    override val parent: Portfolio,
-    public val id: Int,
-    public val repetitions: Int,
-    public val topology: Topology,
-    public val workload: Workload,
-    public val allocationPolicy: String,
-    public val operationalPhenomena: OperationalPhenomena
-) : ContainerExperimentDescriptor() {
-    override val children: Sequence<ExperimentDescriptor> = sequence {
-        repeat(repetitions) { i -> yield(Run(this@Scenario, i, i)) }
-    }
+public class OperationalPhenomenaPortfolio : Portfolio("operational_phenomena") {
+    override val topology: Topology by anyOf(
+        Topology("base")
+    )
+
+    override val workload: Workload by anyOf(
+        Workload("solvinity", 0.1),
+        Workload("solvinity", 0.25),
+        Workload("solvinity", 0.5),
+        Workload("solvinity", 1.0)
+    )
+
+    override val operationalPhenomena: OperationalPhenomena by anyOf(
+        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+        OperationalPhenomena(failureFrequency = 0.0, hasInterference = true),
+        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = false),
+        OperationalPhenomena(failureFrequency = 0.0, hasInterference = false)
+    )
+
+    override val allocationPolicy: String by anyOf(
+        "mem",
+        "mem-inv",
+        "core-mem",
+        "core-mem-inv",
+        "active-servers",
+        "active-servers-inv",
+        "random"
+    )
 }

@@ -22,67 +22,196 @@
 
 package org.opendc.experiments.sc20.experiment
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestCoroutineScope
+import mu.KotlinLogging
+import org.opendc.compute.simulator.allocation.*
+import org.opendc.experiments.sc20.experiment.model.CompositeWorkload
 import org.opendc.experiments.sc20.experiment.model.OperationalPhenomena
 import org.opendc.experiments.sc20.experiment.model.Topology
 import org.opendc.experiments.sc20.experiment.model.Workload
-import org.opendc.experiments.sc20.runner.ContainerExperimentDescriptor
+import org.opendc.experiments.sc20.experiment.monitor.ParquetExperimentMonitor
+import org.opendc.experiments.sc20.trace.Sc20ParquetTraceReader
+import org.opendc.experiments.sc20.trace.Sc20RawParquetTraceReader
+import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
+import org.opendc.format.trace.PerformanceInterferenceModelReader
+import org.opendc.harness.dsl.Experiment
+import org.opendc.harness.dsl.anyOf
+import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.trace.core.EventTracer
+import java.io.File
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.Random
 
 /**
- * A portfolio represents a collection of scenarios are tested.
+ * A portfolio represents a collection of scenarios are tested for the work.
+ *
+ * @param name The name of the portfolio.
  */
-public abstract class Portfolio(
-    override val parent: Experiment,
-    public val id: Int,
-    public val name: String
-) : ContainerExperimentDescriptor() {
+public abstract class Portfolio(name: String) : Experiment(name) {
     /**
-     * The topologies to consider.
+     * The logger for this portfolio instance.
      */
-    protected abstract val topologies: List<Topology>
+    private val logger = KotlinLogging.logger {}
 
     /**
-     * The workloads to consider.
+     * The path to where the environments are located.
      */
-    protected abstract val workloads: List<Workload>
+    private val environmentPath by anyOf(File("environments/"))
+
+    /**
+     * The path to where the traces are located.
+     */
+    private val tracePath by anyOf(File("traces/"))
+
+    /**
+     * The path to where the output results should be written.
+     */
+    private val outputPath by anyOf(File("results/"))
+
+    /**
+     * The path to the original VM placements file.
+     */
+    private val vmPlacements by anyOf(emptyMap<String, String>())
+
+    /**
+     * The path to the performance interference model.
+     */
+    private val performanceInterferenceModel by anyOf<PerformanceInterferenceModelReader?>(null)
+
+    /**
+     * The topology to test.
+     */
+    public abstract val topology: Topology
+
+    /**
+     * The workload to test.
+     */
+    public abstract val workload: Workload
 
     /**
      * The operational phenomenas to consider.
      */
-    protected abstract val operationalPhenomenas: List<OperationalPhenomena>
+    public abstract val operationalPhenomena: OperationalPhenomena
 
     /**
      * The allocation policies to consider.
      */
-    protected abstract val allocationPolicies: List<String>
+    public abstract val allocationPolicy: String
 
     /**
-     * The number of repetitions to perform.
+     * A map of trace readers.
      */
-    public open val repetitions: Int = 32
+    private val traceReaders = ConcurrentHashMap<String, Sc20RawParquetTraceReader>()
 
     /**
-     * Resolve the children of this container.
+     * Perform a single trial for this portfolio.
      */
-    override val children: Sequence<Scenario> = sequence {
-        var id = 0
-        for (topology in topologies) {
-            for (workload in workloads) {
-                for (operationalPhenomena in operationalPhenomenas) {
-                    for (allocationPolicy in allocationPolicies) {
-                        yield(
-                            Scenario(
-                                this@Portfolio,
-                                id++,
-                                repetitions,
-                                topology,
-                                workload,
-                                allocationPolicy,
-                                operationalPhenomena
-                            )
-                        )
-                    }
-                }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun doRun(repeat: Int) {
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
+        val tracer = EventTracer(clock)
+        val seeder = Random(repeat)
+        val environment = Sc20ClusterEnvironmentReader(File(environmentPath, "${topology.name}.txt"))
+
+        val chan = Channel<Unit>(Channel.CONFLATED)
+        val allocationPolicy = createAllocationPolicy(seeder)
+
+        val workload = workload
+        val workloadNames = if (workload is CompositeWorkload) {
+            workload.workloads.map { it.name }
+        } else {
+            listOf(workload.name)
+        }
+
+        val rawReaders = workloadNames.map { workloadName ->
+            traceReaders.computeIfAbsent(workloadName) {
+                logger.info { "Loading trace $workloadName" }
+                Sc20RawParquetTraceReader(File(tracePath, workloadName))
             }
+        }
+
+        val performanceInterferenceModel = performanceInterferenceModel
+            ?.takeIf { operationalPhenomena.hasInterference }
+            ?.construct(seeder) ?: emptyMap()
+        val trace = Sc20ParquetTraceReader(rawReaders, performanceInterferenceModel, workload, seeder.nextInt())
+
+        val monitor = ParquetExperimentMonitor(
+            outputPath,
+            "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
+            4096
+        )
+
+        testScope.launch {
+            val (bareMetalProvisioner, scheduler) = createProvisioner(
+                this,
+                clock,
+                environment,
+                allocationPolicy,
+                tracer
+            )
+
+            val failureDomain = if (operationalPhenomena.failureFrequency > 0) {
+                logger.debug("ENABLING failures")
+                createFailureDomain(
+                    this,
+                    clock,
+                    seeder.nextInt(),
+                    operationalPhenomena.failureFrequency,
+                    bareMetalProvisioner,
+                    chan
+                )
+            } else {
+                null
+            }
+
+            attachMonitor(this, clock, scheduler, monitor)
+            processTrace(
+                this,
+                clock,
+                trace,
+                scheduler,
+                chan,
+                monitor
+            )
+
+            logger.debug("SUBMIT=${scheduler.submittedVms}")
+            logger.debug("FAIL=${scheduler.unscheduledVms}")
+            logger.debug("QUEUED=${scheduler.queuedVms}")
+            logger.debug("RUNNING=${scheduler.runningVms}")
+            logger.debug("FINISHED=${scheduler.finishedVms}")
+
+            failureDomain?.cancel()
+            scheduler.terminate()
+        }
+
+        try {
+            testScope.advanceUntilIdle()
+        } finally {
+            monitor.close()
+        }
+    }
+
+    /**
+     * Create the [AllocationPolicy] instance to use for the trial.
+     */
+    private fun createAllocationPolicy(seeder: Random): AllocationPolicy {
+        return when (allocationPolicy) {
+            "mem" -> AvailableMemoryAllocationPolicy()
+            "mem-inv" -> AvailableMemoryAllocationPolicy(true)
+            "core-mem" -> AvailableCoreMemoryAllocationPolicy()
+            "core-mem-inv" -> AvailableCoreMemoryAllocationPolicy(true)
+            "active-servers" -> NumberOfActiveServersAllocationPolicy()
+            "active-servers-inv" -> NumberOfActiveServersAllocationPolicy(true)
+            "provisioned-cores" -> ProvisionedCoresAllocationPolicy()
+            "provisioned-cores-inv" -> ProvisionedCoresAllocationPolicy(true)
+            "random" -> RandomAllocationPolicy(Random(seeder.nextInt()))
+            "replay" -> ReplayAllocationPolicy(vmPlacements)
+            else -> throw IllegalArgumentException("Unknown policy $allocationPolicy")
         }
     }
 }

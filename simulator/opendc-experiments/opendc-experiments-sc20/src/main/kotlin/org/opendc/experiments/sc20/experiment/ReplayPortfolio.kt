@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +20,31 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.sc20.runner.execution
+package org.opendc.experiments.sc20.experiment
+
+import org.opendc.experiments.sc20.experiment.model.OperationalPhenomena
+import org.opendc.experiments.sc20.experiment.model.Topology
+import org.opendc.experiments.sc20.experiment.model.Workload
+import org.opendc.harness.dsl.anyOf
 
 /**
- * The execution context of an experiment.
+ * A [Portfolio] that compares the original VM placements against our policies.
  */
-public interface ExperimentExecutionContext {
-    /**
-     * The execution listener to use.
-     */
-    public val listener: ExperimentExecutionListener
+public class ReplayPortfolio : Portfolio("replay") {
+    override val topology: Topology by anyOf(
+        Topology("base")
+    )
 
-    /**
-     * The experiment scheduler to use.
-     */
-    public val scheduler: ExperimentScheduler
+    override val workload: Workload by anyOf(
+        Workload("solvinity", 1.0)
+    )
 
-    /**
-     * A cache for objects within a single runner.
-     */
-    public val cache: MutableMap<Any?, Any?>
+    override val operationalPhenomena: OperationalPhenomena by anyOf(
+        OperationalPhenomena(failureFrequency = 0.0, hasInterference = false)
+    )
+
+    override val allocationPolicy: String by anyOf(
+        "replay",
+        "active-servers"
+    )
 }

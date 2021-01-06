@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.sc20.runner.execution
+package org.opendc.experiments.sc20.experiment
 
-import org.opendc.experiments.sc20.runner.ExperimentDescriptor
+import org.opendc.experiments.sc20.experiment.model.OperationalPhenomena
+import org.opendc.experiments.sc20.experiment.model.Topology
+import org.opendc.experiments.sc20.experiment.model.Workload
+import org.opendc.harness.dsl.anyOf
 
 /**
- * Listener to be notified of experiment execution events by experiment runners.
+ * A [Portfolio] to perform a simple test run.
  */
-public interface ExperimentExecutionListener {
-    /**
-     * A method that is invoked when a new [ExperimentDescriptor] is registered.
-     */
-    public fun descriptorRegistered(descriptor: ExperimentDescriptor)
+public class TestPortfolio : Portfolio("test") {
+    override val topology: Topology by anyOf(
+        Topology("base")
+    )
 
-    /**
-     * A method that is invoked when when the execution of a leaf or subtree of the experiment tree has finished,
-     * regardless of the outcome.
-     */
-    public fun executionFinished(descriptor: ExperimentDescriptor, result: ExperimentExecutionResult)
+    override val workload: Workload by anyOf(
+        Workload("solvinity", 1.0)
+    )
 
-    /**
-     * A method that is invoked when the execution of a leaf or subtree of the experiment tree is about to be started.
-     */
-    public fun executionStarted(descriptor: ExperimentDescriptor)
+    override val operationalPhenomena: OperationalPhenomena by anyOf(
+        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
+    )
+
+    override val allocationPolicy: String by anyOf("active-servers")
 }
