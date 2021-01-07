@@ -136,7 +136,7 @@ internal class SimVirtDriverTest {
 
         assertAll(
             { assertEquals(emptyList<Throwable>(), scope.uncaughtExceptions, "No errors") },
-            { assertEquals(2073600, requestedBurst, "Requested Burst does not match") },
+            { assertEquals(2082000, requestedBurst, "Requested Burst does not match") },
             { assertEquals(2013600, grantedBurst, "Granted Burst does not match") },
             { assertEquals(60000, overcommissionedBurst, "Overcommissioned Burst does not match") },
             { assertEquals(1200007, scope.currentTime) }

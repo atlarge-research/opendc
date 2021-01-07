@@ -37,6 +37,7 @@ dependencies {
     implementation(project(":opendc-format"))
     implementation(project(":opendc-workflows"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
+    implementation(project(":opendc-compute:opendc-compute-simulator"))
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
         exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
     }

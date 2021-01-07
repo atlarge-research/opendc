@@ -29,6 +29,7 @@ import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.workflows.workload.Job
 import org.opendc.workflows.workload.Task
+import org.opendc.workflows.workload.WORKFLOW_TASK_CORES
 import org.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
 import java.io.BufferedReader
 import java.io.File
@@ -122,8 +123,8 @@ public class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
 
                     val workflowId = values[workflowIdCol].trim().toLong()
                     val taskId = values[taskIdCol].trim().toLong()
-                    val submitTime = values[submitTimeCol].trim().toLong()
-                    val runtime = max(0, values[runtimeCol].trim().toLong())
+                    val submitTime = values[submitTimeCol].trim().toLong() * 1000 // ms
+                    val runtime = max(0, values[runtimeCol].trim().toLong()) // s
                     val cores = values[coreCol].trim().toInt()
                     val dependencies = values[dependencyCol].split(" ")
                         .filter { it.isNotEmpty() }
@@ -140,7 +141,10 @@ public class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
                         "<unnamed>",
                         SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(flops, cores)),
                         HashSet(),
-                        mapOf(WORKFLOW_TASK_DEADLINE to runtime)
+                        mapOf(
+                            WORKFLOW_TASK_CORES to cores,
+                            WORKFLOW_TASK_DEADLINE to (runtime * 1000)
+                        ),
                     )
                     entry.submissionTime = min(entry.submissionTime, submitTime)
                     (workflow.tasks as MutableSet<Task>).add(task)

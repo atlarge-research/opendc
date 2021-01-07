@@ -28,3 +28,8 @@ package org.opendc.workflows.workload
  * Meta-data key for the deadline of a task.
  */
 public const val WORKFLOW_TASK_DEADLINE: String = "workflow:task:deadline"
+
+/**
+ * Meta-data key for the number of cores needed for a task.
+ */
+public const val WORKFLOW_TASK_CORES: String = "workflow:task:cores"

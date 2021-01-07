@@ -29,41 +29,43 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
+import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
-import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.metal.service.ProvisioningService
+import org.opendc.compute.core.virt.service.VirtProvisioningService
 import org.opendc.trace.core.EventTracer
 import org.opendc.trace.core.consumeAsFlow
 import org.opendc.trace.core.enable
 import org.opendc.workflows.service.stage.job.JobAdmissionPolicy
 import org.opendc.workflows.service.stage.job.JobOrderPolicy
-import org.opendc.workflows.service.stage.resource.ResourceFilterPolicy
-import org.opendc.workflows.service.stage.resource.ResourceSelectionPolicy
 import org.opendc.workflows.service.stage.task.TaskEligibilityPolicy
 import org.opendc.workflows.service.stage.task.TaskOrderPolicy
 import org.opendc.workflows.workload.Job
+import org.opendc.workflows.workload.WORKFLOW_TASK_CORES
 import java.time.Clock
 import java.util.*
 
 /**
  * A [WorkflowService] that distributes work through a multi-stage process based on the Reference Architecture for
- * Topology Scheduling.
+ * Datacenter Scheduling.
  */
 public class StageWorkflowService(
     internal val coroutineScope: CoroutineScope,
     internal val clock: Clock,
     internal val tracer: EventTracer,
-    private val provisioningService: ProvisioningService,
+    private val provisioningService: VirtProvisioningService,
     mode: WorkflowSchedulerMode,
     jobAdmissionPolicy: JobAdmissionPolicy,
     jobOrderPolicy: JobOrderPolicy,
     taskEligibilityPolicy: TaskEligibilityPolicy,
-    taskOrderPolicy: TaskOrderPolicy,
-    resourceFilterPolicy: ResourceFilterPolicy,
-    resourceSelectionPolicy: ResourceSelectionPolicy
+    taskOrderPolicy: TaskOrderPolicy
 ) : WorkflowService {
+    /**
+     * The logger instance to use.
+     */
+    private val logger = KotlinLogging.logger {}
 
     /**
      * The incoming jobs ready to be processed by the scheduler.
@@ -101,25 +103,10 @@ public class StageWorkflowService(
     internal val taskByServer = mutableMapOf<Server, TaskState>()
 
     /**
-     * The nodes that are controlled by the service.
-     */
-    internal lateinit var nodes: List<Node>
-
-    /**
-     * The available nodes.
-     */
-    internal val available: MutableSet<Node> = mutableSetOf()
-
-    /**
-     * The maximum number of incoming jobs.
-     */
-    private val throttleLimit: Int = 20000
-
-    /**
      * The load of the system.
      */
     internal val load: Double
-        get() = (available.size / nodes.size.toDouble())
+        get() = (activeTasks.size / provisioningService.hostCount.toDouble())
 
     /**
      * The root listener of this scheduler.
@@ -170,22 +157,13 @@ public class StageWorkflowService(
     private val mode: WorkflowSchedulerMode.Logic
     private val jobAdmissionPolicy: JobAdmissionPolicy.Logic
     private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic
-    private val resourceFilterPolicy: ResourceFilterPolicy.Logic
-    private val resourceSelectionPolicy: Comparator<Node>
 
     init {
-        coroutineScope.launch {
-            nodes = provisioningService.nodes().toList()
-            available.addAll(nodes)
-        }
-
         this.mode = mode(this)
         this.jobAdmissionPolicy = jobAdmissionPolicy(this)
         this.jobQueue = PriorityQueue(100, jobOrderPolicy(this).thenBy { it.job.uid })
         this.taskEligibilityPolicy = taskEligibilityPolicy(this)
         this.taskQueue = PriorityQueue(1000, taskOrderPolicy(this).thenBy { it.task.uid })
-        this.resourceFilterPolicy = resourceFilterPolicy(this)
-        this.resourceSelectionPolicy = resourceSelectionPolicy(this)
     }
 
     override val events: Flow<WorkflowEvent> = tracer.openRecording().let {
@@ -290,26 +268,25 @@ public class StageWorkflowService(
         // T3 Per task
         while (taskQueue.isNotEmpty()) {
             val instance = taskQueue.peek()
-            val host: Node? = available.firstOrNull()
 
-            if (host != null) {
-                // T4 Submit task to machine
-                available -= host
+            val cores = instance.task.metadata[WORKFLOW_TASK_CORES] as? Int ?: 1
+            val flavor = Flavor(cores, 1000) // TODO How to determine memory usage for workflow task
+            val image = instance.task.image
+            coroutineScope.launch {
+                val server = provisioningService.deploy(instance.task.name, image, flavor)
+
                 instance.state = TaskStatus.ACTIVE
-                val newHost = provisioningService.deploy(host, instance.task.image)
-                val server = newHost.server!!
-                instance.host = newHost
+                instance.server = server
                 taskByServer[server] = instance
+
                 server.events
                     .onEach { event -> if (event is ServerEvent.StateChanged) stateChanged(event.server) }
                     .launchIn(coroutineScope)
-
-                activeTasks += instance
-                taskQueue.poll()
-                rootListener.taskAssigned(instance)
-            } else {
-                break
             }
+
+            activeTasks += instance
+            taskQueue.poll()
+            rootListener.taskAssigned(instance)
         }
     }
 
@@ -333,7 +310,6 @@ public class StageWorkflowService(
                 task.state = TaskStatus.FINISHED
                 task.finishedAt = clock.millis()
                 job.tasks.remove(task)
-                available += task.host!!
                 activeTasks -= task
                 tracer.commit(
                     WorkflowEvent.TaskFinished(

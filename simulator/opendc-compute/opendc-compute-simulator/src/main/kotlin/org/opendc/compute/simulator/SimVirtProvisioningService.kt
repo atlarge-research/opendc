@@ -54,7 +54,8 @@ public class SimVirtProvisioningService(
     private val clock: Clock,
     private val provisioningService: ProvisioningService,
     public val allocationPolicy: AllocationPolicy,
-    private val tracer: EventTracer
+    private val tracer: EventTracer,
+    private val schedulingQuantum: Long = 300000 // 5 minutes in milliseconds
 ) : VirtProvisioningService {
     /**
      * The logger instance to use.
@@ -134,6 +135,8 @@ public class SimVirtProvisioningService(
         return availableHypervisors.map { it.driver }.toSet()
     }
 
+    override val hostCount: Int = hypervisors.size
+
     override suspend fun deploy(
         name: String,
         image: Image,
@@ -173,11 +176,10 @@ public class SimVirtProvisioningService(
             return
         }
 
-        val quantum = 300000 // 5 minutes in milliseconds
         // We assume that the provisioner runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
         // This is important because the slices of the VMs need to be aligned.
         // We calculate here the delay until the next scheduling slot.
-        val delay = quantum - (clock.millis() % quantum)
+        val delay = schedulingQuantum - (clock.millis() % schedulingQuantum)
 
         val call = coroutineScope.launch {
             delay(delay)
@@ -191,7 +193,7 @@ public class SimVirtProvisioningService(
         val imagesToBeScheduled = incomingImages.toSet()
 
         for (imageInstance in imagesToBeScheduled) {
-            val requiredMemory = imageInstance.image.tags["required-memory"] as Long
+            val requiredMemory = imageInstance.flavor.memorySize
             val selectedHv = allocationLogic.select(availableHypervisors, imageInstance)
 
             if (selectedHv == null) {

@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.opendc.compute.core.metal.service.ProvisioningService
+import org.opendc.compute.simulator.SimVirtProvisioningService
+import org.opendc.compute.simulator.allocation.NumberOfActiveServersAllocationPolicy
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
@@ -37,8 +39,6 @@ import org.opendc.workflows.service.WorkflowEvent
 import org.opendc.workflows.service.WorkflowSchedulerMode
 import org.opendc.workflows.service.stage.job.NullJobAdmissionPolicy
 import org.opendc.workflows.service.stage.job.SubmissionTimeJobOrderPolicy
-import org.opendc.workflows.service.stage.resource.FirstFitResourceSelectionPolicy
-import org.opendc.workflows.service.stage.resource.FunctionalResourceFilterPolicy
 import org.opendc.workflows.service.stage.task.NullTaskEligibilityPolicy
 import org.opendc.workflows.service.stage.task.SubmissionTimeTaskOrderPolicy
 import java.io.File
@@ -63,21 +63,29 @@ public fun main(args: Array<String>) {
     val tracer = EventTracer(clock)
 
     val schedulerAsync = testScope.async {
-        val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/env/setup-test.json"))
-            .use { it.construct(this, clock) }
+        val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
+            .use { it.construct(testScope, clock) }
+
+        val bareMetal = environment.platforms[0].zones[0].services[ProvisioningService]
+
+        // Wait for the bare metal nodes to be spawned
+        delay(10)
+
+        val provisioner = SimVirtProvisioningService(testScope, clock, bareMetal, NumberOfActiveServersAllocationPolicy(), tracer, schedulingQuantum = 1000)
+
+        // Wait for the hypervisors to be spawned
+        delay(10)
 
         StageWorkflowService(
-            this,
+            testScope,
             clock,
             tracer,
-            environment.platforms[0].zones[0].services[ProvisioningService],
+            provisioner,
             mode = WorkflowSchedulerMode.Batch(100),
             jobAdmissionPolicy = NullJobAdmissionPolicy,
             jobOrderPolicy = SubmissionTimeJobOrderPolicy(),
             taskEligibilityPolicy = NullTaskEligibilityPolicy,
             taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
-            resourceFilterPolicy = FunctionalResourceFilterPolicy,
-            resourceSelectionPolicy = FirstFitResourceSelectionPolicy
         )
     }
 

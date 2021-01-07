@@ -37,14 +37,14 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.metal.service.ProvisioningService
+import org.opendc.compute.simulator.SimVirtProvisioningService
+import org.opendc.compute.simulator.allocation.NumberOfActiveServersAllocationPolicy
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
 import org.opendc.workflows.service.stage.job.NullJobAdmissionPolicy
 import org.opendc.workflows.service.stage.job.SubmissionTimeJobOrderPolicy
-import org.opendc.workflows.service.stage.resource.FirstFitResourceSelectionPolicy
-import org.opendc.workflows.service.stage.resource.FunctionalResourceFilterPolicy
 import org.opendc.workflows.service.stage.task.NullTaskEligibilityPolicy
 import org.opendc.workflows.service.stage.task.SubmissionTimeTaskOrderPolicy
 import kotlin.math.max
@@ -74,18 +74,26 @@ internal class StageWorkflowSchedulerIntegrationTest {
             val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
                 .use { it.construct(testScope, clock) }
 
+            val bareMetal = environment.platforms[0].zones[0].services[ProvisioningService]
+
+            // Wait for the bare metal nodes to be spawned
+            delay(10)
+
+            val provisioner = SimVirtProvisioningService(testScope, clock, bareMetal, NumberOfActiveServersAllocationPolicy(), tracer, schedulingQuantum = 1000)
+
+            // Wait for the hypervisors to be spawned
+            delay(10)
+
             StageWorkflowService(
                 testScope,
                 clock,
                 tracer,
-                environment.platforms[0].zones[0].services[ProvisioningService],
+                provisioner,
                 mode = WorkflowSchedulerMode.Batch(100),
                 jobAdmissionPolicy = NullJobAdmissionPolicy,
                 jobOrderPolicy = SubmissionTimeJobOrderPolicy(),
                 taskEligibilityPolicy = NullTaskEligibilityPolicy,
                 taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
-                resourceFilterPolicy = FunctionalResourceFilterPolicy,
-                resourceSelectionPolicy = FirstFitResourceSelectionPolicy
             )
         }
 
@@ -110,7 +118,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
             while (reader.hasNext()) {
                 val (time, job) = reader.next()
                 jobsSubmitted++
-                delay(max(0, time * 1000 - clock.millis()))
+                delay(max(0, time - clock.millis()))
                 scheduler.submit(job)
             }
         }
@@ -118,6 +126,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
         testScope.advanceUntilIdle()
 
         assertAll(
+            { assertEquals(emptyList<Throwable>(), testScope.uncaughtExceptions) },
             { assertNotEquals(0, jobsSubmitted, "No jobs submitted") },
             { assertEquals(jobsSubmitted, jobsStarted, "Not all submitted jobs started") },
             { assertEquals(jobsSubmitted, jobsFinished, "Not all started jobs finished") },
