@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,19 +19,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":opendc-core")
-include(":opendc-compute:opendc-compute-core")
-include(":opendc-compute:opendc-compute-simulator")
-include(":opendc-workflows")
-include(":opendc-format")
-include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-sc20")
-include(":opendc-runner-web")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-simulator:opendc-simulator-failures")
-include(":opendc-trace:opendc-trace-core")
-include(":opendc-harness")
-include(":opendc-utils")
+package org.opendc.experiments.sc20.experiment
+
+import org.opendc.experiments.sc20.experiment.model.OperationalPhenomena
+import org.opendc.experiments.sc20.experiment.model.Topology
+import org.opendc.experiments.sc20.experiment.model.Workload
+import org.opendc.harness.dsl.anyOf
+
+/**
+ * A [Portfolio] that compares the original VM placements against our policies.
+ */
+public class ReplayPortfolio : Portfolio("replay") {
+    override val topology: Topology by anyOf(
+        Topology("base")
+    )
+
+    override val workload: Workload by anyOf(
+        Workload("solvinity", 1.0)
+    )
+
+    override val operationalPhenomena: OperationalPhenomena by anyOf(
+        OperationalPhenomena(failureFrequency = 0.0, hasInterference = false)
+    )
+
+    override val allocationPolicy: String by anyOf(
+        "replay",
+        "active-servers"
+    )
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,19 +19,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":opendc-core")
-include(":opendc-compute:opendc-compute-core")
-include(":opendc-compute:opendc-compute-simulator")
-include(":opendc-workflows")
-include(":opendc-format")
-include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-sc20")
-include(":opendc-runner-web")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-simulator:opendc-simulator-failures")
-include(":opendc-trace:opendc-trace-core")
-include(":opendc-harness")
-include(":opendc-utils")
+package org.opendc.harness.api
+
+/**
+ * A definition for a repeatable experiment which consists of multiple scenarios derived from pre-defined experiment
+ * parameters.
+ *
+ * @property name The name of the experiment.
+ * @property parameters The parameters of the experiments.
+ * @property evaluator The function to evaluate a single experiment trial.
+ * @property meta The metadata for the experiment.
+ */
+public data class ExperimentDefinition(
+    val name: String,
+    val parameters: Set<Parameter<*>>,
+    val evaluator: (Trial) -> Unit,
+    val meta: Map<String, Any> = emptyMap()
+)

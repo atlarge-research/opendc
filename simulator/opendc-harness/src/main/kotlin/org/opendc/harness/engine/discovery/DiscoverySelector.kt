@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,19 +19,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":opendc-core")
-include(":opendc-compute:opendc-compute-core")
-include(":opendc-compute:opendc-compute-simulator")
-include(":opendc-workflows")
-include(":opendc-format")
-include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-sc20")
-include(":opendc-runner-web")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-simulator:opendc-simulator-failures")
-include(":opendc-trace:opendc-trace-core")
-include(":opendc-harness")
-include(":opendc-utils")
+package org.opendc.harness.engine.discovery
+
+import org.opendc.harness.api.ExperimentDefinition
+
+/**
+ * A [DiscoverySelector] defines the properties used to discover experiments.
+ */
+public sealed class DiscoverySelector {
+    /**
+     * Test whether the specified [ExperimentDefinition] should be selected.
+     */
+    public abstract fun test(definition: ExperimentDefinition): Boolean
+
+    /**
+     * Select an experiment based on its name.
+     */
+    public data class Name(val name: String) : DiscoverySelector() {
+        override fun test(definition: ExperimentDefinition): Boolean = definition.name == name
+    }
+
+    /**
+     * Select an experiment based on its metadata.
+     */
+    public data class Meta(val key: String, val value: Any) : DiscoverySelector() {
+        override fun test(definition: ExperimentDefinition): Boolean = definition.meta[key] == value
+    }
+}
