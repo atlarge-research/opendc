@@ -39,7 +39,7 @@ public class SimFlopsWorkload(
     public val utilization: Double = 0.8
 ) : SimWorkload {
     init {
-        require(flops >= 0) { "Negative number of flops" }
+        require(flops >= 0) { "Negative number of FLOPs" }
         require(cores > 0) { "Negative number of cores or no cores" }
         require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
@@ -54,4 +54,6 @@ public class SimFlopsWorkload(
 
         ctx.run(SimExecutionContext.Slice(burst, maxUsage, Long.MAX_VALUE), triggerMode = SimExecutionContext.TriggerMode.LAST)
     }
+
+    override fun toString(): String = "SimFlopsWorkload(FLOPs=$flops,cores=$cores,utilization=$utilization)"
 }

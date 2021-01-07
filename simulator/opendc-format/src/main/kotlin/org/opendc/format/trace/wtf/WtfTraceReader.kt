@@ -32,6 +32,7 @@ import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.workflows.workload.Job
 import org.opendc.workflows.workload.Task
+import org.opendc.workflows.workload.WORKFLOW_TASK_CORES
 import org.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
 import java.util.UUID
 import kotlin.math.min
@@ -82,7 +83,10 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
                 "<unnamed>",
                 SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(flops, cores)),
                 HashSet(),
-                mapOf(WORKFLOW_TASK_DEADLINE to runtime)
+                mapOf(
+                    WORKFLOW_TASK_CORES to cores,
+                    WORKFLOW_TASK_DEADLINE to runtime
+                )
             )
 
             entry.submissionTime = min(entry.submissionTime, submitTime)

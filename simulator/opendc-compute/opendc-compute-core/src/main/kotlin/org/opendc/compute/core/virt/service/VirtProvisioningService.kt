@@ -42,6 +42,11 @@ public interface VirtProvisioningService {
     public suspend fun drivers(): Set<VirtDriver>
 
     /**
+     * The number of hosts available in the system.
+     */
+    public val hostCount: Int
+
+    /**
      * Submit the specified [Image] to the provisioning service.
      *
      * @param name The name of the server to deploy.

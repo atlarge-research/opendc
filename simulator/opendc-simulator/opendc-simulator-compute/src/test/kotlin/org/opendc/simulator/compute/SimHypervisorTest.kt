@@ -105,7 +105,7 @@ internal class SimHypervisorTest {
                 )
 
             val machine = SimBareMetalMachine(scope, clock, machineModel)
-            val hypervisor = SimHypervisor(scope, clock, listener)
+            val hypervisor = SimFairSharedHypervisor(scope, clock, listener)
 
             launch {
                 machine.run(hypervisor)
@@ -120,7 +120,7 @@ internal class SimHypervisorTest {
 
         assertAll(
             { Assertions.assertEquals(emptyList<Throwable>(), scope.uncaughtExceptions, "No errors") },
-            { Assertions.assertEquals(2073600, listener.totalRequestedBurst, "Requested Burst does not match") },
+            { Assertions.assertEquals(2082000, listener.totalRequestedBurst, "Requested Burst does not match") },
             { Assertions.assertEquals(2013600, listener.totalGrantedBurst, "Granted Burst does not match") },
             { Assertions.assertEquals(60000, listener.totalOvercommissionedBurst, "Overcommissioned Burst does not match") },
             { Assertions.assertEquals(1200001, scope.currentTime) }

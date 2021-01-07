@@ -148,9 +148,9 @@ class Sc20IntegrationTest {
         assertAll(
             { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
             { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
-            { assertEquals(207379117949, monitor.totalRequestedBurst) },
-            { assertEquals(203388071813, monitor.totalGrantedBurst) },
-            { assertEquals(3991046136, monitor.totalOvercommissionedBurst) },
+            { assertEquals(207480856422, monitor.totalRequestedBurst) },
+            { assertEquals(206510493178, monitor.totalGrantedBurst) },
+            { assertEquals(336120436, monitor.totalOvercommissionedBurst) },
             { assertEquals(0, monitor.totalInterferedBurst) }
         )
     }
@@ -195,9 +195,9 @@ class Sc20IntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(96344114723, monitor.totalRequestedBurst) },
-            { assertEquals(96324378235, monitor.totalGrantedBurst) },
-            { assertEquals(19736424, monitor.totalOvercommissionedBurst) },
+            { assertEquals(96410877173, monitor.totalRequestedBurst) },
+            { assertEquals(96046583992, monitor.totalGrantedBurst) },
+            { assertEquals(19265632, monitor.totalOvercommissionedBurst) },
             { assertEquals(0, monitor.totalInterferedBurst) }
         )
     }

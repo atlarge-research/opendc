@@ -32,8 +32,10 @@ dependencies {
     api(project(":opendc-compute:opendc-compute-core"))
     api(project(":opendc-trace:opendc-trace-core"))
     implementation(project(":opendc-utils"))
+    implementation("io.github.microutils:kotlin-logging:1.7.9")
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    testImplementation(project(":opendc-compute:opendc-compute-simulator"))
     testImplementation(project(":opendc-format"))
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
         exclude("org.jetbrains.kotlin", module = "kotlin-reflect")

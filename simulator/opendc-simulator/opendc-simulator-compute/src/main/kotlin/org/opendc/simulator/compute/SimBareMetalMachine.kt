@@ -251,7 +251,7 @@ public class SimBareMetalMachine(
 
             this.isEmpty = !nonEmpty
             this.totalUsage = totalUsage
-            this.minExit = minExit
+            this.minExit = if (isEmpty) 0 else minExit
             this.maxExit = maxExit
         }
 

@@ -40,7 +40,7 @@ public interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
     ): HypervisorView? {
         return hypervisors.asSequence()
             .filter { hv ->
-                val fitsMemory = hv.availableMemory >= (image.image.tags["required-memory"] as Long)
+                val fitsMemory = hv.availableMemory >= (image.flavor.memorySize)
                 val fitsCpu = hv.server.flavor.cpuCount >= image.flavor.cpuCount
                 fitsMemory && fitsCpu
             }

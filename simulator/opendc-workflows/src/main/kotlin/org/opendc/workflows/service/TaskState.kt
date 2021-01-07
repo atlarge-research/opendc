@@ -22,7 +22,7 @@
 
 package org.opendc.workflows.service
 
-import org.opendc.compute.core.metal.Node
+import org.opendc.compute.core.Server
 import org.opendc.workflows.workload.Task
 
 public class TaskState(public val job: JobState, public val task: Task) {
@@ -62,7 +62,7 @@ public class TaskState(public val job: JobState, public val task: Task) {
             }
         }
 
-    public var host: Node? = null
+    public var server: Server? = null
 
     /**
      * Mark the specified [TaskView] as terminated.

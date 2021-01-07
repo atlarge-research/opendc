@@ -32,11 +32,10 @@ import org.opendc.compute.core.virt.HypervisorEvent
 import org.opendc.compute.core.virt.driver.InsufficientMemoryOnServerException
 import org.opendc.compute.core.virt.driver.VirtDriver
 import org.opendc.core.services.ServiceRegistry
-import org.opendc.simulator.compute.SimExecutionContext
-import org.opendc.simulator.compute.SimHypervisor
-import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
@@ -72,7 +71,7 @@ public class SimVirtDriver(
     /**
      * The hypervisor to run multiple workloads.
      */
-    private val hypervisor = SimHypervisor(
+    private val hypervisor = SimFairSharedHypervisor(
         coroutineScope,
         clock,
         object : SimHypervisor.Listener {
@@ -126,7 +125,14 @@ public class SimVirtDriver(
             events
         )
         availableMemory -= requiredMemory
-        val vm = VirtualMachine(server, events, hypervisor.createMachine(ctx.machine))
+
+        val originalCpu = ctx.machine.cpus[0]
+        val processingNode = originalCpu.node.copy(coreCount = flavor.cpuCount)
+        val processingUnits = (0 until flavor.cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
+        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, flavor.memorySize))
+
+        val machine = SimMachineModel(processingUnits, memoryUnits)
+        val vm = VirtualMachine(server, events, hypervisor.createMachine(machine))
         vms.add(vm)
         vmStarted(vm)
         eventFlow.emit(HypervisorEvent.VmsUpdated(this, vms.size, availableMemory))
