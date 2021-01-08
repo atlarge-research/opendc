@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,38 +22,31 @@
 
 package org.opendc.simulator.compute.workload
 
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-
 /**
- * Test suite for [SimFlopsWorkload] class.
+ * A command that is sent to the host machine.
  */
-class SimFlopsWorkloadTest {
-    @Test
-    fun testFlopsNonNegative() {
-        assertThrows<IllegalArgumentException>("FLOPs must be non-negative") {
-            SimFlopsWorkload(-1)
+public sealed class SimResourceCommand {
+    /**
+     * A request to the host to process the specified amount of [work] on a vCPU before the specified [deadline].
+     *
+     * @param work The amount of work to process on the CPU.
+     * @param limit The maximum amount of work to be processed per second.
+     * @param deadline The instant at which the work needs to be fulfilled.
+     */
+    public data class Consume(val work: Double, val limit: Double, val deadline: Long = Long.MAX_VALUE) : SimResourceCommand() {
+        init {
+            require(work > 0) { "The amount of work must be positive." }
+            require(limit > 0) { "Limit must be positive." }
         }
     }
 
-    @Test
-    fun testUtilizationNonZero() {
-        assertThrows<IllegalArgumentException>("Utilization cannot be zero") {
-            SimFlopsWorkload(1, 0.0)
-        }
-    }
+    /**
+     * An indication to the host that the vCPU will idle until the specified [deadline] or is interrupted.
+     */
+    public data class Idle(val deadline: Long = Long.MAX_VALUE) : SimResourceCommand()
 
-    @Test
-    fun testUtilizationPositive() {
-        assertThrows<IllegalArgumentException>("Utilization cannot be negative") {
-            SimFlopsWorkload(1, -1.0)
-        }
-    }
-
-    @Test
-    fun testUtilizationNotLargerThanOne() {
-        assertThrows<IllegalArgumentException>("Utilization cannot be larger than one") {
-            SimFlopsWorkload(1, 2.0)
-        }
-    }
+    /**
+     * An indication to the host that the vCPU has finished processing.
+     */
+    public object Exit : SimResourceCommand()
 }

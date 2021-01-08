@@ -28,6 +28,7 @@ plugins {
 
 dependencies {
     api(project(":opendc-simulator:opendc-simulator-core"))
+    implementation(project(":opendc-utils"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")

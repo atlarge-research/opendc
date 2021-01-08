@@ -92,7 +92,7 @@ public class Sc20StreamingParquetTraceReader(
     /**
      * A poisonous fragment.
      */
-    private val poison = Pair("\u0000", SimTraceWorkload.Fragment(0, 0, 0, 0.0, 0))
+    private val poison = Pair("\u0000", SimTraceWorkload.Fragment(0, 0.0, 0))
 
     /**
      * The thread to read the records in.
@@ -120,8 +120,6 @@ public class Sc20StreamingParquetTraceReader(
                 val flops = record["flops"] as Long
 
                 val fragment = SimTraceWorkload.Fragment(
-                    tick,
-                    flops,
                     duration,
                     cpuUsage,
                     cores
@@ -204,6 +202,7 @@ public class Sc20StreamingParquetTraceReader(
                 val externalBuffer = mutableListOf<SimTraceWorkload.Fragment>()
                 buffers.getOrPut(id) { mutableListOf() }.add(externalBuffer)
                 val fragments = sequence {
+                    var time = submissionTime
                     repeat@ while (true) {
                         if (externalBuffer.isEmpty()) {
                             if (hasNext) {
@@ -220,7 +219,8 @@ public class Sc20StreamingParquetTraceReader(
                         for (fragment in internalBuffer) {
                             yield(fragment)
 
-                            if (fragment.time >= endTime) {
+                            time += fragment.duration
+                            if (time >= endTime) {
                                 break@repeat
                             }
                         }

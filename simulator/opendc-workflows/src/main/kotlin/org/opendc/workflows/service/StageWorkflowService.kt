@@ -340,7 +340,7 @@ public class StageWorkflowService(
         }
     }
 
-    private suspend fun finishJob(job: JobState) {
+    private fun finishJob(job: JobState) {
         activeJobs -= job
         tracer.commit(WorkflowEvent.JobFinished(this, job.job))
         rootListener.jobFinished(job)

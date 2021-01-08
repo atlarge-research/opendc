@@ -22,15 +22,13 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
  * A generic machine that is able to run a [SimWorkload].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
-public interface SimMachine {
+public interface SimMachine : AutoCloseable {
     /**
      * The model of the machine containing its specifications.
      */
@@ -45,4 +43,9 @@ public interface SimMachine {
      * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
      */
     public suspend fun run(workload: SimWorkload)
+
+    /**
+     * Terminate this machine.
+     */
+    public override fun close()
 }

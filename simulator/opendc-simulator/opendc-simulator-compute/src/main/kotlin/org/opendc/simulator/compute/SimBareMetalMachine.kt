@@ -25,13 +25,13 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.intrinsics.startCoroutineCancellable
-import kotlinx.coroutines.selects.SelectClause0
-import kotlinx.coroutines.selects.SelectInstance
+import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.workload.SimResourceCommand
 import org.opendc.simulator.compute.workload.SimWorkload
-import java.lang.Runnable
+import org.opendc.utils.TimerScheduler
 import java.time.Clock
-import kotlin.coroutines.ContinuationInterceptor
+import java.util.*
+import kotlin.coroutines.*
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -59,23 +59,29 @@ public class SimBareMetalMachine(
         get() = usageState
 
     /**
-     * The current active workload.
+     *  A flag to indicate that the machine is terminated.
      */
-    private var activeWorkload: SimWorkload? = null
+    private var isTerminated = false
 
     /**
-     * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
+     * The [MutableStateFlow] containing the load of the server.
      */
-    override suspend fun run(workload: SimWorkload) {
-        require(activeWorkload == null) { "Run should not be called concurrently" }
+    private val usageState = MutableStateFlow(0.0)
 
-        try {
-            activeWorkload = workload
-            workload.run(ctx)
-        } finally {
-            activeWorkload = null
-        }
-    }
+    /**
+     * The current active workload.
+     */
+    private var cont: Continuation<Unit>? = null
+
+    /**
+     * The active CPUs of this machine.
+     */
+    private var cpus: List<Cpu> = emptyList()
+
+    /**
+     * The [TimerScheduler] to use for scheduling the interrupts.
+     */
+    private val scheduler = TimerScheduler<Cpu>(coroutineScope, clock)
 
     /**
      * The execution context in which the workload runs.
@@ -87,199 +93,220 @@ public class SimBareMetalMachine(
         override val clock: Clock
             get() = this@SimBareMetalMachine.clock
 
-        override fun onRun(
-            batch: Sequence<SimExecutionContext.Slice>,
-            triggerMode: SimExecutionContext.TriggerMode,
-            merge: (SimExecutionContext.Slice, SimExecutionContext.Slice) -> SimExecutionContext.Slice
-        ): SelectClause0 {
-            return object : SelectClause0 {
-                @InternalCoroutinesApi
-                override fun <R> registerSelectClause0(select: SelectInstance<R>, block: suspend () -> R) {
-                    val context = select.completion.context
+        override fun interrupt(cpu: Int) {
+            require(cpu < cpus.size) { "Invalid CPU identifier" }
+            cpus[cpu].interrupt()
+        }
+    }
 
-                    // Do not reset the usage state: we will set it ourselves
-                    usageFlush?.dispose()
-                    usageFlush = null
+    /**
+     * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
+     */
+    override suspend fun run(workload: SimWorkload) {
+        require(!isTerminated) { "Machine is terminated" }
+        require(cont == null) { "Run should not be called concurrently" }
 
-                    val queue = batch.iterator()
-                    var start = Long.MIN_VALUE
-                    var currentWork: SliceWork? = null
-                    var currentDisposable: DisposableHandle? = null
+        workload.onStart(ctx)
 
-                    fun schedule(slice: SimExecutionContext.Slice) {
-                        start = clock.millis()
+        return suspendCancellableCoroutine { cont ->
+            this.cont = cont
+            this.cpus = model.cpus.map { Cpu(it, workload) }
 
-                        val isLastSlice = !queue.hasNext()
-                        val work = SliceWork(slice)
-                        val candidateDuration = when (triggerMode) {
-                            SimExecutionContext.TriggerMode.FIRST -> work.minExit
-                            SimExecutionContext.TriggerMode.LAST -> work.maxExit
-                            SimExecutionContext.TriggerMode.DEADLINE -> slice.deadline - start
-                        }
-
-                        // Check whether the deadline is exceeded during the run of the slice.
-                        val duration = min(candidateDuration, slice.deadline - start)
-
-                        val action = Runnable {
-                            currentWork = null
-
-                            // Flush all the work that was performed
-                            val hasFinished = work.stop(duration)
-
-                            if (!isLastSlice) {
-                                val candidateSlice = queue.next()
-                                val nextSlice =
-                                    // If our previous slice exceeds its deadline, merge it with the next candidate slice
-                                    if (hasFinished)
-                                        candidateSlice
-                                    else
-                                        merge(candidateSlice, slice)
-                                schedule(nextSlice)
-                            } else if (select.trySelect()) {
-                                block.startCoroutineCancellable(select.completion)
-                            }
-                        }
-
-                        // Schedule the flush after the entire slice has finished
-                        currentDisposable = delay.invokeOnTimeout(duration, action, context)
-
-                        // Start the slice work
-                        currentWork = work
-                        work.start()
-                    }
-
-                    // Schedule the first work
-                    if (queue.hasNext()) {
-                        schedule(queue.next())
-
-                        // A DisposableHandle to flush the work in case the call is cancelled
-                        val disposable = DisposableHandle {
-                            val end = clock.millis()
-                            val duration = end - start
-
-                            currentWork?.stop(duration)
-                            currentDisposable?.dispose()
-
-                            val action = {
-                                usageState.value = 0.0
-                                usageFlush = null
-                            }
-
-                            // Schedule reset the usage of the machine since the call is returning
-                            usageFlush = delay.invokeOnTimeout(1, action, context)
-                        }
-
-                        select.disposeOnSelect(disposable)
-                    } else if (select.trySelect()) {
-                        // No work has been given: select immediately
-                        block.startCoroutineCancellable(select.completion)
-                    }
-                }
+            for (cpu in cpus) {
+                cpu.start()
             }
         }
     }
 
     /**
-     * The [MutableStateFlow] containing the load of the server.
+     * Terminate the specified bare-metal machine.
      */
-    private val usageState = MutableStateFlow(0.0)
+    override fun close() {
+        isTerminated = true
+    }
 
     /**
-     * A disposable to prevent resetting the usage state for subsequent calls to onRun.
+     * Update the usage of the machine.
      */
-    private var usageFlush: DisposableHandle? = null
+    private fun updateUsage() {
+        usageState.value = cpus.sumByDouble { it.speed } / cpus.sumByDouble { it.model.frequency }
+    }
 
     /**
-     * Cache the [Delay] instance for timing.
-     *
-     * XXX We need to cache this before the call to [onRun] since doing this in [onRun] is too heavy.
-     * XXX Note however that this is an ugly hack which may break in the future.
+     * This method is invoked when one of the CPUs has exited.
      */
-    @OptIn(InternalCoroutinesApi::class)
-    private val delay = coroutineScope.coroutineContext[ContinuationInterceptor] as Delay
+    private fun onCpuExit(cpu: Int) {
+        // Check whether all other CPUs have finished
+        if (cpus.all { it.hasExited }) {
+            val cont = cont
+            this.cont = null
+            cont?.resume(Unit)
+        }
+    }
 
     /**
-     * A slice to be processed.
+     * This method is invoked when one of the CPUs failed.
      */
-    private inner class SliceWork(val slice: SimExecutionContext.Slice) {
-        /**
-         * The duration after which the first processor finishes processing this slice.
-         */
-        val minExit: Long
+    private fun onCpuFailure(e: Throwable) {
+        // Make sure no other tasks will be resumed.
+        scheduler.cancelAll()
 
-        /**
-         * The duration after which the last processor finishes processing this slice.
-         */
-        val maxExit: Long
+        // In case the flush fails with an exception, immediately propagate to caller, cancelling all other
+        // tasks.
+        val cont = cont
+        this.cont = null
+        cont?.resumeWithException(e)
+    }
 
+    /**
+     * A physical CPU of the machine.
+     */
+    private inner class Cpu(val model: ProcessingUnit, val workload: SimWorkload) {
         /**
-         * A flag to indicate that the slice will exceed the deadline.
+         * The current command.
          */
-        val exceedsDeadline: Boolean
-            get() = slice.deadline < maxExit
-
-        /**
-         * The total amount of CPU usage.
-         */
-        val totalUsage: Double
+        private var currentCommand: CommandWrapper? = null
 
         /**
-         * A flag to indicate that this slice is empty.
+         * The actual processing speed.
          */
-        val isEmpty: Boolean
+        var speed: Double = 0.0
+            set(value) {
+                field = value
+                updateUsage()
+            }
 
-        init {
-            var totalUsage = 0.0
-            var minExit = Long.MAX_VALUE
-            var maxExit = 0L
-            var nonEmpty = false
+        /**
+         * A flag to indicate that the CPU is currently processing a command.
+         */
+        var isIntermediate: Boolean = false
 
-            // Determine the duration of the first/last CPU to finish
-            for (i in 0 until min(model.cpus.size, slice.burst.size)) {
-                val cpu = model.cpus[i]
-                val usage = min(slice.limit[i], cpu.frequency)
-                val cpuDuration = ceil(slice.burst[i] / usage * 1000).toLong() // Convert from seconds to milliseconds
+        /**
+         * A flag to indicate that the CPU has exited.
+         */
+        var hasExited: Boolean = false
 
-                totalUsage += usage / cpu.frequency
+        /**
+         * Process the specified [SimResourceCommand] for this CPU.
+         */
+        fun process(command: SimResourceCommand) {
+            val timestamp = clock.millis()
 
-                if (cpuDuration != 0L) { // We only wait for processor cores with a non-zero burst
-                    minExit = min(minExit, cpuDuration)
-                    maxExit = max(maxExit, cpuDuration)
-                    nonEmpty = true
+            val task = when (command) {
+                is SimResourceCommand.Idle -> {
+                    speed = 0.0
+
+                    val deadline = command.deadline
+
+                    require(deadline >= timestamp) { "Deadline already passed" }
+
+                    if (deadline != Long.MAX_VALUE) {
+                        scheduler.startSingleTimerTo(this, deadline) { flush() }
+                    } else {
+                        null
+                    }
+                }
+                is SimResourceCommand.Consume -> {
+                    val work = command.work
+                    val limit = command.limit
+                    val deadline = command.deadline
+
+                    require(deadline >= timestamp) { "Deadline already passed" }
+
+                    speed = min(model.frequency, limit)
+
+                    // The required duration to process all the work
+                    val finishedAt = timestamp + ceil(work / speed * 1000).toLong()
+
+                    scheduler.startSingleTimerTo(this, min(finishedAt, deadline)) { flush() }
+                }
+                is SimResourceCommand.Exit -> {
+                    speed = 0.0
+                    hasExited = true
+
+                    onCpuExit(model.id)
+
+                    null
                 }
             }
 
-            this.isEmpty = !nonEmpty
-            this.totalUsage = totalUsage
-            this.minExit = if (isEmpty) 0 else minExit
-            this.maxExit = maxExit
+            assert(currentCommand == null) { "Concurrent access to current command" }
+            currentCommand = CommandWrapper(timestamp, command)
         }
 
         /**
-         * Indicate that the work on the slice has started.
+         * Request the workload for more work.
+         */
+        private fun next(remainingWork: Double) {
+            process(workload.onNext(ctx, model.id, remainingWork))
+        }
+
+        /**
+         * Start the CPU.
          */
         fun start() {
-            usageState.value = totalUsage / model.cpus.size
+            try {
+                isIntermediate = true
+
+                process(workload.onStart(ctx, model.id))
+            } catch (e: Throwable) {
+                onCpuFailure(e)
+            } finally {
+                isIntermediate = false
+            }
         }
 
         /**
-         * Flush the work performed on the slice.
+         * Flush the work performed by the CPU.
          */
-        fun stop(duration: Long): Boolean {
-            var hasFinished = true
+        fun flush() {
+            try {
+                val (timestamp, command) = currentCommand ?: return
 
-            for (i in 0 until min(model.cpus.size, slice.burst.size)) {
-                val usage = min(slice.limit[i], model.cpus[i].frequency)
-                val granted = ceil(duration / 1000.0 * usage).toLong()
-                val res = max(0, slice.burst[i] - granted)
-                slice.burst[i] = res
+                isIntermediate = true
+                currentCommand = null
 
-                if (res != 0L) {
-                    hasFinished = false
+                // Cancel the running task and flush the progress
+                scheduler.cancel(this)
+
+                when (command) {
+                    is SimResourceCommand.Idle -> next(remainingWork = 0.0)
+                    is SimResourceCommand.Consume -> {
+                        val duration = clock.millis() - timestamp
+                        val remainingWork = if (duration > 0L) {
+                            val processed = duration / 1000.0 * speed
+                            max(0.0, command.work - processed)
+                        } else {
+                            0.0
+                        }
+
+                        next(remainingWork)
+                    }
+                    SimResourceCommand.Exit -> throw IllegalStateException()
                 }
+            } catch (e: Throwable) {
+                onCpuFailure(e)
+            } finally {
+                isIntermediate = false
+            }
+        }
+
+        /**
+         * Interrupt the CPU.
+         */
+        fun interrupt() {
+            // Prevent users from interrupting the CPU while it is constructing its next command, this will only lead
+            // to infinite recursion.
+            if (isIntermediate) {
+                return
             }
 
-            return hasFinished
+            flush()
         }
     }
+
+    /**
+     * This class wraps a [command] with the timestamp it was started and possibly the task associated with it.
+     */
+    private data class CommandWrapper(val timestamp: Long, val command: SimResourceCommand)
 }

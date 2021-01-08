@@ -36,25 +36,25 @@ import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.workload.SimResourceCommand
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.utils.flow.EventFlow
-import java.time.Clock
 import java.util.*
 
 /**
  * A [VirtDriver] that is simulates virtual machines on a physical machine using [SimHypervisor].
  */
-public class SimVirtDriver(
-    private val coroutineScope: CoroutineScope,
-    clock: Clock,
-    private val ctx: SimExecutionContext
-) : VirtDriver {
+public class SimVirtDriver(private val coroutineScope: CoroutineScope) : VirtDriver, SimWorkload {
+    /**
+     * The execution context in which the [VirtDriver] runs.
+     */
+    private lateinit var ctx: ComputeSimExecutionContext
 
     /**
      * The server hosting this hypervisor.
      */
     public val server: Server
-        get() = (ctx as ComputeSimExecutionContext).server
+        get() = ctx.server
 
     /**
      * The [EventFlow] to emit the events.
@@ -66,35 +66,33 @@ public class SimVirtDriver(
     /**
      * Current total memory use of the images on this hypervisor.
      */
-    private var availableMemory: Long = ctx.machine.memory.map { it.size }.sum()
+    private var availableMemory: Long = 0
 
     /**
      * The hypervisor to run multiple workloads.
      */
-    private val hypervisor = SimFairSharedHypervisor(
-        coroutineScope,
-        clock,
+    private val hypervisor = SimFairShareHypervisor(
         object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
-                requestedBurst: Long,
-                grantedBurst: Long,
-                overcommissionedBurst: Long,
-                interferedBurst: Long,
+                requestedWork: Long,
+                grantedWork: Long,
+                overcommittedWork: Long,
+                interferedWork: Long,
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
                 eventFlow.emit(
                     HypervisorEvent.SliceFinished(
                         this@SimVirtDriver,
-                        requestedBurst,
-                        grantedBurst,
-                        overcommissionedBurst,
-                        interferedBurst,
+                        requestedWork,
+                        grantedWork,
+                        overcommittedWork,
+                        interferedWork,
                         cpuUsage,
                         cpuDemand,
                         vms.size,
-                        (ctx as ComputeSimExecutionContext).server
+                        ctx.server
                     )
                 )
             }
@@ -158,14 +156,31 @@ public class SimVirtDriver(
         val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
 
         val job = coroutineScope.launch {
+            val delegate = (server.image as SimWorkloadImage).workload
+            // Wrap the workload to pass in a ComputeSimExecutionContext
             val workload = object : SimWorkload {
-                override suspend fun run(ctx: SimExecutionContext) {
-                    val wrappedCtx = object : ComputeSimExecutionContext, SimExecutionContext by ctx {
+                lateinit var wrappedCtx: ComputeSimExecutionContext
+
+                override fun onStart(ctx: SimExecutionContext) {
+                    wrappedCtx = object : ComputeSimExecutionContext, SimExecutionContext by ctx {
                         override val server: Server
-                            get() = this@VirtualMachine.server
+                            get() = server
+
+                        override fun toString(): String = "WrappedSimExecutionContext"
                     }
-                    (server.image as SimWorkloadImage).workload.run(wrappedCtx)
+
+                    delegate.onStart(wrappedCtx)
                 }
+
+                override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
+                    return delegate.onStart(wrappedCtx, cpu)
+                }
+
+                override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
+                    return delegate.onNext(wrappedCtx, cpu, remainingWork)
+                }
+
+                override fun toString(): String = "SimWorkloadWrapper(delegate=$delegate)"
             }
 
             delay(1) // TODO Introduce boot time
@@ -206,7 +221,17 @@ public class SimVirtDriver(
         }
     }
 
-    public suspend fun run() {
-        hypervisor.run(ctx)
+    override fun onStart(ctx: SimExecutionContext) {
+        this.ctx = ctx as ComputeSimExecutionContext
+        this.availableMemory = ctx.machine.memory.map { it.size }.sum()
+        this.hypervisor.onStart(ctx)
+    }
+
+    override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
+        return hypervisor.onStart(ctx, cpu)
+    }
+
+    override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
+        return hypervisor.onNext(ctx, cpu, remainingWork)
     }
 }

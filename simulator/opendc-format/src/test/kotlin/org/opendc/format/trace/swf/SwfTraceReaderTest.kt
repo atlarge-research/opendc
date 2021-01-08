@@ -41,7 +41,6 @@ class SwfTraceReaderTest {
         assertEquals(164472, entry.submissionTime)
         // 1188 slices for waiting, 0 full and 1 partial running slices
         assertEquals(1189, ((entry.workload.image as SimWorkloadImage).workload as SimTraceWorkload).trace.toList().size)
-        assertEquals(5_100_000L, ((entry.workload.image as SimWorkloadImage).workload as SimTraceWorkload).trace.toList().last().flops)
         assertEquals(0.25, ((entry.workload.image as SimWorkloadImage).workload as SimTraceWorkload).trace.toList().last().usage)
     }
 }

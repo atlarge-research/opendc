@@ -139,7 +139,7 @@ public class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
                     val task = Task(
                         UUID(0L, taskId),
                         "<unnamed>",
-                        SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(flops, cores)),
+                        SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(flops)),
                         HashSet(),
                         mapOf(
                             WORKFLOW_TASK_CORES to cores,

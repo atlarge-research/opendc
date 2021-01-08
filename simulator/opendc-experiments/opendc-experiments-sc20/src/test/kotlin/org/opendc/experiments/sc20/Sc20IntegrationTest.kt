@@ -90,7 +90,7 @@ class Sc20IntegrationTest {
     fun tearDown() = testScope.cleanupTestCoroutines()
 
     @Test
-    fun smoke() {
+    fun testLarge() {
         val failures = false
         val seed = 0
         val chan = Channel<Unit>(Channel.CONFLATED)
@@ -148,15 +148,15 @@ class Sc20IntegrationTest {
         assertAll(
             { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
             { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
-            { assertEquals(207480856422, monitor.totalRequestedBurst) },
-            { assertEquals(206510493178, monitor.totalGrantedBurst) },
-            { assertEquals(336120436, monitor.totalOvercommissionedBurst) },
+            { assertEquals(1684849230562, monitor.totalRequestedBurst) },
+            { assertEquals(447612683996, monitor.totalGrantedBurst) },
+            { assertEquals(1219535757406, monitor.totalOvercommissionedBurst) },
             { assertEquals(0, monitor.totalInterferedBurst) }
         )
     }
 
     @Test
-    fun small() {
+    fun testSmall() {
         val seed = 1
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
@@ -195,10 +195,10 @@ class Sc20IntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(96410877173, monitor.totalRequestedBurst) },
-            { assertEquals(96046583992, monitor.totalGrantedBurst) },
-            { assertEquals(19265632, monitor.totalOvercommissionedBurst) },
-            { assertEquals(0, monitor.totalInterferedBurst) }
+            { assertEquals(705128393966, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
+            { assertEquals(173489747029, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
+            { assertEquals(526858997740, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
+            { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
         )
     }
 

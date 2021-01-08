@@ -64,7 +64,7 @@ internal class SimBareMetalDriverTest {
 
         testScope.launch {
             val driver = SimBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), machineModel)
-            val image = SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(4_000, 2, utilization = 1.0))
+            val image = SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(4_000, utilization = 1.0))
 
             // Batch driver commands
             withContext(coroutineContext) {
@@ -84,6 +84,6 @@ internal class SimBareMetalDriverTest {
 
         testScope.advanceUntilIdle()
         assertEquals(ServerState.SHUTOFF, finalState)
-        assertEquals(1001, finalTime)
+        assertEquals(501, finalTime)
     }
 }

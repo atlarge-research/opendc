@@ -107,7 +107,7 @@ public class SimVirtProvisioningService(
         coroutineScope.launch {
             val provisionedNodes = provisioningService.nodes()
             provisionedNodes.forEach { node ->
-                val workload = SimVirtDriverWorkload()
+                val workload = SimVirtDriver(coroutineScope)
                 val hypervisorImage = SimWorkloadImage(UUID.randomUUID(), "vmm", emptyMap(), workload)
                 launch {
                     var init = false
@@ -125,7 +125,7 @@ public class SimVirtProvisioningService(
                     }.launchIn(this)
 
                     delay(1)
-                    onHypervisorAvailable(server, workload.driver)
+                    onHypervisorAvailable(server, workload)
                 }
             }
         }
@@ -208,7 +208,7 @@ public class SimVirtProvisioningService(
                             submittedVms,
                             runningVms,
                             finishedVms,
-                            queuedVms,
+                            --queuedVms,
                             ++unscheduledVms
                         )
                     )

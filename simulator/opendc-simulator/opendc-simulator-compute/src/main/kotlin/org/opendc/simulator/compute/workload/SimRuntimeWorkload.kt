@@ -25,44 +25,36 @@ package org.opendc.simulator.compute.workload
 import org.opendc.simulator.compute.SimExecutionContext
 
 /**
- * A [SimWorkload] that models applications as a static number of floating point operations ([flops]) executed on
- * multiple cores of a compute resource.
+ * A [SimWorkload] that models application execution as a single duration.
  *
- * @property flops The number of floating point operations to perform for this task in MFLOPs.
- * @property utilization A model of the CPU utilization of the application.
+ * @property duration The duration of the workload.
+ * @property utilization The utilization of the application during runtime.
  */
-public class SimFlopsWorkload(
-    public val flops: Long,
+public class SimRuntimeWorkload(
+    public val duration: Long,
     public val utilization: Double = 0.8
 ) : SimWorkload {
     init {
-        require(flops >= 0) { "Negative number of flops" }
+        require(duration >= 0) { "Duration must be non-negative" }
         require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
 
     override fun onStart(ctx: SimExecutionContext) {}
 
     override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-        val cores = ctx.machine.cpus.size
         val limit = ctx.machine.cpus[cpu].frequency * utilization
-        val work = flops.toDouble() / cores
-
-        return if (work > 0.0) {
-            SimResourceCommand.Consume(work, limit)
-        } else {
-            SimResourceCommand.Exit
-        }
+        val work = (limit / 1000) * duration
+        return SimResourceCommand.Consume(work, limit)
     }
 
     override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
         return if (remainingWork > 0.0) {
             val limit = ctx.machine.cpus[cpu].frequency * utilization
-
-            return SimResourceCommand.Consume(remainingWork, limit)
+            SimResourceCommand.Consume(remainingWork, limit)
         } else {
             SimResourceCommand.Exit
         }
     }
 
-    override fun toString(): String = "SimFlopsWorkload(FLOPs=$flops,utilization=$utilization)"
+    override fun toString(): String = "SimRuntimeWorkload(duration=$duration,utilization=$utilization)"
 }

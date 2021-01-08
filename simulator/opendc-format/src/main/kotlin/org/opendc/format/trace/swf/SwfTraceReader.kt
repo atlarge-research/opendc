@@ -113,8 +113,6 @@ public class SwfTraceReader(
                         for (tick in submitTime until (submitTime + waitTime - sliceDuration) step sliceDuration) {
                             flopsHistory.add(
                                 SimTraceWorkload.Fragment(
-                                    tick * 1000L,
-                                    0L,
                                     sliceDuration * 1000L,
                                     0.0,
                                     cores
@@ -138,8 +136,6 @@ public class SwfTraceReader(
                     ) {
                         flopsHistory.add(
                             SimTraceWorkload.Fragment(
-                                tick * 1000L,
-                                flopsFullSlice / sliceDuration,
                                 sliceDuration * 1000L,
                                 1.0,
                                 cores
@@ -150,8 +146,6 @@ public class SwfTraceReader(
                     if (runtimePartialSliceRemainder > 0) {
                         flopsHistory.add(
                             SimTraceWorkload.Fragment(
-                                submitTime + (slicedWaitTime + runTime - runtimePartialSliceRemainder),
-                                flopsPartialSlice,
                                 sliceDuration,
                                 runtimePartialSliceRemainder / sliceDuration.toDouble(),
                                 cores

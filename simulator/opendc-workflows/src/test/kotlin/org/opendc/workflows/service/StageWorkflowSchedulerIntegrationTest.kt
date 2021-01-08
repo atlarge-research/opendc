@@ -59,7 +59,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
      * A large integration test where we check whether all tasks in some trace are executed correctly.
      */
     @Test
-    fun `should execute all tasks in trace`() {
+    fun testTrace() {
         var jobsSubmitted = 0L
         var jobsStarted = 0L
         var jobsFinished = 0L

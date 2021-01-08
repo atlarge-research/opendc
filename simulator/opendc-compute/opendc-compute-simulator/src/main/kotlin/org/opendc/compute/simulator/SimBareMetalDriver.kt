@@ -41,6 +41,7 @@ import org.opendc.core.services.ServiceRegistry
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimExecutionContext
 import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.workload.SimResourceCommand
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.utils.flow.EventFlow
@@ -139,15 +140,31 @@ public class SimBareMetalDriver(
             events
         )
 
+        val delegate = (node.image as SimWorkloadImage).workload
         // Wrap the workload to pass in a ComputeSimExecutionContext
         val workload = object : SimWorkload {
-            override suspend fun run(ctx: SimExecutionContext) {
-                val wrappedCtx = object : ComputeSimExecutionContext, SimExecutionContext by ctx {
+            lateinit var wrappedCtx: ComputeSimExecutionContext
+
+            override fun onStart(ctx: SimExecutionContext) {
+                wrappedCtx = object : ComputeSimExecutionContext, SimExecutionContext by ctx {
                     override val server: Server
                         get() = nodeState.value.server!!
+
+                    override fun toString(): String = "WrappedSimExecutionContext"
                 }
-                (node.image as SimWorkloadImage).workload.run(wrappedCtx)
+
+                delegate.onStart(wrappedCtx)
             }
+
+            override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
+                return delegate.onStart(wrappedCtx, cpu)
+            }
+
+            override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
+                return delegate.onNext(wrappedCtx, cpu, remainingWork)
+            }
+
+            override fun toString(): String = "SimWorkloadWrapper(delegate=$delegate)"
         }
 
         job = coroutineScope.launch {
