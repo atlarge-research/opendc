@@ -196,7 +196,9 @@ public class SimVirtProvisioningService(
             val requiredMemory = imageInstance.flavor.memorySize
             val selectedHv = allocationLogic.select(availableHypervisors, imageInstance)
 
-            if (selectedHv == null) {
+            if (selectedHv == null || !selectedHv.driver.canFit(imageInstance.flavor)) {
+                logger.debug { "Server ${imageInstance.server} selected for scheduling but no capacity available for it." }
+
                 if (requiredMemory > maxMemory || imageInstance.flavor.cpuCount > maxCores) {
                     tracer.commit(VmSubmissionInvalidEvent(imageInstance.name))
 

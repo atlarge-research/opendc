@@ -104,6 +104,14 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope) : VirtDri
      */
     private val vms = HashSet<VirtualMachine>()
 
+    override fun canFit(flavor: Flavor): Boolean {
+        val sufficientMemory = availableMemory > flavor.memorySize
+        val enoughCpus = ctx.machine.cpus.size >= flavor.cpuCount
+        val canFit = hypervisor.canFit(flavor.toMachineModel())
+
+        return sufficientMemory && enoughCpus && canFit
+    }
+
     override suspend fun spawn(name: String, image: Image, flavor: Flavor): Server {
         val requiredMemory = flavor.memorySize
         if (availableMemory - requiredMemory < 0) {
@@ -124,17 +132,24 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope) : VirtDri
         )
         availableMemory -= requiredMemory
 
-        val originalCpu = ctx.machine.cpus[0]
-        val processingNode = originalCpu.node.copy(coreCount = flavor.cpuCount)
-        val processingUnits = (0 until flavor.cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
-        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, flavor.memorySize))
 
-        val machine = SimMachineModel(processingUnits, memoryUnits)
-        val vm = VirtualMachine(server, events, hypervisor.createMachine(machine))
+        val vm = VirtualMachine(server, events, hypervisor.createMachine(flavor.toMachineModel()))
         vms.add(vm)
         vmStarted(vm)
         eventFlow.emit(HypervisorEvent.VmsUpdated(this, vms.size, availableMemory))
         return server
+    }
+
+    /**
+     * Convert flavor to machine model.
+     */
+    private fun Flavor.toMachineModel(): SimMachineModel {
+        val originalCpu = ctx.machine.cpus[0]
+        val processingNode = originalCpu.node.copy(coreCount = cpuCount)
+        val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
+        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
+
+        return SimMachineModel(processingUnits, memoryUnits)
     }
 
     private fun vmStarted(vm: VirtualMachine) {
@@ -152,7 +167,7 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope) : VirtDri
     /**
      * A virtual machine instance that the driver manages.
      */
-    private inner class VirtualMachine(server: Server, val events: EventFlow<ServerEvent>, machine: SimMachine) {
+    private inner class VirtualMachine(server: Server, val events: EventFlow<ServerEvent>, val machine: SimMachine) {
         val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
 
         val job = coroutineScope.launch {
@@ -190,6 +205,8 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope) : VirtDri
                 exit(null)
             } catch (cause: Throwable) {
                 exit(cause)
+            } finally {
+                machine.close()
             }
         }
 
