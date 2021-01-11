@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,13 @@
  * SOFTWARE.
  */
 
-description = "Library for simulation of cloud computing components"
+package org.opendc.simulator.compute
 
-plugins {
-    `kotlin-library-convention`
-}
+/**
+ * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
+ */
+public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
+    override val id: String = "space-shared"
 
-dependencies {
-    api(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-utils"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+    override fun create(listener: SimHypervisor.Listener?): SimHypervisor = SimSpaceSharedHypervisor(listener)
 }

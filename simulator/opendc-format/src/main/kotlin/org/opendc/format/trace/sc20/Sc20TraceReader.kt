@@ -125,20 +125,16 @@ public class Sc20TraceReader(
                                     requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
                                     maxCores = max(maxCores, cores)
 
-                                    val flops: Long = (cpuUsage * 5 * 60).toLong()
-
-                                    last = if (last != null && last!!.flops == 0L && flops == 0L) {
+                                    last = if (last != null && last!!.usage == 0.0 && cpuUsage == 0.0) {
                                         val oldFragment = last!!
                                         SimTraceWorkload.Fragment(
-                                            oldFragment.time,
-                                            oldFragment.flops + flops,
                                             oldFragment.duration + traceInterval,
                                             cpuUsage,
                                             cores
                                         )
                                     } else {
                                         val fragment =
-                                            SimTraceWorkload.Fragment(timestamp, flops, traceInterval, cpuUsage, cores)
+                                            SimTraceWorkload.Fragment(traceInterval, cpuUsage, cores)
                                         if (last != null) {
                                             yield(last!!)
                                         }

@@ -26,14 +26,20 @@ import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * SimHypervisor distributes the computing requirements of multiple [SimWorkload] on a single [SimBareMetalMachine] i
- * concurrently.
+ * A SimHypervisor facilitates the execution of multiple concurrent [SimWorkload]s, while acting as a single workload
+ * to a [SimBareMetalMachine].
  */
 public interface SimHypervisor : SimWorkload {
+    /**
+     * Determine whether the specified machine characterized by [model] can fit on this hypervisor at this moment.
+     */
+    public fun canFit(model: SimMachineModel): Boolean
+
     /**
      * Create a [SimMachine] instance on which users may run a [SimWorkload].
      *
      * @param model The machine to create.
+     * @param performanceInterferenceModel The performance interference model to use.
      */
     public fun createMachine(
         model: SimMachineModel,
@@ -49,10 +55,10 @@ public interface SimHypervisor : SimWorkload {
          */
         public fun onSliceFinish(
             hypervisor: SimHypervisor,
-            requestedBurst: Long,
-            grantedBurst: Long,
-            overcommissionedBurst: Long,
-            interferedBurst: Long,
+            requestedWork: Long,
+            grantedWork: Long,
+            overcommittedWork: Long,
+            interferedWork: Long,
             cpuUsage: Double,
             cpuDemand: Double
         )

@@ -40,7 +40,9 @@ import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.compute.core.virt.service.VirtProvisioningService
 import org.opendc.compute.core.virt.service.events.*
 import org.opendc.compute.simulator.allocation.AllocationPolicy
+import org.opendc.simulator.compute.SimHypervisorProvider
 import org.opendc.trace.core.EventTracer
+import org.opendc.utils.TimerScheduler
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
 import java.util.*
@@ -55,7 +57,8 @@ public class SimVirtProvisioningService(
     private val provisioningService: ProvisioningService,
     public val allocationPolicy: AllocationPolicy,
     private val tracer: EventTracer,
-    private val schedulingQuantum: Long = 300000 // 5 minutes in milliseconds
+    private val hypervisor: SimHypervisorProvider,
+    private val schedulingQuantum: Long = 300000, // 5 minutes in milliseconds
 ) : VirtProvisioningService {
     /**
      * The logger instance to use.
@@ -75,7 +78,7 @@ public class SimVirtProvisioningService(
     /**
      * The incoming images to be processed by the provisioner.
      */
-    private val incomingImages: MutableSet<ImageView> = mutableSetOf()
+    private val incomingImages: Deque<ImageView> = ArrayDeque()
 
     /**
      * The active images in the system.
@@ -103,11 +106,16 @@ public class SimVirtProvisioningService(
 
     override val events: Flow<VirtProvisioningEvent> = eventFlow
 
+    /**
+     * The [TimerScheduler] to use for scheduling the scheduler cycles.
+     */
+    private var scheduler: TimerScheduler<Unit> = TimerScheduler(coroutineScope, clock)
+
     init {
         coroutineScope.launch {
             val provisionedNodes = provisioningService.nodes()
             provisionedNodes.forEach { node ->
-                val workload = SimVirtDriverWorkload()
+                val workload = SimVirtDriver(coroutineScope, hypervisor)
                 val hypervisorImage = SimWorkloadImage(UUID.randomUUID(), "vmm", emptyMap(), workload)
                 launch {
                     var init = false
@@ -125,7 +133,7 @@ public class SimVirtProvisioningService(
                     }.launchIn(this)
 
                     delay(1)
-                    onHypervisorAvailable(server, workload.driver)
+                    onHypervisorAvailable(server, workload)
                 }
             }
         }
@@ -169,10 +177,9 @@ public class SimVirtProvisioningService(
         provisionedNodes.forEach { node -> provisioningService.stop(node) }
     }
 
-    private var call: Job? = null
-
     private fun requestCycle() {
-        if (call != null) {
+        // Bail out in case we have already requested a new cycle.
+        if (scheduler.isTimerActive(Unit)) {
             return
         }
 
@@ -181,22 +188,20 @@ public class SimVirtProvisioningService(
         // We calculate here the delay until the next scheduling slot.
         val delay = schedulingQuantum - (clock.millis() % schedulingQuantum)
 
-        val call = coroutineScope.launch {
-            delay(delay)
-            this@SimVirtProvisioningService.call = null
-            schedule()
+        scheduler.startSingleTimer(Unit, delay) {
+            coroutineScope.launch { schedule() }
         }
-        this.call = call
     }
 
     private suspend fun schedule() {
-        val imagesToBeScheduled = incomingImages.toSet()
-
-        for (imageInstance in imagesToBeScheduled) {
+        while (incomingImages.isNotEmpty()) {
+            val imageInstance = incomingImages.peekFirst()
             val requiredMemory = imageInstance.flavor.memorySize
             val selectedHv = allocationLogic.select(availableHypervisors, imageInstance)
 
-            if (selectedHv == null) {
+            if (selectedHv == null || !selectedHv.driver.canFit(imageInstance.flavor)) {
+                logger.trace { "Image ${imageInstance.image} selected for scheduling but no capacity available for it." }
+
                 if (requiredMemory > maxMemory || imageInstance.flavor.cpuCount > maxCores) {
                     tracer.commit(VmSubmissionInvalidEvent(imageInstance.name))
 
@@ -208,12 +213,13 @@ public class SimVirtProvisioningService(
                             submittedVms,
                             runningVms,
                             finishedVms,
-                            queuedVms,
+                            --queuedVms,
                             ++unscheduledVms
                         )
                     )
 
-                    incomingImages -= imageInstance
+                    // Remove the incoming image
+                    incomingImages.poll()
 
                     logger.warn("Failed to spawn ${imageInstance.image}: does not fit [${clock.millis()}]")
                     continue
@@ -224,7 +230,7 @@ public class SimVirtProvisioningService(
 
             try {
                 logger.info { "[${clock.millis()}] Spawning ${imageInstance.image} on ${selectedHv.server.uid} ${selectedHv.server.name} ${selectedHv.server.flavor}" }
-                incomingImages -= imageInstance
+                incomingImages.poll()
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
                 // deciding on stale values.

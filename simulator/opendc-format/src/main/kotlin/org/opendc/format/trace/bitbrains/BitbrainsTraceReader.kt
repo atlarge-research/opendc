@@ -34,6 +34,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.util.*
+import kotlin.math.min
 
 /**
  * A [TraceReader] for the public VM workload trace format.
@@ -70,6 +71,7 @@ public class BitbrainsTraceReader(
                 var vmId = -1L
                 var cores = -1
                 var requiredMemory = -1L
+                var startTime = -1L
 
                 BufferedReader(FileReader(vmFile)).use { reader ->
                     reader.lineSequence()
@@ -91,21 +93,17 @@ public class BitbrainsTraceReader(
                             }
 
                             vmId = vmFile.nameWithoutExtension.trim().toLong()
-                            val timestamp = values[timestampCol].trim().toLong() - 5 * 60
+                            startTime = min(startTime, values[timestampCol].trim().toLong() - 5 * 60)
                             cores = values[coreCol].trim().toInt()
                             val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
                             requiredMemory = (values[provisionedMemoryCol].trim().toDouble() / 1000).toLong()
 
-                            val flops: Long = (cpuUsage * 5 * 60 * cores).toLong()
-
                             if (flopsHistory.isEmpty()) {
-                                flopsHistory.add(SimTraceWorkload.Fragment(timestamp, flops, traceInterval, cpuUsage, cores))
+                                flopsHistory.add(SimTraceWorkload.Fragment(traceInterval, cpuUsage, cores))
                             } else {
-                                if (flopsHistory.last().flops != flops) {
+                                if (flopsHistory.last().usage != cpuUsage) {
                                     flopsHistory.add(
                                         SimTraceWorkload.Fragment(
-                                            timestamp,
-                                            flops,
                                             traceInterval,
                                             cpuUsage,
                                             cores
@@ -115,8 +113,6 @@ public class BitbrainsTraceReader(
                                     val oldFragment = flopsHistory.removeAt(flopsHistory.size - 1)
                                     flopsHistory.add(
                                         SimTraceWorkload.Fragment(
-                                            oldFragment.time,
-                                            oldFragment.flops + flops,
                                             oldFragment.duration + traceInterval,
                                             cpuUsage,
                                             cores
@@ -151,7 +147,7 @@ public class BitbrainsTraceReader(
                     )
                 )
                 entries[vmId] = TraceEntryImpl(
-                    flopsHistory.firstOrNull()?.time ?: -1,
+                    startTime,
                     vmWorkload
                 )
             }

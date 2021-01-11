@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator
+package org.opendc.simulator.compute
 
-import kotlinx.coroutines.coroutineScope
-import org.opendc.simulator.compute.SimExecutionContext
-import org.opendc.simulator.compute.workload.SimWorkload
+/**
+ * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
+ */
+public class SimFairShareHypervisorProvider : SimHypervisorProvider {
+    override val id: String = "fair-share"
 
-public class SimVirtDriverWorkload : SimWorkload {
-    public lateinit var driver: SimVirtDriver
-
-    override suspend fun run(ctx: SimExecutionContext) {
-        coroutineScope {
-            driver = SimVirtDriver(this, ctx.clock, ctx)
-            driver.run()
-        }
-    }
+    override fun create(listener: SimHypervisor.Listener?): SimHypervisor = SimFairShareHypervisor(listener)
 }

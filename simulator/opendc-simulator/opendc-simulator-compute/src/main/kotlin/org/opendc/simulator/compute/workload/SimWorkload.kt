@@ -28,14 +28,31 @@ import org.opendc.simulator.compute.SimExecutionContext
  * A model that characterizes the runtime behavior of some particular workload.
  *
  * Workloads are stateful objects that may be paused and resumed at a later moment. As such, be careful when using the
- * same [SimWorkload] from multiple contexts as only a single concurrent [run] call is expected.
+ * same [SimWorkload] from multiple contexts.
  */
 public interface SimWorkload {
     /**
-     * Launch the workload in the specified [SimExecutionContext].
-     *
-     * This method should encapsulate and characterize the runtime behavior of the instance resulting from launching
-     * the workload on some machine, in terms of the resource consumption on the machine.
+     * This method is invoked when the workload is started, before the (virtual) CPUs assigned to the workload will
+     * start.
      */
-    public suspend fun run(ctx: SimExecutionContext)
+    public fun onStart(ctx: SimExecutionContext)
+
+    /**
+     * This method is invoked when a (virtual) CPU assigned to the workload has started.
+     *
+     * @param ctx The execution context in which the workload runs.
+     * @param cpu The index of the (virtual) CPU to start.
+     * @return The command to perform on the CPU.
+     */
+    public fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand
+
+    /**
+     * This method is invoked when a (virtual) CPU assigned to the workload was interrupted or reached its deadline.
+     *
+     * @param ctx The execution context in which the workload runs.
+     * @param cpu The index of the (virtual) CPU to obtain the resource consumption of.
+     * @param remainingWork The remaining work that was not yet completed.
+     * @return The next command to perform on the CPU.
+     */
+    public fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand
 }

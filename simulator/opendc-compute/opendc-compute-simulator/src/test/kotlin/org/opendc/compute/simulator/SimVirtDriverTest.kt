@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.virt.HypervisorEvent
+import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -66,17 +67,17 @@ internal class SimVirtDriverTest {
     }
 
     /**
-     * Test overcommissioning of a hypervisor.
+     * Test overcommitting of resources by the hypervisor.
      */
     @Test
-    fun overcommission() {
-        var requestedBurst = 0L
-        var grantedBurst = 0L
-        var overcommissionedBurst = 0L
+    fun testOvercommitted() {
+        var requestedWork = 0L
+        var grantedWork = 0L
+        var overcommittedWork = 0L
 
         scope.launch {
-            val virtDriverWorkload = SimVirtDriverWorkload()
-            val vmm = SimWorkloadImage(UUID.randomUUID(), "vmm", emptyMap(), virtDriverWorkload)
+            val virtDriver = SimVirtDriver(this, SimFairShareHypervisorProvider())
+            val vmm = SimWorkloadImage(UUID.randomUUID(), "vmm", emptyMap(), virtDriver)
             val duration = 5 * 60L
             val vmImageA = SimWorkloadImage(
                 UUID.randomUUID(),
@@ -84,10 +85,10 @@ internal class SimVirtDriverTest {
                 emptyMap(),
                 SimTraceWorkload(
                     sequenceOf(
-                        SimTraceWorkload.Fragment(0, 28L * duration, duration * 1000, 28.0, 2),
-                        SimTraceWorkload.Fragment(0, 3500L * duration, duration * 1000, 3500.0, 2),
-                        SimTraceWorkload.Fragment(0, 0, duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(0, 183L * duration, duration * 1000, 183.0, 2)
+                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 3500.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 183.0, 2)
                     ),
                 )
             )
@@ -97,10 +98,10 @@ internal class SimVirtDriverTest {
                 emptyMap(),
                 SimTraceWorkload(
                     sequenceOf(
-                        SimTraceWorkload.Fragment(0, 28L * duration, duration * 1000, 28.0, 2),
-                        SimTraceWorkload.Fragment(0, 3100L * duration, duration * 1000, 3100.0, 2),
-                        SimTraceWorkload.Fragment(0, 0, duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(0, 73L * duration, duration * 1000, 73.0, 2)
+                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 3100.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 73.0, 2)
                     )
                 ),
             )
@@ -115,31 +116,30 @@ internal class SimVirtDriverTest {
             delay(5)
 
             val flavor = Flavor(2, 0)
-            val vmDriver = virtDriverWorkload.driver
-            vmDriver.events
+            virtDriver.events
                 .onEach { event ->
                     when (event) {
                         is HypervisorEvent.SliceFinished -> {
-                            requestedBurst += event.requestedBurst
-                            grantedBurst += event.grantedBurst
-                            overcommissionedBurst += event.overcommissionedBurst
+                            requestedWork += event.requestedBurst
+                            grantedWork += event.grantedBurst
+                            overcommittedWork += event.overcommissionedBurst
                         }
                     }
                 }
                 .launchIn(this)
 
-            vmDriver.spawn("a", vmImageA, flavor)
-            vmDriver.spawn("b", vmImageB, flavor)
+            virtDriver.spawn("a", vmImageA, flavor)
+            virtDriver.spawn("b", vmImageB, flavor)
         }
 
         scope.advanceUntilIdle()
 
         assertAll(
             { assertEquals(emptyList<Throwable>(), scope.uncaughtExceptions, "No errors") },
-            { assertEquals(2082000, requestedBurst, "Requested Burst does not match") },
-            { assertEquals(2013600, grantedBurst, "Granted Burst does not match") },
-            { assertEquals(60000, overcommissionedBurst, "Overcommissioned Burst does not match") },
-            { assertEquals(1200007, scope.currentTime) }
+            { assertEquals(4197600, requestedWork, "Requested work does not match") },
+            { assertEquals(3057600, grantedWork, "Granted work does not match") },
+            { assertEquals(1140000, overcommittedWork, "Overcommitted work does not match") },
+            { assertEquals(1200006, scope.currentTime) }
         )
     }
 }

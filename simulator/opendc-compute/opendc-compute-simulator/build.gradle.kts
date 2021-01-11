@@ -29,10 +29,10 @@ plugins {
 
 dependencies {
     api(project(":opendc-compute:opendc-compute-core"))
+    api(project(":opendc-simulator:opendc-simulator-compute"))
+    api(project(":opendc-simulator:opendc-simulator-failures"))
     implementation(project(":opendc-utils"))
     implementation("io.github.microutils:kotlin-logging:1.7.9")
-    implementation(project(":opendc-simulator:opendc-simulator-compute"))
-    api(project(":opendc-simulator:opendc-simulator-failures"))
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
     testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")

@@ -23,15 +23,20 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
+import org.opendc.simulator.compute.workload.SimResourceCommand
+import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 
 /**
@@ -58,7 +63,7 @@ class SimMachineTest {
         val machine = SimBareMetalMachine(testScope, clock, machineModel)
 
         testScope.runBlockingTest {
-            machine.run(SimFlopsWorkload(2_000, 2, utilization = 1.0))
+            machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
 
             // Two cores execute 1000 MFlOps per second (1000 ms)
             assertEquals(1000, testScope.currentTime)
@@ -72,12 +77,83 @@ class SimMachineTest {
         val machine = SimBareMetalMachine(testScope, clock, machineModel)
 
         testScope.runBlockingTest {
-            machine.run(SimFlopsWorkload(2_000, 2, utilization = 1.0))
-            assertEquals(1.0, machine.usage.value)
+            val res = mutableListOf<Double>()
+            val job = launch { machine.usage.toList(res) }
 
-            // Wait for the usage to reset
-            delay(1)
-            assertEquals(0.0, machine.usage.value)
+            machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
+
+            job.cancel()
+            assertEquals(listOf(0.0, 0.5, 1.0, 0.5, 0.0), res) { "Machine is fully utilized" }
+        }
+    }
+
+    @Test
+    fun testInterrupt() {
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
+        val machine = SimBareMetalMachine(testScope, clock, machineModel)
+
+        val workload = object : SimWorkload {
+            override fun onStart(ctx: SimExecutionContext) {}
+
+            override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
+                ctx.interrupt(cpu)
+                return SimResourceCommand.Exit
+            }
+
+            override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
+                throw IllegalStateException()
+            }
+        }
+
+        assertDoesNotThrow {
+            testScope.runBlockingTest { machine.run(workload) }
+        }
+    }
+
+    @Test
+    fun testExceptionPropagationOnStart() {
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
+        val machine = SimBareMetalMachine(testScope, clock, machineModel)
+
+        val workload = object : SimWorkload {
+            override fun onStart(ctx: SimExecutionContext) {}
+
+            override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
+                throw IllegalStateException()
+            }
+
+            override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
+                throw IllegalStateException()
+            }
+        }
+
+        assertThrows<IllegalStateException> {
+            testScope.runBlockingTest { machine.run(workload) }
+        }
+    }
+
+    @Test
+    fun testExceptionPropagationOnNext() {
+        val testScope = TestCoroutineScope()
+        val clock = DelayControllerClockAdapter(testScope)
+        val machine = SimBareMetalMachine(testScope, clock, machineModel)
+
+        val workload = object : SimWorkload {
+            override fun onStart(ctx: SimExecutionContext) {}
+
+            override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
+                return SimResourceCommand.Consume(1.0, 1.0)
+            }
+
+            override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
+                throw IllegalStateException()
+            }
+        }
+
+        assertThrows<IllegalStateException> {
+            testScope.runBlockingTest { machine.run(workload) }
         }
     }
 }

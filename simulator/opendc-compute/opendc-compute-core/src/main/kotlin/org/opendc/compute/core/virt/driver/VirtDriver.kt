@@ -23,6 +23,7 @@
 package org.opendc.compute.core.virt.driver
 
 import kotlinx.coroutines.flow.Flow
+import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.virt.HypervisorEvent
@@ -40,6 +41,11 @@ public interface VirtDriver {
     public val events: Flow<HypervisorEvent>
 
     /**
+     * Determine whether the specified [flavor] can still fit on this driver.
+     */
+    public fun canFit(flavor: Flavor): Boolean
+
+    /**
      * Spawn the given [Image] on the compute resource of this driver.
      *
      * @param name The name of the server to spawn.
@@ -50,7 +56,7 @@ public interface VirtDriver {
     public suspend fun spawn(
         name: String,
         image: Image,
-        flavor: org.opendc.compute.core.Flavor
+        flavor: Flavor
     ): Server
 
     public companion object Key : AbstractServiceKey<VirtDriver>(UUID.randomUUID(), "virtual-driver")

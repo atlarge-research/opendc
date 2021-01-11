@@ -23,31 +23,64 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimExecutionContext
-import kotlin.math.min
 
 /**
  * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
  * consumption for some period of time.
  */
 public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkload {
-    override suspend fun run(ctx: SimExecutionContext) {
-        var offset = ctx.clock.millis()
+    private var offset = 0L
+    private val iterator = trace.iterator()
+    private var fragment: Fragment? = null
+    private lateinit var barrier: SimWorkloadBarrier
 
-        val batch = trace.map { fragment ->
-            val cores = min(fragment.cores, ctx.machine.cpus.size)
-            val burst = LongArray(cores) { fragment.flops / cores }
-            val usage = DoubleArray(cores) { fragment.usage / cores }
-            offset += fragment.duration
-            SimExecutionContext.Slice(burst, usage, offset)
+    override fun onStart(ctx: SimExecutionContext) {
+        barrier = SimWorkloadBarrier(ctx.machine.cpus.size)
+        fragment = nextFragment()
+        offset = ctx.clock.millis()
+    }
+
+    override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
+        return onNext(ctx, cpu, 0.0)
+    }
+
+    override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
+        val now = ctx.clock.millis()
+        val fragment = fragment ?: return SimResourceCommand.Exit
+        val work = (fragment.duration / 1000) * fragment.usage
+        val deadline = offset + fragment.duration
+
+        assert(deadline >= now) { "Deadline already passed" }
+
+        val cmd =
+            if (cpu < fragment.cores && work > 0.0)
+                SimResourceCommand.Consume(work, fragment.usage, deadline)
+            else
+                SimResourceCommand.Idle(deadline)
+
+        if (barrier.enter()) {
+            this.fragment = nextFragment()
+            this.offset += fragment.duration
         }
 
-        ctx.run(batch)
+        return cmd
     }
 
     override fun toString(): String = "SimTraceWorkload"
 
     /**
+     * Obtain the next fragment.
+     */
+    private fun nextFragment(): Fragment? {
+        return if (iterator.hasNext()) {
+            iterator.next()
+        } else {
+            null
+        }
+    }
+
+    /**
      * A fragment of the workload.
      */
-    public data class Fragment(val time: Long, val flops: Long, val duration: Long, val usage: Double, val cores: Int)
+    public data class Fragment(val duration: Long, val usage: Double, val cores: Int)
 }

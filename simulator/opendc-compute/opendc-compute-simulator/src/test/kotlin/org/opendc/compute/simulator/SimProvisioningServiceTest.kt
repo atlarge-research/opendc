@@ -64,7 +64,7 @@ internal class SimProvisioningServiceTest {
         val clock = DelayControllerClockAdapter(testScope)
 
         testScope.launch {
-            val image = SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(1000, 2))
+            val image = SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(1000))
             val driver = SimBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), machineModel)
 
             val provisioner = SimpleProvisioningService()

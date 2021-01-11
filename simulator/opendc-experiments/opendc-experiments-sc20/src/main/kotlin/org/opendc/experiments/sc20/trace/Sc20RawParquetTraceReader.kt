@@ -66,8 +66,6 @@ public class Sc20RawParquetTraceReader(private val path: File) {
                 val flops = record["flops"] as Long
 
                 val fragment = SimTraceWorkload.Fragment(
-                    tick,
-                    flops,
                     duration,
                     cpuUsage,
                     cores
