@@ -34,7 +34,6 @@ import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter

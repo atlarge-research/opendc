@@ -41,6 +41,7 @@ import org.opendc.compute.simulator.SimVirtProvisioningService
 import org.opendc.compute.simulator.allocation.NumberOfActiveServersAllocationPolicy
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
+import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
 import org.opendc.workflows.service.stage.job.NullJobAdmissionPolicy
@@ -79,7 +80,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
             // Wait for the bare metal nodes to be spawned
             delay(10)
 
-            val provisioner = SimVirtProvisioningService(testScope, clock, bareMetal, NumberOfActiveServersAllocationPolicy(), tracer, schedulingQuantum = 1000)
+            val provisioner = SimVirtProvisioningService(testScope, clock, bareMetal, NumberOfActiveServersAllocationPolicy(), tracer, SimSpaceSharedHypervisorProvider(), schedulingQuantum = 1000)
 
             // Wait for the hypervisors to be spawned
             delay(10)

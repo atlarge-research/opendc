@@ -48,6 +48,7 @@ import org.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
 import org.opendc.experiments.sc20.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.failures.CorrelatedFaultInjector
 import org.opendc.simulator.failures.FailureDomain
@@ -150,7 +151,7 @@ public suspend fun createProvisioner(
     // Wait for the bare metal nodes to be spawned
     delay(10)
 
-    val scheduler = SimVirtProvisioningService(coroutineScope, clock, bareMetalProvisioner, allocationPolicy, eventTracer)
+    val scheduler = SimVirtProvisioningService(coroutineScope, clock, bareMetalProvisioner, allocationPolicy, eventTracer, SimFairShareHypervisorProvider())
 
     // Wait for the hypervisors to be spawned
     delay(10)

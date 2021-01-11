@@ -44,7 +44,7 @@ import java.util.*
 /**
  * A [VirtDriver] that is simulates virtual machines on a physical machine using [SimHypervisor].
  */
-public class SimVirtDriver(private val coroutineScope: CoroutineScope) : VirtDriver, SimWorkload {
+public class SimVirtDriver(private val coroutineScope: CoroutineScope, hypervisor: SimHypervisorProvider) : VirtDriver, SimWorkload {
     /**
      * The execution context in which the [VirtDriver] runs.
      */
@@ -71,7 +71,7 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope) : VirtDri
     /**
      * The hypervisor to run multiple workloads.
      */
-    private val hypervisor = SimFairShareHypervisor(
+    private val hypervisor = hypervisor.create(
         object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
@@ -131,7 +131,6 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope) : VirtDri
             events
         )
         availableMemory -= requiredMemory
-
 
         val vm = VirtualMachine(server, events, hypervisor.createMachine(flavor.toMachineModel()))
         vms.add(vm)

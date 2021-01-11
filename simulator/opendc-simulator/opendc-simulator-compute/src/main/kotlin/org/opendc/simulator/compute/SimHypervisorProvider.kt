@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,22 @@
  * SOFTWARE.
  */
 
-description = "Simulator for OpenDC Compute"
+package org.opendc.simulator.compute
 
-/* Build configuration */
-plugins {
-    `kotlin-library-convention`
-}
+/**
+ * A service provider interface for constructing a [SimHypervisor].
+ */
+public interface SimHypervisorProvider {
+    /**
+     * A unique identifier for this hypervisor implementation.
+     *
+     * Each hypervisor must provide a unique ID, so that they can be selected by the user.
+     * When in doubt, you may use the fully qualified name of your custom [SimHypervisor] implementation class.
+     */
+    public val id: String
 
-dependencies {
-    api(project(":opendc-compute:opendc-compute-core"))
-    api(project(":opendc-simulator:opendc-simulator-compute"))
-    api(project(":opendc-simulator:opendc-simulator-failures"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+    /**
+     * Create a [SimHypervisor] instance with the specified [listener].
+     */
+    public fun create(listener: SimHypervisor.Listener? = null): SimHypervisor
 }

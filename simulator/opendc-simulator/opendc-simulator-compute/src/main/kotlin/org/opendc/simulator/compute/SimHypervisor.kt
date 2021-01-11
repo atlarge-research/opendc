@@ -26,8 +26,8 @@ import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * SimHypervisor distributes the computing requirements of multiple [SimWorkload] on a single [SimBareMetalMachine]
- * concurrently.
+ * A SimHypervisor facilitates the execution of multiple concurrent [SimWorkload]s, while acting as a single workload
+ * to a [SimBareMetalMachine].
  */
 public interface SimHypervisor : SimWorkload {
     /**

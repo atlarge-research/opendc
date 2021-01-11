@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.virt.HypervisorEvent
+import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -75,7 +76,7 @@ internal class SimVirtDriverTest {
         var overcommittedWork = 0L
 
         scope.launch {
-            val virtDriver = SimVirtDriver(this)
+            val virtDriver = SimVirtDriver(this, SimFairShareHypervisorProvider())
             val vmm = SimWorkloadImage(UUID.randomUUID(), "vmm", emptyMap(), virtDriver)
             val duration = 5 * 60L
             val vmImageA = SimWorkloadImage(
