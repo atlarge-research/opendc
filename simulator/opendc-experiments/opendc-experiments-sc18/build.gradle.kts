@@ -29,11 +29,12 @@ plugins {
 }
 
 application {
-    mainClassName = "org.opendc.experiments.sc18.TestExperiment"
+    mainClass.set("org.opendc.harness.runner.console.ConsoleRunnerKt")
 }
 
 dependencies {
     api(project(":opendc-core"))
+    api(project(":opendc-harness"))
     implementation(project(":opendc-format"))
     implementation(project(":opendc-workflows"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))

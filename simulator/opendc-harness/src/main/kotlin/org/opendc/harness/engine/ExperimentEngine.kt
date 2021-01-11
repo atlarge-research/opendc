@@ -22,13 +22,11 @@
 
 package org.opendc.harness.engine
 
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import org.opendc.harness.api.ExperimentDefinition
 import org.opendc.harness.api.Trial
 import org.opendc.harness.engine.scheduler.ExperimentScheduler
@@ -53,6 +51,7 @@ public class ExperimentEngine(
      *
      * @param root The experiment to execute.
      */
+    @OptIn(InternalCoroutinesApi::class)
     public suspend fun execute(root: ExperimentDefinition): Unit = supervisorScope {
         listener.experimentStarted(root)
 
@@ -75,25 +74,13 @@ public class ExperimentEngine(
                                 listener.trialFinished(trial, null)
                             } catch (e: Throwable) {
                                 listener.trialFinished(trial, e)
-                                throw e
                             }
                         }
                     }
 
                     launch {
-                        var error: Throwable? = null
-                        for (job in jobs) {
-                            try {
-                                job.join()
-                            } catch (e: CancellationException) {
-                                // Propagate cancellation
-                                throw e
-                            } catch (e: Throwable) {
-                                error = e
-                            }
-                        }
-
-                        listener.scenarioFinished(scenario, error)
+                        jobs.joinAll()
+                        listener.scenarioFinished(scenario, null)
                     }
                 }
             listener.experimentFinished(root, null)
