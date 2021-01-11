@@ -124,7 +124,7 @@ internal abstract class AbstractEventStream : EventStream {
     }
 
     override fun close() {
-        if (state != StreamState.Closed) {
+        if (state == StreamState.Closed) {
             return
         }
 
