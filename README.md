@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="misc/artwork/logo.png" width="100" alt="OpenDC">
+    <img src="https://raw.githubusercontent.com/atlarge-research/opendc/master/misc/artwork/logo.png" width="100" alt="OpenDC">
     <br>
     OpenDC
 </h1>
@@ -28,7 +28,7 @@ The simulator is accessible both as a ready-to-use website hosted by us at [open
 OpenDC consists of four components: a Kotlin [simulator](/simulator), a MongoDB database, a Python Flask [API](/api), and a React.js [frontend](/frontend), each in their own subdirectories.
 
 <p align="center">
-    <img src="misc/artwork/opendc-component-diagram.png" alt="OpenDC Component Diagram">
+    <img src="https://raw.githubusercontent.com/atlarge-research/opendc/master/misc/artwork/opendc-component-diagram.png" alt="OpenDC Component Diagram">
 </p>
 
 On the frontend, users can construct a topology by specifying a datacenter's rooms, racks and machines, and create scenarios to see how a workload trace runs on that topology. The frontend communicates with the web server over SocketIO, through a custom REST request/response layer. For example, the frontend might make a `GET` request to `/api/v1/users/{userId}`, but this request is completed via SocketIO, not plain HTTP requests. Note that the API itself can also be accessed by HTTP.
