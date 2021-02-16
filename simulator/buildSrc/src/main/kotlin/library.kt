@@ -30,12 +30,12 @@ object Library {
     /**
      * The library for testing the projects.
      */
-    val JUNIT_JUPITER = "5.6.0"
+    val JUNIT_JUPITER = "5.7.1"
 
     /**
      * The library for hosting the tests.
      */
-    val JUNIT_PLATFORM = "1.6.0"
+    val JUNIT_PLATFORM = "1.7.1"
 
     /**
      * Logging facade.
