@@ -51,38 +51,48 @@ public class ExperimentEngine(
      *
      * @param root The experiment to execute.
      */
-    @OptIn(InternalCoroutinesApi::class)
-    public suspend fun execute(root: ExperimentDefinition): Unit = supervisorScope {
+    public suspend fun execute(root: ExperimentDefinition) {
         listener.experimentStarted(root)
 
         try {
-            strategy.generate(root)
-                .asFlow()
-                .map { scenario ->
-                    listener.scenarioStarted(scenario)
-                    scenario
-                }
-                .buffer(100)
-                .collect { scenario ->
-                    val jobs = (0 until repeats).map { repeat ->
-                        val worker = scheduler.allocate()
+            supervisorScope {
+                strategy.generate(root)
+                    .asFlow()
+                    .map { scenario ->
+                        listener.scenarioStarted(scenario)
+                        scenario
+                    }
+                    .buffer(100)
+                    .collect { scenario ->
                         launch {
-                            val trial = Trial(scenario, repeat)
+                            val jobs = (0 until repeats).map { repeat ->
+                                val worker = scheduler.allocate()
+                                launch {
+                                    val trial = Trial(scenario, repeat)
+                                    try {
+                                        listener.trialStarted(trial)
+                                        worker.dispatch(trial)
+                                        listener.trialFinished(trial, null)
+                                    } catch (e: Throwable) {
+                                        listener.trialFinished(trial, e)
+                                        throw e
+                                    }
+                                }
+                            }
+
                             try {
-                                listener.trialStarted(trial)
-                                worker.dispatch(trial)
-                                listener.trialFinished(trial, null)
+                                jobs.joinAll()
+                                listener.scenarioFinished(scenario, null)
+                            } catch (e: CancellationException) {
+                                listener.scenarioFinished(scenario, null)
+                                throw e
                             } catch (e: Throwable) {
-                                listener.trialFinished(trial, e)
+                                listener.scenarioFinished(scenario, e)
                             }
                         }
                     }
+            }
 
-                    launch {
-                        jobs.joinAll()
-                        listener.scenarioFinished(scenario, null)
-                    }
-                }
             listener.experimentFinished(root, null)
         } catch (e: Throwable) {
             listener.experimentFinished(root, e)

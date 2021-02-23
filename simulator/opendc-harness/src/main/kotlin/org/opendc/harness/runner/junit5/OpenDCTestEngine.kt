@@ -47,7 +47,7 @@ public class OpenDCTestEngine : TestEngine {
      */
     private val logger = KotlinLogging.logger {}
 
-    override fun getId(): String = "opendc"
+    override fun getId(): String = "opendc-harness"
 
     override fun getGroupId(): Optional<String> = Optional.of("org.opendc")
 
