@@ -55,12 +55,12 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
     /**
      * The workflow traces to test.
      */
-    private val trace: String by anyOf("traces/chronos_exp_noscaler_ca.gwf")
+    private val trace: String by anyOf("input/traces/chronos_exp_noscaler_ca.gwf")
 
     /**
      * The datacenter environments to test.
      */
-    private val environment: String by anyOf("environments/base.json")
+    private val environment: String by anyOf("input/environments/base.json")
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun doRun(repeat: Int) {

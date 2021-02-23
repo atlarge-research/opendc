@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,35 @@
  * SOFTWARE.
  */
 
-package org.opendc.runner.web
+package org.opendc.experiments.capelin.monitor
 
 import mu.KotlinLogging
 import org.opendc.compute.core.Server
-import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.virt.driver.VirtDriver
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
-import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.telemetry.HostEvent
-import kotlin.math.max
+import org.opendc.experiments.capelin.telemetry.ProvisionerEvent
+import org.opendc.experiments.capelin.telemetry.parquet.ParquetHostEventWriter
+import org.opendc.experiments.capelin.telemetry.parquet.ParquetProvisionerEventWriter
+import java.io.File
 
 /**
- * An [ExperimentMonitor] that tracks the aggregate metrics for each repeat.
+ * The logger instance to use.
  */
-public class WebExperimentMonitor : ExperimentMonitor {
-    private val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
+
+/**
+ * An [ExperimentMonitor] that logs the events to a Parquet file.
+ */
+public class ParquetExperimentMonitor(base: File, partition: String, bufferSize: Int) : ExperimentMonitor {
+    private val hostWriter = ParquetHostEventWriter(
+        File(base, "host-metrics/$partition/data.parquet"),
+        bufferSize
+    )
+    private val provisionerWriter = ParquetProvisionerEventWriter(
+        File(base, "provisioner-metrics/$partition/data.parquet"),
+        bufferSize
+    )
     private val currentHostEvent = mutableMapOf<Server, HostEvent>()
     private var startTime = -1L
 
@@ -139,7 +152,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
                 currentHostEvent[hostServer] = event
             }
             else -> {
-                processHostEvent(previousEvent)
+                hostWriter.write(previousEvent)
 
                 val event = HostEvent(
                     time,
@@ -161,113 +174,29 @@ public class WebExperimentMonitor : ExperimentMonitor {
         }
     }
 
-    private var hostAggregateMetrics: AggregateHostMetrics = AggregateHostMetrics()
-    private val hostMetrics: MutableMap<Server, HostMetrics> = mutableMapOf()
-
-    private fun processHostEvent(event: HostEvent) {
-        val slices = event.duration / SLICE_LENGTH
-
-        hostAggregateMetrics = AggregateHostMetrics(
-            hostAggregateMetrics.totalRequestedBurst + event.requestedBurst,
-            hostAggregateMetrics.totalGrantedBurst + event.grantedBurst,
-            hostAggregateMetrics.totalOvercommittedBurst + event.overcommissionedBurst,
-            hostAggregateMetrics.totalInterferedBurst + event.interferedBurst,
-            hostAggregateMetrics.totalPowerDraw + (slices * (event.powerDraw / 12)),
-            hostAggregateMetrics.totalFailureSlices + if (event.host.state != ServerState.ACTIVE) slices.toLong() else 0,
-            hostAggregateMetrics.totalFailureVmSlices + if (event.host.state != ServerState.ACTIVE) event.vmCount * slices.toLong() else 0
-        )
-
-        hostMetrics.compute(event.host) { key, prev ->
-            HostMetrics(
-                (event.cpuUsage.takeIf { event.host.state == ServerState.ACTIVE } ?: 0.0) + (prev?.cpuUsage ?: 0.0),
-                (event.cpuDemand.takeIf { event.host.state == ServerState.ACTIVE } ?: 0.0) + (prev?.cpuDemand ?: 0.0),
-                event.vmCount + (prev?.vmCount ?: 0),
-                1 + (prev?.count ?: 0)
-            )
-        }
-    }
-
-    private val SLICE_LENGTH: Long = 5 * 60 * 1000
-
-    public data class AggregateHostMetrics(
-        val totalRequestedBurst: Long = 0,
-        val totalGrantedBurst: Long = 0,
-        val totalOvercommittedBurst: Long = 0,
-        val totalInterferedBurst: Long = 0,
-        val totalPowerDraw: Double = 0.0,
-        val totalFailureSlices: Long = 0,
-        val totalFailureVmSlices: Long = 0,
-    )
-
-    public data class HostMetrics(
-        val cpuUsage: Double,
-        val cpuDemand: Double,
-        val vmCount: Long,
-        val count: Long
-    )
-
-    private var provisionerMetrics: AggregateProvisionerMetrics = AggregateProvisionerMetrics()
-
     override fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {
-        provisionerMetrics = AggregateProvisionerMetrics(
-            max(event.totalVmCount, provisionerMetrics.vmTotalCount),
-            max(event.waitingVmCount, provisionerMetrics.vmWaitingCount),
-            max(event.activeVmCount, provisionerMetrics.vmActiveCount),
-            max(event.inactiveVmCount, provisionerMetrics.vmInactiveCount),
-            max(event.failedVmCount, provisionerMetrics.vmFailedCount),
+        provisionerWriter.write(
+            ProvisionerEvent(
+                time,
+                event.totalHostCount,
+                event.availableHostCount,
+                event.totalVmCount,
+                event.activeVmCount,
+                event.inactiveVmCount,
+                event.waitingVmCount,
+                event.failedVmCount
+            )
         )
     }
-
-    public data class AggregateProvisionerMetrics(
-        val vmTotalCount: Int = 0,
-        val vmWaitingCount: Int = 0,
-        val vmActiveCount: Int = 0,
-        val vmInactiveCount: Int = 0,
-        val vmFailedCount: Int = 0
-    )
 
     override fun close() {
+        // Flush remaining events
         for ((_, event) in currentHostEvent) {
-            processHostEvent(event)
+            hostWriter.write(event)
         }
         currentHostEvent.clear()
-    }
 
-    public fun getResult(): Result {
-        return Result(
-            hostAggregateMetrics.totalRequestedBurst,
-            hostAggregateMetrics.totalGrantedBurst,
-            hostAggregateMetrics.totalOvercommittedBurst,
-            hostAggregateMetrics.totalInterferedBurst,
-            hostMetrics.map { it.value.cpuUsage / it.value.count }.average(),
-            hostMetrics.map { it.value.cpuDemand / it.value.count }.average(),
-            hostMetrics.map { it.value.vmCount.toDouble() / it.value.count }.average(),
-            hostMetrics.map { it.value.vmCount.toDouble() / it.value.count }.maxOrNull() ?: 0.0,
-            hostAggregateMetrics.totalPowerDraw,
-            hostAggregateMetrics.totalFailureSlices,
-            hostAggregateMetrics.totalFailureVmSlices,
-            provisionerMetrics.vmTotalCount,
-            provisionerMetrics.vmWaitingCount,
-            provisionerMetrics.vmInactiveCount,
-            provisionerMetrics.vmFailedCount,
-        )
+        hostWriter.close()
+        provisionerWriter.close()
     }
-
-    public data class Result(
-        public val totalRequestedBurst: Long,
-        public val totalGrantedBurst: Long,
-        public val totalOvercommittedBurst: Long,
-        public val totalInterferedBurst: Long,
-        public val meanCpuUsage: Double,
-        public val meanCpuDemand: Double,
-        public val meanNumDeployedImages: Double,
-        public val maxNumDeployedImages: Double,
-        public val totalPowerDraw: Double,
-        public val totalFailureSlices: Long,
-        public val totalFailureVmSlices: Long,
-        public val totalVmsSubmitted: Int,
-        public val totalVmsQueued: Int,
-        public val totalVmsFinished: Int,
-        public val totalVmsFailed: Int
-    )
 }
