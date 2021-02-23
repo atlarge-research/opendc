@@ -22,28 +22,29 @@
  * SOFTWARE.
  */
 
-/**
- * This object contains the versions of the dependencies shared by the different
- * subprojects.
- */
-object Library {
-    /**
-     * The library for testing the projects.
-     */
-    val JUNIT_JUPITER = "5.7.1"
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-    /**
-     * The library for hosting the tests.
-     */
-    val JUNIT_PLATFORM = "1.7.1"
+plugins {
+    `java-library`
+    kotlin("jvm")
+    id("org.jlleitschuh.gradle.ktlint")
+}
 
-    /**
-     * Logging facade.
-     */
-    val SLF4J = "1.7.30"
+/* Project configuration */
+repositories {
+    mavenCentral()
+    jcenter()
+}
 
-    /**
-     * Kotlin coroutines support
-     */
-    val KOTLINX_COROUTINES = "1.4.2"
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
+kotlin {
+    explicitApi()
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
 }

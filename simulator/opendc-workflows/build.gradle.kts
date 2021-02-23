@@ -24,7 +24,8 @@ description = "Workflow service for OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
+    `testing-conventions`
 }
 
 dependencies {
@@ -41,7 +42,5 @@ dependencies {
         exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
     }
     testImplementation(kotlin("reflect"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
+    testRuntimeOnly("org.slf4j:slf4j-simple:${Versions.SLF4J}")
 }

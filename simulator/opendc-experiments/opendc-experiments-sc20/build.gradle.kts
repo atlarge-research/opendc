@@ -24,7 +24,8 @@ description = "Experiments for the SC20 paper"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
+    `testing-conventions`
     application
 }
 
@@ -51,7 +52,4 @@ dependencies {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
 }

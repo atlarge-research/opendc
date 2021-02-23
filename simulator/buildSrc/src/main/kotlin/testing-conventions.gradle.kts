@@ -1,7 +1,9 @@
+import org.gradle.kotlin.dsl.`java-library`
+import org.gradle.kotlin.dsl.kotlin
+import org.gradle.platform.base.Library
+
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,34 +24,15 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     `java-library`
-    kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
-}
-
-/* Project configuration */
-repositories {
-    mavenCentral()
-    jcenter()
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
-
-kotlin {
-    explicitApi()
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
 }
 
 tasks.test {
     useJUnitPlatform()
-    reports.html.isEnabled = true
+}
+
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.JUNIT_JUPITER}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT_JUPITER}")
 }

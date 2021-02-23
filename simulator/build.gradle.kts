@@ -21,7 +21,7 @@
  */
 
 plugins {
-    `dokka-convention`
+    `dokka-conventions`
 }
 
 allprojects {

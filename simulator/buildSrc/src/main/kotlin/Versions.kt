@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * MIT License
+ *
+ * Copyright (c) 2019 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +22,29 @@
  * SOFTWARE.
  */
 
-description = "Utilities used across OpenDC modules"
+/**
+ * This class contains the versions of the dependencies shared by the different
+ * subprojects.
+ */
+public object Versions {
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-}
+    /**
+     * The library for testing the projects.
+     */
+    val JUNIT_JUPITER = "5.7.1"
 
-dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLINX_COROUTINES}")
+    /**
+     * The library for hosting the tests.
+     */
+    val JUNIT_PLATFORM = "1.7.1"
 
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    /**
+     * Logging facade.
+     */
+    val SLF4J = "1.7.30"
+
+    /**
+     * Kotlin coroutines support
+     */
+    val KOTLINX_COROUTINES = "1.4.2"
 }

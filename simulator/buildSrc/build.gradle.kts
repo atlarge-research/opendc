@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2019 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,25 +20,26 @@
  * SOFTWARE.
  */
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     `kotlin-dsl`
 }
 
-kotlinDslPluginOptions {
-    experimentalWarning.set(false)
-}
-
-
 /* Project configuration */
 repositories {
     jcenter()
-    maven {
-        url = uri("https://plugins.gradle.org/m2/")
-    }
+    gradlePluginPortal()
 }
 
 dependencies {
     implementation(kotlin("gradle-plugin", version = "1.4.30"))
     implementation("org.jlleitschuh.gradle:ktlint-gradle:10.0.0")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+        allWarningsAsErrors = true
+    }
 }

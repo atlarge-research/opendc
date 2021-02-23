@@ -23,9 +23,9 @@
 description = "Failure models for OpenDC"
 
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Library.KOTLINX_COROUTINES}")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLINX_COROUTINES}")
 }

@@ -24,7 +24,7 @@ description = "Experiments for the TPDS paper"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
     application
 }
 
@@ -43,7 +43,4 @@ dependencies {
         exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
     }
     implementation(kotlin("reflect"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
 }

@@ -24,7 +24,7 @@ description = "Core implementation of the OpenDC Compute service"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
 }
 
 dependencies {
@@ -32,10 +32,4 @@ dependencies {
     api(project(":opendc-trace:opendc-trace-core"))
     implementation(project(":opendc-utils"))
     implementation("io.github.microutils:kotlin-logging:1.7.9")
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testImplementation(project(":opendc-compute:opendc-compute-simulator"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
 }

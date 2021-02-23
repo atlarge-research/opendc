@@ -24,9 +24,9 @@ description = "Simulation-specific code for use in OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Library.KOTLINX_COROUTINES}")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.KOTLINX_COROUTINES}")
 }

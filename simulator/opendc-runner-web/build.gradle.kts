@@ -24,7 +24,7 @@ description = "Experiment runner for OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
     application
 }
 
