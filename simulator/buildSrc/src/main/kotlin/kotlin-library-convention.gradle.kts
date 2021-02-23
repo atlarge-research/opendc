@@ -28,7 +28,6 @@ plugins {
     `java-library`
     kotlin("jvm")
     id("org.jlleitschuh.gradle.ktlint")
-    jacoco
 }
 
 /* Project configuration */
@@ -45,10 +44,6 @@ kotlin {
     explicitApi()
 }
 
-jacoco {
-    toolVersion = "0.8.6"
-}
-
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
@@ -57,11 +52,4 @@ tasks.withType<KotlinCompile>().configureEach {
 tasks.test {
     useJUnitPlatform()
     reports.html.isEnabled = true
-}
-
-
-tasks.jacocoTestReport {
-    reports {
-        html.isEnabled = true
-    }
 }
