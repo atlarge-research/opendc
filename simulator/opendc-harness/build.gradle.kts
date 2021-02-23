@@ -32,14 +32,12 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     api("org.junit.platform:junit-platform-commons:${versions.junitPlatform}")
 
+    implementation("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")
     implementation("io.github.classgraph:classgraph:${versions["classgraph"]}")
     implementation("io.github.microutils:kotlin-logging")
+
     implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
     implementation("me.tongfei:progressbar:${versions["progressbar"]}")
-
-    implementation("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")
-    implementation("org.junit.platform:junit-platform-suite-api:${versions.junitPlatform}")
-    implementation("org.junit.platform:junit-platform-launcher:${versions.junitPlatform}")
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
 }

@@ -30,13 +30,13 @@ import org.junit.platform.engine.discovery.ClassNameFilter
 import org.junit.platform.engine.discovery.ClassSelector
 import org.junit.platform.engine.discovery.MethodSelector
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
-import org.junit.platform.launcher.LauncherDiscoveryRequest
 import org.opendc.harness.api.ExperimentDefinition
 import org.opendc.harness.engine.ExperimentEngineLauncher
 import org.opendc.harness.engine.discovery.DiscoveryFilter
 import org.opendc.harness.engine.discovery.DiscoveryProvider
 import org.opendc.harness.engine.discovery.DiscoveryRequest
 import org.opendc.harness.engine.discovery.DiscoverySelector
+import java.util.*
 
 /**
  * A [TestEngine] implementation that is able to run experiments defined using the harness.
@@ -49,13 +49,11 @@ public class OpenDCTestEngine : TestEngine {
 
     override fun getId(): String = "opendc"
 
-    override fun discover(request: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
-        // Test whether are excluded from the engines
-        val isEnabled = (request as? LauncherDiscoveryRequest)?.engineFilters?.all { it.toPredicate().test(this) } ?: true
-        if (!isEnabled) {
-            return ExperimentEngineDescriptor(uniqueId, emptyFlow())
-        }
+    override fun getGroupId(): Optional<String> = Optional.of("org.opendc")
 
+    override fun getArtifactId(): Optional<String> = Optional.of("opendc-harness")
+
+    override fun discover(request: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         // IntelliJ will pass a [MethodSelector] to run just a single method inside a file. In that
         // case, no experiments should be discovered, since we support only experiments by class.
         if (request.getSelectorsByType(MethodSelector::class.java).isNotEmpty()) {
