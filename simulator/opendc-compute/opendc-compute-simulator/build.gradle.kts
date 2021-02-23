@@ -29,6 +29,7 @@ plugins {
 }
 
 dependencies {
+    api(platform(project(":opendc-platform")))
     api(project(":opendc-compute:opendc-compute-core"))
     api(project(":opendc-simulator:opendc-simulator-compute"))
     api(project(":opendc-simulator:opendc-simulator-failures"))

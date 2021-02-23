@@ -29,6 +29,7 @@ plugins {
 }
 
 dependencies {
+    api(platform(project(":opendc-platform")))
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     api("org.junit.platform:junit-platform-commons:${versions.junitPlatform}")
 

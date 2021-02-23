@@ -30,6 +30,7 @@ plugins {
 }
 
 dependencies {
+    api(platform(project(":opendc-platform")))
     api(project(":opendc-core"))
     api(project(":opendc-harness"))
     implementation(project(":opendc-format"))

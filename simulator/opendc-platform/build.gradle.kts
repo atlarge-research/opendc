@@ -1,7 +1,3 @@
-import org.gradle.kotlin.dsl.`java-library`
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.repositories
-
 /*
  * Copyright (c) 2021 AtLarge Research
  *
@@ -25,19 +21,17 @@ import org.gradle.kotlin.dsl.repositories
  */
 
 plugins {
-    `java-library`
+    `java-platform`
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+description = "Java platform for the OpenDC project"
 
-/* Dependency constraints across modules */
 dependencies {
     constraints {
         api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.kotlinxCoroutines}")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.kotlinxCoroutines}")
-        implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
+        api("org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.kotlinxCoroutines}")
+
+        api("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
+        runtime("org.slf4j:slf4j-simple:${versions.slf4j}")
     }
 }

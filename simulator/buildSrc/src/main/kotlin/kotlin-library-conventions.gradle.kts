@@ -28,7 +28,12 @@ plugins {
     `java-library`
     kotlin("jvm")
     id("org.jlleitschuh.gradle.ktlint")
-    id("dependency-conventions")
+}
+
+/* Project configuration */
+repositories {
+    mavenCentral()
+    jcenter()
 }
 
 java {
