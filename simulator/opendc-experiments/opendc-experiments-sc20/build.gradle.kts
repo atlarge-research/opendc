@@ -43,7 +43,7 @@ dependencies {
     implementation(project(":opendc-simulator:opendc-simulator-failures"))
     implementation(project(":opendc-compute:opendc-compute-simulator"))
 
-    implementation("io.github.microutils:kotlin-logging:2.0.4")
+    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
     implementation("me.tongfei:progressbar:0.9.0")
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 

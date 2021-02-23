@@ -33,7 +33,7 @@ dependencies {
     api(project(":opendc-compute:opendc-compute-core"))
     api(project(":opendc-trace:opendc-trace-core"))
     implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
+    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
     testImplementation(project(":opendc-compute:opendc-compute-simulator"))
@@ -42,5 +42,5 @@ dependencies {
         exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
     }
     testImplementation(kotlin("reflect"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Versions.SLF4J}")
+    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.kotlinxCoroutines}")
 }

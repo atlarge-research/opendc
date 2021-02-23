@@ -33,6 +33,6 @@ tasks.test {
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT_JUPITER}")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${versions.junitJupiter}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${versions.junitJupiter}")
 }

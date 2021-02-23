@@ -38,6 +38,10 @@ dependencies {
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
 }
 
+kotlinDslPluginOptions {
+    experimentalWarning.set(false)
+}
+
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
         allWarningsAsErrors = true

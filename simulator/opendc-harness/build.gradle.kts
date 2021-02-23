@@ -29,17 +29,17 @@ plugins {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLINX_COROUTINES}")
-    api("org.junit.platform:junit-platform-commons:${Versions.JUNIT_PLATFORM}")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.kotlinxCoroutines}")
+    api("org.junit.platform:junit-platform-commons:${versions.junitPlatform}")
 
     implementation("io.github.classgraph:classgraph:4.8.98")
     implementation("me.tongfei:progressbar:0.9.0")
-    implementation("io.github.microutils:kotlin-logging:2.0.4")
+    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
-    api("org.junit.platform:junit-platform-engine:${Versions.JUNIT_PLATFORM}")
-    api("org.junit.platform:junit-platform-suite-api:${Versions.JUNIT_PLATFORM}")
-    api("org.junit.platform:junit-platform-launcher:${Versions.JUNIT_PLATFORM}")
+    api("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")
+    api("org.junit.platform:junit-platform-suite-api:${versions.junitPlatform}")
+    api("org.junit.platform:junit-platform-launcher:${versions.junitPlatform}")
 
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.14.0")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
 }

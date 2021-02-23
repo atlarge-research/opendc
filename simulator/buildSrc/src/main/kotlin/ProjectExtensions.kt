@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,15 @@
  * SOFTWARE.
  */
 
-description = "Simulator for OpenDC Compute"
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.provideDelegate
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-}
-
-dependencies {
-    api(project(":opendc-compute:opendc-compute-core"))
-    api(project(":opendc-simulator:opendc-simulator-compute"))
-    api(project(":opendc-simulator:opendc-simulator-failures"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
-}
+/**
+ * Obtain the [Versions] object for the specified [Project] instance.
+ */
+val Project.versions: Versions
+    get() {
+        var versions: Versions? by rootProject.extra
+        return versions ?: Versions(rootProject).also { versions = it }
+    }

@@ -22,29 +22,42 @@
  * SOFTWARE.
  */
 
+import org.gradle.api.JavaVersion
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.extra
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
+
 /**
  * This class contains the versions of the dependencies shared by the different
  * subprojects.
  */
-public object Versions {
+public class Versions(private val project: Project) {
+    /**
+     * A delegate for obtaining configuration values from a [Project] instance.
+     */
+    private fun version(name: String? = null): ReadOnlyProperty<Versions, String> =
+        ReadOnlyProperty { _, property -> get(name ?: property.name) }
+
+    val junitJupiter by version(name = "junit-jupiter")
+    val junitPlatform by version(name = "junit-platform")
+
+    val slf4j by version()
+    val kotlinLogging by version(name = "kotlin-logging")
+    val log4j by version()
+
+    val kotlinxCoroutines by version(name = "kotlinx-coroutines")
+
 
     /**
-     * The library for testing the projects.
+     * Obtain the version for the specified [dependency][name].
      */
-    val JUNIT_JUPITER = "5.7.1"
+    operator fun get(name: String) = project.extra.get("$name.version") as String
 
-    /**
-     * The library for hosting the tests.
-     */
-    val JUNIT_PLATFORM = "1.7.1"
-
-    /**
-     * Logging facade.
-     */
-    val SLF4J = "1.7.30"
-
-    /**
-     * Kotlin coroutines support
-     */
-    val KOTLINX_COROUTINES = "1.4.2"
+    companion object {
+        /**
+         * The JVM version to target.
+         */
+        val jvmTarget = JavaVersion.VERSION_1_8
+    }
 }

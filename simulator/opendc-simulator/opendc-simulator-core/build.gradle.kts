@@ -28,5 +28,5 @@ plugins {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.KOTLINX_COROUTINES}")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.kotlinxCoroutines}")
 }
