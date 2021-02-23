@@ -23,14 +23,12 @@
 description = "Library for simulation of cloud computing components"
 
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
+    `testing-conventions`
 }
 
 dependencies {
+    api(platform(project(":opendc-platform")))
     api(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-utils"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
 }

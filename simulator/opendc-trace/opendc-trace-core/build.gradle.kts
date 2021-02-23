@@ -24,9 +24,10 @@ description = "Event tracing library for OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Library.KOTLINX_COROUTINES}")
+    api(platform(project(":opendc-platform")))
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 }

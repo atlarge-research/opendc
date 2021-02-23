@@ -27,8 +27,8 @@ import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.virt.driver.VirtDriver
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
-import org.opendc.experiments.sc20.experiment.monitor.ExperimentMonitor
-import org.opendc.experiments.sc20.telemetry.HostEvent
+import org.opendc.experiments.capelin.monitor.ExperimentMonitor
+import org.opendc.experiments.capelin.telemetry.HostEvent
 import kotlin.math.max
 
 /**

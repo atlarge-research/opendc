@@ -24,19 +24,18 @@ description = "Simulator for OpenDC Compute"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
+    `testing-conventions`
 }
 
 dependencies {
+    api(platform(project(":opendc-platform")))
     api(project(":opendc-compute:opendc-compute-core"))
     api(project(":opendc-simulator:opendc-simulator-compute"))
     api(project(":opendc-simulator:opendc-simulator-failures"))
     implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
+    implementation("io.github.microutils:kotlin-logging")
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
 }

@@ -21,13 +21,14 @@
  */
 rootProject.name = "opendc-simulator"
 
+include(":opendc-platform")
 include(":opendc-core")
 include(":opendc-compute:opendc-compute-core")
 include(":opendc-compute:opendc-compute-simulator")
 include(":opendc-workflows")
 include(":opendc-format")
 include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-sc20")
+include(":opendc-experiments:opendc-experiments-capelin")
 include(":opendc-runner-web")
 include(":opendc-simulator:opendc-simulator-core")
 include(":opendc-simulator:opendc-simulator-compute")

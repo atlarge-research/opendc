@@ -24,24 +24,21 @@ description = "Harness for defining repeatable experiments using OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
+    `testing-conventions`
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Library.KOTLINX_COROUTINES}")
-    api("org.junit.platform:junit-platform-commons:${Library.JUNIT_PLATFORM}")
+    api(platform(project(":opendc-platform")))
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    api("org.junit.platform:junit-platform-commons:${versions.junitPlatform}")
 
-    implementation("io.github.classgraph:classgraph:4.8.98")
-    implementation("me.tongfei:progressbar:0.9.0")
-    implementation("io.github.microutils:kotlin-logging:2.0.4")
-    implementation("com.github.ajalt.clikt:clikt:3.1.0")
+    implementation("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")
+    implementation("io.github.classgraph:classgraph:${versions["classgraph"]}")
+    implementation("io.github.microutils:kotlin-logging")
 
-    api("org.junit.platform:junit-platform-engine:${Library.JUNIT_PLATFORM}")
-    api("org.junit.platform:junit-platform-suite-api:${Library.JUNIT_PLATFORM}")
-    api("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+    implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
+    implementation("me.tongfei:progressbar:${versions["progressbar"]}")
 
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.14.0")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
 }

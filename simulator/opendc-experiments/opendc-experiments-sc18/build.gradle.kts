@@ -20,31 +20,20 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the TPDS paper"
+description = "Experiments for the SC18 article"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
-    application
-}
-
-application {
-    mainClass.set("org.opendc.harness.runner.console.ConsoleRunnerKt")
+    `kotlin-library-conventions`
+    `experiment-conventions`
 }
 
 dependencies {
+    api(platform(project(":opendc-platform")))
     api(project(":opendc-core"))
     api(project(":opendc-harness"))
     implementation(project(":opendc-format"))
     implementation(project(":opendc-workflows"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-compute:opendc-compute-simulator"))
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
-        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    implementation(kotlin("reflect"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
 }

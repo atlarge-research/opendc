@@ -24,7 +24,8 @@ description = "Workflow service for OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-convention`
+    `kotlin-library-conventions`
+    `testing-conventions`
 }
 
 dependencies {
@@ -32,17 +33,11 @@ dependencies {
     api(project(":opendc-compute:opendc-compute-core"))
     api(project(":opendc-trace:opendc-trace-core"))
     implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:1.7.9")
+    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
     testImplementation(project(":opendc-compute:opendc-compute-simulator"))
     testImplementation(project(":opendc-format"))
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
-        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    testImplementation(kotlin("reflect"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${Library.SLF4J}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Library.JUNIT_JUPITER}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Library.JUNIT_JUPITER}")
-    testImplementation("org.junit.platform:junit-platform-launcher:${Library.JUNIT_PLATFORM}")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
+    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
 }

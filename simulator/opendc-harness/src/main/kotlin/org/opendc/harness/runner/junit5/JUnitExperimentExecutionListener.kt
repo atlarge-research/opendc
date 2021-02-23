@@ -24,11 +24,13 @@ package org.opendc.harness.runner.junit5
 
 import org.junit.platform.engine.*
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
+import org.junit.platform.engine.support.descriptor.ClassSource
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import org.opendc.harness.api.ExperimentDefinition
 import org.opendc.harness.api.Scenario
 import org.opendc.harness.api.Trial
 import org.opendc.harness.engine.ExperimentExecutionListener
+import java.util.*
 
 /**
  * An [ExperimentExecutionListener] that notifies JUnit platform of the progress of the experiment trials.
@@ -121,6 +123,14 @@ public class JUnitExperimentExecutionListener(
             override fun mayRegisterTests(): Boolean = true
 
             override fun toString(): String = "ExperimentDescriptor"
+
+            override fun getSource(): Optional<TestSource> {
+                val cls = meta["class.name"] as? String
+                return if (cls != null)
+                    Optional.of(ClassSource.from(cls))
+                else
+                    Optional.empty()
+            }
         }
     }
 
