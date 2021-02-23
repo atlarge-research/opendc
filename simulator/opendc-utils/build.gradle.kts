@@ -29,7 +29,7 @@ plugins {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.kotlinxCoroutines}")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
 }

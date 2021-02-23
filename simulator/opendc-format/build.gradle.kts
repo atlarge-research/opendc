@@ -34,13 +34,10 @@ dependencies {
     api(project(":opendc-workflows"))
     implementation(project(":opendc-simulator:opendc-simulator-compute"))
     implementation(project(":opendc-compute:opendc-compute-simulator"))
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
-        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    implementation(kotlin("reflect"))
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
 
-    implementation("org.apache.parquet:parquet-avro:1.11.0")
-    implementation("org.apache.hadoop:hadoop-client:3.2.1") {
+    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
+    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }

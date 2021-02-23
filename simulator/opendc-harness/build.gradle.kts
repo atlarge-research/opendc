@@ -29,17 +29,17 @@ plugins {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.kotlinxCoroutines}")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     api("org.junit.platform:junit-platform-commons:${versions.junitPlatform}")
 
-    implementation("io.github.classgraph:classgraph:4.8.98")
-    implementation("me.tongfei:progressbar:0.9.0")
-    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
-    implementation("com.github.ajalt.clikt:clikt:3.1.0")
+    implementation("io.github.classgraph:classgraph:${versions["classgraph"]}")
+    implementation("io.github.microutils:kotlin-logging")
+    implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
+    implementation("me.tongfei:progressbar:${versions["progressbar"]}")
 
-    api("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")
-    api("org.junit.platform:junit-platform-suite-api:${versions.junitPlatform}")
-    api("org.junit.platform:junit-platform-launcher:${versions.junitPlatform}")
+    implementation("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")
+    implementation("org.junit.platform:junit-platform-suite-api:${versions.junitPlatform}")
+    implementation("org.junit.platform:junit-platform-launcher:${versions.junitPlatform}")
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
 }

@@ -38,9 +38,6 @@ dependencies {
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
     testImplementation(project(":opendc-compute:opendc-compute-simulator"))
     testImplementation(project(":opendc-format"))
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
-        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    testImplementation(kotlin("reflect"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.kotlinxCoroutines}")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
+    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
 }

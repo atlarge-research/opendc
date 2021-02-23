@@ -40,13 +40,11 @@ dependencies {
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-simulator:opendc-simulator-compute"))
 
-    implementation("com.github.ajalt:clikt:2.8.0")
-    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8") {
-        exclude("org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    implementation("io.sentry:sentry-log4j2:3.1.1")
-    implementation("org.mongodb:mongodb-driver-sync:4.0.5")
+    implementation("io.github.microutils:kotlin-logging")
+    implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
+    implementation("io.sentry:sentry-log4j2:${versions["sentry-log4j2"]}")
+    implementation("org.mongodb:mongodb-driver-sync:${versions["mongodb-driver-sync"]}")
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
     runtimeOnly("org.apache.logging.log4j:log4j-1.2-api:${versions.log4j}")

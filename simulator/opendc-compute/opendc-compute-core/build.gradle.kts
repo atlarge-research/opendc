@@ -31,5 +31,6 @@ dependencies {
     api(project(":opendc-core"))
     api(project(":opendc-trace:opendc-trace-core"))
     implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
+
+    implementation("io.github.microutils:kotlin-logging")
 }

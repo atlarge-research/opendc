@@ -43,12 +43,12 @@ dependencies {
     implementation(project(":opendc-simulator:opendc-simulator-failures"))
     implementation(project(":opendc-compute:opendc-compute-simulator"))
 
-    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
-    implementation("me.tongfei:progressbar:0.9.0")
-    implementation("com.github.ajalt.clikt:clikt:3.1.0")
+    implementation("io.github.microutils:kotlin-logging")
+    implementation("me.tongfei:progressbar:${versions["progressbar"]}")
+    implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
 
-    implementation("org.apache.parquet:parquet-avro:1.11.0")
-    implementation("org.apache.hadoop:hadoop-client:3.2.1") {
+    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
+    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }

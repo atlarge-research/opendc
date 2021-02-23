@@ -1,5 +1,9 @@
+import org.gradle.kotlin.dsl.`java-library`
+import org.gradle.kotlin.dsl.kotlin
+import org.gradle.kotlin.dsl.repositories
+
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +24,20 @@
  * SOFTWARE.
  */
 
-description = "Simulator for OpenDC Compute"
-
-/* Build configuration */
 plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
+    `java-library`
 }
 
-dependencies {
-    api(project(":opendc-compute:opendc-compute-core"))
-    api(project(":opendc-simulator:opendc-simulator-compute"))
-    api(project(":opendc-simulator:opendc-simulator-failures"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging")
+repositories {
+    mavenCentral()
+    jcenter()
+}
 
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
+/* Dependency constraints across modules */
+dependencies {
+    constraints {
+        api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.kotlinxCoroutines}")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.kotlinxCoroutines}")
+        implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
+    }
 }
