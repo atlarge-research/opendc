@@ -20,16 +20,12 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the TPDS paper"
+description = "Experiments for the SC18 article"
 
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    application
-}
-
-application {
-    mainClass.set("org.opendc.harness.runner.console.ConsoleRunnerKt")
+    `experiment-conventions`
 }
 
 dependencies {
