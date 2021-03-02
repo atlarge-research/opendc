@@ -22,13 +22,13 @@
 
 package org.opendc.compute.simulator
 
-import org.opendc.compute.core.Server
+import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.driver.VirtDriver
 import java.util.UUID
 
 public class HypervisorView(
     public val uid: UUID,
-    public var server: Server,
+    public var node: Node,
     public var numberOfActiveServers: Int,
     public var availableMemory: Long,
     public var provisionedCores: Int

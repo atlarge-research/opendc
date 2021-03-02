@@ -39,7 +39,7 @@ public class RandomAllocationPolicy(private val random: Random = Random(0)) : Al
             return hypervisors.asIterable()
                 .filter { hv ->
                     val fitsMemory = hv.availableMemory >= (image.image.tags["required-memory"] as Long)
-                    val fitsCpu = hv.server.flavor.cpuCount >= image.flavor.cpuCount
+                    val fitsCpu = hv.node.flavor.cpuCount >= image.flavor.cpuCount
                     fitsMemory && fitsCpu
                 }
                 .randomOrNull(random)

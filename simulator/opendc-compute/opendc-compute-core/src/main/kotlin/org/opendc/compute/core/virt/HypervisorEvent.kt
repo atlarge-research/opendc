@@ -22,7 +22,7 @@
 
 package org.opendc.compute.core.virt
 
-import org.opendc.compute.core.Server
+import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.driver.VirtDriver
 
 /**
@@ -71,6 +71,6 @@ public sealed class HypervisorEvent {
         public val cpuUsage: Double,
         public val cpuDemand: Double,
         public val numberOfDeployedImages: Int,
-        public val hostServer: Server
+        public val host: Node
     ) : HypervisorEvent()
 }

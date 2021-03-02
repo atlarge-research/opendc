@@ -32,6 +32,9 @@ import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.image.Image
+import org.opendc.compute.core.metal.Node
+import org.opendc.compute.core.metal.NodeEvent
+import org.opendc.compute.core.metal.NodeState
 import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.core.virt.HypervisorEvent
 import org.opendc.compute.core.virt.driver.InsufficientMemoryOnServerException
@@ -68,7 +71,7 @@ public class SimVirtProvisioningService(
     /**
      * The hypervisors that have been launched by the service.
      */
-    private val hypervisors: MutableMap<Server, HypervisorView> = mutableMapOf()
+    private val hypervisors: MutableMap<Node, HypervisorView> = mutableMapOf()
 
     /**
      * The available hypervisors.
@@ -118,22 +121,12 @@ public class SimVirtProvisioningService(
                 val workload = SimVirtDriver(coroutineScope, hypervisor)
                 val hypervisorImage = Image(UUID.randomUUID(), "vmm", mapOf("workload" to workload))
                 launch {
-                    var init = false
                     val deployedNode = provisioningService.deploy(node, hypervisorImage)
-                    val server = deployedNode.server!!
-                    server.events.onEach { event ->
+                    deployedNode.events.onEach { event ->
                         when (event) {
-                            is ServerEvent.StateChanged -> {
-                                if (!init) {
-                                    init = true
-                                }
-                                stateChanged(event.server)
-                            }
+                            is NodeEvent.StateChanged -> stateChanged(event.node, workload)
                         }
                     }.launchIn(this)
-
-                    delay(1)
-                    onHypervisorAvailable(server, workload)
                 }
             }
         }
@@ -229,7 +222,7 @@ public class SimVirtProvisioningService(
             }
 
             try {
-                logger.info { "[${clock.millis()}] Spawning ${imageInstance.image} on ${selectedHv.server.uid} ${selectedHv.server.name} ${selectedHv.server.flavor}" }
+                logger.info { "[${clock.millis()}] Spawning ${imageInstance.image} on ${selectedHv.node.uid} ${selectedHv.node.name} ${selectedHv.node.flavor}" }
                 incomingImages.poll()
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
@@ -308,28 +301,38 @@ public class SimVirtProvisioningService(
         }
     }
 
-    private fun stateChanged(server: Server) {
-        when (server.state) {
-            ServerState.ACTIVE -> {
-                logger.debug { "[${clock.millis()}] Server ${server.uid} available: ${server.state}" }
+    private fun stateChanged(node: Node, hypervisor: SimVirtDriver) {
+        when (node.state) {
+            NodeState.ACTIVE -> {
+                logger.debug { "[${clock.millis()}] Server ${node.uid} available: ${node.state}" }
 
-                if (server in hypervisors) {
+                if (node in hypervisors) {
                     // Corner case for when the hypervisor already exists
-                    availableHypervisors += hypervisors.getValue(server)
+                    availableHypervisors += hypervisors.getValue(node)
                 } else {
                     val hv = HypervisorView(
-                        server.uid,
-                        server,
+                        node.uid,
+                        node,
                         0,
-                        server.flavor.memorySize,
+                        node.flavor.memorySize,
                         0
                     )
-                    maxCores = max(maxCores, server.flavor.cpuCount)
-                    maxMemory = max(maxMemory, server.flavor.memorySize)
-                    hypervisors[server] = hv
+                    hv.driver = hypervisor
+                    hv.driver.events
+                        .onEach { event ->
+                            if (event is HypervisorEvent.VmsUpdated) {
+                                hv.numberOfActiveServers = event.numberOfActiveServers
+                                hv.availableMemory = event.availableMemory
+                            }
+                        }.launchIn(coroutineScope)
+
+                    maxCores = max(maxCores, node.flavor.cpuCount)
+                    maxMemory = max(maxMemory, node.flavor.memorySize)
+                    hypervisors[node] = hv
+                    availableHypervisors += hv
                 }
 
-                tracer.commit(HypervisorAvailableEvent(server.uid))
+                tracer.commit(HypervisorAvailableEvent(node.uid))
 
                 eventFlow.emit(
                     VirtProvisioningEvent.MetricsAvailable(
@@ -349,9 +352,9 @@ public class SimVirtProvisioningService(
                     requestCycle()
                 }
             }
-            ServerState.SHUTOFF, ServerState.ERROR -> {
-                logger.debug { "[${clock.millis()}] Server ${server.uid} unavailable: ${server.state}" }
-                val hv = hypervisors[server] ?: return
+            NodeState.SHUTOFF, NodeState.ERROR -> {
+                logger.debug { "[${clock.millis()}] Server ${node.uid} unavailable: ${node.state}" }
+                val hv = hypervisors[node] ?: return
                 availableHypervisors -= hv
 
                 tracer.commit(HypervisorUnavailableEvent(hv.uid))
@@ -375,37 +378,6 @@ public class SimVirtProvisioningService(
             }
             else -> throw IllegalStateException()
         }
-    }
-
-    private fun onHypervisorAvailable(server: Server, hypervisor: SimVirtDriver) {
-        val hv = hypervisors[server] ?: return
-        hv.driver = hypervisor
-        availableHypervisors += hv
-
-        tracer.commit(HypervisorAvailableEvent(hv.uid))
-
-        eventFlow.emit(
-            VirtProvisioningEvent.MetricsAvailable(
-                this@SimVirtProvisioningService,
-                hypervisors.size,
-                availableHypervisors.size,
-                submittedVms,
-                runningVms,
-                finishedVms,
-                queuedVms,
-                unscheduledVms
-            )
-        )
-
-        hv.driver.events
-            .onEach { event ->
-                if (event is HypervisorEvent.VmsUpdated) {
-                    hv.numberOfActiveServers = event.numberOfActiveServers
-                    hv.availableMemory = event.availableMemory
-                }
-            }.launchIn(coroutineScope)
-
-        requestCycle()
     }
 
     public data class ImageView(

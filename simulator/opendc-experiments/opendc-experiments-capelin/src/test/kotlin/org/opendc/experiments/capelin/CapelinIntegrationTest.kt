@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.core.Server
+import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.compute.simulator.SimVirtProvisioningService
 import org.opendc.compute.simulator.allocation.AvailableCoreMemoryAllocationPolicy
@@ -148,9 +148,9 @@ class CapelinIntegrationTest {
         assertAll(
             { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
             { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
-            { assertEquals(1684849230562, monitor.totalRequestedBurst) },
-            { assertEquals(447612683996, monitor.totalGrantedBurst) },
-            { assertEquals(1219535757406, monitor.totalOvercommissionedBurst) },
+            { assertEquals(1678587333640, monitor.totalRequestedBurst) },
+            { assertEquals(438118200924, monitor.totalGrantedBurst) },
+            { assertEquals(1220323969993, monitor.totalOvercommissionedBurst) },
             { assertEquals(0, monitor.totalInterferedBurst) }
         )
     }
@@ -242,7 +242,7 @@ class CapelinIntegrationTest {
             cpuUsage: Double,
             cpuDemand: Double,
             numberOfDeployedImages: Int,
-            hostServer: Server,
+            host: Node,
             duration: Long
         ) {
             totalRequestedBurst += requestedBurst

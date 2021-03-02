@@ -23,7 +23,7 @@
 package org.opendc.compute.core.metal
 
 import kotlinx.coroutines.flow.Flow
-import org.opendc.compute.core.Server
+import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.image.Image
 import org.opendc.core.Identity
 import java.util.UUID
@@ -53,14 +53,14 @@ public data class Node(
     public val state: NodeState,
 
     /**
+     * The flavor of the node.
+     */
+    public val flavor: Flavor,
+
+    /**
      * The boot image of the node.
      */
     public val image: Image,
-
-    /**
-     * The server instance that is running on the node or `null` if no server is running.
-     */
-    public val server: Server?,
 
     /**
      * The events that are emitted by the node.

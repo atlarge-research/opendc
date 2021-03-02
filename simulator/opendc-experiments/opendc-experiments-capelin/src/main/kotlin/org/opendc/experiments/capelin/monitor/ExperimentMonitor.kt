@@ -23,6 +23,7 @@
 package org.opendc.experiments.capelin.monitor
 
 import org.opendc.compute.core.Server
+import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.driver.VirtDriver
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import java.io.Closeable
@@ -42,14 +43,14 @@ public interface ExperimentMonitor : Closeable {
     public fun reportHostStateChange(
         time: Long,
         driver: VirtDriver,
-        server: Server
+        host: Node
     ) {
     }
 
     /**
      * Report the power consumption of a host.
      */
-    public fun reportPowerConsumption(host: Server, draw: Double) {}
+    public fun reportPowerConsumption(host: Node, draw: Double) {}
 
     /**
      * This method is invoked for a host for each slice that is finishes.
@@ -63,7 +64,7 @@ public interface ExperimentMonitor : Closeable {
         cpuUsage: Double,
         cpuDemand: Double,
         numberOfDeployedImages: Int,
-        hostServer: Server,
+        host: Node,
         duration: Long = 5 * 60 * 1000L
     ) {
     }

@@ -73,7 +73,7 @@ internal class SimProvisioningServiceTest {
             delay(5)
             val nodes = provisioner.nodes()
             val node = provisioner.deploy(nodes.first(), image)
-            node.server!!.events.collect { println(it) }
+            node.events.collect { println(it) }
         }
 
         testScope.advanceUntilIdle()

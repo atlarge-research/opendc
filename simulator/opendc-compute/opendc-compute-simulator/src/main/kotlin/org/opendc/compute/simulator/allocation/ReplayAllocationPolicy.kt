@@ -42,7 +42,7 @@ public class ReplayAllocationPolicy(private val vmPlacements: Map<String, String
         ): HypervisorView? {
             val clusterName = vmPlacements[image.name]
                 ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${image.name}")
-            val machinesInCluster = hypervisors.filter { it.server.name.contains(clusterName) }
+            val machinesInCluster = hypervisors.filter { it.node.name.contains(clusterName) }
 
             if (machinesInCluster.isEmpty()) {
                 logger.info { "Could not find any machines belonging to cluster $clusterName for image ${image.name}, assigning randomly." }

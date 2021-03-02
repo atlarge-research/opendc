@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import org.opendc.compute.core.*
 import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.image.Image
+import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.HypervisorEvent
 import org.opendc.compute.core.virt.driver.InsufficientMemoryOnServerException
 import org.opendc.compute.core.virt.driver.VirtDriver
@@ -45,17 +46,20 @@ import java.util.*
 /**
  * A [VirtDriver] that is simulates virtual machines on a physical machine using [SimHypervisor].
  */
-public class SimVirtDriver(private val coroutineScope: CoroutineScope, hypervisor: SimHypervisorProvider) : VirtDriver, SimWorkload {
+public class SimVirtDriver(
+    private val coroutineScope: CoroutineScope,
+    hypervisor: SimHypervisorProvider
+) : VirtDriver, SimWorkload {
     /**
      * The execution context in which the [VirtDriver] runs.
      */
-    private lateinit var ctx: ComputeSimExecutionContext
+    private lateinit var ctx: SimExecutionContext
 
     /**
-     * The server hosting this hypervisor.
+     * The node on which the hypervisor runs.
      */
-    public val server: Server
-        get() = ctx.server
+    public val node: Node
+        get() = ctx.meta["node"] as Node
 
     /**
      * The [EventFlow] to emit the events.
@@ -93,7 +97,7 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope, hyperviso
                         cpuUsage,
                         cpuDemand,
                         vms.size,
-                        ctx.server
+                        node
                     )
                 )
             }
@@ -153,13 +157,13 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope, hyperviso
     }
 
     private fun vmStarted(vm: VirtualMachine) {
-        vms.forEach { it ->
+        vms.forEach {
             vm.performanceInterferenceModel?.onStart(it.server.image.name)
         }
     }
 
     private fun vmStopped(vm: VirtualMachine) {
-        vms.forEach { it ->
+        vms.forEach {
             vm.performanceInterferenceModel?.onStop(it.server.image.name)
         }
     }
@@ -171,37 +175,12 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope, hyperviso
         val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
 
         val job = coroutineScope.launch {
-            val delegate = server.image.tags["workload"] as SimWorkload
-            // Wrap the workload to pass in a ComputeSimExecutionContext
-            val workload = object : SimWorkload {
-                lateinit var wrappedCtx: ComputeSimExecutionContext
-
-                override fun onStart(ctx: SimExecutionContext) {
-                    wrappedCtx = object : ComputeSimExecutionContext, SimExecutionContext by ctx {
-                        override val server: Server
-                            get() = server
-
-                        override fun toString(): String = "WrappedSimExecutionContext"
-                    }
-
-                    delegate.onStart(wrappedCtx)
-                }
-
-                override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-                    return delegate.onStart(wrappedCtx, cpu)
-                }
-
-                override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
-                    return delegate.onNext(wrappedCtx, cpu, remainingWork)
-                }
-
-                override fun toString(): String = "SimWorkloadWrapper(delegate=$delegate)"
-            }
+            val workload = server.image.tags["workload"] as SimWorkload
 
             delay(1) // TODO Introduce boot time
             init()
             try {
-                machine.run(workload)
+                machine.run(workload, mapOf("driver" to this@SimVirtDriver, "server" to server))
                 exit(null)
             } catch (cause: Throwable) {
                 exit(cause)
@@ -239,7 +218,7 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope, hyperviso
     }
 
     override fun onStart(ctx: SimExecutionContext) {
-        this.ctx = ctx as ComputeSimExecutionContext
+        this.ctx = ctx
         this.availableMemory = ctx.machine.memory.map { it.size }.sum()
         this.hypervisor.onStart(ctx)
     }

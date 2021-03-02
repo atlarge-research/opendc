@@ -30,9 +30,10 @@ import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.opendc.compute.core.ServerEvent
-import org.opendc.compute.core.ServerState
+import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.image.Image
+import org.opendc.compute.core.metal.NodeEvent
+import org.opendc.compute.core.metal.NodeState
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -60,7 +61,7 @@ internal class SimBareMetalDriverTest {
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
 
-        var finalState: ServerState = ServerState.BUILD
+        var finalState: NodeState = NodeState.UNKNOWN
         var finalTime = 0L
 
         testScope.launch {
@@ -70,11 +71,11 @@ internal class SimBareMetalDriverTest {
             withContext(coroutineContext) {
                 driver.init()
                 driver.setImage(image)
-                val server = driver.start().server!!
-                server.events.collect { event ->
+                val node = driver.start()
+                node.events.collect { event ->
                     when (event) {
-                        is ServerEvent.StateChanged -> {
-                            finalState = event.server.state
+                        is NodeEvent.StateChanged -> {
+                            finalState = event.node.state
                             finalTime = clock.millis()
                         }
                     }
@@ -83,7 +84,9 @@ internal class SimBareMetalDriverTest {
         }
 
         testScope.advanceUntilIdle()
-        assertEquals(ServerState.SHUTOFF, finalState)
-        assertEquals(501, finalTime)
+        assertAll(
+            { assertEquals(NodeState.SHUTOFF, finalState) },
+            { assertEquals(501, finalTime) }
+        )
     }
 }

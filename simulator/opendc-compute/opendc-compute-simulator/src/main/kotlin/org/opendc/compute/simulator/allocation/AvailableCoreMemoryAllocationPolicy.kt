@@ -32,7 +32,7 @@ import org.opendc.compute.simulator.HypervisorView
 public class AvailableCoreMemoryAllocationPolicy(private val reversed: Boolean = false) : AllocationPolicy {
     override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
         override val comparator: Comparator<HypervisorView> =
-            compareBy<HypervisorView> { -it.availableMemory / it.server.flavor.cpuCount }
+            compareBy<HypervisorView> { -it.availableMemory / it.node.flavor.cpuCount }
                 .run { if (reversed) reversed() else this }
     }
 }

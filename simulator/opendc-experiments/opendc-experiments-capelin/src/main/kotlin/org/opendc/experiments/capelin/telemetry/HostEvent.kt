@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.capelin.telemetry
 
-import org.opendc.compute.core.Server
+import org.opendc.compute.core.metal.Node
 
 /**
  * A periodic report of the host machine metrics.
@@ -30,7 +30,7 @@ import org.opendc.compute.core.Server
 public data class HostEvent(
     override val timestamp: Long,
     public val duration: Long,
-    public val host: Server,
+    public val node: Node,
     public val vmCount: Int,
     public val requestedBurst: Long,
     public val grantedBurst: Long,

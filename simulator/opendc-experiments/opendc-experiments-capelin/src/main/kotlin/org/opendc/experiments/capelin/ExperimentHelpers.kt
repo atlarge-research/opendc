@@ -35,7 +35,7 @@ import mu.KotlinLogging
 import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.metal.NODE_CLUSTER
-import org.opendc.compute.core.metal.driver.BareMetalDriver
+import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.core.virt.HypervisorEvent
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
@@ -175,14 +175,14 @@ public suspend fun attachMonitor(
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
         // TODO Do not expose VirtDriver directly but use Hypervisor class.
-        val server = (hypervisor as SimVirtDriver).server
+        val server = (hypervisor as SimVirtDriver).node
         monitor.reportHostStateChange(clock.millis(), hypervisor, server)
         server.events
             .onEach { event ->
                 val time = clock.millis()
                 when (event) {
-                    is ServerEvent.StateChanged -> {
-                        monitor.reportHostStateChange(time, hypervisor, event.server)
+                    is NodeEvent.StateChanged -> {
+                        monitor.reportHostStateChange(time, hypervisor, event.node)
                     }
                 }
             }
@@ -199,15 +199,15 @@ public suspend fun attachMonitor(
                         event.cpuUsage,
                         event.cpuDemand,
                         event.numberOfDeployedImages,
-                        event.hostServer
+                        event.host
                     )
                 }
             }
             .launchIn(coroutineScope)
 
-        val driver = hypervisor.server.services[BareMetalDriver.Key] as SimBareMetalDriver
+        val driver = server.metadata["driver"] as SimBareMetalDriver
         driver.powerDraw
-            .onEach { monitor.reportPowerConsumption(hypervisor.server, it) }
+            .onEach { monitor.reportPowerConsumption(server, it) }
             .launchIn(coroutineScope)
     }
 

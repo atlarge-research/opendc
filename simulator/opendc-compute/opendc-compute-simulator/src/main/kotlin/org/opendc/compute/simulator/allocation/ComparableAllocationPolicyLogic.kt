@@ -41,9 +41,9 @@ public interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
         return hypervisors.asSequence()
             .filter { hv ->
                 val fitsMemory = hv.availableMemory >= (image.flavor.memorySize)
-                val fitsCpu = hv.server.flavor.cpuCount >= image.flavor.cpuCount
+                val fitsCpu = hv.node.flavor.cpuCount >= image.flavor.cpuCount
                 fitsMemory && fitsCpu
             }
-            .minWithOrNull(comparator.thenBy { it.server.uid })
+            .minWithOrNull(comparator.thenBy { it.node.uid })
     }
 }

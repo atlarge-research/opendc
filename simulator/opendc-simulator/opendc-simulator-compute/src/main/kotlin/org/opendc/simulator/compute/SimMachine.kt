@@ -42,7 +42,7 @@ public interface SimMachine : AutoCloseable {
     /**
      * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
      */
-    public suspend fun run(workload: SimWorkload)
+    public suspend fun run(workload: SimWorkload, meta: Map<String, Any> = emptyMap())
 
     /**
      * Terminate this machine.

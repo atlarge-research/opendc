@@ -117,33 +117,33 @@ public class SimSpaceSharedHypervisor(private val listener: SimHypervisor.Listen
         private var cpus: List<VCpu> = emptyList()
 
         /**
-         * The execution context in which the workload runs.
-         */
-        val ctx = object : SimExecutionContext {
-            override val machine: SimMachineModel
-                get() = model
-
-            override val clock: Clock
-                get() = this@SimSpaceSharedHypervisor.ctx.clock
-
-            override fun interrupt(cpu: Int) {
-                require(cpu < cpus.size) { "Invalid CPU identifier" }
-                cpus[cpu].interrupt()
-            }
-        }
-
-        /**
          * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
          */
-        override suspend fun run(workload: SimWorkload) {
+        override suspend fun run(workload: SimWorkload, meta: Map<String, Any>) {
             require(!isTerminated) { "Machine is terminated" }
             require(cont == null) { "Run should not be called concurrently" }
+
+            val ctx = object : SimExecutionContext {
+                override val machine: SimMachineModel
+                    get() = model
+
+                override val clock: Clock
+                    get() = this@SimSpaceSharedHypervisor.ctx.clock
+
+                override val meta: Map<String, Any>
+                    get() = meta
+
+                override fun interrupt(cpu: Int) {
+                    require(cpu < cpus.size) { "Invalid CPU identifier" }
+                    cpus[cpu].interrupt()
+                }
+            }
 
             workload.onStart(ctx)
 
             return suspendCancellableCoroutine { cont ->
                 this.cont = cont
-                this.cpus = model.cpus.mapIndexed { index, model -> VCpu(this, model, workload, pCPUs[index]) }
+                this.cpus = model.cpus.mapIndexed { index, model -> VCpu(this, ctx, model, workload, pCPUs[index]) }
 
                 for (cpu in cpus) {
                     cpu.start()
@@ -193,7 +193,7 @@ public class SimSpaceSharedHypervisor(private val listener: SimHypervisor.Listen
     /**
      * A CPU of the virtual machine.
      */
-    private inner class VCpu(val vm: SimVm, val model: ProcessingUnit, val workload: SimWorkload, val pCPU: Int) {
+    private inner class VCpu(val vm: SimVm, val ctx: SimExecutionContext, val model: ProcessingUnit, val workload: SimWorkload, val pCPU: Int) {
         /**
          * The processing speed of the vCPU.
          */
@@ -267,7 +267,7 @@ public class SimSpaceSharedHypervisor(private val listener: SimHypervisor.Listen
          * Interrupt the CPU.
          */
         fun interrupt() {
-            ctx.interrupt(pCPU)
+            this@SimSpaceSharedHypervisor.ctx.interrupt(pCPU)
         }
 
         /**
