@@ -33,7 +33,6 @@ import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.HypervisorEvent
 import org.opendc.compute.core.virt.driver.InsufficientMemoryOnServerException
 import org.opendc.compute.core.virt.driver.VirtDriver
-import org.opendc.core.services.ServiceRegistry
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
@@ -132,7 +131,6 @@ public class SimVirtDriver(
             flavor,
             image,
             ServerState.BUILD,
-            ServiceRegistry(),
             events
         )
         availableMemory -= requiredMemory

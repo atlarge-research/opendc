@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.core.image.Image
 import org.opendc.core.resource.Resource
 import org.opendc.core.resource.TagContainer
-import org.opendc.core.services.ServiceRegistry
 import java.util.UUID
 
 /**
@@ -62,11 +61,6 @@ public data class Server(
      * The last known state of the server.
      */
     public val state: ServerState,
-
-    /**
-     * The services published by this server.
-     */
-    public val services: ServiceRegistry,
 
     /**
      * The events that are emitted by the server.
