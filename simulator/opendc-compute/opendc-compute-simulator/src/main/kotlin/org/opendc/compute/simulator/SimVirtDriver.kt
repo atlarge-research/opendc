@@ -27,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.opendc.compute.core.*
+import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.virt.HypervisorEvent
 import org.opendc.compute.core.virt.driver.InsufficientMemoryOnServerException
@@ -170,7 +171,7 @@ public class SimVirtDriver(private val coroutineScope: CoroutineScope, hyperviso
         val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
 
         val job = coroutineScope.launch {
-            val delegate = (server.image as SimWorkloadImage).workload
+            val delegate = server.image.tags["workload"] as SimWorkload
             // Wrap the workload to pass in a ComputeSimExecutionContext
             val workload = object : SimWorkload {
                 lateinit var wrappedCtx: ComputeSimExecutionContext

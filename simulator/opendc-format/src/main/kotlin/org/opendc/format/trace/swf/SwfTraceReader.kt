@@ -22,8 +22,8 @@
 
 package org.opendc.format.trace.swf
 
+import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -154,18 +154,19 @@ public class SwfTraceReader(
                     }
 
                     val uuid = UUID(0L, jobNumber)
+                    val workload = SimTraceWorkload(flopsHistory.asSequence())
                     val vmWorkload = VmWorkload(
                         uuid,
                         "SWF Workload $jobNumber",
                         UnnamedUser,
-                        SimWorkloadImage(
+                        Image(
                             uuid,
                             jobNumber.toString(),
                             mapOf(
                                 "cores" to cores,
-                                "required-memory" to memory
-                            ),
-                            SimTraceWorkload(flopsHistory.asSequence())
+                                "required-memory" to memory,
+                                "workload" to workload
+                            )
                         )
                     )
 

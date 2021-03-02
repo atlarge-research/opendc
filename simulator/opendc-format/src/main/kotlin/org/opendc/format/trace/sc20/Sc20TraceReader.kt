@@ -22,8 +22,8 @@
 
 package org.opendc.format.trace.sc20
 
+import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -156,19 +156,20 @@ public class Sc20TraceReader(
                         performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId) }.toSortedSet(),
                         Random(random.nextInt())
                     )
+                val workload = SimTraceWorkload(flopsFragments.asSequence())
                 val vmWorkload = VmWorkload(
                     uuid,
                     "VM Workload $vmId",
                     UnnamedUser,
-                    SimWorkloadImage(
+                    Image(
                         uuid,
                         vmId,
                         mapOf(
                             IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
                             "cores" to cores,
-                            "required-memory" to requiredMemory
-                        ),
-                        SimTraceWorkload(flopsFragments.asSequence())
+                            "required-memory" to requiredMemory,
+                            "workload" to workload
+                        )
                     )
                 )
                 entries[uuid] = TraceEntryImpl(

@@ -28,7 +28,6 @@ import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
-import org.opendc.compute.core.image.EmptyImage
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeEvent
@@ -88,7 +87,7 @@ public class SimBareMetalDriver(
      * The machine state.
      */
     private val nodeState =
-        StateFlow(Node(uid, name, metadata + ("driver" to this), NodeState.SHUTOFF, EmptyImage, null, events))
+        StateFlow(Node(uid, name, metadata + ("driver" to this), NodeState.SHUTOFF, Image.EMPTY, null, events))
 
     /**
      * The [SimBareMetalMachine] we use to run the workload.
@@ -140,7 +139,7 @@ public class SimBareMetalDriver(
             events
         )
 
-        val delegate = (node.image as SimWorkloadImage).workload
+        val delegate = node.image.tags["workload"] as SimWorkload
         // Wrap the workload to pass in a ComputeSimExecutionContext
         val workload = object : SimWorkload {
             lateinit var wrappedCtx: ComputeSimExecutionContext

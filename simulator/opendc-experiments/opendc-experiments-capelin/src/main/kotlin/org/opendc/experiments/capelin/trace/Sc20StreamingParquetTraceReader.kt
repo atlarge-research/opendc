@@ -31,8 +31,8 @@ import org.apache.parquet.filter2.predicate.FilterApi
 import org.apache.parquet.filter2.predicate.Statistics
 import org.apache.parquet.filter2.predicate.UserDefinedPredicate
 import org.apache.parquet.io.api.Binary
+import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -235,19 +235,20 @@ public class Sc20StreamingParquetTraceReader(
                         performanceInterferenceModel.items.filter { it.workloadNames.contains(id) }.toSortedSet(),
                         Random(random.nextInt())
                     )
+                val workload = SimTraceWorkload(fragments)
                 val vmWorkload = VmWorkload(
                     uid,
                     "VM Workload $id",
                     UnnamedUser,
-                    SimWorkloadImage(
+                    Image(
                         uid,
                         id,
                         mapOf(
                             IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
                             "cores" to maxCores,
-                            "required-memory" to requiredMemory
-                        ),
-                        SimTraceWorkload(fragments),
+                            "required-memory" to requiredMemory,
+                            "workload" to workload
+                        )
                     )
                 )
 

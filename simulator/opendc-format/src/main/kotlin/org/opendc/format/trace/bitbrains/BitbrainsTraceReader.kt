@@ -22,8 +22,8 @@
 
 package org.opendc.format.trace.bitbrains
 
+import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -131,19 +131,20 @@ public class BitbrainsTraceReader(
                             .toSortedSet()
                     )
 
+                val workload = SimTraceWorkload(flopsHistory.asSequence())
                 val vmWorkload = VmWorkload(
                     uuid,
                     "VM Workload $vmId",
                     UnnamedUser,
-                    SimWorkloadImage(
+                    Image(
                         uuid,
                         vmId.toString(),
                         mapOf(
                             IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
                             "cores" to cores,
-                            "required-memory" to requiredMemory
-                        ),
-                        SimTraceWorkload(flopsHistory.asSequence())
+                            "required-memory" to requiredMemory,
+                            "workload" to workload
+                        )
                     )
                 )
                 entries[vmId] = TraceEntryImpl(

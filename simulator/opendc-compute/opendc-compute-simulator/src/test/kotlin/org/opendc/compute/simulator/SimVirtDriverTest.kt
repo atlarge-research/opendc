@@ -33,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.Flavor
+import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.virt.HypervisorEvent
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
@@ -77,33 +78,35 @@ internal class SimVirtDriverTest {
 
         scope.launch {
             val virtDriver = SimVirtDriver(this, SimFairShareHypervisorProvider())
-            val vmm = SimWorkloadImage(UUID.randomUUID(), "vmm", emptyMap(), virtDriver)
+            val vmm = Image(UUID.randomUUID(), "vmm", mapOf("workload" to virtDriver))
             val duration = 5 * 60L
-            val vmImageA = SimWorkloadImage(
+            val vmImageA = Image(
                 UUID.randomUUID(),
                 "<unnamed>",
-                emptyMap(),
-                SimTraceWorkload(
-                    sequenceOf(
-                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 3500.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 183.0, 2)
-                    ),
+                mapOf(
+                    "workload" to SimTraceWorkload(
+                        sequenceOf(
+                            SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
+                            SimTraceWorkload.Fragment(duration * 1000, 3500.0, 2),
+                            SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
+                            SimTraceWorkload.Fragment(duration * 1000, 183.0, 2)
+                        ),
+                    )
                 )
             )
-            val vmImageB = SimWorkloadImage(
+            val vmImageB = Image(
                 UUID.randomUUID(),
                 "<unnamed>",
-                emptyMap(),
-                SimTraceWorkload(
-                    sequenceOf(
-                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 3100.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 73.0, 2)
+                mapOf(
+                    "workload" to SimTraceWorkload(
+                        sequenceOf(
+                            SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
+                            SimTraceWorkload.Fragment(duration * 1000, 3100.0, 2),
+                            SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
+                            SimTraceWorkload.Fragment(duration * 1000, 73.0, 2)
+                        )
                     )
-                ),
+                )
             )
 
             val metalDriver =

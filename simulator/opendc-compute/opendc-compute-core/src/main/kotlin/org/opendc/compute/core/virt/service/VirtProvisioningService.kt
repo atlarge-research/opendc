@@ -23,6 +23,7 @@
 package org.opendc.compute.core.virt.service
 
 import kotlinx.coroutines.flow.Flow
+import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.virt.driver.VirtDriver
@@ -56,7 +57,7 @@ public interface VirtProvisioningService {
     public suspend fun deploy(
         name: String,
         image: Image,
-        flavor: org.opendc.compute.core.Flavor
+        flavor: Flavor
     ): Server
 
     /**

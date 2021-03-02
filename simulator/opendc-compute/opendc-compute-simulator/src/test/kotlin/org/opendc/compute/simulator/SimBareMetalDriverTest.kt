@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.ServerState
+import org.opendc.compute.core.image.Image
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -64,8 +65,7 @@ internal class SimBareMetalDriverTest {
 
         testScope.launch {
             val driver = SimBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), machineModel)
-            val image = SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(4_000, utilization = 1.0))
-
+            val image = Image(UUID.randomUUID(), "<unnamed>", mapOf("workload" to SimFlopsWorkload(4_000, utilization = 1.0)))
             // Batch driver commands
             withContext(coroutineContext) {
                 driver.init()

@@ -116,7 +116,7 @@ public class SimVirtProvisioningService(
             val provisionedNodes = provisioningService.nodes()
             provisionedNodes.forEach { node ->
                 val workload = SimVirtDriver(coroutineScope, hypervisor)
-                val hypervisorImage = SimWorkloadImage(UUID.randomUUID(), "vmm", emptyMap(), workload)
+                val hypervisorImage = Image(UUID.randomUUID(), "vmm", mapOf("workload" to workload))
                 launch {
                     var init = false
                     val deployedNode = provisioningService.deploy(node, hypervisorImage)

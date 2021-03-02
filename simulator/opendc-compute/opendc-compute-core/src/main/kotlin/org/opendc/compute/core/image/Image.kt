@@ -23,6 +23,8 @@
 package org.opendc.compute.core.image
 
 import org.opendc.core.resource.Resource
+import org.opendc.core.resource.TagContainer
+import java.util.*
 
 /**
  * An image containing a bootable operating system that can directly be executed by physical or virtual server.
@@ -32,4 +34,15 @@ import org.opendc.core.resource.Resource
  * useful for backup purposes or for producing “gold” server images if you plan to deploy a particular server
  * configuration frequently.
  */
-public interface Image : Resource
+public data class Image(
+    public override val uid: UUID,
+    public override val name: String,
+    public override val tags: TagContainer
+) : Resource {
+    public companion object {
+        /**
+         * An empty boot disk [Image] that exits immediately on start.
+         */
+        public val EMPTY: Image = Image(UUID.randomUUID(), "empty", emptyMap())
+    }
+}

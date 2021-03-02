@@ -22,8 +22,8 @@
 
 package org.opendc.experiments.capelin.trace
 
+import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.format.trace.TraceEntry
@@ -73,11 +73,10 @@ public class Sc20ParquetTraceReader(
                             performanceInterferenceModel[id] ?: PerformanceInterferenceModel(TreeSet())
 
                         val newImage =
-                            SimWorkloadImage(
+                            Image(
                                 image.uid,
                                 image.name,
                                 image.tags + mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
-                                (image as SimWorkloadImage).workload
                             )
                         val newWorkload = entry.workload.copy(image = newImage)
                         Sc20RawParquetTraceReader.TraceEntryImpl(entry.submissionTime, newWorkload)

@@ -23,8 +23,8 @@
 package org.opendc.experiments.capelin.trace
 
 import mu.KotlinLogging
+import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.SamplingStrategy
 import org.opendc.experiments.capelin.model.Workload
@@ -196,11 +196,10 @@ public fun sampleHpcWorkload(
  */
 private fun sample(entry: TraceEntry<VmWorkload>, i: Int): TraceEntry<VmWorkload> {
     val id = UUID.nameUUIDFromBytes("${entry.workload.image.uid}-$i".toByteArray())
-    val image = SimWorkloadImage(
+    val image = Image(
         id,
         entry.workload.image.name,
-        entry.workload.image.tags,
-        (entry.workload.image as SimWorkloadImage).workload
+        entry.workload.image.tags
     )
     val vmWorkload = entry.workload.copy(uid = id, image = image, name = entry.workload.name)
     return VmTraceEntry(vmWorkload, entry.submissionTime)
