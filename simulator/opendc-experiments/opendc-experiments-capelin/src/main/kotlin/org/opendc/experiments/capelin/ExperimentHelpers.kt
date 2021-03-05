@@ -32,8 +32,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.ServerEvent
+import org.opendc.compute.core.*
 import org.opendc.compute.core.metal.NODE_CLUSTER
 import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.service.ProvisioningService
@@ -250,14 +249,12 @@ public suspend fun processTrace(
                         workload.image.tags["required-memory"] as Long
                     )
                 )
-                // Monitor server events
-                server.events
-                    .onEach {
-                        if (it is ServerEvent.StateChanged) {
-                            monitor.reportVmStateChange(clock.millis(), it.server)
-                        }
+
+                server.watch(object : ServerWatcher {
+                    override fun onStateChanged(server: Server, newState: ServerState) {
+                        monitor.reportVmStateChange(clock.millis(), server, newState)
                     }
-                    .collect()
+                })
             }
         }
 

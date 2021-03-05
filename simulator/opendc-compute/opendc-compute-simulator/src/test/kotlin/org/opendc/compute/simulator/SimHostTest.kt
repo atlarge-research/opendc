@@ -24,7 +24,6 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -36,6 +35,7 @@ import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.ServerState
+import org.opendc.compute.core.ServerWatcher
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.virt.HostEvent
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
@@ -134,8 +134,8 @@ internal class SimHostTest {
                 }
                 .launchIn(this)
 
-            launch { virtDriver.spawn(Server(UUID.randomUUID(), "a", emptyMap(), flavor, vmImageA, ServerState.BUILD, emptyFlow())) }
-            launch { virtDriver.spawn(Server(UUID.randomUUID(), "b", emptyMap(), flavor, vmImageB, ServerState.BUILD, emptyFlow())) }
+            launch { virtDriver.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImageA)) }
+            launch { virtDriver.spawn(MockServer(UUID.randomUUID(), "b", flavor, vmImageB)) }
         }
 
         scope.advanceUntilIdle()
@@ -147,5 +147,21 @@ internal class SimHostTest {
             { assertEquals(1140000, overcommittedWork, "Overcommitted work does not match") },
             { assertEquals(1200006, scope.currentTime) }
         )
+    }
+
+    private class MockServer(
+        override val uid: UUID,
+        override val name: String,
+        override val flavor: Flavor,
+        override val image: Image
+    ) : Server {
+        override val tags: Map<String, String> = emptyMap()
+        override val state: ServerState = ServerState.BUILD
+
+        override fun watch(watcher: ServerWatcher) {}
+
+        override fun unwatch(watcher: ServerWatcher) {}
+
+        override suspend fun refresh() {}
     }
 }

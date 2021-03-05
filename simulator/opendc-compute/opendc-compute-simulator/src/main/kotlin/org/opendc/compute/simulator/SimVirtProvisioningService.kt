@@ -27,10 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.ServerEvent
-import org.opendc.compute.core.ServerState
+import org.opendc.compute.core.*
 import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeEvent
@@ -181,14 +178,11 @@ public class SimVirtProvisioningService(
         image: Image,
         flavor: Flavor
     ): Server {
-        return Server(
+        return ServerImpl(
             uid = UUID(random.nextLong(), random.nextLong()),
             name = name,
-            tags = emptyMap(),
             flavor = flavor,
-            image = image,
-            state = ServerState.BUILD,
-            events = EventFlow()
+            image = image
         )
     }
 
@@ -255,7 +249,7 @@ public class SimVirtProvisioningService(
 
                 coroutineScope.launch {
                     try {
-                        cont.resume(server)
+                        cont.resume(ClientServer(server))
                         selectedHv.driver.spawn(server)
                         activeServers += server
 
@@ -367,9 +361,9 @@ public class SimVirtProvisioningService(
     }
 
     override fun onStateChange(host: Host, server: Server, newState: ServerState) {
-        val eventFlow = server.events as EventFlow<ServerEvent>
-        val newServer = server.copy(state = newState)
-        eventFlow.emit(ServerEvent.StateChanged(newServer, server.state))
+        val serverImpl = server as ServerImpl
+        serverImpl.state = newState
+        serverImpl.watchers.forEach { it.onStateChanged(server, newState) }
 
         if (newState == ServerState.SHUTOFF) {
             logger.info { "[${clock.millis()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
@@ -405,4 +399,29 @@ public class SimVirtProvisioningService(
     }
 
     public data class LaunchRequest(val server: Server, val cont: Continuation<Server>)
+
+    private class ServerImpl(
+        override val uid: UUID,
+        override val name: String,
+        override val flavor: Flavor,
+        override val image: Image
+    ) : Server {
+        val watchers = mutableListOf<ServerWatcher>()
+
+        override fun watch(watcher: ServerWatcher) {
+            watchers += watcher
+        }
+
+        override fun unwatch(watcher: ServerWatcher) {
+            watchers -= watcher
+        }
+
+        override suspend fun refresh() {
+            // No-op: this object is the source-of-truth
+        }
+
+        override val tags: Map<String, String> = emptyMap()
+
+        override var state: ServerState = ServerState.BUILD
+    }
 }

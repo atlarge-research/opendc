@@ -22,51 +22,54 @@
 
 package org.opendc.compute.core
 
-import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.core.image.Image
 import org.opendc.core.resource.Resource
-import org.opendc.core.resource.TagContainer
-import java.util.UUID
 
 /**
- * A server instance that is running on some physical or virtual machine.
+ * A stateful object representing a server instance that is running on some physical or virtual machine.
  */
-public data class Server(
+public interface Server : Resource {
     /**
-     * The unique identifier of the server.
+     * The name of the server.
      */
-    public override val uid: UUID,
+    public override val name: String
 
     /**
-     * The optional name of the server.
+     * The flavor of the server.
      */
-    public override val name: String,
+    public val flavor: Flavor
 
     /**
-     * The tags of this server.
+     * The image of the server.
      */
-    public override val tags: TagContainer,
+    public val image: Image
 
     /**
-     * The hardware configuration of the server.
+     * The tags assigned to the server.
      */
-    public val flavor: Flavor,
-
-    /**
-     * The image running on the server.
-     */
-    public val image: Image,
+    public override val tags: Map<String, String>
 
     /**
      * The last known state of the server.
      */
-    public val state: ServerState,
+    public val state: ServerState
 
     /**
-     * The events that are emitted by the server.
+     * Register the specified [ServerWatcher] to watch the state of the server.
+     *
+     * @param watcher The watcher to register for the server.
      */
-    public val events: Flow<ServerEvent>
-) : Resource {
-    override fun hashCode(): Int = uid.hashCode()
-    override fun equals(other: Any?): Boolean = other is Server && uid == other.uid
+    public fun watch(watcher: ServerWatcher)
+
+    /**
+     * De-register the specified [ServerWatcher] from the server to stop it from receiving events.
+     *
+     * @param watcher The watcher to de-register from the server.
+     */
+    public fun unwatch(watcher: ServerWatcher)
+
+    /**
+     * Refresh the local state of the resource.
+     */
+    public suspend fun refresh()
 }

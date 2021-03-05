@@ -23,6 +23,7 @@
 package org.opendc.experiments.capelin.monitor
 
 import org.opendc.compute.core.Server
+import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.Host
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
@@ -35,7 +36,7 @@ public interface ExperimentMonitor : Closeable {
     /**
      * This method is invoked when the state of a VM changes.
      */
-    public fun reportVmStateChange(time: Long, server: Server) {}
+    public fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {}
 
     /**
      * This method is invoked when the state of a host changes.

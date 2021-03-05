@@ -24,6 +24,7 @@ package org.opendc.experiments.capelin.monitor
 
 import mu.KotlinLogging
 import org.opendc.compute.core.Server
+import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.Host
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
@@ -53,7 +54,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
     private val currentHostEvent = mutableMapOf<Node, HostEvent>()
     private var startTime = -1L
 
-    override fun reportVmStateChange(time: Long, server: Server) {
+    override fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {
         if (startTime < 0) {
             startTime = time
 

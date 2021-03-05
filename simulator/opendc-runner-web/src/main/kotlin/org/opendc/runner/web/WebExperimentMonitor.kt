@@ -24,6 +24,7 @@ package org.opendc.runner.web
 
 import mu.KotlinLogging
 import org.opendc.compute.core.Server
+import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeState
 import org.opendc.compute.core.virt.Host
@@ -40,7 +41,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
     private val currentHostEvent = mutableMapOf<Node, HostEvent>()
     private var startTime = -1L
 
-    override fun reportVmStateChange(time: Long, server: Server) {
+    override fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {
         if (startTime < 0) {
             startTime = time
 

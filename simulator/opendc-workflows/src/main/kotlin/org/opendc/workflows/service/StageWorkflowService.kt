@@ -25,15 +25,10 @@ package org.opendc.workflows.service
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.ServerEvent
-import org.opendc.compute.core.ServerState
+import org.opendc.compute.core.*
 import org.opendc.compute.core.virt.service.VirtProvisioningService
 import org.opendc.trace.core.EventTracer
 import org.opendc.trace.core.consumeAsFlow
@@ -61,7 +56,7 @@ public class StageWorkflowService(
     jobOrderPolicy: JobOrderPolicy,
     taskEligibilityPolicy: TaskEligibilityPolicy,
     taskOrderPolicy: TaskOrderPolicy
-) : WorkflowService {
+) : WorkflowService, ServerWatcher {
     /**
      * The logger instance to use.
      */
@@ -205,7 +200,7 @@ public class StageWorkflowService(
     /**
      * Indicate to the scheduler that a scheduling cycle is needed.
      */
-    private suspend fun requestCycle() = mode.requestCycle()
+    private fun requestCycle() = mode.requestCycle()
 
     /**
      * Perform a scheduling cycle immediately.
@@ -279,9 +274,7 @@ public class StageWorkflowService(
                 instance.server = server
                 taskByServer[server] = instance
 
-                server.events
-                    .onEach { event -> if (event is ServerEvent.StateChanged) stateChanged(event.server) }
-                    .launchIn(coroutineScope)
+                server.watch(this@StageWorkflowService)
             }
 
             activeTasks += instance
@@ -290,8 +283,8 @@ public class StageWorkflowService(
         }
     }
 
-    private suspend fun stateChanged(server: Server) {
-        when (server.state) {
+    public override fun onStateChanged(server: Server, newState: ServerState) {
+        when (newState) {
             ServerState.ACTIVE -> {
                 val task = taskByServer.getValue(server)
                 task.startedAt = clock.millis()
