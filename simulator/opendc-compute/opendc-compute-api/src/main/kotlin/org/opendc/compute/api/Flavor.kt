@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,20 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core
+package org.opendc.compute.api
 
 /**
- * An event that is emitted by a [Server].
+ * Flavors define the compute and memory capacity of [Server] instance. To put it simply, a flavor is an available
+ * hardware configuration for a server. It defines the size of a virtual server that can be launched.
  */
-public sealed class ServerEvent {
+public data class Flavor(
     /**
-     * The server that emitted the event.
+     * The number of (virtual) processing cores to use.
      */
-    public abstract val server: Server
+    public val cpuCount: Int,
 
     /**
-     * This event is emitted when the state of [server] changes.
-     *
-     * @property server The server of which the state changed.
-     * @property previousState The previous state of the server.
+     * The amount of RAM available to the server (in MB).
      */
-    public data class StateChanged(override val server: Server, val previousState: ServerState) : ServerEvent()
-}
+    public val memorySize: Long
+)

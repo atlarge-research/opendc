@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,34 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core.image
-
-import org.opendc.core.resource.Resource
-import org.opendc.core.resource.TagContainer
-import java.util.*
+package org.opendc.compute.api
 
 /**
- * An image containing a bootable operating system that can directly be executed by physical or virtual server.
- *
- * OpenStack: A collection of files used to create or rebuild a server. Operators provide a number of pre-built OS
- * images by default. You may also create custom images from cloud servers you have launched. These custom images are
- * useful for backup purposes or for producing “gold” server images if you plan to deploy a particular server
- * configuration frequently.
+ * An enumeration describing the possible states of a server.
  */
-public data class Image(
-    public override val uid: UUID,
-    public override val name: String,
-    public override val tags: TagContainer
-) : Resource {
-    public companion object {
-        /**
-         * An empty boot disk [Image] that exits immediately on start.
-         */
-        public val EMPTY: Image = Image(UUID.randomUUID(), "empty", emptyMap())
-    }
+public enum class ServerState {
+    /**
+     * The server has not yet finished the original build process.
+     */
+    BUILD,
+
+    /**
+     * The server was powered down by the user.
+     */
+    SHUTOFF,
+
+    /**
+     * The server is active and running.
+     */
+    ACTIVE,
+
+    /**
+     * The server is in error.
+     */
+    ERROR,
+
+    /**
+     * The state of the server is unknown.
+     */
+    UNKNOWN,
 }

@@ -27,8 +27,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
+import org.opendc.compute.api.*
 import org.opendc.compute.core.*
-import org.opendc.compute.core.image.Image
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.NodeState
@@ -141,31 +141,38 @@ public class SimVirtProvisioningService(
 
     override val hostCount: Int = hypervisors.size
 
-    override suspend fun deploy(
-        name: String,
-        image: Image,
-        flavor: Flavor
-    ): Server {
-        tracer.commit(VmSubmissionEvent(name, image, flavor))
+    override fun newClient(): ComputeClient = object : ComputeClient {
+        private var isClosed: Boolean = false
 
-        _events.emit(
-            VirtProvisioningEvent.MetricsAvailable(
-                this@SimVirtProvisioningService,
-                hypervisors.size,
-                availableHypervisors.size,
-                ++submittedVms,
-                runningVms,
-                finishedVms,
-                ++queuedVms,
-                unscheduledVms
+        override suspend fun newServer(name: String, image: Image, flavor: Flavor): Server {
+            check(!isClosed) { "Client is closed" }
+            tracer.commit(VmSubmissionEvent(name, image, flavor))
+
+            _events.emit(
+                VirtProvisioningEvent.MetricsAvailable(
+                    this@SimVirtProvisioningService,
+                    hypervisors.size,
+                    availableHypervisors.size,
+                    ++submittedVms,
+                    runningVms,
+                    finishedVms,
+                    ++queuedVms,
+                    unscheduledVms
+                )
             )
-        )
 
-        return suspendCancellableCoroutine { cont ->
-            val request = LaunchRequest(createServer(name, image, flavor), cont)
-            queue += request
-            requestCycle()
+            return suspendCancellableCoroutine { cont ->
+                val request = LaunchRequest(createServer(name, image, flavor), cont)
+                queue += request
+                requestCycle()
+            }
         }
+
+        override fun close() {
+            isClosed = true
+        }
+
+        override fun toString(): String = "ComputeClient"
     }
 
     override suspend fun terminate() {

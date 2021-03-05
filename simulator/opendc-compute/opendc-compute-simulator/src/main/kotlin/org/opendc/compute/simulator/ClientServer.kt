@@ -22,11 +22,11 @@
 
 package org.opendc.compute.simulator
 
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.ServerState
-import org.opendc.compute.core.ServerWatcher
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Image
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.ServerWatcher
 import java.util.*
 
 /**

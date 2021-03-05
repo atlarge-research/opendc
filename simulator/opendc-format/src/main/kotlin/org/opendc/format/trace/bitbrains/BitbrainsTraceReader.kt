@@ -22,7 +22,7 @@
 
 package org.opendc.format.trace.bitbrains
 
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Image
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry

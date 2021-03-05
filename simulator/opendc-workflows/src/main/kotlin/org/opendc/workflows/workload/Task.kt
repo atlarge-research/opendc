@@ -24,7 +24,7 @@
 
 package org.opendc.workflows.workload
 
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Image
 import org.opendc.core.Identity
 import java.util.*
 

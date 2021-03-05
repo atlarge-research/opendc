@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflows.service.stage.job
+description = "API interface for the OpenDC Compute service"
 
-import org.opendc.workflows.service.JobState
-import org.opendc.workflows.service.StageWorkflowService
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+}
 
-/**
- * A [JobAdmissionPolicy] that limits the amount of jobs based on the average system load.
- *
- * @property limit The maximum load before stopping admission.
- */
-public data class LoadJobAdmissionPolicy(public val limit: Double) : JobAdmissionPolicy {
-    override fun invoke(scheduler: StageWorkflowService): JobAdmissionPolicy.Logic = object : JobAdmissionPolicy.Logic {
-        override fun invoke(
-            job: JobState
-        ): JobAdmissionPolicy.Advice =
-            if (scheduler.load < limit)
-                JobAdmissionPolicy.Advice.ADMIT
-            else
-                JobAdmissionPolicy.Advice.STOP
-    }
-
-    override fun toString(): String = "Limit-Load($limit)"
+dependencies {
+    api(platform(project(":opendc-platform")))
+    api(project(":opendc-core"))
 }

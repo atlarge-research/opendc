@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator.allocation
 
 import mu.KotlinLogging
-import org.opendc.compute.core.Server
+import org.opendc.compute.api.Server
 import org.opendc.compute.simulator.HypervisorView
 
 private val logger = KotlinLogging.logger {}

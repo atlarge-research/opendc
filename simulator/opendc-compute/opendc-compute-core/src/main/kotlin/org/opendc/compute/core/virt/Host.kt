@@ -23,7 +23,7 @@
 package org.opendc.compute.core.virt
 
 import kotlinx.coroutines.flow.Flow
-import org.opendc.compute.core.Server
+import org.opendc.compute.api.Server
 import java.util.*
 
 /**

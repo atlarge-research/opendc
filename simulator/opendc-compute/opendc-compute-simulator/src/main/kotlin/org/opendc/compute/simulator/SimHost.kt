@@ -25,8 +25,10 @@ package org.opendc.compute.simulator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import mu.KotlinLogging
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
 import org.opendc.compute.core.*
-import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.*
 import org.opendc.simulator.compute.*

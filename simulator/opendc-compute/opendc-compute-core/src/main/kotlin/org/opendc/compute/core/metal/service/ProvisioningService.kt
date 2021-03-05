@@ -22,7 +22,7 @@
 
 package org.opendc.compute.core.metal.service
 
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Image
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.driver.BareMetalDriver
 import org.opendc.core.services.AbstractServiceKey

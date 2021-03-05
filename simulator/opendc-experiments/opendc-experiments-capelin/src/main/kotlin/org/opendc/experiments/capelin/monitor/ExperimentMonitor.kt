@@ -22,8 +22,8 @@
 
 package org.opendc.experiments.capelin.monitor
 
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.ServerState
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.virt.Host
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent

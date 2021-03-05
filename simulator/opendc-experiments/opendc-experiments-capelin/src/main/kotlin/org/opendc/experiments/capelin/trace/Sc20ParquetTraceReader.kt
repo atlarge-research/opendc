@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.capelin.trace
 
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Image
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.Workload

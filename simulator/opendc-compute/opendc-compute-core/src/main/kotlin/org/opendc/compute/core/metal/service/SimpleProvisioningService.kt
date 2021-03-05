@@ -23,7 +23,7 @@
 package org.opendc.compute.core.metal.service
 
 import kotlinx.coroutines.CancellationException
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Image
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.driver.BareMetalDriver
 

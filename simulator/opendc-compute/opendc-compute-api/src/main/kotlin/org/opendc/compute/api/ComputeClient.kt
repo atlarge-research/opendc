@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,34 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core
+package org.opendc.compute.api
 
 /**
- * An enumeration describing the possible states of a server.
+ * A client interface for the OpenDC Compute service.
  */
-public enum class ServerState {
+public interface ComputeClient : AutoCloseable {
     /**
-     * The server has not yet finished the original build process.
+     * Create a new [Server] instance at this compute service.
+     *
+     * @param name The name of the server to deploy.
+     * @param image The image to be deployed.
+     * @param flavor The flavor of the machine instance to run this [image] on.
      */
-    BUILD,
+    public suspend fun newServer(
+        name: String,
+        image: Image,
+        flavor: Flavor
+    ): Server
 
     /**
-     * The server was powered down by the user.
+     * Release the resources associated with this client, preventing any further API calls.
      */
-    SHUTOFF,
-
-    /**
-     * The server is active and running.
-     */
-    ACTIVE,
-
-    /**
-     * The server is in error.
-     */
-    ERROR,
-
-    /**
-     * The state of the server is unknown.
-     */
-    UNKNOWN,
+    public override fun close()
 }

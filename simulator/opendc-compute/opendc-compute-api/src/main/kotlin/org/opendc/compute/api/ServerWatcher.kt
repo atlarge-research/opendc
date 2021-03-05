@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core
+package org.opendc.compute.api
 
 /**
  * An interface used to watch the state of [Server] instances.

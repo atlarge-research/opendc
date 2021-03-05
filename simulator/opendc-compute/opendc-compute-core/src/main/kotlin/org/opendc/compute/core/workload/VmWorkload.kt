@@ -22,7 +22,7 @@
 
 package org.opendc.compute.core.workload
 
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Image
 import org.opendc.core.User
 import org.opendc.core.workload.Workload
 import java.util.UUID

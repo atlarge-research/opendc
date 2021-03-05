@@ -32,7 +32,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.opendc.compute.core.*
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.core.metal.NODE_CLUSTER
 import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.service.ProvisioningService
@@ -231,6 +234,7 @@ public suspend fun processTrace(
     chan: Channel<Unit>,
     monitor: ExperimentMonitor
 ) {
+    val client = scheduler.newClient()
     try {
         var submitted = 0
 
@@ -241,7 +245,7 @@ public suspend fun processTrace(
             delay(max(0, time - clock.millis()))
             coroutineScope.launch {
                 chan.send(Unit)
-                val server = scheduler.deploy(
+                val server = client.newServer(
                     workload.image.name,
                     workload.image,
                     Flavor(
@@ -269,5 +273,6 @@ public suspend fun processTrace(
         delay(1)
     } finally {
         reader.close()
+        client.close()
     }
 }

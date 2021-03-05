@@ -23,9 +23,7 @@
 package org.opendc.compute.core.virt.service
 
 import kotlinx.coroutines.flow.Flow
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.core.virt.Host
 
 /**
@@ -48,17 +46,9 @@ public interface VirtProvisioningService {
     public val hostCount: Int
 
     /**
-     * Submit the specified [Image] to the provisioning service.
-     *
-     * @param name The name of the server to deploy.
-     * @param image The image to be deployed.
-     * @param flavor The flavor of the machine instance to run this [image] on.
+     * Create a new [ComputeClient] to control the compute service.
      */
-    public suspend fun deploy(
-        name: String,
-        image: Image,
-        flavor: Flavor
-    ): Server
+    public fun newClient(): ComputeClient
 
     /**
      * Terminate the provisioning service releasing all the leased bare-metal machines.

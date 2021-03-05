@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflows.service.stage.task
+package org.opendc.compute.api
 
-import org.opendc.workflows.service.StageWorkflowService
-import org.opendc.workflows.service.TaskState
+import org.opendc.core.resource.Resource
+import org.opendc.core.resource.TagContainer
+import java.util.*
 
 /**
- * A [TaskEligibilityPolicy] that limits the number of active tasks in the system based on the average system load.
+ * An image containing a bootable operating system that can directly be executed by physical or virtual server.
+ *
+ * OpenStack: A collection of files used to create or rebuild a server. Operators provide a number of pre-built OS
+ * images by default. You may also create custom images from cloud servers you have launched. These custom images are
+ * useful for backup purposes or for producing “gold” server images if you plan to deploy a particular server
+ * configuration frequently.
  */
-public data class LoadTaskEligibilityPolicy(val limit: Double) : TaskEligibilityPolicy {
-    override fun invoke(scheduler: StageWorkflowService): TaskEligibilityPolicy.Logic = object : TaskEligibilityPolicy.Logic {
-        override fun invoke(
-            task: TaskState
-        ): TaskEligibilityPolicy.Advice =
-            if (scheduler.load < limit)
-                TaskEligibilityPolicy.Advice.ADMIT
-            else
-                TaskEligibilityPolicy.Advice.STOP
+public data class Image(
+    public override val uid: UUID,
+    public override val name: String,
+    public override val tags: TagContainer
+) : Resource {
+    public companion object {
+        /**
+         * An empty boot disk [Image] that exits immediately on start.
+         */
+        public val EMPTY: Image = Image(UUID.randomUUID(), "empty", emptyMap())
     }
-
-    override fun toString(): String = "Limit-Load($limit)"
 }

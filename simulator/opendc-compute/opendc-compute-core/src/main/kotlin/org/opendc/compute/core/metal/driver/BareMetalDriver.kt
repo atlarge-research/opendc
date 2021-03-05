@@ -23,8 +23,8 @@
 package org.opendc.compute.core.metal.driver
 
 import kotlinx.coroutines.flow.Flow
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Image
+import org.opendc.compute.api.Server
 import org.opendc.compute.core.metal.Node
 import org.opendc.core.services.AbstractServiceKey
 import java.util.UUID

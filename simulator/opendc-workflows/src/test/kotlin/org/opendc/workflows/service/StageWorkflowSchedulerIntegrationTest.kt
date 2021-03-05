@@ -89,7 +89,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
                 testScope,
                 clock,
                 tracer,
-                provisioner,
+                provisioner.newClient(),
                 mode = WorkflowSchedulerMode.Batch(100),
                 jobAdmissionPolicy = NullJobAdmissionPolicy,
                 jobOrderPolicy = SubmissionTimeJobOrderPolicy(),

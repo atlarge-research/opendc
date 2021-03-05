@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,8 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core
+package org.opendc.compute.api
 
-import org.opendc.compute.core.image.Image
 import org.opendc.core.resource.Resource
 
 /**

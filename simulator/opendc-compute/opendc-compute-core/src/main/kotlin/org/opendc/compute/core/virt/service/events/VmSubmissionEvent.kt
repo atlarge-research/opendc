@@ -22,8 +22,8 @@
 
 package org.opendc.compute.core.virt.service.events
 
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Image
 import org.opendc.trace.core.Event
 
 /**

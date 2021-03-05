@@ -23,8 +23,8 @@
 package org.opendc.compute.core.metal
 
 import kotlinx.coroutines.flow.Flow
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Image
 import org.opendc.core.Identity
 import java.util.UUID
 

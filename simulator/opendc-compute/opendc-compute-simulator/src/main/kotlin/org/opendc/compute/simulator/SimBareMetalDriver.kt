@@ -24,8 +24,8 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.image.Image
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Image
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.NodeState

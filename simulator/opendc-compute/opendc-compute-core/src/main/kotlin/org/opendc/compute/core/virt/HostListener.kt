@@ -22,8 +22,8 @@
 
 package org.opendc.compute.core.virt
 
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.ServerState
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
 
 /**
  * Listener interface for events originating from a [Host].

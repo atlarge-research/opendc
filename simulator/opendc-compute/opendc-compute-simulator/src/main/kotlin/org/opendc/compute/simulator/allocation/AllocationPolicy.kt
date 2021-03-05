@@ -22,7 +22,7 @@
 
 package org.opendc.compute.simulator.allocation
 
-import org.opendc.compute.core.Server
+import org.opendc.compute.api.Server
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.simulator.HypervisorView
 

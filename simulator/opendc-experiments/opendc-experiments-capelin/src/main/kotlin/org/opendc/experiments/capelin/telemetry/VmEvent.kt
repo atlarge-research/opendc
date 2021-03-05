@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.capelin.telemetry
 
-import org.opendc.compute.core.Server
+import org.opendc.compute.api.Server
 
 /**
  * A periodic report of a virtual machine's metrics.

@@ -28,8 +28,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.opendc.compute.core.*
-import org.opendc.compute.core.virt.service.VirtProvisioningService
+import org.opendc.compute.api.*
 import org.opendc.trace.core.EventTracer
 import org.opendc.trace.core.consumeAsFlow
 import org.opendc.trace.core.enable
@@ -50,7 +49,7 @@ public class StageWorkflowService(
     internal val coroutineScope: CoroutineScope,
     internal val clock: Clock,
     internal val tracer: EventTracer,
-    private val provisioningService: VirtProvisioningService,
+    private val computeClient: ComputeClient,
     mode: WorkflowSchedulerMode,
     jobAdmissionPolicy: JobAdmissionPolicy,
     jobOrderPolicy: JobOrderPolicy,
@@ -96,12 +95,6 @@ public class StageWorkflowService(
      * The running tasks by [Server].
      */
     internal val taskByServer = mutableMapOf<Server, TaskState>()
-
-    /**
-     * The load of the system.
-     */
-    internal val load: Double
-        get() = (activeTasks.size / provisioningService.hostCount.toDouble())
 
     /**
      * The root listener of this scheduler.
@@ -268,7 +261,7 @@ public class StageWorkflowService(
             val flavor = Flavor(cores, 1000) // TODO How to determine memory usage for workflow task
             val image = instance.task.image
             coroutineScope.launch {
-                val server = provisioningService.deploy(instance.task.name, image, flavor)
+                val server = computeClient.newServer(instance.task.name, image, flavor)
 
                 instance.state = TaskStatus.ACTIVE
                 instance.server = server
