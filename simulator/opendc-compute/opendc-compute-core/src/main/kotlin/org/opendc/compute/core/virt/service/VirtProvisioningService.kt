@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.core.Flavor
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.image.Image
-import org.opendc.compute.core.virt.driver.VirtDriver
+import org.opendc.compute.core.virt.Host
 
 /**
  * A service for VM provisioning on a cloud.
@@ -40,7 +40,7 @@ public interface VirtProvisioningService {
     /**
      * Obtain the active hypervisors for this provisioner.
      */
-    public suspend fun drivers(): Set<VirtDriver>
+    public suspend fun drivers(): Set<Host>
 
     /**
      * The number of hosts available in the system.

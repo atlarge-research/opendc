@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.allocation
+package org.opendc.compute.core.virt
 
 import org.opendc.compute.core.Server
-import org.opendc.compute.simulator.HypervisorView
-import kotlin.random.Random
+import org.opendc.compute.core.ServerState
 
 /**
- * An [AllocationPolicy] that select a random node on which the server fits.
+ * Listener interface for events originating from a [Host].
  */
-public class RandomAllocationPolicy(private val random: Random = Random(0)) : AllocationPolicy {
-    @OptIn(ExperimentalStdlibApi::class)
-    override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
-        override fun select(
-            hypervisors: Set<HypervisorView>,
-            server: Server
-        ): HypervisorView? {
-            return hypervisors.asIterable()
-                .filter { hv ->
-                    val fitsMemory = hv.availableMemory >= (server.image.tags["required-memory"] as Long)
-                    val fitsCpu = hv.node.flavor.cpuCount >= server.flavor.cpuCount
-                    fitsMemory && fitsCpu
-                }
-                .randomOrNull(random)
-        }
-    }
+public interface HostListener {
+    /**
+     * This method is invoked when the state of an [instance][server] on [host] changes.
+     */
+    public fun onStateChange(host: Host, server: Server, newState: ServerState) {}
+
+    /**
+     * This method is invoked when the state of a [Host] has changed.
+     */
+    public fun onStateChange(host: Host, newState: HostState) {}
 }

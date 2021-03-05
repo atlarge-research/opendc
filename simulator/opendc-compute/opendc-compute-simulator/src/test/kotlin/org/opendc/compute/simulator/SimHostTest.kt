@@ -24,6 +24,7 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -33,8 +34,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.Flavor
+import org.opendc.compute.core.Server
+import org.opendc.compute.core.ServerState
 import org.opendc.compute.core.image.Image
-import org.opendc.compute.core.virt.HypervisorEvent
+import org.opendc.compute.core.virt.HostEvent
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -49,7 +52,7 @@ import java.util.UUID
  * Basic test-suite for the hypervisor.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class SimVirtDriverTest {
+internal class SimHostTest {
     private lateinit var scope: TestCoroutineScope
     private lateinit var clock: Clock
     private lateinit var machineModel: SimMachineModel
@@ -77,7 +80,7 @@ internal class SimVirtDriverTest {
         var overcommittedWork = 0L
 
         scope.launch {
-            val virtDriver = SimVirtDriver(this, SimFairShareHypervisorProvider())
+            val virtDriver = SimHost(UUID.randomUUID(), this, SimFairShareHypervisorProvider())
             val vmm = Image(UUID.randomUUID(), "vmm", mapOf("workload" to virtDriver))
             val duration = 5 * 60L
             val vmImageA = Image(
@@ -122,7 +125,7 @@ internal class SimVirtDriverTest {
             virtDriver.events
                 .onEach { event ->
                     when (event) {
-                        is HypervisorEvent.SliceFinished -> {
+                        is HostEvent.SliceFinished -> {
                             requestedWork += event.requestedBurst
                             grantedWork += event.grantedBurst
                             overcommittedWork += event.overcommissionedBurst
@@ -131,8 +134,8 @@ internal class SimVirtDriverTest {
                 }
                 .launchIn(this)
 
-            virtDriver.spawn("a", vmImageA, flavor)
-            virtDriver.spawn("b", vmImageB, flavor)
+            launch { virtDriver.spawn(Server(UUID.randomUUID(), "a", emptyMap(), flavor, vmImageA, ServerState.BUILD, emptyFlow())) }
+            launch { virtDriver.spawn(Server(UUID.randomUUID(), "b", emptyMap(), flavor, vmImageB, ServerState.BUILD, emptyFlow())) }
         }
 
         scope.advanceUntilIdle()

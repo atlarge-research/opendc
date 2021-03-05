@@ -26,7 +26,7 @@ import mu.KotlinLogging
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeState
-import org.opendc.compute.core.virt.driver.VirtDriver
+import org.opendc.compute.core.virt.Host
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.telemetry.HostEvent
@@ -51,7 +51,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
 
     override fun reportHostStateChange(
         time: Long,
-        driver: VirtDriver,
+        driver: Host,
         host: Node
     ) {
         logger.debug { "Host ${host.uid} changed state ${host.state} [$time]" }

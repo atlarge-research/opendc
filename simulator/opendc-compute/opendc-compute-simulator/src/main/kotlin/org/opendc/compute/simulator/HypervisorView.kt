@@ -23,7 +23,7 @@
 package org.opendc.compute.simulator
 
 import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.virt.driver.VirtDriver
+import org.opendc.compute.core.virt.Host
 import java.util.UUID
 
 public class HypervisorView(
@@ -33,5 +33,5 @@ public class HypervisorView(
     public var availableMemory: Long,
     public var provisionedCores: Int
 ) {
-    public lateinit var driver: VirtDriver
+    public lateinit var driver: Host
 }

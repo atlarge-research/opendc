@@ -24,7 +24,7 @@ package org.opendc.experiments.capelin.monitor
 
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.virt.driver.VirtDriver
+import org.opendc.compute.core.virt.Host
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import java.io.Closeable
 
@@ -42,7 +42,7 @@ public interface ExperimentMonitor : Closeable {
      */
     public fun reportHostStateChange(
         time: Long,
-        driver: VirtDriver,
+        driver: Host,
         host: Node
     ) {
     }

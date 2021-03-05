@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,17 @@
 
 package org.opendc.compute.core.virt
 
-import kotlinx.coroutines.flow.Flow
-import org.opendc.core.Identity
-import java.util.UUID
-
 /**
- * A hypervisor (or virtual machine monitor) is software or firmware that virtualizes the host compute environment
- * into several virtual guest machines.
+ * The state of a host.
  */
-public class Hypervisor(
+public enum class HostState {
     /**
-     * The unique identifier of the hypervisor.
+     * The host is up.
      */
-    override val uid: UUID,
+    UP,
 
     /**
-     * The optional name of the hypervisor.
+     * The host is down.
      */
-    override val name: String,
-
-    /**
-     * Metadata of the hypervisor.
-     */
-    public val metadata: Map<String, Any>,
-
-    /**
-     * The events that are emitted by the hypervisor.
-     */
-    public val events: Flow<HypervisorEvent>
-) : Identity {
-    override fun hashCode(): Int = uid.hashCode()
-    override fun equals(other: Any?): Boolean = other is Hypervisor && uid == other.uid
+    DOWN
 }

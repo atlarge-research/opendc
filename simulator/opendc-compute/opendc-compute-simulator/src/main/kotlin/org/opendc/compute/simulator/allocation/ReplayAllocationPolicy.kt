@@ -23,8 +23,8 @@
 package org.opendc.compute.simulator.allocation
 
 import mu.KotlinLogging
+import org.opendc.compute.core.Server
 import org.opendc.compute.simulator.HypervisorView
-import org.opendc.compute.simulator.SimVirtProvisioningService
 
 private val logger = KotlinLogging.logger {}
 
@@ -38,14 +38,14 @@ public class ReplayAllocationPolicy(private val vmPlacements: Map<String, String
     override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
         override fun select(
             hypervisors: Set<HypervisorView>,
-            image: SimVirtProvisioningService.ImageView
+            server: Server
         ): HypervisorView? {
-            val clusterName = vmPlacements[image.name]
-                ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${image.name}")
+            val clusterName = vmPlacements[server.name]
+                ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${server.name}")
             val machinesInCluster = hypervisors.filter { it.node.name.contains(clusterName) }
 
             if (machinesInCluster.isEmpty()) {
-                logger.info { "Could not find any machines belonging to cluster $clusterName for image ${image.name}, assigning randomly." }
+                logger.info { "Could not find any machines belonging to cluster $clusterName for image ${server.name}, assigning randomly." }
                 return hypervisors.maxByOrNull { it.availableMemory }
             }
 

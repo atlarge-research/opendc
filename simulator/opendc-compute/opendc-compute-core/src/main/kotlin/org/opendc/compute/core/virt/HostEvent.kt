@@ -23,16 +23,15 @@
 package org.opendc.compute.core.virt
 
 import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.virt.driver.VirtDriver
 
 /**
- * An event that is emitted by a [VirtDriver].
+ * An event that is emitted by a [Host].
  */
-public sealed class HypervisorEvent {
+public sealed class HostEvent {
     /**
      * The driver that emitted the event.
      */
-    public abstract val driver: VirtDriver
+    public abstract val driver: Host
 
     /**
      * This event is emitted when the number of active servers on the server managed by this driver is updated.
@@ -42,10 +41,10 @@ public sealed class HypervisorEvent {
      * @property availableMemory The available memory, in MB.
      */
     public data class VmsUpdated(
-        override val driver: VirtDriver,
+        override val driver: Host,
         public val numberOfActiveServers: Int,
         public val availableMemory: Long
-    ) : HypervisorEvent()
+    ) : HostEvent()
 
     /**
      * This event is emitted when a slice is finished.
@@ -63,7 +62,7 @@ public sealed class HypervisorEvent {
      * @property numberOfDeployedImages The number of images deployed on this hypervisor.
      */
     public data class SliceFinished(
-        override val driver: VirtDriver,
+        override val driver: Host,
         public val requestedBurst: Long,
         public val grantedBurst: Long,
         public val overcommissionedBurst: Long,
@@ -72,5 +71,5 @@ public sealed class HypervisorEvent {
         public val cpuDemand: Double,
         public val numberOfDeployedImages: Int,
         public val host: Node
-    ) : HypervisorEvent()
+    ) : HostEvent()
 }

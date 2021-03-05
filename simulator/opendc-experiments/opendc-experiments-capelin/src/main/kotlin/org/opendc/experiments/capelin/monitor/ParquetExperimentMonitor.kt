@@ -25,7 +25,7 @@ package org.opendc.experiments.capelin.monitor
 import mu.KotlinLogging
 import org.opendc.compute.core.Server
 import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.virt.driver.VirtDriver
+import org.opendc.compute.core.virt.Host
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.experiments.capelin.telemetry.HostEvent
 import org.opendc.experiments.capelin.telemetry.ProvisionerEvent
@@ -64,7 +64,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
 
     override fun reportHostStateChange(
         time: Long,
-        driver: VirtDriver,
+        driver: Host,
         host: Node
     ) {
         logger.debug { "Host ${host.uid} changed state ${host.state} [$time]" }

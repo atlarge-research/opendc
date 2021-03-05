@@ -36,9 +36,7 @@ import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.NodeState
 import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.compute.core.virt.HypervisorEvent
-import org.opendc.compute.core.virt.driver.InsufficientMemoryOnServerException
-import org.opendc.compute.core.virt.driver.VirtDriver
+import org.opendc.compute.core.virt.*
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.compute.core.virt.service.VirtProvisioningService
 import org.opendc.compute.core.virt.service.events.*
@@ -62,11 +60,16 @@ public class SimVirtProvisioningService(
     private val tracer: EventTracer,
     private val hypervisor: SimHypervisorProvider,
     private val schedulingQuantum: Long = 300000, // 5 minutes in milliseconds
-) : VirtProvisioningService {
+) : VirtProvisioningService, HostListener {
     /**
      * The logger instance to use.
      */
     private val logger = KotlinLogging.logger {}
+
+    /**
+     * A mapping from host to hypervisor view.
+     */
+    private val hostToHv = mutableMapOf<Host, HypervisorView>()
 
     /**
      * The hypervisors that have been launched by the service.
@@ -79,14 +82,19 @@ public class SimVirtProvisioningService(
     private val availableHypervisors: MutableSet<HypervisorView> = mutableSetOf()
 
     /**
-     * The incoming images to be processed by the provisioner.
+     * The servers that should be launched by the service.
      */
-    private val incomingImages: Deque<ImageView> = ArrayDeque()
+    private val queue: Deque<LaunchRequest> = ArrayDeque()
 
     /**
-     * The active images in the system.
+     * The active servers in the system.
      */
-    private val activeImages: MutableSet<ImageView> = mutableSetOf()
+    private val activeServers: MutableSet<Server> = mutableSetOf()
+
+    /**
+     * The [Random] instance used to generate unique identifiers for the objects.
+     */
+    private val random = Random(0)
 
     public var submittedVms: Int = 0
     public var queuedVms: Int = 0
@@ -102,12 +110,9 @@ public class SimVirtProvisioningService(
      */
     private val allocationLogic = allocationPolicy()
 
-    /**
-     * The [EventFlow] to emit the events.
-     */
-    internal val eventFlow = EventFlow<VirtProvisioningEvent>()
-
-    override val events: Flow<VirtProvisioningEvent> = eventFlow
+    override val events: Flow<VirtProvisioningEvent>
+        get() = _events
+    private val _events = EventFlow<VirtProvisioningEvent>()
 
     /**
      * The [TimerScheduler] to use for scheduling the scheduler cycles.
@@ -118,7 +123,8 @@ public class SimVirtProvisioningService(
         coroutineScope.launch {
             val provisionedNodes = provisioningService.nodes()
             provisionedNodes.forEach { node ->
-                val workload = SimVirtDriver(coroutineScope, hypervisor)
+                val workload = SimHost(UUID(random.nextLong(), random.nextLong()), coroutineScope, hypervisor)
+                workload.addListener(this@SimVirtProvisioningService)
                 val hypervisorImage = Image(UUID.randomUUID(), "vmm", mapOf("workload" to workload))
                 launch {
                     val deployedNode = provisioningService.deploy(node, hypervisorImage)
@@ -132,7 +138,7 @@ public class SimVirtProvisioningService(
         }
     }
 
-    override suspend fun drivers(): Set<VirtDriver> {
+    override suspend fun drivers(): Set<Host> {
         return availableHypervisors.map { it.driver }.toSet()
     }
 
@@ -145,7 +151,7 @@ public class SimVirtProvisioningService(
     ): Server {
         tracer.commit(VmSubmissionEvent(name, image, flavor))
 
-        eventFlow.emit(
+        _events.emit(
             VirtProvisioningEvent.MetricsAvailable(
                 this@SimVirtProvisioningService,
                 hypervisors.size,
@@ -158,9 +164,9 @@ public class SimVirtProvisioningService(
             )
         )
 
-        return suspendCancellableCoroutine<Server> { cont ->
-            val vmInstance = ImageView(name, image, flavor, cont)
-            incomingImages += vmInstance
+        return suspendCancellableCoroutine { cont ->
+            val request = LaunchRequest(createServer(name, image, flavor), cont)
+            queue += request
             requestCycle()
         }
     }
@@ -168,6 +174,22 @@ public class SimVirtProvisioningService(
     override suspend fun terminate() {
         val provisionedNodes = provisioningService.nodes()
         provisionedNodes.forEach { node -> provisioningService.stop(node) }
+    }
+
+    private fun createServer(
+        name: String,
+        image: Image,
+        flavor: Flavor
+    ): Server {
+        return Server(
+            uid = UUID(random.nextLong(), random.nextLong()),
+            name = name,
+            tags = emptyMap(),
+            flavor = flavor,
+            image = image,
+            state = ServerState.BUILD,
+            events = EventFlow()
+        )
     }
 
     private fun requestCycle() {
@@ -182,23 +204,23 @@ public class SimVirtProvisioningService(
         val delay = schedulingQuantum - (clock.millis() % schedulingQuantum)
 
         scheduler.startSingleTimer(Unit, delay) {
-            coroutineScope.launch { schedule() }
+            schedule()
         }
     }
 
-    private suspend fun schedule() {
-        while (incomingImages.isNotEmpty()) {
-            val imageInstance = incomingImages.peekFirst()
-            val requiredMemory = imageInstance.flavor.memorySize
-            val selectedHv = allocationLogic.select(availableHypervisors, imageInstance)
+    private fun schedule() {
+        while (queue.isNotEmpty()) {
+            val (server, cont) = queue.peekFirst()
+            val requiredMemory = server.flavor.memorySize
+            val selectedHv = allocationLogic.select(availableHypervisors, server)
 
-            if (selectedHv == null || !selectedHv.driver.canFit(imageInstance.flavor)) {
-                logger.trace { "Image ${imageInstance.image} selected for scheduling but no capacity available for it." }
+            if (selectedHv == null || !selectedHv.driver.canFit(server)) {
+                logger.trace { "Server $server selected for scheduling but no capacity available for it." }
 
-                if (requiredMemory > maxMemory || imageInstance.flavor.cpuCount > maxCores) {
-                    tracer.commit(VmSubmissionInvalidEvent(imageInstance.name))
+                if (requiredMemory > maxMemory || server.flavor.cpuCount > maxCores) {
+                    tracer.commit(VmSubmissionInvalidEvent(server.name))
 
-                    eventFlow.emit(
+                    _events.emit(
                         VirtProvisioningEvent.MetricsAvailable(
                             this@SimVirtProvisioningService,
                             hypervisors.size,
@@ -212,9 +234,9 @@ public class SimVirtProvisioningService(
                     )
 
                     // Remove the incoming image
-                    incomingImages.poll()
+                    queue.poll()
 
-                    logger.warn("Failed to spawn ${imageInstance.image}: does not fit [${clock.millis()}]")
+                    logger.warn("Failed to spawn $server: does not fit [${clock.millis()}]")
                     continue
                 } else {
                     break
@@ -222,86 +244,49 @@ public class SimVirtProvisioningService(
             }
 
             try {
-                logger.info { "[${clock.millis()}] Spawning ${imageInstance.image} on ${selectedHv.node.uid} ${selectedHv.node.name} ${selectedHv.node.flavor}" }
-                incomingImages.poll()
+                logger.info { "[${clock.millis()}] Spawning $server on ${selectedHv.node.uid} ${selectedHv.node.name} ${selectedHv.node.flavor}" }
+                queue.poll()
 
                 // Speculatively update the hypervisor view information to prevent other images in the queue from
                 // deciding on stale values.
                 selectedHv.numberOfActiveServers++
-                selectedHv.provisionedCores += imageInstance.flavor.cpuCount
+                selectedHv.provisionedCores += server.flavor.cpuCount
                 selectedHv.availableMemory -= requiredMemory // XXX Temporary hack
 
-                val server = selectedHv.driver.spawn(
-                    imageInstance.name,
-                    imageInstance.image,
-                    imageInstance.flavor
-                )
-                imageInstance.server = server
-                imageInstance.continuation.resume(server)
+                coroutineScope.launch {
+                    try {
+                        cont.resume(server)
+                        selectedHv.driver.spawn(server)
+                        activeServers += server
 
-                tracer.commit(VmScheduledEvent(imageInstance.name))
+                        tracer.commit(VmScheduledEvent(server.name))
+                        _events.emit(
+                            VirtProvisioningEvent.MetricsAvailable(
+                                this@SimVirtProvisioningService,
+                                hypervisors.size,
+                                availableHypervisors.size,
+                                submittedVms,
+                                ++runningVms,
+                                finishedVms,
+                                --queuedVms,
+                                unscheduledVms
+                            )
+                        )
+                    } catch (e: InsufficientMemoryOnServerException) {
+                        logger.error("Failed to deploy VM", e)
 
-                eventFlow.emit(
-                    VirtProvisioningEvent.MetricsAvailable(
-                        this@SimVirtProvisioningService,
-                        hypervisors.size,
-                        availableHypervisors.size,
-                        submittedVms,
-                        ++runningVms,
-                        finishedVms,
-                        --queuedVms,
-                        unscheduledVms
-                    )
-                )
-                activeImages += imageInstance
-
-                server.events
-                    .onEach { event ->
-                        when (event) {
-                            is ServerEvent.StateChanged -> {
-                                if (event.server.state == ServerState.SHUTOFF) {
-                                    logger.info { "[${clock.millis()}] Server ${event.server.uid} ${event.server.name} ${event.server.flavor} finished." }
-
-                                    tracer.commit(VmStoppedEvent(event.server.name))
-
-                                    eventFlow.emit(
-                                        VirtProvisioningEvent.MetricsAvailable(
-                                            this@SimVirtProvisioningService,
-                                            hypervisors.size,
-                                            availableHypervisors.size,
-                                            submittedVms,
-                                            --runningVms,
-                                            ++finishedVms,
-                                            queuedVms,
-                                            unscheduledVms
-                                        )
-                                    )
-
-                                    activeImages -= imageInstance
-                                    selectedHv.provisionedCores -= server.flavor.cpuCount
-
-                                    // Try to reschedule if needed
-                                    if (incomingImages.isNotEmpty()) {
-                                        requestCycle()
-                                    }
-                                }
-                            }
-                        }
+                        selectedHv.numberOfActiveServers--
+                        selectedHv.provisionedCores -= server.flavor.cpuCount
+                        selectedHv.availableMemory += requiredMemory
                     }
-                    .launchIn(coroutineScope)
-            } catch (e: InsufficientMemoryOnServerException) {
-                logger.error("Failed to deploy VM", e)
-
-                selectedHv.numberOfActiveServers--
-                selectedHv.provisionedCores -= imageInstance.flavor.cpuCount
-                selectedHv.availableMemory += requiredMemory
+                }
             } catch (e: Throwable) {
                 logger.error("Failed to deploy VM", e)
             }
         }
     }
 
-    private fun stateChanged(node: Node, hypervisor: SimVirtDriver) {
+    private fun stateChanged(node: Node, hypervisor: SimHost) {
         when (node.state) {
             NodeState.ACTIVE -> {
                 logger.debug { "[${clock.millis()}] Server ${node.uid} available: ${node.state}" }
@@ -320,7 +305,7 @@ public class SimVirtProvisioningService(
                     hv.driver = hypervisor
                     hv.driver.events
                         .onEach { event ->
-                            if (event is HypervisorEvent.VmsUpdated) {
+                            if (event is HostEvent.VmsUpdated) {
                                 hv.numberOfActiveServers = event.numberOfActiveServers
                                 hv.availableMemory = event.availableMemory
                             }
@@ -329,12 +314,13 @@ public class SimVirtProvisioningService(
                     maxCores = max(maxCores, node.flavor.cpuCount)
                     maxMemory = max(maxMemory, node.flavor.memorySize)
                     hypervisors[node] = hv
+                    hostToHv[hypervisor] = hv
                     availableHypervisors += hv
                 }
 
                 tracer.commit(HypervisorAvailableEvent(node.uid))
 
-                eventFlow.emit(
+                _events.emit(
                     VirtProvisioningEvent.MetricsAvailable(
                         this@SimVirtProvisioningService,
                         hypervisors.size,
@@ -348,7 +334,7 @@ public class SimVirtProvisioningService(
                 )
 
                 // Re-schedule on the new machine
-                if (incomingImages.isNotEmpty()) {
+                if (queue.isNotEmpty()) {
                     requestCycle()
                 }
             }
@@ -359,7 +345,7 @@ public class SimVirtProvisioningService(
 
                 tracer.commit(HypervisorUnavailableEvent(hv.uid))
 
-                eventFlow.emit(
+                _events.emit(
                     VirtProvisioningEvent.MetricsAvailable(
                         this@SimVirtProvisioningService,
                         hypervisors.size,
@@ -372,7 +358,7 @@ public class SimVirtProvisioningService(
                     )
                 )
 
-                if (incomingImages.isNotEmpty()) {
+                if (queue.isNotEmpty()) {
                     requestCycle()
                 }
             }
@@ -380,11 +366,43 @@ public class SimVirtProvisioningService(
         }
     }
 
-    public data class ImageView(
-        public val name: String,
-        public val image: Image,
-        public val flavor: Flavor,
-        public val continuation: Continuation<Server>,
-        public var server: Server? = null
-    )
+    override fun onStateChange(host: Host, server: Server, newState: ServerState) {
+        val eventFlow = server.events as EventFlow<ServerEvent>
+        val newServer = server.copy(state = newState)
+        eventFlow.emit(ServerEvent.StateChanged(newServer, server.state))
+
+        if (newState == ServerState.SHUTOFF) {
+            logger.info { "[${clock.millis()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
+
+            tracer.commit(VmStoppedEvent(server.name))
+
+            _events.emit(
+                VirtProvisioningEvent.MetricsAvailable(
+                    this@SimVirtProvisioningService,
+                    hypervisors.size,
+                    availableHypervisors.size,
+                    submittedVms,
+                    --runningVms,
+                    ++finishedVms,
+                    queuedVms,
+                    unscheduledVms
+                )
+            )
+
+            activeServers -= server
+            val hv = hostToHv[host]
+            if (hv != null) {
+                hv.provisionedCores -= server.flavor.cpuCount
+            } else {
+                logger.error { "Unknown host $host" }
+            }
+
+            // Try to reschedule if needed
+            if (queue.isNotEmpty()) {
+                requestCycle()
+            }
+        }
+    }
+
+    public data class LaunchRequest(val server: Server, val cont: Continuation<Server>)
 }

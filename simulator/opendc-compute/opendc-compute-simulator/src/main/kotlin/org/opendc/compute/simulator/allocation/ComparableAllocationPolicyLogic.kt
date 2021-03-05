@@ -22,8 +22,8 @@
 
 package org.opendc.compute.simulator.allocation
 
+import org.opendc.compute.core.Server
 import org.opendc.compute.simulator.HypervisorView
-import org.opendc.compute.simulator.SimVirtProvisioningService
 
 /**
  * The logic for an [AllocationPolicy] that uses a [Comparator] to select the appropriate node.
@@ -36,12 +36,12 @@ public interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
 
     override fun select(
         hypervisors: Set<HypervisorView>,
-        image: SimVirtProvisioningService.ImageView
+        server: Server
     ): HypervisorView? {
         return hypervisors.asSequence()
             .filter { hv ->
-                val fitsMemory = hv.availableMemory >= (image.flavor.memorySize)
-                val fitsCpu = hv.node.flavor.cpuCount >= image.flavor.cpuCount
+                val fitsMemory = hv.availableMemory >= (server.flavor.memorySize)
+                val fitsCpu = hv.node.flavor.cpuCount >= server.flavor.cpuCount
                 fitsMemory && fitsCpu
             }
             .minWithOrNull(comparator.thenBy { it.node.uid })

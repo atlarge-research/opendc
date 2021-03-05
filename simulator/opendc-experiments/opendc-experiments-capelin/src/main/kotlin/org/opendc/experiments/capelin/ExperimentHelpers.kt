@@ -37,11 +37,11 @@ import org.opendc.compute.core.ServerEvent
 import org.opendc.compute.core.metal.NODE_CLUSTER
 import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.compute.core.virt.HypervisorEvent
+import org.opendc.compute.core.virt.HostEvent
 import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.compute.simulator.SimBareMetalDriver
-import org.opendc.compute.simulator.SimVirtDriver
+import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.SimVirtProvisioningService
 import org.opendc.compute.simulator.allocation.AllocationPolicy
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
@@ -174,8 +174,8 @@ public suspend fun attachMonitor(
 
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
-        // TODO Do not expose VirtDriver directly but use Hypervisor class.
-        val server = (hypervisor as SimVirtDriver).node
+        // TODO Do not expose Host directly but use Hypervisor class.
+        val server = (hypervisor as SimHost).node
         monitor.reportHostStateChange(clock.millis(), hypervisor, server)
         server.events
             .onEach { event ->
@@ -190,7 +190,7 @@ public suspend fun attachMonitor(
         hypervisor.events
             .onEach { event ->
                 when (event) {
-                    is HypervisorEvent.SliceFinished -> monitor.reportHostSlice(
+                    is HostEvent.SliceFinished -> monitor.reportHostSlice(
                         clock.millis(),
                         event.requestedBurst,
                         event.grantedBurst,

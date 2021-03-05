@@ -22,9 +22,9 @@
 
 package org.opendc.compute.simulator.allocation
 
+import org.opendc.compute.core.Server
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.simulator.HypervisorView
-import org.opendc.compute.simulator.SimVirtProvisioningService
 
 /**
  * A policy for selecting the [Node] an image should be deployed to,
@@ -39,7 +39,7 @@ public interface AllocationPolicy {
          */
         public fun select(
             hypervisors: Set<HypervisorView>,
-            image: SimVirtProvisioningService.ImageView
+            server: Server
         ): HypervisorView?
     }
 
