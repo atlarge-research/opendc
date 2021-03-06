@@ -34,9 +34,9 @@ import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.NodeState
 import org.opendc.compute.core.metal.driver.BareMetalDriver
-import org.opendc.compute.simulator.power.ConstantPowerModel
-import org.opendc.compute.simulator.power.PowerModel
-import org.opendc.compute.simulator.power.Powerable
+import org.opendc.compute.simulator.power.api.CpuPowerModel
+import org.opendc.compute.simulator.power.api.Powerable
+import org.opendc.compute.simulator.power.models.ConstantPowerModel
 import org.opendc.core.services.ServiceRegistry
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimExecutionContext
@@ -59,7 +59,7 @@ import kotlin.random.Random
  * @param name An optional name of the machine.
  * @param metadata The initial metadata of the node.
  * @param machine The machine model to simulate.
- * @param powerModel The power model of this machine.
+ * @param cpuPowerModel The CPU power model of this machine.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 public class SimBareMetalDriver(
@@ -69,7 +69,7 @@ public class SimBareMetalDriver(
     name: String,
     metadata: Map<String, Any>,
     machine: SimMachineModel,
-    powerModel: PowerModel<SimBareMetalDriver> = ConstantPowerModel(0.0)
+    cpuPowerModel: CpuPowerModel = ConstantPowerModel(0.0),
 ) : BareMetalDriver, FailureDomain, Powerable {
     /**
      * The flavor that corresponds to this machine.
@@ -100,7 +100,7 @@ public class SimBareMetalDriver(
     override val usage: Flow<Double>
         get() = this.machine.usage
 
-    override val powerDraw: Flow<Double> = powerModel(this)
+    override val powerDraw: Flow<Double> = cpuPowerModel.getPowerDraw(this)
 
     /**
      * The internal random instance.

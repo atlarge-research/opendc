@@ -5,7 +5,7 @@
 .python-version
 database/opendc_testing/*
 
-# macOS-specific files
+# MacOS-specific files
 .DS_Store
 
 # Environment files

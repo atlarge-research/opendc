@@ -36,7 +36,7 @@ import org.opendc.compute.core.metal.NODE_CLUSTER
 import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.core.metal.service.SimpleProvisioningService
 import org.opendc.compute.simulator.SimBareMetalDriver
-import org.opendc.compute.simulator.power.LinearLoadPowerModel
+import org.opendc.compute.simulator.power.models.LinearPowerModel
 import org.opendc.core.Environment
 import org.opendc.core.Platform
 import org.opendc.core.Zone
@@ -92,7 +92,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
                     "node-$clusterId-$position",
                     mapOf(NODE_CLUSTER to clusterId),
                     SimMachineModel(processors, memoryUnits),
-                    LinearLoadPowerModel(energyConsumptionW, 2 * energyConsumptionW)
+                    LinearPowerModel(2 * energyConsumptionW, .5)
                 )
             )
         }

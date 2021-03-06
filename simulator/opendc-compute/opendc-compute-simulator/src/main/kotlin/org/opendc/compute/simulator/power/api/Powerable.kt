@@ -22,11 +22,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.power
+package org.opendc.compute.simulator.power.api
 
 import kotlinx.coroutines.flow.Flow
 
 /**
- * A model for computing the power draw based on some value.
+ * An entity that is uses power from some power source.
  */
-public typealias PowerModel<T> = (T) -> Flow<Double>
+public interface Powerable {
+    /**
+     * The power draw at the device's power supply in watts (W).w
+     */
+    public val powerDraw: Flow<Double>
+}

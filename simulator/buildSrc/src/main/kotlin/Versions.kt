@@ -41,6 +41,7 @@ public class Versions(private val project: Project) {
 
     val junitJupiter by version(name = "junit-jupiter")
     val junitPlatform by version(name = "junit-platform")
+    val mockk by version()
 
     val slf4j by version()
     val kotlinLogging by version(name = "kotlin-logging")

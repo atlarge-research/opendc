@@ -27,7 +27,7 @@ import org.opendc.compute.core.metal.NODE_CLUSTER
 import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.core.metal.service.SimpleProvisioningService
 import org.opendc.compute.simulator.SimBareMetalDriver
-import org.opendc.compute.simulator.power.LinearLoadPowerModel
+import org.opendc.compute.simulator.power.models.LinearPowerModel
 import org.opendc.core.Environment
 import org.opendc.core.Platform
 import org.opendc.core.Zone
@@ -118,7 +118,7 @@ public class Sc20ClusterEnvironmentReader(
                                 // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
                                 // power draw of 350W.
                                 // Source: https://stackoverflow.com/questions/6128960
-                                LinearLoadPowerModel(200.0, 350.0)
+                                LinearPowerModel(350.0, 200 / 350.0)
                             )
                         )
                     }
