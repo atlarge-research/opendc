@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,28 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+/**
+ * An event that is emitted by the [ComputeService].
+ */
+public sealed class ComputeServiceEvent {
+    /**
+     * The service that has emitted the event.
+     */
+    public abstract val provisioner: ComputeService
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-
-    implementation("io.github.microutils:kotlin-logging")
+    /**
+     * An event emitted for writing metrics.
+     */
+    public data class MetricsAvailable(
+        override val provisioner: ComputeService,
+        public val totalHostCount: Int,
+        public val availableHostCount: Int,
+        public val totalVmCount: Int,
+        public val activeVmCount: Int,
+        public val inactiveVmCount: Int,
+        public val waitingVmCount: Int,
+        public val failedVmCount: Int
+    ) : ComputeServiceEvent()
 }

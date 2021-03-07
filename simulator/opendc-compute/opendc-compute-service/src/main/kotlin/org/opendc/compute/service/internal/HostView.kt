@@ -20,20 +20,16 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.internal
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.service.driver.Host
+import java.util.UUID
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
+public class HostView(public val host: Host) {
+    public val uid: UUID
+        get() = host.uid
 
-    implementation("io.github.microutils:kotlin-logging")
+    public var numberOfActiveServers: Int = 0
+    public var availableMemory: Long = host.model.memorySize
+    public var provisionedCores: Int = 0
 }

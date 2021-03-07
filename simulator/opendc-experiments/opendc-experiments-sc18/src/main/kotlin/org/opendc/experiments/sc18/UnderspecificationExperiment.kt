@@ -25,8 +25,9 @@ package org.opendc.experiments.sc18
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.compute.simulator.SimVirtProvisioningService
-import org.opendc.compute.simulator.allocation.NumberOfActiveServersAllocationPolicy
+import org.opendc.compute.service.ComputeService
+import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
+import org.opendc.compute.simulator.SimHostProvisioner
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.harness.dsl.Experiment
@@ -91,15 +92,16 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
             // Wait for the bare metal nodes to be spawned
             delay(10)
 
-            val provisioner = SimVirtProvisioningService(
-                testScope,
+            val provisioner = SimHostProvisioner(testScope.coroutineContext, bareMetal, SimSpaceSharedHypervisorProvider())
+            val hosts = provisioner.provisionAll()
+            val compute = ComputeService(
+                testScope.coroutineContext,
                 clock,
-                bareMetal,
-                NumberOfActiveServersAllocationPolicy(),
                 tracer,
-                SimSpaceSharedHypervisorProvider(),
-                schedulingQuantum = 1000
+                NumberOfActiveServersAllocationPolicy(),
             )
+
+            hosts.forEach { compute.addHost(it) }
 
             // Wait for the hypervisors to be spawned
             delay(10)
@@ -108,7 +110,7 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
                 testScope,
                 clock,
                 tracer,
-                provisioner.newClient(),
+                compute.newClient(),
                 mode = WorkflowSchedulerMode.Batch(100),
                 jobAdmissionPolicy = NullJobAdmissionPolicy,
                 jobOrderPolicy = SubmissionTimeJobOrderPolicy(),

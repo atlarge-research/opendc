@@ -20,20 +20,29 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.scheduler
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.internal.HostView
+import kotlin.random.Random
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-
-    implementation("io.github.microutils:kotlin-logging")
+/**
+ * An [AllocationPolicy] that select a random node on which the server fits.
+ */
+public class RandomAllocationPolicy(private val random: Random = Random(0)) : AllocationPolicy {
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
+        override fun select(
+            hypervisors: Set<HostView>,
+            server: Server
+        ): HostView? {
+            return hypervisors.asIterable()
+                .filter { hv ->
+                    val fitsMemory = hv.availableMemory >= (server.image.tags["required-memory"] as Long)
+                    val fitsCpu = hv.host.model.cpuCount >= server.flavor.cpuCount
+                    fitsMemory && fitsCpu
+                }
+                .randomOrNull(random)
+        }
+    }
 }

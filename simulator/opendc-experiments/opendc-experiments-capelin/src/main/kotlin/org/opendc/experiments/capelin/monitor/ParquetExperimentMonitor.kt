@@ -26,8 +26,8 @@ import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.virt.Host
-import org.opendc.compute.core.virt.service.VirtProvisioningEvent
+import org.opendc.compute.service.ComputeServiceEvent
+import org.opendc.compute.service.driver.Host
 import org.opendc.experiments.capelin.telemetry.HostEvent
 import org.opendc.experiments.capelin.telemetry.ProvisionerEvent
 import org.opendc.experiments.capelin.telemetry.parquet.ParquetHostEventWriter
@@ -176,7 +176,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         }
     }
 
-    override fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {
+    override fun reportProvisionerMetrics(time: Long, event: ComputeServiceEvent.MetricsAvailable) {
         provisionerWriter.write(
             ProvisionerEvent(
                 time,

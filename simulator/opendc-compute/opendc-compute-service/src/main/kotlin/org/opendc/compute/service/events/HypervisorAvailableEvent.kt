@@ -20,20 +20,12 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.events
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.trace.core.Event
+import java.util.*
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-
-    implementation("io.github.microutils:kotlin-logging")
-}
+/**
+ * This event is emitted when a hypervisor has become available.
+ */
+public class HypervisorAvailableEvent(public val uid: UUID) : Event()

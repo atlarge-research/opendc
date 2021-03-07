@@ -25,8 +25,8 @@ package org.opendc.experiments.capelin.monitor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.virt.Host
-import org.opendc.compute.core.virt.service.VirtProvisioningEvent
+import org.opendc.compute.service.ComputeServiceEvent
+import org.opendc.compute.service.driver.Host
 import java.io.Closeable
 
 /**
@@ -73,5 +73,5 @@ public interface ExperimentMonitor : Closeable {
     /**
      * This method is invoked for a provisioner event.
      */
-    public fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {}
+    public fun reportProvisionerMetrics(time: Long, event: ComputeServiceEvent.MetricsAvailable) {}
 }

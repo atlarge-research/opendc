@@ -20,20 +20,18 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.scheduler
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.service.internal.HostView
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-
-    implementation("io.github.microutils:kotlin-logging")
+/**
+ * Allocation policy that selects the node with the least amount of active servers.
+ *
+ * @param reversed A flag to reverse the order, such that the node with the most active servers is selected.
+ */
+public class NumberOfActiveServersAllocationPolicy(public val reversed: Boolean = false) : AllocationPolicy {
+    override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
+        override val comparator: Comparator<HostView> = compareBy<HostView> { it.numberOfActiveServers }
+            .run { if (reversed) reversed() else this }
+    }
 }

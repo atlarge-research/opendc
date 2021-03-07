@@ -27,8 +27,8 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.metal.NodeState
-import org.opendc.compute.core.virt.Host
-import org.opendc.compute.core.virt.service.VirtProvisioningEvent
+import org.opendc.compute.service.ComputeServiceEvent
+import org.opendc.compute.service.driver.Host
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.telemetry.HostEvent
 import kotlin.math.max
@@ -210,7 +210,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
 
     private var provisionerMetrics: AggregateProvisionerMetrics = AggregateProvisionerMetrics()
 
-    override fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {
+    override fun reportProvisionerMetrics(time: Long, event: ComputeServiceEvent.MetricsAvailable) {
         provisionerMetrics = AggregateProvisionerMetrics(
             max(event.totalVmCount, provisionerMetrics.vmTotalCount),
             max(event.waitingVmCount, provisionerMetrics.vmWaitingCount),

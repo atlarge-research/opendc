@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,21 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+description = "OpenDC Compute Service implementation"
 
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
+    `testing-conventions`
 }
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
     api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
     api(project(":opendc-trace:opendc-trace-core"))
     implementation(project(":opendc-utils"))
-
     implementation("io.github.microutils:kotlin-logging")
+
+    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
 }

@@ -20,20 +20,13 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.events
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Image
+import org.opendc.trace.core.Event
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-
-    implementation("io.github.microutils:kotlin-logging")
-}
+/**
+ * This event is emitted when a virtual machine is submitted to the provisioning service.
+ */
+public class VmSubmissionEvent(public val name: String, public val image: Image, public val flavor: Flavor) : Event()

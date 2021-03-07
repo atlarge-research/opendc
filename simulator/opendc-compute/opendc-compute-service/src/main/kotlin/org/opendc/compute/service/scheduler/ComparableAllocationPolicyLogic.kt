@@ -20,20 +20,30 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.scheduler
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.internal.HostView
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
+/**
+ * The logic for an [AllocationPolicy] that uses a [Comparator] to select the appropriate node.
+ */
+public interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
+    /**
+     * The comparator to use.
+     */
+    public val comparator: Comparator<HostView>
 
-    implementation("io.github.microutils:kotlin-logging")
+    override fun select(
+        hypervisors: Set<HostView>,
+        server: Server
+    ): HostView? {
+        return hypervisors.asSequence()
+            .filter { hv ->
+                val fitsMemory = hv.availableMemory >= (server.flavor.memorySize)
+                val fitsCpu = hv.host.model.cpuCount >= server.flavor.cpuCount
+                fitsMemory && fitsCpu
+            }
+            .minWithOrNull(comparator.thenBy { it.host.uid })
+    }
 }

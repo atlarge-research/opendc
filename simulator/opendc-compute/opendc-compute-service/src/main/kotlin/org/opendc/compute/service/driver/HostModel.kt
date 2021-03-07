@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,12 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.driver
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
-
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-
-    implementation("io.github.microutils:kotlin-logging")
-}
+/**
+ * Describes the static machine properties of the host.
+ *
+ * @property vcpuCount The number of logical processing cores available for this host.
+ * @property memorySize The amount of memory available for this host in MB.
+ */
+public data class HostModel(public val cpuCount: Int, public val memorySize: Long)

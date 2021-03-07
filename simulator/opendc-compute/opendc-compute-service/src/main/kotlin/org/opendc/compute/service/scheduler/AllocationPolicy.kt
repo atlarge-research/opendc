@@ -20,20 +20,30 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.scheduler
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.internal.HostView
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
+/**
+ * A policy for selecting the [Node] an image should be deployed to,
+ */
+public interface AllocationPolicy {
+    /**
+     * The logic of the allocation policy.
+     */
+    public interface Logic {
+        /**
+         * Select the node on which the server should be scheduled.
+         */
+        public fun select(
+            hypervisors: Set<HostView>,
+            server: Server
+        ): HostView?
+    }
 
-    implementation("io.github.microutils:kotlin-logging")
+    /**
+     * Builds the logic of the policy.
+     */
+    public operator fun invoke(): Logic
 }

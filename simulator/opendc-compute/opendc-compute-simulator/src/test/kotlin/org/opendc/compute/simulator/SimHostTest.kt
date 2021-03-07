@@ -24,6 +24,7 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -37,7 +38,9 @@ import org.opendc.compute.api.Image
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
-import org.opendc.compute.core.virt.HostEvent
+import org.opendc.compute.core.metal.Node
+import org.opendc.compute.core.metal.NodeState
+import org.opendc.compute.service.driver.HostEvent
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -79,8 +82,13 @@ internal class SimHostTest {
         var grantedWork = 0L
         var overcommittedWork = 0L
 
+        val node = Node(
+            UUID.randomUUID(), "name", emptyMap(), NodeState.SHUTOFF,
+            Flavor(machineModel.cpus.size, machineModel.memory.map { it.size }.sum()), Image.EMPTY, emptyFlow()
+        )
+
         scope.launch {
-            val virtDriver = SimHost(UUID.randomUUID(), this, SimFairShareHypervisorProvider())
+            val virtDriver = SimHost(node, this, SimFairShareHypervisorProvider())
             val vmm = Image(UUID.randomUUID(), "vmm", mapOf("workload" to virtDriver))
             val duration = 5 * 60L
             val vmImageA = Image(

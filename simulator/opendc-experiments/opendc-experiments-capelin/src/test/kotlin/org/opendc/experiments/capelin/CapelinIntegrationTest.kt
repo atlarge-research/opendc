@@ -34,8 +34,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.metal.Node
 import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimVirtProvisioningService
-import org.opendc.compute.simulator.allocation.AvailableCoreMemoryAllocationPolicy
+import org.opendc.compute.service.internal.ComputeServiceImpl
+import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
 import org.opendc.experiments.capelin.experiment.attachMonitor
 import org.opendc.experiments.capelin.experiment.createFailureDomain
 import org.opendc.experiments.capelin.experiment.createProvisioner
@@ -97,7 +97,7 @@ class CapelinIntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader()
         val environmentReader = createTestEnvironmentReader()
-        lateinit var scheduler: SimVirtProvisioningService
+        lateinit var scheduler: ComputeServiceImpl
         val tracer = EventTracer(clock)
 
         testScope.launch {
@@ -108,8 +108,8 @@ class CapelinIntegrationTest {
                 allocationPolicy,
                 tracer
             )
-            val bareMetalProvisioner = res.first
-            scheduler = res.second
+            val bareMetalProvisioner = res.metal
+            scheduler = res.compute
 
             val failureDomain = if (failures) {
                 println("ENABLING failures")
@@ -138,8 +138,9 @@ class CapelinIntegrationTest {
             println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
             failureDomain?.cancel()
-            scheduler.terminate()
+            scheduler.close()
             monitor.close()
+            res.provisioner.close()
         }
 
         runSimulation()
@@ -148,9 +149,9 @@ class CapelinIntegrationTest {
         assertAll(
             { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
             { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
-            { assertEquals(1679510908774, monitor.totalRequestedBurst) },
-            { assertEquals(384100282091, monitor.totalGrantedBurst) },
-            { assertEquals(1282152242721, monitor.totalOvercommissionedBurst) },
+            { assertEquals(1678587333640, monitor.totalRequestedBurst) },
+            { assertEquals(438118200924, monitor.totalGrantedBurst) },
+            { assertEquals(1220323969993, monitor.totalOvercommissionedBurst) },
             { assertEquals(0, monitor.totalInterferedBurst) }
         )
     }
@@ -162,19 +163,16 @@ class CapelinIntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader(0.5, seed)
         val environmentReader = createTestEnvironmentReader("single")
-        lateinit var scheduler: SimVirtProvisioningService
         val tracer = EventTracer(clock)
 
         testScope.launch {
-            val res = createProvisioner(
+            val (_, provisioner, scheduler) = createProvisioner(
                 this,
                 clock,
                 environmentReader,
                 allocationPolicy,
                 tracer
             )
-            scheduler = res.second
-
             attachMonitor(this, clock, scheduler, monitor)
             processTrace(
                 this,
@@ -187,17 +185,18 @@ class CapelinIntegrationTest {
 
             println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
-            scheduler.terminate()
+            scheduler.close()
             monitor.close()
+            provisioner.close()
         }
 
         runSimulation()
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(710487768664, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
-            { assertEquals(118846235815, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
-            { assertEquals(584211294239, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
+            { assertEquals(705128393965, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
+            { assertEquals(173489747029, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
+            { assertEquals(526858997740, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
         )
     }

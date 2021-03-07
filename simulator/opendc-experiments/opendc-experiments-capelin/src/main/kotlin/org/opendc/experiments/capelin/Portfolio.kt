@@ -28,6 +28,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
+import org.opendc.compute.service.scheduler.AllocationPolicy
+import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
+import org.opendc.compute.service.scheduler.AvailableMemoryAllocationPolicy
+import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
+import org.opendc.compute.service.scheduler.ProvisionedCoresAllocationPolicy
+import org.opendc.compute.service.scheduler.RandomAllocationPolicy
 import org.opendc.compute.simulator.allocation.*
 import org.opendc.experiments.capelin.experiment.attachMonitor
 import org.opendc.experiments.capelin.experiment.createFailureDomain
@@ -151,7 +157,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
         )
 
         testScope.launch {
-            val (bareMetalProvisioner, scheduler) = createProvisioner(
+            val (bareMetalProvisioner, provisioner, scheduler) = createProvisioner(
                 this,
                 clock,
                 environment,
@@ -190,7 +196,8 @@ public abstract class Portfolio(name: String) : Experiment(name) {
             logger.debug("FINISHED=${scheduler.finishedVms}")
 
             failureDomain?.cancel()
-            scheduler.terminate()
+            scheduler.close()
+            provisioner.close()
         }
 
         try {

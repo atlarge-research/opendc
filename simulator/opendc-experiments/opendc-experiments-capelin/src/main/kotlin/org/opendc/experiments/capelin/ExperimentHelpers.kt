@@ -39,13 +39,15 @@ import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.core.metal.NODE_CLUSTER
 import org.opendc.compute.core.metal.NodeEvent
 import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.compute.core.virt.HostEvent
-import org.opendc.compute.core.virt.service.VirtProvisioningEvent
 import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.service.ComputeService
+import org.opendc.compute.service.ComputeServiceEvent
+import org.opendc.compute.service.driver.HostEvent
+import org.opendc.compute.service.internal.ComputeServiceImpl
+import org.opendc.compute.service.scheduler.AllocationPolicy
 import org.opendc.compute.simulator.SimBareMetalDriver
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.simulator.SimVirtProvisioningService
-import org.opendc.compute.simulator.allocation.AllocationPolicy
+import org.opendc.compute.simulator.SimHostProvisioner
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
@@ -137,6 +139,12 @@ public fun createTraceReader(
     )
 }
 
+public data class ProvisionerResult(
+    val metal: ProvisioningService,
+    val provisioner: SimHostProvisioner,
+    val compute: ComputeServiceImpl
+)
+
 /**
  * Construct the environment for a VM provisioner and return the provisioner instance.
  */
@@ -146,33 +154,40 @@ public suspend fun createProvisioner(
     environmentReader: EnvironmentReader,
     allocationPolicy: AllocationPolicy,
     eventTracer: EventTracer
-): Pair<ProvisioningService, SimVirtProvisioningService> {
+): ProvisionerResult {
     val environment = environmentReader.use { it.construct(coroutineScope, clock) }
     val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService]
 
     // Wait for the bare metal nodes to be spawned
     delay(10)
 
-    val scheduler = SimVirtProvisioningService(coroutineScope, clock, bareMetalProvisioner, allocationPolicy, eventTracer, SimFairShareHypervisorProvider())
+    val provisioner = SimHostProvisioner(coroutineScope.coroutineContext, bareMetalProvisioner, SimFairShareHypervisorProvider())
+    val hosts = provisioner.provisionAll()
+
+    val scheduler = ComputeService(coroutineScope.coroutineContext, clock, eventTracer, allocationPolicy) as ComputeServiceImpl
+
+    for (host in hosts) {
+        scheduler.addHost(host)
+    }
 
     // Wait for the hypervisors to be spawned
     delay(10)
 
-    return bareMetalProvisioner to scheduler
+    return ProvisionerResult(bareMetalProvisioner, provisioner, scheduler)
 }
 
 /**
  * Attach the specified monitor to the VM provisioner.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public suspend fun attachMonitor(
+public fun attachMonitor(
     coroutineScope: CoroutineScope,
     clock: Clock,
-    scheduler: SimVirtProvisioningService,
+    scheduler: ComputeService,
     monitor: ExperimentMonitor
 ) {
 
-    val hypervisors = scheduler.drivers()
+    val hypervisors = scheduler.hosts
 
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
@@ -201,7 +216,7 @@ public suspend fun attachMonitor(
                         event.cpuUsage,
                         event.cpuDemand,
                         event.numberOfDeployedImages,
-                        event.host
+                        (event.driver as SimHost).node
                     )
                 }
             }
@@ -216,7 +231,7 @@ public suspend fun attachMonitor(
     scheduler.events
         .onEach { event ->
             when (event) {
-                is VirtProvisioningEvent.MetricsAvailable ->
+                is ComputeServiceEvent.MetricsAvailable ->
                     monitor.reportProvisionerMetrics(clock.millis(), event)
             }
         }
@@ -230,7 +245,7 @@ public suspend fun processTrace(
     coroutineScope: CoroutineScope,
     clock: Clock,
     reader: TraceReader<VmWorkload>,
-    scheduler: SimVirtProvisioningService,
+    scheduler: ComputeService,
     chan: Channel<Unit>,
     monitor: ExperimentMonitor
 ) {
@@ -265,7 +280,7 @@ public suspend fun processTrace(
         scheduler.events
             .takeWhile {
                 when (it) {
-                    is VirtProvisioningEvent.MetricsAvailable ->
+                    is ComputeServiceEvent.MetricsAvailable ->
                         it.inactiveVmCount + it.failedVmCount != submitted
                 }
             }

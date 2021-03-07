@@ -30,7 +30,7 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.core.*
 import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.virt.*
+import org.opendc.compute.service.driver.*
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
@@ -45,7 +45,7 @@ import kotlin.coroutines.resume
  * A [Host] that is simulates virtual machines on a physical machine using [SimHypervisor].
  */
 public class SimHost(
-    override val uid: UUID,
+    public val node: Node,
     private val coroutineScope: CoroutineScope,
     hypervisor: SimHypervisorProvider
 ) : Host, SimWorkload {
@@ -96,8 +96,7 @@ public class SimHost(
                         interferedWork,
                         cpuUsage,
                         cpuDemand,
-                        guests.size,
-                        node
+                        guests.size
                     )
                 )
             }
@@ -107,19 +106,22 @@ public class SimHost(
     /**
      * The virtual machines running on the hypervisor.
      */
-    private val guests = HashMap<Server, SimGuest>()
+    private val guests = HashMap<Server, Guest>()
 
-    /**
-     * The node on which the hypervisor runs.
-     */
-    public val node: Node
-        get() = ctx.meta["node"] as Node
+    override val uid: UUID
+        get() = node.uid
+
+    override val name: String
+        get() = node.name
+
+    override val model: HostModel
+        get() = HostModel(node.flavor.cpuCount, node.flavor.memorySize)
 
     override val state: HostState
         get() = _state
     private var _state: HostState = HostState.UP
         set(value) {
-            listeners.forEach { it.onStateChange(this, value) }
+            listeners.forEach { it.onStateChanged(this, value) }
             field = value
         }
 
@@ -138,7 +140,7 @@ public class SimHost(
         }
 
         require(canFit(server)) { "Server does not fit" }
-        val guest = SimGuest(server, hypervisor.createMachine(server.flavor.toMachineModel()))
+        val guest = Guest(server, hypervisor.createMachine(server.flavor.toMachineModel()))
         guests[server] = guest
 
         if (start) {
@@ -187,24 +189,24 @@ public class SimHost(
         return SimMachineModel(processingUnits, memoryUnits)
     }
 
-    private fun onGuestStart(vm: SimGuest) {
+    private fun onGuestStart(vm: Guest) {
         guests.forEach { _, guest ->
             if (guest.state == ServerState.ACTIVE) {
                 vm.performanceInterferenceModel?.onStart(vm.server.image.name)
             }
         }
 
-        listeners.forEach { it.onStateChange(this, vm.server, vm.state) }
+        listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
     }
 
-    private fun onGuestStop(vm: SimGuest) {
+    private fun onGuestStop(vm: Guest) {
         guests.forEach { _, guest ->
             if (guest.state == ServerState.ACTIVE) {
                 vm.performanceInterferenceModel?.onStop(vm.server.image.name)
             }
         }
 
-        listeners.forEach { it.onStateChange(this, vm.server, vm.state) }
+        listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
 
         _events.emit(HostEvent.VmsUpdated(this@SimHost, guests.count { it.value.state == ServerState.ACTIVE }, availableMemory))
     }
@@ -212,7 +214,7 @@ public class SimHost(
     /**
      * A virtual machine instance that the driver manages.
      */
-    private inner class SimGuest(val server: Server, val machine: SimMachine) {
+    private inner class Guest(val server: Server, val machine: SimMachine) {
         val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
 
         var state: ServerState = ServerState.SHUTOFF

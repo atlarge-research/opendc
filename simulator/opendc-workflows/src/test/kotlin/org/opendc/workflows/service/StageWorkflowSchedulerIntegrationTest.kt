@@ -37,8 +37,9 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.compute.simulator.SimVirtProvisioningService
-import org.opendc.compute.simulator.allocation.NumberOfActiveServersAllocationPolicy
+import org.opendc.compute.service.ComputeService
+import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
+import org.opendc.compute.simulator.SimHostProvisioner
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
@@ -80,7 +81,11 @@ internal class StageWorkflowSchedulerIntegrationTest {
             // Wait for the bare metal nodes to be spawned
             delay(10)
 
-            val provisioner = SimVirtProvisioningService(testScope, clock, bareMetal, NumberOfActiveServersAllocationPolicy(), tracer, SimSpaceSharedHypervisorProvider(), schedulingQuantum = 1000)
+            val provisioner = SimHostProvisioner(testScope.coroutineContext, bareMetal, SimSpaceSharedHypervisorProvider())
+            val hosts = provisioner.provisionAll()
+            val compute = ComputeService(testScope.coroutineContext, clock, tracer, NumberOfActiveServersAllocationPolicy(), schedulingQuantum = 1000)
+
+            hosts.forEach { compute.addHost(it) }
 
             // Wait for the hypervisors to be spawned
             delay(10)
@@ -89,7 +94,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
                 testScope,
                 clock,
                 tracer,
-                provisioner.newClient(),
+                compute.newClient(),
                 mode = WorkflowSchedulerMode.Batch(100),
                 jobAdmissionPolicy = NullJobAdmissionPolicy,
                 jobOrderPolicy = SubmissionTimeJobOrderPolicy(),

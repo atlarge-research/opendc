@@ -20,20 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+package org.opendc.compute.service.scheduler
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.service.internal.HostView
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
-    api(project(":opendc-trace:opendc-trace-core"))
-    implementation(project(":opendc-utils"))
-
-    implementation("io.github.microutils:kotlin-logging")
+/**
+ * An [AllocationPolicy] that selects the machine with the highest/lowest amount of memory per core.
+ *
+ * @param reversed An option to reverse the order of the machines (lower amount of memory scores better).
+ */
+public class AvailableCoreMemoryAllocationPolicy(private val reversed: Boolean = false) : AllocationPolicy {
+    override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
+        override val comparator: Comparator<HostView> =
+            compareBy<HostView> { -it.availableMemory / it.host.model.cpuCount }
+                .run { if (reversed) reversed() else this }
+    }
 }
