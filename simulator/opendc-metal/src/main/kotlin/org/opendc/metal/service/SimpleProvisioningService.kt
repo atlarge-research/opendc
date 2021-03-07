@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,45 +20,46 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core.metal.service
+package org.opendc.metal.service
 
+import kotlinx.coroutines.CancellationException
 import org.opendc.compute.api.Image
-import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.metal.driver.BareMetalDriver
-import org.opendc.core.services.AbstractServiceKey
-import java.util.UUID
+import org.opendc.metal.Node
+import org.opendc.metal.driver.BareMetalDriver
 
 /**
- * A cloud platform service for provisioning bare-metal compute nodes on the platform.
+ * A very basic implementation of the [ProvisioningService].
  */
-public interface ProvisioningService {
+public class SimpleProvisioningService : ProvisioningService {
     /**
-     * Create a new bare-metal compute node.
+     * The active nodes in this service.
      */
-    public suspend fun create(driver: BareMetalDriver): Node
+    private val nodes: MutableMap<Node, BareMetalDriver> = mutableMapOf()
 
-    /**
-     * Obtain the available nodes.
-     */
-    public suspend fun nodes(): Set<Node>
+    override suspend fun create(driver: BareMetalDriver): Node {
+        val node = driver.init()
+        nodes[node] = driver
+        return node
+    }
 
-    /**
-     * Refresh the state of a compute node.
-     */
-    public suspend fun refresh(node: Node): Node
+    override suspend fun nodes(): Set<Node> = nodes.keys
 
-    /**
-     * Deploy the specified [Image] on a compute node.
-     */
-    public suspend fun deploy(node: Node, image: Image): Node
+    override suspend fun refresh(node: Node): Node {
+        return nodes[node]!!.refresh()
+    }
 
-    /**
-     * Stop the specified [Node] .
-     */
-    public suspend fun stop(node: Node): Node
+    override suspend fun deploy(node: Node, image: Image): Node {
+        val driver = nodes[node]!!
+        driver.setImage(image)
+        return driver.reboot()
+    }
 
-    /**
-     * The service key of this service.
-     */
-    public companion object Key : AbstractServiceKey<ProvisioningService>(UUID.randomUUID(), "provisioner")
+    override suspend fun stop(node: Node): Node {
+        val driver = nodes[node]!!
+        return try {
+            driver.stop()
+        } catch (e: CancellationException) {
+            node
+        }
+    }
 }

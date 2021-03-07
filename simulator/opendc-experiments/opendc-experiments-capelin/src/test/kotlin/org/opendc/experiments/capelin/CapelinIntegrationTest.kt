@@ -32,8 +32,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.api.ComputeWorkload
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
 import org.opendc.experiments.capelin.experiment.attachMonitor
@@ -47,6 +46,7 @@ import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
+import org.opendc.metal.Node
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
 import java.io.File
@@ -194,7 +194,7 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(705128393965, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
+            { assertEquals(705128393966, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
             { assertEquals(173489747029, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
             { assertEquals(526858997740, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
@@ -209,7 +209,7 @@ class CapelinIntegrationTest {
     /**
      * Obtain the trace reader for the test.
      */
-    private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<VmWorkload> {
+    private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<ComputeWorkload> {
         return Sc20ParquetTraceReader(
             listOf(Sc20RawParquetTraceReader(File("src/test/resources/trace"))),
             emptyMap(),

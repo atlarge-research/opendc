@@ -22,34 +22,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core.metal
+package org.opendc.metal
+
+/*
+ * Common metadata keys for bare-metal nodes.
+ */
 
 /**
- * An enumeration describing the possible states of a bare-metal compute node.
+ * The cluster to which the node belongs.
  */
-public enum class NodeState {
-    /**
-     * The node is booting.
-     */
-    BOOT,
-
-    /**
-     * The node is powered off.
-     */
-    SHUTOFF,
-
-    /**
-     * The node is active and running.
-     */
-    ACTIVE,
-
-    /**
-     * The node is in error.
-     */
-    ERROR,
-
-    /**
-     * The state of the node is unknown.
-     */
-    UNKNOWN,
-}
+public const val NODE_CLUSTER: String = "bare-metal:cluster"

@@ -24,9 +24,9 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.*
 import org.opendc.compute.api.Image
-import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.service.driver.Host
+import org.opendc.metal.Node
+import org.opendc.metal.service.ProvisioningService
 import org.opendc.simulator.compute.SimHypervisorProvider
 import kotlin.coroutines.CoroutineContext
 

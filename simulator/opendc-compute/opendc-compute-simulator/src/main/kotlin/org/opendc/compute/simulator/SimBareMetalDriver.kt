@@ -26,13 +26,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Image
-import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.metal.NodeEvent
-import org.opendc.compute.core.metal.NodeState
-import org.opendc.compute.core.metal.driver.BareMetalDriver
 import org.opendc.compute.simulator.power.api.CpuPowerModel
 import org.opendc.compute.simulator.power.api.Powerable
 import org.opendc.compute.simulator.power.models.ConstantPowerModel
+import org.opendc.metal.Node
+import org.opendc.metal.NodeEvent
+import org.opendc.metal.NodeState
+import org.opendc.metal.driver.BareMetalDriver
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.workload.SimWorkload

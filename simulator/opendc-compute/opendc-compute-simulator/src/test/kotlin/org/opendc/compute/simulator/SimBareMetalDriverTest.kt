@@ -32,8 +32,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.api.Image
-import org.opendc.compute.core.metal.NodeEvent
-import org.opendc.compute.core.metal.NodeState
+import org.opendc.metal.NodeEvent
+import org.opendc.metal.NodeState
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode

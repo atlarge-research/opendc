@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core.metal
-
-/*
- * Common metadata keys for bare-metal nodes.
- */
+package org.opendc.metal
 
 /**
- * The cluster to which the node belongs.
+ * An event that is emitted by a [Node].
  */
-public const val NODE_CLUSTER: String = "bare-metal:cluster"
+public sealed class NodeEvent {
+    /**
+     * The node that emitted the event.
+     */
+    public abstract val node: Node
+
+    /**
+     * This event is emitted when the state of [node] changes.
+     *
+     * @property node The node of which the state changed.
+     * @property previousState The previous state of the node.
+     */
+    public data class StateChanged(override val node: Node, val previousState: NodeState) : NodeEvent()
+}

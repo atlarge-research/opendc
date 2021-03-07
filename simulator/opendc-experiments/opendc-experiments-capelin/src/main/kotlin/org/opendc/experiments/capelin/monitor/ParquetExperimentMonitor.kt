@@ -25,13 +25,13 @@ package org.opendc.experiments.capelin.monitor
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
-import org.opendc.compute.core.metal.Node
 import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
 import org.opendc.experiments.capelin.telemetry.HostEvent
 import org.opendc.experiments.capelin.telemetry.ProvisionerEvent
 import org.opendc.experiments.capelin.telemetry.parquet.ParquetHostEventWriter
 import org.opendc.experiments.capelin.telemetry.parquet.ParquetProvisionerEventWriter
+import org.opendc.metal.Node
 import java.io.File
 
 /**

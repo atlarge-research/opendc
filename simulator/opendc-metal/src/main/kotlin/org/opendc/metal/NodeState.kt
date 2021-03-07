@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * MIT License
+ *
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +22,34 @@
  * SOFTWARE.
  */
 
-description = "Library for reading common data formats for topology simulation"
+package org.opendc.metal
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-}
+/**
+ * An enumeration describing the possible states of a bare-metal compute node.
+ */
+public enum class NodeState {
+    /**
+     * The node is booting.
+     */
+    BOOT,
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-workflows"))
-    implementation(project(":opendc-simulator:opendc-simulator-compute"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
+    /**
+     * The node is powered off.
+     */
+    SHUTOFF,
 
-    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
-    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
+    /**
+     * The node is active and running.
+     */
+    ACTIVE,
+
+    /**
+     * The node is in error.
+     */
+    ERROR,
+
+    /**
+     * The state of the node is unknown.
+     */
+    UNKNOWN,
 }

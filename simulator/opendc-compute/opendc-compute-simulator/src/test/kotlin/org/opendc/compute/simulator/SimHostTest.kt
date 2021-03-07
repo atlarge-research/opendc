@@ -38,9 +38,9 @@ import org.opendc.compute.api.Image
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
-import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.metal.NodeState
 import org.opendc.compute.service.driver.HostEvent
+import org.opendc.metal.Node
+import org.opendc.metal.NodeState
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit

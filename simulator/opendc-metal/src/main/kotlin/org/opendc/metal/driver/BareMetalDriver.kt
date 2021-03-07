@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core.metal.driver
+package org.opendc.metal.driver
 
 import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.api.Image
 import org.opendc.compute.api.Server
-import org.opendc.compute.core.metal.Node
 import org.opendc.core.services.AbstractServiceKey
+import org.opendc.metal.Node
 import java.util.UUID
 
 /**

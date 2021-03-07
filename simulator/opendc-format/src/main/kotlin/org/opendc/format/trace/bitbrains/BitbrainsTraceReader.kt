@@ -22,8 +22,8 @@
 
 package org.opendc.format.trace.bitbrains
 
+import org.opendc.compute.api.ComputeWorkload
 import org.opendc.compute.api.Image
-import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -45,17 +45,17 @@ import kotlin.math.min
 public class BitbrainsTraceReader(
     traceDirectory: File,
     performanceInterferenceModel: PerformanceInterferenceModel
-) : TraceReader<VmWorkload> {
+) : TraceReader<ComputeWorkload> {
     /**
      * The internal iterator to use for this reader.
      */
-    private val iterator: Iterator<TraceEntry<VmWorkload>>
+    private val iterator: Iterator<TraceEntry<ComputeWorkload>>
 
     /**
      * Initialize the reader.
      */
     init {
-        val entries = mutableMapOf<Long, TraceEntry<VmWorkload>>()
+        val entries = mutableMapOf<Long, TraceEntry<ComputeWorkload>>()
 
         var timestampCol = 0
         var coreCol = 0
@@ -132,7 +132,7 @@ public class BitbrainsTraceReader(
                     )
 
                 val workload = SimTraceWorkload(flopsHistory.asSequence())
-                val vmWorkload = VmWorkload(
+                val vmWorkload = ComputeWorkload(
                     uuid,
                     "VM Workload $vmId",
                     UnnamedUser,
@@ -159,7 +159,7 @@ public class BitbrainsTraceReader(
 
     override fun hasNext(): Boolean = iterator.hasNext()
 
-    override fun next(): TraceEntry<VmWorkload> = iterator.next()
+    override fun next(): TraceEntry<ComputeWorkload> = iterator.next()
 
     override fun close() {}
 
@@ -176,6 +176,6 @@ public class BitbrainsTraceReader(
      */
     private data class TraceEntryImpl(
         override var submissionTime: Long,
-        override val workload: VmWorkload
-    ) : TraceEntry<VmWorkload>
+        override val workload: ComputeWorkload
+    ) : TraceEntry<ComputeWorkload>
 }

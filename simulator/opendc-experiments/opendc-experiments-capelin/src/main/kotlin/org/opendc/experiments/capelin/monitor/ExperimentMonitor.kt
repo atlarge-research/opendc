@@ -24,9 +24,9 @@ package org.opendc.experiments.capelin.monitor
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
-import org.opendc.compute.core.metal.Node
 import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
+import org.opendc.metal.Node
 import java.io.Closeable
 
 /**

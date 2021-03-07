@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core.metal
+package org.opendc.compute.api
+
+import org.opendc.core.User
+import org.opendc.core.workload.Workload
+import java.util.UUID
 
 /**
- * An event that is emitted by a [Node].
+ * A workload that represents a VM.
+ *
+ * @property uid A unique identified of this VM.
+ * @property name The name of this VM.
+ * @property owner The owner of the VM.
+ * @property image The image of the VM.
  */
-public sealed class NodeEvent {
-    /**
-     * The node that emitted the event.
-     */
-    public abstract val node: Node
+public data class ComputeWorkload(
+    override val uid: UUID,
+    override val name: String,
+    override val owner: User,
+    val image: Image
+) : Workload {
+    override fun equals(other: Any?): Boolean = other is ComputeWorkload && uid == other.uid
 
-    /**
-     * This event is emitted when the state of [node] changes.
-     *
-     * @property node The node of which the state changed.
-     * @property previousState The previous state of the node.
-     */
-    public data class StateChanged(override val node: Node, val previousState: NodeState) : NodeEvent()
+    override fun hashCode(): Int = uid.hashCode()
 }

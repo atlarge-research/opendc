@@ -22,8 +22,8 @@
 
 package org.opendc.experiments.capelin.trace
 
+import org.opendc.compute.api.ComputeWorkload
 import org.opendc.compute.api.Image
-import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.format.trace.TraceEntry
@@ -45,11 +45,11 @@ public class Sc20ParquetTraceReader(
     performanceInterferenceModel: Map<String, PerformanceInterferenceModel>,
     workload: Workload,
     seed: Int
-) : TraceReader<VmWorkload> {
+) : TraceReader<ComputeWorkload> {
     /**
      * The iterator over the actual trace.
      */
-    private val iterator: Iterator<TraceEntry<VmWorkload>> =
+    private val iterator: Iterator<TraceEntry<ComputeWorkload>> =
         rawReaders
             .map { it.read() }
             .run {
@@ -87,7 +87,7 @@ public class Sc20ParquetTraceReader(
 
     override fun hasNext(): Boolean = iterator.hasNext()
 
-    override fun next(): TraceEntry<VmWorkload> = iterator.next()
+    override fun next(): TraceEntry<ComputeWorkload> = iterator.next()
 
     override fun close() {}
 }

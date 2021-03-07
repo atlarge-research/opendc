@@ -28,9 +28,8 @@ import mu.KotlinLogging
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
-import org.opendc.compute.core.*
-import org.opendc.compute.core.metal.Node
 import org.opendc.compute.service.driver.*
+import org.opendc.metal.Node
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel

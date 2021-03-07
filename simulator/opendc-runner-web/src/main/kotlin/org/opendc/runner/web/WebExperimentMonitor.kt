@@ -25,12 +25,12 @@ package org.opendc.runner.web
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
-import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.metal.NodeState
 import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.telemetry.HostEvent
+import org.opendc.metal.Node
+import org.opendc.metal.NodeState
 import kotlin.math.max
 
 /**

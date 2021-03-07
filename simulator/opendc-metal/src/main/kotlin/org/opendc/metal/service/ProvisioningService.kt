@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,45 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.core.workload
+package org.opendc.metal.service
 
 import org.opendc.compute.api.Image
-import org.opendc.core.User
-import org.opendc.core.workload.Workload
+import org.opendc.core.services.AbstractServiceKey
+import org.opendc.metal.Node
+import org.opendc.metal.driver.BareMetalDriver
 import java.util.UUID
 
 /**
- * A workload that represents a VM.
- *
- * @property uid A unique identified of this VM.
- * @property name The name of this VM.
- * @property owner The owner of the VM.
- * @property image The image of the VM.
+ * A cloud platform service for provisioning bare-metal compute nodes on the platform.
  */
-public data class VmWorkload(
-    override val uid: UUID,
-    override val name: String,
-    override val owner: User,
-    val image: Image
-) : Workload {
-    override fun equals(other: Any?): Boolean = other is VmWorkload && uid == other.uid
+public interface ProvisioningService {
+    /**
+     * Create a new bare-metal compute node.
+     */
+    public suspend fun create(driver: BareMetalDriver): Node
 
-    override fun hashCode(): Int = uid.hashCode()
+    /**
+     * Obtain the available nodes.
+     */
+    public suspend fun nodes(): Set<Node>
+
+    /**
+     * Refresh the state of a compute node.
+     */
+    public suspend fun refresh(node: Node): Node
+
+    /**
+     * Deploy the specified [Image] on a compute node.
+     */
+    public suspend fun deploy(node: Node, image: Image): Node
+
+    /**
+     * Stop the specified [Node] .
+     */
+    public suspend fun stop(node: Node): Node
+
+    /**
+     * The service key of this service.
+     */
+    public companion object Key : AbstractServiceKey<ProvisioningService>(UUID.randomUUID(), "provisioner")
 }

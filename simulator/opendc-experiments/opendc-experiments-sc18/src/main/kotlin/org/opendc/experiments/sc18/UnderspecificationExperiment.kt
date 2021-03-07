@@ -24,7 +24,6 @@ package org.opendc.experiments.sc18
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.TestCoroutineScope
-import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
 import org.opendc.compute.simulator.SimHostProvisioner
@@ -32,6 +31,7 @@ import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
+import org.opendc.metal.service.ProvisioningService
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer

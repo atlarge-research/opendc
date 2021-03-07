@@ -22,8 +22,8 @@
 
 package org.opendc.format.trace.sc20
 
+import org.opendc.compute.api.ComputeWorkload
 import org.opendc.compute.api.Image
-import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -49,17 +49,17 @@ public class Sc20TraceReader(
     performanceInterferenceModel: PerformanceInterferenceModel,
     selectedVms: List<String>,
     random: Random
-) : TraceReader<VmWorkload> {
+) : TraceReader<ComputeWorkload> {
     /**
      * The internal iterator to use for this reader.
      */
-    private val iterator: Iterator<TraceEntry<VmWorkload>>
+    private val iterator: Iterator<TraceEntry<ComputeWorkload>>
 
     /**
      * Initialize the reader.
      */
     init {
-        val entries = mutableMapOf<UUID, TraceEntry<VmWorkload>>()
+        val entries = mutableMapOf<UUID, TraceEntry<ComputeWorkload>>()
 
         val timestampCol = 0
         val cpuUsageCol = 1
@@ -157,7 +157,7 @@ public class Sc20TraceReader(
                         Random(random.nextInt())
                     )
                 val workload = SimTraceWorkload(flopsFragments.asSequence())
-                val vmWorkload = VmWorkload(
+                val vmWorkload = ComputeWorkload(
                     uuid,
                     "VM Workload $vmId",
                     UnnamedUser,
@@ -184,7 +184,7 @@ public class Sc20TraceReader(
 
     override fun hasNext(): Boolean = iterator.hasNext()
 
-    override fun next(): TraceEntry<VmWorkload> = iterator.next()
+    override fun next(): TraceEntry<ComputeWorkload> = iterator.next()
 
     override fun close() {}
 
@@ -201,6 +201,6 @@ public class Sc20TraceReader(
      */
     private data class TraceEntryImpl(
         override var submissionTime: Long,
-        override val workload: VmWorkload
-    ) : TraceEntry<VmWorkload>
+        override val workload: ComputeWorkload
+    ) : TraceEntry<ComputeWorkload>
 }

@@ -36,12 +36,12 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.core.metal.service.ProvisioningService
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
 import org.opendc.compute.simulator.SimHostProvisioner
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
+import org.opendc.metal.service.ProvisioningService
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer

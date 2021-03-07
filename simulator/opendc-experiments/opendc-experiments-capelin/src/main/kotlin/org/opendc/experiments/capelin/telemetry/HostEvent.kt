@@ -22,7 +22,7 @@
 
 package org.opendc.experiments.capelin.telemetry
 
-import org.opendc.compute.core.metal.Node
+import org.opendc.metal.Node
 
 /**
  * A periodic report of the host machine metrics.

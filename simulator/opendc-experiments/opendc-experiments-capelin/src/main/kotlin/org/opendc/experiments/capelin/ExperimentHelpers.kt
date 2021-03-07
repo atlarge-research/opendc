@@ -32,14 +32,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import org.opendc.compute.api.ComputeWorkload
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
-import org.opendc.compute.core.metal.NODE_CLUSTER
-import org.opendc.compute.core.metal.NodeEvent
-import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.compute.core.workload.VmWorkload
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.HostEvent
@@ -52,6 +49,9 @@ import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
+import org.opendc.metal.NODE_CLUSTER
+import org.opendc.metal.NodeEvent
+import org.opendc.metal.service.ProvisioningService
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.failures.CorrelatedFaultInjector
@@ -244,7 +244,7 @@ public fun attachMonitor(
 public suspend fun processTrace(
     coroutineScope: CoroutineScope,
     clock: Clock,
-    reader: TraceReader<VmWorkload>,
+    reader: TraceReader<ComputeWorkload>,
     scheduler: ComputeService,
     chan: Channel<Unit>,
     monitor: ExperimentMonitor

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Core implementation of the OpenDC Compute service"
+description = "Bare-metal provisioning in OpenDC"
 
 /* Build configuration */
 plugins {
@@ -31,7 +31,6 @@ dependencies {
     api(platform(project(":opendc-platform")))
     api(project(":opendc-core"))
     api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-compute:opendc-compute-service"))
     api(project(":opendc-trace:opendc-trace-core"))
     implementation(project(":opendc-utils"))
 

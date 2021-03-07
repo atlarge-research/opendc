@@ -2,7 +2,7 @@ package org.opendc.compute.simulator.power.api
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.opendc.compute.core.metal.driver.BareMetalDriver
+import org.opendc.metal.driver.BareMetalDriver
 
 public interface CpuPowerModel {
     /**
