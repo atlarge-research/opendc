@@ -27,11 +27,11 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
+import org.opendc.compute.service.driver.HostState
 import org.opendc.experiments.capelin.telemetry.HostEvent
 import org.opendc.experiments.capelin.telemetry.ProvisionerEvent
 import org.opendc.experiments.capelin.telemetry.parquet.ParquetHostEventWriter
 import org.opendc.experiments.capelin.telemetry.parquet.ParquetProvisionerEventWriter
-import org.opendc.metal.Node
 import java.io.File
 
 /**
@@ -51,7 +51,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         File(base, "provisioner-metrics/$partition/data.parquet"),
         bufferSize
     )
-    private val currentHostEvent = mutableMapOf<Node, HostEvent>()
+    private val currentHostEvent = mutableMapOf<Host, HostEvent>()
     private var startTime = -1L
 
     override fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {
@@ -63,12 +63,8 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         }
     }
 
-    override fun reportHostStateChange(
-        time: Long,
-        driver: Host,
-        host: Node
-    ) {
-        logger.debug { "Host ${host.uid} changed state ${host.state} [$time]" }
+    override fun reportHostStateChange(time: Long, host: Host, newState: HostState) {
+        logger.debug { "Host ${host.uid} changed state $newState [$time]" }
 
         val previousEvent = currentHostEvent[host]
 
@@ -97,9 +93,9 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         )
     }
 
-    private val lastPowerConsumption = mutableMapOf<Node, Double>()
+    private val lastPowerConsumption = mutableMapOf<Host, Double>()
 
-    override fun reportPowerConsumption(host: Node, draw: Double) {
+    override fun reportPowerConsumption(host: Host, draw: Double) {
         lastPowerConsumption[host] = draw
     }
 
@@ -112,7 +108,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         cpuUsage: Double,
         cpuDemand: Double,
         numberOfDeployedImages: Int,
-        host: Node,
+        host: Host,
         duration: Long
     ) {
         val previousEvent = currentHostEvent[host]
@@ -130,7 +126,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
                     cpuUsage,
                     cpuDemand,
                     lastPowerConsumption[host] ?: 200.0,
-                    host.flavor.cpuCount
+                    host.model.cpuCount
                 )
 
                 currentHostEvent[host] = event
@@ -148,7 +144,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
                     cpuUsage,
                     cpuDemand,
                     lastPowerConsumption[host] ?: 200.0,
-                    host.flavor.cpuCount
+                    host.model.cpuCount
                 )
 
                 currentHostEvent[host] = event
@@ -168,7 +164,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
                     cpuUsage,
                     cpuDemand,
                     lastPowerConsumption[host] ?: 200.0,
-                    host.flavor.cpuCount
+                    host.model.cpuCount
                 )
 
                 currentHostEvent[host] = event

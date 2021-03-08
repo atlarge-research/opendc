@@ -28,36 +28,24 @@ import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Field
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.bson.Document
 import org.bson.types.ObjectId
-import org.opendc.compute.simulator.SimBareMetalDriver
 import org.opendc.compute.simulator.power.models.LinearPowerModel
-import org.opendc.core.Environment
-import org.opendc.core.Platform
-import org.opendc.core.Zone
-import org.opendc.core.services.ServiceRegistry
 import org.opendc.format.environment.EnvironmentReader
-import org.opendc.metal.NODE_CLUSTER
-import org.opendc.metal.service.ProvisioningService
-import org.opendc.metal.service.SimpleProvisioningService
+import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import java.time.Clock
 import java.util.*
 
 /**
  * A helper class that converts the MongoDB topology into an OpenDC environment.
  */
 public class TopologyParser(private val collection: MongoCollection<Document>, private val id: ObjectId) : EnvironmentReader {
-    /**
-     * Parse the topology with the specified [id].
-     */
-    override suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment {
-        val nodes = mutableListOf<SimBareMetalDriver>()
+
+    public override fun read(): List<MachineDef> {
+        val nodes = mutableListOf<MachineDef>()
         val random = Random(0)
 
         for (machine in fetchMachines(id)) {
@@ -85,36 +73,17 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
             val energyConsumptionW = machine.getList("cpus", Document::class.java).sumBy { it.getInteger("energyConsumptionW") }.toDouble()
 
             nodes.add(
-                SimBareMetalDriver(
-                    coroutineScope,
-                    clock,
+                MachineDef(
                     UUID(random.nextLong(), random.nextLong()),
                     "node-$clusterId-$position",
-                    mapOf(NODE_CLUSTER to clusterId),
+                    mapOf("cluster" to clusterId),
                     SimMachineModel(processors, memoryUnits),
                     LinearPowerModel(2 * energyConsumptionW, .5)
                 )
             )
         }
 
-        val provisioningService = SimpleProvisioningService()
-        coroutineScope.launch {
-            for (node in nodes) {
-                provisioningService.create(node)
-            }
-        }
-
-        val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
-
-        val platform = Platform(
-            UUID.randomUUID(),
-            "opendc-platform",
-            listOf(
-                Zone(UUID.randomUUID(), "zone", serviceRegistry)
-            )
-        )
-
-        return Environment(fetchName(id), null, listOf(platform))
+        return nodes
     }
 
     override fun close() {}

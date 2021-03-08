@@ -29,34 +29,43 @@ import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
-import org.opendc.metal.Node
+import org.opendc.compute.simulator.power.api.CpuPowerModel
+import org.opendc.compute.simulator.power.api.Powerable
+import org.opendc.compute.simulator.power.models.ConstantPowerModel
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.workload.SimResourceCommand
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.failures.FailureDomain
 import org.opendc.utils.flow.EventFlow
+import java.time.Clock
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
 /**
  * A [Host] that is simulates virtual machines on a physical machine using [SimHypervisor].
  */
 public class SimHost(
-    public val node: Node,
-    private val coroutineScope: CoroutineScope,
-    hypervisor: SimHypervisorProvider
-) : Host, SimWorkload {
+    override val uid: UUID,
+    override val name: String,
+    model: SimMachineModel,
+    override val meta: Map<String, Any>,
+    context: CoroutineContext,
+    clock: Clock,
+    hypervisor: SimHypervisorProvider,
+    cpuPowerModel: CpuPowerModel = ConstantPowerModel(0.0),
+) : Host, FailureDomain, Powerable, AutoCloseable {
+    /**
+     * The [CoroutineScope] of the host bounded by the lifecycle of the host.
+     */
+    override val scope: CoroutineScope = CoroutineScope(context)
+
     /**
      * The logger instance of this server.
      */
     private val logger = KotlinLogging.logger {}
-
-    /**
-     * The execution context in which the [Host] runs.
-     */
-    private lateinit var ctx: SimExecutionContext
 
     override val events: Flow<HostEvent>
         get() = _events
@@ -70,12 +79,17 @@ public class SimHost(
     /**
      * Current total memory use of the images on this hypervisor.
      */
-    private var availableMemory: Long = 0
+    private var availableMemory: Long = model.memory.map { it.size }.sum()
+
+    /**
+     * The machine to run on.
+     */
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(scope, clock, model)
 
     /**
      * The hypervisor to run multiple workloads.
      */
-    private val hypervisor = hypervisor.create(
+    public val hypervisor: SimHypervisor = hypervisor.create(
         object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
@@ -107,26 +121,38 @@ public class SimHost(
      */
     private val guests = HashMap<Server, Guest>()
 
-    override val uid: UUID
-        get() = node.uid
-
-    override val name: String
-        get() = node.name
-
-    override val model: HostModel
-        get() = HostModel(node.flavor.cpuCount, node.flavor.memorySize)
-
     override val state: HostState
         get() = _state
-    private var _state: HostState = HostState.UP
+    private var _state: HostState = HostState.DOWN
         set(value) {
             listeners.forEach { it.onStateChanged(this, value) }
             field = value
         }
 
+    override val model: HostModel = HostModel(model.cpus.size, model.memory.map { it.size }.sum())
+
+    override val powerDraw: Flow<Double> = cpuPowerModel.getPowerDraw(this)
+
+    init {
+        // Launch hypervisor onto machine
+        scope.launch {
+            try {
+                _state = HostState.UP
+                machine.run(this@SimHost.hypervisor, emptyMap())
+            } catch (_: CancellationException) {
+                // Ignored
+            } catch (cause: Throwable) {
+                logger.error(cause) { "Host failed" }
+                throw cause
+            } finally {
+                _state = HostState.DOWN
+            }
+        }
+    }
+
     override fun canFit(server: Server): Boolean {
         val sufficientMemory = availableMemory > server.flavor.memorySize
-        val enoughCpus = ctx.machine.cpus.size >= server.flavor.cpuCount
+        val enoughCpus = machine.model.cpus.size >= server.flavor.cpuCount
         val canFit = hypervisor.canFit(server.flavor.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
@@ -176,11 +202,16 @@ public class SimHost(
         listeners.remove(listener)
     }
 
+    override fun close() {
+        scope.cancel()
+        _state = HostState.DOWN
+    }
+
     /**
      * Convert flavor to machine model.
      */
     private fun Flavor.toMachineModel(): SimMachineModel {
-        val originalCpu = ctx.machine.cpus[0]
+        val originalCpu = machine.model.cpus[0]
         val processingNode = originalCpu.node.copy(coreCount = cpuCount)
         val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
@@ -208,6 +239,14 @@ public class SimHost(
         listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
 
         _events.emit(HostEvent.VmsUpdated(this@SimHost, guests.count { it.value.state == ServerState.ACTIVE }, availableMemory))
+    }
+
+    override suspend fun fail() {
+        _state = HostState.DOWN
+    }
+
+    override suspend fun recover() {
+        _state = HostState.UP
     }
 
     /**
@@ -251,7 +290,7 @@ public class SimHost(
             assert(job == null) { "Concurrent job running" }
             val workload = server.image.tags["workload"] as SimWorkload
 
-            val job = coroutineScope.launch {
+            val job = scope.launch {
                 delay(1) // TODO Introduce boot time
                 init()
                 cont.resume(Unit)
@@ -285,19 +324,5 @@ public class SimHost(
             availableMemory += server.flavor.memorySize
             onGuestStop(this)
         }
-    }
-
-    override fun onStart(ctx: SimExecutionContext) {
-        this.ctx = ctx
-        this.availableMemory = ctx.machine.memory.map { it.size }.sum()
-        this.hypervisor.onStart(ctx)
-    }
-
-    override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-        return hypervisor.onStart(ctx, cpu)
-    }
-
-    override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
-        return hypervisor.onNext(ctx, cpu, remainingWork)
     }
 }

@@ -25,22 +25,14 @@ package org.opendc.format.environment.sc20
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import kotlinx.coroutines.CoroutineScope
-import org.opendc.compute.simulator.SimBareMetalDriver
 import org.opendc.compute.simulator.power.models.LinearPowerModel
-import org.opendc.core.Environment
-import org.opendc.core.Platform
-import org.opendc.core.Zone
-import org.opendc.core.services.ServiceRegistry
 import org.opendc.format.environment.EnvironmentReader
-import org.opendc.metal.service.ProvisioningService
-import org.opendc.metal.service.SimpleProvisioningService
+import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import java.io.InputStream
-import java.time.Clock
 import java.util.*
 
 /**
@@ -55,9 +47,12 @@ public class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
      */
     private val setup: Setup = mapper.readValue(input)
 
-    override suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment {
+    /**
+     * Read the environment.
+     */
+    public override fun read(): List<MachineDef> {
         var counter = 0
-        val nodes = setup.rooms.flatMap { room ->
+        return setup.rooms.flatMap { room ->
             room.objects.flatMap { roomObject ->
                 when (roomObject) {
                     is RoomObject.Rack -> {
@@ -81,11 +76,9 @@ public class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
-                            SimBareMetalDriver(
-                                coroutineScope,
-                                clock,
-                                UUID.randomUUID(),
-                                "node-${counter++}",
+                            MachineDef(
+                                UUID(0L, counter++.toLong()),
+                                "node-$counter",
                                 emptyMap(),
                                 SimMachineModel(cores, memories),
                                 // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
@@ -98,23 +91,6 @@ public class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
                 }
             }
         }
-
-        val provisioningService = SimpleProvisioningService()
-        for (node in nodes) {
-            provisioningService.create(node)
-        }
-
-        val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
-
-        val platform = Platform(
-            UUID.randomUUID(),
-            "sc20-platform",
-            listOf(
-                Zone(UUID.randomUUID(), "zone", serviceRegistry)
-            )
-        )
-
-        return Environment(setup.name, null, listOf(platform))
     }
 
     override fun close() {}

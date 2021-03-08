@@ -33,12 +33,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.api.ComputeWorkload
+import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
-import org.opendc.experiments.capelin.experiment.attachMonitor
-import org.opendc.experiments.capelin.experiment.createFailureDomain
-import org.opendc.experiments.capelin.experiment.createProvisioner
-import org.opendc.experiments.capelin.experiment.processTrace
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
@@ -46,7 +43,6 @@ import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
-import org.opendc.metal.Node
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
 import java.io.File
@@ -101,15 +97,13 @@ class CapelinIntegrationTest {
         val tracer = EventTracer(clock)
 
         testScope.launch {
-            val res = createProvisioner(
+            scheduler = createComputeService(
                 this,
                 clock,
                 environmentReader,
                 allocationPolicy,
                 tracer
             )
-            val bareMetalProvisioner = res.metal
-            scheduler = res.compute
 
             val failureDomain = if (failures) {
                 println("ENABLING failures")
@@ -118,7 +112,7 @@ class CapelinIntegrationTest {
                     clock,
                     seed,
                     24.0 * 7,
-                    bareMetalProvisioner,
+                    scheduler,
                     chan
                 )
             } else {
@@ -140,7 +134,6 @@ class CapelinIntegrationTest {
             failureDomain?.cancel()
             scheduler.close()
             monitor.close()
-            res.provisioner.close()
         }
 
         runSimulation()
@@ -166,7 +159,7 @@ class CapelinIntegrationTest {
         val tracer = EventTracer(clock)
 
         testScope.launch {
-            val (_, provisioner, scheduler) = createProvisioner(
+            val scheduler = createComputeService(
                 this,
                 clock,
                 environmentReader,
@@ -187,7 +180,6 @@ class CapelinIntegrationTest {
 
             scheduler.close()
             monitor.close()
-            provisioner.close()
         }
 
         runSimulation()
@@ -241,7 +233,7 @@ class CapelinIntegrationTest {
             cpuUsage: Double,
             cpuDemand: Double,
             numberOfDeployedImages: Int,
-            host: Node,
+            host: Host,
             duration: Long
         ) {
             totalRequestedBurst += requestedBurst

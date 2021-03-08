@@ -46,11 +46,11 @@ import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolic
 import org.opendc.compute.service.scheduler.ProvisionedCoresAllocationPolicy
 import org.opendc.compute.service.scheduler.RandomAllocationPolicy
 import org.opendc.compute.simulator.allocation.*
-import org.opendc.experiments.capelin.experiment.attachMonitor
-import org.opendc.experiments.capelin.experiment.createFailureDomain
-import org.opendc.experiments.capelin.experiment.createProvisioner
-import org.opendc.experiments.capelin.experiment.processTrace
+import org.opendc.experiments.capelin.attachMonitor
+import org.opendc.experiments.capelin.createComputeService
+import org.opendc.experiments.capelin.createFailureDomain
 import org.opendc.experiments.capelin.model.Workload
+import org.opendc.experiments.capelin.processTrace
 import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
 import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
@@ -247,7 +247,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
         val tracer = EventTracer(clock)
 
         testScope.launch {
-            val (bareMetalProvisioner, provisioner, scheduler) = createProvisioner(
+            val scheduler = createComputeService(
                 this,
                 clock,
                 environment,
@@ -262,7 +262,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                     clock,
                     seeder.nextInt(),
                     operational.get("failureFrequency", Number::class.java)?.toDouble() ?: 24.0 * 7,
-                    bareMetalProvisioner,
+                    scheduler,
                     chan
                 )
             } else {
@@ -287,7 +287,6 @@ public class RunnerCli : CliktCommand(name = "runner") {
 
             failureDomain?.cancel()
             scheduler.close()
-            provisioner.close()
         }
 
         try {

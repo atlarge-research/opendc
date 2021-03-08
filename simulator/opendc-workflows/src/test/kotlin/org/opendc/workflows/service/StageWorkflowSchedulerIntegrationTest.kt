@@ -25,7 +25,6 @@
 package org.opendc.workflows.service
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -38,10 +37,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
-import org.opendc.compute.simulator.SimHostProvisioner
+import org.opendc.compute.simulator.SimHost
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
-import org.opendc.metal.service.ProvisioningService
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
@@ -72,23 +70,24 @@ internal class StageWorkflowSchedulerIntegrationTest {
         val clock = DelayControllerClockAdapter(testScope)
         val tracer = EventTracer(clock)
 
-        val schedulerAsync = testScope.async {
-            val environment = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
-                .use { it.construct(testScope, clock) }
+        val scheduler = let {
+            val hosts = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
+                .use { it.read() }
+                .map { def ->
+                    SimHost(
+                        def.uid,
+                        def.name,
+                        def.model,
+                        def.meta,
+                        testScope.coroutineContext,
+                        clock,
+                        SimSpaceSharedHypervisorProvider()
+                    )
+                }
 
-            val bareMetal = environment.platforms[0].zones[0].services[ProvisioningService]
-
-            // Wait for the bare metal nodes to be spawned
-            delay(10)
-
-            val provisioner = SimHostProvisioner(testScope.coroutineContext, bareMetal, SimSpaceSharedHypervisorProvider())
-            val hosts = provisioner.provisionAll()
             val compute = ComputeService(testScope.coroutineContext, clock, tracer, NumberOfActiveServersAllocationPolicy(), schedulingQuantum = 1000)
 
             hosts.forEach { compute.addHost(it) }
-
-            // Wait for the hypervisors to be spawned
-            delay(10)
 
             StageWorkflowService(
                 testScope,
@@ -104,7 +103,6 @@ internal class StageWorkflowSchedulerIntegrationTest {
         }
 
         testScope.launch {
-            val scheduler = schedulerAsync.await()
             scheduler.events
                 .onEach { event ->
                     when (event) {
@@ -119,7 +117,6 @@ internal class StageWorkflowSchedulerIntegrationTest {
 
         testScope.launch {
             val reader = GwfTraceReader(object {}.javaClass.getResourceAsStream("/trace.gwf"))
-            val scheduler = schedulerAsync.await()
 
             while (reader.hasNext()) {
                 val (time, job) = reader.next()

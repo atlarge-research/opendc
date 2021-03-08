@@ -26,12 +26,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
-import org.opendc.compute.simulator.SimHostProvisioner
+import org.opendc.compute.simulator.SimHost
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
-import org.opendc.metal.service.ProvisioningService
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
@@ -84,16 +83,20 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
         }
 
         testScope.launch {
-            val environment = Sc18EnvironmentReader(FileInputStream(File(environment)))
-                .use { it.construct(testScope, clock) }
+            val hosts = Sc18EnvironmentReader(FileInputStream(File(environment)))
+                .use { it.read() }
+                .map { def ->
+                    SimHost(
+                        def.uid,
+                        def.name,
+                        def.model,
+                        def.meta,
+                        testScope.coroutineContext,
+                        clock,
+                        SimSpaceSharedHypervisorProvider()
+                    )
+                }
 
-            val bareMetal = environment.platforms[0].zones[0].services[ProvisioningService]
-
-            // Wait for the bare metal nodes to be spawned
-            delay(10)
-
-            val provisioner = SimHostProvisioner(testScope.coroutineContext, bareMetal, SimSpaceSharedHypervisorProvider())
-            val hosts = provisioner.provisionAll()
             val compute = ComputeService(
                 testScope.coroutineContext,
                 clock,
@@ -102,9 +105,6 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
             )
 
             hosts.forEach { compute.addHost(it) }
-
-            // Wait for the hypervisors to be spawned
-            delay(10)
 
             val scheduler = StageWorkflowService(
                 testScope,

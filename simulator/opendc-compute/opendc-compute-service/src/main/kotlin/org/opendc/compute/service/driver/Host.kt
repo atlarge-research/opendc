@@ -51,6 +51,11 @@ public interface Host {
     public val state: HostState
 
     /**
+     * Meta-data associated with the host.
+     */
+    public val meta: Map<String, Any>
+
+    /**
      * The events emitted by the driver.
      */
     public val events: Flow<HostEvent>

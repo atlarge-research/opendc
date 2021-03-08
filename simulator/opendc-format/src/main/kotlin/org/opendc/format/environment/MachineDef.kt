@@ -20,53 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.metal
+package org.opendc.format.environment
 
-import kotlinx.coroutines.flow.Flow
-import org.opendc.compute.api.Flavor
-import org.opendc.compute.api.Image
-import org.opendc.core.Identity
-import java.util.UUID
+import org.opendc.compute.simulator.power.api.CpuPowerModel
+import org.opendc.simulator.compute.SimMachineModel
+import java.util.*
 
-/**
- * A bare-metal compute node.
- */
-public data class Node(
-    /**
-     * The unique identifier of the node.
-     */
-    public override val uid: UUID,
-
-    /**
-     * The optional name of the node.
-     */
-    public override val name: String,
-
-    /**
-     * Metadata of the node.
-     */
-    public val metadata: Map<String, Any>,
-
-    /**
-     * The last known state of the compute node.
-     */
-    public val state: NodeState,
-
-    /**
-     * The flavor of the node.
-     */
-    public val flavor: Flavor,
-
-    /**
-     * The boot image of the node.
-     */
-    public val image: Image,
-
-    /**
-     * The events that are emitted by the node.
-     */
-    public val events: Flow<NodeEvent>
-) : Identity {
-    override fun hashCode(): Int = uid.hashCode()
-    override fun equals(other: Any?): Boolean = other is Node && uid == other.uid
-}
+public data class MachineDef(
+    val uid: UUID,
+    val name: String,
+    val meta: Map<String, Any>,
+    val model: SimMachineModel,
+    val powerModel: CpuPowerModel
+)

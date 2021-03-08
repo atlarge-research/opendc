@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.experiment
+package org.opendc.experiments.capelin
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,23 +39,20 @@ import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.ComputeServiceEvent
+import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostEvent
+import org.opendc.compute.service.driver.HostListener
+import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.AllocationPolicy
-import org.opendc.compute.simulator.SimBareMetalDriver
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.simulator.SimHostProvisioner
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
-import org.opendc.metal.NODE_CLUSTER
-import org.opendc.metal.NodeEvent
-import org.opendc.metal.service.ProvisioningService
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.failures.CorrelatedFaultInjector
-import org.opendc.simulator.failures.FailureDomain
 import org.opendc.simulator.failures.FaultInjector
 import org.opendc.trace.core.EventTracer
 import java.io.File
@@ -72,20 +69,20 @@ private val logger = KotlinLogging.logger {}
 /**
  * Construct the failure domain for the experiments.
  */
-public suspend fun createFailureDomain(
+public fun createFailureDomain(
     coroutineScope: CoroutineScope,
     clock: Clock,
     seed: Int,
     failureInterval: Double,
-    bareMetalProvisioner: ProvisioningService,
+    service: ComputeService,
     chan: Channel<Unit>
 ): CoroutineScope {
     val job = coroutineScope.launch {
         chan.receive()
         val random = Random(seed)
         val injectors = mutableMapOf<String, FaultInjector>()
-        for (node in bareMetalProvisioner.nodes()) {
-            val cluster = node.metadata[NODE_CLUSTER] as String
+        for (host in service.hosts) {
+            val cluster = host.meta["cluster"] as String
             val injector =
                 injectors.getOrPut(cluster) {
                     createFaultInjector(
@@ -95,7 +92,7 @@ public suspend fun createFailureDomain(
                         failureInterval
                     )
                 }
-            injector.enqueue(node.metadata["driver"] as FailureDomain)
+            injector.enqueue(host as SimHost)
         }
     }
     return CoroutineScope(coroutineScope.coroutineContext + job)
@@ -139,41 +136,39 @@ public fun createTraceReader(
     )
 }
 
-public data class ProvisionerResult(
-    val metal: ProvisioningService,
-    val provisioner: SimHostProvisioner,
-    val compute: ComputeServiceImpl
-)
-
 /**
- * Construct the environment for a VM provisioner and return the provisioner instance.
+ * Construct the environment for a simulated compute service..
  */
-public suspend fun createProvisioner(
+public fun createComputeService(
     coroutineScope: CoroutineScope,
     clock: Clock,
     environmentReader: EnvironmentReader,
     allocationPolicy: AllocationPolicy,
     eventTracer: EventTracer
-): ProvisionerResult {
-    val environment = environmentReader.use { it.construct(coroutineScope, clock) }
-    val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService]
+): ComputeServiceImpl {
+    val hosts = environmentReader
+        .use { it.read() }
+        .map { def ->
+            SimHost(
+                def.uid,
+                def.name,
+                def.model,
+                def.meta,
+                coroutineScope.coroutineContext,
+                clock,
+                SimFairShareHypervisorProvider(),
+                def.powerModel
+            )
+        }
 
-    // Wait for the bare metal nodes to be spawned
-    delay(10)
-
-    val provisioner = SimHostProvisioner(coroutineScope.coroutineContext, bareMetalProvisioner, SimFairShareHypervisorProvider())
-    val hosts = provisioner.provisionAll()
-
-    val scheduler = ComputeService(coroutineScope.coroutineContext, clock, eventTracer, allocationPolicy) as ComputeServiceImpl
+    val scheduler =
+        ComputeService(coroutineScope.coroutineContext, clock, eventTracer, allocationPolicy) as ComputeServiceImpl
 
     for (host in hosts) {
         scheduler.addHost(host)
     }
 
-    // Wait for the hypervisors to be spawned
-    delay(10)
-
-    return ProvisionerResult(bareMetalProvisioner, provisioner, scheduler)
+    return scheduler
 }
 
 /**
@@ -186,25 +181,16 @@ public fun attachMonitor(
     scheduler: ComputeService,
     monitor: ExperimentMonitor
 ) {
-
-    val hypervisors = scheduler.hosts
-
-    // Monitor hypervisor events
-    for (hypervisor in hypervisors) {
-        // TODO Do not expose Host directly but use Hypervisor class.
-        val server = (hypervisor as SimHost).node
-        monitor.reportHostStateChange(clock.millis(), hypervisor, server)
-        server.events
-            .onEach { event ->
-                val time = clock.millis()
-                when (event) {
-                    is NodeEvent.StateChanged -> {
-                        monitor.reportHostStateChange(time, hypervisor, event.node)
-                    }
-                }
+    // Monitor host events
+    for (host in scheduler.hosts) {
+        monitor.reportHostStateChange(clock.millis(), host, HostState.UP)
+        host.addListener(object : HostListener {
+            override fun onStateChanged(host: Host, newState: HostState) {
+                monitor.reportHostStateChange(clock.millis(), host, newState)
             }
-            .launchIn(coroutineScope)
-        hypervisor.events
+        })
+
+        host.events
             .onEach { event ->
                 when (event) {
                     is HostEvent.SliceFinished -> monitor.reportHostSlice(
@@ -216,15 +202,14 @@ public fun attachMonitor(
                         event.cpuUsage,
                         event.cpuDemand,
                         event.numberOfDeployedImages,
-                        (event.driver as SimHost).node
+                        event.driver
                     )
                 }
             }
             .launchIn(coroutineScope)
 
-        val driver = server.metadata["driver"] as SimBareMetalDriver
-        driver.powerDraw
-            .onEach { monitor.reportPowerConsumption(server, it) }
+        (host as SimHost).powerDraw
+            .onEach { monitor.reportPowerConsumption(host, it) }
             .launchIn(coroutineScope)
     }
 
