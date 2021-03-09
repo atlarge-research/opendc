@@ -30,10 +30,9 @@ plugins {
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
     api(project(":opendc-harness"))
     implementation(project(":opendc-format"))
-    implementation(project(":opendc-workflows"))
+    implementation(project(":opendc-workflow:opendc-workflow-service"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-compute:opendc-compute-simulator"))
 }

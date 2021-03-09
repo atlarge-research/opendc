@@ -24,7 +24,7 @@ package org.opendc.experiments.sc18
 
 import org.opendc.trace.core.EventStream
 import org.opendc.trace.core.onEvent
-import org.opendc.workflows.service.WorkflowEvent
+import org.opendc.workflow.service.WorkflowEvent
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine

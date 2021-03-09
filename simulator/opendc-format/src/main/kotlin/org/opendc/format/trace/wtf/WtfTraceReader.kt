@@ -25,15 +25,13 @@ package org.opendc.format.trace.wtf
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
-import org.opendc.compute.api.Image
-import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
-import org.opendc.workflows.workload.Job
-import org.opendc.workflows.workload.Task
-import org.opendc.workflows.workload.WORKFLOW_TASK_CORES
-import org.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
+import org.opendc.workflow.api.Job
+import org.opendc.workflow.api.Task
+import org.opendc.workflow.api.WORKFLOW_TASK_CORES
+import org.opendc.workflow.api.WORKFLOW_TASK_DEADLINE
 import java.util.UUID
 import kotlin.math.min
 
@@ -53,10 +51,12 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
      * Initialize the reader.
      */
     init {
-        val entries = mutableMapOf<Long, TraceEntryImpl>()
+        val workflows = mutableMapOf<Long, Job>()
+        val starts = mutableMapOf<Long, Long>()
         val tasks = mutableMapOf<Long, Task>()
         val taskDependencies = mutableMapOf<Task, List<Long>>()
 
+        @Suppress("DEPRECATION")
         val reader = AvroParquetReader.builder<GenericRecord>(Path(path, "tasks/schema-1.0")).build()
 
         while (true) {
@@ -74,29 +74,22 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
 
             val flops: Long = 4100 * (runtime / 1000) * cores
 
-            val entry = entries.getOrPut(workflowId) {
-                TraceEntryImpl(submitTime, Job(UUID(0L, taskId), "<unnamed>", UnnamedUser, HashSet()))
+            val workflow = workflows.getOrPut(workflowId) {
+                Job(UUID(0L, workflowId), "<unnamed>", HashSet())
             }
-            val workflow = entry.workload
             val workload = SimFlopsWorkload(flops)
             val task = Task(
                 UUID(0L, taskId),
                 "<unnamed>",
-                Image(
-                    UUID.randomUUID(),
-                    "<unnamed>",
-                    mapOf(
-                        "workload" to workload
-                    )
-                ),
                 HashSet(),
                 mapOf(
+                    "workload" to workload,
                     WORKFLOW_TASK_CORES to cores,
                     WORKFLOW_TASK_DEADLINE to runtime
                 )
             )
 
-            entry.submissionTime = min(entry.submissionTime, submitTime)
+            starts.merge(workflowId, submitTime, ::min)
             (workflow.tasks as MutableSet<Task>).add(task)
             tasks[taskId] = task
             taskDependencies[task] = dependencies
@@ -112,7 +105,9 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
         }
 
         // Create the entry iterator
-        iterator = entries.values.sortedBy { it.submissionTime }.iterator()
+        iterator = workflows.map { (id, job) -> TraceEntry(job.uid, job.name, starts.getValue(id), job, job.metadata) }
+            .sortedBy { it.start }
+            .iterator()
     }
 
     override fun hasNext(): Boolean = iterator.hasNext()
@@ -120,20 +115,4 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
     override fun next(): TraceEntry<Job> = iterator.next()
 
     override fun close() {}
-
-    /**
-     * An unnamed user.
-     */
-    private object UnnamedUser : User {
-        override val name: String = "<unnamed>"
-        override val uid: UUID = UUID.randomUUID()
-    }
-
-    /**
-     * An entry in the trace.
-     */
-    private data class TraceEntryImpl(
-        override var submissionTime: Long,
-        override val workload: Job
-    ) : TraceEntry<Job>
 }

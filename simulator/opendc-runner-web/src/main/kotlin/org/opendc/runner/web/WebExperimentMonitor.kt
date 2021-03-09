@@ -27,10 +27,9 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
+import org.opendc.compute.service.driver.HostState
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.telemetry.HostEvent
-import org.opendc.metal.Node
-import org.opendc.metal.NodeState
 import kotlin.math.max
 
 /**
@@ -38,7 +37,7 @@ import kotlin.math.max
  */
 public class WebExperimentMonitor : ExperimentMonitor {
     private val logger = KotlinLogging.logger {}
-    private val currentHostEvent = mutableMapOf<Node, HostEvent>()
+    private val currentHostEvent = mutableMapOf<Host, HostEvent>()
     private var startTime = -1L
 
     override fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {
@@ -50,12 +49,8 @@ public class WebExperimentMonitor : ExperimentMonitor {
         }
     }
 
-    override fun reportHostStateChange(
-        time: Long,
-        driver: Host,
-        host: Node
-    ) {
-        logger.debug { "Host ${host.uid} changed state ${host.state} [$time]" }
+    override fun reportHostStateChange(time: Long, host: Host, newState: HostState) {
+        logger.debug { "Host ${host.uid} changed state $newState [$time]" }
 
         val previousEvent = currentHostEvent[host]
 
@@ -84,9 +79,9 @@ public class WebExperimentMonitor : ExperimentMonitor {
         )
     }
 
-    private val lastPowerConsumption = mutableMapOf<Node, Double>()
+    private val lastPowerConsumption = mutableMapOf<Host, Double>()
 
-    override fun reportPowerConsumption(host: Node, draw: Double) {
+    override fun reportPowerConsumption(host: Host, draw: Double) {
         lastPowerConsumption[host] = draw
     }
 
@@ -99,7 +94,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
         cpuUsage: Double,
         cpuDemand: Double,
         numberOfDeployedImages: Int,
-        host: Node,
+        host: Host,
         duration: Long
     ) {
         val previousEvent = currentHostEvent[host]
@@ -117,7 +112,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
                     cpuUsage,
                     cpuDemand,
                     lastPowerConsumption[host] ?: 200.0,
-                    host.flavor.cpuCount
+                    host.model.cpuCount
                 )
 
                 currentHostEvent[host] = event
@@ -135,7 +130,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
                     cpuUsage,
                     cpuDemand,
                     lastPowerConsumption[host] ?: 200.0,
-                    host.flavor.cpuCount
+                    host.model.cpuCount
                 )
 
                 currentHostEvent[host] = event
@@ -155,7 +150,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
                     cpuUsage,
                     cpuDemand,
                     lastPowerConsumption[host] ?: 200.0,
-                    host.flavor.cpuCount
+                    host.model.cpuCount
                 )
 
                 currentHostEvent[host] = event
@@ -164,7 +159,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
     }
 
     private var hostAggregateMetrics: AggregateHostMetrics = AggregateHostMetrics()
-    private val hostMetrics: MutableMap<Node, HostMetrics> = mutableMapOf()
+    private val hostMetrics: MutableMap<Host, HostMetrics> = mutableMapOf()
 
     private fun processHostEvent(event: HostEvent) {
         val slices = event.duration / SLICE_LENGTH
@@ -175,14 +170,14 @@ public class WebExperimentMonitor : ExperimentMonitor {
             hostAggregateMetrics.totalOvercommittedBurst + event.overcommissionedBurst,
             hostAggregateMetrics.totalInterferedBurst + event.interferedBurst,
             hostAggregateMetrics.totalPowerDraw + (slices * (event.powerDraw / 12)),
-            hostAggregateMetrics.totalFailureSlices + if (event.node.state != NodeState.ACTIVE) slices.toLong() else 0,
-            hostAggregateMetrics.totalFailureVmSlices + if (event.node.state != NodeState.ACTIVE) event.vmCount * slices.toLong() else 0
+            hostAggregateMetrics.totalFailureSlices + if (event.host.state != HostState.UP) slices else 0,
+            hostAggregateMetrics.totalFailureVmSlices + if (event.host.state != HostState.UP) event.vmCount * slices else 0
         )
 
-        hostMetrics.compute(event.node) { _, prev ->
+        hostMetrics.compute(event.host) { _, prev ->
             HostMetrics(
-                (event.cpuUsage.takeIf { event.node.state == NodeState.ACTIVE } ?: 0.0) + (prev?.cpuUsage ?: 0.0),
-                (event.cpuDemand.takeIf { event.node.state == NodeState.ACTIVE } ?: 0.0) + (prev?.cpuDemand ?: 0.0),
+                (event.cpuUsage.takeIf { event.host.state == HostState.UP } ?: 0.0) + (prev?.cpuUsage ?: 0.0),
+                (event.cpuDemand.takeIf { event.host.state == HostState.UP } ?: 0.0) + (prev?.cpuDemand ?: 0.0),
                 event.vmCount + (prev?.vmCount ?: 0),
                 1 + (prev?.count ?: 0)
             )

@@ -24,7 +24,6 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -39,8 +38,6 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.driver.HostEvent
-import org.opendc.metal.Node
-import org.opendc.metal.NodeState
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -82,18 +79,13 @@ internal class SimHostTest {
         var grantedWork = 0L
         var overcommittedWork = 0L
 
-        val node = Node(
-            UUID.randomUUID(), "name", emptyMap(), NodeState.SHUTOFF,
-            Flavor(machineModel.cpus.size, machineModel.memory.map { it.size }.sum()), Image.EMPTY, emptyFlow()
-        )
-
         scope.launch {
-            val virtDriver = SimHost(node, this, SimFairShareHypervisorProvider())
-            val vmm = Image(UUID.randomUUID(), "vmm", mapOf("workload" to virtDriver))
+            val virtDriver = SimHost(UUID.randomUUID(), "test", machineModel, emptyMap(), coroutineContext, clock, SimFairShareHypervisorProvider())
             val duration = 5 * 60L
-            val vmImageA = Image(
+            val vmImageA = MockImage(
                 UUID.randomUUID(),
                 "<unnamed>",
+                emptyMap(),
                 mapOf(
                     "workload" to SimTraceWorkload(
                         sequenceOf(
@@ -105,9 +97,10 @@ internal class SimHostTest {
                     )
                 )
             )
-            val vmImageB = Image(
+            val vmImageB = MockImage(
                 UUID.randomUUID(),
                 "<unnamed>",
+                emptyMap(),
                 mapOf(
                     "workload" to SimTraceWorkload(
                         sequenceOf(
@@ -120,16 +113,9 @@ internal class SimHostTest {
                 )
             )
 
-            val metalDriver =
-                SimBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), machineModel)
-
-            metalDriver.init()
-            metalDriver.setImage(vmm)
-            metalDriver.start()
-
             delay(5)
 
-            val flavor = Flavor(2, 0)
+            val flavor = MockFlavor(2, 0)
             virtDriver.events
                 .onEach { event ->
                     when (event) {
@@ -157,14 +143,56 @@ internal class SimHostTest {
         )
     }
 
+    private class MockFlavor(
+        override val cpuCount: Int,
+        override val memorySize: Long
+    ) : Flavor {
+        override val uid: UUID = UUID.randomUUID()
+        override val name: String = "test"
+        override val labels: Map<String, String> = emptyMap()
+        override val meta: Map<String, Any> = emptyMap()
+
+        override suspend fun delete() {
+            throw NotImplementedError()
+        }
+
+        override suspend fun refresh() {
+            throw NotImplementedError()
+        }
+    }
+
+    private class MockImage(
+        override val uid: UUID,
+        override val name: String,
+        override val labels: Map<String, String>,
+        override val meta: Map<String, Any>
+    ) : Image {
+        override suspend fun delete() {
+            throw NotImplementedError()
+        }
+
+        override suspend fun refresh() {
+            throw NotImplementedError()
+        }
+    }
+
     private class MockServer(
         override val uid: UUID,
         override val name: String,
         override val flavor: Flavor,
         override val image: Image
     ) : Server {
-        override val tags: Map<String, String> = emptyMap()
-        override val state: ServerState = ServerState.BUILD
+        override val labels: Map<String, String> = emptyMap()
+
+        override val meta: Map<String, Any> = emptyMap()
+
+        override val state: ServerState = ServerState.TERMINATED
+
+        override suspend fun start() {}
+
+        override suspend fun stop() {}
+
+        override suspend fun delete() {}
 
         override fun watch(watcher: ServerWatcher) {}
 

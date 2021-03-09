@@ -35,10 +35,6 @@ import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolic
 import org.opendc.compute.service.scheduler.ProvisionedCoresAllocationPolicy
 import org.opendc.compute.service.scheduler.RandomAllocationPolicy
 import org.opendc.compute.simulator.allocation.*
-import org.opendc.experiments.capelin.experiment.attachMonitor
-import org.opendc.experiments.capelin.experiment.createFailureDomain
-import org.opendc.experiments.capelin.experiment.createProvisioner
-import org.opendc.experiments.capelin.experiment.processTrace
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
@@ -157,7 +153,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
         )
 
         testScope.launch {
-            val (bareMetalProvisioner, provisioner, scheduler) = createProvisioner(
+            val scheduler = createComputeService(
                 this,
                 clock,
                 environment,
@@ -172,7 +168,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
                     clock,
                     seeder.nextInt(),
                     operationalPhenomena.failureFrequency,
-                    bareMetalProvisioner,
+                    scheduler,
                     chan
                 )
             } else {
@@ -197,7 +193,6 @@ public abstract class Portfolio(name: String) : Experiment(name) {
 
             failureDomain?.cancel()
             scheduler.close()
-            provisioner.close()
         }
 
         try {

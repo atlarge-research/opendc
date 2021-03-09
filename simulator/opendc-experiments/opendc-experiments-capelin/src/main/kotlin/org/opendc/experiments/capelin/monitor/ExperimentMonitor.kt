@@ -26,7 +26,7 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
-import org.opendc.metal.Node
+import org.opendc.compute.service.driver.HostState
 import java.io.Closeable
 
 /**
@@ -41,17 +41,12 @@ public interface ExperimentMonitor : Closeable {
     /**
      * This method is invoked when the state of a host changes.
      */
-    public fun reportHostStateChange(
-        time: Long,
-        driver: Host,
-        host: Node
-    ) {
-    }
+    public fun reportHostStateChange(time: Long, host: Host, newState: HostState) {}
 
     /**
      * Report the power consumption of a host.
      */
-    public fun reportPowerConsumption(host: Node, draw: Double) {}
+    public fun reportPowerConsumption(host: Host, draw: Double) {}
 
     /**
      * This method is invoked for a host for each slice that is finishes.
@@ -65,7 +60,7 @@ public interface ExperimentMonitor : Closeable {
         cpuUsage: Double,
         cpuDemand: Double,
         numberOfDeployedImages: Int,
-        host: Node,
+        host: Host,
         duration: Long = 5 * 60 * 1000L
     ) {
     }

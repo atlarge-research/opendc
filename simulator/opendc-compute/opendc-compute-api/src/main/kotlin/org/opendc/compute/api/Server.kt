@@ -22,17 +22,10 @@
 
 package org.opendc.compute.api
 
-import org.opendc.core.resource.Resource
-
 /**
  * A stateful object representing a server instance that is running on some physical or virtual machine.
  */
 public interface Server : Resource {
-    /**
-     * The name of the server.
-     */
-    public override val name: String
-
     /**
      * The flavor of the server.
      */
@@ -44,14 +37,33 @@ public interface Server : Resource {
     public val image: Image
 
     /**
-     * The tags assigned to the server.
-     */
-    public override val tags: Map<String, String>
-
-    /**
      * The last known state of the server.
      */
     public val state: ServerState
+
+    /**
+     * Request the server to be started.
+     *
+     * This method is guaranteed to return after the request was acknowledged, but might return before the server was
+     * started.
+     */
+    public suspend fun start()
+
+    /**
+     * Request the server to be stopped.
+     *
+     * This method is guaranteed to return after the request was acknowledged, but might return before the server was
+     * stopped.
+     */
+    public suspend fun stop()
+
+    /**
+     * Request the server to be deleted.
+     *
+     * This method is guaranteed to return after the request was acknowledged, but might return before the server was
+     * deleted.
+     */
+    public suspend fun delete()
 
     /**
      * Register the specified [ServerWatcher] to watch the state of the server.
@@ -66,9 +78,4 @@ public interface Server : Resource {
      * @param watcher The watcher to de-register from the server.
      */
     public fun unwatch(watcher: ServerWatcher)
-
-    /**
-     * Refresh the local state of the resource.
-     */
-    public suspend fun refresh()
 }

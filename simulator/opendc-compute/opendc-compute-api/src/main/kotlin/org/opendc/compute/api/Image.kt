@@ -22,27 +22,12 @@
 
 package org.opendc.compute.api
 
-import org.opendc.core.resource.Resource
-import org.opendc.core.resource.TagContainer
-import java.util.*
-
 /**
  * An image containing a bootable operating system that can directly be executed by physical or virtual server.
- *
- * OpenStack: A collection of files used to create or rebuild a server. Operators provide a number of pre-built OS
- * images by default. You may also create custom images from cloud servers you have launched. These custom images are
- * useful for backup purposes or for producing “gold” server images if you plan to deploy a particular server
- * configuration frequently.
  */
-public data class Image(
-    public override val uid: UUID,
-    public override val name: String,
-    public override val tags: TagContainer
-) : Resource {
-    public companion object {
-        /**
-         * An empty boot disk [Image] that exits immediately on start.
-         */
-        public val EMPTY: Image = Image(UUID.randomUUID(), "empty", emptyMap())
-    }
+public interface Image : Resource {
+    /**
+     * Delete the image instance.
+     */
+    public suspend fun delete()
 }

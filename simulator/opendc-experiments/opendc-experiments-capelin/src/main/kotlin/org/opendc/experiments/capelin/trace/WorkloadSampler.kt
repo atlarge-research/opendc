@@ -23,12 +23,11 @@
 package org.opendc.experiments.capelin.trace
 
 import mu.KotlinLogging
-import org.opendc.compute.api.ComputeWorkload
-import org.opendc.compute.api.Image
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.SamplingStrategy
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.format.trace.TraceEntry
+import org.opendc.simulator.compute.workload.SimWorkload
 import java.util.*
 import kotlin.random.Random
 
@@ -38,11 +37,11 @@ private val logger = KotlinLogging.logger {}
  * Sample the workload for the specified [run].
  */
 public fun sampleWorkload(
-    trace: List<TraceEntry<ComputeWorkload>>,
+    trace: List<TraceEntry<SimWorkload>>,
     workload: Workload,
     subWorkload: Workload,
     seed: Int
-): List<TraceEntry<ComputeWorkload>> {
+): List<TraceEntry<SimWorkload>> {
     return when {
         workload is CompositeWorkload -> sampleRegularWorkload(trace, workload, subWorkload, seed)
         workload.samplingStrategy == SamplingStrategy.HPC ->
@@ -58,24 +57,24 @@ public fun sampleWorkload(
  * Sample a regular (non-HPC) workload.
  */
 public fun sampleRegularWorkload(
-    trace: List<TraceEntry<ComputeWorkload>>,
+    trace: List<TraceEntry<SimWorkload>>,
     workload: Workload,
     subWorkload: Workload,
     seed: Int
-): List<TraceEntry<ComputeWorkload>> {
+): List<TraceEntry<SimWorkload>> {
     val fraction = subWorkload.fraction
 
     val shuffled = trace.shuffled(Random(seed))
-    val res = mutableListOf<TraceEntry<ComputeWorkload>>()
+    val res = mutableListOf<TraceEntry<SimWorkload>>()
     val totalLoad = if (workload is CompositeWorkload) {
         workload.totalLoad
     } else {
-        shuffled.sumByDouble { it.workload.image.tags.getValue("total-load") as Double }
+        shuffled.sumByDouble { it.meta.getValue("total-load") as Double }
     }
     var currentLoad = 0.0
 
     for (entry in shuffled) {
-        val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
+        val entryLoad = entry.meta.getValue("total-load") as Double
         if ((currentLoad + entryLoad) / totalLoad > fraction) {
             break
         }
@@ -93,23 +92,23 @@ public fun sampleRegularWorkload(
  * Sample a HPC workload.
  */
 public fun sampleHpcWorkload(
-    trace: List<TraceEntry<ComputeWorkload>>,
+    trace: List<TraceEntry<SimWorkload>>,
     workload: Workload,
     seed: Int,
     sampleOnLoad: Boolean
-): List<TraceEntry<ComputeWorkload>> {
+): List<TraceEntry<SimWorkload>> {
     val pattern = Regex("^vm__workload__(ComputeNode|cn).*")
     val random = Random(seed)
 
     val fraction = workload.fraction
     val (hpc, nonHpc) = trace.partition { entry ->
-        val name = entry.workload.image.name
+        val name = entry.name
         name.matches(pattern)
     }
 
     val hpcSequence = generateSequence(0) { it + 1 }
         .map { index ->
-            val res = mutableListOf<TraceEntry<ComputeWorkload>>()
+            val res = mutableListOf<TraceEntry<SimWorkload>>()
             hpc.mapTo(res) { sample(it, index) }
             res.shuffle(random)
             res
@@ -118,7 +117,7 @@ public fun sampleHpcWorkload(
 
     val nonHpcSequence = generateSequence(0) { it + 1 }
         .map { index ->
-            val res = mutableListOf<TraceEntry<ComputeWorkload>>()
+            val res = mutableListOf<TraceEntry<SimWorkload>>()
             nonHpc.mapTo(res) { sample(it, index) }
             res.shuffle(random)
             res
@@ -130,7 +129,7 @@ public fun sampleHpcWorkload(
     val totalLoad = if (workload is CompositeWorkload) {
         workload.totalLoad
     } else {
-        trace.sumByDouble { it.workload.image.tags.getValue("total-load") as Double }
+        trace.sumByDouble { it.meta.getValue("total-load") as Double }
     }
 
     logger.debug { "Total trace load: $totalLoad" }
@@ -139,12 +138,12 @@ public fun sampleHpcWorkload(
     var nonHpcCount = 0
     var nonHpcLoad = 0.0
 
-    val res = mutableListOf<TraceEntry<ComputeWorkload>>()
+    val res = mutableListOf<TraceEntry<SimWorkload>>()
 
     if (sampleOnLoad) {
         var currentLoad = 0.0
         for (entry in hpcSequence) {
-            val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
+            val entryLoad = entry.meta.getValue("total-load") as Double
             if ((currentLoad + entryLoad) / totalLoad > fraction) {
                 break
             }
@@ -156,7 +155,7 @@ public fun sampleHpcWorkload(
         }
 
         for (entry in nonHpcSequence) {
-            val entryLoad = entry.workload.image.tags.getValue("total-load") as Double
+            val entryLoad = entry.meta.getValue("total-load") as Double
             if ((currentLoad + entryLoad) / totalLoad > 1) {
                 break
             }
@@ -170,7 +169,7 @@ public fun sampleHpcWorkload(
         hpcSequence
             .take((fraction * trace.size).toInt())
             .forEach { entry ->
-                hpcLoad += entry.workload.image.tags.getValue("total-load") as Double
+                hpcLoad += entry.meta.getValue("total-load") as Double
                 hpcCount += 1
                 res.add(entry)
             }
@@ -178,7 +177,7 @@ public fun sampleHpcWorkload(
         nonHpcSequence
             .take(((1 - fraction) * trace.size).toInt())
             .forEach { entry ->
-                nonHpcLoad += entry.workload.image.tags.getValue("total-load") as Double
+                nonHpcLoad += entry.meta.getValue("total-load") as Double
                 nonHpcCount += 1
                 res.add(entry)
             }
@@ -194,16 +193,7 @@ public fun sampleHpcWorkload(
 /**
  * Sample a random trace entry.
  */
-private fun sample(entry: TraceEntry<ComputeWorkload>, i: Int): TraceEntry<ComputeWorkload> {
-    val id = UUID.nameUUIDFromBytes("${entry.workload.image.uid}-$i".toByteArray())
-    val image = Image(
-        id,
-        entry.workload.image.name,
-        entry.workload.image.tags
-    )
-    val vmWorkload = entry.workload.copy(uid = id, image = image, name = entry.workload.name)
-    return VmTraceEntry(vmWorkload, entry.submissionTime)
+private fun sample(entry: TraceEntry<SimWorkload>, i: Int): TraceEntry<SimWorkload> {
+    val uid = UUID.nameUUIDFromBytes("${entry.uid}-$i".toByteArray())
+    return entry.copy(uid = uid)
 }
-
-private class VmTraceEntry(override val workload: ComputeWorkload, override val submissionTime: Long) :
-    TraceEntry<ComputeWorkload>

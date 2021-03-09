@@ -26,14 +26,19 @@ package org.opendc.compute.api
  * Flavors define the compute and memory capacity of [Server] instance. To put it simply, a flavor is an available
  * hardware configuration for a server. It defines the size of a virtual server that can be launched.
  */
-public data class Flavor(
+public interface Flavor : Resource {
     /**
      * The number of (virtual) processing cores to use.
      */
-    public val cpuCount: Int,
+    public val cpuCount: Int
 
     /**
      * The amount of RAM available to the server (in MB).
      */
     public val memorySize: Long
-)
+
+    /**
+     * Delete the flavor instance.
+     */
+    public suspend fun delete()
+}

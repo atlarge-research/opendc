@@ -22,21 +22,95 @@
 
 package org.opendc.compute.api
 
+import java.util.UUID
+
 /**
  * A client interface for the OpenDC Compute service.
  */
 public interface ComputeClient : AutoCloseable {
+    /**
+     * Obtain the list of [Flavor]s accessible by the requesting user.
+     */
+    public suspend fun queryFlavors(): List<Flavor>
+
+    /**
+     * Obtain a [Flavor] by its unique identifier.
+     *
+     * @param id The identifier of the flavor.
+     */
+    public suspend fun findFlavor(id: UUID): Flavor?
+
+    /**
+     * Create a new [Flavor] instance at this compute service.
+     *
+     * @param name The name of the flavor.
+     * @param cpuCount The amount of CPU cores for this flavor.
+     * @param memorySize The size of the memory.
+     * @param labels The identifying labels of the image.
+     * @param meta The non-identifying meta-data of the image.
+     */
+    public suspend fun newFlavor(
+        name: String,
+        cpuCount: Int,
+        memorySize: Long,
+        labels: Map<String, String> = emptyMap(),
+        meta: Map<String, Any> = emptyMap()
+    ): Flavor
+
+    /**
+     * Obtain the list of [Image]s accessible by the requesting user.
+     */
+    public suspend fun queryImages(): List<Image>
+
+    /**
+     * Obtain a [Image] by its unique identifier.
+     *
+     * @param id The identifier of the image.
+     */
+    public suspend fun findImage(id: UUID): Image?
+
+    /**
+     * Create a new [Image] instance at this compute service.
+     *
+     * @param name The name of the image.
+     * @param labels The identifying labels of the image.
+     * @param meta The non-identifying meta-data of the image.
+     */
+    public suspend fun newImage(
+        name: String,
+        labels: Map<String, String> = emptyMap(),
+        meta: Map<String, Any> = emptyMap()
+    ): Image
+
+    /**
+     * Obtain the list of [Server]s accessible by the requesting user.
+     */
+    public suspend fun queryServers(): List<Server>
+
+    /**
+     * Obtain a [Server] by its unique identifier.
+     *
+     * @param id The identifier of the server.
+     */
+    public suspend fun findServer(id: UUID): Server?
+
     /**
      * Create a new [Server] instance at this compute service.
      *
      * @param name The name of the server to deploy.
      * @param image The image to be deployed.
      * @param flavor The flavor of the machine instance to run this [image] on.
+     * @param labels The identifying labels of the server.
+     * @param meta The non-identifying meta-data of the server.
+     * @param start A flag to indicate that the server should be started immediately.
      */
     public suspend fun newServer(
         name: String,
         image: Image,
-        flavor: Flavor
+        flavor: Flavor,
+        labels: Map<String, String> = emptyMap(),
+        meta: Map<String, Any> = emptyMap(),
+        start: Boolean = true
     ): Server
 
     /**

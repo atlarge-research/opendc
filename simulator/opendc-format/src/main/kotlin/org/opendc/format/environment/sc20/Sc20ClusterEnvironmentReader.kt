@@ -22,17 +22,9 @@
 
 package org.opendc.format.environment.sc20
 
-import kotlinx.coroutines.CoroutineScope
-import org.opendc.compute.simulator.SimBareMetalDriver
 import org.opendc.compute.simulator.power.models.LinearPowerModel
-import org.opendc.core.Environment
-import org.opendc.core.Platform
-import org.opendc.core.Zone
-import org.opendc.core.services.ServiceRegistry
 import org.opendc.format.environment.EnvironmentReader
-import org.opendc.metal.NODE_CLUSTER
-import org.opendc.metal.service.ProvisioningService
-import org.opendc.metal.service.SimpleProvisioningService
+import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -40,7 +32,6 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.time.Clock
 import java.util.*
 
 /**
@@ -54,8 +45,7 @@ public class Sc20ClusterEnvironmentReader(
 
     public constructor(file: File) : this(FileInputStream(file))
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment {
+    public override fun read(): List<MachineDef> {
         var clusterIdCol = 0
         var speedCol = 0
         var numberOfHostsCol = 0
@@ -69,7 +59,7 @@ public class Sc20ClusterEnvironmentReader(
         var memoryPerHost: Long
         var coresPerHost: Int
 
-        val nodes = mutableListOf<SimBareMetalDriver>()
+        val nodes = mutableListOf<MachineDef>()
         val random = Random(0)
 
         input.bufferedReader().use { reader ->
@@ -103,12 +93,10 @@ public class Sc20ClusterEnvironmentReader(
 
                     repeat(numberOfHosts) {
                         nodes.add(
-                            SimBareMetalDriver(
-                                coroutineScope,
-                                clock,
+                            MachineDef(
                                 UUID(random.nextLong(), random.nextLong()),
                                 "node-$clusterId-$it",
-                                mapOf(NODE_CLUSTER to clusterId),
+                                mapOf("cluster" to clusterId),
                                 SimMachineModel(
                                     List(coresPerHost) { coreId ->
                                         ProcessingUnit(unknownProcessingNode, coreId, speed)
@@ -125,22 +113,7 @@ public class Sc20ClusterEnvironmentReader(
                 }
         }
 
-        val provisioningService = SimpleProvisioningService()
-        for (node in nodes) {
-            provisioningService.create(node)
-        }
-
-        val serviceRegistry = ServiceRegistry().put(ProvisioningService, provisioningService)
-
-        val platform = Platform(
-            UUID.randomUUID(),
-            "sc20-platform",
-            listOf(
-                Zone(UUID.randomUUID(), "zone", serviceRegistry)
-            )
-        )
-
-        return Environment("SC20 Environment", null, listOf(platform))
+        return nodes
     }
 
     override fun close() {}

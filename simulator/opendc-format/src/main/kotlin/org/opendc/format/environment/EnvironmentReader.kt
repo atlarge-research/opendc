@@ -22,17 +22,14 @@
 
 package org.opendc.format.environment
 
-import kotlinx.coroutines.CoroutineScope
-import org.opendc.core.Environment
 import java.io.Closeable
-import java.time.Clock
 
 /**
- * An interface for reading descriptions of topology environments into memory as [Environment].
+ * An interface for reading descriptions of topology environments into memory.
  */
 public interface EnvironmentReader : Closeable {
     /**
-     * Construct an [Environment] in the specified [CoroutineScope].
+     * Read the environment into a list.
      */
-    public suspend fun construct(coroutineScope: CoroutineScope, clock: Clock): Environment
+    public fun read(): List<MachineDef>
 }

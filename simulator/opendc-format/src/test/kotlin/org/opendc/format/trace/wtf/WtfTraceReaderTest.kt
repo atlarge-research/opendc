@@ -36,11 +36,11 @@ class WtfTraceReaderTest {
     fun testParseWtf() {
         val reader = WtfTraceReader("src/test/resources/wtf-trace")
         var entry = reader.next()
-        assertEquals(0, entry.submissionTime)
+        assertEquals(0, entry.start)
         assertEquals(23, entry.workload.tasks.size)
 
         entry = reader.next()
-        assertEquals(333387, entry.submissionTime)
+        assertEquals(333387, entry.start)
         assertEquals(23, entry.workload.tasks.size)
     }
 }

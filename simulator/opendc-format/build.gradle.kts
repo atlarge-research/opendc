@@ -30,9 +30,8 @@ plugins {
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
     api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-workflows"))
+    api(project(":opendc-workflow:opendc-workflow-api"))
     implementation(project(":opendc-simulator:opendc-simulator-compute"))
     implementation(project(":opendc-compute:opendc-compute-simulator"))
     api("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")

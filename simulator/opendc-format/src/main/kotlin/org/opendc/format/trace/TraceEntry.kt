@@ -24,31 +24,21 @@
 
 package org.opendc.format.trace
 
-import org.opendc.core.workload.Workload
+import java.util.UUID
 
 /**
  * An entry in a workload trace.
  *
- * @param T The shape of the workload in this entry.
+ * @param uid The unique identifier of the entry.
+ * @param name The name of the entry.
+ * @param start The start time of the workload.
+ * @param workload The workload of the entry.
+ * @param meta The meta-data associated with the workload.
  */
-public interface TraceEntry<T : Workload> {
-    /**
-     * The time of submission of the workload.
-     */
-    public val submissionTime: Long
-
-    /**
-     * The workload in this trace entry.
-     */
-    public val workload: T
-
-    /**
-     * Extract the submission time from this entry.
-     */
-    public operator fun component1(): Long = submissionTime
-
-    /**
-     * Extract the workload from this entry.
-     */
-    public operator fun component2(): T = workload
-}
+public data class TraceEntry<out T>(
+    val uid: UUID,
+    val name: String,
+    val start: Long,
+    val workload: T,
+    val meta: Map<String, Any>
+)

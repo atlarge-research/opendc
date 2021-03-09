@@ -22,14 +22,13 @@
 
 package org.opendc.format.trace
 
-import org.opendc.core.workload.Workload
 import java.io.Closeable
 
 /**
- * An interface for reading [Workload]s into memory.
+ * An interface for reading workloads into memory.
  *
  * This interface must guarantee that the entries are delivered in order of submission time.
  *
  * @param T The shape of the workloads supported by this reader.
  */
-public interface TraceReader<T : Workload> : Iterator<TraceEntry<T>>, Closeable
+public interface TraceReader<T> : Iterator<TraceEntry<T>>, Closeable

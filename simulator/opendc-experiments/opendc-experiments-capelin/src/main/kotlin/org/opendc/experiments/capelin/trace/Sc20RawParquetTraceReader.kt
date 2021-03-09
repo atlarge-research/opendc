@@ -26,12 +26,10 @@ import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
-import org.opendc.compute.api.ComputeWorkload
-import org.opendc.compute.api.Image
-import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.compute.workload.SimWorkload
 import java.io.File
 import java.util.UUID
 
@@ -48,6 +46,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
      * Read the fragments into memory.
      */
     private fun parseFragments(path: File): Map<String, List<SimTraceWorkload.Fragment>> {
+        @Suppress("DEPRECATION")
         val reader = AvroParquetReader.builder<GenericData.Record>(Path(path.absolutePath, "trace.parquet"))
             .disableCompatibility()
             .build()
@@ -59,11 +58,9 @@ public class Sc20RawParquetTraceReader(private val path: File) {
                 val record = reader.read() ?: break
 
                 val id = record["id"].toString()
-                val tick = record["time"] as Long
                 val duration = record["duration"] as Long
                 val cores = record["cores"] as Int
                 val cpuUsage = record["cpuUsage"] as Double
-                val flops = record["flops"] as Long
 
                 val fragment = SimTraceWorkload.Fragment(
                     duration,
@@ -83,13 +80,14 @@ public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * Read the metadata into a workload.
      */
-    private fun parseMeta(path: File, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<TraceEntryImpl> {
+    private fun parseMeta(path: File, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<TraceEntry<SimWorkload>> {
+        @Suppress("DEPRECATION")
         val metaReader = AvroParquetReader.builder<GenericData.Record>(Path(path.absolutePath, "meta.parquet"))
             .disableCompatibility()
             .build()
 
         var counter = 0
-        val entries = mutableListOf<TraceEntryImpl>()
+        val entries = mutableListOf<TraceEntry<SimWorkload>>()
 
         return try {
             while (true) {
@@ -109,13 +107,9 @@ public class Sc20RawParquetTraceReader(private val path: File) {
                 val vmFragments = fragments.getValue(id).asSequence()
                 val totalLoad = vmFragments.sumByDouble { it.usage } * 5 * 60 // avg MHz * duration = MFLOPs
                 val workload = SimTraceWorkload(vmFragments)
-                val vmWorkload = ComputeWorkload(
-                    uid,
-                    id,
-                    UnnamedUser,
-                    Image(
-                        uid,
-                        id,
+                entries.add(
+                    TraceEntry(
+                        uid, id, submissionTime, workload,
                         mapOf(
                             "submit-time" to submissionTime,
                             "end-time" to endTime,
@@ -126,7 +120,6 @@ public class Sc20RawParquetTraceReader(private val path: File) {
                         )
                     )
                 )
-                entries.add(TraceEntryImpl(submissionTime, vmWorkload))
             }
 
             entries
@@ -141,7 +134,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * The entries in the trace.
      */
-    private val entries: List<TraceEntryImpl>
+    private val entries: List<TraceEntry<SimWorkload>>
 
     init {
         val fragments = parseFragments(path)
@@ -151,21 +144,5 @@ public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * Read the entries in the trace.
      */
-    public fun read(): List<TraceEntry<ComputeWorkload>> = entries
-
-    /**
-     * An unnamed user.
-     */
-    private object UnnamedUser : User {
-        override val name: String = "<unnamed>"
-        override val uid: UUID = UUID.randomUUID()
-    }
-
-    /**
-     * An entry in the trace.
-     */
-    internal data class TraceEntryImpl(
-        override var submissionTime: Long,
-        override val workload: ComputeWorkload
-    ) : TraceEntry<ComputeWorkload>
+    public fun read(): List<TraceEntry<SimWorkload>> = entries
 }

@@ -29,5 +29,4 @@ plugins {
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
 }
