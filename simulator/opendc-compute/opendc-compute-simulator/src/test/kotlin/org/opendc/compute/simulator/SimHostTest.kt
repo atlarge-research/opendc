@@ -115,7 +115,7 @@ internal class SimHostTest {
 
             delay(5)
 
-            val flavor = Flavor(2, 0)
+            val flavor = MockFlavor(2, 0)
             virtDriver.events
                 .onEach { event ->
                     when (event) {
@@ -141,6 +141,24 @@ internal class SimHostTest {
             { assertEquals(1140000, overcommittedWork, "Overcommitted work does not match") },
             { assertEquals(1200006, scope.currentTime) }
         )
+    }
+
+    private class MockFlavor(
+        override val cpuCount: Int,
+        override val memorySize: Long
+    ) : Flavor {
+        override val uid: UUID = UUID.randomUUID()
+        override val name: String = "test"
+        override val labels: Map<String, String> = emptyMap()
+        override val meta: Map<String, Any> = emptyMap()
+
+        override suspend fun delete() {
+            throw NotImplementedError()
+        }
+
+        override suspend fun refresh() {
+            throw NotImplementedError()
+        }
     }
 
     private class MockImage(

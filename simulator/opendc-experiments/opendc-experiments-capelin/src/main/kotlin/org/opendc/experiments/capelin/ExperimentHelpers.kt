@@ -246,7 +246,8 @@ public suspend fun processTrace(
                 val server = client.newServer(
                     entry.name,
                     image,
-                    Flavor(
+                    client.newFlavor(
+                        entry.name,
                         entry.meta["cores"] as Int,
                         entry.meta["required-memory"] as Long
                     ),

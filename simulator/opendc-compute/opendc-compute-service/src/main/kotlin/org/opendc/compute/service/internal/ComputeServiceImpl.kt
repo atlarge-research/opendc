@@ -90,6 +90,11 @@ public class ComputeServiceImpl(
     private val activeServers: MutableMap<Server, Host> = mutableMapOf()
 
     /**
+     * The registered flavors for this compute service.
+     */
+    internal val flavors = mutableMapOf<UUID, InternalFlavor>()
+
+    /**
      * The registered images for this compute service.
      */
     internal val images = mutableMapOf<UUID, InternalImage>()
@@ -130,6 +135,43 @@ public class ComputeServiceImpl(
 
     override fun newClient(): ComputeClient = object : ComputeClient {
         private var isClosed: Boolean = false
+
+        override suspend fun queryFlavors(): List<Flavor> {
+            check(!isClosed) { "Client is already closed" }
+
+            return flavors.values.map { ClientFlavor(it) }
+        }
+
+        override suspend fun findFlavor(id: UUID): Flavor? {
+            check(!isClosed) { "Client is already closed" }
+
+            return flavors[id]?.let { ClientFlavor(it) }
+        }
+
+        override suspend fun newFlavor(
+            name: String,
+            cpuCount: Int,
+            memorySize: Long,
+            labels: Map<String, String>,
+            meta: Map<String, Any>
+        ): Flavor {
+            check(!isClosed) { "Client is already closed" }
+
+            val uid = UUID(clock.millis(), random.nextLong())
+            val flavor = InternalFlavor(
+                this@ComputeServiceImpl,
+                uid,
+                name,
+                cpuCount,
+                memorySize,
+                labels,
+                meta
+            )
+
+            flavors[uid] = flavor
+
+            return ClientFlavor(flavor)
+        }
 
         override suspend fun queryImages(): List<Image> {
             check(!isClosed) { "Client is already closed" }
@@ -250,12 +292,16 @@ public class ComputeServiceImpl(
         requestSchedulingCycle()
     }
 
-    internal fun delete(server: InternalServer) {
-        checkNotNull(servers.remove(server.uid)) { "Server was not know" }
+    internal fun delete(flavor: InternalFlavor) {
+        checkNotNull(flavors.remove(flavor.uid)) { "Flavor was not known" }
     }
 
     internal fun delete(image: InternalImage) {
-        checkNotNull(images.remove(image.uid)) { "Server was not know" }
+        checkNotNull(images.remove(image.uid)) { "Image was not known" }
+    }
+
+    internal fun delete(server: InternalServer) {
+        checkNotNull(servers.remove(server.uid)) { "Server was not known" }
     }
 
     /**

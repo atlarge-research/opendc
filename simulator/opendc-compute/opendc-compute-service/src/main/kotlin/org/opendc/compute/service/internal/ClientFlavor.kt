@@ -20,25 +20,43 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.api
+package org.opendc.compute.service.internal
+
+import org.opendc.compute.api.Flavor
+import java.util.UUID
 
 /**
- * Flavors define the compute and memory capacity of [Server] instance. To put it simply, a flavor is an available
- * hardware configuration for a server. It defines the size of a virtual server that can be launched.
+ * A [Flavor] implementation that is passed to clients but delegates its implementation to another class.
  */
-public interface Flavor : Resource {
-    /**
-     * The number of (virtual) processing cores to use.
-     */
-    public val cpuCount: Int
+internal class ClientFlavor(private val delegate: Flavor) : Flavor {
+    override val uid: UUID = delegate.uid
 
-    /**
-     * The amount of RAM available to the server (in MB).
-     */
-    public val memorySize: Long
+    override var name: String = delegate.name
+        private set
 
-    /**
-     * Delete the flavor instance.
-     */
-    public suspend fun delete()
+    override var cpuCount: Int = delegate.cpuCount
+        private set
+
+    override var memorySize: Long = delegate.memorySize
+        private set
+
+    override var labels: Map<String, String> = delegate.labels.toMap()
+        private set
+
+    override var meta: Map<String, Any> = delegate.meta.toMap()
+        private set
+
+    override suspend fun delete() {
+        delegate.delete()
+    }
+
+    override suspend fun refresh() {
+        delegate.refresh()
+
+        name = delegate.name
+        cpuCount = delegate.cpuCount
+        memorySize = delegate.memorySize
+        labels = delegate.labels
+        meta = delegate.meta
+    }
 }

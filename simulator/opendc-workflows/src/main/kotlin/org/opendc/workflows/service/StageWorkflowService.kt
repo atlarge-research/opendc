@@ -262,9 +262,9 @@ public class StageWorkflowService(
             val instance = taskQueue.peek()
 
             val cores = instance.task.metadata[WORKFLOW_TASK_CORES] as? Int ?: 1
-            val flavor = Flavor(cores, 1000) // TODO How to determine memory usage for workflow task
             val image = image
             coroutineScope.launch {
+                val flavor = computeClient.newFlavor(instance.task.name, cores, 1000) // TODO How to determine memory usage for workflow task
                 val server = computeClient.newServer(instance.task.name, image, flavor, start = false, meta = instance.task.metadata)
 
                 instance.state = TaskStatus.ACTIVE
@@ -299,7 +299,10 @@ public class StageWorkflowService(
             ServerState.TERMINATED, ServerState.ERROR -> {
                 val task = taskByServer.remove(server) ?: throw IllegalStateException()
 
-                coroutineScope.launch { server.delete() }
+                coroutineScope.launch {
+                    server.delete()
+                    server.flavor.delete()
+                }
 
                 val job = task.job
                 task.state = TaskStatus.FINISHED

@@ -20,25 +20,45 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.api
+package org.opendc.compute.service.internal
+
+import org.opendc.compute.api.Flavor
+import java.util.*
 
 /**
- * Flavors define the compute and memory capacity of [Server] instance. To put it simply, a flavor is an available
- * hardware configuration for a server. It defines the size of a virtual server that can be launched.
+ * Internal stateful representation of a [Flavor].
  */
-public interface Flavor : Resource {
-    /**
-     * The number of (virtual) processing cores to use.
-     */
-    public val cpuCount: Int
+internal class InternalFlavor(
+    private val service: ComputeServiceImpl,
+    override val uid: UUID,
+    name: String,
+    cpuCount: Int,
+    memorySize: Long,
+    labels: Map<String, String>,
+    meta: Map<String, Any>
+) : Flavor {
+    override var name: String = name
+        private set
 
-    /**
-     * The amount of RAM available to the server (in MB).
-     */
-    public val memorySize: Long
+    override var cpuCount: Int = cpuCount
+        private set
 
-    /**
-     * Delete the flavor instance.
-     */
-    public suspend fun delete()
+    override var memorySize: Long = memorySize
+        private set
+
+    override val labels: MutableMap<String, String> = labels.toMutableMap()
+
+    override val meta: MutableMap<String, Any> = meta.toMutableMap()
+
+    override suspend fun refresh() {
+        // No-op: this object is the source-of-truth
+    }
+
+    override suspend fun delete() {
+        service.delete(this)
+    }
+
+    override fun equals(other: Any?): Boolean = other is InternalFlavor && uid == other.uid
+
+    override fun hashCode(): Int = uid.hashCode()
 }
