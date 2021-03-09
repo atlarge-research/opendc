@@ -22,8 +22,8 @@
 
 package org.opendc.format.trace.swf
 
-import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
+import org.opendc.compute.api.ComputeWorkload
+import org.opendc.compute.api.Image
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -43,17 +43,17 @@ import java.util.*
 public class SwfTraceReader(
     file: File,
     maxNumCores: Int = -1
-) : TraceReader<VmWorkload> {
+) : TraceReader<ComputeWorkload> {
     /**
      * The internal iterator to use for this reader.
      */
-    private val iterator: Iterator<TraceEntry<VmWorkload>>
+    private val iterator: Iterator<TraceEntry<ComputeWorkload>>
 
     /**
      * Initialize the reader.
      */
     init {
-        val entries = mutableMapOf<Long, TraceEntry<VmWorkload>>()
+        val entries = mutableMapOf<Long, TraceEntry<ComputeWorkload>>()
 
         val jobNumberCol = 0
         val submitTimeCol = 1 // seconds (begin of trace is 0)
@@ -154,18 +154,19 @@ public class SwfTraceReader(
                     }
 
                     val uuid = UUID(0L, jobNumber)
-                    val vmWorkload = VmWorkload(
+                    val workload = SimTraceWorkload(flopsHistory.asSequence())
+                    val vmWorkload = ComputeWorkload(
                         uuid,
                         "SWF Workload $jobNumber",
                         UnnamedUser,
-                        SimWorkloadImage(
+                        Image(
                             uuid,
                             jobNumber.toString(),
                             mapOf(
                                 "cores" to cores,
-                                "required-memory" to memory
-                            ),
-                            SimTraceWorkload(flopsHistory.asSequence())
+                                "required-memory" to memory,
+                                "workload" to workload
+                            )
                         )
                     )
 
@@ -179,7 +180,7 @@ public class SwfTraceReader(
 
     override fun hasNext(): Boolean = iterator.hasNext()
 
-    override fun next(): TraceEntry<VmWorkload> = iterator.next()
+    override fun next(): TraceEntry<ComputeWorkload> = iterator.next()
 
     override fun close() {}
 
@@ -196,6 +197,6 @@ public class SwfTraceReader(
      */
     private data class TraceEntryImpl(
         override var submissionTime: Long,
-        override val workload: VmWorkload
-    ) : TraceEntry<VmWorkload>
+        override val workload: ComputeWorkload
+    ) : TraceEntry<ComputeWorkload>
 }

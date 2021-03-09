@@ -32,10 +32,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimVirtProvisioningService
-import org.opendc.compute.simulator.allocation.AvailableCoreMemoryAllocationPolicy
+import org.opendc.compute.api.ComputeWorkload
+import org.opendc.compute.service.internal.ComputeServiceImpl
+import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
 import org.opendc.experiments.capelin.experiment.attachMonitor
 import org.opendc.experiments.capelin.experiment.createFailureDomain
 import org.opendc.experiments.capelin.experiment.createProvisioner
@@ -47,6 +46,7 @@ import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
+import org.opendc.metal.Node
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
 import java.io.File
@@ -97,7 +97,7 @@ class CapelinIntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader()
         val environmentReader = createTestEnvironmentReader()
-        lateinit var scheduler: SimVirtProvisioningService
+        lateinit var scheduler: ComputeServiceImpl
         val tracer = EventTracer(clock)
 
         testScope.launch {
@@ -108,8 +108,8 @@ class CapelinIntegrationTest {
                 allocationPolicy,
                 tracer
             )
-            val bareMetalProvisioner = res.first
-            scheduler = res.second
+            val bareMetalProvisioner = res.metal
+            scheduler = res.compute
 
             val failureDomain = if (failures) {
                 println("ENABLING failures")
@@ -138,8 +138,9 @@ class CapelinIntegrationTest {
             println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
             failureDomain?.cancel()
-            scheduler.terminate()
+            scheduler.close()
             monitor.close()
+            res.provisioner.close()
         }
 
         runSimulation()
@@ -148,9 +149,9 @@ class CapelinIntegrationTest {
         assertAll(
             { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
             { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
-            { assertEquals(1684849230562, monitor.totalRequestedBurst) },
-            { assertEquals(447612683996, monitor.totalGrantedBurst) },
-            { assertEquals(1219535757406, monitor.totalOvercommissionedBurst) },
+            { assertEquals(1678587333640, monitor.totalRequestedBurst) },
+            { assertEquals(438118200924, monitor.totalGrantedBurst) },
+            { assertEquals(1220323969993, monitor.totalOvercommissionedBurst) },
             { assertEquals(0, monitor.totalInterferedBurst) }
         )
     }
@@ -162,19 +163,16 @@ class CapelinIntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader(0.5, seed)
         val environmentReader = createTestEnvironmentReader("single")
-        lateinit var scheduler: SimVirtProvisioningService
         val tracer = EventTracer(clock)
 
         testScope.launch {
-            val res = createProvisioner(
+            val (_, provisioner, scheduler) = createProvisioner(
                 this,
                 clock,
                 environmentReader,
                 allocationPolicy,
                 tracer
             )
-            scheduler = res.second
-
             attachMonitor(this, clock, scheduler, monitor)
             processTrace(
                 this,
@@ -187,8 +185,9 @@ class CapelinIntegrationTest {
 
             println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
-            scheduler.terminate()
+            scheduler.close()
             monitor.close()
+            provisioner.close()
         }
 
         runSimulation()
@@ -210,7 +209,7 @@ class CapelinIntegrationTest {
     /**
      * Obtain the trace reader for the test.
      */
-    private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<VmWorkload> {
+    private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<ComputeWorkload> {
         return Sc20ParquetTraceReader(
             listOf(Sc20RawParquetTraceReader(File("src/test/resources/trace"))),
             emptyMap(),
@@ -242,7 +241,7 @@ class CapelinIntegrationTest {
             cpuUsage: Double,
             cpuDemand: Double,
             numberOfDeployedImages: Int,
-            hostServer: Server,
+            host: Node,
             duration: Long
         ) {
             totalRequestedBurst += requestedBurst

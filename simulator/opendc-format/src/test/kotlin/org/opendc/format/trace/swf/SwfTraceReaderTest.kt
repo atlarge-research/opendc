@@ -24,7 +24,6 @@ package org.opendc.format.trace.swf
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.compute.simulator.SimWorkloadImage
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import java.io.File
 
@@ -35,12 +34,12 @@ class SwfTraceReaderTest {
         var entry = reader.next()
         assertEquals(0, entry.submissionTime)
         // 1961 slices for waiting, 3 full and 1 partial running slices
-        assertEquals(1965, ((entry.workload.image as SimWorkloadImage).workload as SimTraceWorkload).trace.toList().size)
+        assertEquals(1965, (entry.workload.image.tags["workload"] as SimTraceWorkload).trace.toList().size)
 
         entry = reader.next()
         assertEquals(164472, entry.submissionTime)
         // 1188 slices for waiting, 0 full and 1 partial running slices
-        assertEquals(1189, ((entry.workload.image as SimWorkloadImage).workload as SimTraceWorkload).trace.toList().size)
-        assertEquals(0.25, ((entry.workload.image as SimWorkloadImage).workload as SimTraceWorkload).trace.toList().last().usage)
+        assertEquals(1189, (entry.workload.image.tags["workload"] as SimTraceWorkload).trace.toList().size)
+        assertEquals(0.25, (entry.workload.image.tags["workload"] as SimTraceWorkload).trace.toList().last().usage)
     }
 }

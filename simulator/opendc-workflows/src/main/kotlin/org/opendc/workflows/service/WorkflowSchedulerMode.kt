@@ -24,7 +24,6 @@ package org.opendc.workflows.service
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import org.opendc.workflows.service.stage.StagePolicy
 
 /**
@@ -38,7 +37,7 @@ public sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Lo
         /**
          * Request a new scheduling cycle to be performed.
          */
-        public suspend fun requestCycle()
+        public fun requestCycle()
     }
 
     /**
@@ -46,9 +45,8 @@ public sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Lo
      */
     public object Interactive : WorkflowSchedulerMode() {
         override fun invoke(scheduler: StageWorkflowService): Logic = object : Logic {
-            override suspend fun requestCycle() {
-                yield()
-                scheduler.schedule()
+            override fun requestCycle() {
+                scheduler.coroutineScope.launch { scheduler.schedule() }
             }
         }
 
@@ -62,7 +60,7 @@ public sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Lo
         private var next: kotlinx.coroutines.Job? = null
 
         override fun invoke(scheduler: StageWorkflowService): Logic = object : Logic {
-            override suspend fun requestCycle() {
+            override fun requestCycle() {
                 if (next == null) {
                     // In batch mode, we assume that the scheduler runs at a fixed slot every time
                     // quantum (e.g t=0, t=60, t=120). We calculate here the delay until the next scheduling slot.
@@ -88,7 +86,7 @@ public sealed class WorkflowSchedulerMode : StagePolicy<WorkflowSchedulerMode.Lo
         private var next: kotlinx.coroutines.Job? = null
 
         override fun invoke(scheduler: StageWorkflowService): Logic = object : Logic {
-            override suspend fun requestCycle() {
+            override fun requestCycle() {
                 if (next == null) {
                     val delay = random.nextInt(200).toLong()
 

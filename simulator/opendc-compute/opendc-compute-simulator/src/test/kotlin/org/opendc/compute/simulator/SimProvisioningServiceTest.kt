@@ -29,7 +29,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.opendc.compute.core.metal.service.SimpleProvisioningService
+import org.opendc.compute.api.Image
+import org.opendc.metal.service.SimpleProvisioningService
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -64,7 +65,7 @@ internal class SimProvisioningServiceTest {
         val clock = DelayControllerClockAdapter(testScope)
 
         testScope.launch {
-            val image = SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(1000))
+            val image = Image(UUID.randomUUID(), "<unnamed>", mapOf("machine" to SimFlopsWorkload(1000)))
             val driver = SimBareMetalDriver(this, clock, UUID.randomUUID(), "test", emptyMap(), machineModel)
 
             val provisioner = SimpleProvisioningService()
@@ -72,7 +73,7 @@ internal class SimProvisioningServiceTest {
             delay(5)
             val nodes = provisioner.nodes()
             val node = provisioner.deploy(nodes.first(), image)
-            node.server!!.events.collect { println(it) }
+            node.events.collect { println(it) }
         }
 
         testScope.advanceUntilIdle()

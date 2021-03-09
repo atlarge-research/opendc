@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.opendc.compute.core.metal.driver.BareMetalDriver
 import org.opendc.compute.simulator.power.api.CpuPowerModel
 import org.opendc.compute.simulator.power.models.*
+import org.opendc.metal.driver.BareMetalDriver
 import java.util.stream.Stream
 import kotlin.math.pow
 

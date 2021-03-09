@@ -40,6 +40,11 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
 import org.bson.Document
 import org.bson.types.ObjectId
+import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
+import org.opendc.compute.service.scheduler.AvailableMemoryAllocationPolicy
+import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
+import org.opendc.compute.service.scheduler.ProvisionedCoresAllocationPolicy
+import org.opendc.compute.service.scheduler.RandomAllocationPolicy
 import org.opendc.compute.simulator.allocation.*
 import org.opendc.experiments.capelin.experiment.attachMonitor
 import org.opendc.experiments.capelin.experiment.createFailureDomain
@@ -242,7 +247,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
         val tracer = EventTracer(clock)
 
         testScope.launch {
-            val (bareMetalProvisioner, scheduler) = createProvisioner(
+            val (bareMetalProvisioner, provisioner, scheduler) = createProvisioner(
                 this,
                 clock,
                 environment,
@@ -281,7 +286,8 @@ public class RunnerCli : CliktCommand(name = "runner") {
             logger.debug("FINISHED=${scheduler.finishedVms}")
 
             failureDomain?.cancel()
-            scheduler.terminate()
+            scheduler.close()
+            provisioner.close()
         }
 
         try {

@@ -33,5 +33,6 @@ dependencies {
 
         api("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
         runtime("org.slf4j:slf4j-simple:${versions.slf4j}")
+        runtime("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
     }
 }

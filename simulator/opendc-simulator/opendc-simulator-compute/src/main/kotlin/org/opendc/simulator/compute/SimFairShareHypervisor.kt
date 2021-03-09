@@ -336,33 +336,33 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
         private var cpus: List<VCpu> = emptyList()
 
         /**
-         * The execution context in which the workload runs.
-         */
-        val ctx = object : SimExecutionContext {
-            override val machine: SimMachineModel
-                get() = model
-
-            override val clock: Clock
-                get() = this@SimFairShareHypervisor.ctx.clock
-
-            override fun interrupt(cpu: Int) {
-                require(cpu < cpus.size) { "Invalid CPU identifier" }
-                cpus[cpu].interrupt()
-            }
-        }
-
-        /**
          * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
          */
-        override suspend fun run(workload: SimWorkload) {
+        override suspend fun run(workload: SimWorkload, meta: Map<String, Any>) {
             require(!isTerminated) { "Machine is terminated" }
             require(cont == null) { "Run should not be called concurrently" }
+
+            val ctx = object : SimExecutionContext {
+                override val machine: SimMachineModel
+                    get() = model
+
+                override val clock: Clock
+                    get() = this@SimFairShareHypervisor.ctx.clock
+
+                override val meta: Map<String, Any>
+                    get() = meta
+
+                override fun interrupt(cpu: Int) {
+                    require(cpu < cpus.size) { "Invalid CPU identifier" }
+                    cpus[cpu].interrupt()
+                }
+            }
 
             workload.onStart(ctx)
 
             return suspendCancellableCoroutine { cont ->
                 this.cont = cont
-                this.cpus = model.cpus.map { VCpu(this, it, workload) }
+                this.cpus = model.cpus.map { VCpu(this, ctx, it, workload) }
 
                 for (cpu in cpus) {
                     // Register vCPU to scheduler
@@ -417,7 +417,12 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
     /**
      * A CPU of the virtual machine.
      */
-    private inner class VCpu(val vm: SimVm, val model: ProcessingUnit, val workload: SimWorkload) : Comparable<VCpu> {
+    private inner class VCpu(
+        val vm: SimVm,
+        val ctx: SimExecutionContext,
+        val model: ProcessingUnit,
+        val workload: SimWorkload
+    ) : Comparable<VCpu> {
         /**
          * The latest command processed by the CPU.
          */
@@ -488,7 +493,7 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
                 isIntermediate = true
                 latestFlush = ctx.clock.millis()
 
-                process(workload.onStart(vm.ctx, model.id))
+                process(workload.onStart(ctx, model.id))
             } catch (e: Throwable) {
                 fail(e)
             } finally {
@@ -514,7 +519,7 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
                         // Act like nothing has happened in case the vCPU did not reach its deadline or was not
                         // interrupted by the user.
                         if (interrupt || command.deadline <= now) {
-                            process(workload.onNext(vm.ctx, model.id, 0.0))
+                            process(workload.onNext(ctx, model.id, 0.0))
                         }
                     }
                     is SimResourceCommand.Consume -> {
@@ -545,7 +550,7 @@ public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener
                                 totalOvercommittedWork += remainingWork
                             }
 
-                            process(workload.onNext(vm.ctx, model.id, remainingWork))
+                            process(workload.onNext(ctx, model.id, remainingWork))
                         } else {
                             process(SimResourceCommand.Consume(remainingWork, command.limit, command.deadline))
                         }

@@ -29,15 +29,16 @@ plugins {
 }
 
 dependencies {
+    api(platform(project(":opendc-platform")))
     api(project(":opendc-core"))
-    api(project(":opendc-compute:opendc-compute-core"))
+    api(project(":opendc-compute:opendc-compute-api"))
     api(project(":opendc-trace:opendc-trace-core"))
     implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
+    implementation("io.github.microutils:kotlin-logging")
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
     testImplementation(project(":opendc-compute:opendc-compute-simulator"))
     testImplementation(project(":opendc-format"))
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
-    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
 }

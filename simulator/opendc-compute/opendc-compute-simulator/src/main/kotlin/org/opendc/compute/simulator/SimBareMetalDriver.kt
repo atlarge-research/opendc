@@ -24,31 +24,23 @@ package org.opendc.compute.simulator
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.ServerEvent
-import org.opendc.compute.core.ServerState
-import org.opendc.compute.core.image.EmptyImage
-import org.opendc.compute.core.image.Image
-import org.opendc.compute.core.metal.Node
-import org.opendc.compute.core.metal.NodeEvent
-import org.opendc.compute.core.metal.NodeState
-import org.opendc.compute.core.metal.driver.BareMetalDriver
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Image
 import org.opendc.compute.simulator.power.api.CpuPowerModel
 import org.opendc.compute.simulator.power.api.Powerable
 import org.opendc.compute.simulator.power.models.ConstantPowerModel
-import org.opendc.core.services.ServiceRegistry
+import org.opendc.metal.Node
+import org.opendc.metal.NodeEvent
+import org.opendc.metal.NodeState
+import org.opendc.metal.driver.BareMetalDriver
 import org.opendc.simulator.compute.SimBareMetalMachine
-import org.opendc.simulator.compute.SimExecutionContext
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.workload.SimResourceCommand
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.utils.flow.EventFlow
 import org.opendc.utils.flow.StateFlow
 import java.time.Clock
 import java.util.UUID
-import kotlin.random.Random
 
 /**
  * A basic implementation of the [BareMetalDriver] that simulates an [Image] running on a bare-metal machine.
@@ -88,7 +80,7 @@ public class SimBareMetalDriver(
      * The machine state.
      */
     private val nodeState =
-        StateFlow(Node(uid, name, metadata + ("driver" to this), NodeState.SHUTOFF, EmptyImage, null, events))
+        StateFlow(Node(uid, name, metadata + ("driver" to this), NodeState.SHUTOFF, flavor, Image.EMPTY, events))
 
     /**
      * The [SimBareMetalMachine] we use to run the workload.
@@ -103,19 +95,9 @@ public class SimBareMetalDriver(
     override val powerDraw: Flow<Double> = cpuPowerModel.getPowerDraw(this)
 
     /**
-     * The internal random instance.
-     */
-    private val random = Random(uid.leastSignificantBits xor uid.mostSignificantBits)
-
-    /**
      * The [Job] that runs the simulated workload.
      */
     private var job: Job? = null
-
-    /**
-     * The event stream to publish to for the server.
-     */
-    private var serverEvents: EventFlow<ServerEvent>? = null
 
     override suspend fun init(): Node {
         return nodeState.value
@@ -127,51 +109,13 @@ public class SimBareMetalDriver(
             return node
         }
 
-        val events = EventFlow<ServerEvent>()
-        serverEvents = events
-        val server = Server(
-            UUID(random.nextLong(), random.nextLong()),
-            node.name,
-            emptyMap(),
-            flavor,
-            node.image,
-            ServerState.BUILD,
-            ServiceRegistry().put(BareMetalDriver, this@SimBareMetalDriver),
-            events
-        )
-
-        val delegate = (node.image as SimWorkloadImage).workload
-        // Wrap the workload to pass in a ComputeSimExecutionContext
-        val workload = object : SimWorkload {
-            lateinit var wrappedCtx: ComputeSimExecutionContext
-
-            override fun onStart(ctx: SimExecutionContext) {
-                wrappedCtx = object : ComputeSimExecutionContext, SimExecutionContext by ctx {
-                    override val server: Server
-                        get() = nodeState.value.server!!
-
-                    override fun toString(): String = "WrappedSimExecutionContext"
-                }
-
-                delegate.onStart(wrappedCtx)
-            }
-
-            override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-                return delegate.onStart(wrappedCtx, cpu)
-            }
-
-            override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
-                return delegate.onNext(wrappedCtx, cpu, remainingWork)
-            }
-
-            override fun toString(): String = "SimWorkloadWrapper(delegate=$delegate)"
-        }
+        val workload = node.image.tags["workload"] as SimWorkload
 
         job = coroutineScope.launch {
             delay(1) // TODO Introduce boot time
             initMachine()
             try {
-                machine.run(workload)
+                machine.run(workload, mapOf("driver" to this@SimBareMetalDriver, "node" to node))
                 exitMachine(null)
             } catch (_: CancellationException) {
                 // Ignored
@@ -180,31 +124,21 @@ public class SimBareMetalDriver(
             }
         }
 
-        setNode(node.copy(state = NodeState.BOOT, server = server))
+        setNode(node.copy(state = NodeState.BOOT))
         return nodeState.value
     }
 
     private fun initMachine() {
-        val server = nodeState.value.server?.copy(state = ServerState.ACTIVE)
-        setNode(nodeState.value.copy(state = NodeState.ACTIVE, server = server))
+        setNode(nodeState.value.copy(state = NodeState.ACTIVE))
     }
 
     private fun exitMachine(cause: Throwable?) {
-        val newServerState =
-            if (cause == null)
-                ServerState.SHUTOFF
-            else
-                ServerState.ERROR
         val newNodeState =
             if (cause == null)
-                nodeState.value.state
+                NodeState.SHUTOFF
             else
                 NodeState.ERROR
-        val server = nodeState.value.server?.copy(state = newServerState)
-        setNode(nodeState.value.copy(state = newNodeState, server = server))
-
-        serverEvents?.close()
-        serverEvents = null
+        setNode(nodeState.value.copy(state = newNodeState))
     }
 
     override suspend fun stop(): Node {
@@ -214,7 +148,7 @@ public class SimBareMetalDriver(
         }
 
         job?.cancelAndJoin()
-        setNode(node.copy(state = NodeState.SHUTOFF, server = null))
+        setNode(node.copy(state = NodeState.SHUTOFF))
         return node
     }
 
@@ -236,13 +170,6 @@ public class SimBareMetalDriver(
             events.emit(NodeEvent.StateChanged(value, field.state))
         }
 
-        val oldServer = field.server
-        val newServer = value.server
-
-        if (oldServer != null && newServer != null && oldServer.state != newServer.state) {
-            serverEvents?.emit(ServerEvent.StateChanged(newServer, oldServer.state))
-        }
-
         nodeState.value = value
     }
 
@@ -250,13 +177,11 @@ public class SimBareMetalDriver(
         get() = coroutineScope
 
     override suspend fun fail() {
-        val server = nodeState.value.server?.copy(state = ServerState.ERROR)
-        setNode(nodeState.value.copy(state = NodeState.ERROR, server = server))
+        setNode(nodeState.value.copy(state = NodeState.ERROR))
     }
 
     override suspend fun recover() {
-        val server = nodeState.value.server?.copy(state = ServerState.ACTIVE)
-        setNode(nodeState.value.copy(state = NodeState.ACTIVE, server = server))
+        setNode(nodeState.value.copy(state = NodeState.ACTIVE))
     }
 
     override fun toString(): String = "SimBareMetalDriver(node = ${nodeState.value.uid})"

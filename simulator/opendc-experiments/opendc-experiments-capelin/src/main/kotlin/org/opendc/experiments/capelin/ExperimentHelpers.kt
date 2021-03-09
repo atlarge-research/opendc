@@ -32,22 +32,26 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.ServerEvent
-import org.opendc.compute.core.metal.NODE_CLUSTER
-import org.opendc.compute.core.metal.driver.BareMetalDriver
-import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.compute.core.virt.HypervisorEvent
-import org.opendc.compute.core.virt.service.VirtProvisioningEvent
-import org.opendc.compute.core.workload.VmWorkload
+import org.opendc.compute.api.ComputeWorkload
+import org.opendc.compute.api.Flavor
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.api.ServerWatcher
+import org.opendc.compute.service.ComputeService
+import org.opendc.compute.service.ComputeServiceEvent
+import org.opendc.compute.service.driver.HostEvent
+import org.opendc.compute.service.internal.ComputeServiceImpl
+import org.opendc.compute.service.scheduler.AllocationPolicy
 import org.opendc.compute.simulator.SimBareMetalDriver
-import org.opendc.compute.simulator.SimVirtDriver
-import org.opendc.compute.simulator.SimVirtProvisioningService
-import org.opendc.compute.simulator.allocation.AllocationPolicy
+import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.simulator.SimHostProvisioner
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
+import org.opendc.metal.NODE_CLUSTER
+import org.opendc.metal.NodeEvent
+import org.opendc.metal.service.ProvisioningService
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.failures.CorrelatedFaultInjector
@@ -135,6 +139,12 @@ public fun createTraceReader(
     )
 }
 
+public data class ProvisionerResult(
+    val metal: ProvisioningService,
+    val provisioner: SimHostProvisioner,
+    val compute: ComputeServiceImpl
+)
+
 /**
  * Construct the environment for a VM provisioner and return the provisioner instance.
  */
@@ -144,45 +154,52 @@ public suspend fun createProvisioner(
     environmentReader: EnvironmentReader,
     allocationPolicy: AllocationPolicy,
     eventTracer: EventTracer
-): Pair<ProvisioningService, SimVirtProvisioningService> {
+): ProvisionerResult {
     val environment = environmentReader.use { it.construct(coroutineScope, clock) }
     val bareMetalProvisioner = environment.platforms[0].zones[0].services[ProvisioningService]
 
     // Wait for the bare metal nodes to be spawned
     delay(10)
 
-    val scheduler = SimVirtProvisioningService(coroutineScope, clock, bareMetalProvisioner, allocationPolicy, eventTracer, SimFairShareHypervisorProvider())
+    val provisioner = SimHostProvisioner(coroutineScope.coroutineContext, bareMetalProvisioner, SimFairShareHypervisorProvider())
+    val hosts = provisioner.provisionAll()
+
+    val scheduler = ComputeService(coroutineScope.coroutineContext, clock, eventTracer, allocationPolicy) as ComputeServiceImpl
+
+    for (host in hosts) {
+        scheduler.addHost(host)
+    }
 
     // Wait for the hypervisors to be spawned
     delay(10)
 
-    return bareMetalProvisioner to scheduler
+    return ProvisionerResult(bareMetalProvisioner, provisioner, scheduler)
 }
 
 /**
  * Attach the specified monitor to the VM provisioner.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public suspend fun attachMonitor(
+public fun attachMonitor(
     coroutineScope: CoroutineScope,
     clock: Clock,
-    scheduler: SimVirtProvisioningService,
+    scheduler: ComputeService,
     monitor: ExperimentMonitor
 ) {
 
-    val hypervisors = scheduler.drivers()
+    val hypervisors = scheduler.hosts
 
     // Monitor hypervisor events
     for (hypervisor in hypervisors) {
-        // TODO Do not expose VirtDriver directly but use Hypervisor class.
-        val server = (hypervisor as SimVirtDriver).server
+        // TODO Do not expose Host directly but use Hypervisor class.
+        val server = (hypervisor as SimHost).node
         monitor.reportHostStateChange(clock.millis(), hypervisor, server)
         server.events
             .onEach { event ->
                 val time = clock.millis()
                 when (event) {
-                    is ServerEvent.StateChanged -> {
-                        monitor.reportHostStateChange(time, hypervisor, event.server)
+                    is NodeEvent.StateChanged -> {
+                        monitor.reportHostStateChange(time, hypervisor, event.node)
                     }
                 }
             }
@@ -190,7 +207,7 @@ public suspend fun attachMonitor(
         hypervisor.events
             .onEach { event ->
                 when (event) {
-                    is HypervisorEvent.SliceFinished -> monitor.reportHostSlice(
+                    is HostEvent.SliceFinished -> monitor.reportHostSlice(
                         clock.millis(),
                         event.requestedBurst,
                         event.grantedBurst,
@@ -199,22 +216,22 @@ public suspend fun attachMonitor(
                         event.cpuUsage,
                         event.cpuDemand,
                         event.numberOfDeployedImages,
-                        event.hostServer
+                        (event.driver as SimHost).node
                     )
                 }
             }
             .launchIn(coroutineScope)
 
-        val driver = hypervisor.server.services[BareMetalDriver.Key] as SimBareMetalDriver
+        val driver = server.metadata["driver"] as SimBareMetalDriver
         driver.powerDraw
-            .onEach { monitor.reportPowerConsumption(hypervisor.server, it) }
+            .onEach { monitor.reportPowerConsumption(server, it) }
             .launchIn(coroutineScope)
     }
 
     scheduler.events
         .onEach { event ->
             when (event) {
-                is VirtProvisioningEvent.MetricsAvailable ->
+                is ComputeServiceEvent.MetricsAvailable ->
                     monitor.reportProvisionerMetrics(clock.millis(), event)
             }
         }
@@ -227,11 +244,12 @@ public suspend fun attachMonitor(
 public suspend fun processTrace(
     coroutineScope: CoroutineScope,
     clock: Clock,
-    reader: TraceReader<VmWorkload>,
-    scheduler: SimVirtProvisioningService,
+    reader: TraceReader<ComputeWorkload>,
+    scheduler: ComputeService,
     chan: Channel<Unit>,
     monitor: ExperimentMonitor
 ) {
+    val client = scheduler.newClient()
     try {
         var submitted = 0
 
@@ -242,7 +260,7 @@ public suspend fun processTrace(
             delay(max(0, time - clock.millis()))
             coroutineScope.launch {
                 chan.send(Unit)
-                val server = scheduler.deploy(
+                val server = client.newServer(
                     workload.image.name,
                     workload.image,
                     Flavor(
@@ -250,21 +268,19 @@ public suspend fun processTrace(
                         workload.image.tags["required-memory"] as Long
                     )
                 )
-                // Monitor server events
-                server.events
-                    .onEach {
-                        if (it is ServerEvent.StateChanged) {
-                            monitor.reportVmStateChange(clock.millis(), it.server)
-                        }
+
+                server.watch(object : ServerWatcher {
+                    override fun onStateChanged(server: Server, newState: ServerState) {
+                        monitor.reportVmStateChange(clock.millis(), server, newState)
                     }
-                    .collect()
+                })
             }
         }
 
         scheduler.events
             .takeWhile {
                 when (it) {
-                    is VirtProvisioningEvent.MetricsAvailable ->
+                    is ComputeServiceEvent.MetricsAvailable ->
                         it.inactiveVmCount + it.failedVmCount != submitted
                 }
             }
@@ -272,5 +288,6 @@ public suspend fun processTrace(
         delay(1)
     } finally {
         reader.close()
+        client.close()
     }
 }

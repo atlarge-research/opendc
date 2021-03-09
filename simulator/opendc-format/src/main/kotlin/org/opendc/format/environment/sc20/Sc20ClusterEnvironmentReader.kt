@@ -23,9 +23,6 @@
 package org.opendc.format.environment.sc20
 
 import kotlinx.coroutines.CoroutineScope
-import org.opendc.compute.core.metal.NODE_CLUSTER
-import org.opendc.compute.core.metal.service.ProvisioningService
-import org.opendc.compute.core.metal.service.SimpleProvisioningService
 import org.opendc.compute.simulator.SimBareMetalDriver
 import org.opendc.compute.simulator.power.models.LinearPowerModel
 import org.opendc.core.Environment
@@ -33,6 +30,9 @@ import org.opendc.core.Platform
 import org.opendc.core.Zone
 import org.opendc.core.services.ServiceRegistry
 import org.opendc.format.environment.EnvironmentReader
+import org.opendc.metal.NODE_CLUSTER
+import org.opendc.metal.service.ProvisioningService
+import org.opendc.metal.service.SimpleProvisioningService
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode

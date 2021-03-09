@@ -58,12 +58,22 @@ public fun <T> EventFlow(): EventFlow<T> = EventFlowImpl()
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 private class EventFlowImpl<T> : EventFlow<T> {
     private var closed: Boolean = false
-    private val subscribers = HashMap<SendChannel<T>, Unit>()
+    private val subscribers = mutableListOf<SendChannel<T>>()
 
     override fun emit(event: T) {
+        if (closed) {
+            return
+        }
+
+        val it = subscribers.iterator()
         synchronized(this) {
-            for ((chan, _) in subscribers) {
-                chan.offer(event)
+            while (it.hasNext()) {
+                val chan = it.next()
+                if (chan.isClosedForSend) {
+                    it.remove()
+                } else {
+                    chan.offer(event)
+                }
             }
         }
     }
@@ -72,9 +82,11 @@ private class EventFlowImpl<T> : EventFlow<T> {
         synchronized(this) {
             closed = true
 
-            for ((chan, _) in subscribers) {
+            for (chan in subscribers) {
                 chan.close()
             }
+
+            subscribers.clear()
         }
     }
 
@@ -87,9 +99,13 @@ private class EventFlowImpl<T> : EventFlow<T> {
             }
 
             channel = Channel(Channel.UNLIMITED)
-            subscribers[channel] = Unit
+            subscribers.add(channel)
         }
-        channel.consumeAsFlow().collect(collector)
+        try {
+            channel.consumeAsFlow().collect(collector)
+        } finally {
+            channel.close()
+        }
     }
 
     override fun toString(): String = "EventFlow"

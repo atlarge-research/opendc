@@ -23,8 +23,8 @@
 package org.opendc.experiments.capelin.trace
 
 import mu.KotlinLogging
-import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
+import org.opendc.compute.api.ComputeWorkload
+import org.opendc.compute.api.Image
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.SamplingStrategy
 import org.opendc.experiments.capelin.model.Workload
@@ -38,11 +38,11 @@ private val logger = KotlinLogging.logger {}
  * Sample the workload for the specified [run].
  */
 public fun sampleWorkload(
-    trace: List<TraceEntry<VmWorkload>>,
+    trace: List<TraceEntry<ComputeWorkload>>,
     workload: Workload,
     subWorkload: Workload,
     seed: Int
-): List<TraceEntry<VmWorkload>> {
+): List<TraceEntry<ComputeWorkload>> {
     return when {
         workload is CompositeWorkload -> sampleRegularWorkload(trace, workload, subWorkload, seed)
         workload.samplingStrategy == SamplingStrategy.HPC ->
@@ -58,15 +58,15 @@ public fun sampleWorkload(
  * Sample a regular (non-HPC) workload.
  */
 public fun sampleRegularWorkload(
-    trace: List<TraceEntry<VmWorkload>>,
+    trace: List<TraceEntry<ComputeWorkload>>,
     workload: Workload,
     subWorkload: Workload,
     seed: Int
-): List<TraceEntry<VmWorkload>> {
+): List<TraceEntry<ComputeWorkload>> {
     val fraction = subWorkload.fraction
 
     val shuffled = trace.shuffled(Random(seed))
-    val res = mutableListOf<TraceEntry<VmWorkload>>()
+    val res = mutableListOf<TraceEntry<ComputeWorkload>>()
     val totalLoad = if (workload is CompositeWorkload) {
         workload.totalLoad
     } else {
@@ -93,11 +93,11 @@ public fun sampleRegularWorkload(
  * Sample a HPC workload.
  */
 public fun sampleHpcWorkload(
-    trace: List<TraceEntry<VmWorkload>>,
+    trace: List<TraceEntry<ComputeWorkload>>,
     workload: Workload,
     seed: Int,
     sampleOnLoad: Boolean
-): List<TraceEntry<VmWorkload>> {
+): List<TraceEntry<ComputeWorkload>> {
     val pattern = Regex("^vm__workload__(ComputeNode|cn).*")
     val random = Random(seed)
 
@@ -109,7 +109,7 @@ public fun sampleHpcWorkload(
 
     val hpcSequence = generateSequence(0) { it + 1 }
         .map { index ->
-            val res = mutableListOf<TraceEntry<VmWorkload>>()
+            val res = mutableListOf<TraceEntry<ComputeWorkload>>()
             hpc.mapTo(res) { sample(it, index) }
             res.shuffle(random)
             res
@@ -118,7 +118,7 @@ public fun sampleHpcWorkload(
 
     val nonHpcSequence = generateSequence(0) { it + 1 }
         .map { index ->
-            val res = mutableListOf<TraceEntry<VmWorkload>>()
+            val res = mutableListOf<TraceEntry<ComputeWorkload>>()
             nonHpc.mapTo(res) { sample(it, index) }
             res.shuffle(random)
             res
@@ -139,7 +139,7 @@ public fun sampleHpcWorkload(
     var nonHpcCount = 0
     var nonHpcLoad = 0.0
 
-    val res = mutableListOf<TraceEntry<VmWorkload>>()
+    val res = mutableListOf<TraceEntry<ComputeWorkload>>()
 
     if (sampleOnLoad) {
         var currentLoad = 0.0
@@ -194,17 +194,16 @@ public fun sampleHpcWorkload(
 /**
  * Sample a random trace entry.
  */
-private fun sample(entry: TraceEntry<VmWorkload>, i: Int): TraceEntry<VmWorkload> {
+private fun sample(entry: TraceEntry<ComputeWorkload>, i: Int): TraceEntry<ComputeWorkload> {
     val id = UUID.nameUUIDFromBytes("${entry.workload.image.uid}-$i".toByteArray())
-    val image = SimWorkloadImage(
+    val image = Image(
         id,
         entry.workload.image.name,
-        entry.workload.image.tags,
-        (entry.workload.image as SimWorkloadImage).workload
+        entry.workload.image.tags
     )
     val vmWorkload = entry.workload.copy(uid = id, image = image, name = entry.workload.name)
     return VmTraceEntry(vmWorkload, entry.submissionTime)
 }
 
-private class VmTraceEntry(override val workload: VmWorkload, override val submissionTime: Long) :
-    TraceEntry<VmWorkload>
+private class VmTraceEntry(override val workload: ComputeWorkload, override val submissionTime: Long) :
+    TraceEntry<ComputeWorkload>

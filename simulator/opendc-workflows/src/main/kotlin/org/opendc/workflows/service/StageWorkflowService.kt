@@ -25,16 +25,10 @@ package org.opendc.workflows.service
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.opendc.compute.core.Flavor
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.ServerEvent
-import org.opendc.compute.core.ServerState
-import org.opendc.compute.core.virt.service.VirtProvisioningService
+import org.opendc.compute.api.*
 import org.opendc.trace.core.EventTracer
 import org.opendc.trace.core.consumeAsFlow
 import org.opendc.trace.core.enable
@@ -55,13 +49,13 @@ public class StageWorkflowService(
     internal val coroutineScope: CoroutineScope,
     internal val clock: Clock,
     internal val tracer: EventTracer,
-    private val provisioningService: VirtProvisioningService,
+    private val computeClient: ComputeClient,
     mode: WorkflowSchedulerMode,
     jobAdmissionPolicy: JobAdmissionPolicy,
     jobOrderPolicy: JobOrderPolicy,
     taskEligibilityPolicy: TaskEligibilityPolicy,
     taskOrderPolicy: TaskOrderPolicy
-) : WorkflowService {
+) : WorkflowService, ServerWatcher {
     /**
      * The logger instance to use.
      */
@@ -101,12 +95,6 @@ public class StageWorkflowService(
      * The running tasks by [Server].
      */
     internal val taskByServer = mutableMapOf<Server, TaskState>()
-
-    /**
-     * The load of the system.
-     */
-    internal val load: Double
-        get() = (activeTasks.size / provisioningService.hostCount.toDouble())
 
     /**
      * The root listener of this scheduler.
@@ -205,7 +193,7 @@ public class StageWorkflowService(
     /**
      * Indicate to the scheduler that a scheduling cycle is needed.
      */
-    private suspend fun requestCycle() = mode.requestCycle()
+    private fun requestCycle() = mode.requestCycle()
 
     /**
      * Perform a scheduling cycle immediately.
@@ -273,15 +261,13 @@ public class StageWorkflowService(
             val flavor = Flavor(cores, 1000) // TODO How to determine memory usage for workflow task
             val image = instance.task.image
             coroutineScope.launch {
-                val server = provisioningService.deploy(instance.task.name, image, flavor)
+                val server = computeClient.newServer(instance.task.name, image, flavor)
 
                 instance.state = TaskStatus.ACTIVE
                 instance.server = server
                 taskByServer[server] = instance
 
-                server.events
-                    .onEach { event -> if (event is ServerEvent.StateChanged) stateChanged(event.server) }
-                    .launchIn(coroutineScope)
+                server.watch(this@StageWorkflowService)
             }
 
             activeTasks += instance
@@ -290,8 +276,8 @@ public class StageWorkflowService(
         }
     }
 
-    private suspend fun stateChanged(server: Server) {
-        when (server.state) {
+    public override fun onStateChanged(server: Server, newState: ServerState) {
+        when (newState) {
             ServerState.ACTIVE -> {
                 val task = taskByServer.getValue(server)
                 task.startedAt = clock.millis()

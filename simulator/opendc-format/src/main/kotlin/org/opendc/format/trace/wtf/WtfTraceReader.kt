@@ -25,7 +25,7 @@ package org.opendc.format.trace.wtf
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
-import org.opendc.compute.simulator.SimWorkloadImage
+import org.opendc.compute.api.Image
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -78,10 +78,17 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
                 TraceEntryImpl(submitTime, Job(UUID(0L, taskId), "<unnamed>", UnnamedUser, HashSet()))
             }
             val workflow = entry.workload
+            val workload = SimFlopsWorkload(flops)
             val task = Task(
                 UUID(0L, taskId),
                 "<unnamed>",
-                SimWorkloadImage(UUID.randomUUID(), "<unnamed>", emptyMap(), SimFlopsWorkload(flops)),
+                Image(
+                    UUID.randomUUID(),
+                    "<unnamed>",
+                    mapOf(
+                        "workload" to workload
+                    )
+                ),
                 HashSet(),
                 mapOf(
                     WORKFLOW_TASK_CORES to cores,

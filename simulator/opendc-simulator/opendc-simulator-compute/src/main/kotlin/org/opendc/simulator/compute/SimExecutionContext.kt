@@ -41,6 +41,11 @@ public interface SimExecutionContext {
     public val machine: SimMachineModel
 
     /**
+     * The metadata associated with the context.
+     */
+    public val meta: Map<String, Any>
+
+    /**
      * Ask the host machine to interrupt the specified vCPU.
      *
      * @param cpu The id of the vCPU to interrupt.

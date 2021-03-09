@@ -23,13 +23,15 @@
 package org.opendc.experiments.capelin.monitor
 
 import mu.KotlinLogging
-import org.opendc.compute.core.Server
-import org.opendc.compute.core.virt.driver.VirtDriver
-import org.opendc.compute.core.virt.service.VirtProvisioningEvent
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.service.ComputeServiceEvent
+import org.opendc.compute.service.driver.Host
 import org.opendc.experiments.capelin.telemetry.HostEvent
 import org.opendc.experiments.capelin.telemetry.ProvisionerEvent
 import org.opendc.experiments.capelin.telemetry.parquet.ParquetHostEventWriter
 import org.opendc.experiments.capelin.telemetry.parquet.ParquetProvisionerEventWriter
+import org.opendc.metal.Node
 import java.io.File
 
 /**
@@ -49,10 +51,10 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         File(base, "provisioner-metrics/$partition/data.parquet"),
         bufferSize
     )
-    private val currentHostEvent = mutableMapOf<Server, HostEvent>()
+    private val currentHostEvent = mutableMapOf<Node, HostEvent>()
     private var startTime = -1L
 
-    override fun reportVmStateChange(time: Long, server: Server) {
+    override fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {
         if (startTime < 0) {
             startTime = time
 
@@ -63,12 +65,12 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
 
     override fun reportHostStateChange(
         time: Long,
-        driver: VirtDriver,
-        server: Server
+        driver: Host,
+        host: Node
     ) {
-        logger.debug { "Host ${server.uid} changed state ${server.state} [$time]" }
+        logger.debug { "Host ${host.uid} changed state ${host.state} [$time]" }
 
-        val previousEvent = currentHostEvent[server]
+        val previousEvent = currentHostEvent[host]
 
         val roundedTime = previousEvent?.let {
             val duration = time - it.timestamp
@@ -91,13 +93,13 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
             0.0,
             0.0,
             0,
-            server
+            host
         )
     }
 
-    private val lastPowerConsumption = mutableMapOf<Server, Double>()
+    private val lastPowerConsumption = mutableMapOf<Node, Double>()
 
-    override fun reportPowerConsumption(host: Server, draw: Double) {
+    override fun reportPowerConsumption(host: Node, draw: Double) {
         lastPowerConsumption[host] = draw
     }
 
@@ -110,16 +112,16 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         cpuUsage: Double,
         cpuDemand: Double,
         numberOfDeployedImages: Int,
-        hostServer: Server,
+        host: Node,
         duration: Long
     ) {
-        val previousEvent = currentHostEvent[hostServer]
+        val previousEvent = currentHostEvent[host]
         when {
             previousEvent == null -> {
                 val event = HostEvent(
                     time,
                     5 * 60 * 1000L,
-                    hostServer,
+                    host,
                     numberOfDeployedImages,
                     requestedBurst,
                     grantedBurst,
@@ -127,17 +129,17 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
                     interferedBurst,
                     cpuUsage,
                     cpuDemand,
-                    lastPowerConsumption[hostServer] ?: 200.0,
-                    hostServer.flavor.cpuCount
+                    lastPowerConsumption[host] ?: 200.0,
+                    host.flavor.cpuCount
                 )
 
-                currentHostEvent[hostServer] = event
+                currentHostEvent[host] = event
             }
             previousEvent.timestamp == time -> {
                 val event = HostEvent(
                     time,
                     previousEvent.duration,
-                    hostServer,
+                    host,
                     numberOfDeployedImages,
                     requestedBurst,
                     grantedBurst,
@@ -145,11 +147,11 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
                     interferedBurst,
                     cpuUsage,
                     cpuDemand,
-                    lastPowerConsumption[hostServer] ?: 200.0,
-                    hostServer.flavor.cpuCount
+                    lastPowerConsumption[host] ?: 200.0,
+                    host.flavor.cpuCount
                 )
 
-                currentHostEvent[hostServer] = event
+                currentHostEvent[host] = event
             }
             else -> {
                 hostWriter.write(previousEvent)
@@ -157,7 +159,7 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
                 val event = HostEvent(
                     time,
                     time - previousEvent.timestamp,
-                    hostServer,
+                    host,
                     numberOfDeployedImages,
                     requestedBurst,
                     grantedBurst,
@@ -165,16 +167,16 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
                     interferedBurst,
                     cpuUsage,
                     cpuDemand,
-                    lastPowerConsumption[hostServer] ?: 200.0,
-                    hostServer.flavor.cpuCount
+                    lastPowerConsumption[host] ?: 200.0,
+                    host.flavor.cpuCount
                 )
 
-                currentHostEvent[hostServer] = event
+                currentHostEvent[host] = event
             }
         }
     }
 
-    override fun reportProvisionerMetrics(time: Long, event: VirtProvisioningEvent.MetricsAvailable) {
+    override fun reportProvisionerMetrics(time: Long, event: ComputeServiceEvent.MetricsAvailable) {
         provisionerWriter.write(
             ProvisionerEvent(
                 time,

@@ -26,8 +26,8 @@ import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
-import org.opendc.compute.core.workload.VmWorkload
-import org.opendc.compute.simulator.SimWorkloadImage
+import org.opendc.compute.api.ComputeWorkload
+import org.opendc.compute.api.Image
 import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -108,11 +108,12 @@ public class Sc20RawParquetTraceReader(private val path: File) {
 
                 val vmFragments = fragments.getValue(id).asSequence()
                 val totalLoad = vmFragments.sumByDouble { it.usage } * 5 * 60 // avg MHz * duration = MFLOPs
-                val vmWorkload = VmWorkload(
+                val workload = SimTraceWorkload(vmFragments)
+                val vmWorkload = ComputeWorkload(
                     uid,
                     id,
                     UnnamedUser,
-                    SimWorkloadImage(
+                    Image(
                         uid,
                         id,
                         mapOf(
@@ -120,9 +121,9 @@ public class Sc20RawParquetTraceReader(private val path: File) {
                             "end-time" to endTime,
                             "total-load" to totalLoad,
                             "cores" to maxCores,
-                            "required-memory" to requiredMemory
-                        ),
-                        SimTraceWorkload(vmFragments)
+                            "required-memory" to requiredMemory,
+                            "workload" to workload
+                        )
                     )
                 )
                 entries.add(TraceEntryImpl(submissionTime, vmWorkload))
@@ -150,7 +151,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * Read the entries in the trace.
      */
-    public fun read(): List<TraceEntry<VmWorkload>> = entries
+    public fun read(): List<TraceEntry<ComputeWorkload>> = entries
 
     /**
      * An unnamed user.
@@ -165,6 +166,6 @@ public class Sc20RawParquetTraceReader(private val path: File) {
      */
     internal data class TraceEntryImpl(
         override var submissionTime: Long,
-        override val workload: VmWorkload
-    ) : TraceEntry<VmWorkload>
+        override val workload: ComputeWorkload
+    ) : TraceEntry<ComputeWorkload>
 }
