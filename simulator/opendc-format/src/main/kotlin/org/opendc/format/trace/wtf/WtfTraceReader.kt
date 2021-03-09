@@ -25,7 +25,6 @@ package org.opendc.format.trace.wtf
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
-import org.opendc.compute.api.Image
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
@@ -57,6 +56,7 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
         val tasks = mutableMapOf<Long, Task>()
         val taskDependencies = mutableMapOf<Task, List<Long>>()
 
+        @Suppress("DEPRECATION")
         val reader = AvroParquetReader.builder<GenericRecord>(Path(path, "tasks/schema-1.0")).build()
 
         while (true) {
@@ -81,16 +81,9 @@ public class WtfTraceReader(path: String) : TraceReader<Job> {
             val task = Task(
                 UUID(0L, taskId),
                 "<unnamed>",
-                Image(
-                    UUID.randomUUID(),
-                    "<unnamed>",
-                    emptyMap(),
-                    mapOf(
-                        "workload" to workload
-                    )
-                ),
                 HashSet(),
                 mapOf(
+                    "workload" to workload,
                     WORKFLOW_TASK_CORES to cores,
                     WORKFLOW_TASK_DEADLINE to runtime
                 )

@@ -83,7 +83,7 @@ public class Sc20TraceReader(
                 var vmId = ""
                 var maxCores = -1
                 var requiredMemory = -1L
-                var timestamp = -1L
+                var timestamp: Long
                 var cores = -1
                 var minTime = Long.MAX_VALUE
 

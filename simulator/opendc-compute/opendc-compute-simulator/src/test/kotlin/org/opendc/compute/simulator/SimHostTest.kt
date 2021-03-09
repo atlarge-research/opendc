@@ -82,7 +82,7 @@ internal class SimHostTest {
         scope.launch {
             val virtDriver = SimHost(UUID.randomUUID(), "test", machineModel, emptyMap(), coroutineContext, clock, SimFairShareHypervisorProvider())
             val duration = 5 * 60L
-            val vmImageA = Image(
+            val vmImageA = MockImage(
                 UUID.randomUUID(),
                 "<unnamed>",
                 emptyMap(),
@@ -97,7 +97,7 @@ internal class SimHostTest {
                     )
                 )
             )
-            val vmImageB = Image(
+            val vmImageB = MockImage(
                 UUID.randomUUID(),
                 "<unnamed>",
                 emptyMap(),
@@ -141,6 +141,21 @@ internal class SimHostTest {
             { assertEquals(1140000, overcommittedWork, "Overcommitted work does not match") },
             { assertEquals(1200006, scope.currentTime) }
         )
+    }
+
+    private class MockImage(
+        override val uid: UUID,
+        override val name: String,
+        override val labels: Map<String, String>,
+        override val meta: Map<String, Any>
+    ) : Image {
+        override suspend fun delete() {
+            throw NotImplementedError()
+        }
+
+        override suspend fun refresh() {
+            throw NotImplementedError()
+        }
     }
 
     private class MockServer(

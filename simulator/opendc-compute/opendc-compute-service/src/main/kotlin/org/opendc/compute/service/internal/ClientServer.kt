@@ -87,6 +87,8 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
     }
 
     override suspend fun refresh() {
+        delegate.refresh()
+
         name = delegate.name
         flavor = delegate.flavor
         image = delegate.image

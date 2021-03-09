@@ -46,6 +46,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
      * Read the fragments into memory.
      */
     private fun parseFragments(path: File): Map<String, List<SimTraceWorkload.Fragment>> {
+        @Suppress("DEPRECATION")
         val reader = AvroParquetReader.builder<GenericData.Record>(Path(path.absolutePath, "trace.parquet"))
             .disableCompatibility()
             .build()
@@ -80,6 +81,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
      * Read the metadata into a workload.
      */
     private fun parseMeta(path: File, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<TraceEntry<SimWorkload>> {
+        @Suppress("DEPRECATION")
         val metaReader = AvroParquetReader.builder<GenericData.Record>(Path(path.absolutePath, "meta.parquet"))
             .disableCompatibility()
             .build()

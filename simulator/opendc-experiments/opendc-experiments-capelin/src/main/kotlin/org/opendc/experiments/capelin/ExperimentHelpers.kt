@@ -232,6 +232,7 @@ public suspend fun processTrace(
     monitor: ExperimentMonitor
 ) {
     val client = scheduler.newClient()
+    val image = client.newImage("vm-image")
     try {
         var submitted = 0
 
@@ -244,7 +245,7 @@ public suspend fun processTrace(
                 chan.send(Unit)
                 val server = client.newServer(
                     entry.name,
-                    Image(entry.uid, entry.name, emptyMap(), mapOf("workload" to entry.workload)),
+                    image,
                     Flavor(
                         entry.meta["cores"] as Int,
                         entry.meta["required-memory"] as Long

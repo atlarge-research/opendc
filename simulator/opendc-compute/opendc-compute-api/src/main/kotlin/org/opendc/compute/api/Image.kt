@@ -22,16 +22,12 @@
 
 package org.opendc.compute.api
 
-import java.util.UUID
-
 /**
  * An image containing a bootable operating system that can directly be executed by physical or virtual server.
  */
-public data class Image(
-    public override val uid: UUID,
-    public override val name: String,
-    override val labels: Map<String, String>,
-    override val meta: Map<String, Any>
-) : Resource {
-    override suspend fun refresh() {}
+public interface Image : Resource {
+    /**
+     * Delete the image instance.
+     */
+    public suspend fun delete()
 }

@@ -96,6 +96,7 @@ public class Sc20StreamingParquetTraceReader(
      * The thread to read the records in.
      */
     private val readerThread = thread(start = true, name = "sc20-reader") {
+        @Suppress("DEPRECATION")
         val reader = AvroParquetReader.builder<GenericData.Record>(Path(traceFile.absolutePath, "trace.parquet"))
             .disableCompatibility()
             .run { if (filter != null) withFilter(filter) else this }
@@ -111,11 +112,9 @@ public class Sc20StreamingParquetTraceReader(
                 }
 
                 val id = record["id"].toString()
-                val tick = record["time"] as Long
                 val duration = record["duration"] as Long
                 val cores = record["cores"] as Int
                 val cpuUsage = record["cpuUsage"] as Double
-                val flops = record["flops"] as Long
 
                 val fragment = SimTraceWorkload.Fragment(
                     duration,
@@ -165,6 +164,7 @@ public class Sc20StreamingParquetTraceReader(
         val entries = mutableMapOf<String, GenericData.Record>()
         val buffers = mutableMapOf<String, MutableList<MutableList<SimTraceWorkload.Fragment>>>()
 
+        @Suppress("DEPRECATION")
         val metaReader = AvroParquetReader.builder<GenericData.Record>(Path(traceFile.absolutePath, "meta.parquet"))
             .disableCompatibility()
             .run { if (filter != null) withFilter(filter) else this }

@@ -145,6 +145,7 @@ public class StageWorkflowService(
     private val mode: WorkflowSchedulerMode.Logic
     private val jobAdmissionPolicy: JobAdmissionPolicy.Logic
     private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic
+    private lateinit var image: Image
 
     init {
         this.mode = mode(this)
@@ -152,6 +153,9 @@ public class StageWorkflowService(
         this.jobQueue = PriorityQueue(100, jobOrderPolicy(this).thenBy { it.job.uid })
         this.taskEligibilityPolicy = taskEligibilityPolicy(this)
         this.taskQueue = PriorityQueue(1000, taskOrderPolicy(this).thenBy { it.task.uid })
+        coroutineScope.launch {
+            image = computeClient.newImage("workflow-runner")
+        }
     }
 
     override val events: Flow<WorkflowEvent> = tracer.openRecording().let {
@@ -259,9 +263,9 @@ public class StageWorkflowService(
 
             val cores = instance.task.metadata[WORKFLOW_TASK_CORES] as? Int ?: 1
             val flavor = Flavor(cores, 1000) // TODO How to determine memory usage for workflow task
-            val image = instance.task.image
+            val image = image
             coroutineScope.launch {
-                val server = computeClient.newServer(instance.task.name, image, flavor, start = false)
+                val server = computeClient.newServer(instance.task.name, image, flavor, start = false, meta = instance.task.metadata)
 
                 instance.state = TaskStatus.ACTIVE
                 instance.server = server

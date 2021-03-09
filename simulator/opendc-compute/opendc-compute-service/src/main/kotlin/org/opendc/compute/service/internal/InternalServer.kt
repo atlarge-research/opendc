@@ -94,6 +94,7 @@ internal class InternalServer(
             ServerState.RUNNING -> {
                 val host = checkNotNull(host) { "Server not running" }
                 host.delete(this)
+                service.delete(this)
             }
             else -> {} // No work needed
         }
@@ -123,4 +124,8 @@ internal class InternalServer(
     internal fun assignHost(host: Host) {
         this.host = host
     }
+
+    override fun equals(other: Any?): Boolean = other is InternalServer && uid == other.uid
+
+    override fun hashCode(): Int = uid.hashCode()
 }

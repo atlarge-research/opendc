@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +20,36 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflows.workload
+package org.opendc.compute.service.internal
 
+import org.opendc.compute.api.Image
 import java.util.*
 
 /**
- * A stage of a [Job].
- *
- * @property uid A unique identified of this task.
- * @property name The name of this task.
- * @property image The application image to run as part of this workflow task.
- * @property dependencies The dependencies of this task in order for it to execute.
- * @property metadata Additional metadata for this task.
+ * An [Image] implementation that is passed to clients but delegates its implementation to another class.
  */
-public data class Task(
-    val uid: UUID,
-    val name: String,
-    val dependencies: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
-) {
-    override fun equals(other: Any?): Boolean = other is Task && uid == other.uid
+internal class ClientImage(private val delegate: Image) : Image {
+    override val uid: UUID = delegate.uid
 
-    override fun hashCode(): Int = uid.hashCode()
+    override var name: String = delegate.name
+        private set
+
+    override var labels: Map<String, String> = delegate.labels.toMap()
+        private set
+
+    override var meta: Map<String, Any> = delegate.meta.toMap()
+        private set
+
+    override suspend fun delete() {
+        delegate.delete()
+        refresh()
+    }
+
+    override suspend fun refresh() {
+        delegate.refresh()
+
+        name = delegate.name
+        labels = delegate.labels
+        meta = delegate.meta
+    }
 }

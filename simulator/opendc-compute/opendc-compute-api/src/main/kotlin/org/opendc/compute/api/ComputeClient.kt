@@ -29,6 +29,31 @@ import java.util.UUID
  */
 public interface ComputeClient : AutoCloseable {
     /**
+     * Obtain the list of [Image]s accessible by the requesting user.
+     */
+    public suspend fun queryImages(): List<Image>
+
+    /**
+     * Obtain a [Image] by its unique identifier.
+     *
+     * @param id The identifier of the image.
+     */
+    public suspend fun findImage(id: UUID): Image?
+
+    /**
+     * Create a new [Image] instance at this compute service.
+     *
+     * @param name The name of the image.
+     * @param labels The identifying labels of the image.
+     * @param meta The non-identifying meta-data of the image.
+     */
+    public suspend fun newImage(
+        name: String,
+        labels: Map<String, String> = emptyMap(),
+        meta: Map<String, Any> = emptyMap()
+    ): Image
+
+    /**
      * Obtain the list of [Server]s accessible by the requesting user.
      */
     public suspend fun queryServers(): List<Server>

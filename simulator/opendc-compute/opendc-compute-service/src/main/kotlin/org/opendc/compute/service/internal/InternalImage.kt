@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +20,35 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflows.workload
+package org.opendc.compute.service.internal
 
+import org.opendc.compute.api.Image
 import java.util.*
 
 /**
- * A stage of a [Job].
- *
- * @property uid A unique identified of this task.
- * @property name The name of this task.
- * @property image The application image to run as part of this workflow task.
- * @property dependencies The dependencies of this task in order for it to execute.
- * @property metadata Additional metadata for this task.
+ * Internal stateful representation of an [Image].
  */
-public data class Task(
-    val uid: UUID,
-    val name: String,
-    val dependencies: Set<Task>,
-    val metadata: Map<String, Any> = emptyMap()
-) {
-    override fun equals(other: Any?): Boolean = other is Task && uid == other.uid
+internal class InternalImage(
+    private val service: ComputeServiceImpl,
+    override val uid: UUID,
+    override val name: String,
+    labels: Map<String, String>,
+    meta: Map<String, Any>
+) : Image {
+
+    override val labels: MutableMap<String, String> = labels.toMutableMap()
+
+    override val meta: MutableMap<String, Any> = meta.toMutableMap()
+
+    override suspend fun refresh() {
+        // No-op: this object is the source-of-truth
+    }
+
+    override suspend fun delete() {
+        service.delete(this)
+    }
+
+    override fun equals(other: Any?): Boolean = other is InternalImage && uid == other.uid
 
     override fun hashCode(): Int = uid.hashCode()
 }

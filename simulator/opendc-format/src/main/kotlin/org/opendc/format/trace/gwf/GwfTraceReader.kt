@@ -22,7 +22,6 @@
 
 package org.opendc.format.trace.gwf
 
-import org.opendc.compute.api.Image
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
@@ -138,9 +137,9 @@ public class GwfTraceReader(reader: BufferedReader) : TraceReader<Job> {
                     val task = Task(
                         UUID(0L, taskId),
                         "<unnamed>",
-                        Image(UUID.randomUUID(), "<unnamed>", emptyMap(), mapOf("workload" to workload)),
                         HashSet(),
                         mapOf(
+                            "workload" to workload,
                             WORKFLOW_TASK_CORES to cores,
                             WORKFLOW_TASK_DEADLINE to (runtime * 1000)
                         ),

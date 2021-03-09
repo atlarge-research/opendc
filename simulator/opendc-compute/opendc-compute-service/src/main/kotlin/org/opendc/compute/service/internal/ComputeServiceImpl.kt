@@ -90,6 +90,11 @@ public class ComputeServiceImpl(
     private val activeServers: MutableMap<Server, Host> = mutableMapOf()
 
     /**
+     * The registered images for this compute service.
+     */
+    internal val images = mutableMapOf<UUID, InternalImage>()
+
+    /**
      * The registered servers for this compute service.
      */
     private val servers = mutableMapOf<UUID, InternalServer>()
@@ -126,6 +131,29 @@ public class ComputeServiceImpl(
     override fun newClient(): ComputeClient = object : ComputeClient {
         private var isClosed: Boolean = false
 
+        override suspend fun queryImages(): List<Image> {
+            check(!isClosed) { "Client is already closed" }
+
+            return images.values.map { ClientImage(it) }
+        }
+
+        override suspend fun findImage(id: UUID): Image? {
+            check(!isClosed) { "Client is already closed" }
+
+            return images[id]?.let { ClientImage(it) }
+        }
+
+        override suspend fun newImage(name: String, labels: Map<String, String>, meta: Map<String, Any>): Image {
+            check(!isClosed) { "Client is already closed" }
+
+            val uid = UUID(clock.millis(), random.nextLong())
+            val image = InternalImage(this@ComputeServiceImpl, uid, name, labels, meta)
+
+            images[uid] = image
+
+            return ClientImage(image)
+        }
+
         override suspend fun newServer(
             name: String,
             image: Image,
@@ -150,15 +178,19 @@ public class ComputeServiceImpl(
                 )
             )
 
+            val uid = UUID(clock.millis(), random.nextLong())
             val server = InternalServer(
                 this@ComputeServiceImpl,
-                uid = UUID(random.nextLong(), random.nextLong()),
+                uid,
                 name,
                 flavor,
                 image,
                 labels.toMutableMap(),
                 meta.toMutableMap()
             )
+
+            servers[uid] = server
+
             if (start) {
                 server.start()
             }
@@ -216,6 +248,14 @@ public class ComputeServiceImpl(
 
         queue.add(SchedulingRequest(server))
         requestSchedulingCycle()
+    }
+
+    internal fun delete(server: InternalServer) {
+        checkNotNull(servers.remove(server.uid)) { "Server was not know" }
+    }
+
+    internal fun delete(image: InternalImage) {
+        checkNotNull(images.remove(image.uid)) { "Server was not know" }
     }
 
     /**
