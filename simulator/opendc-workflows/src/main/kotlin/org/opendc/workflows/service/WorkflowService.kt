@@ -23,7 +23,6 @@
 package org.opendc.workflows.service
 
 import kotlinx.coroutines.flow.Flow
-import org.opendc.core.services.AbstractServiceKey
 import org.opendc.workflows.workload.Job
 import java.util.*
 
@@ -42,9 +41,4 @@ public interface WorkflowService {
      * Submit the specified [Job] to the workflow service for scheduling.
      */
     public suspend fun submit(job: Job)
-
-    /**
-     * The service key for the workflow scheduler.
-     */
-    public companion object Key : AbstractServiceKey<WorkflowService>(UUID.randomUUID(), "workflows")
 }

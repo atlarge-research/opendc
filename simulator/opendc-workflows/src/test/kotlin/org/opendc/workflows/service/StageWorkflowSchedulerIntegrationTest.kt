@@ -119,10 +119,10 @@ internal class StageWorkflowSchedulerIntegrationTest {
             val reader = GwfTraceReader(object {}.javaClass.getResourceAsStream("/trace.gwf"))
 
             while (reader.hasNext()) {
-                val (time, job) = reader.next()
+                val entry = reader.next()
                 jobsSubmitted++
-                delay(max(0, time - clock.millis()))
-                scheduler.submit(job)
+                delay(max(0, entry.start - clock.millis()))
+                scheduler.submit(entry.workload)
             }
         }
 

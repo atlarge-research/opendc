@@ -22,8 +22,6 @@
 
 package org.opendc.workflows.workload
 
-import org.opendc.core.User
-import org.opendc.core.workload.Workload
 import java.util.*
 
 /**
@@ -31,17 +29,15 @@ import java.util.*
  *
  * @property uid A unique identified of this workflow.
  * @property name The name of this workflow.
- * @property owner The owner of the workflow.
  * @property tasks The tasks that are part of this workflow.
  * @property metadata Additional metadata for the job.
  */
 public data class Job(
-    override val uid: UUID,
-    override val name: String,
-    override val owner: User,
-    public val tasks: Set<Task>,
-    public val metadata: Map<String, Any> = emptyMap()
-) : Workload {
+    val uid: UUID,
+    val name: String,
+    val tasks: Set<Task>,
+    val metadata: Map<String, Any> = emptyMap()
+) {
     override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
 
     override fun hashCode(): Int = uid.hashCode()

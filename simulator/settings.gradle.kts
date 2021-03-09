@@ -22,7 +22,6 @@
 rootProject.name = "opendc-simulator"
 
 include(":opendc-platform")
-include(":opendc-core")
 include(":opendc-compute:opendc-compute-api")
 include(":opendc-compute:opendc-compute-service")
 include(":opendc-compute:opendc-compute-simulator")

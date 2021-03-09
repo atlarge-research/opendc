@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.api.ComputeWorkload
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
@@ -43,6 +42,7 @@ import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
 import java.io.File
@@ -201,7 +201,7 @@ class CapelinIntegrationTest {
     /**
      * Obtain the trace reader for the test.
      */
-    private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<ComputeWorkload> {
+    private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<SimWorkload> {
         return Sc20ParquetTraceReader(
             listOf(Sc20RawParquetTraceReader(File("src/test/resources/trace"))),
             emptyMap(),

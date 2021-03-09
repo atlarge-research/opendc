@@ -255,7 +255,7 @@ public class SimHost(
      * A virtual machine instance that the driver manages.
      */
     private inner class Guest(val server: Server, val machine: SimMachine) {
-        val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+        val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.meta[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
 
         var state: ServerState = ServerState.TERMINATED
 

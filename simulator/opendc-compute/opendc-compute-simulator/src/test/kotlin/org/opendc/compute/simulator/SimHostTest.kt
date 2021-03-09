@@ -85,6 +85,7 @@ internal class SimHostTest {
             val vmImageA = Image(
                 UUID.randomUUID(),
                 "<unnamed>",
+                emptyMap(),
                 mapOf(
                     "workload" to SimTraceWorkload(
                         sequenceOf(
@@ -99,6 +100,7 @@ internal class SimHostTest {
             val vmImageB = Image(
                 UUID.randomUUID(),
                 "<unnamed>",
+                emptyMap(),
                 mapOf(
                     "workload" to SimTraceWorkload(
                         sequenceOf(

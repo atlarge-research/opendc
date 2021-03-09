@@ -32,14 +32,14 @@ class SwfTraceReaderTest {
     internal fun testParseSwf() {
         val reader = SwfTraceReader(File(SwfTraceReaderTest::class.java.getResource("/swf_trace.txt").toURI()))
         var entry = reader.next()
-        assertEquals(0, entry.submissionTime)
+        assertEquals(0, entry.start)
         // 1961 slices for waiting, 3 full and 1 partial running slices
-        assertEquals(1965, (entry.workload.image.tags["workload"] as SimTraceWorkload).trace.toList().size)
+        assertEquals(1965, (entry.workload as SimTraceWorkload).trace.toList().size)
 
         entry = reader.next()
-        assertEquals(164472, entry.submissionTime)
+        assertEquals(164472, entry.start)
         // 1188 slices for waiting, 0 full and 1 partial running slices
-        assertEquals(1189, (entry.workload.image.tags["workload"] as SimTraceWorkload).trace.toList().size)
-        assertEquals(0.25, (entry.workload.image.tags["workload"] as SimTraceWorkload).trace.toList().last().usage)
+        assertEquals(1189, (entry.workload as SimTraceWorkload).trace.toList().size)
+        assertEquals(0.25, (entry.workload as SimTraceWorkload).trace.toList().last().usage)
     }
 }

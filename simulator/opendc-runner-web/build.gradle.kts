@@ -34,7 +34,6 @@ application {
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-core"))
     implementation(project(":opendc-compute:opendc-compute-simulator"))
     implementation(project(":opendc-format"))
     implementation(project(":opendc-experiments:opendc-experiments-capelin"))

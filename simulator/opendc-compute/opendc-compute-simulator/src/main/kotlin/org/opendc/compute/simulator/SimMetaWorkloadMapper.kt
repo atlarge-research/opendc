@@ -30,6 +30,6 @@ import org.opendc.simulator.compute.workload.SimWorkload
  */
 public class SimMetaWorkloadMapper(private val key: String = "workload") : SimWorkloadMapper {
     override fun createWorkload(server: Server): SimWorkload {
-        return server.image.tags[key] as SimWorkload
+        return server.image.meta[key] as SimWorkload
     }
 }

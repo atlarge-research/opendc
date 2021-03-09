@@ -22,14 +22,12 @@
 
 package org.opendc.format.trace.bitbrains
 
-import org.opendc.compute.api.ComputeWorkload
-import org.opendc.compute.api.Image
-import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.compute.workload.SimWorkload
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -45,17 +43,17 @@ import kotlin.math.min
 public class BitbrainsTraceReader(
     traceDirectory: File,
     performanceInterferenceModel: PerformanceInterferenceModel
-) : TraceReader<ComputeWorkload> {
+) : TraceReader<SimWorkload> {
     /**
      * The internal iterator to use for this reader.
      */
-    private val iterator: Iterator<TraceEntry<ComputeWorkload>>
+    private val iterator: Iterator<TraceEntry<SimWorkload>>
 
     /**
      * Initialize the reader.
      */
     init {
-        val entries = mutableMapOf<Long, TraceEntry<ComputeWorkload>>()
+        val entries = mutableMapOf<Long, TraceEntry<SimWorkload>>()
 
         var timestampCol = 0
         var coreCol = 0
@@ -132,50 +130,27 @@ public class BitbrainsTraceReader(
                     )
 
                 val workload = SimTraceWorkload(flopsHistory.asSequence())
-                val vmWorkload = ComputeWorkload(
+                entries[vmId] = TraceEntry(
                     uuid,
-                    "VM Workload $vmId",
-                    UnnamedUser,
-                    Image(
-                        uuid,
-                        vmId.toString(),
-                        mapOf(
-                            IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
-                            "cores" to cores,
-                            "required-memory" to requiredMemory,
-                            "workload" to workload
-                        )
-                    )
-                )
-                entries[vmId] = TraceEntryImpl(
+                    vmId.toString(),
                     startTime,
-                    vmWorkload
+                    workload,
+                    mapOf(
+                        IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
+                        "cores" to cores,
+                        "required-memory" to requiredMemory,
+                        "workload" to workload
+                    )
                 )
             }
 
         // Create the entry iterator
-        iterator = entries.values.sortedBy { it.submissionTime }.iterator()
+        iterator = entries.values.sortedBy { it.start }.iterator()
     }
 
     override fun hasNext(): Boolean = iterator.hasNext()
 
-    override fun next(): TraceEntry<ComputeWorkload> = iterator.next()
+    override fun next(): TraceEntry<SimWorkload> = iterator.next()
 
     override fun close() {}
-
-    /**
-     * An unnamed user.
-     */
-    private object UnnamedUser : User {
-        override val name: String = "<unnamed>"
-        override val uid: UUID = UUID.randomUUID()
-    }
-
-    /**
-     * An entry in the trace.
-     */
-    private data class TraceEntryImpl(
-        override var submissionTime: Long,
-        override val workload: ComputeWorkload
-    ) : TraceEntry<ComputeWorkload>
 }

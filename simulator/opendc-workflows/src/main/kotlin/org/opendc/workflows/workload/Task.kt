@@ -25,7 +25,6 @@
 package org.opendc.workflows.workload
 
 import org.opendc.compute.api.Image
-import org.opendc.core.Identity
 import java.util.*
 
 /**
@@ -38,12 +37,12 @@ import java.util.*
  * @property metadata Additional metadata for this task.
  */
 public data class Task(
-    override val uid: UUID,
-    override val name: String,
-    public val image: Image,
-    public val dependencies: Set<Task>,
-    public val metadata: Map<String, Any> = emptyMap()
-) : Identity {
+    val uid: UUID,
+    val name: String,
+    val image: Image,
+    val dependencies: Set<Task>,
+    val metadata: Map<String, Any> = emptyMap()
+) {
     override fun equals(other: Any?): Boolean = other is Task && uid == other.uid
 
     override fun hashCode(): Int = uid.hashCode()

@@ -32,11 +32,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import org.opendc.compute.api.ComputeWorkload
-import org.opendc.compute.api.Flavor
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
-import org.opendc.compute.api.ServerWatcher
+import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
@@ -52,6 +48,7 @@ import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector
 import org.opendc.simulator.failures.FaultInjector
 import org.opendc.trace.core.EventTracer
@@ -229,7 +226,7 @@ public fun attachMonitor(
 public suspend fun processTrace(
     coroutineScope: CoroutineScope,
     clock: Clock,
-    reader: TraceReader<ComputeWorkload>,
+    reader: TraceReader<SimWorkload>,
     scheduler: ComputeService,
     chan: Channel<Unit>,
     monitor: ExperimentMonitor
@@ -239,19 +236,20 @@ public suspend fun processTrace(
         var submitted = 0
 
         while (reader.hasNext()) {
-            val (time, workload) = reader.next()
+            val entry = reader.next()
 
             submitted++
-            delay(max(0, time - clock.millis()))
+            delay(max(0, entry.start - clock.millis()))
             coroutineScope.launch {
                 chan.send(Unit)
                 val server = client.newServer(
-                    workload.image.name,
-                    workload.image,
+                    entry.name,
+                    Image(entry.uid, entry.name, emptyMap(), mapOf("workload" to entry.workload)),
                     Flavor(
-                        workload.image.tags["cores"] as Int,
-                        workload.image.tags["required-memory"] as Long
-                    )
+                        entry.meta["cores"] as Int,
+                        entry.meta["required-memory"] as Long
+                    ),
+                    meta = entry.meta
                 )
 
                 server.watch(object : ServerWatcher {

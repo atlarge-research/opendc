@@ -121,9 +121,9 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
             val reader = GwfTraceReader(File(trace))
 
             while (reader.hasNext()) {
-                val (time, job) = reader.next()
-                delay(max(0, time * 1000 - clock.millis()))
-                scheduler.submit(job)
+                val entry = reader.next()
+                delay(max(0, entry.start * 1000 - clock.millis()))
+                scheduler.submit(entry.workload)
             }
         }
 

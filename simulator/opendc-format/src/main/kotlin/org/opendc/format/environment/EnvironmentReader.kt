@@ -22,11 +22,10 @@
 
 package org.opendc.format.environment
 
-import org.opendc.core.Environment
 import java.io.Closeable
 
 /**
- * An interface for reading descriptions of topology environments into memory as [Environment].
+ * An interface for reading descriptions of topology environments into memory.
  */
 public interface EnvironmentReader : Closeable {
     /**

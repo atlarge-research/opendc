@@ -31,14 +31,12 @@ import org.apache.parquet.filter2.predicate.FilterApi
 import org.apache.parquet.filter2.predicate.Statistics
 import org.apache.parquet.filter2.predicate.UserDefinedPredicate
 import org.apache.parquet.io.api.Binary
-import org.opendc.compute.api.ComputeWorkload
-import org.opendc.compute.api.Image
-import org.opendc.core.User
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.compute.workload.SimWorkload
 import java.io.File
 import java.io.Serializable
 import java.util.SortedSet
@@ -62,11 +60,11 @@ public class Sc20StreamingParquetTraceReader(
     performanceInterferenceModel: PerformanceInterferenceModel,
     selectedVms: List<String>,
     random: Random
-) : TraceReader<ComputeWorkload> {
+) : TraceReader<SimWorkload> {
     /**
      * The internal iterator to use for this reader.
      */
-    private val iterator: Iterator<TraceEntry<ComputeWorkload>>
+    private val iterator: Iterator<TraceEntry<SimWorkload>>
 
     /**
      * The intermediate buffer to store the read records in.
@@ -236,35 +234,25 @@ public class Sc20StreamingParquetTraceReader(
                         Random(random.nextInt())
                     )
                 val workload = SimTraceWorkload(fragments)
-                val vmWorkload = ComputeWorkload(
-                    uid,
-                    "VM Workload $id",
-                    UnnamedUser,
-                    Image(
-                        uid,
-                        id,
-                        mapOf(
-                            IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
-                            "cores" to maxCores,
-                            "required-memory" to requiredMemory,
-                            "workload" to workload
-                        )
+
+                TraceEntry(
+                    uid, id, submissionTime, workload,
+                    mapOf(
+                        IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
+                        "cores" to maxCores,
+                        "required-memory" to requiredMemory,
+                        "workload" to workload
                     )
                 )
-
-                TraceEntryImpl(
-                    submissionTime,
-                    vmWorkload
-                )
             }
-            .sortedBy { it.submissionTime }
+            .sortedBy { it.start }
             .toList()
             .iterator()
     }
 
     override fun hasNext(): Boolean = iterator.hasNext()
 
-    override fun next(): TraceEntry<ComputeWorkload> = iterator.next()
+    override fun next(): TraceEntry<SimWorkload> = iterator.next()
 
     override fun close() {
         readerThread.interrupt()
@@ -287,20 +275,4 @@ public class Sc20StreamingParquetTraceReader(
             return selectedVms.subSet(min.toStringUsingUTF8(), max.toStringUsingUTF8() + "\u0000").isNotEmpty()
         }
     }
-
-    /**
-     * An unnamed user.
-     */
-    private object UnnamedUser : User {
-        override val name: String = "<unnamed>"
-        override val uid: UUID = UUID.randomUUID()
-    }
-
-    /**
-     * An entry in the trace.
-     */
-    private data class TraceEntryImpl(
-        override var submissionTime: Long,
-        override val workload: ComputeWorkload
-    ) : TraceEntry<ComputeWorkload>
 }

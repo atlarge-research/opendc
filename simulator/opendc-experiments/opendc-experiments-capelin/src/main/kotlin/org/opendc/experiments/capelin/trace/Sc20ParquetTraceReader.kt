@@ -22,14 +22,13 @@
 
 package org.opendc.experiments.capelin.trace
 
-import org.opendc.compute.api.ComputeWorkload
-import org.opendc.compute.api.Image
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.workload.SimWorkload
 import java.util.TreeSet
 
 /**
@@ -45,11 +44,11 @@ public class Sc20ParquetTraceReader(
     performanceInterferenceModel: Map<String, PerformanceInterferenceModel>,
     workload: Workload,
     seed: Int
-) : TraceReader<ComputeWorkload> {
+) : TraceReader<SimWorkload> {
     /**
      * The iterator over the actual trace.
      */
-    private val iterator: Iterator<TraceEntry<ComputeWorkload>> =
+    private val iterator: Iterator<TraceEntry<SimWorkload>> =
         rawReaders
             .map { it.read() }
             .run {
@@ -67,19 +66,11 @@ public class Sc20ParquetTraceReader(
                     this
                 else {
                     map { entry ->
-                        val image = entry.workload.image
-                        val id = image.name
+                        val id = entry.name
                         val relevantPerformanceInterferenceModelItems =
                             performanceInterferenceModel[id] ?: PerformanceInterferenceModel(TreeSet())
 
-                        val newImage =
-                            Image(
-                                image.uid,
-                                image.name,
-                                image.tags + mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems),
-                            )
-                        val newWorkload = entry.workload.copy(image = newImage)
-                        Sc20RawParquetTraceReader.TraceEntryImpl(entry.submissionTime, newWorkload)
+                        entry.copy(meta = entry.meta + mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems))
                     }
                 }
             }
@@ -87,7 +78,7 @@ public class Sc20ParquetTraceReader(
 
     override fun hasNext(): Boolean = iterator.hasNext()
 
-    override fun next(): TraceEntry<ComputeWorkload> = iterator.next()
+    override fun next(): TraceEntry<SimWorkload> = iterator.next()
 
     override fun close() {}
 }
