@@ -22,31 +22,34 @@
 
 package org.opendc.compute.api
 
+import java.util.UUID
+
 /**
- * A client interface for the OpenDC Compute service.
+ * A generic resource provided by the OpenDC Compute service.
  */
-public interface ComputeClient : AutoCloseable {
+public interface Resource {
     /**
-     * Create a new [Server] instance at this compute service.
-     *
-     * @param name The name of the server to deploy.
-     * @param image The image to be deployed.
-     * @param flavor The flavor of the machine instance to run this [image] on.
-     * @param labels The identifying labels of the server.
-     * @param meta The non-identifying meta-data of the server.
-     * @param start A flag to indicate that the server should be started immediately.
+     * The unique identifier of the resource.
      */
-    public suspend fun newServer(
-        name: String,
-        image: Image,
-        flavor: Flavor,
-        labels: Map<String, String> = emptyMap(),
-        meta: Map<String, Any> = emptyMap(),
-        start: Boolean = true
-    ): Server
+    public val uid: UUID
 
     /**
-     * Release the resources associated with this client, preventing any further API calls.
+     * The name of the resource.
      */
-    public override fun close()
+    public val name: String
+
+    /**
+     * The identifying labels attached to the resource.
+     */
+    public val labels: Map<String, String>
+
+    /**
+     * The non-identifying metadata attached to the resource.
+     */
+    public val meta: Map<String, Any>
+
+    /**
+     * Refresh the local state of the resource.
+     */
+    public suspend fun refresh()
 }

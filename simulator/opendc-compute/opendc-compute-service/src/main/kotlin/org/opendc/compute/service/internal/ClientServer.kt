@@ -46,7 +46,10 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
     override var image: Image = delegate.image
         private set
 
-    override var tags: Map<String, String> = delegate.tags.toMap()
+    override var labels: Map<String, String> = delegate.labels.toMap()
+        private set
+
+    override var meta: Map<String, Any> = delegate.meta.toMap()
         private set
 
     override var state: ServerState = delegate.state
@@ -87,7 +90,8 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
         name = delegate.name
         flavor = delegate.flavor
         image = delegate.image
-        tags = delegate.tags
+        labels = delegate.labels
+        meta = delegate.meta
         state = delegate.state
     }
 

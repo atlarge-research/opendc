@@ -147,7 +147,10 @@ internal class SimHostTest {
         override val flavor: Flavor,
         override val image: Image
     ) : Server {
-        override val tags: Map<String, String> = emptyMap()
+        override val labels: Map<String, String> = emptyMap()
+
+        override val meta: Map<String, Any> = emptyMap()
+
         override val state: ServerState = ServerState.TERMINATED
 
         override suspend fun start() {}

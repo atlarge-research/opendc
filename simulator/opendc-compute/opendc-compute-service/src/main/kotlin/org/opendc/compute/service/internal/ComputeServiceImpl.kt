@@ -26,7 +26,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import mu.KotlinLogging
 import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
@@ -41,9 +40,7 @@ import org.opendc.utils.TimerScheduler
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
 import java.util.*
-import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
 import kotlin.math.max
 
 /**
@@ -130,6 +127,8 @@ public class ComputeServiceImpl(
             name: String,
             image: Image,
             flavor: Flavor,
+            labels: Map<String, String>,
+            meta: Map<String, Any>,
             start: Boolean
         ): Server {
             check(!isClosed) { "Client is closed" }
@@ -148,7 +147,14 @@ public class ComputeServiceImpl(
                 )
             )
 
-            val server = createServer(name, image, flavor)
+            val server = ServerImpl(
+                uid = UUID(random.nextLong(), random.nextLong()),
+                name,
+                flavor,
+                image,
+                labels.toMutableMap(),
+                meta.toMutableMap()
+            )
             if (start) {
                 server.start()
             }
@@ -189,19 +195,6 @@ public class ComputeServiceImpl(
         scope.cancel()
     }
 
-    private fun createServer(
-        name: String,
-        image: Image,
-        flavor: Flavor,
-    ): ServerImpl {
-        return ServerImpl(
-            uid = UUID(random.nextLong(), random.nextLong()),
-            name,
-            flavor,
-            image
-        )
-    }
-
     private fun requestCycle() {
         // Bail out in case we have already requested a new cycle.
         if (scheduler.isTimerActive(Unit)) {
@@ -220,7 +213,7 @@ public class ComputeServiceImpl(
 
     private fun schedule() {
         while (queue.isNotEmpty()) {
-            val (server, cont) = queue.peekFirst()
+            val (server) = queue.peekFirst()
             val requiredMemory = server.flavor.memorySize
             val selectedHv = allocationLogic.select(availableHosts, server)
 
@@ -265,7 +258,6 @@ public class ComputeServiceImpl(
             scope.launch {
                 try {
                     selectedHv.host.spawn(server)
-                    cont.resume(Unit)
                     activeServers[server] = selectedHv.host
 
                     tracer.commit(VmScheduledEvent(server.name))
@@ -390,13 +382,15 @@ public class ComputeServiceImpl(
         }
     }
 
-    private data class LaunchRequest(val server: ServerImpl, val cont: Continuation<Unit>)
+    private data class LaunchRequest(val server: ServerImpl)
 
     private inner class ServerImpl(
         override val uid: UUID,
         override val name: String,
         override val flavor: Flavor,
-        override val image: Image
+        override val image: Image,
+        override val labels: MutableMap<String, String>,
+        override val meta: MutableMap<String, Any>
     ) : Server {
         val watchers = mutableListOf<ServerWatcher>()
 
@@ -417,11 +411,9 @@ public class ComputeServiceImpl(
                 else -> {
                     logger.info { "User requested to start server $uid" }
                     state = ServerState.PROVISIONING
-                    suspendCancellableCoroutine<Unit> { cont ->
-                        val request = LaunchRequest(this, cont)
-                        queue += request
-                        requestCycle()
-                    }
+                    val request = LaunchRequest(this)
+                    queue += request
+                    requestCycle()
                 }
             }
         }
@@ -462,8 +454,6 @@ public class ComputeServiceImpl(
         override suspend fun refresh() {
             // No-op: this object is the source-of-truth
         }
-
-        override val tags: Map<String, String> = emptyMap()
 
         override var state: ServerState = ServerState.TERMINATED
             set(value) {
