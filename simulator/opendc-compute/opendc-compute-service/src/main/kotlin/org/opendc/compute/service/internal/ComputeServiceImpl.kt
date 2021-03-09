@@ -92,7 +92,7 @@ public class ComputeServiceImpl(
     /**
      * The active servers in the system.
      */
-    private val activeServers: MutableSet<Server> = mutableSetOf()
+    private val activeServers: MutableMap<Server, Host> = mutableMapOf()
 
     public var submittedVms: Int = 0
     public var queuedVms: Int = 0
@@ -126,7 +126,12 @@ public class ComputeServiceImpl(
     override fun newClient(): ComputeClient = object : ComputeClient {
         private var isClosed: Boolean = false
 
-        override suspend fun newServer(name: String, image: Image, flavor: Flavor): Server {
+        override suspend fun newServer(
+            name: String,
+            image: Image,
+            flavor: Flavor,
+            start: Boolean
+        ): Server {
             check(!isClosed) { "Client is closed" }
             tracer.commit(VmSubmissionEvent(name, image, flavor))
 
@@ -143,11 +148,12 @@ public class ComputeServiceImpl(
                 )
             )
 
-            return suspendCancellableCoroutine { cont ->
-                val request = LaunchRequest(createServer(name, image, flavor), cont)
-                queue += request
-                requestCycle()
+            val server = createServer(name, image, flavor)
+            if (start) {
+                server.start()
             }
+
+            return ClientServer(server)
         }
 
         override fun close() {
@@ -186,13 +192,13 @@ public class ComputeServiceImpl(
     private fun createServer(
         name: String,
         image: Image,
-        flavor: Flavor
-    ): Server {
+        flavor: Flavor,
+    ): ServerImpl {
         return ServerImpl(
             uid = UUID(random.nextLong(), random.nextLong()),
-            name = name,
-            flavor = flavor,
-            image = image
+            name,
+            flavor,
+            image
         )
     }
 
@@ -258,9 +264,9 @@ public class ComputeServiceImpl(
 
             scope.launch {
                 try {
-                    cont.resume(ClientServer(server))
                     selectedHv.host.spawn(server)
-                    activeServers += server
+                    cont.resume(Unit)
+                    activeServers[server] = selectedHv.host
 
                     tracer.commit(VmScheduledEvent(server.name))
                     _events.emit(
@@ -348,9 +354,8 @@ public class ComputeServiceImpl(
     override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
         val serverImpl = server as ServerImpl
         serverImpl.state = newState
-        serverImpl.watchers.forEach { it.onStateChanged(server, newState) }
 
-        if (newState == ServerState.SHUTOFF) {
+        if (newState == ServerState.TERMINATED || newState == ServerState.DELETED) {
             logger.info { "[${clock.millis()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
 
             tracer.commit(VmStoppedEvent(server.name))
@@ -385,15 +390,66 @@ public class ComputeServiceImpl(
         }
     }
 
-    public data class LaunchRequest(val server: Server, val cont: Continuation<Server>)
+    private data class LaunchRequest(val server: ServerImpl, val cont: Continuation<Unit>)
 
-    private class ServerImpl(
+    private inner class ServerImpl(
         override val uid: UUID,
         override val name: String,
         override val flavor: Flavor,
         override val image: Image
     ) : Server {
         val watchers = mutableListOf<ServerWatcher>()
+
+        override suspend fun start() {
+            when (state) {
+                ServerState.RUNNING -> {
+                    logger.debug { "User tried to start server but server is already running" }
+                    return
+                }
+                ServerState.PROVISIONING -> {
+                    logger.debug { "User tried to start server but request is already pending: doing nothing" }
+                    return
+                }
+                ServerState.DELETED -> {
+                    logger.warn { "User tried to start terminated server" }
+                    throw IllegalArgumentException("Server is terminated")
+                }
+                else -> {
+                    logger.info { "User requested to start server $uid" }
+                    state = ServerState.PROVISIONING
+                    suspendCancellableCoroutine<Unit> { cont ->
+                        val request = LaunchRequest(this, cont)
+                        queue += request
+                        requestCycle()
+                    }
+                }
+            }
+        }
+
+        override suspend fun stop() {
+            when (state) {
+                ServerState.PROVISIONING -> {} // TODO Find way to interrupt these
+                ServerState.RUNNING, ServerState.ERROR -> {
+                    // Warn: possible race condition on activeServers
+                    val host = checkNotNull(activeServers[this]) { "Server not running" }
+                    host.stop(this)
+                }
+                ServerState.TERMINATED -> {} // No work needed
+                ServerState.DELETED -> throw IllegalStateException("Server is terminated")
+            }
+        }
+
+        override suspend fun delete() {
+            when (state) {
+                ServerState.PROVISIONING -> {} // TODO Find way to interrupt these
+                ServerState.RUNNING -> {
+                    // Warn: possible race condition on activeServers
+                    val host = checkNotNull(activeServers[this]) { "Server not running" }
+                    host.delete(this)
+                }
+                else -> {} // No work needed
+            }
+        }
 
         override fun watch(watcher: ServerWatcher) {
             watchers += watcher
@@ -409,6 +465,13 @@ public class ComputeServiceImpl(
 
         override val tags: Map<String, String> = emptyMap()
 
-        override var state: ServerState = ServerState.BUILD
+        override var state: ServerState = ServerState.TERMINATED
+            set(value) {
+                if (value != field) {
+                    watchers.forEach { it.onStateChanged(this, value) }
+                }
+
+                field = value
+            }
     }
 }

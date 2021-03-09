@@ -27,27 +27,27 @@ package org.opendc.compute.api
  */
 public enum class ServerState {
     /**
-     * The server has not yet finished the original build process.
+     * Resources are being allocated for the instance. The instance is not running yet.
      */
-    BUILD,
+    PROVISIONING,
 
     /**
-     * The server was powered down by the user.
+     * A user shut down the instance.
      */
-    SHUTOFF,
+    TERMINATED,
 
     /**
-     * The server is active and running.
+     * The server instance is booting up or running.
      */
-    ACTIVE,
+    RUNNING,
 
     /**
-     * The server is in error.
+     * The server is in an error state.
      */
     ERROR,
 
     /**
-     * The state of the server is unknown.
+     * The server has been deleted and cannot be started later on.
      */
-    UNKNOWN,
+    DELETED,
 }

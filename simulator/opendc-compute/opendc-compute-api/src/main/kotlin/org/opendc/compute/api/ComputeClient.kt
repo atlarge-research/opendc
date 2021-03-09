@@ -32,11 +32,13 @@ public interface ComputeClient : AutoCloseable {
      * @param name The name of the server to deploy.
      * @param image The image to be deployed.
      * @param flavor The flavor of the machine instance to run this [image] on.
+     * @param start A flag to indicate that the server should be started immediately.
      */
     public suspend fun newServer(
         name: String,
         image: Image,
-        flavor: Flavor
+        flavor: Flavor,
+        start: Boolean = true
     ): Server
 
     /**

@@ -54,6 +54,21 @@ public interface Server : Resource {
     public val state: ServerState
 
     /**
+     * Start the server.
+     */
+    public suspend fun start()
+
+    /**
+     * Stop the server.
+     */
+    public suspend fun stop()
+
+    /**
+     * Delete the server instance from the service.
+     */
+    public suspend fun delete()
+
+    /**
      * Register the specified [ServerWatcher] to watch the state of the server.
      *
      * @param watcher The watcher to register for the server.

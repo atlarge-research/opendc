@@ -79,7 +79,7 @@ public interface Host {
     public operator fun contains(server: Server): Boolean
 
     /**
-     * Stat the server [instance][server] if it is currently not running on this host.
+     * Start the server [instance][server] if it is currently not running on this host.
      *
      * @throws IllegalArgumentException if the server is not present on the host.
      */
@@ -93,9 +93,9 @@ public interface Host {
     public suspend fun stop(server: Server)
 
     /**
-     * Terminate the specified [instance][server] on this host and cleanup all resources associated with it.
+     * Delete the specified [instance][server] on this host and cleanup all resources associated with it.
      */
-    public suspend fun terminate(server: Server)
+    public suspend fun delete(server: Server)
 
     /**
      * Add a [HostListener] to this host.

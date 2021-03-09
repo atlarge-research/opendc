@@ -125,7 +125,9 @@ public class SimHost(
         get() = _state
     private var _state: HostState = HostState.DOWN
         set(value) {
-            listeners.forEach { it.onStateChanged(this, value) }
+            if (value != field) {
+                listeners.forEach { it.onStateChanged(this, value) }
+            }
             field = value
         }
 
@@ -172,7 +174,7 @@ public class SimHost(
             guest.start()
         }
 
-        _events.emit(HostEvent.VmsUpdated(this, guests.count { it.value.state == ServerState.ACTIVE }, availableMemory))
+        _events.emit(HostEvent.VmsUpdated(this, guests.count { it.value.state == ServerState.RUNNING }, availableMemory))
     }
 
     override fun contains(server: Server): Boolean {
@@ -189,7 +191,7 @@ public class SimHost(
         guest.stop()
     }
 
-    override suspend fun terminate(server: Server) {
+    override suspend fun delete(server: Server) {
         val guest = guests.remove(server) ?: return
         guest.terminate()
     }
@@ -221,7 +223,7 @@ public class SimHost(
 
     private fun onGuestStart(vm: Guest) {
         guests.forEach { _, guest ->
-            if (guest.state == ServerState.ACTIVE) {
+            if (guest.state == ServerState.RUNNING) {
                 vm.performanceInterferenceModel?.onStart(vm.server.image.name)
             }
         }
@@ -231,14 +233,14 @@ public class SimHost(
 
     private fun onGuestStop(vm: Guest) {
         guests.forEach { _, guest ->
-            if (guest.state == ServerState.ACTIVE) {
+            if (guest.state == ServerState.RUNNING) {
                 vm.performanceInterferenceModel?.onStop(vm.server.image.name)
             }
         }
 
         listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
 
-        _events.emit(HostEvent.VmsUpdated(this@SimHost, guests.count { it.value.state == ServerState.ACTIVE }, availableMemory))
+        _events.emit(HostEvent.VmsUpdated(this@SimHost, guests.count { it.value.state == ServerState.RUNNING }, availableMemory))
     }
 
     override suspend fun fail() {
@@ -255,33 +257,38 @@ public class SimHost(
     private inner class Guest(val server: Server, val machine: SimMachine) {
         val performanceInterferenceModel: PerformanceInterferenceModel? = server.image.tags[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
 
-        var state: ServerState = ServerState.SHUTOFF
+        var state: ServerState = ServerState.TERMINATED
 
         suspend fun start() {
             when (state) {
-                ServerState.SHUTOFF -> {
+                ServerState.TERMINATED -> {
                     logger.info { "User requested to start server ${server.uid}" }
                     launch()
                 }
-                ServerState.ACTIVE -> return
+                ServerState.RUNNING -> return
+                ServerState.DELETED -> {
+                    logger.warn { "User tried to start terminated server" }
+                    throw IllegalArgumentException("Server is terminated")
+                }
                 else -> assert(false) { "Invalid state transition" }
             }
         }
 
         suspend fun stop() {
             when (state) {
-                ServerState.ACTIVE, ServerState.ERROR -> {
+                ServerState.RUNNING, ServerState.ERROR -> {
                     val job = job ?: throw IllegalStateException("Server should be active")
                     job.cancel()
                     job.join()
                 }
-                ServerState.SHUTOFF -> return
+                ServerState.TERMINATED, ServerState.DELETED -> return
                 else -> assert(false) { "Invalid state transition" }
             }
         }
 
         suspend fun terminate() {
             stop()
+            state = ServerState.DELETED
         }
 
         private var job: Job? = null
@@ -310,14 +317,14 @@ public class SimHost(
         }
 
         private fun init() {
-            state = ServerState.ACTIVE
+            state = ServerState.RUNNING
             onGuestStart(this)
         }
 
         private fun exit(cause: Throwable?) {
             state =
                 if (cause == null)
-                    ServerState.SHUTOFF
+                    ServerState.TERMINATED
                 else
                     ServerState.ERROR
 

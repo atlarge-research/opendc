@@ -261,13 +261,14 @@ public class StageWorkflowService(
             val flavor = Flavor(cores, 1000) // TODO How to determine memory usage for workflow task
             val image = instance.task.image
             coroutineScope.launch {
-                val server = computeClient.newServer(instance.task.name, image, flavor)
+                val server = computeClient.newServer(instance.task.name, image, flavor, start = false)
 
                 instance.state = TaskStatus.ACTIVE
                 instance.server = server
                 taskByServer[server] = instance
 
                 server.watch(this@StageWorkflowService)
+                server.start()
             }
 
             activeTasks += instance
@@ -278,7 +279,8 @@ public class StageWorkflowService(
 
     public override fun onStateChanged(server: Server, newState: ServerState) {
         when (newState) {
-            ServerState.ACTIVE -> {
+            ServerState.PROVISIONING -> {}
+            ServerState.RUNNING -> {
                 val task = taskByServer.getValue(server)
                 task.startedAt = clock.millis()
                 tracer.commit(
@@ -290,8 +292,11 @@ public class StageWorkflowService(
                 )
                 rootListener.taskStarted(task)
             }
-            ServerState.SHUTOFF, ServerState.ERROR -> {
+            ServerState.TERMINATED, ServerState.ERROR -> {
                 val task = taskByServer.remove(server) ?: throw IllegalStateException()
+
+                coroutineScope.launch { server.delete() }
+
                 val job = task.job
                 task.state = TaskStatus.FINISHED
                 task.finishedAt = clock.millis()
@@ -322,6 +327,7 @@ public class StageWorkflowService(
 
                 requestCycle()
             }
+            ServerState.DELETED -> {}
             else -> throw IllegalStateException()
         }
     }

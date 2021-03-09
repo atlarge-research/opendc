@@ -148,7 +148,13 @@ internal class SimHostTest {
         override val image: Image
     ) : Server {
         override val tags: Map<String, String> = emptyMap()
-        override val state: ServerState = ServerState.BUILD
+        override val state: ServerState = ServerState.TERMINATED
+
+        override suspend fun start() {}
+
+        override suspend fun stop() {}
+
+        override suspend fun delete() {}
 
         override fun watch(watcher: ServerWatcher) {}
 

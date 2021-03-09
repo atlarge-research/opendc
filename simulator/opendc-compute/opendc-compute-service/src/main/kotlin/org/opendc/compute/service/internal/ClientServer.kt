@@ -52,6 +52,21 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
     override var state: ServerState = delegate.state
         private set
 
+    override suspend fun start() {
+        delegate.start()
+        refresh()
+    }
+
+    override suspend fun stop() {
+        delegate.stop()
+        refresh()
+    }
+
+    override suspend fun delete() {
+        delegate.delete()
+        refresh()
+    }
+
     override fun watch(watcher: ServerWatcher) {
         if (watchers.isEmpty()) {
             delegate.watch(this)
