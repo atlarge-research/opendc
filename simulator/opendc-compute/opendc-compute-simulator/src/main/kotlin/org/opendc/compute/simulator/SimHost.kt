@@ -36,7 +36,6 @@ import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
@@ -56,6 +55,7 @@ public class SimHost(
     clock: Clock,
     hypervisor: SimHypervisorProvider,
     cpuPowerModel: CpuPowerModel = ConstantPowerModel(0.0),
+    private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper()
 ) : Host, FailureDomain, Powerable, AutoCloseable {
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
@@ -295,7 +295,7 @@ public class SimHost(
 
         private suspend fun launch() = suspendCancellableCoroutine<Unit> { cont ->
             assert(job == null) { "Concurrent job running" }
-            val workload = server.image.tags["workload"] as SimWorkload
+            val workload = mapper.createWorkload(server)
 
             val job = scope.launch {
                 delay(1) // TODO Introduce boot time
