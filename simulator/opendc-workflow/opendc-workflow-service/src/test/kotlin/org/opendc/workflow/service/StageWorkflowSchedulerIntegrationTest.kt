@@ -20,70 +20,58 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.sc18
+package org.opendc.workflow.service
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
 import org.opendc.compute.simulator.SimHost
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
-import org.opendc.harness.dsl.Experiment
-import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.trace.core.EventTracer
-import org.opendc.trace.core.enable
-import org.opendc.workflow.service.WorkflowEvent
-import org.opendc.workflow.service.WorkflowService
+import org.opendc.workflow.service.internal.WorkflowServiceImpl
 import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.NullTaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.SubmissionTimeTaskOrderPolicy
-import java.io.File
-import java.io.FileInputStream
 import kotlin.math.max
 
 /**
- * The [UnderspecificationExperiment] investigates the impact of scheduler underspecification on  performance.
- * It focuses on components that must exist (that is, based on their own publications, the correct operation of the
- * schedulers under study requires these components), yet have been left underspecified by their author.
+ * Integration test suite for the [WorkflowServiceImpl].
  */
-public class UnderspecificationExperiment : Experiment("underspecification") {
+@DisplayName("WorkflowServiceImpl")
+@OptIn(ExperimentalCoroutinesApi::class)
+internal class StageWorkflowSchedulerIntegrationTest {
     /**
-     * The workflow traces to test.
+     * A large integration test where we check whether all tasks in some trace are executed correctly.
      */
-    private val trace: String by anyOf("input/traces/chronos_exp_noscaler_ca.gwf")
+    @Test
+    fun testTrace() {
+        var jobsSubmitted = 0L
+        var jobsStarted = 0L
+        var jobsFinished = 0L
+        var tasksStarted = 0L
+        var tasksFinished = 0L
 
-    /**
-     * The datacenter environments to test.
-     */
-    private val environment: String by anyOf("input/environments/base.json")
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override fun doRun(repeat: Int) {
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
         val tracer = EventTracer(clock)
-        val recording = tracer.openRecording().run {
-            enable<WorkflowEvent.JobSubmitted>()
-            enable<WorkflowEvent.JobStarted>()
-            enable<WorkflowEvent.JobFinished>()
-            enable<WorkflowEvent.TaskStarted>()
-            enable<WorkflowEvent.TaskFinished>()
-            this
-        }
 
-        testScope.launch {
-            launch { println("MAKESPAN: ${recording.workflowRuntime()}") }
-            launch { println("WAIT: ${recording.workflowWaitingTime()}") }
-            recording.start()
-        }
-
-        testScope.launch {
-            val hosts = Sc18EnvironmentReader(FileInputStream(File(environment)))
+        val scheduler = let {
+            val hosts = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
                 .use { it.read() }
                 .map { def ->
                     SimHost(
@@ -97,16 +85,11 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
                     )
                 }
 
-            val compute = ComputeService(
-                testScope.coroutineContext,
-                clock,
-                tracer,
-                NumberOfActiveServersAllocationPolicy(),
-            )
+            val compute = ComputeService(testScope.coroutineContext, clock, tracer, NumberOfActiveServersAllocationPolicy(), schedulingQuantum = 1000)
 
             hosts.forEach { compute.addHost(it) }
 
-            val scheduler = WorkflowService(
+            WorkflowService(
                 testScope.coroutineContext,
                 clock,
                 tracer,
@@ -117,21 +100,40 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
                 taskEligibilityPolicy = NullTaskEligibilityPolicy,
                 taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
             )
+        }
 
-            val reader = GwfTraceReader(File(trace))
+        testScope.launch {
+            scheduler.events
+                .onEach { event ->
+                    when (event) {
+                        is WorkflowEvent.JobStarted -> jobsStarted++
+                        is WorkflowEvent.JobFinished -> jobsFinished++
+                        is WorkflowEvent.TaskStarted -> tasksStarted++
+                        is WorkflowEvent.TaskFinished -> tasksFinished++
+                    }
+                }
+                .collect()
+        }
+
+        testScope.launch {
+            val reader = GwfTraceReader(object {}.javaClass.getResourceAsStream("/trace.gwf"))
 
             while (reader.hasNext()) {
                 val entry = reader.next()
-                delay(max(0, entry.start * 1000 - clock.millis()))
+                jobsSubmitted++
+                delay(max(0, entry.start - clock.millis()))
                 scheduler.submit(entry.workload)
             }
         }
 
         testScope.advanceUntilIdle()
-        recording.close()
 
-        // Check whether everything went okay
-        testScope.uncaughtExceptions.forEach { it.printStackTrace() }
-        assert(testScope.uncaughtExceptions.isEmpty()) { "Errors occurred during execution of the experiment" }
+        assertAll(
+            { assertEquals(emptyList<Throwable>(), testScope.uncaughtExceptions) },
+            { assertNotEquals(0, jobsSubmitted, "No jobs submitted") },
+            { assertEquals(jobsSubmitted, jobsStarted, "Not all submitted jobs started") },
+            { assertEquals(jobsSubmitted, jobsFinished, "Not all started jobs finished") },
+            { assertEquals(tasksStarted, tasksFinished, "Not all started tasks finished") }
+        )
     }
 }

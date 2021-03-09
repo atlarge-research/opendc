@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,25 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the SC18 article"
+description = "Workflow orchestration service for OpenDC"
 
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    `experiment-conventions`
+    `testing-conventions`
 }
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-workflow:opendc-workflow-service"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
+    api(project(":opendc-workflow:opendc-workflow-api"))
+    api(project(":opendc-compute:opendc-compute-api"))
+    api(project(":opendc-trace:opendc-trace-core"))
+    implementation(project(":opendc-utils"))
+    implementation("io.github.microutils:kotlin-logging")
+
+    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    testImplementation(project(":opendc-compute:opendc-compute-simulator"))
+    testImplementation(project(":opendc-format"))
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
 }

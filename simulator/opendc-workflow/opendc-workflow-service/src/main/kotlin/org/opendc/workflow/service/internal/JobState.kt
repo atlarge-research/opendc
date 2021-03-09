@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,20 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the SC18 article"
+package org.opendc.workflow.service.internal
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `experiment-conventions`
-}
+import org.opendc.workflow.api.Job
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-workflow:opendc-workflow-service"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
+public class JobState(public val job: Job, public val submittedAt: Long) {
+    /**
+     * A flag to indicate whether this job is finished.
+     */
+    public val isFinished: Boolean
+        get() = tasks.isEmpty()
+
+    internal val tasks: MutableSet<TaskState> = mutableSetOf()
+
+    override fun equals(other: Any?): Boolean = other is JobState && other.job == job
+
+    override fun hashCode(): Int = job.hashCode()
 }

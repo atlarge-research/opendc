@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * MIT License
+ *
+ * Copyright (c) 2020 atlarge-research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +22,14 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the SC18 article"
+package org.opendc.workflow.api
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `experiment-conventions`
-}
+/**
+ * Meta-data key for the deadline of a task.
+ */
+public const val WORKFLOW_TASK_DEADLINE: String = "workflow:task:deadline"
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-workflow:opendc-workflow-service"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
-}
+/**
+ * Meta-data key for the number of cores needed for a task.
+ */
+public const val WORKFLOW_TASK_CORES: String = "workflow:task:cores"

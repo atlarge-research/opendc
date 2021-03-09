@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,24 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the SC18 article"
+package org.opendc.workflow.service.scheduler.task
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `experiment-conventions`
-}
+import org.opendc.workflow.service.internal.TaskState
+import org.opendc.workflow.service.internal.WorkflowServiceImpl
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-workflow:opendc-workflow-service"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
+/**
+ * A [TaskEligibilityPolicy] that limits the total number of active tasks in the system.
+ */
+public data class LimitTaskEligibilityPolicy(val limit: Int) : TaskEligibilityPolicy {
+    override fun invoke(scheduler: WorkflowServiceImpl): TaskEligibilityPolicy.Logic = object : TaskEligibilityPolicy.Logic {
+        override fun invoke(
+            task: TaskState
+        ): TaskEligibilityPolicy.Advice =
+            if (scheduler.activeTasks.size < limit)
+                TaskEligibilityPolicy.Advice.ADMIT
+            else
+                TaskEligibilityPolicy.Advice.STOP
+    }
+
+    override fun toString(): String = "Limit-Active($limit)"
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,27 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the SC18 article"
+package org.opendc.workflow.api
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `experiment-conventions`
-}
+import java.util.*
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-workflow:opendc-workflow-service"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
+/**
+ * A workload that represents a directed acyclic graph (DAG) of tasks with control and data dependencies between tasks.
+ *
+ * @property uid A unique identified of this workflow.
+ * @property name The name of this workflow.
+ * @property tasks The tasks that are part of this workflow.
+ * @property metadata Additional metadata for the job.
+ */
+public data class Job(
+    val uid: UUID,
+    val name: String,
+    val tasks: Set<Task>,
+    val metadata: Map<String, Any> = emptyMap()
+) {
+    override fun equals(other: Any?): Boolean = other is Job && uid == other.uid
+
+    override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "Job(uid=$uid, name=$name, tasks=${tasks.size}, metadata=$metadata)"
 }

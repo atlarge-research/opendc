@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,26 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the SC18 article"
+package org.opendc.workflow.service.scheduler.job
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `experiment-conventions`
-}
+import org.opendc.workflow.service.internal.JobState
+import org.opendc.workflow.service.internal.WorkflowServiceImpl
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-workflow:opendc-workflow-service"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
+/**
+ * A [JobAdmissionPolicy] that limits the amount of active jobs in the system.
+ *
+ * @property limit The maximum number of concurrent jobs in the system.
+ */
+public data class LimitJobAdmissionPolicy(public val limit: Int) : JobAdmissionPolicy {
+    override fun invoke(scheduler: WorkflowServiceImpl): JobAdmissionPolicy.Logic = object : JobAdmissionPolicy.Logic {
+        override fun invoke(
+            job: JobState
+        ): JobAdmissionPolicy.Advice =
+            if (scheduler.activeJobs.size < limit)
+                JobAdmissionPolicy.Advice.ADMIT
+            else
+                JobAdmissionPolicy.Advice.STOP
+    }
+
+    override fun toString(): String = "Limit-Active($limit)"
 }

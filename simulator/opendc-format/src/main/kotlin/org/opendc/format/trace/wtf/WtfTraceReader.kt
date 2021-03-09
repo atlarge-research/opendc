@@ -28,10 +28,10 @@ import org.apache.parquet.avro.AvroParquetReader
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
-import org.opendc.workflows.workload.Job
-import org.opendc.workflows.workload.Task
-import org.opendc.workflows.workload.WORKFLOW_TASK_CORES
-import org.opendc.workflows.workload.WORKFLOW_TASK_DEADLINE
+import org.opendc.workflow.api.Job
+import org.opendc.workflow.api.Task
+import org.opendc.workflow.api.WORKFLOW_TASK_CORES
+import org.opendc.workflow.api.WORKFLOW_TASK_DEADLINE
 import java.util.UUID
 import kotlin.math.min
 
