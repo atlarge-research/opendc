@@ -22,10 +22,24 @@
 
 package org.opendc.compute.api
 
+import java.util.UUID
+
 /**
  * A client interface for the OpenDC Compute service.
  */
 public interface ComputeClient : AutoCloseable {
+    /**
+     * Obtain the list of [Server]s accessible by the requesting user.
+     */
+    public suspend fun queryServers(): List<Server>
+
+    /**
+     * Obtain a [Server] by its unique identifier.
+     *
+     * @param id The identifier of the server.
+     */
+    public suspend fun findServer(id: UUID): Server?
+
     /**
      * Create a new [Server] instance at this compute service.
      *

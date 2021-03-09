@@ -22,10 +22,8 @@
 
 package org.opendc.compute.service.internal
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
@@ -84,12 +82,17 @@ public class ComputeServiceImpl(
     /**
      * The servers that should be launched by the service.
      */
-    private val queue: Deque<LaunchRequest> = ArrayDeque()
+    private val queue: Deque<SchedulingRequest> = ArrayDeque()
 
     /**
      * The active servers in the system.
      */
     private val activeServers: MutableMap<Server, Host> = mutableMapOf()
+
+    /**
+     * The registered servers for this compute service.
+     */
+    private val servers = mutableMapOf<UUID, InternalServer>()
 
     public var submittedVms: Int = 0
     public var queuedVms: Int = 0
@@ -147,7 +150,8 @@ public class ComputeServiceImpl(
                 )
             )
 
-            val server = ServerImpl(
+            val server = InternalServer(
+                this@ComputeServiceImpl,
                 uid = UUID(random.nextLong(), random.nextLong()),
                 name,
                 flavor,
@@ -160,6 +164,18 @@ public class ComputeServiceImpl(
             }
 
             return ClientServer(server)
+        }
+
+        override suspend fun findServer(id: UUID): Server? {
+            check(!isClosed) { "Client is already closed" }
+
+            return servers[id]?.let { ClientServer(it) }
+        }
+
+        override suspend fun queryServers(): List<Server> {
+            check(!isClosed) { "Client is already closed" }
+
+            return servers.values.map { ClientServer(it) }
         }
 
         override fun close() {
@@ -195,9 +211,19 @@ public class ComputeServiceImpl(
         scope.cancel()
     }
 
-    private fun requestCycle() {
-        // Bail out in case we have already requested a new cycle.
-        if (scheduler.isTimerActive(Unit)) {
+    internal fun schedule(server: InternalServer) {
+        logger.debug { "Enqueueing server ${server.uid} to be assigned to host." }
+
+        queue.add(SchedulingRequest(server))
+        requestSchedulingCycle()
+    }
+
+    /**
+     * Indicate that a new scheduling cycle is needed due to a change to the service's state.
+     */
+    private fun requestSchedulingCycle() {
+        // Bail out in case we have already requested a new cycle or the queue is empty.
+        if (scheduler.isTimerActive(Unit) || queue.isEmpty()) {
             return
         }
 
@@ -207,20 +233,28 @@ public class ComputeServiceImpl(
         val delay = schedulingQuantum - (clock.millis() % schedulingQuantum)
 
         scheduler.startSingleTimer(Unit, delay) {
-            schedule()
+            doSchedule()
         }
     }
 
-    private fun schedule() {
+    /**
+     * Run a single scheduling iteration.
+     */
+    private fun doSchedule() {
         while (queue.isNotEmpty()) {
-            val (server) = queue.peekFirst()
-            val requiredMemory = server.flavor.memorySize
-            val selectedHv = allocationLogic.select(availableHosts, server)
+            val request = queue.peek()
 
-            if (selectedHv == null || !selectedHv.host.canFit(server)) {
+            if (request.isCancelled) {
+                queue.poll()
+                continue
+            }
+
+            val server = request.server
+            val hv = allocationLogic.select(availableHosts, request.server)
+            if (hv == null || !hv.host.canFit(server)) {
                 logger.trace { "Server $server selected for scheduling but no capacity available for it." }
 
-                if (requiredMemory > maxMemory || server.flavor.cpuCount > maxCores) {
+                if (server.flavor.memorySize > maxMemory || server.flavor.cpuCount > maxCores) {
                     tracer.commit(VmSubmissionInvalidEvent(server.name))
 
                     _events.emit(
@@ -246,42 +280,60 @@ public class ComputeServiceImpl(
                 }
             }
 
-            logger.info { "[${clock.millis()}] Spawning $server on ${selectedHv.host.uid} ${selectedHv.host.name} ${selectedHv.host.model}" }
+            val host = hv.host
+
+            // Remove request from queue
             queue.poll()
 
-            // Speculatively update the hypervisor view information to prevent other images in the queue from
-            // deciding on stale values.
-            selectedHv.numberOfActiveServers++
-            selectedHv.provisionedCores += server.flavor.cpuCount
-            selectedHv.availableMemory -= requiredMemory // XXX Temporary hack
+            logger.info { "Assigned server $server to host $host." }
+            try {
+                // Speculatively update the hypervisor view information to prevent other images in the queue from
+                // deciding on stale values.
+                hv.numberOfActiveServers++
+                hv.provisionedCores += server.flavor.cpuCount
+                hv.availableMemory -= server.flavor.memorySize // XXX Temporary hack
 
-            scope.launch {
-                try {
-                    selectedHv.host.spawn(server)
-                    activeServers[server] = selectedHv.host
+                scope.launch {
+                    try {
+                        server.assignHost(host)
+                        host.spawn(server)
+                        activeServers[server] = host
 
-                    tracer.commit(VmScheduledEvent(server.name))
-                    _events.emit(
-                        ComputeServiceEvent.MetricsAvailable(
-                            this@ComputeServiceImpl,
-                            hostCount,
-                            availableHosts.size,
-                            submittedVms,
-                            ++runningVms,
-                            finishedVms,
-                            --queuedVms,
-                            unscheduledVms
+                        tracer.commit(VmScheduledEvent(server.name))
+                        _events.emit(
+                            ComputeServiceEvent.MetricsAvailable(
+                                this@ComputeServiceImpl,
+                                hostCount,
+                                availableHosts.size,
+                                submittedVms,
+                                ++runningVms,
+                                finishedVms,
+                                --queuedVms,
+                                unscheduledVms
+                            )
                         )
-                    )
-                } catch (e: Throwable) {
-                    logger.error("Failed to deploy VM", e)
+                    } catch (e: Throwable) {
+                        logger.error("Failed to deploy VM", e)
 
-                    selectedHv.numberOfActiveServers--
-                    selectedHv.provisionedCores -= server.flavor.cpuCount
-                    selectedHv.availableMemory += requiredMemory
+                        hv.numberOfActiveServers--
+                        hv.provisionedCores -= server.flavor.cpuCount
+                        hv.availableMemory += server.flavor.memorySize
+                    }
                 }
+            } catch (e: Exception) {
+                logger.warn(e) { "Failed to assign server $server to $host. " }
             }
         }
+    }
+
+    /**
+     * A request to schedule an [InternalServer] onto one of the [Host]s.
+     */
+    private data class SchedulingRequest(val server: InternalServer) {
+        /**
+         * A flag to indicate that the request is cancelled.
+         */
+        var isCancelled: Boolean = false
     }
 
     override fun onStateChanged(host: Host, newState: HostState) {
@@ -311,9 +363,7 @@ public class ComputeServiceImpl(
                 )
 
                 // Re-schedule on the new machine
-                if (queue.isNotEmpty()) {
-                    requestCycle()
-                }
+                requestSchedulingCycle()
             }
             HostState.DOWN -> {
                 logger.debug { "[${clock.millis()}] Host ${host.uid} state changed: $newState" }
@@ -336,16 +386,21 @@ public class ComputeServiceImpl(
                     )
                 )
 
-                if (queue.isNotEmpty()) {
-                    requestCycle()
-                }
+                requestSchedulingCycle()
             }
         }
     }
 
     override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
-        val serverImpl = server as ServerImpl
-        serverImpl.state = newState
+        require(server is InternalServer) { "Invalid server type passed to service" }
+
+        if (server.host != host) {
+            // This can happen when a server is rescheduled and started on another machine, while being deleted from
+            // the old machine.
+            return
+        }
+
+        server.state = newState
 
         if (newState == ServerState.TERMINATED || newState == ServerState.DELETED) {
             logger.info { "[${clock.millis()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
@@ -376,92 +431,7 @@ public class ComputeServiceImpl(
             }
 
             // Try to reschedule if needed
-            if (queue.isNotEmpty()) {
-                requestCycle()
-            }
+            requestSchedulingCycle()
         }
-    }
-
-    private data class LaunchRequest(val server: ServerImpl)
-
-    private inner class ServerImpl(
-        override val uid: UUID,
-        override val name: String,
-        override val flavor: Flavor,
-        override val image: Image,
-        override val labels: MutableMap<String, String>,
-        override val meta: MutableMap<String, Any>
-    ) : Server {
-        val watchers = mutableListOf<ServerWatcher>()
-
-        override suspend fun start() {
-            when (state) {
-                ServerState.RUNNING -> {
-                    logger.debug { "User tried to start server but server is already running" }
-                    return
-                }
-                ServerState.PROVISIONING -> {
-                    logger.debug { "User tried to start server but request is already pending: doing nothing" }
-                    return
-                }
-                ServerState.DELETED -> {
-                    logger.warn { "User tried to start terminated server" }
-                    throw IllegalArgumentException("Server is terminated")
-                }
-                else -> {
-                    logger.info { "User requested to start server $uid" }
-                    state = ServerState.PROVISIONING
-                    val request = LaunchRequest(this)
-                    queue += request
-                    requestCycle()
-                }
-            }
-        }
-
-        override suspend fun stop() {
-            when (state) {
-                ServerState.PROVISIONING -> {} // TODO Find way to interrupt these
-                ServerState.RUNNING, ServerState.ERROR -> {
-                    // Warn: possible race condition on activeServers
-                    val host = checkNotNull(activeServers[this]) { "Server not running" }
-                    host.stop(this)
-                }
-                ServerState.TERMINATED -> {} // No work needed
-                ServerState.DELETED -> throw IllegalStateException("Server is terminated")
-            }
-        }
-
-        override suspend fun delete() {
-            when (state) {
-                ServerState.PROVISIONING -> {} // TODO Find way to interrupt these
-                ServerState.RUNNING -> {
-                    // Warn: possible race condition on activeServers
-                    val host = checkNotNull(activeServers[this]) { "Server not running" }
-                    host.delete(this)
-                }
-                else -> {} // No work needed
-            }
-        }
-
-        override fun watch(watcher: ServerWatcher) {
-            watchers += watcher
-        }
-
-        override fun unwatch(watcher: ServerWatcher) {
-            watchers -= watcher
-        }
-
-        override suspend fun refresh() {
-            // No-op: this object is the source-of-truth
-        }
-
-        override var state: ServerState = ServerState.TERMINATED
-            set(value) {
-                if (value != field) {
-                    watchers.forEach { it.onStateChanged(this, value) }
-                }
-
-                field = value
-            }
     }
 }
