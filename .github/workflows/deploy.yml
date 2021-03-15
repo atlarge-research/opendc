@@ -20,8 +20,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
           SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
       - name: Pull Changes
-        run: ssh -i ../opendc.key opendc.org 'cd opendc && git pull origin'
+        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && git pull origin'
       - name: Rebuild Images
-        run: ssh -i ../opendc.key opendc.org 'cd opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml build frontend api simulator'
+        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml build frontend api simulator'
       - name: Deploy Images
-        run: ssh -i ../opendc.key opendc.org 'cd opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d'
+        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d'
