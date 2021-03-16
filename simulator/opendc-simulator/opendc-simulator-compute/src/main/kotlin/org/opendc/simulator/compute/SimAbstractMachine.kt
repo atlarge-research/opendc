@@ -38,13 +38,18 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * Abstract implementation of the [SimMachine] interface.
- *
- * @param context The [CoroutineContext] in which the machine runs.
  */
 public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine {
     private val _usage = MutableStateFlow(0.0)
     override val usage: StateFlow<Double>
         get() = _usage
+
+    /**
+     * The speed of the CPU cores.
+     */
+    public val speed: List<Double>
+        get() = _speed
+    private var _speed = mutableListOf<Double>()
 
     /**
      * A flag to indicate that the machine is terminated.
@@ -89,13 +94,16 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
         val ctx = Context(resources, meta + mapOf("coroutine-context" to context))
         val totalCapacity = model.cpus.sumByDouble { it.frequency }
 
+        _speed = MutableList(model.cpus.size) { 0.0 }
+
         workload.onStart(ctx)
 
         for ((cpu, source) in resources) {
             val consumer = workload.getConsumer(ctx, cpu)
             val job = source.speed
                 .onEach {
-                    _usage.value = resources.values.sumByDouble { it.speed.value } / totalCapacity
+                    _speed[cpu.id] = source.speed.value
+                    _usage.value = _speed.sum() / totalCapacity
                 }
                 .launchIn(this)
 

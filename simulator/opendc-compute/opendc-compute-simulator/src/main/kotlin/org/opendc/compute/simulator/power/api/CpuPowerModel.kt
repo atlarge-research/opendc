@@ -2,7 +2,7 @@ package org.opendc.compute.simulator.power.api
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.opendc.compute.simulator.SimHost
+import org.opendc.simulator.compute.SimMachine
 
 public interface CpuPowerModel {
     /**
@@ -18,14 +18,11 @@ public interface CpuPowerModel {
     /**
      * Emits the values of power consumption for servers.
      *
-     * @param host A [SimHost] that offers host CPU utilization.
-     * @param withoutIdle A [Boolean] flag indicates whether (false) add a constant
-     *                  power consumption value when the server is idle or (true) not
-     *                  with a default value being false.
+     * @param machine The [SimMachine] that the model is measuring.
      * @return A [Flow] of values representing the server power draw.
      */
-    public fun getPowerDraw(host: SimHost, withoutIdle: Boolean = false): Flow<Double> =
-        host.machine.usage.map {
+    public fun getPowerDraw(machine: SimMachine): Flow<Double> =
+        machine.usage.map {
             computeCpuPower(it)
         }
 }

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.power.api.CpuPowerModel
 import org.opendc.compute.simulator.power.models.*
 import org.opendc.simulator.compute.SimBareMetalMachine
@@ -18,7 +17,7 @@ import kotlin.math.pow
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class CpuPowerModelTest {
     private val epsilon = 10.0.pow(-3)
-    private val cpuUtil = .9
+    private val cpuUtil = 0.9
 
     @ParameterizedTest
     @MethodSource("cpuPowerModelArgs")
@@ -49,12 +48,10 @@ internal class CpuPowerModelTest {
     ) {
         runBlockingTest {
             val cpuLoads = flowOf(cpuUtil, cpuUtil, cpuUtil).stateIn(this)
-            val bareMetalDriver = mockkClass(SimHost::class)
             val machine = mockkClass(SimBareMetalMachine::class)
-            every { bareMetalDriver.machine } returns machine
             every { machine.usage } returns cpuLoads
 
-            val serverPowerDraw = powerModel.getPowerDraw(bareMetalDriver)
+            val serverPowerDraw = powerModel.getPowerDraw(machine)
 
             assertEquals(
                 serverPowerDraw.first().toDouble(),
@@ -62,7 +59,6 @@ internal class CpuPowerModelTest {
                 epsilon
             )
 
-            verify(exactly = 1) { bareMetalDriver.machine }
             verify(exactly = 1) { machine.usage }
         }
     }

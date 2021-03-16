@@ -133,7 +133,7 @@ public class SimHost(
 
     override val model: HostModel = HostModel(model.cpus.size, model.memory.map { it.size }.sum())
 
-    override val powerDraw: Flow<Double> = cpuPowerModel.getPowerDraw(this)
+    override val powerDraw: Flow<Double> = cpuPowerModel.getPowerDraw(machine)
 
     init {
         // Launch hypervisor onto machine
