@@ -59,7 +59,9 @@ public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, priva
      * The scheduling job.
      */
     private val job = coroutineScope.launch {
+        val timers = timers
         val queue = queue
+        val clock = clock
         var next: Long? = channel.receive()
 
         while (true) {
@@ -176,17 +178,24 @@ public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, priva
         require(timestamp >= now) { "Timestamp must be in the future" }
         check(job.isActive) { "Timer is stopped" }
 
-        val timer = Timer(key, timestamp, block)
-
         timers.compute(key) { _, old ->
-            old?.isCancelled = true
-            timer
-        }
-        queue.add(timer)
+            if (old?.timestamp == timestamp) {
+                // Fast-path: timer for the same timestamp already exists
+                old
+            } else {
+                // Slow-path: cancel old timer and replace it with new timer
+                val timer = Timer(key, timestamp, block)
 
-        // Check if we need to push the interruption forward
-        if (queue.peek() == timer) {
-            channel.sendBlocking(timer.timestamp)
+                old?.isCancelled = true
+                queue.add(timer)
+
+                // Check if we need to push the interruption forward
+                if (queue.peek() == timer) {
+                    channel.sendBlocking(timer.timestamp)
+                }
+
+                timer
+            }
         }
     }
 
