@@ -1,9 +1,6 @@
 name: Build Simulator
 
 on:
-  push:
-    paths:
-      - 'simulator/**'
   pull_request:
     branches: [master]
 
