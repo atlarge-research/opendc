@@ -40,9 +40,9 @@ import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.driver.HostEvent
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.model.SimMemoryUnit
+import org.opendc.simulator.compute.model.SimProcessingNode
+import org.opendc.simulator.compute.model.SimProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.time.Clock
@@ -62,11 +62,11 @@ internal class SimHostTest {
         scope = TestCoroutineScope()
         clock = DelayControllerClockAdapter(scope)
 
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
+        val cpuNode = SimProcessingNode("Intel", "Xeon", "amd64", 2)
 
         machineModel = SimMachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            cpus = List(cpuNode.coreCount) { SimProcessingUnit(cpuNode, it, 3200.0) },
+            memory = List(4) { SimMemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 
@@ -136,8 +136,8 @@ internal class SimHostTest {
 
         assertAll(
             { assertEquals(emptyList<Throwable>(), scope.uncaughtExceptions, "No errors") },
-            { assertEquals(4197600, requestedWork, "Requested work does not match") },
-            { assertEquals(3057600, grantedWork, "Granted work does not match") },
+            { assertEquals(4273200, requestedWork, "Requested work does not match") },
+            { assertEquals(3133200, grantedWork, "Granted work does not match") },
             { assertEquals(1140000, overcommittedWork, "Overcommitted work does not match") },
             { assertEquals(1200006, scope.currentTime) }
         )

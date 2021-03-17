@@ -28,5 +28,5 @@ package org.opendc.simulator.compute
 public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
     override val id: String = "space-shared"
 
-    override fun create(listener: SimHypervisor.Listener?): SimHypervisor = SimSpaceSharedHypervisor(listener)
+    override fun create(listener: SimHypervisor.Listener?): SimHypervisor = SimSpaceSharedHypervisor()
 }

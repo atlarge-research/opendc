@@ -22,7 +22,11 @@
 
 package org.opendc.simulator.compute.workload
 
-import org.opendc.simulator.compute.SimExecutionContext
+import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.resources.SimResourceCommand
+import org.opendc.simulator.resources.SimResourceConsumer
+import org.opendc.simulator.resources.SimResourceContext
 
 /**
  * A [SimWorkload] that models applications as a static number of floating point operations ([flops]) executed on
@@ -36,31 +40,35 @@ public class SimFlopsWorkload(
     public val utilization: Double = 0.8
 ) : SimWorkload {
     init {
-        require(flops >= 0) { "Negative number of flops" }
+        require(flops >= 0) { "Number of FLOPs must be positive" }
         require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
 
-    override fun onStart(ctx: SimExecutionContext) {}
+    override fun onStart(ctx: SimMachineContext) {}
 
-    override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-        val cores = ctx.machine.cpus.size
-        val limit = ctx.machine.cpus[cpu].frequency * utilization
-        val work = flops.toDouble() / cores
-
-        return if (work > 0.0) {
-            SimResourceCommand.Consume(work, limit)
-        } else {
-            SimResourceCommand.Exit
-        }
+    override fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit> {
+        return CpuConsumer(ctx)
     }
 
-    override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
-        return if (remainingWork > 0.0) {
-            val limit = ctx.machine.cpus[cpu].frequency * utilization
+    private inner class CpuConsumer(private val machine: SimMachineContext) : SimResourceConsumer<SimProcessingUnit> {
+        override fun onStart(ctx: SimResourceContext<SimProcessingUnit>): SimResourceCommand {
+            val limit = ctx.resource.frequency * utilization
+            val work = flops.toDouble() / machine.cpus.size
 
-            return SimResourceCommand.Consume(remainingWork, limit)
-        } else {
-            SimResourceCommand.Exit
+            return if (work > 0.0) {
+                SimResourceCommand.Consume(work, limit)
+            } else {
+                SimResourceCommand.Exit
+            }
+        }
+
+        override fun onNext(ctx: SimResourceContext<SimProcessingUnit>, remainingWork: Double): SimResourceCommand {
+            return if (remainingWork > 0.0) {
+                val limit = ctx.resource.frequency * utilization
+                return SimResourceCommand.Consume(remainingWork, limit)
+            } else {
+                SimResourceCommand.Exit
+            }
         }
     }
 

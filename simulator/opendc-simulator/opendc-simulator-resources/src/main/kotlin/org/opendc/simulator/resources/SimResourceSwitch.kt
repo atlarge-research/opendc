@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,22 +19,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":opendc-platform")
-include(":opendc-compute:opendc-compute-api")
-include(":opendc-compute:opendc-compute-service")
-include(":opendc-compute:opendc-compute-simulator")
-include(":opendc-workflow:opendc-workflow-api")
-include(":opendc-workflow:opendc-workflow-service")
-include(":opendc-format")
-include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-capelin")
-include(":opendc-runner-web")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-resources")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-simulator:opendc-simulator-failures")
-include(":opendc-trace:opendc-trace-core")
-include(":opendc-harness")
-include(":opendc-utils")
+package org.opendc.simulator.resources
+
+/**
+ * A [SimResourceSwitch] enables switching of capacity of multiple resources of type [R] between multiple consumers.
+ */
+public interface SimResourceSwitch<R : SimResource> : AutoCloseable {
+    /**
+     * The output resource providers to which resource consumers can be attached.
+     */
+    public val outputs: Set<SimResourceProvider<R>>
+
+    /**
+     * The input resources that will be switched between the output providers.
+     */
+    public val inputs: Set<SimResourceProvider<R>>
+
+    /**
+     * Add an output to the switch represented by [resource].
+     */
+    public fun addOutput(resource: R): SimResourceProvider<R>
+
+    /**
+     * Add the specified [input] to the switch.
+     */
+    public fun addInput(input: SimResourceProvider<R>)
+}

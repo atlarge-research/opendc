@@ -30,7 +30,7 @@ package org.opendc.simulator.compute.model
  * @property arch The micro-architecture of the processor node.
  * @property coreCount The number of logical CPUs in the processor node.
  */
-public data class ProcessingNode(
+public data class SimProcessingNode(
     public val vendor: String,
     public val arch: String,
     public val modelName: String,

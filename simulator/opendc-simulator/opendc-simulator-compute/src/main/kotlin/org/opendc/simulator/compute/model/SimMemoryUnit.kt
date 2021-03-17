@@ -20,36 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.model
 
-import java.time.Clock
+import org.opendc.simulator.resources.SimResource
 
 /**
- * A simulated execution context in which a bootable image runs. This interface represents the
- * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
- * which the image runs.
+ * A memory unit of a compute resource, either virtual or physical.
+ *
+ * @property vendor The vendor string of the memory.
+ * @property modelName The name of the memory model.
+ * @property speed The access speed of the memory in MHz.
+ * @property size The size of the memory unit in MBs.
  */
-public interface SimExecutionContext {
-    /**
-     * The virtual clock tracking simulation time.
-     */
-    public val clock: Clock
-
-    /**
-     * The machine model of the machine that is running the image.
-     */
-    public val machine: SimMachineModel
-
-    /**
-     * The metadata associated with the context.
-     */
-    public val meta: Map<String, Any>
-
-    /**
-     * Ask the host machine to interrupt the specified vCPU.
-     *
-     * @param cpu The id of the vCPU to interrupt.
-     * @throws IllegalArgumentException if the identifier points to a non-existing vCPU.
-     */
-    public fun interrupt(cpu: Int)
+public data class SimMemoryUnit(
+    public val vendor: String,
+    public val modelName: String,
+    public val speed: Double,
+    public val size: Long
+) : SimResource {
+    override val capacity: Double
+        get() = speed
 }

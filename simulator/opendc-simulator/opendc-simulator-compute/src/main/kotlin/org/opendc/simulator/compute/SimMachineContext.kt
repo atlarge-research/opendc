@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,41 @@
 
 package org.opendc.simulator.compute
 
+import org.opendc.simulator.compute.model.SimMemoryUnit
 import org.opendc.simulator.compute.model.SimProcessingUnit
-import org.opendc.simulator.resources.*
-import kotlin.coroutines.CoroutineContext
+import org.opendc.simulator.resources.SimResource
+import java.time.Clock
 
 /**
- * A [SimHypervisor] that allocates its sub-resources exclusively for the virtual machine that it hosts.
+ * A simulated execution context in which a bootable image runs. This interface represents the
+ * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
+ * which the image runs.
  */
-public class SimSpaceSharedHypervisor : SimAbstractHypervisor() {
-    override fun canFit(model: SimMachineModel, switch: SimResourceSwitch<SimProcessingUnit>): Boolean {
-        return switch.inputs.size - switch.outputs.size >= model.cpus.size
-    }
+public interface SimMachineContext {
+    /**
+     * The virtual clock tracking simulation time.
+     */
+    public val clock: Clock
 
-    override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch<SimProcessingUnit> {
-        return SimResourceSwitchExclusive(ctx.meta["coroutine-context"] as CoroutineContext)
-    }
+    /**
+     * The metadata associated with the context.
+     */
+    public val meta: Map<String, Any>
+
+    /**
+     * The CPUs available on the machine.
+     */
+    public val cpus: List<SimProcessingUnit>
+
+    /**
+     * The memory available on the machine
+     */
+    public val memory: List<SimMemoryUnit>
+
+    /**
+     * Interrupt the specified [resource].
+     *
+     * @throws IllegalArgumentException if the resource does not belong to this execution context.
+     */
+    public fun interrupt(resource: SimResource)
 }

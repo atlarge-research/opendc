@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload
+package org.opendc.simulator.resources
 
 /**
- * The [SimWorkloadBarrier] is a barrier that allows workloads to wait for a select number of CPUs to complete, before
- * proceeding its operation.
+ * A generic representation of resource that may be consumed.
  */
-public class SimWorkloadBarrier(public val parties: Int) {
-    private var counter = 0
-
+public interface SimResource {
     /**
-     * Enter the barrier and determine whether the caller is the last to reach the barrier.
-     *
-     * @return `true` if the caller is the last to reach the barrier, `false` otherwise.
+     * The capacity of the resource.
      */
-    public fun enter(): Boolean {
-        val last = ++counter == parties
-        if (last) {
-            counter = 0
-            return true
-        }
-        return false
-    }
+    public val capacity: Double
 }

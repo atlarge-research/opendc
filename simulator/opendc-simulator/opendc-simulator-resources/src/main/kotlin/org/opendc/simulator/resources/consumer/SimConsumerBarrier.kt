@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.model
+package org.opendc.simulator.resources.consumer
 
 /**
- * A memory unit of a compute resource, either virtual or physical.
- *
- * @property vendor The vendor string of the memory.
- * @property modelName The name of the memory model.
- * @property speed The access speed of the memory in MHz.
- * @property size The size of the memory unit in MBs.
+ * The [SimConsumerBarrier] is a barrier that allows consumers to wait for a select number of other consumers to
+ * complete, before proceeding its operation.
  */
-public data class MemoryUnit(
-    public val vendor: String,
-    public val modelName: String,
-    public val speed: Double,
-    public val size: Long
-)
+public class SimConsumerBarrier(public val parties: Int) {
+    private var counter = 0
+
+    /**
+     * Enter the barrier and determine whether the caller is the last to reach the barrier.
+     *
+     * @return `true` if the caller is the last to reach the barrier, `false` otherwise.
+     */
+    public fun enter(): Boolean {
+        val last = ++counter == parties
+        if (last) {
+            counter = 0
+            return true
+        }
+        return false
+    }
+}

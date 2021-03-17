@@ -20,33 +20,55 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload
+package org.opendc.simulator.resources
+
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 
 /**
- * A command that is sent to the host machine.
+ * Test suite for [SimResourceCommand].
  */
-public sealed class SimResourceCommand {
-    /**
-     * A request to the host to process the specified amount of [work] on a vCPU before the specified [deadline].
-     *
-     * @param work The amount of work to process on the CPU.
-     * @param limit The maximum amount of work to be processed per second.
-     * @param deadline The instant at which the work needs to be fulfilled.
-     */
-    public data class Consume(val work: Double, val limit: Double, val deadline: Long = Long.MAX_VALUE) : SimResourceCommand() {
-        init {
-            require(work > 0) { "The amount of work must be positive." }
-            require(limit > 0) { "Limit must be positive." }
+class SimResourceCommandTest {
+    @Test
+    fun testZeroWork() {
+        assertThrows<IllegalArgumentException> {
+            SimResourceCommand.Consume(0.0, 1.0)
         }
     }
 
-    /**
-     * An indication to the host that the vCPU will idle until the specified [deadline] or is interrupted.
-     */
-    public data class Idle(val deadline: Long = Long.MAX_VALUE) : SimResourceCommand()
+    @Test
+    fun testNegativeWork() {
+        assertThrows<IllegalArgumentException> {
+            SimResourceCommand.Consume(-1.0, 1.0)
+        }
+    }
 
-    /**
-     * An indication to the host that the vCPU has finished processing.
-     */
-    public object Exit : SimResourceCommand()
+    @Test
+    fun testZeroLimit() {
+        assertThrows<IllegalArgumentException> {
+            SimResourceCommand.Consume(1.0, 0.0)
+        }
+    }
+
+    @Test
+    fun testNegativeLimit() {
+        assertThrows<IllegalArgumentException> {
+            SimResourceCommand.Consume(1.0, -1.0, 1)
+        }
+    }
+
+    @Test
+    fun testConsumeCorrect() {
+        assertDoesNotThrow {
+            SimResourceCommand.Consume(1.0, 1.0)
+        }
+    }
+
+    @Test
+    fun testIdleCorrect() {
+        assertDoesNotThrow {
+            SimResourceCommand.Idle(1)
+        }
+    }
 }

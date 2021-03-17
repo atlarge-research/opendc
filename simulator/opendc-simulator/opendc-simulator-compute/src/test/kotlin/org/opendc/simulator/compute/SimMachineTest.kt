@@ -24,19 +24,14 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.model.SimMemoryUnit
+import org.opendc.simulator.compute.model.SimProcessingNode
+import org.opendc.simulator.compute.model.SimProcessingUnit
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
-import org.opendc.simulator.compute.workload.SimResourceCommand
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 
 /**
@@ -48,112 +43,44 @@ class SimMachineTest {
 
     @BeforeEach
     fun setUp() {
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
+        val cpuNode = SimProcessingNode("Intel", "Xeon", "amd64", 2)
 
         machineModel = SimMachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            cpus = List(cpuNode.coreCount) { SimProcessingUnit(cpuNode, it, 1000.0) },
+            memory = List(4) { SimMemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 
     @Test
-    fun testFlopsWorkload() {
-        val testScope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimBareMetalMachine(testScope, clock, machineModel)
+    fun testFlopsWorkload() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
 
-        testScope.runBlockingTest {
+        try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
 
             // Two cores execute 1000 MFlOps per second (1000 ms)
-            assertEquals(1000, testScope.currentTime)
+            assertEquals(1000, currentTime)
+        } finally {
+            machine.close()
         }
     }
 
     @Test
-    fun testUsage() {
-        val testScope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimBareMetalMachine(testScope, clock, machineModel)
+    fun testUsage() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
 
-        testScope.runBlockingTest {
-            val res = mutableListOf<Double>()
-            val job = launch { machine.usage.toList(res) }
+        val res = mutableListOf<Double>()
+        val job = launch { machine.usage.toList(res) }
 
+        try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
 
             job.cancel()
             assertEquals(listOf(0.0, 0.5, 1.0, 0.5, 0.0), res) { "Machine is fully utilized" }
-        }
-    }
-
-    @Test
-    fun testInterrupt() {
-        val testScope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimBareMetalMachine(testScope, clock, machineModel)
-
-        val workload = object : SimWorkload {
-            override fun onStart(ctx: SimExecutionContext) {}
-
-            override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-                ctx.interrupt(cpu)
-                return SimResourceCommand.Exit
-            }
-
-            override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
-                throw IllegalStateException()
-            }
-        }
-
-        assertDoesNotThrow {
-            testScope.runBlockingTest { machine.run(workload) }
-        }
-    }
-
-    @Test
-    fun testExceptionPropagationOnStart() {
-        val testScope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimBareMetalMachine(testScope, clock, machineModel)
-
-        val workload = object : SimWorkload {
-            override fun onStart(ctx: SimExecutionContext) {}
-
-            override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-                throw IllegalStateException()
-            }
-
-            override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
-                throw IllegalStateException()
-            }
-        }
-
-        assertThrows<IllegalStateException> {
-            testScope.runBlockingTest { machine.run(workload) }
-        }
-    }
-
-    @Test
-    fun testExceptionPropagationOnNext() {
-        val testScope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimBareMetalMachine(testScope, clock, machineModel)
-
-        val workload = object : SimWorkload {
-            override fun onStart(ctx: SimExecutionContext) {}
-
-            override fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand {
-                return SimResourceCommand.Consume(1.0, 1.0)
-            }
-
-            override fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand {
-                throw IllegalStateException()
-            }
-        }
-
-        assertThrows<IllegalStateException> {
-            testScope.runBlockingTest { machine.run(workload) }
+        } finally {
+            machine.close()
         }
     }
 }

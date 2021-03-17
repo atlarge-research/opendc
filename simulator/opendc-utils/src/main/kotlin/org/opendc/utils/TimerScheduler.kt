@@ -22,24 +22,28 @@
 
 package org.opendc.utils
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import java.time.Clock
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 
 /**
  * A TimerScheduler facilitates scheduled execution of future tasks.
  *
- * @property coroutineScope The [CoroutineScope] to run the tasks in.
+ * @property context The [CoroutineContext] to run the tasks with.
  * @property clock The clock to keep track of the time.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, private val clock: Clock) : AutoCloseable {
+public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clock) : AutoCloseable {
+    /**
+     * The scope in which the scheduler runs.
+     */
+    private val scope = CoroutineScope(context + Job())
+
     /**
      * A priority queue containing the tasks to be scheduled in the future.
      */
@@ -51,15 +55,17 @@ public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, priva
     private val timers = mutableMapOf<T, Timer>()
 
     /**
-     * The channel to communicate with the
+     * The channel to communicate with the scheduling job.
      */
     private val channel = Channel<Long?>(Channel.CONFLATED)
 
     /**
      * The scheduling job.
      */
-    private val job = coroutineScope.launch {
+    private val job = scope.launch {
+        val timers = timers
         val queue = queue
+        val clock = clock
         var next: Long? = channel.receive()
 
         while (true) {
@@ -69,7 +75,7 @@ public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, priva
                 val delay = next?.let { max(0L, it - clock.millis()) } ?: return@select
 
                 onTimeout(delay) {
-                    while (queue.isNotEmpty()) {
+                    while (queue.isNotEmpty() && isActive) {
                         val timer = queue.peek()
                         val timestamp = clock.millis()
 
@@ -84,7 +90,11 @@ public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, priva
 
                         if (!timer.isCancelled) {
                             timers.remove(timer.key)
-                            timer()
+                            try {
+                                timer()
+                            } catch (e: Throwable) {
+                                Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), e)
+                            }
                         }
                     }
 
@@ -99,7 +109,7 @@ public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, priva
      */
     override fun close() {
         cancelAll()
-        job.cancel()
+        scope.cancel()
     }
 
     /**
@@ -176,17 +186,24 @@ public class TimerScheduler<T>(private val coroutineScope: CoroutineScope, priva
         require(timestamp >= now) { "Timestamp must be in the future" }
         check(job.isActive) { "Timer is stopped" }
 
-        val timer = Timer(key, timestamp, block)
-
         timers.compute(key) { _, old ->
-            old?.isCancelled = true
-            timer
-        }
-        queue.add(timer)
+            if (old?.timestamp == timestamp) {
+                // Fast-path: timer for the same timestamp already exists
+                old
+            } else {
+                // Slow-path: cancel old timer and replace it with new timer
+                val timer = Timer(key, timestamp, block)
 
-        // Check if we need to push the interruption forward
-        if (queue.peek() == timer) {
-            channel.sendBlocking(timer.timestamp)
+                old?.isCancelled = true
+                queue.add(timer)
+
+                // Check if we need to push the interruption forward
+                if (queue.peek() == timer) {
+                    channel.sendBlocking(timer.timestamp)
+                }
+
+                timer
+            }
         }
     }
 

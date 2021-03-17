@@ -22,7 +22,9 @@
 
 package org.opendc.simulator.compute.workload
 
-import org.opendc.simulator.compute.SimExecutionContext
+import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.resources.SimResourceConsumer
 
 /**
  * A model that characterizes the runtime behavior of some particular workload.
@@ -32,27 +34,12 @@ import org.opendc.simulator.compute.SimExecutionContext
  */
 public interface SimWorkload {
     /**
-     * This method is invoked when the workload is started, before the (virtual) CPUs assigned to the workload will
-     * start.
+     * This method is invoked when the workload is started.
      */
-    public fun onStart(ctx: SimExecutionContext)
+    public fun onStart(ctx: SimMachineContext)
 
     /**
-     * This method is invoked when a (virtual) CPU assigned to the workload has started.
-     *
-     * @param ctx The execution context in which the workload runs.
-     * @param cpu The index of the (virtual) CPU to start.
-     * @return The command to perform on the CPU.
+     * Obtain the resource consumer for the specified processing unit.
      */
-    public fun onStart(ctx: SimExecutionContext, cpu: Int): SimResourceCommand
-
-    /**
-     * This method is invoked when a (virtual) CPU assigned to the workload was interrupted or reached its deadline.
-     *
-     * @param ctx The execution context in which the workload runs.
-     * @param cpu The index of the (virtual) CPU to obtain the resource consumption of.
-     * @param remainingWork The remaining work that was not yet completed.
-     * @return The next command to perform on the CPU.
-     */
-    public fun onNext(ctx: SimExecutionContext, cpu: Int, remainingWork: Double): SimResourceCommand
+    public fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit>
 }

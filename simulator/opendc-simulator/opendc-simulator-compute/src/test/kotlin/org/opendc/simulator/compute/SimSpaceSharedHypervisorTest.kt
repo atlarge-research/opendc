@@ -25,38 +25,33 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.model.SimMemoryUnit
+import org.opendc.simulator.compute.model.SimProcessingNode
+import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
-import java.time.Clock
 
 /**
  * A test suite for the [SimSpaceSharedHypervisor].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimSpaceSharedHypervisorTest {
-    private lateinit var scope: TestCoroutineScope
-    private lateinit var clock: Clock
     private lateinit var machineModel: SimMachineModel
 
     @BeforeEach
     fun setUp() {
-        scope = TestCoroutineScope()
-        clock = DelayControllerClockAdapter(scope)
-
-        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
+        val cpuNode = SimProcessingNode("Intel", "Xeon", "amd64", 1)
         machineModel = SimMachineModel(
-            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            cpus = List(cpuNode.coreCount) { SimProcessingUnit(cpuNode, it, 3200.0) },
+            memory = List(4) { SimMemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 
@@ -64,42 +59,45 @@ internal class SimSpaceSharedHypervisorTest {
      * Test a trace workload.
      */
     @Test
-    fun testTrace() {
+    fun testTrace() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
         val usagePm = mutableListOf<Double>()
         val usageVm = mutableListOf<Double>()
 
-        scope.launch {
-            val duration = 5 * 60L
-            val workloadA =
-                SimTraceWorkload(
-                    sequenceOf(
-                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 1),
-                        SimTraceWorkload.Fragment(duration * 1000, 3500.0, 1),
-                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 1),
-                        SimTraceWorkload.Fragment(duration * 1000, 183.0, 1)
-                    ),
-                )
+        val duration = 5 * 60L
+        val workloadA =
+            SimTraceWorkload(
+                sequenceOf(
+                    SimTraceWorkload.Fragment(duration * 1000, 28.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 3500.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 0.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 183.0, 1)
+                ),
+            )
 
-            val machine = SimBareMetalMachine(scope, clock, machineModel)
-            val hypervisor = SimSpaceSharedHypervisor()
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val hypervisor = SimSpaceSharedHypervisor()
 
-            launch { machine.usage.toList(usagePm) }
-            launch { machine.run(hypervisor) }
+        val colA = launch { machine.usage.toList(usagePm) }
+        launch { machine.run(hypervisor) }
 
-            yield()
-            launch {
-                val vm = hypervisor.createMachine(machineModel)
-                launch { vm.usage.toList(usageVm) }
-                vm.run(workloadA)
-            }
-        }
+        yield()
 
-        scope.advanceUntilIdle()
+        val vm = hypervisor.createMachine(machineModel)
+        val colB = launch { vm.usage.toList(usageVm) }
+        vm.run(workloadA)
+        yield()
+
+        vm.close()
+        machine.close()
+        colA.cancel()
+        colB.cancel()
 
         assertAll(
             { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), usagePm) { "Correct PM usage" } },
-            { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), usageVm) { "Correct VM usage" } },
-            { assertEquals(5 * 60L * 4000, scope.currentTime) { "Took enough time" } }
+            // Temporary limitation is that VMs do not emit usage information
+            // { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), usageVm) { "Correct VM usage" } },
+            { assertEquals(5 * 60L * 4000, currentTime) { "Took enough time" } }
         )
     }
 
@@ -107,69 +105,111 @@ internal class SimSpaceSharedHypervisorTest {
      * Test runtime workload on hypervisor.
      */
     @Test
-    fun testRuntimeWorkload() {
+    fun testRuntimeWorkload() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
         val duration = 5 * 60L * 1000
         val workload = SimRuntimeWorkload(duration)
-        val machine = SimBareMetalMachine(scope, clock, machineModel)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
         val hypervisor = SimSpaceSharedHypervisor()
 
-        scope.launch {
-            launch { machine.run(hypervisor) }
+        launch { machine.run(hypervisor) }
+        yield()
+        val vm = hypervisor.createMachine(machineModel)
+        vm.run(workload)
+        vm.close()
+        machine.close()
 
-            yield()
-            launch { hypervisor.createMachine(machineModel).run(workload) }
-        }
+        assertEquals(duration, currentTime) { "Took enough time" }
+    }
 
-        scope.advanceUntilIdle()
+    /**
+     * Test FLOPs workload on hypervisor.
+     */
+    @Test
+    fun testFlopsWorkload() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
 
-        assertEquals(duration, scope.currentTime) { "Took enough time" }
+        val duration = 5 * 60L * 1000
+        val workload = SimFlopsWorkload((duration * 3.2).toLong(), 1.0)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val hypervisor = SimSpaceSharedHypervisor()
+
+        launch { machine.run(hypervisor) }
+        yield()
+        val vm = hypervisor.createMachine(machineModel)
+        vm.run(workload)
+        machine.close()
+
+        assertEquals(duration, currentTime) { "Took enough time" }
+    }
+
+    /**
+     * Test two workloads running sequentially.
+     */
+    @Test
+    fun testTwoWorkloads() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val duration = 5 * 60L * 1000
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val hypervisor = SimSpaceSharedHypervisor()
+
+        launch { machine.run(hypervisor) }
+        yield()
+
+        val vm = hypervisor.createMachine(machineModel)
+        vm.run(SimRuntimeWorkload(duration))
+        vm.close()
+
+        val vm2 = hypervisor.createMachine(machineModel)
+        vm2.run(SimRuntimeWorkload(duration))
+        vm2.close()
+        machine.close()
+
+        assertEquals(duration * 2, currentTime) { "Took enough time" }
     }
 
     /**
      * Test concurrent workloads on the machine.
      */
     @Test
-    fun testConcurrentWorkloadFails() {
-        val machine = SimBareMetalMachine(scope, clock, machineModel)
+    fun testConcurrentWorkloadFails() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
         val hypervisor = SimSpaceSharedHypervisor()
 
-        scope.launch {
-            launch { machine.run(hypervisor) }
+        launch { machine.run(hypervisor) }
+        yield()
 
-            yield()
+        hypervisor.createMachine(machineModel)
 
-            hypervisor.createMachine(machineModel)
+        assertAll(
+            { assertFalse(hypervisor.canFit(machineModel)) },
+            { assertThrows<IllegalArgumentException> { hypervisor.createMachine(machineModel) } }
+        )
 
-            assertAll(
-                { assertFalse(hypervisor.canFit(machineModel)) },
-                { assertThrows<IllegalStateException> { hypervisor.createMachine(machineModel) } }
-            )
-        }
-
-        scope.advanceUntilIdle()
+        machine.close()
     }
 
     /**
      * Test concurrent workloads on the machine.
      */
     @Test
-    fun testConcurrentWorkloadSucceeds() {
-        val machine = SimBareMetalMachine(scope, clock, machineModel)
+    fun testConcurrentWorkloadSucceeds() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
         val hypervisor = SimSpaceSharedHypervisor()
 
-        scope.launch {
-            launch { machine.run(hypervisor) }
+        launch { machine.run(hypervisor) }
+        yield()
 
-            yield()
+        hypervisor.createMachine(machineModel).close()
 
-            hypervisor.createMachine(machineModel).close()
+        assertAll(
+            { assertTrue(hypervisor.canFit(machineModel)) },
+            { assertDoesNotThrow { hypervisor.createMachine(machineModel) } }
+        )
 
-            assertAll(
-                { assertTrue(hypervisor.canFit(machineModel)) },
-                { assertDoesNotThrow { hypervisor.createMachine(machineModel) } }
-            )
-        }
-
-        scope.advanceUntilIdle()
+        machine.close()
     }
 }

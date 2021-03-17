@@ -27,6 +27,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.yield
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -142,8 +143,8 @@ class CapelinIntegrationTest {
         assertAll(
             { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
             { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
-            { assertEquals(1678587333640, monitor.totalRequestedBurst) },
-            { assertEquals(438118200924, monitor.totalGrantedBurst) },
+            { assertEquals(1707132711051, monitor.totalRequestedBurst) },
+            { assertEquals(457881474296, monitor.totalGrantedBurst) },
             { assertEquals(1220323969993, monitor.totalOvercommissionedBurst) },
             { assertEquals(0, monitor.totalInterferedBurst) }
         )
@@ -176,6 +177,8 @@ class CapelinIntegrationTest {
                 monitor
             )
 
+            yield()
+
             println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
 
             scheduler.close()
@@ -186,8 +189,8 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(705128393966, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
-            { assertEquals(173489747029, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
+            { assertEquals(711464322955, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
+            { assertEquals(175226276978, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
             { assertEquals(526858997740, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
         )
