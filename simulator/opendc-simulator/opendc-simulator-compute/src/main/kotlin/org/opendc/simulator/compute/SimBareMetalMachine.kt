@@ -23,17 +23,10 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import org.opendc.simulator.compute.model.SimMemoryUnit
 import org.opendc.simulator.compute.model.SimProcessingUnit
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
-import java.util.*
 import kotlin.coroutines.*
 
 /**
@@ -42,83 +35,34 @@ import kotlin.coroutines.*
  * A [SimBareMetalMachine] is a stateful object and you should be careful when operating this object concurrently. For
  * example. the class expects only a single concurrent call to [run].
  *
- * @param coroutineScope The [CoroutineScope] to run the simulated workload in.
+ * @param context The [CoroutineContext] to run the simulated workload in.
  * @param clock The virtual clock to track the simulation time.
  * @param model The machine model to simulate.
  */
 @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
 public class SimBareMetalMachine(
-    private val coroutineScope: CoroutineScope,
+    context: CoroutineContext,
     private val clock: Clock,
     override val model: SimMachineModel
-) : SimMachine {
-    private val _usage = MutableStateFlow(0.0)
-    override val usage: StateFlow<Double>
-        get() = _usage
-
+) : SimAbstractMachine(clock) {
     /**
-     *  A flag to indicate that the machine is terminated.
+     * The [Job] associated with this machine.
      */
-    private var isTerminated = false
+    private val job = Job()
+
+    override val context: CoroutineContext = context + job
 
     /**
      * The [TimerScheduler] to use for scheduling the interrupts.
      */
-    private val scheduler = TimerScheduler<Any>(coroutineScope, clock)
+    private val scheduler = TimerScheduler<Any>(this.context, clock)
 
-    /**
-     * The execution context in which the workload runs.
-     */
-    private inner class Context(val map: Map<SimProcessingUnit, SimResourceContext<SimProcessingUnit>>,
-                                override val meta: Map<String, Any>) : SimMachineContext {
-        override val clock: Clock
-            get() = this@SimBareMetalMachine.clock
-
-        override val cpus: List<SimProcessingUnit> = model.cpus
-
-        override val memory: List<SimMemoryUnit> = model.memory
-
-        override fun interrupt(resource: SimResource) {
-            val context = map[resource]
-            checkNotNull(context) { "Invalid resource" }
-            context.interrupt()
-        }
-    }
-
-    /**
-     * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
-     */
-    override suspend fun run(workload: SimWorkload, meta: Map<String, Any>): Unit = coroutineScope {
-        require(!isTerminated) { "Machine is terminated" }
-        val map = mutableMapOf<SimProcessingUnit, SimResourceContext<SimProcessingUnit>>()
-        val ctx = Context(map, meta)
-        val sources = model.cpus.map { SimResourceSource(it, clock, scheduler) }
-        val totalCapacity = model.cpus.sumByDouble { it.frequency }
-
-        workload.onStart(ctx)
-
-        for (source in sources) {
-            val consumer = workload.getConsumer(ctx, source.resource)
-            val job = source.speed
-                .onEach {
-                    _usage.value = sources.sumByDouble { it.speed.value } / totalCapacity
-                }
-                .launchIn(this)
-
-            launch {
-                source.consume(object : SimResourceConsumer<SimProcessingUnit> by consumer {
-                    override fun onStart(ctx: SimResourceContext<SimProcessingUnit>): SimResourceCommand {
-                        map[ctx.resource] = ctx
-                        return consumer.onStart(ctx)
-                    }
-                })
-                job.cancel()
-            }
-        }
-    }
+    override val resources: Map<SimProcessingUnit, SimResourceSource<SimProcessingUnit>> =
+        model.cpus.associateWith { SimResourceSource(it, clock, scheduler) }
 
     override fun close() {
-        isTerminated = true
+        super.close()
         scheduler.close()
+        job.cancel()
     }
 }

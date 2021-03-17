@@ -24,7 +24,6 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -53,33 +52,35 @@ class SimMachineTest {
     }
 
     @Test
-    fun testFlopsWorkload() {
-        val testScope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimBareMetalMachine(testScope, clock, machineModel)
+    fun testFlopsWorkload() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
 
-        testScope.runBlockingTest {
+        try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
 
             // Two cores execute 1000 MFlOps per second (1000 ms)
-            assertEquals(1000, testScope.currentTime)
+            assertEquals(1000, currentTime)
+        } finally {
+            machine.close()
         }
     }
 
     @Test
-    fun testUsage() {
-        val testScope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(testScope)
-        val machine = SimBareMetalMachine(testScope, clock, machineModel)
+    fun testUsage() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
 
-        testScope.runBlockingTest {
-            val res = mutableListOf<Double>()
-            val job = launch { machine.usage.toList(res) }
+        val res = mutableListOf<Double>()
+        val job = launch { machine.usage.toList(res) }
 
+        try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
 
             job.cancel()
             assertEquals(listOf(0.0, 0.5, 1.0, 0.5, 0.0), res) { "Machine is fully utilized" }
+        } finally {
+            machine.close()
         }
     }
 }

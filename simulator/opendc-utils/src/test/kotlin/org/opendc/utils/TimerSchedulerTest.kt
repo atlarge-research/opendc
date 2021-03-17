@@ -38,7 +38,7 @@ internal class TimerSchedulerTest {
     fun testBasicTimer() {
         runBlockingTest {
             val clock = DelayControllerClockAdapter(this)
-            val scheduler = TimerScheduler<Int>(this, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
                 scheduler.close()
@@ -51,7 +51,7 @@ internal class TimerSchedulerTest {
     fun testCancelNonExisting() {
         runBlockingTest {
             val clock = DelayControllerClockAdapter(this)
-            val scheduler = TimerScheduler<Int>(this, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.cancel(1)
             scheduler.close()
@@ -62,7 +62,7 @@ internal class TimerSchedulerTest {
     fun testCancelExisting() {
         runBlockingTest {
             val clock = DelayControllerClockAdapter(this)
-            val scheduler = TimerScheduler<Int>(this, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
                 assertFalse(false)
@@ -81,7 +81,7 @@ internal class TimerSchedulerTest {
     fun testCancelAll() {
         runBlockingTest {
             val clock = DelayControllerClockAdapter(this)
-            val scheduler = TimerScheduler<Int>(this, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
                 assertFalse(false)
@@ -99,7 +99,7 @@ internal class TimerSchedulerTest {
     fun testOverride() {
         runBlockingTest {
             val clock = DelayControllerClockAdapter(this)
-            val scheduler = TimerScheduler<Int>(this, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
                 assertFalse(false)
@@ -117,7 +117,7 @@ internal class TimerSchedulerTest {
     fun testStopped() {
         runBlockingTest {
             val clock = DelayControllerClockAdapter(this)
-            val scheduler = TimerScheduler<Int>(this, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.close()
 
@@ -133,7 +133,7 @@ internal class TimerSchedulerTest {
     fun testNegativeDelay() {
         runBlockingTest {
             val clock = DelayControllerClockAdapter(this)
-            val scheduler = TimerScheduler<Int>(this, clock)
+            val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             assertThrows<IllegalArgumentException> {
                 scheduler.startSingleTimer(1, -1) {

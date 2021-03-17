@@ -31,6 +31,11 @@ import org.opendc.simulator.compute.workload.SimWorkload
  */
 public interface SimHypervisor : SimWorkload {
     /**
+     * The machines running on the hypervisor.
+     */
+    public val vms: Set<SimMachine>
+
+    /**
      * Determine whether the specified machine characterized by [model] can fit on this hypervisor at this moment.
      */
     public fun canFit(model: SimMachineModel): Boolean

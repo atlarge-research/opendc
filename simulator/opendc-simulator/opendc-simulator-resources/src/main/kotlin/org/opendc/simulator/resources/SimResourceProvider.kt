@@ -37,6 +37,11 @@ public interface SimResourceProvider<out R : SimResource> : AutoCloseable {
     public suspend fun consume(consumer: SimResourceConsumer<R>)
 
     /**
+     * Interrupt the resource.
+     */
+    public fun interrupt()
+
+    /**
      * End the lifetime of the resource.
      *
      * This operation terminates the existing resource consumer.

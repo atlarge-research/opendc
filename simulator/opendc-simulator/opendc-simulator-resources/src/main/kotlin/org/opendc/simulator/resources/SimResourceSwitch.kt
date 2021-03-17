@@ -20,21 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
-
-import org.opendc.simulator.compute.model.SimProcessingUnit
-import org.opendc.simulator.resources.*
-import kotlin.coroutines.CoroutineContext
+package org.opendc.simulator.resources
 
 /**
- * A [SimHypervisor] that allocates its sub-resources exclusively for the virtual machine that it hosts.
+ * A [SimResourceSwitch] enables switching of capacity of multiple resources of type [R] between multiple consumers.
  */
-public class SimSpaceSharedHypervisor : SimAbstractHypervisor() {
-    override fun canFit(model: SimMachineModel, switch: SimResourceSwitch<SimProcessingUnit>): Boolean {
-        return switch.inputs.size - switch.outputs.size >= model.cpus.size
-    }
+public interface SimResourceSwitch<R : SimResource> : AutoCloseable {
+    /**
+     * The output resource providers to which resource consumers can be attached.
+     */
+    public val outputs: Set<SimResourceProvider<R>>
 
-    override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch<SimProcessingUnit> {
-        return SimResourceSwitchExclusive(ctx.meta["coroutine-context"] as CoroutineContext)
-    }
+    /**
+     * The input resources that will be switched between the output providers.
+     */
+    public val inputs: Set<SimResourceProvider<R>>
+
+    /**
+     * Add an output to the switch represented by [resource].
+     */
+    public fun addOutput(resource: R): SimResourceProvider<R>
+
+    /**
+     * Add the specified [input] to the switch.
+     */
+    public fun addInput(input: SimResourceProvider<R>)
 }

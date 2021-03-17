@@ -138,10 +138,11 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
         }
 
         try {
-            val (timestamp, command) = activeCommand ?: return
+            val activeCommand = activeCommand ?: return
+            val (timestamp, command) = activeCommand
 
             isProcessing = true
-            activeCommand = null
+            this.activeCommand = null
 
             val duration = now - timestamp
             assert(duration >= 0) { "Flush in the past" }
@@ -153,6 +154,8 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
                     // 2. The resource consumer should be interrupted (e.g., someone called .interrupt())
                     if (command.deadline <= now || !isIntermediate) {
                         next(remainingWork = 0.0)
+                    } else {
+                        this.activeCommand = activeCommand
                     }
                 }
                 is SimResourceCommand.Consume -> {

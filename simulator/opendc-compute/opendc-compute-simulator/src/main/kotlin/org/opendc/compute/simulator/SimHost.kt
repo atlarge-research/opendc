@@ -84,7 +84,7 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(scope, clock, model)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model)
 
     /**
      * The hypervisor to run multiple workloads.
@@ -206,6 +206,7 @@ public class SimHost(
 
     override fun close() {
         scope.cancel()
+        machine.close()
         _state = HostState.DOWN
     }
 

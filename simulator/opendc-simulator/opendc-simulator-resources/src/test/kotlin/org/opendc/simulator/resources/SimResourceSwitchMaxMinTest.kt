@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,57 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.resources
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingNode
-import org.opendc.simulator.compute.model.SimProcessingUnit
-import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.resources.consumer.SimTraceConsumer
 import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.utils.TimerScheduler
 
 /**
- * Test suite for the [SimHypervisor] class.
+ * Test suite for the [SimResourceSwitch] implementations
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class SimHypervisorTest {
-    private lateinit var model: SimMachineModel
+internal class SimResourceSwitchMaxMinTest {
+    class SimCpu(val speed: Double) : SimResource {
+        override val capacity: Double
+            get() = speed
+    }
 
-    @BeforeEach
-    fun setUp() {
-        val cpuNode = SimProcessingNode("Intel", "Xeon", "amd64", 1)
-        model = SimMachineModel(
-            cpus = List(cpuNode.coreCount) { SimProcessingUnit(cpuNode, it, 3200.0) },
-            memory = List(4) { SimMemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
-        )
+    @Test
+    fun testSmoke() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val switch = SimResourceSwitchMaxMin<SimCpu>(clock, coroutineContext)
+
+        val sources = List(2) { SimResourceSource(SimCpu(2000.0), clock, scheduler) }
+        sources.forEach { switch.addInput(it) }
+
+        val provider = switch.addOutput(SimCpu(1000.0))
+
+        val consumer = object : SimResourceConsumer<SimCpu> {
+            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
+                return SimResourceCommand.Consume(1.0, 1.0)
+            }
+
+            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
+                return SimResourceCommand.Exit
+            }
+        }
+
+        try {
+            provider.consume(consumer)
+            yield()
+        } finally {
+            switch.close()
+            scheduler.close()
+        }
     }
 
     /**
@@ -59,13 +79,15 @@ internal class SimHypervisorTest {
     @Test
     fun testOvercommittedSingle() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val listener = object : SimHypervisor.Listener {
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+
+        val listener = object : SimResourceSwitchMaxMin.Listener<SimCpu> {
             var totalRequestedWork = 0L
             var totalGrantedWork = 0L
             var totalOvercommittedWork = 0L
 
             override fun onSliceFinish(
-                hypervisor: SimHypervisor,
+                switch: SimResourceSwitchMaxMin<SimCpu>,
                 requestedWork: Long,
                 grantedWork: Long,
                 overcommittedWork: Long,
@@ -80,27 +102,27 @@ internal class SimHypervisorTest {
         }
 
         val duration = 5 * 60L
-        val workloadA =
-            SimTraceWorkload(
+        val workload =
+            SimTraceConsumer(
                 sequenceOf(
-                    SimTraceWorkload.Fragment(duration * 1000, 28.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 3500.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 0.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 183.0, 1)
+                    SimTraceConsumer.Fragment(duration * 1000, 28.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 3500.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 0.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 183.0)
                 ),
             )
 
-        val machine = SimBareMetalMachine(coroutineContext, clock, model)
-        val hypervisor = SimFairShareHypervisor(listener)
+        val switch = SimResourceSwitchMaxMin(clock, coroutineContext, listener)
+        val provider = switch.addOutput(SimCpu(3200.0))
 
-        launch {
-            machine.run(hypervisor)
-            println("Hypervisor finished")
+        try {
+            switch.addInput(SimResourceSource(SimCpu(3200.0), clock, scheduler))
+            provider.consume(workload)
+            yield()
+        } finally {
+            switch.close()
+            scheduler.close()
         }
-        yield()
-        hypervisor.createMachine(model).run(workloadA)
-        yield()
-        machine.close()
 
         assertAll(
             { assertEquals(1113300, listener.totalRequestedWork, "Requested Burst does not match") },
@@ -116,13 +138,15 @@ internal class SimHypervisorTest {
     @Test
     fun testOvercommittedDual() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val listener = object : SimHypervisor.Listener {
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+
+        val listener = object : SimResourceSwitchMaxMin.Listener<SimCpu> {
             var totalRequestedWork = 0L
             var totalGrantedWork = 0L
             var totalOvercommittedWork = 0L
 
             override fun onSliceFinish(
-                hypervisor: SimHypervisor,
+                switch: SimResourceSwitchMaxMin<SimCpu>,
                 requestedWork: Long,
                 grantedWork: Long,
                 overcommittedWork: Long,
@@ -138,46 +162,41 @@ internal class SimHypervisorTest {
 
         val duration = 5 * 60L
         val workloadA =
-            SimTraceWorkload(
+            SimTraceConsumer(
                 sequenceOf(
-                    SimTraceWorkload.Fragment(duration * 1000, 28.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 3500.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 0.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 183.0, 1)
+                    SimTraceConsumer.Fragment(duration * 1000, 28.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 3500.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 0.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 183.0)
                 ),
             )
         val workloadB =
-            SimTraceWorkload(
+            SimTraceConsumer(
                 sequenceOf(
-                    SimTraceWorkload.Fragment(duration * 1000, 28.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 3100.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 0.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 73.0, 1)
+                    SimTraceConsumer.Fragment(duration * 1000, 28.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 3100.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 0.0),
+                    SimTraceConsumer.Fragment(duration * 1000, 73.0)
                 )
             )
 
-        val machine = SimBareMetalMachine(coroutineContext, clock, model)
-        val hypervisor = SimFairShareHypervisor(listener)
+        val switch = SimResourceSwitchMaxMin(clock, coroutineContext, listener)
+        val providerA = switch.addOutput(SimCpu(3200.0))
+        val providerB = switch.addOutput(SimCpu(3200.0))
 
-        launch {
-            machine.run(hypervisor)
-        }
+        try {
+            switch.addInput(SimResourceSource(SimCpu(3200.0), clock, scheduler))
 
-        yield()
-        coroutineScope {
-            launch {
-                val vm = hypervisor.createMachine(model)
-                vm.run(workloadA)
-                vm.close()
+            coroutineScope {
+                launch { providerA.consume(workloadA) }
+                providerB.consume(workloadB)
             }
-            val vm = hypervisor.createMachine(model)
-            vm.run(workloadB)
-            vm.close()
-        }
-        yield()
-        machine.close()
-        yield()
 
+            yield()
+        } finally {
+            switch.close()
+            scheduler.close()
+        }
         assertAll(
             { assertEquals(2082000, listener.totalRequestedWork, "Requested Burst does not match") },
             { assertEquals(1062000, listener.totalGrantedWork, "Granted Burst does not match") },

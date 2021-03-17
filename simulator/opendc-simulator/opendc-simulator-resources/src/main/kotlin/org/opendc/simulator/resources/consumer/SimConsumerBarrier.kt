@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload
+package org.opendc.simulator.resources.consumer
 
 /**
- * The [SimWorkloadBarrier] is a barrier that allows workloads to wait for a select number of CPUs to complete, before
- * proceeding its operation.
+ * The [SimConsumerBarrier] is a barrier that allows consumers to wait for a select number of other consumers to
+ * complete, before proceeding its operation.
  */
-public class SimWorkloadBarrier(public val parties: Int) {
+public class SimConsumerBarrier(public val parties: Int) {
     private var counter = 0
 
     /**

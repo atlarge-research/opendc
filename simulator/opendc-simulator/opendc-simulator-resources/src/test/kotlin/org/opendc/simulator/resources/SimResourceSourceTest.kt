@@ -24,38 +24,27 @@ package org.opendc.simulator.resources
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
-import java.time.Clock
 
 /**
- * A test suite for the [SimResourceScheduler] class.
+ * A test suite for the [SimResourceSource] class.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimResourceSourceTest {
-
-    private lateinit var scope: TestCoroutineScope
-    private lateinit var clock: Clock
-
     data class SimCpu(val speed: Double) : SimResource {
         override val capacity: Double
             get() = speed
     }
 
-    @BeforeEach
-    fun setUp() {
-        scope = TestCoroutineScope()
-        clock = DelayControllerClockAdapter(scope)
-    }
-
     @Test
-    fun testSpeed() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
+    fun testSpeed() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
@@ -67,21 +56,25 @@ class SimResourceSourceTest {
             }
         }
 
-        scope.runBlockingTest {
+        try {
             val res = mutableListOf<Double>()
             val job = launch { provider.speed.toList(res) }
 
             provider.consume(consumer)
 
             job.cancel()
-            assertEquals(listOf(0.0, resource.speed, 0.0), res) { "Speed is reported correctly" }
+            assertEquals(listOf(0.0, provider.resource.speed, 0.0), res) { "Speed is reported correctly" }
+        } finally {
+            scheduler.close()
+            provider.close()
         }
     }
 
     @Test
-    fun testSpeedLimit() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
+    fun testSpeedLimit() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
@@ -93,21 +86,29 @@ class SimResourceSourceTest {
             }
         }
 
-        scope.runBlockingTest {
+        try {
             val res = mutableListOf<Double>()
             val job = launch { provider.speed.toList(res) }
 
             provider.consume(consumer)
 
             job.cancel()
-            assertEquals(listOf(0.0, resource.speed, 0.0), res) { "Speed is reported correctly" }
+            assertEquals(listOf(0.0, provider.resource.speed, 0.0), res) { "Speed is reported correctly" }
+        } finally {
+            scheduler.close()
+            provider.close()
         }
     }
 
+    /**
+     * Test to see whether no infinite recursion occurs when interrupting during [SimResourceConsumer.onStart] or
+     * [SimResourceConsumer.onNext].
+     */
     @Test
-    fun testInterrupt() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
+    fun testIntermediateInterrupt() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
@@ -120,21 +121,82 @@ class SimResourceSourceTest {
             }
         }
 
-        assertDoesNotThrow {
-            scope.runBlockingTest {
+        try {
+            provider.consume(consumer)
+        } finally {
+            scheduler.close()
+            provider.close()
+        }
+    }
+
+    @Test
+    fun testInterrupt() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        lateinit var resCtx: SimResourceContext<SimCpu>
+
+        val consumer = object : SimResourceConsumer<SimCpu> {
+            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
+                resCtx = ctx
+                return SimResourceCommand.Consume(4.0, 1.0)
+            }
+
+            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
+                assertEquals(0.0, remainingWork)
+                return SimResourceCommand.Exit
+            }
+        }
+
+        try {
+            launch {
+                yield()
+                resCtx.interrupt()
+            }
+            provider.consume(consumer)
+
+            assertEquals(0, currentTime)
+        } finally {
+            scheduler.close()
+            provider.close()
+        }
+    }
+
+    @Test
+    fun testFailure() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+
+        val consumer = object : SimResourceConsumer<SimCpu> {
+            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
+                throw IllegalStateException()
+            }
+
+            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
+                throw IllegalStateException()
+            }
+        }
+
+        try {
+            assertThrows<IllegalStateException> {
                 provider.consume(consumer)
             }
+        } finally {
+            scheduler.close()
+            provider.close()
         }
     }
 
     @Test
-    fun testFailure() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
+    fun testExceptionPropagationOnNext() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
-                throw IllegalStateException()
+                return SimResourceCommand.Consume(1.0, 1.0)
             }
 
             override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
@@ -142,17 +204,21 @@ class SimResourceSourceTest {
             }
         }
 
-        assertThrows<IllegalStateException> {
-            scope.runBlockingTest {
+        try {
+            assertThrows<IllegalStateException> {
                 provider.consume(consumer)
             }
+        } finally {
+            scheduler.close()
+            provider.close()
         }
     }
 
     @Test
-    fun testExceptionPropagationOnNext() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
+    fun testConcurrentConsumption() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
@@ -164,15 +230,24 @@ class SimResourceSourceTest {
             }
         }
 
-        assertThrows<IllegalStateException> {
-            scope.runBlockingTest { provider.consume(consumer) }
+        try {
+            assertThrows<IllegalStateException> {
+                coroutineScope {
+                    launch { provider.consume(consumer) }
+                    provider.consume(consumer)
+                }
+            }
+        } finally {
+            scheduler.close()
+            provider.close()
         }
     }
 
     @Test
-    fun testConcurrentConsumption() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
+    fun testClosedConsumption() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
@@ -184,41 +259,22 @@ class SimResourceSourceTest {
             }
         }
 
-        assertThrows<IllegalStateException> {
-            scope.runBlockingTest {
-                launch { provider.consume(consumer) }
-                launch { provider.consume(consumer) }
-            }
-        }
-    }
-
-    @Test
-    fun testClosedConsumption() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
-
-        val consumer = object : SimResourceConsumer<SimCpu> {
-            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
-                return SimResourceCommand.Consume(1.0, 1.0)
-            }
-
-            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
-                throw IllegalStateException()
-            }
-        }
-
-        assertThrows<IllegalStateException> {
-            scope.runBlockingTest {
+        try {
+            assertThrows<IllegalStateException> {
                 provider.close()
                 provider.consume(consumer)
             }
+        } finally {
+            scheduler.close()
+            provider.close()
         }
     }
 
     @Test
-    fun testCloseDuringConsumption() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
+    fun testCloseDuringConsumption() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
@@ -230,19 +286,23 @@ class SimResourceSourceTest {
             }
         }
 
-        scope.runBlockingTest {
+        try {
             launch { provider.consume(consumer) }
             delay(500)
             provider.close()
-        }
 
-        assertEquals(500, scope.currentTime)
+            assertEquals(500, currentTime)
+        } finally {
+            scheduler.close()
+            provider.close()
+        }
     }
 
     @Test
-    fun testIdle() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
+    fun testIdle() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
@@ -254,31 +314,40 @@ class SimResourceSourceTest {
             }
         }
 
-        scope.runBlockingTest {
+        try {
             provider.consume(consumer)
-        }
 
-        assertEquals(500, scope.currentTime)
+            assertEquals(500, currentTime)
+        } finally {
+            scheduler.close()
+            provider.close()
+        }
     }
 
     @Test
     fun testInfiniteSleep() {
-        val resource = SimCpu(4200.0)
-        val provider = SimResourceSource(resource, clock, TimerScheduler(scope, clock))
-
-        val consumer = object : SimResourceConsumer<SimCpu> {
-            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
-                return SimResourceCommand.Idle()
-            }
-
-            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
-                return SimResourceCommand.Exit
-            }
-        }
-
         assertThrows<IllegalStateException> {
-            scope.runBlockingTest {
-                provider.consume(consumer)
+            runBlockingTest {
+                val clock = DelayControllerClockAdapter(this)
+                val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+                val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+
+                val consumer = object : SimResourceConsumer<SimCpu> {
+                    override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
+                        return SimResourceCommand.Idle()
+                    }
+
+                    override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
+                        return SimResourceCommand.Exit
+                    }
+                }
+
+                try {
+                    provider.consume(consumer)
+                } finally {
+                    scheduler.close()
+                    provider.close()
+                }
             }
         }
     }

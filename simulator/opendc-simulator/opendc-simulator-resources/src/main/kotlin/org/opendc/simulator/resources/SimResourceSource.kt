@@ -50,30 +50,6 @@ public class SimResourceSource<R : SimResource>(
         get() = _speed
     private val _speed = MutableStateFlow(0.0)
 
-    override suspend fun consume(consumer: SimResourceConsumer<R>) {
-        check(!isClosed) { "Lifetime of resource has ended." }
-        check(cont == null) { "Run should not be called concurrently" }
-
-        try {
-            return suspendCancellableCoroutine { cont ->
-                this.cont = cont
-                val ctx = Context(consumer, cont)
-                ctx.start()
-                cont.invokeOnCancellation {
-                    ctx.stop()
-                }
-            }
-        } finally {
-            cont = null
-        }
-    }
-
-    override fun close() {
-        isClosed = true
-        cont?.cancel()
-        cont = null
-    }
-
     /**
      * A flag to indicate that the resource was closed.
      */
@@ -83,6 +59,44 @@ public class SimResourceSource<R : SimResource>(
      * The current active consumer.
      */
     private var cont: CancellableContinuation<Unit>? = null
+
+    /**
+     * The [Context] that is currently running.
+     */
+    private var ctx: Context? = null
+
+    override suspend fun consume(consumer: SimResourceConsumer<R>) {
+        check(!isClosed) { "Lifetime of resource has ended." }
+        check(cont == null) { "Run should not be called concurrently" }
+
+        try {
+            return suspendCancellableCoroutine { cont ->
+                val ctx = Context(consumer, cont)
+
+                this.cont = cont
+                this.ctx = ctx
+
+                ctx.start()
+                cont.invokeOnCancellation {
+                    ctx.stop()
+                }
+            }
+        } finally {
+            cont = null
+            ctx = null
+        }
+    }
+
+    override fun close() {
+        isClosed = true
+        cont?.cancel()
+        cont = null
+        ctx = null
+    }
+
+    override fun interrupt() {
+        ctx?.interrupt()
+    }
 
     /**
      * Internal implementation of [SimResourceContext] for this class.
@@ -113,7 +127,7 @@ public class SimResourceSource<R : SimResource>(
             speed = getSpeed(limit)
             val until = min(deadline, clock.millis() + getDuration(work, speed))
 
-            scheduler.startSingleTimerTo(this, until) { flush() }
+            scheduler.startSingleTimerTo(this, until, ::flush)
         }
 
         override fun onFinish() {

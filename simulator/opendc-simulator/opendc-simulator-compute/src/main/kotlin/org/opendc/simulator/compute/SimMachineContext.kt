@@ -37,7 +37,7 @@ public interface SimMachineContext {
      * The virtual clock tracking simulation time.
      */
     public val clock: Clock
-    
+
     /**
      * The metadata associated with the context.
      */

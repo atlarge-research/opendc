@@ -125,7 +125,7 @@ public class ComputeServiceImpl(
     /**
      * The [TimerScheduler] to use for scheduling the scheduler cycles.
      */
-    private var scheduler: TimerScheduler<Unit> = TimerScheduler(scope, clock)
+    private var scheduler: TimerScheduler<Unit> = TimerScheduler(scope.coroutineContext, clock)
 
     override val hosts: Set<Host>
         get() = hostToView.keys

@@ -27,6 +27,7 @@ import org.opendc.simulator.compute.model.SimProcessingUnit
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
+import org.opendc.simulator.resources.consumer.SimConsumerBarrier
 
 /**
  * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
@@ -36,10 +37,10 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkloa
     private var offset = 0L
     private val iterator = trace.iterator()
     private var fragment: Fragment? = null
-    private lateinit var barrier: SimWorkloadBarrier
+    private lateinit var barrier: SimConsumerBarrier
 
     override fun onStart(ctx: SimMachineContext) {
-        barrier = SimWorkloadBarrier(ctx.cpus.size)
+        barrier = SimConsumerBarrier(ctx.cpus.size)
         fragment = nextFragment()
         offset = ctx.clock.millis()
     }
