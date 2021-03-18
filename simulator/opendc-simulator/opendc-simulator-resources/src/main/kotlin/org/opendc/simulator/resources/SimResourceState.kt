@@ -23,30 +23,21 @@
 package org.opendc.simulator.resources
 
 /**
- * A SimResourceCommand communicates to a [SimResource] how it is consumed by a [SimResourceConsumer].
+ * The state of a resource provider.
  */
-public sealed class SimResourceCommand {
+public enum class SimResourceState {
     /**
-     * A request to the resource to perform the specified amount of work before the given [deadline].
-     *
-     * @param work The amount of work to process.
-     * @param limit The maximum amount of work to be processed per second.
-     * @param deadline The instant at which the work needs to be fulfilled.
+     * The resource provider is pending and the resource is waiting to be consumed.
      */
-    public data class Consume(val work: Double, val limit: Double, val deadline: Long = Long.MAX_VALUE) : SimResourceCommand() {
-        init {
-            require(work > 0) { "Amount of work must be positive" }
-            require(limit > 0) { "Limit must be positive" }
-        }
-    }
+    Pending,
 
     /**
-     * An indication to the resource that the consumer will idle until the specified [deadline] or if it is interrupted.
+     * The resource provider is active and the resource is currently being consumed.
      */
-    public data class Idle(val deadline: Long = Long.MAX_VALUE) : SimResourceCommand()
+    Active,
 
     /**
-     * An indication to the resource that the consumer has finished.
+     * The resource provider is stopped and the resource cannot be consumed anymore.
      */
-    public object Exit : SimResourceCommand()
+    Stopped
 }

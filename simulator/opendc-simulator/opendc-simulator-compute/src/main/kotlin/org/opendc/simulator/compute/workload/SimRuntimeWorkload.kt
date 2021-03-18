@@ -24,9 +24,8 @@ package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.model.SimProcessingUnit
-import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceContext
+import org.opendc.simulator.resources.consumer.SimWorkConsumer
 
 /**
  * A [SimWorkload] that models application execution as a single duration.
@@ -46,24 +45,8 @@ public class SimRuntimeWorkload(
     override fun onStart(ctx: SimMachineContext) {}
 
     override fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit> {
-        return CpuConsumer()
-    }
-
-    private inner class CpuConsumer : SimResourceConsumer<SimProcessingUnit> {
-        override fun onStart(ctx: SimResourceContext<SimProcessingUnit>): SimResourceCommand {
-            val limit = ctx.resource.frequency * utilization
-            val work = (limit / 1000) * duration
-            return SimResourceCommand.Consume(work, limit)
-        }
-
-        override fun onNext(ctx: SimResourceContext<SimProcessingUnit>, remainingWork: Double): SimResourceCommand {
-            return if (remainingWork > 0.0) {
-                val limit = ctx.resource.frequency * utilization
-                SimResourceCommand.Consume(remainingWork, limit)
-            } else {
-                SimResourceCommand.Exit
-            }
-        }
+        val limit = cpu.frequency * utilization
+        return SimWorkConsumer((limit / 1000) * duration, utilization)
     }
 
     override fun toString(): String = "SimRuntimeWorkload(duration=$duration,utilization=$utilization)"

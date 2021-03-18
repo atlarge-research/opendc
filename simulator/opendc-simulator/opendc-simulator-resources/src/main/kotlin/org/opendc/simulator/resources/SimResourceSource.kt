@@ -27,9 +27,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.math.min
 
 /**
@@ -37,6 +34,7 @@ import kotlin.math.min
  *
  * @param resource The resource to provide.
  * @param clock The virtual clock to track simulation time.
+ * @param scheduler The scheduler to schedule the interrupts.
  */
 public class SimResourceSource<R : SimResource>(
     override val resource: R,
@@ -51,60 +49,48 @@ public class SimResourceSource<R : SimResource>(
     private val _speed = MutableStateFlow(0.0)
 
     /**
-     * A flag to indicate that the resource was closed.
-     */
-    private var isClosed: Boolean = false
-
-    /**
-     * The current active consumer.
-     */
-    private var cont: CancellableContinuation<Unit>? = null
-
-    /**
      * The [Context] that is currently running.
      */
     private var ctx: Context? = null
 
-    override suspend fun consume(consumer: SimResourceConsumer<R>) {
-        check(!isClosed) { "Lifetime of resource has ended." }
-        check(cont == null) { "Run should not be called concurrently" }
+    override var state: SimResourceState = SimResourceState.Pending
+        private set
 
-        try {
-            return suspendCancellableCoroutine { cont ->
-                val ctx = Context(consumer, cont)
+    override fun startConsumer(consumer: SimResourceConsumer<R>) {
+        check(state == SimResourceState.Pending) { "Resource is in invalid state" }
+        val ctx = Context(consumer)
 
-                this.cont = cont
-                this.ctx = ctx
+        this.ctx = ctx
+        this.state = SimResourceState.Active
 
-                ctx.start()
-                cont.invokeOnCancellation {
-                    ctx.stop()
-                }
-            }
-        } finally {
-            cont = null
-            ctx = null
-        }
+        ctx.start()
     }
 
     override fun close() {
-        isClosed = true
-        cont?.cancel()
-        cont = null
-        ctx = null
+        cancel()
+        state = SimResourceState.Stopped
     }
 
     override fun interrupt() {
         ctx?.interrupt()
     }
 
+    override fun cancel() {
+        val ctx = ctx
+        if (ctx != null) {
+            this.ctx = null
+            ctx.stop()
+        }
+
+        if (state != SimResourceState.Stopped) {
+            state = SimResourceState.Pending
+        }
+    }
+
     /**
      * Internal implementation of [SimResourceContext] for this class.
      */
-    private inner class Context(
-        consumer: SimResourceConsumer<R>,
-        val cont: Continuation<Unit>
-    ) : SimAbstractResourceContext<R>(resource, clock, consumer) {
+    private inner class Context(consumer: SimResourceConsumer<R>) : SimAbstractResourceContext<R>(resource, clock, consumer) {
         /**
          * The processing speed of the resource.
          */
@@ -130,16 +116,12 @@ public class SimResourceSource<R : SimResource>(
             scheduler.startSingleTimerTo(this, until, ::flush)
         }
 
-        override fun onFinish() {
+        override fun onFinish(cause: Throwable?) {
             speed = 0.0
             scheduler.cancel(this)
-            cont.resume(Unit)
-        }
+            cancel()
 
-        override fun onFailure(cause: Throwable) {
-            speed = 0.0
-            scheduler.cancel(this)
-            cont.resumeWithException(cause)
+            super.onFinish(cause)
         }
 
         override fun toString(): String = "SimResourceSource.Context[resource=$resource]"

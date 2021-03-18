@@ -24,7 +24,6 @@ package org.opendc.simulator.compute
 
 import org.opendc.simulator.compute.model.SimProcessingUnit
 import org.opendc.simulator.resources.*
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A [SimHypervisor] that allocates its sub-resources exclusively for the virtual machine that it hosts.
@@ -35,6 +34,6 @@ public class SimSpaceSharedHypervisor : SimAbstractHypervisor() {
     }
 
     override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch<SimProcessingUnit> {
-        return SimResourceSwitchExclusive(ctx.meta["coroutine-context"] as CoroutineContext)
+        return SimResourceSwitchExclusive()
     }
 }

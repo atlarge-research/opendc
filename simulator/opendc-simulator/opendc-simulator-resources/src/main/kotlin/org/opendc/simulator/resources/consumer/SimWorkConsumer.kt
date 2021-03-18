@@ -28,42 +28,33 @@ import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
 
 /**
- * A [SimResourceConsumer] that replays a workload trace consisting of multiple fragments, each indicating the resource
- * consumption for some period of time.
+ * A [SimResourceConsumer] that consumes the specified amount of work at the specified utilization.
  */
-public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResourceConsumer<SimResource> {
-    private var iterator: Iterator<Fragment>? = null
+public class SimWorkConsumer<R : SimResource>(
+    private val work: Double,
+    private val utilization: Double
+) : SimResourceConsumer<R> {
 
-    override fun onStart(ctx: SimResourceContext<SimResource>) {
-        check(iterator == null) { "Consumer already running" }
-        iterator = trace.iterator()
+    init {
+        require(work >= 0.0) { "Work must be positive" }
+        require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
 
-    override fun onNext(ctx: SimResourceContext<SimResource>, capacity: Double, remainingWork: Double): SimResourceCommand {
-        val iterator = checkNotNull(iterator)
-        return if (iterator.hasNext()) {
-            val now = ctx.clock.millis()
-            val fragment = iterator.next()
-            val work = (fragment.duration / 1000) * fragment.usage
-            val deadline = now + fragment.duration
+    private var limit = 0.0
+    private var remainingWork: Double = 0.0
 
-            assert(deadline >= now) { "Deadline already passed" }
+    override fun onStart(ctx: SimResourceContext<R>) {
+        limit = ctx.resource.capacity * utilization
+        remainingWork = work
+    }
 
-            if (work > 0.0)
-                SimResourceCommand.Consume(work, fragment.usage, deadline)
-            else
-                SimResourceCommand.Idle(deadline)
+    override fun onNext(ctx: SimResourceContext<R>, capacity: Double, remainingWork: Double): SimResourceCommand {
+        val work = this.remainingWork + remainingWork
+        this.remainingWork -= work
+        return if (work > 0.0) {
+            SimResourceCommand.Consume(work, limit)
         } else {
             SimResourceCommand.Exit
         }
     }
-
-    override fun onFinish(ctx: SimResourceContext<SimResource>, cause: Throwable?) {
-        iterator = null
-    }
-
-    /**
-     * A fragment of the workload.
-     */
-    public data class Fragment(val duration: Long, val usage: Double)
 }

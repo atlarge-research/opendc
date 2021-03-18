@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.resources
 
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -47,22 +49,15 @@ internal class SimResourceSwitchMaxMinTest {
     fun testSmoke() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val switch = SimResourceSwitchMaxMin<SimCpu>(clock, coroutineContext)
+        val switch = SimResourceSwitchMaxMin<SimCpu>(clock)
 
         val sources = List(2) { SimResourceSource(SimCpu(2000.0), clock, scheduler) }
         sources.forEach { switch.addInput(it) }
 
         val provider = switch.addOutput(SimCpu(1000.0))
 
-        val consumer = object : SimResourceConsumer<SimCpu> {
-            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
-                return SimResourceCommand.Consume(1.0, 1.0)
-            }
-
-            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
-                return SimResourceCommand.Exit
-            }
-        }
+        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0, 1.0) andThen SimResourceCommand.Exit
 
         try {
             provider.consume(consumer)
@@ -112,7 +107,7 @@ internal class SimResourceSwitchMaxMinTest {
                 ),
             )
 
-        val switch = SimResourceSwitchMaxMin(clock, coroutineContext, listener)
+        val switch = SimResourceSwitchMaxMin(clock, listener)
         val provider = switch.addOutput(SimCpu(3200.0))
 
         try {
@@ -180,7 +175,7 @@ internal class SimResourceSwitchMaxMinTest {
                 )
             )
 
-        val switch = SimResourceSwitchMaxMin(clock, coroutineContext, listener)
+        val switch = SimResourceSwitchMaxMin(clock, listener)
         val providerA = switch.addOutput(SimCpu(3200.0))
         val providerB = switch.addOutput(SimCpu(3200.0))
 

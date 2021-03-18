@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.resources
 
+import kotlinx.coroutines.suspendCancellableCoroutine
+
 /**
  * A [SimResourceProvider] provides some resource of type [R].
  */
@@ -32,14 +34,26 @@ public interface SimResourceProvider<out R : SimResource> : AutoCloseable {
     public val resource: R
 
     /**
-     * Consume the resource provided by this provider using the specified [consumer].
+     * The state of the resource.
      */
-    public suspend fun consume(consumer: SimResourceConsumer<R>)
+    public val state: SimResourceState
 
     /**
-     * Interrupt the resource.
+     * Start the specified [resource consumer][consumer] in the context of this resource provider asynchronously.
+     *
+     * @throws IllegalStateException if there is already a consumer active or the resource lifetime has ended.
+     */
+    public fun startConsumer(consumer: SimResourceConsumer<R>)
+
+    /**
+     * Interrupt the resource consumer. If there is no consumer active, this operation will be a no-op.
      */
     public fun interrupt()
+
+    /**
+     * Cancel the current resource consumer. If there is no consumer active, this operation will be a no-op.
+     */
+    public fun cancel()
 
     /**
      * End the lifetime of the resource.
@@ -47,4 +61,24 @@ public interface SimResourceProvider<out R : SimResource> : AutoCloseable {
      * This operation terminates the existing resource consumer.
      */
     public override fun close()
+}
+
+/**
+ * Consume the resource provided by this provider using the specified [consumer] and suspend execution until
+ * the consumer has finished.
+ */
+public suspend fun <R : SimResource> SimResourceProvider<R>.consume(consumer: SimResourceConsumer<R>) {
+    return suspendCancellableCoroutine { cont ->
+        startConsumer(object : SimResourceConsumer<R> by consumer {
+            override fun onFinish(ctx: SimResourceContext<R>, cause: Throwable?) {
+                assert(!cont.isCompleted) { "Coroutine already completed" }
+
+                cont.resumeWith(if (cause != null) Result.failure(cause) else Result.success(Unit))
+
+                consumer.onFinish(ctx, cause)
+            }
+
+            override fun toString(): String = "SimSuspendingResourceConsumer"
+        })
+    }
 }

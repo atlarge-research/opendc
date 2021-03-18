@@ -25,10 +25,6 @@ package org.opendc.simulator.resources
 import kotlinx.coroutines.*
 import org.opendc.simulator.resources.consumer.SimConsumerBarrier
 import java.time.Clock
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -39,14 +35,8 @@ import kotlin.math.min
  */
 public class SimResourceSwitchMaxMin<R : SimResource>(
     private val clock: Clock,
-    context: CoroutineContext,
     private val listener: Listener<R>? = null
 ) : SimResourceSwitch<R> {
-    /**
-     * The [CoroutineScope] of the service bounded by the lifecycle of the service.
-     */
-    private val scope = CoroutineScope(context + Job())
-
     private val inputConsumers = mutableSetOf<InputConsumer>()
     private val _outputs = mutableSetOf<OutputProvider>()
     override val outputs: Set<SimResourceProvider<R>>
@@ -112,9 +102,16 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
     private var barrier: SimConsumerBarrier = SimConsumerBarrier(0)
 
     /**
+     * A flag to indicate that the switch is closed.
+     */
+    private var isClosed: Boolean = false
+
+    /**
      * Add an output to the switch represented by [resource].
      */
     override fun addOutput(resource: R): SimResourceProvider<R> {
+        check(!isClosed) { "Switch has been closed" }
+
         val provider = OutputProvider(resource)
         _outputs.add(provider)
         return provider
@@ -124,13 +121,15 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
      * Add the specified [input] to the switch.
      */
     override fun addInput(input: SimResourceProvider<R>) {
+        check(!isClosed) { "Switch has been closed" }
+
         val consumer = InputConsumer(input)
         _inputs.add(input)
         inputConsumers += consumer
     }
 
     override fun close() {
-        scope.cancel()
+        isClosed = true
     }
 
     /**
@@ -297,54 +296,46 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
      */
     private inner class OutputProvider(override val resource: R) : SimResourceProvider<R> {
         /**
-         * A flag to indicate that the resource was closed.
-         */
-        private var isClosed: Boolean = false
-
-        /**
-         * The current active consumer.
-         */
-        private var cont: CancellableContinuation<Unit>? = null
-
-        /**
          * The [OutputContext] that is currently running.
          */
         private var ctx: OutputContext? = null
 
-        override suspend fun consume(consumer: SimResourceConsumer<R>) {
-            check(!isClosed) { "Lifetime of resource has ended." }
-            check(cont == null) { "Run should not be called concurrently" }
+        override var state: SimResourceState = SimResourceState.Pending
+            internal set
 
-            try {
-                return suspendCancellableCoroutine { cont ->
-                    val ctx = OutputContext(resource, consumer, cont)
-                    ctx.start()
-                    cont.invokeOnCancellation {
-                        ctx.stop()
-                    }
+        override fun startConsumer(consumer: SimResourceConsumer<R>) {
+            check(state == SimResourceState.Pending) { "Resource cannot be consumed" }
 
-                    this.cont = cont
-                    this.ctx = ctx
+            val ctx = OutputContext(this, resource, consumer)
+            this.ctx = ctx
+            this.state = SimResourceState.Active
+            outputContexts += ctx
 
-                    outputContexts += ctx
-                    schedule()
-                }
-            } finally {
-                cont = null
-                ctx = null
-            }
+            ctx.start()
+            schedule()
         }
 
         override fun close() {
-            isClosed = true
-            cont?.cancel()
-            cont = null
-            ctx = null
+            cancel()
+
+            state = SimResourceState.Stopped
             _outputs.remove(this)
         }
 
         override fun interrupt() {
             ctx?.interrupt()
+        }
+
+        override fun cancel() {
+            val ctx = ctx
+            if (ctx != null) {
+                this.ctx = null
+                ctx.stop()
+            }
+
+            if (state != SimResourceState.Stopped) {
+                state = SimResourceState.Pending
+            }
         }
     }
 
@@ -352,9 +343,9 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
      * A [SimAbstractResourceContext] for the output resources.
      */
     private inner class OutputContext(
+        private val provider: OutputProvider,
         resource: R,
-        consumer: SimResourceConsumer<R>,
-        private val cont: Continuation<Unit>
+        consumer: SimResourceConsumer<R>
     ) : SimAbstractResourceContext<R>(resource, clock, consumer), Comparable<OutputContext> {
         /**
          * The current command that is processed by the vCPU.
@@ -371,11 +362,6 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
          */
         var actualSpeed: Double = 0.0
 
-        /**
-         * A flag to indicate that the CPU has exited.
-         */
-        var hasExited: Boolean = false
-
         override fun onIdle(deadline: Long) {
             allowedSpeed = 0.0
             activeCommand = SimResourceCommand.Idle(deadline)
@@ -386,16 +372,11 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
             activeCommand = SimResourceCommand.Consume(work, limit, deadline)
         }
 
-        override fun onFinish() {
-            hasExited = true
+        override fun onFinish(cause: Throwable?) {
             activeCommand = SimResourceCommand.Exit
-            cont.resume(Unit)
-        }
+            provider.cancel()
 
-        override fun onFailure(cause: Throwable) {
-            hasExited = true
-            activeCommand = SimResourceCommand.Exit
-            cont.resumeWithException(cause)
+            super.onFinish(cause)
         }
 
         override fun getRemainingWork(work: Double, speed: Double, duration: Long, isInterrupted: Boolean): Double {
@@ -453,21 +434,8 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
         private lateinit var ctx: SimResourceContext<R>
 
         init {
-            scope.launch {
-                try {
-                    barrier = SimConsumerBarrier(barrier.parties + 1)
-                    input.consume(this@InputConsumer)
-                } catch (e: CancellationException) {
-                    // Cancel gracefully
-                    throw e
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                } finally {
-                    barrier = SimConsumerBarrier(barrier.parties - 1)
-                    inputConsumers -= this@InputConsumer
-                    _inputs -= input
-                }
-            }
+            barrier = SimConsumerBarrier(barrier.parties + 1)
+            input.startConsumer(this@InputConsumer)
         }
 
         /**
@@ -477,12 +445,11 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
             ctx.interrupt()
         }
 
-        override fun onStart(ctx: SimResourceContext<R>): SimResourceCommand {
+        override fun onStart(ctx: SimResourceContext<R>) {
             this.ctx = ctx
-            return commands[ctx.resource] ?: SimResourceCommand.Idle()
         }
 
-        override fun onNext(ctx: SimResourceContext<R>, remainingWork: Double): SimResourceCommand {
+        override fun onNext(ctx: SimResourceContext<R>, capacity: Double, remainingWork: Double): SimResourceCommand {
             totalRemainingWork += remainingWork
             val isLast = barrier.enter()
 
@@ -503,6 +470,14 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
 
                 commands[ctx.resource] ?: SimResourceCommand.Idle()
             }
+        }
+
+        override fun onFinish(ctx: SimResourceContext<R>, cause: Throwable?) {
+            barrier = SimConsumerBarrier(barrier.parties - 1)
+            inputConsumers -= this@InputConsumer
+            _inputs -= input
+
+            super.onFinish(ctx, cause)
         }
     }
 }

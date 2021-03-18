@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.resources
 
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -34,7 +36,6 @@ import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
-import java.lang.IllegalStateException
 
 /**
  * Test suite for the [SimResourceSwitchExclusive] class.
@@ -67,7 +68,7 @@ internal class SimResourceSwitchExclusiveTest {
                 ),
             )
 
-        val switch = SimResourceSwitchExclusive<SimCpu>(coroutineContext)
+        val switch = SimResourceSwitchExclusive<SimCpu>()
         val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
 
         switch.addInput(source)
@@ -98,17 +99,10 @@ internal class SimResourceSwitchExclusiveTest {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
-        val workload = object : SimResourceConsumer<SimCpu> {
-            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
-                return SimResourceCommand.Consume(duration / 1000.0, 1.0)
-            }
+        val workload = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        every { workload.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
 
-            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
-                return SimResourceCommand.Exit
-            }
-        }
-
-        val switch = SimResourceSwitchExclusive<SimCpu>(coroutineContext)
+        val switch = SimResourceSwitchExclusive<SimCpu>()
         val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
 
         switch.addInput(source)
@@ -134,16 +128,27 @@ internal class SimResourceSwitchExclusiveTest {
 
         val duration = 5 * 60L * 1000
         val workload = object : SimResourceConsumer<SimCpu> {
-            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
-                return SimResourceCommand.Consume(duration / 1000.0, 1.0)
+            var isFirst = true
+
+            override fun onStart(ctx: SimResourceContext<SimCpu>) {
+                isFirst = true
             }
 
-            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
-                return SimResourceCommand.Exit
+            override fun onNext(
+                ctx: SimResourceContext<SimCpu>,
+                capacity: Double,
+                remainingWork: Double
+            ): SimResourceCommand {
+                return if (isFirst) {
+                    isFirst = false
+                    SimResourceCommand.Consume(duration / 1000.0, 1.0)
+                } else {
+                    SimResourceCommand.Exit
+                }
             }
         }
 
-        val switch = SimResourceSwitchExclusive<SimCpu>(coroutineContext)
+        val switch = SimResourceSwitchExclusive<SimCpu>()
         val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
 
         switch.addInput(source)
@@ -169,17 +174,10 @@ internal class SimResourceSwitchExclusiveTest {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
-        val workload = object : SimResourceConsumer<SimCpu> {
-            override fun onStart(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
-                return SimResourceCommand.Consume(duration.toDouble(), 1.0)
-            }
+        val workload = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        every { workload.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
 
-            override fun onNext(ctx: SimResourceContext<SimCpu>, remainingWork: Double): SimResourceCommand {
-                return SimResourceCommand.Exit
-            }
-        }
-
-        val switch = SimResourceSwitchExclusive<SimCpu>(coroutineContext)
+        val switch = SimResourceSwitchExclusive<SimCpu>()
         val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
 
         switch.addInput(source)

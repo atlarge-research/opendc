@@ -49,12 +49,9 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
     /**
      * This method is invoked when the resource consumer has finished.
      */
-    public abstract fun onFinish()
-
-    /**
-     * This method is invoked when the resource consumer throws an exception.
-     */
-    public abstract fun onFailure(cause: Throwable)
+    public open fun onFinish(cause: Throwable?) {
+        consumer.onFinish(this, cause)
+    }
 
     /**
      * Compute the duration that a resource consumption will take with the specified [speed].
@@ -67,7 +64,14 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
      * Compute the speed at which the resource may be consumed.
      */
     protected open fun getSpeed(limit: Double): Double {
-        return min(limit, resource.capacity)
+        return min(limit, getCapacity())
+    }
+
+    /**
+     * Return the capacity available for the resource consumer.
+     */
+    protected open fun getCapacity(): Double {
+        return resource.capacity
     }
 
     /**
@@ -93,13 +97,17 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
      * Start the consumer.
      */
     public fun start() {
-        try {
-            isProcessing = true
-            latestFlush = clock.millis()
+        check(state == SimResourceState.Pending) { "Consumer is already started" }
 
-            interpret(consumer.onStart(this))
-        } catch (e: Throwable) {
-            onFailure(e)
+        state = SimResourceState.Active
+        isProcessing = true
+        latestFlush = clock.millis()
+
+        try {
+            consumer.onStart(this)
+            interpret(consumer.onNext(this, getCapacity(), 0.0))
+        } catch (cause: Throwable) {
+            doStop(cause)
         } finally {
             isProcessing = false
         }
@@ -114,9 +122,9 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
             latestFlush = clock.millis()
 
             flush(isIntermediate = true)
-            onFinish()
-        } catch (e: Throwable) {
-            onFailure(e)
+            doStop(null)
+        } catch (cause: Throwable) {
+            doStop(cause)
         } finally {
             isProcessing = false
         }
@@ -129,7 +137,12 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
      * flushed, but without interrupting the resource consumer to submit a new command. If false, the resource consumer
      * will be asked to deliver a new command and is essentially interrupted.
      */
-    public open fun flush(isIntermediate: Boolean = false) {
+    public fun flush(isIntermediate: Boolean = false) {
+        // Flush is no-op when the consumer is finished or not yet started
+        if (state != SimResourceState.Active) {
+            return
+        }
+
         val now = clock.millis()
 
         // Fast path: if the intermediate progress was already flushed at the current instant, we can skip it.
@@ -177,8 +190,8 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
                     // Flush may not be called when the resource consumer has finished
                     throw IllegalStateException()
             }
-        } catch (e: Throwable) {
-            onFailure(e)
+        } catch (cause: Throwable) {
+            doStop(cause)
         } finally {
             latestFlush = now
             isProcessing = false
@@ -203,6 +216,11 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
     protected var isProcessing: Boolean = false
 
     /**
+     * A flag to indicate the state of the context.
+     */
+    private var state: SimResourceState = SimResourceState.Pending
+
+    /**
      * The current command that is being processed.
      */
     private var activeCommand: CommandWrapper? = null
@@ -211,6 +229,18 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
      * The latest timestamp at which the resource was flushed.
      */
     private var latestFlush: Long = Long.MIN_VALUE
+
+    /**
+     * Finish the consumer and resource provider.
+     */
+    private fun doStop(cause: Throwable?) {
+        val state = state
+        this.state = SimResourceState.Stopped
+
+        if (state == SimResourceState.Active) {
+            onFinish(cause)
+        }
+    }
 
     /**
      * Interpret the specified [SimResourceCommand] that was submitted by the resource consumer.
@@ -235,9 +265,7 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
 
                 onConsume(work, limit, deadline)
             }
-            is SimResourceCommand.Exit -> {
-                onFinish()
-            }
+            is SimResourceCommand.Exit -> doStop(null)
         }
 
         assert(activeCommand == null) { "Concurrent access to current command" }
@@ -248,7 +276,7 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
      * Request the workload for more work.
      */
     private fun next(remainingWork: Double) {
-        interpret(consumer.onNext(this, remainingWork))
+        interpret(consumer.onNext(this, getCapacity(), remainingWork))
     }
 
     /**

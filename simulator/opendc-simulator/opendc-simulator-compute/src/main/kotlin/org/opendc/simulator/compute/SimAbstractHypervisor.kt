@@ -32,7 +32,6 @@ import org.opendc.simulator.compute.model.SimProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
 import java.time.Clock
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Abstract implementation of the [SimHypervisor] interface.
@@ -121,7 +120,7 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
                     override val clock: Clock
                         get() = this@SimAbstractHypervisor.context.clock
 
-                    override val meta: Map<String, Any> = meta + mapOf("coroutine-context" to context.meta["coroutine-context"] as CoroutineContext)
+                    override val meta: Map<String, Any> = meta
 
                     override fun interrupt(resource: SimResource) {
                         requireNotNull(this@VirtualMachine.cpus[resource]).interrupt()

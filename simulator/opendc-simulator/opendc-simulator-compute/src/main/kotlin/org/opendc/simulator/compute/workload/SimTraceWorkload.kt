@@ -50,11 +50,7 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkloa
     }
 
     private inner class CpuConsumer : SimResourceConsumer<SimProcessingUnit> {
-        override fun onStart(ctx: SimResourceContext<SimProcessingUnit>): SimResourceCommand {
-            return onNext(ctx, 0.0)
-        }
-
-        override fun onNext(ctx: SimResourceContext<SimProcessingUnit>, remainingWork: Double): SimResourceCommand {
+        override fun onNext(ctx: SimResourceContext<SimProcessingUnit>, capacity: Double, remainingWork: Double): SimResourceCommand {
             val now = ctx.clock.millis()
             val fragment = fragment ?: return SimResourceCommand.Exit
             val work = (fragment.duration / 1000) * fragment.usage

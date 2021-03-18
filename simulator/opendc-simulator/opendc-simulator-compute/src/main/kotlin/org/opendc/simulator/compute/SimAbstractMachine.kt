@@ -33,6 +33,7 @@ import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.SimResource
 import org.opendc.simulator.resources.SimResourceProvider
 import org.opendc.simulator.resources.SimResourceSource
+import org.opendc.simulator.resources.consume
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 
@@ -91,7 +92,7 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     override suspend fun run(workload: SimWorkload, meta: Map<String, Any>): Unit = withContext(context) {
         val resources = resources
         require(!isTerminated) { "Machine is terminated" }
-        val ctx = Context(resources, meta + mapOf("coroutine-context" to context))
+        val ctx = Context(resources, meta)
         val totalCapacity = model.cpus.sumByDouble { it.frequency }
 
         _speed = MutableList(model.cpus.size) { 0.0 }
