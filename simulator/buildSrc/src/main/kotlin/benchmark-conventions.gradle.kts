@@ -20,20 +20,41 @@
  * SOFTWARE.
  */
 
-description = "Uniform resource consumption simulation model"
+import kotlinx.benchmark.gradle.*
+import org.jetbrains.kotlin.allopen.gradle.*
 
 plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-    `benchmark-conventions`
+    id("org.jetbrains.kotlinx.benchmark")
+    `java-library`
+    kotlin("plugin.allopen")
+}
+
+sourceSets {
+    register("jmh") {
+        compileClasspath += sourceSets["main"].output
+        runtimeClasspath += sourceSets["main"].output
+    }
+}
+
+configurations {
+    named("jmhImplementation") {
+        extendsFrom(configurations["implementation"])
+    }
+}
+
+configure<AllOpenExtension> {
+    annotation("org.openjdk.jmh.annotations.State")
+}
+
+benchmark {
+    targets {
+        register("jmh") {
+            this as JvmBenchmarkTarget
+            jmhVersion = "1.21"
+        }
+    }
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation(project(":opendc-utils"))
-
-    jmhImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm:0.3.0")
 }
