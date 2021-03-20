@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,25 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":opendc-platform")
-include(":opendc-compute:opendc-compute-api")
-include(":opendc-compute:opendc-compute-service")
-include(":opendc-compute:opendc-compute-simulator")
-include(":opendc-workflow:opendc-workflow-api")
-include(":opendc-workflow:opendc-workflow-service")
-include(":opendc-serverless:opendc-serverless-api")
-include(":opendc-serverless:opendc-serverless-service")
-include(":opendc-serverless:opendc-serverless-simulator")
-include(":opendc-format")
-include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-capelin")
-include(":opendc-runner-web")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-resources")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-simulator:opendc-simulator-failures")
-include(":opendc-trace:opendc-trace-core")
-include(":opendc-harness")
-include(":opendc-utils")
+description = "Serverless API for OpenDC"
+
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+}
+
+dependencies {
+    api(platform(project(":opendc-platform")))
+}

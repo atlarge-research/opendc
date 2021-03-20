@@ -24,7 +24,9 @@ This component is responsible for modelling and simulation of datacenters and th
   The [Infrastructure as a Service](https://en.wikipedia.org/wiki/Infrastructure_as_a_Service) (IaaS) component of OpenDC for computing infrastructure (similar to 
   [Amazon EC2](https://aws.amazon.com/ec2/) and [Google Compute Engine](https://cloud.google.com/compute)).
 - **[opendc-workflow](opendc-workflow)**  
-  Workflow orchestration service built on top of OpenDC. 
+  Workflow orchestration service built on top of OpenDC.
+- **[opendc-serverless](opendc-serverless)**  
+  FaaS platform built on top of OpenDC. 
 - **[opendc-format](opendc-format)**  
   Collection of libraries for processing data formats related to (simulation of) cloud computing and datacenters. 
 - **[opendc-experiments](opendc-experiments)**  

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,25 +19,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
 
-include(":opendc-platform")
-include(":opendc-compute:opendc-compute-api")
-include(":opendc-compute:opendc-compute-service")
-include(":opendc-compute:opendc-compute-simulator")
-include(":opendc-workflow:opendc-workflow-api")
-include(":opendc-workflow:opendc-workflow-service")
-include(":opendc-serverless:opendc-serverless-api")
-include(":opendc-serverless:opendc-serverless-service")
-include(":opendc-serverless:opendc-serverless-simulator")
-include(":opendc-format")
-include(":opendc-experiments:opendc-experiments-sc18")
-include(":opendc-experiments:opendc-experiments-capelin")
-include(":opendc-runner-web")
-include(":opendc-simulator:opendc-simulator-core")
-include(":opendc-simulator:opendc-simulator-resources")
-include(":opendc-simulator:opendc-simulator-compute")
-include(":opendc-simulator:opendc-simulator-failures")
-include(":opendc-trace:opendc-trace-core")
-include(":opendc-harness")
-include(":opendc-utils")
+package org.opendc.serverless.api
+
+import java.util.UUID
+
+/**
+ * A serverless function instance.
+ */
+public interface ServerlessFunction {
+    /**
+     * The unique identifier of the function.
+     */
+    public val uid: UUID
+
+    /**
+     * The name of the function.
+     */
+    public val name: String
+
+    /**
+     * The identifying labels attached to the resource.
+     */
+    public val labels: Map<String, String>
+
+    /**
+     * The non-identifying metadata attached to the resource.
+     */
+    public val meta: Map<String, Any>
+
+    /**
+     * Invoke the serverless function.
+     */
+    public suspend operator fun invoke()
+
+    /**
+     * Request the function to be deleted.
+     */
+    public suspend fun delete()
+
+    /**
+     * Refresh the local state of this object.
+     */
+    public suspend fun refresh()
+}
