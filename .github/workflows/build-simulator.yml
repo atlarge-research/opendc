@@ -35,8 +35,25 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble
       - name: Check with Gradle
-        run: ./gradlew check codeCoverageReport --info
-      - uses: codecov/codecov-action@v1
+        run: ./gradlew check codeCoverageReport
+      - name: Publish report
+        if: always()
+        uses: mikepenz/action-junit-report@v2
+        with:
+          check_name: test (Java ${{ matrix.java }})
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: reports-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: |
+            ./**/build/reports/**/*
+            ./**/build/test-results/**/*
+          retention-days: 5
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./simulator/build/reports/jacoco/report.xml
