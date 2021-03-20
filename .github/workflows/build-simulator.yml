@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
@@ -33,4 +35,9 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble
       - name: Check with Gradle
-        run: ./gradlew check --info
+        run: ./gradlew check codeCoverageReport --info
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./simulator/build/reports/jacoco/report.xml
+          flags: simulator

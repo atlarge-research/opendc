@@ -1,0 +1,4 @@
+flags:
+  simulator:
+    paths:
+      - simulator/
