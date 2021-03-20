@@ -26,6 +26,7 @@ description = "Workflow orchestration service for OpenDC"
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {

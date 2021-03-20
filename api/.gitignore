@@ -14,3 +14,5 @@ _mailinglist
 config.json
 test.json
 .env*
+.coverage
+.junit-report.xml

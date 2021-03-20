@@ -1,0 +1,7 @@
+flags:
+  simulator:
+    paths:
+      - simulator/
+  api:
+    paths:
+      - api/

@@ -26,6 +26,7 @@ description = "Library for reading common data formats for topology simulation"
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {

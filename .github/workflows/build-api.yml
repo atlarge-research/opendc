@@ -1,9 +1,6 @@
 name: Build API
 
 on:
-  push:
-    paths:
-      - 'api/**'
   pull_request:
     branches: [master]
 
@@ -29,8 +26,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Lint with pylint
-        run: |
-          ./check.sh
+        run: ./check.sh
       - name: Test with pytest
-        run: |
-          pytest opendc
+        run: pytest --cov=opendc/ --junitxml=.junit-report.xml
+      - name: Publish report
+        if: always()
+        uses: mikepenz/action-junit-report@v2
+        with:
+          check_name: test (Python ${{ matrix.python }})
+          report_paths: '**/.junit-report.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./api/.coverage
+          flags: api
+

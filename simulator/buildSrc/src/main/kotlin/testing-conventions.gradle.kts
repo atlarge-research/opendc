@@ -1,7 +1,3 @@
-import org.gradle.kotlin.dsl.`java-library`
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.platform.base.Library
-
 /*
  * Copyright (c) 2021 AtLarge Research
  *
@@ -30,6 +26,11 @@ plugins {
 
 tasks.test {
     useJUnitPlatform()
+
+    reports {
+        html.isEnabled = true
+        junitXml.isEnabled = true
+    }
 }
 
 dependencies {

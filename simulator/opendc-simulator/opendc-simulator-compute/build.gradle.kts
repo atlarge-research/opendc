@@ -25,6 +25,7 @@ description = "Library for simulation of cloud computing components"
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {
