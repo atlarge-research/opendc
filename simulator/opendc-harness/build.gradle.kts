@@ -26,6 +26,7 @@ description = "Harness for defining repeatable experiments using OpenDC"
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {

@@ -32,19 +32,25 @@ repositories {
     mavenCentral()
 }
 
-task<JacocoReport>("jacocoTestReport") {
+tasks.register<JacocoReport>("codeCoverageReport") {
     group = "Coverage reports"
-    description = "Generates an aggregate report from all subprojects"
+    description = "Generates an aggregate report based on all subprojects"
 
-    val jacocoReportTasks = subprojects.map { it.tasks.withType<JacocoReport>() }
-    dependsOn(jacocoReportTasks)
-    executionData(jacocoReportTasks)
+    reports {
+        xml.isEnabled = true
+        xml.destination = file("${buildDir}/reports/jacoco/report.xml")
 
-    subprojects.forEach { testedProject ->
-        val sourceSets = testedProject.convention.findPlugin(JavaPluginConvention::class)?.sourceSets ?: return@forEach
+        html.isEnabled = true
+    }
 
-        this@task.additionalSourceDirs.from(sourceSets["main"].allSource.srcDirs)
-        this@task.sourceDirectories.from(sourceSets["main"].allSource.srcDirs)
-        this@task.classDirectories.from(sourceSets["main"].output)
+    subprojects {
+        this@subprojects.plugins.withType<JacocoPlugin>().configureEach {
+            this@subprojects.tasks.matching {
+                it.extensions.findByType<JacocoTaskExtension>() != null }
+                .configureEach {
+                    sourceSets(this@subprojects.the<SourceSetContainer>().named("main").get())
+                    executionData(this)
+                }
+        }
     }
 }

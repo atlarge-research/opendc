@@ -22,6 +22,7 @@
 
 plugins {
     `dokka-conventions`
+    `jacoco-aggregation`
 }
 
 allprojects {

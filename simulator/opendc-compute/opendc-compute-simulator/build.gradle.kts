@@ -26,6 +26,7 @@ description = "Simulator for OpenDC Compute"
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {
