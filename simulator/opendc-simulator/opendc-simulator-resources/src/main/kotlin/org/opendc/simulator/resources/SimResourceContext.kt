@@ -40,6 +40,16 @@ public interface SimResourceContext<out R : SimResource> {
     public val clock: Clock
 
     /**
+     * The resource capacity available at this instant.
+     */
+    public val capacity: Double
+
+    /**
+     * The amount of work still remaining at this instant.
+     */
+    public val remainingWork: Double
+
+    /**
      * Ask the resource provider to interrupt its resource.
      */
     public fun interrupt()

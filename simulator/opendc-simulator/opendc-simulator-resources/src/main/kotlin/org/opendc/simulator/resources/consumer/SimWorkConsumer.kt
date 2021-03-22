@@ -48,8 +48,8 @@ public class SimWorkConsumer<R : SimResource>(
         remainingWork = work
     }
 
-    override fun onNext(ctx: SimResourceContext<R>, capacity: Double, remainingWork: Double): SimResourceCommand {
-        val work = this.remainingWork + remainingWork
+    override fun onNext(ctx: SimResourceContext<R>): SimResourceCommand {
+        val work = this.remainingWork + ctx.remainingWork
         this.remainingWork -= work
         return if (work > 0.0) {
             SimResourceCommand.Consume(work, limit)

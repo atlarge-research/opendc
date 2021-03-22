@@ -49,7 +49,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
+        every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1000 * provider.resource.speed, provider.resource.speed))
             .andThen(SimResourceCommand.Exit)
 
@@ -74,7 +74,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
+        every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1000 * provider.resource.speed, 2 * provider.resource.speed))
             .andThen(SimResourceCommand.Exit)
 
@@ -107,7 +107,7 @@ class SimResourceSourceTest {
                 ctx.interrupt()
             }
 
-            override fun onNext(ctx: SimResourceContext<SimCpu>, capacity: Double, remainingWork: Double): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
                 return SimResourceCommand.Exit
             }
         }
@@ -133,8 +133,8 @@ class SimResourceSourceTest {
                 resCtx = ctx
             }
 
-            override fun onNext(ctx: SimResourceContext<SimCpu>, capacity: Double, remainingWork: Double): SimResourceCommand {
-                assertEquals(0.0, remainingWork)
+            override fun onNext(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
+                assertEquals(0.0, ctx.remainingWork)
                 return if (isFirst) {
                     isFirst = false
                     SimResourceCommand.Consume(4.0, 1.0)
@@ -185,7 +185,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
+        every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
 
@@ -206,7 +206,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
+        every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
 
@@ -230,7 +230,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
+        every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
 
@@ -252,7 +252,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
+        every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
 
@@ -275,7 +275,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
+        every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Idle(clock.millis() + 500))
             .andThen(SimResourceCommand.Exit)
 
@@ -298,7 +298,7 @@ class SimResourceSourceTest {
                 val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
                 val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-                every { consumer.onNext(any(), any(), any()) }
+                every { consumer.onNext(any()) }
                     .returns(SimResourceCommand.Idle())
                     .andThenThrows(IllegalStateException())
 
@@ -319,7 +319,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
+        every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Idle(2))
             .andThen(SimResourceCommand.Exit)
 

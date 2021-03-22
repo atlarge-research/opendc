@@ -36,6 +36,21 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
     private val consumer: SimResourceConsumer<R>
 ) : SimResourceContext<R> {
     /**
+     * The capacity of the resource.
+     */
+    override val capacity: Double
+        get() = resource.capacity
+
+    /**
+     * The amount of work still remaining at this instant.
+     */
+    override val remainingWork: Double
+        get() {
+            val activeCommand = activeCommand ?: return 0.0
+            return computeRemainingWork(activeCommand, clock.millis())
+        }
+
+    /**
      * This method is invoked when the resource will idle until the specified [deadline].
      */
     public abstract fun onIdle(deadline: Long)
@@ -64,27 +79,18 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
      * Compute the speed at which the resource may be consumed.
      */
     protected open fun getSpeed(limit: Double): Double {
-        return min(limit, getCapacity())
+        return min(limit, capacity)
     }
 
     /**
-     * Return the capacity available for the resource consumer.
-     */
-    protected open fun getCapacity(): Double {
-        return resource.capacity
-    }
-
-    /**
-     * Get the remaining work to process after a resource consumption was flushed.
+     * Get the remaining work to process after a resource consumption.
      *
      * @param work The size of the resource consumption.
      * @param speed The speed of consumption.
      * @param duration The duration from the start of the consumption until now.
-     * @param isInterrupted A flag to indicate that the resource consumption could not be fully processed due to
-     * it being interrupted before it could finish or reach its deadline.
      * @return The amount of work remaining.
      */
-    protected open fun getRemainingWork(work: Double, speed: Double, duration: Long, isInterrupted: Boolean): Double {
+    protected open fun getRemainingWork(work: Double, speed: Double, duration: Long): Double {
         return if (duration > 0L) {
             val processed = duration / 1000.0 * speed
             max(0.0, work - processed)
@@ -99,13 +105,15 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
     public fun start() {
         check(state == SimResourceState.Pending) { "Consumer is already started" }
 
+        val now = clock.millis()
+
         state = SimResourceState.Active
         isProcessing = true
-        latestFlush = clock.millis()
+        latestFlush = now
 
         try {
             consumer.onStart(this)
-            interpret(consumer.onNext(this, getCapacity(), 0.0))
+            activeCommand = interpret(consumer.onNext(this), now)
         } catch (cause: Throwable) {
             doStop(cause)
         } finally {
@@ -154,36 +162,34 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
             val activeCommand = activeCommand ?: return
             val (timestamp, command) = activeCommand
 
+            // Note: accessor is reliant on activeCommand being set
+            val remainingWork = remainingWork
+
             isProcessing = true
-            this.activeCommand = null
 
             val duration = now - timestamp
             assert(duration >= 0) { "Flush in the past" }
 
-            when (command) {
+            this.activeCommand = when (command) {
                 is SimResourceCommand.Idle -> {
                     // We should only continue processing the next command if:
                     // 1. The resource consumer reached its deadline.
                     // 2. The resource consumer should be interrupted (e.g., someone called .interrupt())
                     if (command.deadline <= now || !isIntermediate) {
-                        next(remainingWork = 0.0)
+                        next(now)
                     } else {
-                        this.activeCommand = activeCommand
+                        activeCommand
                     }
                 }
                 is SimResourceCommand.Consume -> {
-                    val speed = min(resource.capacity, command.limit)
-                    val isInterrupted = !isIntermediate && duration < getDuration(command.work, speed)
-                    val remainingWork = getRemainingWork(command.work, speed, duration, isInterrupted)
-
                     // We should only continue processing the next command if:
                     // 1. The resource consumption was finished.
                     // 2. The resource consumer reached its deadline.
                     // 3. The resource consumer should be interrupted (e.g., someone called .interrupt())
                     if (remainingWork == 0.0 || command.deadline <= now || !isIntermediate) {
-                        next(remainingWork)
+                        next(now)
                     } else {
-                        interpret(SimResourceCommand.Consume(remainingWork, command.limit, command.deadline))
+                        interpret(SimResourceCommand.Consume(remainingWork, command.limit, command.deadline), now)
                     }
                 }
                 SimResourceCommand.Exit ->
@@ -238,6 +244,7 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
         this.state = SimResourceState.Stopped
 
         if (state == SimResourceState.Active) {
+            activeCommand = null
             onFinish(cause)
         }
     }
@@ -245,9 +252,7 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
     /**
      * Interpret the specified [SimResourceCommand] that was submitted by the resource consumer.
      */
-    private fun interpret(command: SimResourceCommand) {
-        val now = clock.millis()
-
+    private fun interpret(command: SimResourceCommand, now: Long): CommandWrapper? {
         when (command) {
             is SimResourceCommand.Idle -> {
                 val deadline = command.deadline
@@ -265,18 +270,34 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
 
                 onConsume(work, limit, deadline)
             }
-            is SimResourceCommand.Exit -> doStop(null)
+            is SimResourceCommand.Exit -> {
+                doStop(null)
+                // No need to set the next active command
+                return null
+            }
         }
 
-        assert(activeCommand == null) { "Concurrent access to current command" }
-        activeCommand = CommandWrapper(now, command)
+        return CommandWrapper(now, command)
     }
 
     /**
      * Request the workload for more work.
      */
-    private fun next(remainingWork: Double) {
-        interpret(consumer.onNext(this, getCapacity(), remainingWork))
+    private fun next(now: Long): CommandWrapper? = interpret(consumer.onNext(this), now)
+
+    /**
+     * Compute the remaining work based on the specified [wrapper] and [timestamp][now].
+     */
+    private fun computeRemainingWork(wrapper: CommandWrapper, now: Long): Double {
+        val (timestamp, command) = wrapper
+        val duration = now - timestamp
+        return when (command) {
+            is SimResourceCommand.Consume -> {
+                val speed = getSpeed(command.limit)
+                getRemainingWork(command.work, speed, duration)
+            }
+            is SimResourceCommand.Idle, SimResourceCommand.Exit -> 0.0
+        }
     }
 
     /**

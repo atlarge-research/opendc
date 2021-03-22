@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.resources
 
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.opendc.utils.TimerScheduler

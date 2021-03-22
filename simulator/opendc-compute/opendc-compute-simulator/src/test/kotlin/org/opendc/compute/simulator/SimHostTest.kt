@@ -137,8 +137,8 @@ internal class SimHostTest {
         assertAll(
             { assertEquals(emptyList<Throwable>(), scope.uncaughtExceptions, "No errors") },
             { assertEquals(4281600, requestedWork, "Requested work does not match") },
-            { assertEquals(3141600, grantedWork, "Granted work does not match") },
-            { assertEquals(1140000, overcommittedWork, "Overcommitted work does not match") },
+            { assertEquals(2241600, grantedWork, "Granted work does not match") },
+            { assertEquals(2040000, overcommittedWork, "Overcommitted work does not match") },
             { assertEquals(1200006, scope.currentTime) }
         )
     }

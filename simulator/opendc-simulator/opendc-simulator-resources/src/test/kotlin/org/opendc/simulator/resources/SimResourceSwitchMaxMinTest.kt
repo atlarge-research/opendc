@@ -57,7 +57,7 @@ internal class SimResourceSwitchMaxMinTest {
         val provider = switch.addOutput(SimCpu(1000.0))
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0, 1.0) andThen SimResourceCommand.Exit
+        every { consumer.onNext(any()) } returns SimResourceCommand.Consume(1.0, 1.0) andThen SimResourceCommand.Exit
 
         try {
             provider.consume(consumer)

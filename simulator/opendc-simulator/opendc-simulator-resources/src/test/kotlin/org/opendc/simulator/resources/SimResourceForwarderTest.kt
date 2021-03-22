@@ -60,9 +60,7 @@ internal class SimResourceForwarderTest {
 
         forwarder.consume(object : SimResourceConsumer<SimCpu> {
             override fun onNext(
-                ctx: SimResourceContext<SimCpu>,
-                capacity: Double,
-                remainingWork: Double
+                ctx: SimResourceContext<SimCpu>
             ): SimResourceCommand {
                 return SimResourceCommand.Exit
             }
@@ -88,9 +86,7 @@ internal class SimResourceForwarderTest {
             var isFirst = true
 
             override fun onNext(
-                ctx: SimResourceContext<SimCpu>,
-                capacity: Double,
-                remainingWork: Double
+                ctx: SimResourceContext<SimCpu>
             ): SimResourceCommand {
                 return if (isFirst) {
                     isFirst = false
@@ -109,9 +105,7 @@ internal class SimResourceForwarderTest {
         val forwarder = SimResourceForwarder(SimCpu(1000.0))
         val consumer = object : SimResourceConsumer<SimCpu> {
             override fun onNext(
-                ctx: SimResourceContext<SimCpu>,
-                capacity: Double,
-                remainingWork: Double
+                ctx: SimResourceContext<SimCpu>
             ): SimResourceCommand = SimResourceCommand.Exit
         }
 
@@ -134,7 +128,7 @@ internal class SimResourceForwarderTest {
         val forwarder = SimResourceForwarder(SimCpu(1000.0))
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Exit
+        every { consumer.onNext(any()) } returns SimResourceCommand.Exit
 
         forwarder.startConsumer(consumer)
         forwarder.cancel()
@@ -150,7 +144,7 @@ internal class SimResourceForwarderTest {
         val source = SimResourceSource(SimCpu(2000.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Idle(10)
+        every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10)
 
         source.startConsumer(forwarder)
         yield()
@@ -170,7 +164,7 @@ internal class SimResourceForwarderTest {
         val source = SimResourceSource(SimCpu(2000.0), clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Idle(10)
+        every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10)
 
         source.startConsumer(forwarder)
         yield()

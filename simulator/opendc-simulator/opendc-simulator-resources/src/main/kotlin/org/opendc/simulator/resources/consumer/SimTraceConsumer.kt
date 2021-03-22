@@ -39,7 +39,7 @@ public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResour
         iterator = trace.iterator()
     }
 
-    override fun onNext(ctx: SimResourceContext<SimResource>, capacity: Double, remainingWork: Double): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext<SimResource>): SimResourceCommand {
         val iterator = checkNotNull(iterator)
         return if (iterator.hasNext()) {
             val now = ctx.clock.millis()

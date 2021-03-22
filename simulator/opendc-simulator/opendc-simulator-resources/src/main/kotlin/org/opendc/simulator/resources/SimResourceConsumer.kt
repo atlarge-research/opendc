@@ -41,11 +41,9 @@ public interface SimResourceConsumer<in R : SimResource> {
      * the resource finished processing, reached its deadline or was interrupted.
      *
      * @param ctx The execution context in which the consumer runs.
-     * @param capacity The capacity that is available for the consumer. In case no capacity is available, zero is given.
-     * @param remainingWork The work of the previous command that was not yet completed due to interruption or deadline.
      * @return The next command that the resource should execute.
      */
-    public fun onNext(ctx: SimResourceContext<R>, capacity: Double, remainingWork: Double): SimResourceCommand
+    public fun onNext(ctx: SimResourceContext<R>): SimResourceCommand
 
     /**
      * This method is invoked when the consumer has finished, either because it exited via [SimResourceCommand.Exit],

@@ -57,9 +57,10 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
     private val outputContexts: MutableList<OutputContext> = mutableListOf()
 
     /**
-     * The total amount of remaining work (of all pCPUs).
+     * The remaining work of all inputs.
      */
-    private var totalRemainingWork: Double = 0.0
+    private val totalRemainingWork: Double
+        get() = inputConsumers.sumByDouble { it.remainingWork }
 
     /**
      * The total speed requested by the vCPUs.
@@ -241,6 +242,8 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
      * Flush the progress of the vCPUs.
      */
     private fun flushGuests() {
+        val totalRemainingWork = totalRemainingWork
+
         // Flush all the outputs work
         for (output in outputContexts) {
             output.flush(isIntermediate = true)
@@ -256,7 +259,6 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
             totalRequestedSpeed,
             totalAllocatedSpeed
         )
-        totalRemainingWork = 0.0
         totalInterferedWork = 0.0
         totalOvercommittedWork = 0.0
 
@@ -362,29 +364,39 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
          */
         var actualSpeed: Double = 0.0
 
+        private fun reportOvercommit() {
+            totalOvercommittedWork += remainingWork
+        }
+
         override fun onIdle(deadline: Long) {
+            reportOvercommit()
+
             allowedSpeed = 0.0
             activeCommand = SimResourceCommand.Idle(deadline)
         }
 
         override fun onConsume(work: Double, limit: Double, deadline: Long) {
+            reportOvercommit()
+
             allowedSpeed = getSpeed(limit)
             activeCommand = SimResourceCommand.Consume(work, limit, deadline)
         }
 
         override fun onFinish(cause: Throwable?) {
+            reportOvercommit()
+
             activeCommand = SimResourceCommand.Exit
             provider.cancel()
 
             super.onFinish(cause)
         }
 
-        override fun getRemainingWork(work: Double, speed: Double, duration: Long, isInterrupted: Boolean): Double {
+        override fun getRemainingWork(work: Double, speed: Double, duration: Long): Double {
             // Apply performance interference model
             val performanceScore = 1.0
 
             // Compute the remaining amount of work
-            val remainingWork = if (work > 0.0) {
+            return if (work > 0.0) {
                 // Compute the fraction of compute time allocated to the VM
                 val fraction = actualSpeed / totalAllocatedSpeed
 
@@ -400,12 +412,6 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
             } else {
                 0.0
             }
-
-            if (!isInterrupted) {
-                totalOvercommittedWork += remainingWork
-            }
-
-            return remainingWork
         }
 
         override fun interrupt() {
@@ -433,6 +439,12 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
          */
         private lateinit var ctx: SimResourceContext<R>
 
+        /**
+         * The remaining work of this consumer.
+         */
+        val remainingWork: Double
+            get() = ctx.remainingWork
+
         init {
             barrier = SimConsumerBarrier(barrier.parties + 1)
             input.startConsumer(this@InputConsumer)
@@ -449,8 +461,7 @@ public class SimResourceSwitchMaxMin<R : SimResource>(
             this.ctx = ctx
         }
 
-        override fun onNext(ctx: SimResourceContext<R>, capacity: Double, remainingWork: Double): SimResourceCommand {
-            totalRemainingWork += remainingWork
+        override fun onNext(ctx: SimResourceContext<R>): SimResourceCommand {
             val isLast = barrier.enter()
 
             // Flush the progress of the guest after the barrier has been reached.

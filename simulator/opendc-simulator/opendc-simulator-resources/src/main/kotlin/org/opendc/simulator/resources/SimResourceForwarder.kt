@@ -43,11 +43,6 @@ public class SimResourceForwarder<R : SimResource>(override val resource: R) :
     private var hasDelegateStarted: Boolean = false
 
     /**
-     * The remaining amount of work last cycle.
-     */
-    private var remainingWork: Double = 0.0
-
-    /**
      * The state of the forwarder.
      */
     override var state: SimResourceState = SimResourceState.Pending
@@ -92,9 +87,8 @@ public class SimResourceForwarder<R : SimResource>(override val resource: R) :
         this.ctx = ctx
     }
 
-    override fun onNext(ctx: SimResourceContext<R>, capacity: Double, remainingWork: Double): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext<R>): SimResourceCommand {
         val delegate = delegate
-        this.remainingWork = remainingWork
 
         if (!hasDelegateStarted) {
             start()
@@ -103,7 +97,7 @@ public class SimResourceForwarder<R : SimResource>(override val resource: R) :
         return if (state == SimResourceState.Stopped) {
             SimResourceCommand.Exit
         } else if (delegate != null) {
-            val command = delegate.onNext(ctx, capacity, remainingWork)
+            val command = delegate.onNext(ctx)
             if (command == SimResourceCommand.Exit) {
                 // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
                 // reset beforehand the existing state and check whether it has been updated afterwards
@@ -114,7 +108,7 @@ public class SimResourceForwarder<R : SimResource>(override val resource: R) :
                 if (state == SimResourceState.Stopped)
                     SimResourceCommand.Exit
                 else
-                    onNext(ctx, capacity, 0.0)
+                    onNext(ctx)
             } else {
                 command
             }

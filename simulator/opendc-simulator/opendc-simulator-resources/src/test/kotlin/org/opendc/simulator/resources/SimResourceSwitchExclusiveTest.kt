@@ -100,7 +100,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         val duration = 5 * 60L * 1000
         val workload = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { workload.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
+        every { workload.onNext(any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
 
         val switch = SimResourceSwitchExclusive<SimCpu>()
         val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
@@ -135,9 +135,7 @@ internal class SimResourceSwitchExclusiveTest {
             }
 
             override fun onNext(
-                ctx: SimResourceContext<SimCpu>,
-                capacity: Double,
-                remainingWork: Double
+                ctx: SimResourceContext<SimCpu>
             ): SimResourceCommand {
                 return if (isFirst) {
                     isFirst = false
@@ -175,7 +173,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         val duration = 5 * 60L * 1000
         val workload = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { workload.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
+        every { workload.onNext(any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
 
         val switch = SimResourceSwitchExclusive<SimCpu>()
         val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)

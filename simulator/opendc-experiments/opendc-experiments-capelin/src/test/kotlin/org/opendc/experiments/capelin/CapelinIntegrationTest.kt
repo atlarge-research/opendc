@@ -144,8 +144,8 @@ class CapelinIntegrationTest {
             { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
             { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
             { assertEquals(1707144601723, monitor.totalRequestedBurst) },
-            { assertEquals(457893364971, monitor.totalGrantedBurst) },
-            { assertEquals(1220323969993, monitor.totalOvercommissionedBurst) },
+            { assertEquals(457798297997, monitor.totalGrantedBurst) },
+            { assertEquals(1236692477983, monitor.totalOvercommissionedBurst) },
             { assertEquals(0, monitor.totalInterferedBurst) }
         )
     }
@@ -190,8 +190,8 @@ class CapelinIntegrationTest {
         // Note that these values have been verified beforehand
         assertAll(
             { assertEquals(711464339925, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
-            { assertEquals(175226293948, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
-            { assertEquals(526858997740, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
+            { assertEquals(175226294127, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
+            { assertEquals(528959213229, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
         )
     }

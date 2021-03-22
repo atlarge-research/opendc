@@ -45,7 +45,7 @@ class SimResourceContextTest {
         val resource = SimCpu(4200.0)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
+        every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
         val context = object : SimAbstractResourceContext<SimCpu>(resource, clock, consumer) {
             override fun onIdle(deadline: Long) {}
@@ -64,7 +64,7 @@ class SimResourceContextTest {
         val resource = SimCpu(4200.0)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
+        every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
         val context = spyk(object : SimAbstractResourceContext<SimCpu>(resource, clock, consumer) {
             override fun onIdle(deadline: Long) {}
@@ -85,7 +85,7 @@ class SimResourceContextTest {
         val resource = SimCpu(4200.0)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
+        every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
         val context = spyk(object : SimAbstractResourceContext<SimCpu>(resource, clock, consumer) {
             override fun onIdle(deadline: Long) {}
@@ -111,7 +111,7 @@ class SimResourceContextTest {
         val resource = SimCpu(4200.0)
 
         val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
+        every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
         val context = object : SimAbstractResourceContext<SimCpu>(resource, clock, consumer) {
             override fun onIdle(deadline: Long) {}
