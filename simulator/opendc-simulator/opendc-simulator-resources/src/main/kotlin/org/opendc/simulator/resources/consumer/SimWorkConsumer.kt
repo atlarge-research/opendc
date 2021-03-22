@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.resources.consumer
 
-import org.opendc.simulator.resources.SimResource
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
@@ -30,10 +29,10 @@ import org.opendc.simulator.resources.SimResourceContext
 /**
  * A [SimResourceConsumer] that consumes the specified amount of work at the specified utilization.
  */
-public class SimWorkConsumer<R : SimResource>(
+public class SimWorkConsumer(
     private val work: Double,
     private val utilization: Double
-) : SimResourceConsumer<R> {
+) : SimResourceConsumer {
 
     init {
         require(work >= 0.0) { "Work must be positive" }
@@ -43,12 +42,12 @@ public class SimWorkConsumer<R : SimResource>(
     private var limit = 0.0
     private var remainingWork: Double = 0.0
 
-    override fun onStart(ctx: SimResourceContext<R>) {
-        limit = ctx.resource.capacity * utilization
+    override fun onStart(ctx: SimResourceContext) {
+        limit = ctx.capacity * utilization
         remainingWork = work
     }
 
-    override fun onNext(ctx: SimResourceContext<R>): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
         val work = this.remainingWork + ctx.remainingWork
         this.remainingWork -= work
         return if (work > 0.0) {

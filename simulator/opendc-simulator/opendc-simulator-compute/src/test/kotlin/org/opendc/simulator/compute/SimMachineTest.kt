@@ -28,9 +28,9 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingNode
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 
@@ -43,11 +43,11 @@ class SimMachineTest {
 
     @BeforeEach
     fun setUp() {
-        val cpuNode = SimProcessingNode("Intel", "Xeon", "amd64", 2)
+        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
         machineModel = SimMachineModel(
-            cpus = List(cpuNode.coreCount) { SimProcessingUnit(cpuNode, it, 1000.0) },
-            memory = List(4) { SimMemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 

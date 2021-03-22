@@ -40,23 +40,18 @@ import org.opendc.utils.TimerScheduler
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceSwitchMaxMinTest {
-    class SimCpu(val speed: Double) : SimResource {
-        override val capacity: Double
-            get() = speed
-    }
-
     @Test
     fun testSmoke() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val switch = SimResourceSwitchMaxMin<SimCpu>(clock)
+        val switch = SimResourceSwitchMaxMin(clock)
 
-        val sources = List(2) { SimResourceSource(SimCpu(2000.0), clock, scheduler) }
+        val sources = List(2) { SimResourceSource(2000.0, clock, scheduler) }
         sources.forEach { switch.addInput(it) }
 
-        val provider = switch.addOutput(SimCpu(1000.0))
+        val provider = switch.addOutput(1000.0)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(1.0, 1.0) andThen SimResourceCommand.Exit
 
         try {
@@ -76,13 +71,13 @@ internal class SimResourceSwitchMaxMinTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
-        val listener = object : SimResourceSwitchMaxMin.Listener<SimCpu> {
+        val listener = object : SimResourceSwitchMaxMin.Listener {
             var totalRequestedWork = 0L
             var totalGrantedWork = 0L
             var totalOvercommittedWork = 0L
 
             override fun onSliceFinish(
-                switch: SimResourceSwitchMaxMin<SimCpu>,
+                switch: SimResourceSwitchMaxMin,
                 requestedWork: Long,
                 grantedWork: Long,
                 overcommittedWork: Long,
@@ -108,10 +103,10 @@ internal class SimResourceSwitchMaxMinTest {
             )
 
         val switch = SimResourceSwitchMaxMin(clock, listener)
-        val provider = switch.addOutput(SimCpu(3200.0))
+        val provider = switch.addOutput(3200.0)
 
         try {
-            switch.addInput(SimResourceSource(SimCpu(3200.0), clock, scheduler))
+            switch.addInput(SimResourceSource(3200.0, clock, scheduler))
             provider.consume(workload)
             yield()
         } finally {
@@ -135,13 +130,13 @@ internal class SimResourceSwitchMaxMinTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
-        val listener = object : SimResourceSwitchMaxMin.Listener<SimCpu> {
+        val listener = object : SimResourceSwitchMaxMin.Listener {
             var totalRequestedWork = 0L
             var totalGrantedWork = 0L
             var totalOvercommittedWork = 0L
 
             override fun onSliceFinish(
-                switch: SimResourceSwitchMaxMin<SimCpu>,
+                switch: SimResourceSwitchMaxMin,
                 requestedWork: Long,
                 grantedWork: Long,
                 overcommittedWork: Long,
@@ -176,11 +171,11 @@ internal class SimResourceSwitchMaxMinTest {
             )
 
         val switch = SimResourceSwitchMaxMin(clock, listener)
-        val providerA = switch.addOutput(SimCpu(3200.0))
-        val providerB = switch.addOutput(SimCpu(3200.0))
+        val providerA = switch.addOutput(3200.0)
+        val providerB = switch.addOutput(3200.0)
 
         try {
-            switch.addInput(SimResourceSource(SimCpu(3200.0), clock, scheduler))
+            switch.addInput(SimResourceSource(3200.0, clock, scheduler))
 
             coroutineScope {
                 launch { providerA.consume(workloadA) }

@@ -35,7 +35,7 @@ import org.opendc.compute.simulator.power.models.ConstantPowerModel
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
-import org.opendc.simulator.compute.model.SimMemoryUnit
+import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
@@ -217,7 +217,7 @@ public class SimHost(
         val originalCpu = machine.model.cpus[0]
         val processingNode = originalCpu.node.copy(coreCount = cpuCount)
         val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
-        val memoryUnits = listOf(SimMemoryUnit("Generic", "Generic", 3200.0, memorySize))
+        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
         return SimMachineModel(processingUnits, memoryUnits)
     }

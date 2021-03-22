@@ -30,17 +30,10 @@ import kotlin.math.min
 /**
  * Partial implementation of a [SimResourceContext] managing the communication between resources and resource consumers.
  */
-public abstract class SimAbstractResourceContext<R : SimResource>(
-    override val resource: R,
+public abstract class SimAbstractResourceContext(
     override val clock: Clock,
-    private val consumer: SimResourceConsumer<R>
-) : SimResourceContext<R> {
-    /**
-     * The capacity of the resource.
-     */
-    override val capacity: Double
-        get() = resource.capacity
-
+    private val consumer: SimResourceConsumer
+) : SimResourceContext {
     /**
      * The amount of work still remaining at this instant.
      */
@@ -49,6 +42,12 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
             val activeCommand = activeCommand ?: return 0.0
             return computeRemainingWork(activeCommand, clock.millis())
         }
+
+    /**
+     * A flag to indicate the state of the context.
+     */
+    public var state: SimResourceState = SimResourceState.Pending
+        private set
 
     /**
      * This method is invoked when the resource will idle until the specified [deadline].
@@ -178,7 +177,7 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
                     if (command.deadline <= now || !isIntermediate) {
                         next(now)
                     } else {
-                        activeCommand
+                        interpret(SimResourceCommand.Idle(command.deadline), now)
                     }
                 }
                 is SimResourceCommand.Consume -> {
@@ -214,17 +213,12 @@ public abstract class SimAbstractResourceContext<R : SimResource>(
         flush()
     }
 
-    override fun toString(): String = "SimAbstractResourceContext[resource=$resource]"
+    override fun toString(): String = "SimAbstractResourceContext[capacity=$capacity]"
 
     /**
      * A flag to indicate that the resource is currently processing a command.
      */
     protected var isProcessing: Boolean = false
-
-    /**
-     * A flag to indicate the state of the context.
-     */
-    private var state: SimResourceState = SimResourceState.Pending
 
     /**
      * The current command that is being processed.

@@ -28,45 +28,45 @@ import java.util.ArrayDeque
  * A [SimResourceSwitch] implementation that allocates outputs to the inputs of the switch exclusively. This means that
  * a single output is directly connected to an input and that the switch can only support as much outputs as inputs.
  */
-public class SimResourceSwitchExclusive<R : SimResource> : SimResourceSwitch<R> {
+public class SimResourceSwitchExclusive : SimResourceSwitch {
     /**
      * A flag to indicate that the switch is closed.
      */
     private var isClosed: Boolean = false
 
     private val _outputs = mutableSetOf<Provider>()
-    override val outputs: Set<SimResourceProvider<R>>
+    override val outputs: Set<SimResourceProvider>
         get() = _outputs
 
-    private val availableResources = ArrayDeque<SimResourceForwarder<R>>()
+    private val availableResources = ArrayDeque<SimResourceForwarder>()
 
-    private val _inputs = mutableSetOf<SimResourceProvider<R>>()
-    override val inputs: Set<SimResourceProvider<R>>
+    private val _inputs = mutableSetOf<SimResourceProvider>()
+    override val inputs: Set<SimResourceProvider>
         get() = _inputs
 
-    override fun addOutput(resource: R): SimResourceProvider<R> {
+    override fun addOutput(capacity: Double): SimResourceProvider {
         check(!isClosed) { "Switch has been closed" }
         check(availableResources.isNotEmpty()) { "No capacity to serve request" }
         val forwarder = availableResources.poll()
-        val output = Provider(resource, forwarder)
+        val output = Provider(capacity, forwarder)
         _outputs += output
         return output
     }
 
-    override fun addInput(input: SimResourceProvider<R>) {
+    override fun addInput(input: SimResourceProvider) {
         check(!isClosed) { "Switch has been closed" }
 
         if (input in inputs) {
             return
         }
 
-        val forwarder = SimResourceForwarder(input.resource)
+        val forwarder = SimResourceForwarder()
 
         _inputs += input
         availableResources += forwarder
 
-        input.startConsumer(object : SimResourceConsumer<R> by forwarder {
-            override fun onFinish(ctx: SimResourceContext<R>, cause: Throwable?) {
+        input.startConsumer(object : SimResourceConsumer by forwarder {
+            override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
                 // De-register the input after it has finished
                 _inputs -= input
                 forwarder.onFinish(ctx, cause)
@@ -78,13 +78,13 @@ public class SimResourceSwitchExclusive<R : SimResource> : SimResourceSwitch<R> 
         isClosed = true
 
         // Cancel all upstream subscriptions
-        _inputs.forEach(SimResourceProvider<R>::cancel)
+        _inputs.forEach(SimResourceProvider::cancel)
     }
 
     private inner class Provider(
-        override val resource: R,
-        private val forwarder: SimResourceForwarder<R>
-    ) : SimResourceProvider<R> by forwarder {
+        private val capacity: Double,
+        private val forwarder: SimResourceForwarder
+    ) : SimResourceProvider by forwarder {
         override fun close() {
             _outputs -= this
             availableResources += forwarder

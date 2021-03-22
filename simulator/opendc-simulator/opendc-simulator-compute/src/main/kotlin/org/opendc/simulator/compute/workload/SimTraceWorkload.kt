@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
@@ -45,31 +45,29 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkloa
         offset = ctx.clock.millis()
     }
 
-    override fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit> {
-        return CpuConsumer()
-    }
+    override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer {
+        return object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+                val now = ctx.clock.millis()
+                val fragment = fragment ?: return SimResourceCommand.Exit
+                val work = (fragment.duration / 1000) * fragment.usage
+                val deadline = offset + fragment.duration
 
-    private inner class CpuConsumer : SimResourceConsumer<SimProcessingUnit> {
-        override fun onNext(ctx: SimResourceContext<SimProcessingUnit>): SimResourceCommand {
-            val now = ctx.clock.millis()
-            val fragment = fragment ?: return SimResourceCommand.Exit
-            val work = (fragment.duration / 1000) * fragment.usage
-            val deadline = offset + fragment.duration
+                assert(deadline >= now) { "Deadline already passed" }
 
-            assert(deadline >= now) { "Deadline already passed" }
+                val cmd =
+                    if (cpu.id < fragment.cores && work > 0.0)
+                        SimResourceCommand.Consume(work, fragment.usage, deadline)
+                    else
+                        SimResourceCommand.Idle(deadline)
 
-            val cmd =
-                if (ctx.resource.id < fragment.cores && work > 0.0)
-                    SimResourceCommand.Consume(work, fragment.usage, deadline)
-                else
-                    SimResourceCommand.Idle(deadline)
+                if (barrier.enter()) {
+                    this@SimTraceWorkload.fragment = nextFragment()
+                    this@SimTraceWorkload.offset += fragment.duration
+                }
 
-            if (barrier.enter()) {
-                this@SimTraceWorkload.fragment = nextFragment()
-                this@SimTraceWorkload.offset += fragment.duration
+                return cmd
             }
-
-            return cmd
         }
     }
 

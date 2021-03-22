@@ -31,15 +31,15 @@ import kotlin.math.min
 /**
  * A [SimResourceSource] represents a source for some resource of type [R] that provides bounded processing capacity.
  *
- * @param resource The resource to provide.
+ * @param initialCapacity The initial capacity of the resource.
  * @param clock The virtual clock to track simulation time.
  * @param scheduler The scheduler to schedule the interrupts.
  */
-public class SimResourceSource<R : SimResource>(
-    override val resource: R,
+public class SimResourceSource(
+    private val initialCapacity: Double,
     private val clock: Clock,
     private val scheduler: TimerScheduler<Any>
-) : SimResourceProvider<R> {
+) : SimResourceProvider {
     /**
      * The resource processing speed over time.
      */
@@ -55,7 +55,7 @@ public class SimResourceSource<R : SimResource>(
     override var state: SimResourceState = SimResourceState.Pending
         private set
 
-    override fun startConsumer(consumer: SimResourceConsumer<R>) {
+    override fun startConsumer(consumer: SimResourceConsumer) {
         check(state == SimResourceState.Pending) { "Resource is in invalid state" }
         val ctx = Context(consumer)
 
@@ -89,7 +89,9 @@ public class SimResourceSource<R : SimResource>(
     /**
      * Internal implementation of [SimResourceContext] for this class.
      */
-    private inner class Context(consumer: SimResourceConsumer<R>) : SimAbstractResourceContext<R>(resource, clock, consumer) {
+    private inner class Context(consumer: SimResourceConsumer) : SimAbstractResourceContext(clock, consumer) {
+        override val capacity: Double = initialCapacity
+
         /**
          * The processing speed of the resource.
          */
@@ -123,6 +125,6 @@ public class SimResourceSource<R : SimResource>(
             super.onFinish(cause)
         }
 
-        override fun toString(): String = "SimResourceSource.Context[resource=$resource]"
+        override fun toString(): String = "SimResourceSource.Context[capacity=$capacity]"
     }
 }

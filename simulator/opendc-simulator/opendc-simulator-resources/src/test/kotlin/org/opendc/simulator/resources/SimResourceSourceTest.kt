@@ -37,20 +37,16 @@ import org.opendc.utils.TimerScheduler
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimResourceSourceTest {
-    data class SimCpu(val speed: Double) : SimResource {
-        override val capacity: Double
-            get() = speed
-    }
-
     @Test
     fun testSpeed() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
-            .returns(SimResourceCommand.Consume(1000 * provider.resource.speed, provider.resource.speed))
+            .returns(SimResourceCommand.Consume(1000 * capacity, capacity))
             .andThen(SimResourceCommand.Exit)
 
         try {
@@ -60,7 +56,7 @@ class SimResourceSourceTest {
             provider.consume(consumer)
 
             job.cancel()
-            assertEquals(listOf(0.0, provider.resource.speed, 0.0), res) { "Speed is reported correctly" }
+            assertEquals(listOf(0.0, capacity, 0.0), res) { "Speed is reported correctly" }
         } finally {
             scheduler.close()
             provider.close()
@@ -71,11 +67,12 @@ class SimResourceSourceTest {
     fun testSpeedLimit() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
-            .returns(SimResourceCommand.Consume(1000 * provider.resource.speed, 2 * provider.resource.speed))
+            .returns(SimResourceCommand.Consume(1000 * capacity, 2 * capacity))
             .andThen(SimResourceCommand.Exit)
 
         try {
@@ -85,7 +82,7 @@ class SimResourceSourceTest {
             provider.consume(consumer)
 
             job.cancel()
-            assertEquals(listOf(0.0, provider.resource.speed, 0.0), res) { "Speed is reported correctly" }
+            assertEquals(listOf(0.0, capacity, 0.0), res) { "Speed is reported correctly" }
         } finally {
             scheduler.close()
             provider.close()
@@ -100,14 +97,15 @@ class SimResourceSourceTest {
     fun testIntermediateInterrupt() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = object : SimResourceConsumer<SimCpu> {
-            override fun onStart(ctx: SimResourceContext<SimCpu>) {
+        val consumer = object : SimResourceConsumer {
+            override fun onStart(ctx: SimResourceContext) {
                 ctx.interrupt()
             }
 
-            override fun onNext(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
                 return SimResourceCommand.Exit
             }
         }
@@ -124,16 +122,17 @@ class SimResourceSourceTest {
     fun testInterrupt() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
-        lateinit var resCtx: SimResourceContext<SimCpu>
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
+        lateinit var resCtx: SimResourceContext
 
-        val consumer = object : SimResourceConsumer<SimCpu> {
+        val consumer = object : SimResourceConsumer {
             var isFirst = true
-            override fun onStart(ctx: SimResourceContext<SimCpu>) {
+            override fun onStart(ctx: SimResourceContext) {
                 resCtx = ctx
             }
 
-            override fun onNext(ctx: SimResourceContext<SimCpu>): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
                 assertEquals(0.0, ctx.remainingWork)
                 return if (isFirst) {
                     isFirst = false
@@ -162,9 +161,10 @@ class SimResourceSourceTest {
     fun testFailure() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onStart(any()) }
             .throws(IllegalStateException())
 
@@ -182,9 +182,10 @@ class SimResourceSourceTest {
     fun testExceptionPropagationOnNext() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
@@ -203,9 +204,10 @@ class SimResourceSourceTest {
     fun testConcurrentConsumption() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
@@ -227,9 +229,10 @@ class SimResourceSourceTest {
     fun testClosedConsumption() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
@@ -249,9 +252,10 @@ class SimResourceSourceTest {
     fun testCloseDuringConsumption() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
@@ -272,9 +276,10 @@ class SimResourceSourceTest {
     fun testIdle() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Idle(clock.millis() + 500))
             .andThen(SimResourceCommand.Exit)
@@ -295,9 +300,10 @@ class SimResourceSourceTest {
             runBlockingTest {
                 val clock = DelayControllerClockAdapter(this)
                 val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-                val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+                val capacity = 4200.0
+                val provider = SimResourceSource(capacity, clock, scheduler)
 
-                val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+                val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
                 every { consumer.onNext(any()) }
                     .returns(SimResourceCommand.Idle())
                     .andThenThrows(IllegalStateException())
@@ -316,9 +322,10 @@ class SimResourceSourceTest {
     fun testIncorrectDeadline() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(4200.0), clock, scheduler)
+        val capacity = 4200.0
+        val provider = SimResourceSource(capacity, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Idle(2))
             .andThen(SimResourceCommand.Exit)

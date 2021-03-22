@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 
@@ -44,7 +44,7 @@ public class SimRuntimeWorkload(
 
     override fun onStart(ctx: SimMachineContext) {}
 
-    override fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit> {
+    override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer {
         val limit = cpu.frequency * utilization
         return SimWorkConsumer((limit / 1000) * duration, utilization)
     }

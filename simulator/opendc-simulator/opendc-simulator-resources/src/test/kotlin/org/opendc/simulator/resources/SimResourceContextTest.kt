@@ -33,25 +33,18 @@ import org.opendc.simulator.utils.DelayControllerClockAdapter
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimResourceContextTest {
-    data class SimCpu(val speed: Double) : SimResource {
-        override val capacity: Double
-            get() = speed
-    }
-
     @Test
     fun testFlushWithoutCommand() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
 
-        val resource = SimCpu(4200.0)
-
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
-        val context = object : SimAbstractResourceContext<SimCpu>(resource, clock, consumer) {
+        val context = object : SimAbstractResourceContext(clock, consumer) {
+            override val capacity: Double = 4200.0
+
             override fun onIdle(deadline: Long) {}
-
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
-
             override fun onFinish(cause: Throwable?) {}
         }
 
@@ -61,12 +54,13 @@ class SimResourceContextTest {
     @Test
     fun testIntermediateFlush() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val resource = SimCpu(4200.0)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
-        val context = spyk(object : SimAbstractResourceContext<SimCpu>(resource, clock, consumer) {
+        val context = spyk(object : SimAbstractResourceContext(clock, consumer) {
+            override val capacity: Double = 4200.0
+
             override fun onIdle(deadline: Long) {}
             override fun onFinish(cause: Throwable?) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
@@ -82,12 +76,13 @@ class SimResourceContextTest {
     @Test
     fun testIntermediateFlushIdle() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val resource = SimCpu(4200.0)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
-        val context = spyk(object : SimAbstractResourceContext<SimCpu>(resource, clock, consumer) {
+        val context = spyk(object : SimAbstractResourceContext(clock, consumer) {
+            override val capacity: Double = 4200.0
+
             override fun onIdle(deadline: Long) {}
             override fun onFinish(cause: Throwable?) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
@@ -100,7 +95,7 @@ class SimResourceContextTest {
         context.flush(isIntermediate = true)
 
         assertAll(
-            { verify(exactly = 1) { context.onIdle(any()) } },
+            { verify(exactly = 2) { context.onIdle(any()) } },
             { verify(exactly = 1) { context.onFinish(null) } }
         )
     }
@@ -108,12 +103,13 @@ class SimResourceContextTest {
     @Test
     fun testDoubleStart() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val resource = SimCpu(4200.0)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
-        val context = object : SimAbstractResourceContext<SimCpu>(resource, clock, consumer) {
+        val context = object : SimAbstractResourceContext(clock, consumer) {
+            override val capacity: Double = 4200.0
+
             override fun onIdle(deadline: Long) {}
             override fun onFinish(cause: Throwable?) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}

@@ -26,9 +26,9 @@ import org.opendc.compute.simulator.power.models.LinearPowerModel
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingNode
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -88,8 +88,8 @@ public class Sc20ClusterEnvironmentReader(
                     memoryPerHost = values[memoryPerHostCol].trim().toLong() * 1000L
                     coresPerHost = values[coresPerHostCol].trim().toInt()
 
-                    val unknownProcessingNode = SimProcessingNode("unknown", "unknown", "unknown", coresPerHost)
-                    val unknownMemoryUnit = SimMemoryUnit("unknown", "unknown", -1.0, memoryPerHost)
+                    val unknownProcessingNode = ProcessingNode("unknown", "unknown", "unknown", coresPerHost)
+                    val unknownMemoryUnit = MemoryUnit("unknown", "unknown", -1.0, memoryPerHost)
 
                     repeat(numberOfHosts) {
                         nodes.add(
@@ -99,7 +99,7 @@ public class Sc20ClusterEnvironmentReader(
                                 mapOf("cluster" to clusterId),
                                 SimMachineModel(
                                     List(coresPerHost) { coreId ->
-                                        SimProcessingUnit(unknownProcessingNode, coreId, speed)
+                                        ProcessingUnit(unknownProcessingNode, coreId, speed)
                                     },
                                     listOf(unknownMemoryUnit)
                                 ),

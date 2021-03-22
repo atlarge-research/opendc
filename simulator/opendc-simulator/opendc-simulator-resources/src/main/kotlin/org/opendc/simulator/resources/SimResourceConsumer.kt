@@ -28,13 +28,13 @@ package org.opendc.simulator.resources
  * Implementors of this interface should be considered stateful and must be assumed not to be re-usable (concurrently)
  * for multiple resource providers, unless explicitly said otherwise.
  */
-public interface SimResourceConsumer<in R : SimResource> {
+public interface SimResourceConsumer {
     /**
      * This method is invoked when the consumer is started for some resource.
      *
      * @param ctx The execution context in which the consumer runs.
      */
-    public fun onStart(ctx: SimResourceContext<R>) {}
+    public fun onStart(ctx: SimResourceContext) {}
 
     /**
      * This method is invoked when a resource asks for the next [command][SimResourceCommand] to process, either because
@@ -43,7 +43,7 @@ public interface SimResourceConsumer<in R : SimResource> {
      * @param ctx The execution context in which the consumer runs.
      * @return The next command that the resource should execute.
      */
-    public fun onNext(ctx: SimResourceContext<R>): SimResourceCommand
+    public fun onNext(ctx: SimResourceContext): SimResourceCommand
 
     /**
      * This method is invoked when the consumer has finished, either because it exited via [SimResourceCommand.Exit],
@@ -54,5 +54,5 @@ public interface SimResourceConsumer<in R : SimResource> {
      * @param ctx The execution context in which the consumer ran.
      * @param cause The cause of the finish in case the resource finished exceptionally.
      */
-    public fun onFinish(ctx: SimResourceContext<R>, cause: Throwable? = null) {}
+    public fun onFinish(ctx: SimResourceContext, cause: Throwable? = null) {}
 }

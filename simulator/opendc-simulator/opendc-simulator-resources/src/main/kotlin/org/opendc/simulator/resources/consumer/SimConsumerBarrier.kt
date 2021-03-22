@@ -42,4 +42,11 @@ public class SimConsumerBarrier(public val parties: Int) {
         }
         return false
     }
+
+    /**
+     * Reset the barrier.
+     */
+    public fun reset() {
+        counter = 0
+    }
 }

@@ -29,9 +29,9 @@ import org.opendc.compute.simulator.power.models.ConstantPowerModel
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingNode
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import java.io.InputStream
 import java.util.*
 
@@ -61,12 +61,12 @@ public class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
                             val cores = machine.cpus.flatMap { id ->
                                 when (id) {
                                     1 -> {
-                                        val node = SimProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 4)
-                                        List(node.coreCount) { SimProcessingUnit(node, it, 4100.0) }
+                                        val node = ProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 4)
+                                        List(node.coreCount) { ProcessingUnit(node, it, 4100.0) }
                                     }
                                     2 -> {
-                                        val node = SimProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 2)
-                                        List(node.coreCount) { SimProcessingUnit(node, it, 3500.0) }
+                                        val node = ProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 2)
+                                        List(node.coreCount) { ProcessingUnit(node, it, 3500.0) }
                                     }
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
@@ -75,7 +75,7 @@ public class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
                                 UUID(0L, counter++.toLong()),
                                 "node-$counter",
                                 emptyMap(),
-                                SimMachineModel(cores, listOf(SimMemoryUnit("", "", 2300.0, 16000))),
+                                SimMachineModel(cores, listOf(MemoryUnit("", "", 2300.0, 16000))),
                                 ConstantPowerModel(0.0)
                             )
                         }

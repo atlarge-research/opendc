@@ -40,28 +40,20 @@ import org.opendc.utils.TimerScheduler
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceForwarderTest {
-
-    data class SimCpu(val speed: Double) : SimResource {
-        override val capacity: Double
-            get() = speed
-    }
-
     @Test
     fun testExitImmediately() = runBlockingTest {
-        val forwarder = SimResourceForwarder(SimCpu(1000.0))
+        val forwarder = SimResourceForwarder()
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(SimCpu(2000.0), clock, scheduler)
+        val source = SimResourceSource(2000.0, clock, scheduler)
 
         launch {
             source.consume(forwarder)
             source.close()
         }
 
-        forwarder.consume(object : SimResourceConsumer<SimCpu> {
-            override fun onNext(
-                ctx: SimResourceContext<SimCpu>
-            ): SimResourceCommand {
+        forwarder.consume(object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
                 return SimResourceCommand.Exit
             }
         })
@@ -72,22 +64,20 @@ internal class SimResourceForwarderTest {
 
     @Test
     fun testExit() = runBlockingTest {
-        val forwarder = SimResourceForwarder(SimCpu(1000.0))
+        val forwarder = SimResourceForwarder()
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(SimCpu(2000.0), clock, scheduler)
+        val source = SimResourceSource(2000.0, clock, scheduler)
 
         launch {
             source.consume(forwarder)
             source.close()
         }
 
-        forwarder.consume(object : SimResourceConsumer<SimCpu> {
+        forwarder.consume(object : SimResourceConsumer {
             var isFirst = true
 
-            override fun onNext(
-                ctx: SimResourceContext<SimCpu>
-            ): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
                 return if (isFirst) {
                     isFirst = false
                     SimResourceCommand.Consume(10.0, 1.0)
@@ -102,11 +92,9 @@ internal class SimResourceForwarderTest {
 
     @Test
     fun testState() = runBlockingTest {
-        val forwarder = SimResourceForwarder(SimCpu(1000.0))
-        val consumer = object : SimResourceConsumer<SimCpu> {
-            override fun onNext(
-                ctx: SimResourceContext<SimCpu>
-            ): SimResourceCommand = SimResourceCommand.Exit
+        val forwarder = SimResourceForwarder()
+        val consumer = object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext): SimResourceCommand = SimResourceCommand.Exit
         }
 
         assertEquals(SimResourceState.Pending, forwarder.state)
@@ -125,9 +113,9 @@ internal class SimResourceForwarderTest {
 
     @Test
     fun testCancelPendingDelegate() = runBlockingTest {
-        val forwarder = SimResourceForwarder(SimCpu(1000.0))
+        val forwarder = SimResourceForwarder()
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Exit
 
         forwarder.startConsumer(consumer)
@@ -138,12 +126,12 @@ internal class SimResourceForwarderTest {
 
     @Test
     fun testCancelStartedDelegate() = runBlockingTest {
-        val forwarder = SimResourceForwarder(SimCpu(1000.0))
+        val forwarder = SimResourceForwarder()
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(SimCpu(2000.0), clock, scheduler)
+        val source = SimResourceSource(2000.0, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10)
 
         source.startConsumer(forwarder)
@@ -158,12 +146,12 @@ internal class SimResourceForwarderTest {
 
     @Test
     fun testCancelPropagation() = runBlockingTest {
-        val forwarder = SimResourceForwarder(SimCpu(1000.0))
+        val forwarder = SimResourceForwarder()
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(SimCpu(2000.0), clock, scheduler)
+        val source = SimResourceSource(2000.0, clock, scheduler)
 
-        val consumer = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10)
 
         source.startConsumer(forwarder)

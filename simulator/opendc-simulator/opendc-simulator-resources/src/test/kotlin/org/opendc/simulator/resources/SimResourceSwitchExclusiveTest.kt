@@ -42,11 +42,6 @@ import org.opendc.utils.TimerScheduler
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceSwitchExclusiveTest {
-    class SimCpu(val speed: Double) : SimResource {
-        override val capacity: Double
-            get() = speed
-    }
-
     /**
      * Test a trace workload.
      */
@@ -68,12 +63,12 @@ internal class SimResourceSwitchExclusiveTest {
                 ),
             )
 
-        val switch = SimResourceSwitchExclusive<SimCpu>()
-        val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
+        val switch = SimResourceSwitchExclusive()
+        val source = SimResourceSource(3200.0, clock, scheduler)
 
         switch.addInput(source)
 
-        val provider = switch.addOutput(SimCpu(3200.0))
+        val provider = switch.addOutput(3200.0)
         val job = launch { source.speed.toList(speed) }
 
         try {
@@ -99,15 +94,15 @@ internal class SimResourceSwitchExclusiveTest {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
-        val workload = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val workload = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { workload.onNext(any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
 
-        val switch = SimResourceSwitchExclusive<SimCpu>()
-        val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
+        val switch = SimResourceSwitchExclusive()
+        val source = SimResourceSource(3200.0, clock, scheduler)
 
         switch.addInput(source)
 
-        val provider = switch.addOutput(SimCpu(3200.0))
+        val provider = switch.addOutput(3200.0)
 
         try {
             provider.consume(workload)
@@ -127,16 +122,14 @@ internal class SimResourceSwitchExclusiveTest {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
-        val workload = object : SimResourceConsumer<SimCpu> {
+        val workload = object : SimResourceConsumer {
             var isFirst = true
 
-            override fun onStart(ctx: SimResourceContext<SimCpu>) {
+            override fun onStart(ctx: SimResourceContext) {
                 isFirst = true
             }
 
-            override fun onNext(
-                ctx: SimResourceContext<SimCpu>
-            ): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
                 return if (isFirst) {
                     isFirst = false
                     SimResourceCommand.Consume(duration / 1000.0, 1.0)
@@ -146,12 +139,12 @@ internal class SimResourceSwitchExclusiveTest {
             }
         }
 
-        val switch = SimResourceSwitchExclusive<SimCpu>()
-        val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
+        val switch = SimResourceSwitchExclusive()
+        val source = SimResourceSource(3200.0, clock, scheduler)
 
         switch.addInput(source)
 
-        val provider = switch.addOutput(SimCpu(3200.0))
+        val provider = switch.addOutput(3200.0)
 
         try {
             provider.consume(workload)
@@ -172,15 +165,15 @@ internal class SimResourceSwitchExclusiveTest {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
-        val workload = mockk<SimResourceConsumer<SimCpu>>(relaxUnitFun = true)
+        val workload = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { workload.onNext(any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
 
-        val switch = SimResourceSwitchExclusive<SimCpu>()
-        val source = SimResourceSource(SimCpu(3200.0), clock, scheduler)
+        val switch = SimResourceSwitchExclusive()
+        val source = SimResourceSource(3200.0, clock, scheduler)
 
         switch.addInput(source)
 
-        switch.addOutput(SimCpu(3200.0))
-        assertThrows<IllegalStateException> { switch.addOutput(SimCpu(3200.0)) }
+        switch.addOutput(3200.0)
+        assertThrows<IllegalStateException> { switch.addOutput(3200.0) }
     }
 }

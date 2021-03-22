@@ -27,12 +27,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 /**
  * A [SimResourceProvider] provides some resource of type [R].
  */
-public interface SimResourceProvider<out R : SimResource> : AutoCloseable {
-    /**
-     * The resource that is managed by this provider.
-     */
-    public val resource: R
-
+public interface SimResourceProvider : AutoCloseable {
     /**
      * The state of the resource.
      */
@@ -43,7 +38,7 @@ public interface SimResourceProvider<out R : SimResource> : AutoCloseable {
      *
      * @throws IllegalStateException if there is already a consumer active or the resource lifetime has ended.
      */
-    public fun startConsumer(consumer: SimResourceConsumer<R>)
+    public fun startConsumer(consumer: SimResourceConsumer)
 
     /**
      * Interrupt the resource consumer. If there is no consumer active, this operation will be a no-op.
@@ -67,15 +62,15 @@ public interface SimResourceProvider<out R : SimResource> : AutoCloseable {
  * Consume the resource provided by this provider using the specified [consumer] and suspend execution until
  * the consumer has finished.
  */
-public suspend fun <R : SimResource> SimResourceProvider<R>.consume(consumer: SimResourceConsumer<R>) {
+public suspend fun SimResourceProvider.consume(consumer: SimResourceConsumer) {
     return suspendCancellableCoroutine { cont ->
-        startConsumer(object : SimResourceConsumer<R> by consumer {
-            override fun onFinish(ctx: SimResourceContext<R>, cause: Throwable?) {
+        startConsumer(object : SimResourceConsumer by consumer {
+            override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
                 assert(!cont.isCompleted) { "Coroutine already completed" }
 
-                cont.resumeWith(if (cause != null) Result.failure(cause) else Result.success(Unit))
-
                 consumer.onFinish(ctx, cause)
+
+                cont.resumeWith(if (cause != null) Result.failure(cause) else Result.success(Unit))
             }
 
             override fun toString(): String = "SimSuspendingResourceConsumer"

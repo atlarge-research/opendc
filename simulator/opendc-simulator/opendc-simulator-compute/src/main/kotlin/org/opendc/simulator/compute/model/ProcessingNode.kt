@@ -20,14 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.resources
+package org.opendc.simulator.compute.model
 
 /**
- * A generic representation of resource that may be consumed.
+ * A processing node/package/socket containing possibly several CPU cores.
+ *
+ * @property vendor The vendor string of the processor node.
+ * @property modelName The name of the processor node.
+ * @property arch The micro-architecture of the processor node.
+ * @property coreCount The number of logical CPUs in the processor node.
  */
-public interface SimResource {
-    /**
-     * The capacity of the resource.
-     */
-    public val capacity: Double
-}
+public data class ProcessingNode(
+    public val vendor: String,
+    public val arch: String,
+    public val modelName: String,
+    public val coreCount: Int
+)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.model
+package org.opendc.simulator.resources
+
+import org.opendc.simulator.resources.consumer.SimTraceConsumer
 
 /**
- * A processing node/package/socket containing possibly several CPU cores.
- *
- * @property vendor The vendor string of the processor node.
- * @property modelName The name of the processor node.
- * @property arch The micro-architecture of the processor node.
- * @property coreCount The number of logical CPUs in the processor node.
+ * Helper function to create simple consumer workload.
  */
-public data class SimProcessingNode(
-    public val vendor: String,
-    public val arch: String,
-    public val modelName: String,
-    public val coreCount: Int
-)
+fun createSimpleConsumer(): SimResourceConsumer {
+    return SimTraceConsumer(
+        sequenceOf(
+            SimTraceConsumer.Fragment(1000, 28.0),
+            SimTraceConsumer.Fragment(1000, 3500.0),
+            SimTraceConsumer.Fragment(1000, 0.0),
+            SimTraceConsumer.Fragment(1000, 183.0),
+            SimTraceConsumer.Fragment(1000, 400.0),
+            SimTraceConsumer.Fragment(1000, 100.0),
+            SimTraceConsumer.Fragment(1000, 3000.0),
+            SimTraceConsumer.Fragment(1000, 4500.0),
+        ),
+    )
+}

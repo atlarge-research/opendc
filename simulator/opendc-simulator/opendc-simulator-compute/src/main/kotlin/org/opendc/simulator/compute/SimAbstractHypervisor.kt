@@ -27,8 +27,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
 import java.time.Clock
@@ -45,7 +45,7 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
     /**
      * The resource switch to use.
      */
-    private lateinit var switch: SimResourceSwitch<SimProcessingUnit>
+    private lateinit var switch: SimResourceSwitch
 
     /**
      * The virtual machines running on this hypervisor.
@@ -57,12 +57,12 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
     /**
      * Construct the [SimResourceSwitch] implementation that performs the actual scheduling of the CPUs.
      */
-    public abstract fun createSwitch(ctx: SimMachineContext): SimResourceSwitch<SimProcessingUnit>
+    public abstract fun createSwitch(ctx: SimMachineContext): SimResourceSwitch
 
     /**
      * Check whether the specified machine model fits on this hypervisor.
      */
-    public abstract fun canFit(model: SimMachineModel, switch: SimResourceSwitch<SimProcessingUnit>): Boolean
+    public abstract fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean
 
     override fun canFit(model: SimMachineModel): Boolean {
         return canFit(model, switch)
@@ -101,7 +101,7 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
         /**
          * The vCPUs of the machine.
          */
-        private val cpus: Map<SimProcessingUnit, SimResourceProvider<SimProcessingUnit>> = model.cpus.associateWith { switch.addOutput(it) }
+        private val cpus: Map<ProcessingUnit, SimResourceProvider> = model.cpus.associateWith { switch.addOutput(it.frequency) }
 
         /**
          * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
@@ -111,10 +111,10 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
                 require(!isTerminated) { "Machine is terminated" }
 
                 val ctx = object : SimMachineContext {
-                    override val cpus: List<SimProcessingUnit>
+                    override val cpus: List<ProcessingUnit>
                         get() = model.cpus
 
-                    override val memory: List<SimMemoryUnit>
+                    override val memory: List<MemoryUnit>
                         get() = model.memory
 
                     override val clock: Clock
@@ -122,8 +122,8 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
 
                     override val meta: Map<String, Any> = meta
 
-                    override fun interrupt(resource: SimResource) {
-                        requireNotNull(this@VirtualMachine.cpus[resource]).interrupt()
+                    override fun interrupt(cpu: ProcessingUnit) {
+                        requireNotNull(this@VirtualMachine.cpus[cpu]).interrupt()
                     }
                 }
 
@@ -155,8 +155,8 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
         switch = createSwitch(ctx)
     }
 
-    override fun getConsumer(ctx: SimMachineContext, cpu: SimProcessingUnit): SimResourceConsumer<SimProcessingUnit> {
-        val forwarder = SimResourceForwarder(cpu)
+    override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer {
+        val forwarder = SimResourceForwarder()
         switch.addInput(forwarder)
         return forwarder
     }

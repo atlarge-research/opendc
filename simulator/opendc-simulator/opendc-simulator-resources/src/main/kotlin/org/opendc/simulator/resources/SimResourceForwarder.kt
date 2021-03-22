@@ -25,17 +25,16 @@ package org.opendc.simulator.resources
 /**
  * A helper class to construct a [SimResourceProvider] which forwards the requests to a [SimResourceConsumer].
  */
-public class SimResourceForwarder<R : SimResource>(override val resource: R) :
-    SimResourceProvider<R>, SimResourceConsumer<R> {
+public class SimResourceForwarder : SimResourceProvider, SimResourceConsumer {
     /**
      * The [SimResourceContext] in which the forwarder runs.
      */
-    private var ctx: SimResourceContext<R>? = null
+    private var ctx: SimResourceContext? = null
 
     /**
      * The delegate [SimResourceConsumer].
      */
-    private var delegate: SimResourceConsumer<R>? = null
+    private var delegate: SimResourceConsumer? = null
 
     /**
      * A flag to indicate that the delegate was started.
@@ -48,11 +47,13 @@ public class SimResourceForwarder<R : SimResource>(override val resource: R) :
     override var state: SimResourceState = SimResourceState.Pending
         private set
 
-    override fun startConsumer(consumer: SimResourceConsumer<R>) {
+    override fun startConsumer(consumer: SimResourceConsumer) {
         check(state == SimResourceState.Pending) { "Resource is in invalid state" }
 
         state = SimResourceState.Active
         delegate = consumer
+
+        // Interrupt the provider to replace the consumer
         interrupt()
     }
 
@@ -83,11 +84,11 @@ public class SimResourceForwarder<R : SimResource>(override val resource: R) :
         }
     }
 
-    override fun onStart(ctx: SimResourceContext<R>) {
+    override fun onStart(ctx: SimResourceContext) {
         this.ctx = ctx
     }
 
-    override fun onNext(ctx: SimResourceContext<R>): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
         val delegate = delegate
 
         if (!hasDelegateStarted) {
@@ -117,7 +118,7 @@ public class SimResourceForwarder<R : SimResource>(override val resource: R) :
         }
     }
 
-    override fun onFinish(ctx: SimResourceContext<R>, cause: Throwable?) {
+    override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
         this.ctx = null
 
         val delegate = delegate

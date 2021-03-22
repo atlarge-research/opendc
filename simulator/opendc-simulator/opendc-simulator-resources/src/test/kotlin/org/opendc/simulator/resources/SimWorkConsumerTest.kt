@@ -35,18 +35,13 @@ import org.opendc.utils.TimerScheduler
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimWorkConsumerTest {
-    data class SimCpu(val speed: Double) : SimResource {
-        override val capacity: Double
-            get() = speed
-    }
-
     @Test
     fun testSmoke() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(1.0), clock, scheduler)
+        val provider = SimResourceSource(1.0, clock, scheduler)
 
-        val consumer = SimWorkConsumer<SimCpu>(1.0, 1.0)
+        val consumer = SimWorkConsumer(1.0, 1.0)
 
         try {
             provider.consume(consumer)
@@ -60,9 +55,9 @@ internal class SimWorkConsumerTest {
     fun testUtilization() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val provider = SimResourceSource(SimCpu(1.0), clock, scheduler)
+        val provider = SimResourceSource(1.0, clock, scheduler)
 
-        val consumer = SimWorkConsumer<SimCpu>(1.0, 0.5)
+        val consumer = SimWorkConsumer(1.0, 0.5)
 
         try {
             provider.consume(consumer)
