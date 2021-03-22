@@ -40,9 +40,7 @@ class SimResourceContextTest {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
-        val context = object : SimAbstractResourceContext(clock, consumer) {
-            override val capacity: Double = 4200.0
-
+        val context = object : SimAbstractResourceContext(4200.0, clock, consumer) {
             override fun onIdle(deadline: Long) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
             override fun onFinish(cause: Throwable?) {}
@@ -58,9 +56,7 @@ class SimResourceContextTest {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
-        val context = spyk(object : SimAbstractResourceContext(clock, consumer) {
-            override val capacity: Double = 4200.0
-
+        val context = spyk(object : SimAbstractResourceContext(4200.0, clock, consumer) {
             override fun onIdle(deadline: Long) {}
             override fun onFinish(cause: Throwable?) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
@@ -80,9 +76,7 @@ class SimResourceContextTest {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
-        val context = spyk(object : SimAbstractResourceContext(clock, consumer) {
-            override val capacity: Double = 4200.0
-
+        val context = spyk(object : SimAbstractResourceContext(4200.0, clock, consumer) {
             override fun onIdle(deadline: Long) {}
             override fun onFinish(cause: Throwable?) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
@@ -107,9 +101,7 @@ class SimResourceContextTest {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
-        val context = object : SimAbstractResourceContext(clock, consumer) {
-            override val capacity: Double = 4200.0
-
+        val context = object : SimAbstractResourceContext(4200.0, clock, consumer) {
             override fun onIdle(deadline: Long) {}
             override fun onFinish(cause: Throwable?) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}

@@ -335,10 +335,7 @@ public class SimResourceDistributorMaxMin(
     private inner class OutputContext(
         private val provider: OutputProvider,
         consumer: SimResourceConsumer
-    ) : SimAbstractResourceContext(clock, consumer), Comparable<OutputContext> {
-        override val capacity: Double
-            get() = provider.capacity
-
+    ) : SimAbstractResourceContext(provider.capacity, clock, consumer), Comparable<OutputContext> {
         /**
          * The current command that is processed by the vCPU.
          */
@@ -369,7 +366,7 @@ public class SimResourceDistributorMaxMin(
         override fun onConsume(work: Double, limit: Double, deadline: Long) {
             reportOvercommit()
 
-            allowedSpeed = getSpeed(limit)
+            allowedSpeed = speed
             activeCommand = SimResourceCommand.Consume(work, limit, deadline)
         }
 

@@ -24,14 +24,14 @@ package org.opendc.simulator.resources
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
 
@@ -162,5 +162,25 @@ internal class SimResourceForwarderTest {
 
         verify(exactly = 1) { consumer.onStart(any()) }
         verify(exactly = 1) { consumer.onFinish(any(), null) }
+    }
+
+    @Test
+    fun testAdjustCapacity() = runBlockingTest {
+        val forwarder = SimResourceForwarder()
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val source = SimResourceSource(1.0, clock, scheduler)
+
+        val consumer = spyk(SimWorkConsumer(2.0, 1.0))
+        source.startConsumer(forwarder)
+
+        coroutineScope {
+            launch { forwarder.consume(consumer) }
+            delay(1000)
+            source.capacity = 0.5
+        }
+
+        assertEquals(3000, currentTime)
+        verify(exactly = 1) { consumer.onCapacityChanged(any(), true) }
     }
 }

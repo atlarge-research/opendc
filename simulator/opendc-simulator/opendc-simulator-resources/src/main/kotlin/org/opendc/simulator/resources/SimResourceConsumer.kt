@@ -46,6 +46,19 @@ public interface SimResourceConsumer {
     public fun onNext(ctx: SimResourceContext): SimResourceCommand
 
     /**
+     * This is method is invoked when the capacity of the resource changes.
+     *
+     * After being informed of such an event, the consumer might decide to adjust its consumption by interrupting the
+     * resource via [SimResourceContext.interrupt]. Alternatively, the consumer may decide to ignore the event, possibly
+     * causing the active resource command to finish at a later moment than initially planned.
+     *
+     * @param ctx The execution context in which the consumer runs.
+     * @param isThrottled A flag to indicate that the active resource command will be throttled as a result of the
+     * capacity change.
+     */
+    public fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {}
+
+    /**
      * This method is invoked when the consumer has finished, either because it exited via [SimResourceCommand.Exit],
      * the resource finished itself, or a failure occurred at the resource.
      *

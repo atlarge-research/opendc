@@ -23,7 +23,7 @@
 package org.opendc.simulator.resources
 
 /**
- * A SimResourceCommand communicates to a [SimResource] how it is consumed by a [SimResourceConsumer].
+ * A SimResourceCommand communicates to a resource how it is consumed by a [SimResourceConsumer].
  */
 public sealed class SimResourceCommand {
     /**

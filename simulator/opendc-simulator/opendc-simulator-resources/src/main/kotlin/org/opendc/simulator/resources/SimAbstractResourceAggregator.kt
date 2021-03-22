@@ -100,10 +100,7 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
         get() = _inputs
     private val _inputs = mutableSetOf<SimResourceProvider>()
 
-    private val context = object : SimAbstractResourceContext(clock, _output) {
-        override val capacity: Double
-            get() = inputContexts.sumByDouble { it.capacity }
-
+    private val context = object : SimAbstractResourceContext(inputContexts.sumByDouble { it.capacity }, clock, _output) {
         override val remainingWork: Double
             get() = inputContexts.sumByDouble { it.remainingWork }
 
@@ -113,13 +110,9 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
             interruptAll()
         }
 
-        override fun onConsume(work: Double, limit: Double, deadline: Long) {
-            doConsume(work, limit, deadline)
-        }
+        override fun onConsume(work: Double, limit: Double, deadline: Long) = doConsume(work, limit, deadline)
 
-        override fun onIdle(deadline: Long) {
-            doIdle(deadline)
-        }
+        override fun onIdle(deadline: Long) = doIdle(deadline)
 
         override fun onFinish(cause: Throwable?) {
             doFinish(cause)
@@ -176,6 +169,7 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
     private inner class Consumer : SimResourceConsumer {
         override fun onStart(ctx: SimResourceContext) {
             onContextStarted(ctx)
+            onCapacityChanged(ctx, false)
 
             // Make sure we initialize the output if we have not done so yet
             if (context.state == SimResourceState.Pending) {
@@ -187,6 +181,11 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
             doSchedule()
 
             return commands[ctx] ?: SimResourceCommand.Idle()
+        }
+
+        override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
+            // Adjust capacity of output resource
+            context.capacity = inputContexts.sumByDouble { it.capacity }
         }
 
         override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {

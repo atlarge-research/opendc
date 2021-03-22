@@ -25,11 +25,9 @@ package org.opendc.simulator.resources
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -151,6 +149,58 @@ internal class SimResourceAggregatorMaxMinTest {
             assertThrows<IllegalStateException> { aggregator.output.consume(consumer) }
             yield()
             assertEquals(SimResourceState.Pending, sources[0].state)
+        } finally {
+            aggregator.output.close()
+        }
+    }
+
+    @Test
+    fun testAdjustCapacity() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+
+        val aggregator = SimResourceAggregatorMaxMin(clock)
+        val sources = listOf(
+            SimResourceSource(1.0, clock, scheduler),
+            SimResourceSource(1.0, clock, scheduler)
+        )
+        sources.forEach(aggregator::addInput)
+
+        val consumer = SimWorkConsumer(4.0, 1.0)
+        try {
+            coroutineScope {
+                launch { aggregator.output.consume(consumer) }
+                delay(1000)
+                sources[0].capacity = 0.5
+            }
+            yield()
+            assertEquals(2334, currentTime)
+        } finally {
+            aggregator.output.close()
+        }
+    }
+
+    @Test
+    fun testFailOverCapacity() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+
+        val aggregator = SimResourceAggregatorMaxMin(clock)
+        val sources = listOf(
+            SimResourceSource(1.0, clock, scheduler),
+            SimResourceSource(1.0, clock, scheduler)
+        )
+        sources.forEach(aggregator::addInput)
+
+        val consumer = SimWorkConsumer(1.0, 0.5)
+        try {
+            coroutineScope {
+                launch { aggregator.output.consume(consumer) }
+                delay(500)
+                sources[0].capacity = 0.5
+            }
+            yield()
+            assertEquals(1000, currentTime)
         } finally {
             aggregator.output.close()
         }

@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
+import kotlin.math.ceil
 import kotlin.math.min
 
 /**
@@ -36,7 +37,7 @@ import kotlin.math.min
  * @param scheduler The scheduler to schedule the interrupts.
  */
 public class SimResourceSource(
-    private val initialCapacity: Double,
+    initialCapacity: Double,
     private val clock: Clock,
     private val scheduler: TimerScheduler<Any>
 ) : SimResourceProvider {
@@ -46,6 +47,15 @@ public class SimResourceSource(
     public val speed: StateFlow<Double>
         get() = _speed
     private val _speed = MutableStateFlow(0.0)
+
+    /**
+     * The capacity of the resource.
+     */
+    public var capacity: Double = initialCapacity
+        set(value) {
+            field = value
+            ctx?.capacity = value
+        }
 
     /**
      * The [Context] that is currently running.
@@ -89,20 +99,9 @@ public class SimResourceSource(
     /**
      * Internal implementation of [SimResourceContext] for this class.
      */
-    private inner class Context(consumer: SimResourceConsumer) : SimAbstractResourceContext(clock, consumer) {
-        override val capacity: Double = initialCapacity
-
-        /**
-         * The processing speed of the resource.
-         */
-        private var speed: Double = 0.0
-            set(value) {
-                field = value
-                _speed.value = field
-            }
-
+    private inner class Context(consumer: SimResourceConsumer) : SimAbstractResourceContext(capacity, clock, consumer) {
         override fun onIdle(deadline: Long) {
-            speed = 0.0
+            _speed.value = speed
 
             // Do not resume if deadline is "infinite"
             if (deadline != Long.MAX_VALUE) {
@@ -111,14 +110,15 @@ public class SimResourceSource(
         }
 
         override fun onConsume(work: Double, limit: Double, deadline: Long) {
-            speed = getSpeed(limit)
+            _speed.value = speed
+
             val until = min(deadline, clock.millis() + getDuration(work, speed))
 
             scheduler.startSingleTimerTo(this, until, ::flush)
         }
 
         override fun onFinish(cause: Throwable?) {
-            speed = 0.0
+            _speed.value = speed
             scheduler.cancel(this)
             cancel()
 
@@ -126,5 +126,12 @@ public class SimResourceSource(
         }
 
         override fun toString(): String = "SimResourceSource.Context[capacity=$capacity]"
+    }
+
+    /**
+     * Compute the duration that a resource consumption will take with the specified [speed].
+     */
+    private fun getDuration(work: Double, speed: Double): Long {
+        return ceil(work / speed * 1000).toLong()
     }
 }

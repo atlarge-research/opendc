@@ -86,6 +86,8 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
         private val forwarder: SimResourceForwarder
     ) : SimResourceProvider by forwarder {
         override fun close() {
+            // We explicitly do not close the forwarder here in order to re-use it across output resources.
+
             _outputs -= this
             availableResources += forwarder
         }

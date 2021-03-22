@@ -23,7 +23,6 @@
 package org.opendc.simulator.resources
 
 import java.time.Clock
-import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
@@ -31,9 +30,24 @@ import kotlin.math.min
  * Partial implementation of a [SimResourceContext] managing the communication between resources and resource consumers.
  */
 public abstract class SimAbstractResourceContext(
+    initialCapacity: Double,
     override val clock: Clock,
     private val consumer: SimResourceConsumer
 ) : SimResourceContext {
+    /**
+     * The capacity of the resource.
+     */
+    public final override var capacity: Double = initialCapacity
+        set(value) {
+            val oldValue = field
+
+            // Only changes will be propagated
+            if (value != oldValue) {
+                field = value
+                onCapacityChange()
+            }
+        }
+
     /**
      * The amount of work still remaining at this instant.
      */
@@ -47,6 +61,12 @@ public abstract class SimAbstractResourceContext(
      * A flag to indicate the state of the context.
      */
     public var state: SimResourceState = SimResourceState.Pending
+        private set
+
+    /**
+     * The current processing speed of the resource.
+     */
+    public var speed: Double = 0.0
         private set
 
     /**
@@ -65,20 +85,6 @@ public abstract class SimAbstractResourceContext(
      */
     public open fun onFinish(cause: Throwable?) {
         consumer.onFinish(this, cause)
-    }
-
-    /**
-     * Compute the duration that a resource consumption will take with the specified [speed].
-     */
-    protected open fun getDuration(work: Double, speed: Double): Long {
-        return ceil(work / speed * 1000).toLong()
-    }
-
-    /**
-     * Compute the speed at which the resource may be consumed.
-     */
-    protected open fun getSpeed(limit: Double): Double {
-        return min(limit, capacity)
     }
 
     /**
@@ -183,8 +189,8 @@ public abstract class SimAbstractResourceContext(
                 is SimResourceCommand.Consume -> {
                     // We should only continue processing the next command if:
                     // 1. The resource consumption was finished.
-                    // 2. The resource consumer reached its deadline.
-                    // 3. The resource consumer should be interrupted (e.g., someone called .interrupt())
+                    // 2. The resource capacity cannot satisfy the demand.
+                    // 4. The resource consumer should be interrupted (e.g., someone called .interrupt())
                     if (remainingWork == 0.0 || command.deadline <= now || !isIntermediate) {
                         next(now)
                     } else {
@@ -253,6 +259,8 @@ public abstract class SimAbstractResourceContext(
 
                 require(deadline >= now) { "Deadline already passed" }
 
+                speed = 0.0
+
                 onIdle(deadline)
             }
             is SimResourceCommand.Consume -> {
@@ -262,10 +270,15 @@ public abstract class SimAbstractResourceContext(
 
                 require(deadline >= now) { "Deadline already passed" }
 
+                speed = min(capacity, limit)
+
                 onConsume(work, limit, deadline)
             }
             is SimResourceCommand.Exit -> {
+                speed = 0.0
+
                 doStop(null)
+
                 // No need to set the next active command
                 return null
             }
@@ -286,11 +299,27 @@ public abstract class SimAbstractResourceContext(
         val (timestamp, command) = wrapper
         val duration = now - timestamp
         return when (command) {
-            is SimResourceCommand.Consume -> {
-                val speed = getSpeed(command.limit)
-                getRemainingWork(command.work, speed, duration)
-            }
+            is SimResourceCommand.Consume -> getRemainingWork(command.work, speed, duration)
             is SimResourceCommand.Idle, SimResourceCommand.Exit -> 0.0
+        }
+    }
+
+    /**
+     * Indicate that the capacity of the resource has changed.
+     */
+    private fun onCapacityChange() {
+        // Do not inform the consumer if it has not been started yet
+        if (state != SimResourceState.Active) {
+            return
+        }
+
+        val isThrottled = speed > capacity
+        consumer.onCapacityChanged(this, isThrottled)
+
+        // Optimization: only flush changes if the new capacity cannot satisfy the active resource command.
+        // Alternatively, if the consumer already interrupts the resource, the fast-path will be taken in flush().
+        if (isThrottled) {
+            flush(isIntermediate = true)
         }
     }
 

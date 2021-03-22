@@ -39,17 +39,16 @@ public class SimWorkConsumer(
         require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
 
-    private var limit = 0.0
-    private var remainingWork: Double = 0.0
-
-    override fun onStart(ctx: SimResourceContext) {
-        limit = ctx.capacity * utilization
-        remainingWork = work
-    }
+    private var isFirst = true
 
     override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-        val work = this.remainingWork + ctx.remainingWork
-        this.remainingWork -= work
+        val limit = ctx.capacity * utilization
+        val work = if (isFirst) {
+            isFirst = false
+            work
+        } else {
+            ctx.remainingWork
+        }
         return if (work > 0.0) {
             SimResourceCommand.Consume(work, limit)
         } else {

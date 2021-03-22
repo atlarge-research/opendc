@@ -118,6 +118,10 @@ public class SimResourceForwarder : SimResourceProvider, SimResourceConsumer {
         }
     }
 
+    override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
+        delegate?.onCapacityChanged(ctx, isThrottled)
+    }
+
     override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
         this.ctx = null
 
