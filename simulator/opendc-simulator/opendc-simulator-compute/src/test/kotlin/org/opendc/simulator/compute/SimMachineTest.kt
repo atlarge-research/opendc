@@ -76,7 +76,7 @@ class SimMachineTest {
 
         try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
-
+            yield()
             job.cancel()
             assertEquals(listOf(0.0, 0.5, 1.0, 0.5, 0.0), res) { "Machine is fully utilized" }
         } finally {

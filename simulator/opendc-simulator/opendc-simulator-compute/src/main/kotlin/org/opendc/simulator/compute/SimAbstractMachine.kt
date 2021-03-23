@@ -102,7 +102,7 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
             val consumer = workload.getConsumer(ctx, cpu)
             val job = source.speed
                 .onEach {
-                    _speed[cpu.id] = source.speed.value
+                    _speed[cpu.id] = it
                     _usage.value = _speed.sum() / totalCapacity
                 }
                 .launchIn(this)
@@ -116,9 +116,8 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
 
     override fun close() {
         if (!isTerminated) {
-            resources.forEach { (_, provider) -> provider.close() }
-        } else {
             isTerminated = true
+            resources.forEach { (_, provider) -> provider.close() }
         }
     }
 }
