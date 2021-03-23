@@ -142,11 +142,11 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
          */
         override fun close() {
             if (!isTerminated) {
+                isTerminated = true
+
                 cpus.forEach { (_, provider) -> provider.close() }
                 _vms.remove(this)
             }
-
-            isTerminated = true
         }
     }
 
