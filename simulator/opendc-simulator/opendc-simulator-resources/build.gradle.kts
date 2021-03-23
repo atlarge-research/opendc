@@ -26,6 +26,7 @@ plugins {
     `kotlin-library-conventions`
     `testing-conventions`
     `jacoco-conventions`
+    `benchmark-conventions`
 }
 
 dependencies {
@@ -33,5 +34,6 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation(project(":opendc-utils"))
 
+    jmhImplementation(project(":opendc-simulator:opendc-simulator-core"))
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
 }

@@ -23,26 +23,26 @@
 package org.opendc.simulator.resources
 
 /**
- * A [SimResourceSwitch] enables switching of capacity of multiple resources of type [R] between multiple consumers.
+ * A [SimResourceSwitch] enables switching of capacity of multiple resources between multiple consumers.
  */
-public interface SimResourceSwitch<R : SimResource> : AutoCloseable {
+public interface SimResourceSwitch : AutoCloseable {
     /**
      * The output resource providers to which resource consumers can be attached.
      */
-    public val outputs: Set<SimResourceProvider<R>>
+    public val outputs: Set<SimResourceProvider>
 
     /**
      * The input resources that will be switched between the output providers.
      */
-    public val inputs: Set<SimResourceProvider<R>>
+    public val inputs: Set<SimResourceProvider>
 
     /**
-     * Add an output to the switch represented by [resource].
+     * Add an output to the switch with the specified [capacity].
      */
-    public fun addOutput(resource: R): SimResourceProvider<R>
+    public fun addOutput(capacity: Double): SimResourceProvider
 
     /**
      * Add the specified [input] to the switch.
      */
-    public fun addInput(input: SimResourceProvider<R>)
+    public fun addInput(input: SimResourceProvider)
 }

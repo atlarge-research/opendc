@@ -22,34 +22,19 @@
 
 package org.opendc.simulator.resources
 
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-
 /**
  * A helper class to construct a [SimResourceProvider] which forwards the requests to a [SimResourceConsumer].
  */
-public class SimResourceForwarder<R : SimResource>(override val resource: R) :
-    SimResourceProvider<R>, SimResourceConsumer<R> {
+public class SimResourceForwarder : SimResourceProvider, SimResourceConsumer {
     /**
      * The [SimResourceContext] in which the forwarder runs.
      */
-    private var ctx: SimResourceContext<R>? = null
-
-    /**
-     * A flag to indicate that the forwarder is closed.
-     */
-    private var isClosed: Boolean = false
-
-    /**
-     * The continuation to resume after consumption.
-     */
-    private var cont: Continuation<Unit>? = null
+    private var ctx: SimResourceContext? = null
 
     /**
      * The delegate [SimResourceConsumer].
      */
-    private var delegate: SimResourceConsumer<R>? = null
+    private var delegate: SimResourceConsumer? = null
 
     /**
      * A flag to indicate that the delegate was started.
@@ -57,99 +42,115 @@ public class SimResourceForwarder<R : SimResource>(override val resource: R) :
     private var hasDelegateStarted: Boolean = false
 
     /**
-     * The remaining amount of work last cycle.
+     * The state of the forwarder.
      */
-    private var remainingWork: Double = 0.0
+    override var state: SimResourceState = SimResourceState.Pending
+        private set
 
-    override suspend fun consume(consumer: SimResourceConsumer<R>) {
-        check(!isClosed) { "Lifecycle of forwarder has ended" }
-        check(cont == null) { "Run should not be called concurrently" }
+    override fun startConsumer(consumer: SimResourceConsumer) {
+        check(state == SimResourceState.Pending) { "Resource is in invalid state" }
 
-        return suspendCancellableCoroutine { cont ->
-            this.cont = cont
-            this.delegate = consumer
+        state = SimResourceState.Active
+        delegate = consumer
 
-            cont.invokeOnCancellation { reset() }
-
-            ctx?.interrupt()
-        }
+        // Interrupt the provider to replace the consumer
+        interrupt()
     }
 
     override fun interrupt() {
         ctx?.interrupt()
     }
 
+    override fun cancel() {
+        val delegate = delegate
+        val ctx = ctx
+
+        state = SimResourceState.Pending
+
+        if (delegate != null && ctx != null) {
+            this.delegate = null
+            delegate.onFinish(ctx)
+        }
+    }
+
     override fun close() {
-        isClosed = true
-        interrupt()
-        ctx = null
+        val ctx = ctx
+
+        state = SimResourceState.Stopped
+
+        if (ctx != null) {
+            this.ctx = null
+            ctx.interrupt()
+        }
     }
 
-    override fun onStart(ctx: SimResourceContext<R>): SimResourceCommand {
+    override fun onStart(ctx: SimResourceContext) {
         this.ctx = ctx
-
-        return onNext(ctx, 0.0)
     }
 
-    override fun onNext(ctx: SimResourceContext<R>, remainingWork: Double): SimResourceCommand {
-        this.remainingWork = remainingWork
+    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+        val delegate = delegate
 
-        return if (isClosed) {
-            SimResourceCommand.Exit
-        } else if (!hasDelegateStarted) {
+        if (!hasDelegateStarted) {
             start()
+        }
+
+        return if (state == SimResourceState.Stopped) {
+            SimResourceCommand.Exit
+        } else if (delegate != null) {
+            val command = delegate.onNext(ctx)
+            if (command == SimResourceCommand.Exit) {
+                // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
+                // reset beforehand the existing state and check whether it has been updated afterwards
+                reset()
+
+                delegate.onFinish(ctx)
+
+                if (state == SimResourceState.Stopped)
+                    SimResourceCommand.Exit
+                else
+                    onNext(ctx)
+            } else {
+                command
+            }
         } else {
-            next()
+            SimResourceCommand.Idle()
+        }
+    }
+
+    override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
+        delegate?.onCapacityChanged(ctx, isThrottled)
+    }
+
+    override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
+        this.ctx = null
+
+        val delegate = delegate
+        if (delegate != null) {
+            reset()
+            delegate.onFinish(ctx, cause)
         }
     }
 
     /**
      * Start the delegate.
      */
-    private fun start(): SimResourceCommand {
-        val delegate = delegate ?: return SimResourceCommand.Idle()
-        val command = delegate.onStart(checkNotNull(ctx))
+    private fun start() {
+        val delegate = delegate ?: return
+        delegate.onStart(checkNotNull(ctx))
 
         hasDelegateStarted = true
-
-        return forward(command)
-    }
-
-    /**
-     * Obtain the next command to process.
-     */
-    private fun next(): SimResourceCommand {
-        val delegate = delegate
-        return forward(delegate?.onNext(checkNotNull(ctx), remainingWork) ?: SimResourceCommand.Idle())
-    }
-
-    /**
-     * Forward the specified [command].
-     */
-    private fun forward(command: SimResourceCommand): SimResourceCommand {
-        return if (command == SimResourceCommand.Exit) {
-            val cont = checkNotNull(cont)
-
-            // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
-            // reset beforehand the existing state and check whether it has been updated afterwards
-            reset()
-            cont.resume(Unit)
-
-            if (isClosed)
-                SimResourceCommand.Exit
-            else
-                start()
-        } else {
-            command
-        }
     }
 
     /**
      * Reset the delegate.
      */
     private fun reset() {
-        cont = null
         delegate = null
         hasDelegateStarted = false
+
+        if (state != SimResourceState.Stopped) {
+            state = SimResourceState.Pending
+        }
     }
 }

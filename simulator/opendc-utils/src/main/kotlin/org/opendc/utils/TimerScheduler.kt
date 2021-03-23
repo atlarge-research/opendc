@@ -93,7 +93,7 @@ public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clo
                             try {
                                 timer()
                             } catch (e: Throwable) {
-                                Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), e)
+                                coroutineContext[CoroutineExceptionHandler]?.handleException(coroutineContext, e)
                             }
                         }
                     }

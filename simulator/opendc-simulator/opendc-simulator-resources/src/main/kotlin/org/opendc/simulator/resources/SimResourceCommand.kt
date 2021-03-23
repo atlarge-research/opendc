@@ -23,13 +23,13 @@
 package org.opendc.simulator.resources
 
 /**
- * A SimResourceCommand communicates to a [SimResource] how it is consumed by a [SimResourceConsumer].
+ * A SimResourceCommand communicates to a resource how it is consumed by a [SimResourceConsumer].
  */
 public sealed class SimResourceCommand {
     /**
      * A request to the resource to perform the specified amount of work before the given [deadline].
      *
-     * @param work The amount of work to process on the CPU.
+     * @param work The amount of work to process.
      * @param limit The maximum amount of work to be processed per second.
      * @param deadline The instant at which the work needs to be fulfilled.
      */

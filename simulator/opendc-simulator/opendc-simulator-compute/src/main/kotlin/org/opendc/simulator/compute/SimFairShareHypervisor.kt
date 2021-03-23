@@ -22,10 +22,8 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.compute.model.SimProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A [SimHypervisor] that distributes the computing requirements of multiple [SimWorkload] on a single
@@ -35,15 +33,14 @@ import kotlin.coroutines.CoroutineContext
  */
 public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener? = null) : SimAbstractHypervisor() {
 
-    override fun canFit(model: SimMachineModel, switch: SimResourceSwitch<SimProcessingUnit>): Boolean = true
+    override fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean = true
 
-    override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch<SimProcessingUnit> {
+    override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch {
         return SimResourceSwitchMaxMin(
             ctx.clock,
-            ctx.meta["coroutine-context"] as CoroutineContext,
-            object : SimResourceSwitchMaxMin.Listener<SimProcessingUnit> {
+            object : SimResourceSwitchMaxMin.Listener {
                 override fun onSliceFinish(
-                    switch: SimResourceSwitchMaxMin<SimProcessingUnit>,
+                    switch: SimResourceSwitchMaxMin,
                     requestedWork: Long,
                     grantedWork: Long,
                     overcommittedWork: Long,

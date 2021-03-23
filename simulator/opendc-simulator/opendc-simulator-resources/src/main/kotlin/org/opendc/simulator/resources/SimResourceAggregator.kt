@@ -22,30 +22,27 @@
 
 package org.opendc.simulator.resources
 
-import java.time.Clock
-
 /**
- * The execution context in which a [SimResourceConsumer] runs. It facilitates the communication and control between a
- * resource and a resource consumer.
+ * A [SimResourceAggregator] aggregates the capacity of multiple resources into a single resource.
  */
-public interface SimResourceContext {
+public interface SimResourceAggregator : AutoCloseable {
     /**
-     * The virtual clock tracking simulation time.
+     * The output resource provider to which resource consumers can be attached.
      */
-    public val clock: Clock
+    public val output: SimResourceProvider
 
     /**
-     * The resource capacity available at this instant.
+     * The input resources that will be switched between the output providers.
      */
-    public val capacity: Double
+    public val inputs: Set<SimResourceProvider>
 
     /**
-     * The amount of work still remaining at this instant.
+     * Add the specified [input] to the switch.
      */
-    public val remainingWork: Double
+    public fun addInput(input: SimResourceProvider)
 
     /**
-     * Ask the resource provider to interrupt its resource.
+     * End the lifecycle of the aggregator.
      */
-    public fun interrupt()
+    public override fun close()
 }

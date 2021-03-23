@@ -22,69 +22,72 @@
 
 package org.opendc.simulator.resources
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import java.util.ArrayDeque
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A [SimResourceSwitch] implementation that allocates outputs to the inputs of the switch exclusively. This means that
  * a single output is directly connected to an input and that the switch can only support as much outputs as inputs.
  */
-public class SimResourceSwitchExclusive<R : SimResource>(context: CoroutineContext) : SimResourceSwitch<R> {
+public class SimResourceSwitchExclusive : SimResourceSwitch {
     /**
-     * The [CoroutineScope] of the service bounded by the lifecycle of the service.
+     * A flag to indicate that the switch is closed.
      */
-    private val scope = CoroutineScope(context + Job())
+    private var isClosed: Boolean = false
 
-    private val _outputs = mutableSetOf<SimResourceProvider<R>>()
-    override val outputs: Set<SimResourceProvider<R>>
+    private val _outputs = mutableSetOf<Provider>()
+    override val outputs: Set<SimResourceProvider>
         get() = _outputs
 
-    private val availableResources = ArrayDeque<SimResourceForwarder<R>>()
-    private val _inputs = mutableSetOf<SimResourceProvider<R>>()
-    override val inputs: Set<SimResourceProvider<R>>
+    private val availableResources = ArrayDeque<SimResourceForwarder>()
+
+    private val _inputs = mutableSetOf<SimResourceProvider>()
+    override val inputs: Set<SimResourceProvider>
         get() = _inputs
 
-    override fun addOutput(resource: R): SimResourceProvider<R> {
+    override fun addOutput(capacity: Double): SimResourceProvider {
+        check(!isClosed) { "Switch has been closed" }
         check(availableResources.isNotEmpty()) { "No capacity to serve request" }
         val forwarder = availableResources.poll()
-        val output = Provider(resource, forwarder)
+        val output = Provider(capacity, forwarder)
         _outputs += output
         return output
     }
 
-    override fun addInput(input: SimResourceProvider<R>) {
+    override fun addInput(input: SimResourceProvider) {
+        check(!isClosed) { "Switch has been closed" }
+
         if (input in inputs) {
             return
         }
 
-        val forwarder = SimResourceForwarder(input.resource)
-
-        scope.launch { input.consume(forwarder) }
+        val forwarder = SimResourceForwarder()
 
         _inputs += input
         availableResources += forwarder
+
+        input.startConsumer(object : SimResourceConsumer by forwarder {
+            override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
+                // De-register the input after it has finished
+                _inputs -= input
+                forwarder.onFinish(ctx, cause)
+            }
+        })
     }
 
     override fun close() {
-        scope.cancel()
+        isClosed = true
+
+        // Cancel all upstream subscriptions
+        _inputs.forEach(SimResourceProvider::cancel)
     }
 
     private inner class Provider(
-        override val resource: R,
-        private val forwarder: SimResourceForwarder<R>
-    ) : SimResourceProvider<R> {
-
-        override suspend fun consume(consumer: SimResourceConsumer<R>) = forwarder.consume(consumer)
-
-        override fun interrupt() {
-            forwarder.interrupt()
-        }
-
+        private val capacity: Double,
+        private val forwarder: SimResourceForwarder
+    ) : SimResourceProvider by forwarder {
         override fun close() {
+            // We explicitly do not close the forwarder here in order to re-use it across output resources.
+
             _outputs -= this
             availableResources += forwarder
         }

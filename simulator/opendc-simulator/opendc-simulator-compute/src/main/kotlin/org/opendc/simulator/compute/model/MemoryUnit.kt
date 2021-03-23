@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.resources
-
-import java.time.Clock
+package org.opendc.simulator.compute.model
 
 /**
- * The execution context in which a [SimResourceConsumer] runs. It facilitates the communication and control between a
- * resource and a resource consumer.
+ * A memory unit of a compute resource, either virtual or physical.
+ *
+ * @property vendor The vendor string of the memory.
+ * @property modelName The name of the memory model.
+ * @property speed The access speed of the memory in MHz.
+ * @property size The size of the memory unit in MBs.
  */
-public interface SimResourceContext {
-    /**
-     * The virtual clock tracking simulation time.
-     */
-    public val clock: Clock
-
-    /**
-     * The resource capacity available at this instant.
-     */
-    public val capacity: Double
-
-    /**
-     * The amount of work still remaining at this instant.
-     */
-    public val remainingWork: Double
-
-    /**
-     * Ask the resource provider to interrupt its resource.
-     */
-    public fun interrupt()
-}
+public data class MemoryUnit(
+    public val vendor: String,
+    public val modelName: String,
+    public val speed: Double,
+    public val size: Long
+)

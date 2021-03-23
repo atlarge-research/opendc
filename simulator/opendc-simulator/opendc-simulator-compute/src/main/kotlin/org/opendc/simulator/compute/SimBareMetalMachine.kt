@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.*
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
@@ -57,8 +57,8 @@ public class SimBareMetalMachine(
      */
     private val scheduler = TimerScheduler<Any>(this.context, clock)
 
-    override val resources: Map<SimProcessingUnit, SimResourceSource<SimProcessingUnit>> =
-        model.cpus.associateWith { SimResourceSource(it, clock, scheduler) }
+    override val resources: Map<ProcessingUnit, SimResourceSource> =
+        model.cpus.associateWith { SimResourceSource(it.frequency, clock, scheduler) }
 
     override fun close() {
         super.close()

@@ -23,23 +23,49 @@
 package org.opendc.simulator.resources
 
 /**
- * A SimResourceConsumer characterizes how a [SimResource] is consumed.
+ * A [SimResourceConsumer] characterizes how a [SimResource] is consumed.
+ *
+ * Implementors of this interface should be considered stateful and must be assumed not to be re-usable (concurrently)
+ * for multiple resource providers, unless explicitly said otherwise.
  */
-public interface SimResourceConsumer<in R : SimResource> {
+public interface SimResourceConsumer {
     /**
-     * This method is invoked when the consumer is started for a resource.
+     * This method is invoked when the consumer is started for some resource.
      *
      * @param ctx The execution context in which the consumer runs.
-     * @return The next command that the resource should perform.
      */
-    public fun onStart(ctx: SimResourceContext<R>): SimResourceCommand
+    public fun onStart(ctx: SimResourceContext) {}
 
     /**
-     * This method is invoked when a resource was either interrupted or reached its deadline.
+     * This method is invoked when a resource asks for the next [command][SimResourceCommand] to process, either because
+     * the resource finished processing, reached its deadline or was interrupted.
      *
      * @param ctx The execution context in which the consumer runs.
-     * @param remainingWork The remaining work that was not yet completed.
-     * @return The next command that the resource should perform.
+     * @return The next command that the resource should execute.
      */
-    public fun onNext(ctx: SimResourceContext<R>, remainingWork: Double): SimResourceCommand
+    public fun onNext(ctx: SimResourceContext): SimResourceCommand
+
+    /**
+     * This is method is invoked when the capacity of the resource changes.
+     *
+     * After being informed of such an event, the consumer might decide to adjust its consumption by interrupting the
+     * resource via [SimResourceContext.interrupt]. Alternatively, the consumer may decide to ignore the event, possibly
+     * causing the active resource command to finish at a later moment than initially planned.
+     *
+     * @param ctx The execution context in which the consumer runs.
+     * @param isThrottled A flag to indicate that the active resource command will be throttled as a result of the
+     * capacity change.
+     */
+    public fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {}
+
+    /**
+     * This method is invoked when the consumer has finished, either because it exited via [SimResourceCommand.Exit],
+     * the resource finished itself, or a failure occurred at the resource.
+     *
+     * Note that throwing an exception in [onStart] or [onNext] is undefined behavior and up to the resource provider.
+     *
+     * @param ctx The execution context in which the consumer ran.
+     * @param cause The cause of the finish in case the resource finished exceptionally.
+     */
+    public fun onFinish(ctx: SimResourceContext, cause: Throwable? = null) {}
 }

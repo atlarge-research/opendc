@@ -22,47 +22,47 @@
 
 package org.opendc.simulator.resources.consumer
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
+import kotlin.math.min
 
 /**
- * A [SimResourceConsumer] that replays a workload trace consisting of multiple fragments, each indicating the resource
- * consumption for some period of time.
+ * Helper class to expose an observable [speed] field describing the speed of the consumer.
  */
-public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResourceConsumer {
-    private var iterator: Iterator<Fragment>? = null
-
-    override fun onStart(ctx: SimResourceContext) {
-        check(iterator == null) { "Consumer already running" }
-        iterator = trace.iterator()
-    }
+public class SimSpeedConsumerAdapter(private val delegate: SimResourceConsumer) : SimResourceConsumer by delegate {
+    /**
+     * The resource processing speed over time.
+     */
+    public val speed: StateFlow<Double>
+        get() = _speed
+    private val _speed = MutableStateFlow(0.0)
 
     override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-        val iterator = checkNotNull(iterator)
-        return if (iterator.hasNext()) {
-            val now = ctx.clock.millis()
-            val fragment = iterator.next()
-            val work = (fragment.duration / 1000) * fragment.usage
-            val deadline = now + fragment.duration
+        val command = delegate.onNext(ctx)
 
-            assert(deadline >= now) { "Deadline already passed" }
+        when (command) {
+            is SimResourceCommand.Idle -> _speed.value = 0.0
+            is SimResourceCommand.Consume -> _speed.value = min(ctx.capacity, command.limit)
+            is SimResourceCommand.Exit -> _speed.value = 0.0
+        }
 
-            if (work > 0.0)
-                SimResourceCommand.Consume(work, fragment.usage, deadline)
-            else
-                SimResourceCommand.Idle(deadline)
-        } else {
-            SimResourceCommand.Exit
+        return command
+    }
+
+    override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
+        val oldSpeed = _speed.value
+
+        delegate.onCapacityChanged(ctx, isThrottled)
+
+        // Check if the consumer interrupted the consumer and updated the resource consumption. If not, we might
+        // need to update the current speed.
+        if (oldSpeed == _speed.value) {
+            _speed.value = min(ctx.capacity, _speed.value)
         }
     }
 
-    override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
-        iterator = null
-    }
-
-    /**
-     * A fragment of the workload.
-     */
-    public data class Fragment(val duration: Long, val usage: Double)
+    override fun toString(): String = "SimSpeedConsumerAdapter[delegate=$delegate]"
 }

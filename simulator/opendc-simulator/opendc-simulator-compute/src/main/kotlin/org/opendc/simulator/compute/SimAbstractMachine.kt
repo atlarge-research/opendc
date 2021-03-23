@@ -27,12 +27,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.SimResource
 import org.opendc.simulator.resources.SimResourceProvider
 import org.opendc.simulator.resources.SimResourceSource
+import org.opendc.simulator.resources.consume
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 
@@ -64,24 +64,24 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     /**
      * The resources allocated for this machine.
      */
-    protected abstract val resources: Map<SimProcessingUnit, SimResourceSource<SimProcessingUnit>>
+    protected abstract val resources: Map<ProcessingUnit, SimResourceSource>
 
     /**
      * The execution context in which the workload runs.
      */
     private inner class Context(
-        val sources: Map<SimProcessingUnit, SimResourceProvider<SimProcessingUnit>>,
+        val sources: Map<ProcessingUnit, SimResourceProvider>,
         override val meta: Map<String, Any>
     ) : SimMachineContext {
         override val clock: Clock
             get() = this@SimAbstractMachine.clock
 
-        override val cpus: List<SimProcessingUnit> = model.cpus
+        override val cpus: List<ProcessingUnit> = model.cpus
 
-        override val memory: List<SimMemoryUnit> = model.memory
+        override val memory: List<MemoryUnit> = model.memory
 
-        override fun interrupt(resource: SimResource) {
-            checkNotNull(sources[resource]) { "Invalid resource" }.interrupt()
+        override fun interrupt(cpu: ProcessingUnit) {
+            checkNotNull(sources[cpu]) { "Invalid resource" }.interrupt()
         }
     }
 
@@ -91,7 +91,7 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     override suspend fun run(workload: SimWorkload, meta: Map<String, Any>): Unit = withContext(context) {
         val resources = resources
         require(!isTerminated) { "Machine is terminated" }
-        val ctx = Context(resources, meta + mapOf("coroutine-context" to context))
+        val ctx = Context(resources, meta)
         val totalCapacity = model.cpus.sumByDouble { it.frequency }
 
         _speed = MutableList(model.cpus.size) { 0.0 }
@@ -102,7 +102,7 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
             val consumer = workload.getConsumer(ctx, cpu)
             val job = source.speed
                 .onEach {
-                    _speed[cpu.id] = source.speed.value
+                    _speed[cpu.id] = it
                     _usage.value = _speed.sum() / totalCapacity
                 }
                 .launchIn(this)
@@ -116,9 +116,8 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
 
     override fun close() {
         if (!isTerminated) {
-            resources.forEach { (_, provider) -> provider.close() }
-        } else {
             isTerminated = true
+            resources.forEach { (_, provider) -> provider.close() }
         }
     }
 }

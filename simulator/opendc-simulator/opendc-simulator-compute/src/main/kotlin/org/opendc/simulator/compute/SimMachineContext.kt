@@ -22,9 +22,8 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingUnit
-import org.opendc.simulator.resources.SimResource
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingUnit
 import java.time.Clock
 
 /**
@@ -46,17 +45,17 @@ public interface SimMachineContext {
     /**
      * The CPUs available on the machine.
      */
-    public val cpus: List<SimProcessingUnit>
+    public val cpus: List<ProcessingUnit>
 
     /**
      * The memory available on the machine
      */
-    public val memory: List<SimMemoryUnit>
+    public val memory: List<MemoryUnit>
 
     /**
-     * Interrupt the specified [resource].
+     * Interrupt the specified [cpu].
      *
      * @throws IllegalArgumentException if the resource does not belong to this execution context.
      */
-    public fun interrupt(resource: SimResource)
+    public fun interrupt(cpu: ProcessingUnit)
 }

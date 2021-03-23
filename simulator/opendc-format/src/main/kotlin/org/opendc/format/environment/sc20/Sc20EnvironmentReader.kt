@@ -29,9 +29,9 @@ import org.opendc.compute.simulator.power.models.LinearPowerModel
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingNode
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import java.io.InputStream
 import java.util.*
 
@@ -60,19 +60,19 @@ public class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
                             val cores = machine.cpus.flatMap { id ->
                                 when (id) {
                                     1 -> {
-                                        val node = SimProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 4)
-                                        List(node.coreCount) { SimProcessingUnit(node, it, 4100.0) }
+                                        val node = ProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 4)
+                                        List(node.coreCount) { ProcessingUnit(node, it, 4100.0) }
                                     }
                                     2 -> {
-                                        val node = SimProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 2)
-                                        List(node.coreCount) { SimProcessingUnit(node, it, 3500.0) }
+                                        val node = ProcessingNode("Intel", "Core(TM) i7-6920HQ", "amd64", 2)
+                                        List(node.coreCount) { ProcessingUnit(node, it, 3500.0) }
                                     }
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }
                             val memories = machine.memories.map { id ->
                                 when (id) {
-                                    1 -> SimMemoryUnit("Samsung", "PC DRAM K4A4G045WD", 1600.0, 4_000L)
+                                    1 -> MemoryUnit("Samsung", "PC DRAM K4A4G045WD", 1600.0, 4_000L)
                                     else -> throw IllegalArgumentException("The cpu id $id is not recognized")
                                 }
                             }

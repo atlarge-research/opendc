@@ -20,32 +20,41 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.resources
+import kotlinx.benchmark.gradle.*
+import org.jetbrains.kotlin.allopen.gradle.*
 
-import java.time.Clock
+plugins {
+    id("org.jetbrains.kotlinx.benchmark")
+    `java-library`
+    kotlin("plugin.allopen")
+}
 
-/**
- * The execution context in which a [SimResourceConsumer] runs. It facilitates the communication and control between a
- * resource and a resource consumer.
- */
-public interface SimResourceContext {
-    /**
-     * The virtual clock tracking simulation time.
-     */
-    public val clock: Clock
+sourceSets {
+    register("jmh") {
+        compileClasspath += sourceSets["main"].output
+        runtimeClasspath += sourceSets["main"].output
+    }
+}
 
-    /**
-     * The resource capacity available at this instant.
-     */
-    public val capacity: Double
+configurations {
+    named("jmhImplementation") {
+        extendsFrom(configurations["implementation"])
+    }
+}
 
-    /**
-     * The amount of work still remaining at this instant.
-     */
-    public val remainingWork: Double
+configure<AllOpenExtension> {
+    annotation("org.openjdk.jmh.annotations.State")
+}
 
-    /**
-     * Ask the resource provider to interrupt its resource.
-     */
-    public fun interrupt()
+benchmark {
+    targets {
+        register("jmh") {
+            this as JvmBenchmarkTarget
+            jmhVersion = "1.21"
+        }
+    }
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm:0.3.0")
 }

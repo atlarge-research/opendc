@@ -20,32 +20,39 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.resources
+package org.opendc.simulator.resources.consumer
 
-import java.time.Clock
+import org.opendc.simulator.resources.SimResourceCommand
+import org.opendc.simulator.resources.SimResourceConsumer
+import org.opendc.simulator.resources.SimResourceContext
 
 /**
- * The execution context in which a [SimResourceConsumer] runs. It facilitates the communication and control between a
- * resource and a resource consumer.
+ * A [SimResourceConsumer] that consumes the specified amount of work at the specified utilization.
  */
-public interface SimResourceContext {
-    /**
-     * The virtual clock tracking simulation time.
-     */
-    public val clock: Clock
+public class SimWorkConsumer(
+    private val work: Double,
+    private val utilization: Double
+) : SimResourceConsumer {
 
-    /**
-     * The resource capacity available at this instant.
-     */
-    public val capacity: Double
+    init {
+        require(work >= 0.0) { "Work must be positive" }
+        require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
+    }
 
-    /**
-     * The amount of work still remaining at this instant.
-     */
-    public val remainingWork: Double
+    private var isFirst = true
 
-    /**
-     * Ask the resource provider to interrupt its resource.
-     */
-    public fun interrupt()
+    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+        val limit = ctx.capacity * utilization
+        val work = if (isFirst) {
+            isFirst = false
+            work
+        } else {
+            ctx.remainingWork
+        }
+        return if (work > 0.0) {
+            SimResourceCommand.Consume(work, limit)
+        } else {
+            SimResourceCommand.Exit
+        }
+    }
 }

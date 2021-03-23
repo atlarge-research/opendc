@@ -36,6 +36,8 @@ dependencies {
     implementation(kotlin("gradle-plugin", version = "1.4.31"))
     implementation("org.jlleitschuh.gradle:ktlint-gradle:10.0.0")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
+    implementation("org.jetbrains.kotlin:kotlin-allopen:1.4.30")
+    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.3.0")
 }
 
 kotlinDslPluginOptions {

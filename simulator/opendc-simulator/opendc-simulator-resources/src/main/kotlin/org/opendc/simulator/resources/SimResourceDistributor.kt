@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.model
-
-import org.opendc.simulator.resources.SimResource
+package org.opendc.simulator.resources
 
 /**
- * A memory unit of a compute resource, either virtual or physical.
- *
- * @property vendor The vendor string of the memory.
- * @property modelName The name of the memory model.
- * @property speed The access speed of the memory in MHz.
- * @property size The size of the memory unit in MBs.
+ * A [SimResourceDistributor] distributes the capacity of some resource over multiple resource consumers.
  */
-public data class SimMemoryUnit(
-    public val vendor: String,
-    public val modelName: String,
-    public val speed: Double,
-    public val size: Long
-) : SimResource {
-    override val capacity: Double
-        get() = speed
+public interface SimResourceDistributor : AutoCloseable {
+    /**
+     * The output resource providers to which resource consumers can be attached.
+     */
+    public val outputs: Set<SimResourceProvider>
+
+    /**
+     * The input resource that will be distributed over the consumers.
+     */
+    public val input: SimResourceProvider
+
+    /**
+     * Add an output to the switch with the specified [capacity].
+     */
+    public fun addOutput(capacity: Double): SimResourceProvider
 }

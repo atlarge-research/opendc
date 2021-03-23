@@ -24,6 +24,7 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
@@ -31,9 +32,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingNode
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 
@@ -46,10 +47,10 @@ internal class SimHypervisorTest {
 
     @BeforeEach
     fun setUp() {
-        val cpuNode = SimProcessingNode("Intel", "Xeon", "amd64", 1)
+        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
         model = SimMachineModel(
-            cpus = List(cpuNode.coreCount) { SimProcessingUnit(cpuNode, it, 3200.0) },
-            memory = List(4) { SimMemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
     }
 
@@ -98,15 +99,21 @@ internal class SimHypervisorTest {
             println("Hypervisor finished")
         }
         yield()
-        hypervisor.createMachine(model).run(workloadA)
+        val vm = hypervisor.createMachine(model)
+        val res = mutableListOf<Double>()
+        val job = launch { machine.usage.toList(res) }
+
+        vm.run(workloadA)
         yield()
+        job.cancel()
         machine.close()
 
         assertAll(
             { assertEquals(1113300, listener.totalRequestedWork, "Requested Burst does not match") },
             { assertEquals(1023300, listener.totalGrantedWork, "Granted Burst does not match") },
             { assertEquals(90000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
-            { assertEquals(1200000, currentTime) }
+            { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), res) { "VM usage is correct" } },
+            { assertEquals(1200000, currentTime) { "Current time is correct" } }
         )
     }
 

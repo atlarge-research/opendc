@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.compute.model.SimMemoryUnit
-import org.opendc.simulator.compute.model.SimProcessingUnit
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingUnit
 
 /**
  * A description of the physical or virtual machine on which a bootable image runs.
@@ -31,4 +31,4 @@ import org.opendc.simulator.compute.model.SimProcessingUnit
  * @property cpus The list of processing units available to the image.
  * @property memory The list of memory units available to the image.
  */
-public data class SimMachineModel(public val cpus: List<SimProcessingUnit>, public val memory: List<SimMemoryUnit>)
+public data class SimMachineModel(public val cpus: List<ProcessingUnit>, public val memory: List<MemoryUnit>)
