@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,24 @@
  * SOFTWARE.
  */
 
-description = "Library for simulating computing workloads"
+package org.opendc.simulator.compute
 
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-    `benchmark-conventions`
-}
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-simulator:opendc-simulator-core"))
-    api(project(":opendc-simulator:opendc-simulator-resources"))
-    implementation(project(":opendc-utils"))
+/**
+ * Helper function to create simple consumer workload.
+ */
+fun createSimpleConsumer(): SimTraceWorkload {
+    return SimTraceWorkload(
+        sequenceOf(
+            SimTraceWorkload.Fragment(1000, 28.0, 1),
+            SimTraceWorkload.Fragment(1000, 3500.0, 1),
+            SimTraceWorkload.Fragment(1000, 0.0, 1),
+            SimTraceWorkload.Fragment(1000, 183.0, 1),
+            SimTraceWorkload.Fragment(1000, 400.0, 1),
+            SimTraceWorkload.Fragment(1000, 100.0, 1),
+            SimTraceWorkload.Fragment(1000, 3000.0, 1),
+            SimTraceWorkload.Fragment(1000, 4500.0, 1),
+        ),
+    )
 }
