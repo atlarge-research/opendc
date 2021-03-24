@@ -1,9 +1,8 @@
-package org.opendc.compute.simulator.power
+package org.opendc.simulator.compute.power
 
 import io.mockk.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.compute.simulator.power.models.PStatePowerModel
 import org.opendc.simulator.compute.SimBareMetalMachine
 import java.time.Clock
 

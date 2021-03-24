@@ -1,4 +1,4 @@
-package org.opendc.compute.simulator.power.models
+package org.opendc.simulator.compute.power
 
 import org.opendc.simulator.compute.SimBareMetalMachine
 import java.time.Clock

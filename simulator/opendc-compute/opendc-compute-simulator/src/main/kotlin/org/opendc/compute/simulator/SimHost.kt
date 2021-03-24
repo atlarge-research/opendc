@@ -29,13 +29,12 @@ import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
-import org.opendc.compute.simulator.power.api.CpuPowerModel
-import org.opendc.compute.simulator.power.api.Powerable
-import org.opendc.compute.simulator.power.models.ConstantPowerModel
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.MachinePowerModel
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
@@ -54,9 +53,9 @@ public class SimHost(
     context: CoroutineContext,
     clock: Clock,
     hypervisor: SimHypervisorProvider,
-    cpuPowerModel: CpuPowerModel = ConstantPowerModel(0.0),
-    private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper()
-) : Host, FailureDomain, Powerable, AutoCloseable {
+    powerModel: MachinePowerModel = ConstantPowerModel(0.0),
+    private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
+) : Host, FailureDomain, AutoCloseable {
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
      */
@@ -84,7 +83,7 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, powerModel)
 
     /**
      * The hypervisor to run multiple workloads.
@@ -132,8 +131,6 @@ public class SimHost(
         }
 
     override val model: HostModel = HostModel(model.cpus.size, model.memory.map { it.size }.sum())
-
-    override val powerDraw: Flow<Double> = cpuPowerModel.getPowerDraw(machine)
 
     init {
         // Launch hypervisor onto machine
@@ -223,7 +220,7 @@ public class SimHost(
     }
 
     private fun onGuestStart(vm: Guest) {
-        guests.forEach { _, guest ->
+        guests.forEach { (_, guest) ->
             if (guest.state == ServerState.RUNNING) {
                 vm.performanceInterferenceModel?.onStart(vm.server.image.name)
             }
@@ -233,7 +230,7 @@ public class SimHost(
     }
 
     private fun onGuestStop(vm: Guest) {
-        guests.forEach { _, guest ->
+        guests.forEach { (_, guest) ->
             if (guest.state == ServerState.RUNNING) {
                 vm.performanceInterferenceModel?.onStop(vm.server.image.name)
             }
