@@ -25,13 +25,13 @@ package org.opendc.format.environment.sc18
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.opendc.compute.simulator.power.models.ConstantPowerModel
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.ConstantPowerModel
 import java.io.InputStream
 import java.util.*
 

@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.power.api
+package org.opendc.simulator.compute
 
-import kotlinx.coroutines.flow.Flow
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 
 /**
- * An entity that is uses power from some power source.
+ * Helper function to create simple consumer workload.
  */
-public interface Powerable {
-    /**
-     * The power draw at the device's power supply in watts (W).w
-     */
-    public val powerDraw: Flow<Double>
+fun createSimpleConsumer(): SimTraceWorkload {
+    return SimTraceWorkload(
+        sequenceOf(
+            SimTraceWorkload.Fragment(1000, 28.0, 1),
+            SimTraceWorkload.Fragment(1000, 3500.0, 1),
+            SimTraceWorkload.Fragment(1000, 0.0, 1),
+            SimTraceWorkload.Fragment(1000, 183.0, 1),
+            SimTraceWorkload.Fragment(1000, 400.0, 1),
+            SimTraceWorkload.Fragment(1000, 100.0, 1),
+            SimTraceWorkload.Fragment(1000, 3000.0, 1),
+            SimTraceWorkload.Fragment(1000, 4500.0, 1),
+        ),
+    )
 }

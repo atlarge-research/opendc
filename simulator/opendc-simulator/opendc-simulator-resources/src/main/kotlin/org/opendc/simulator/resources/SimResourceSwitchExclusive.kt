@@ -38,7 +38,7 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
     override val outputs: Set<SimResourceProvider>
         get() = _outputs
 
-    private val availableResources = ArrayDeque<SimResourceForwarder>()
+    private val availableResources = ArrayDeque<SimResourceTransformer>()
 
     private val _inputs = mutableSetOf<SimResourceProvider>()
     override val inputs: Set<SimResourceProvider>
@@ -83,7 +83,7 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
 
     private inner class Provider(
         private val capacity: Double,
-        private val forwarder: SimResourceForwarder
+        private val forwarder: SimResourceTransformer
     ) : SimResourceProvider by forwarder {
         override fun close() {
             // We explicitly do not close the forwarder here in order to re-use it across output resources.

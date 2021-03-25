@@ -1,10 +1,9 @@
-package org.opendc.compute.simulator.power.models
+package org.opendc.simulator.compute.power
 
-import org.opendc.compute.simulator.power.api.CpuPowerModel
-import kotlin.math.sqrt
+import kotlin.math.pow
 
 /**
- * The square root power model partially adapted from CloudSim.
+ * The cubic power model partially adapted from CloudSim.
  *
  * @param maxPower The maximum power draw in Watts of the server.
  * @param staticPowerPercent The static power percentage.
@@ -12,15 +11,15 @@ import kotlin.math.sqrt
  *                      It is the amount of energy consumed even when the host is idle.
  * @property constPower The constant power consumption for each fraction of resource used.
  */
-public class SqrtPowerModel(
+public class CubicPowerModel(
     private var maxPower: Double,
     staticPowerPercent: Double
-) : CpuPowerModel {
+) : MachinePowerModel {
     private var staticPower: Double = staticPowerPercent * maxPower
-    private var constPower: Double = (maxPower - staticPower) / sqrt(100.0)
+    private var constPower: Double = (maxPower - staticPower) / 100.0.pow(3)
 
-    override fun computeCpuPower(cpuUtil: Double): Double {
+    public override fun computeCpuPower(cpuUtil: Double): Double {
         require(cpuUtil in 0.0..1.0) { "CPU utilization must be in [0, 1]" }
-        return staticPower + constPower * sqrt(cpuUtil * 100)
+        return staticPower + constPower * (cpuUtil * 100).pow(3)
     }
 }

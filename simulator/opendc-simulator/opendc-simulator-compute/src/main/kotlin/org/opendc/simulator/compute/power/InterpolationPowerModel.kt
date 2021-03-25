@@ -1,6 +1,5 @@
-package org.opendc.compute.simulator.power.models
+package org.opendc.simulator.compute.power
 
-import org.opendc.compute.simulator.power.api.CpuPowerModel
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -13,7 +12,7 @@ import kotlin.math.floor
  *                      It is the amount of energy consumed even when the host is idle.
  * @property constPower The constant power consumption for each fraction of resource used.
  */
-public abstract class InterpolationPowerModel : CpuPowerModel {
+public abstract class InterpolationPowerModel : MachinePowerModel {
 
     public override fun computeCpuPower(cpuUtil: Double): Double {
         require(cpuUtil in 0.0..1.0) { "CPU utilization must be in [0, 1]" }

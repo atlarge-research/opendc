@@ -23,9 +23,15 @@
 package org.opendc.simulator.resources
 
 /**
- * A helper class to construct a [SimResourceProvider] which forwards the requests to a [SimResourceConsumer].
+ * A [SimResourceFlow] that transforms the resource commands emitted by the resource commands to the resource provider.
+ *
+ * @param isCoupled A flag to indicate that the transformer will exit when the resource consumer exits.
+ * @param transform The function to transform the received resource command.
  */
-public class SimResourceForwarder : SimResourceProvider, SimResourceConsumer {
+public class SimResourceTransformer(
+    private val isCoupled: Boolean = false,
+    private val transform: (SimResourceContext, SimResourceCommand) -> SimResourceCommand
+) : SimResourceFlow {
     /**
      * The [SimResourceContext] in which the forwarder runs.
      */
@@ -98,7 +104,7 @@ public class SimResourceForwarder : SimResourceProvider, SimResourceConsumer {
         return if (state == SimResourceState.Stopped) {
             SimResourceCommand.Exit
         } else if (delegate != null) {
-            val command = delegate.onNext(ctx)
+            val command = transform(ctx, delegate.onNext(ctx))
             if (command == SimResourceCommand.Exit) {
                 // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
                 // reset beforehand the existing state and check whether it has been updated afterwards
@@ -106,7 +112,7 @@ public class SimResourceForwarder : SimResourceProvider, SimResourceConsumer {
 
                 delegate.onFinish(ctx)
 
-                if (state == SimResourceState.Stopped)
+                if (isCoupled || state == SimResourceState.Stopped)
                     SimResourceCommand.Exit
                 else
                     onNext(ctx)
@@ -153,4 +159,13 @@ public class SimResourceForwarder : SimResourceProvider, SimResourceConsumer {
             state = SimResourceState.Pending
         }
     }
+}
+
+/**
+ * Constructs a [SimResourceTransformer] that forwards the received resource command with an identity transform.
+ *
+ * @param isCoupled A flag to indicate that the transformer will exit when the resource consumer exits.
+ */
+public fun SimResourceForwarder(isCoupled: Boolean = false): SimResourceTransformer {
+    return SimResourceTransformer(isCoupled) { _, command -> command }
 }

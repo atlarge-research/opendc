@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,10 @@
  * SOFTWARE.
  */
 
-description = "Library for simulating computing workloads"
+package org.opendc.simulator.resources
 
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-    `benchmark-conventions`
-}
-
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-simulator:opendc-simulator-core"))
-    api(project(":opendc-simulator:opendc-simulator-resources"))
-    implementation(project(":opendc-utils"))
-}
+/**
+ * A [SimResourceFlow] acts as both a resource consumer and resource provider at the same time, simplifying bridging
+ * between different components.
+ */
+public interface SimResourceFlow : SimResourceConsumer, SimResourceProvider

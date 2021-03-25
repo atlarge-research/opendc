@@ -23,7 +23,10 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.MachinePowerModel
 import org.opendc.simulator.resources.*
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
@@ -43,14 +46,20 @@ import kotlin.coroutines.*
 public class SimBareMetalMachine(
     context: CoroutineContext,
     private val clock: Clock,
-    override val model: SimMachineModel
+    override val model: SimMachineModel,
+    private val powerModel: MachinePowerModel = ConstantPowerModel(0.0)
 ) : SimAbstractMachine(clock) {
     /**
      * The [Job] associated with this machine.
      */
-    private val job = Job()
+    private val scope = CoroutineScope(context + Job())
 
-    override val context: CoroutineContext = context + job
+    /**
+     * The power draw of the machine.
+     */
+    public val powerDraw: StateFlow<Double> = usage.map { powerModel.computeCpuPower(it) }.stateIn(scope, SharingStarted.Eagerly, 0.0)
+
+    override val context: CoroutineContext = scope.coroutineContext
 
     /**
      * The [TimerScheduler] to use for scheduling the interrupts.
@@ -63,6 +72,6 @@ public class SimBareMetalMachine(
     override fun close() {
         super.close()
         scheduler.close()
-        job.cancel()
+        scope.cancel()
     }
 }

@@ -22,8 +22,8 @@
 
 package org.opendc.format.environment
 
-import org.opendc.compute.simulator.power.api.CpuPowerModel
 import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.power.MachinePowerModel
 import java.util.*
 
 public data class MachineDef(
@@ -31,5 +31,5 @@ public data class MachineDef(
     val name: String,
     val meta: Map<String, Any>,
     val model: SimMachineModel,
-    val powerModel: CpuPowerModel
+    val powerModel: MachinePowerModel
 )

@@ -36,10 +36,10 @@ import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
 
 /**
- * A test suite for the [SimResourceForwarder] class.
+ * A test suite for the [SimResourceTransformer] class.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class SimResourceForwarderTest {
+internal class SimResourceTransformerTest {
     @Test
     fun testExitImmediately() = runBlockingTest {
         val forwarder = SimResourceForwarder()
@@ -165,6 +165,23 @@ internal class SimResourceForwarderTest {
     }
 
     @Test
+    fun testExitPropagation() = runBlockingTest {
+        val forwarder = SimResourceForwarder(isCoupled = true)
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val source = SimResourceSource(2000.0, clock, scheduler)
+
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
+        every { consumer.onNext(any()) } returns SimResourceCommand.Exit
+
+        source.startConsumer(forwarder)
+        forwarder.consume(consumer)
+        yield()
+
+        assertEquals(SimResourceState.Pending, source.state)
+    }
+
+    @Test
     fun testAdjustCapacity() = runBlockingTest {
         val forwarder = SimResourceForwarder()
         val clock = DelayControllerClockAdapter(this)
@@ -182,5 +199,20 @@ internal class SimResourceForwarderTest {
 
         assertEquals(3000, currentTime)
         verify(exactly = 1) { consumer.onCapacityChanged(any(), true) }
+    }
+
+    @Test
+    fun testTransformExit() = runBlockingTest {
+        val forwarder = SimResourceTransformer { _, _ -> SimResourceCommand.Exit }
+        val clock = DelayControllerClockAdapter(this)
+        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val source = SimResourceSource(1.0, clock, scheduler)
+
+        val consumer = spyk(SimWorkConsumer(2.0, 1.0))
+        source.startConsumer(forwarder)
+        forwarder.consume(consumer)
+
+        assertEquals(0, currentTime)
+        verify(exactly = 1) { consumer.onNext(any()) }
     }
 }

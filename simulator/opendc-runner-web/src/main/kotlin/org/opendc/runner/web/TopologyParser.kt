@@ -30,13 +30,13 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
 import org.bson.Document
 import org.bson.types.ObjectId
-import org.opendc.compute.simulator.power.models.LinearPowerModel
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.LinearPowerModel
 import java.util.*
 
 /**

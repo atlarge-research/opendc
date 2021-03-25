@@ -22,13 +22,13 @@
 
 package org.opendc.format.environment.sc20
 
-import org.opendc.compute.simulator.power.models.LinearPowerModel
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.LinearPowerModel
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream

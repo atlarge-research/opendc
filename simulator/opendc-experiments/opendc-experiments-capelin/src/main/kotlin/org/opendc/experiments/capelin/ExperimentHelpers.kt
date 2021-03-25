@@ -205,7 +205,7 @@ public fun attachMonitor(
             }
             .launchIn(coroutineScope)
 
-        (host as SimHost).powerDraw
+        (host as SimHost).machine.powerDraw
             .onEach { monitor.reportPowerConsumption(host, it) }
             .launchIn(coroutineScope)
     }
