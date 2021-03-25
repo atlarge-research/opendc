@@ -45,7 +45,6 @@ import org.opendc.compute.service.scheduler.AvailableMemoryAllocationPolicy
 import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
 import org.opendc.compute.service.scheduler.ProvisionedCoresAllocationPolicy
 import org.opendc.compute.service.scheduler.RandomAllocationPolicy
-import org.opendc.compute.simulator.allocation.*
 import org.opendc.experiments.capelin.attachMonitor
 import org.opendc.experiments.capelin.createComputeService
 import org.opendc.experiments.capelin.createFailureDomain

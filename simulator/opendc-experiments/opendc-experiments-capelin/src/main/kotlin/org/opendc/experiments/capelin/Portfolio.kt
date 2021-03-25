@@ -28,13 +28,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import mu.KotlinLogging
-import org.opendc.compute.service.scheduler.AllocationPolicy
-import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
-import org.opendc.compute.service.scheduler.AvailableMemoryAllocationPolicy
-import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
-import org.opendc.compute.service.scheduler.ProvisionedCoresAllocationPolicy
-import org.opendc.compute.service.scheduler.RandomAllocationPolicy
-import org.opendc.compute.simulator.allocation.*
+import org.opendc.compute.service.scheduler.*
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology

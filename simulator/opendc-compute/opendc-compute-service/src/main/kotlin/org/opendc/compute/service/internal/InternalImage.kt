@@ -48,7 +48,9 @@ internal class InternalImage(
         service.delete(this)
     }
 
-    override fun equals(other: Any?): Boolean = other is InternalImage && uid == other.uid
+    override fun equals(other: Any?): Boolean = other is Image && uid == other.uid
 
     override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "Image[uid=$uid,name=$name]"
 }

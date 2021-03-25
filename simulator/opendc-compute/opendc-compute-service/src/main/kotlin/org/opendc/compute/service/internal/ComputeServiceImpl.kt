@@ -57,7 +57,7 @@ public class ComputeServiceImpl(
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
      */
-    private val scope = CoroutineScope(context)
+    private val scope = CoroutineScope(context + Job())
 
     /**
      * The logger instance of this server.
@@ -133,130 +133,133 @@ public class ComputeServiceImpl(
     override val hostCount: Int
         get() = hostToView.size
 
-    override fun newClient(): ComputeClient = object : ComputeClient {
-        private var isClosed: Boolean = false
+    override fun newClient(): ComputeClient {
+        check(scope.isActive) { "Service is already closed" }
+        return object : ComputeClient {
+            private var isClosed: Boolean = false
 
-        override suspend fun queryFlavors(): List<Flavor> {
-            check(!isClosed) { "Client is already closed" }
+            override suspend fun queryFlavors(): List<Flavor> {
+                check(!isClosed) { "Client is already closed" }
 
-            return flavors.values.map { ClientFlavor(it) }
-        }
-
-        override suspend fun findFlavor(id: UUID): Flavor? {
-            check(!isClosed) { "Client is already closed" }
-
-            return flavors[id]?.let { ClientFlavor(it) }
-        }
-
-        override suspend fun newFlavor(
-            name: String,
-            cpuCount: Int,
-            memorySize: Long,
-            labels: Map<String, String>,
-            meta: Map<String, Any>
-        ): Flavor {
-            check(!isClosed) { "Client is already closed" }
-
-            val uid = UUID(clock.millis(), random.nextLong())
-            val flavor = InternalFlavor(
-                this@ComputeServiceImpl,
-                uid,
-                name,
-                cpuCount,
-                memorySize,
-                labels,
-                meta
-            )
-
-            flavors[uid] = flavor
-
-            return ClientFlavor(flavor)
-        }
-
-        override suspend fun queryImages(): List<Image> {
-            check(!isClosed) { "Client is already closed" }
-
-            return images.values.map { ClientImage(it) }
-        }
-
-        override suspend fun findImage(id: UUID): Image? {
-            check(!isClosed) { "Client is already closed" }
-
-            return images[id]?.let { ClientImage(it) }
-        }
-
-        override suspend fun newImage(name: String, labels: Map<String, String>, meta: Map<String, Any>): Image {
-            check(!isClosed) { "Client is already closed" }
-
-            val uid = UUID(clock.millis(), random.nextLong())
-            val image = InternalImage(this@ComputeServiceImpl, uid, name, labels, meta)
-
-            images[uid] = image
-
-            return ClientImage(image)
-        }
-
-        override suspend fun newServer(
-            name: String,
-            image: Image,
-            flavor: Flavor,
-            labels: Map<String, String>,
-            meta: Map<String, Any>,
-            start: Boolean
-        ): Server {
-            check(!isClosed) { "Client is closed" }
-            tracer.commit(VmSubmissionEvent(name, image, flavor))
-
-            _events.emit(
-                ComputeServiceEvent.MetricsAvailable(
-                    this@ComputeServiceImpl,
-                    hostCount,
-                    availableHosts.size,
-                    ++submittedVms,
-                    runningVms,
-                    finishedVms,
-                    ++queuedVms,
-                    unscheduledVms
-                )
-            )
-
-            val uid = UUID(clock.millis(), random.nextLong())
-            val server = InternalServer(
-                this@ComputeServiceImpl,
-                uid,
-                name,
-                flavor,
-                image,
-                labels.toMutableMap(),
-                meta.toMutableMap()
-            )
-
-            servers[uid] = server
-
-            if (start) {
-                server.start()
+                return flavors.values.map { ClientFlavor(it) }
             }
 
-            return ClientServer(server)
+            override suspend fun findFlavor(id: UUID): Flavor? {
+                check(!isClosed) { "Client is already closed" }
+
+                return flavors[id]?.let { ClientFlavor(it) }
+            }
+
+            override suspend fun newFlavor(
+                name: String,
+                cpuCount: Int,
+                memorySize: Long,
+                labels: Map<String, String>,
+                meta: Map<String, Any>
+            ): Flavor {
+                check(!isClosed) { "Client is already closed" }
+
+                val uid = UUID(clock.millis(), random.nextLong())
+                val flavor = InternalFlavor(
+                    this@ComputeServiceImpl,
+                    uid,
+                    name,
+                    cpuCount,
+                    memorySize,
+                    labels,
+                    meta
+                )
+
+                flavors[uid] = flavor
+
+                return ClientFlavor(flavor)
+            }
+
+            override suspend fun queryImages(): List<Image> {
+                check(!isClosed) { "Client is already closed" }
+
+                return images.values.map { ClientImage(it) }
+            }
+
+            override suspend fun findImage(id: UUID): Image? {
+                check(!isClosed) { "Client is already closed" }
+
+                return images[id]?.let { ClientImage(it) }
+            }
+
+            override suspend fun newImage(name: String, labels: Map<String, String>, meta: Map<String, Any>): Image {
+                check(!isClosed) { "Client is already closed" }
+
+                val uid = UUID(clock.millis(), random.nextLong())
+                val image = InternalImage(this@ComputeServiceImpl, uid, name, labels, meta)
+
+                images[uid] = image
+
+                return ClientImage(image)
+            }
+
+            override suspend fun newServer(
+                name: String,
+                image: Image,
+                flavor: Flavor,
+                labels: Map<String, String>,
+                meta: Map<String, Any>,
+                start: Boolean
+            ): Server {
+                check(!isClosed) { "Client is closed" }
+                tracer.commit(VmSubmissionEvent(name, image, flavor))
+
+                _events.emit(
+                    ComputeServiceEvent.MetricsAvailable(
+                        this@ComputeServiceImpl,
+                        hostCount,
+                        availableHosts.size,
+                        ++submittedVms,
+                        runningVms,
+                        finishedVms,
+                        ++queuedVms,
+                        unscheduledVms
+                    )
+                )
+
+                val uid = UUID(clock.millis(), random.nextLong())
+                val server = InternalServer(
+                    this@ComputeServiceImpl,
+                    uid,
+                    name,
+                    requireNotNull(flavors[flavor.uid]) { "Unknown flavor" },
+                    requireNotNull(images[image.uid]) { "Unknown image" },
+                    labels.toMutableMap(),
+                    meta.toMutableMap()
+                )
+
+                servers[uid] = server
+
+                if (start) {
+                    server.start()
+                }
+
+                return ClientServer(server)
+            }
+
+            override suspend fun findServer(id: UUID): Server? {
+                check(!isClosed) { "Client is already closed" }
+
+                return servers[id]?.let { ClientServer(it) }
+            }
+
+            override suspend fun queryServers(): List<Server> {
+                check(!isClosed) { "Client is already closed" }
+
+                return servers.values.map { ClientServer(it) }
+            }
+
+            override fun close() {
+                isClosed = true
+            }
+
+            override fun toString(): String = "ComputeClient"
         }
-
-        override suspend fun findServer(id: UUID): Server? {
-            check(!isClosed) { "Client is already closed" }
-
-            return servers[id]?.let { ClientServer(it) }
-        }
-
-        override suspend fun queryServers(): List<Server> {
-            check(!isClosed) { "Client is already closed" }
-
-            return servers.values.map { ClientServer(it) }
-        }
-
-        override fun close() {
-            isClosed = true
-        }
-
-        override fun toString(): String = "ComputeClient"
     }
 
     override fun addHost(host: Host) {
@@ -285,23 +288,25 @@ public class ComputeServiceImpl(
         scope.cancel()
     }
 
-    internal fun schedule(server: InternalServer) {
+    internal fun schedule(server: InternalServer): SchedulingRequest {
         logger.debug { "Enqueueing server ${server.uid} to be assigned to host." }
 
-        queue.add(SchedulingRequest(server))
+        val request = SchedulingRequest(server)
+        queue.add(request)
         requestSchedulingCycle()
+        return request
     }
 
     internal fun delete(flavor: InternalFlavor) {
-        checkNotNull(flavors.remove(flavor.uid)) { "Flavor was not known" }
+        flavors.remove(flavor.uid)
     }
 
     internal fun delete(image: InternalImage) {
-        checkNotNull(images.remove(image.uid)) { "Image was not known" }
+        images.remove(image.uid)
     }
 
     internal fun delete(server: InternalServer) {
-        checkNotNull(servers.remove(server.uid)) { "Server was not known" }
+        servers.remove(server.uid)
     }
 
     /**
@@ -338,7 +343,7 @@ public class ComputeServiceImpl(
             val server = request.server
             val hv = allocationLogic.select(availableHosts, request.server)
             if (hv == null || !hv.host.canFit(server)) {
-                logger.trace { "Server $server selected for scheduling but no capacity available for it." }
+                logger.trace { "Server $server selected for scheduling but no capacity available for it at the moment" }
 
                 if (server.flavor.memorySize > maxMemory || server.flavor.cpuCount > maxCores) {
                     tracer.commit(VmSubmissionInvalidEvent(server.name))
@@ -360,6 +365,8 @@ public class ComputeServiceImpl(
                     queue.poll()
 
                     logger.warn("Failed to spawn $server: does not fit [${clock.millis()}]")
+
+                    server.state = ServerState.ERROR
                     continue
                 } else {
                     break
@@ -372,42 +379,39 @@ public class ComputeServiceImpl(
             queue.poll()
 
             logger.info { "Assigned server $server to host $host." }
-            try {
-                // Speculatively update the hypervisor view information to prevent other images in the queue from
-                // deciding on stale values.
-                hv.numberOfActiveServers++
-                hv.provisionedCores += server.flavor.cpuCount
-                hv.availableMemory -= server.flavor.memorySize // XXX Temporary hack
 
-                scope.launch {
-                    try {
-                        server.assignHost(host)
-                        host.spawn(server)
-                        activeServers[server] = host
+            // Speculatively update the hypervisor view information to prevent other images in the queue from
+            // deciding on stale values.
+            hv.numberOfActiveServers++
+            hv.provisionedCores += server.flavor.cpuCount
+            hv.availableMemory -= server.flavor.memorySize // XXX Temporary hack
 
-                        tracer.commit(VmScheduledEvent(server.name))
-                        _events.emit(
-                            ComputeServiceEvent.MetricsAvailable(
-                                this@ComputeServiceImpl,
-                                hostCount,
-                                availableHosts.size,
-                                submittedVms,
-                                ++runningVms,
-                                finishedVms,
-                                --queuedVms,
-                                unscheduledVms
-                            )
+            scope.launch {
+                try {
+                    server.host = host
+                    host.spawn(server)
+                    activeServers[server] = host
+
+                    tracer.commit(VmScheduledEvent(server.name))
+                    _events.emit(
+                        ComputeServiceEvent.MetricsAvailable(
+                            this@ComputeServiceImpl,
+                            hostCount,
+                            availableHosts.size,
+                            submittedVms,
+                            ++runningVms,
+                            finishedVms,
+                            --queuedVms,
+                            unscheduledVms
                         )
-                    } catch (e: Throwable) {
-                        logger.error("Failed to deploy VM", e)
+                    )
+                } catch (e: Throwable) {
+                    logger.error("Failed to deploy VM", e)
 
-                        hv.numberOfActiveServers--
-                        hv.provisionedCores -= server.flavor.cpuCount
-                        hv.availableMemory += server.flavor.memorySize
-                    }
+                    hv.numberOfActiveServers--
+                    hv.provisionedCores -= server.flavor.cpuCount
+                    hv.availableMemory += server.flavor.memorySize
                 }
-            } catch (e: Exception) {
-                logger.warn(e) { "Failed to assign server $server to $host. " }
             }
         }
     }
@@ -415,7 +419,7 @@ public class ComputeServiceImpl(
     /**
      * A request to schedule an [InternalServer] onto one of the [Host]s.
      */
-    private data class SchedulingRequest(val server: InternalServer) {
+    internal data class SchedulingRequest(val server: InternalServer) {
         /**
          * A flag to indicate that the request is cancelled.
          */

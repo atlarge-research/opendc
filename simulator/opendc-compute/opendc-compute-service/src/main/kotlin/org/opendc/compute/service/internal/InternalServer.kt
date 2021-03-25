@@ -34,8 +34,8 @@ internal class InternalServer(
     private val service: ComputeServiceImpl,
     override val uid: UUID,
     override val name: String,
-    override val flavor: Flavor,
-    override val image: Image,
+    override val flavor: InternalFlavor,
+    override val image: InternalImage,
     override val labels: MutableMap<String, String>,
     override val meta: MutableMap<String, Any>
 ) : Server {
@@ -54,6 +54,11 @@ internal class InternalServer(
      */
     internal var host: Host? = null
 
+    /**
+     * The current scheduling request.
+     */
+    private var request: ComputeServiceImpl.SchedulingRequest? = null
+
     override suspend fun start() {
         when (state) {
             ServerState.RUNNING -> {
@@ -66,35 +71,43 @@ internal class InternalServer(
             }
             ServerState.DELETED -> {
                 logger.warn { "User tried to start terminated server" }
-                throw IllegalArgumentException("Server is terminated")
+                throw IllegalStateException("Server is terminated")
             }
             else -> {
                 logger.info { "User requested to start server $uid" }
                 state = ServerState.PROVISIONING
-                service.schedule(this)
+                assert(request == null) { "Scheduling request already active" }
+                request = service.schedule(this)
             }
         }
     }
 
     override suspend fun stop() {
         when (state) {
-            ServerState.PROVISIONING -> {} // TODO Find way to interrupt these
+            ServerState.PROVISIONING -> {
+                cancelProvisioningRequest()
+                state = ServerState.TERMINATED
+            }
             ServerState.RUNNING, ServerState.ERROR -> {
                 val host = checkNotNull(host) { "Server not running" }
                 host.stop(this)
             }
-            ServerState.TERMINATED -> {} // No work needed
-            ServerState.DELETED -> throw IllegalStateException("Server is terminated")
+            ServerState.TERMINATED, ServerState.DELETED -> {} // No work needed
         }
     }
 
     override suspend fun delete() {
         when (state) {
-            ServerState.PROVISIONING -> {} // TODO Find way to interrupt these
-            ServerState.RUNNING -> {
+            ServerState.PROVISIONING, ServerState.TERMINATED -> {
+                cancelProvisioningRequest()
+                service.delete(this)
+                state = ServerState.DELETED
+            }
+            ServerState.RUNNING, ServerState.ERROR -> {
                 val host = checkNotNull(host) { "Server not running" }
                 host.delete(this)
                 service.delete(this)
+                state = ServerState.DELETED
             }
             else -> {} // No work needed
         }
@@ -121,11 +134,20 @@ internal class InternalServer(
             field = value
         }
 
-    internal fun assignHost(host: Host) {
-        this.host = host
+    /**
+     * Cancel the provisioning request if active.
+     */
+    private fun cancelProvisioningRequest() {
+        val request = request
+        if (request != null) {
+            this.request = null
+            request.isCancelled = true
+        }
     }
 
-    override fun equals(other: Any?): Boolean = other is InternalServer && uid == other.uid
+    override fun equals(other: Any?): Boolean = other is Server && uid == other.uid
 
     override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "Server[uid=$uid,state=$state]"
 }
