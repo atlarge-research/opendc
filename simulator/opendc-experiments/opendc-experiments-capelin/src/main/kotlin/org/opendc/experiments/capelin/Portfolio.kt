@@ -41,7 +41,6 @@ import org.opendc.format.trace.PerformanceInterferenceModelReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.utils.DelayControllerClockAdapter
-import org.opendc.trace.core.EventTracer
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
@@ -114,7 +113,6 @@ public abstract class Portfolio(name: String) : Experiment(name) {
     override fun doRun(repeat: Int) {
         val testScope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(testScope)
-        val tracer = EventTracer(clock)
         val seeder = Random(repeat)
         val environment = Sc20ClusterEnvironmentReader(File(environmentPath, "${topology.name}.txt"))
 
@@ -151,8 +149,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
                 this,
                 clock,
                 environment,
-                allocationPolicy,
-                tracer
+                allocationPolicy
             )
 
             val failureDomain = if (operationalPhenomena.failureFrequency > 0) {

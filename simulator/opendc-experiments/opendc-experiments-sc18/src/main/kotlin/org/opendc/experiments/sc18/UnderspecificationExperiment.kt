@@ -100,7 +100,6 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
             val compute = ComputeService(
                 testScope.coroutineContext,
                 clock,
-                tracer,
                 NumberOfActiveServersAllocationPolicy(),
             )
 

@@ -85,7 +85,7 @@ internal class StageWorkflowSchedulerIntegrationTest {
                     )
                 }
 
-            val compute = ComputeService(testScope.coroutineContext, clock, tracer, NumberOfActiveServersAllocationPolicy(), schedulingQuantum = 1000)
+            val compute = ComputeService(testScope.coroutineContext, clock, NumberOfActiveServersAllocationPolicy(), schedulingQuantum = 1000)
 
             hosts.forEach { compute.addHost(it) }
 

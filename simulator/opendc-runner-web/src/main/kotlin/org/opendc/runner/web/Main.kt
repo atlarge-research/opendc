@@ -54,7 +54,6 @@ import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
 import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
-import org.opendc.trace.core.EventTracer
 import java.io.File
 import kotlin.coroutines.coroutineContext
 import kotlin.random.Random
@@ -243,15 +242,13 @@ public class RunnerCli : CliktCommand(name = "runner") {
         val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), ObjectId::class.java)
         val environment = TopologyParser(topologies, topologyId)
         val monitor = WebExperimentMonitor()
-        val tracer = EventTracer(clock)
 
         testScope.launch {
             val scheduler = createComputeService(
                 this,
                 clock,
                 environment,
-                allocationPolicy,
-                tracer
+                allocationPolicy
             )
 
             val failureDomain = if (operational.getBoolean("failuresEnabled")) {

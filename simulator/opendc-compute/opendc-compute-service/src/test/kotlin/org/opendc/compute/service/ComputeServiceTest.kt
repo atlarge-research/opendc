@@ -40,7 +40,6 @@ import org.opendc.compute.service.driver.HostModel
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.AvailableMemoryAllocationPolicy
 import org.opendc.simulator.utils.DelayControllerClockAdapter
-import org.opendc.trace.core.EventTracer
 import java.util.*
 
 /**
@@ -55,9 +54,8 @@ internal class ComputeServiceTest {
     fun setUp() {
         scope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(scope)
-        val tracer = EventTracer(clock)
         val policy = AvailableMemoryAllocationPolicy()
-        service = ComputeService(scope.coroutineContext, clock, tracer, policy)
+        service = ComputeService(scope.coroutineContext, clock, policy)
     }
 
     @AfterEach

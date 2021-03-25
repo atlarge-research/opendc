@@ -31,9 +31,7 @@ import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
-import org.opendc.compute.service.events.*
 import org.opendc.compute.service.scheduler.AllocationPolicy
-import org.opendc.trace.core.EventTracer
 import org.opendc.utils.TimerScheduler
 import org.opendc.utils.flow.EventFlow
 import java.time.Clock
@@ -50,7 +48,6 @@ import kotlin.math.max
 internal class ComputeServiceImpl(
     private val context: CoroutineContext,
     private val clock: Clock,
-    private val tracer: EventTracer,
     private val allocationPolicy: AllocationPolicy,
     private val schedulingQuantum: Long
 ) : ComputeService, HostListener {
@@ -207,8 +204,6 @@ internal class ComputeServiceImpl(
                 start: Boolean
             ): Server {
                 check(!isClosed) { "Client is closed" }
-                tracer.commit(VmSubmissionEvent(name, image, flavor))
-
                 _events.emit(
                     ComputeServiceEvent.MetricsAvailable(
                         this@ComputeServiceImpl,
@@ -346,8 +341,6 @@ internal class ComputeServiceImpl(
                 logger.trace { "Server $server selected for scheduling but no capacity available for it at the moment" }
 
                 if (server.flavor.memorySize > maxMemory || server.flavor.cpuCount > maxCores) {
-                    tracer.commit(VmSubmissionInvalidEvent(server.name))
-
                     _events.emit(
                         ComputeServiceEvent.MetricsAvailable(
                             this@ComputeServiceImpl,
@@ -392,7 +385,6 @@ internal class ComputeServiceImpl(
                     host.spawn(server)
                     activeServers[server] = host
 
-                    tracer.commit(VmScheduledEvent(server.name))
                     _events.emit(
                         ComputeServiceEvent.MetricsAvailable(
                             this@ComputeServiceImpl,
@@ -437,8 +429,6 @@ internal class ComputeServiceImpl(
                     availableHosts += hv
                 }
 
-                tracer.commit(HypervisorAvailableEvent(host.uid))
-
                 _events.emit(
                     ComputeServiceEvent.MetricsAvailable(
                         this@ComputeServiceImpl,
@@ -460,8 +450,6 @@ internal class ComputeServiceImpl(
 
                 val hv = hostToView[host] ?: return
                 availableHosts -= hv
-
-                tracer.commit(HypervisorUnavailableEvent(hv.uid))
 
                 _events.emit(
                     ComputeServiceEvent.MetricsAvailable(
@@ -494,8 +482,6 @@ internal class ComputeServiceImpl(
 
         if (newState == ServerState.TERMINATED || newState == ServerState.DELETED) {
             logger.info { "[${clock.millis()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
-
-            tracer.commit(VmStoppedEvent(server.name))
 
             _events.emit(
                 ComputeServiceEvent.MetricsAvailable(

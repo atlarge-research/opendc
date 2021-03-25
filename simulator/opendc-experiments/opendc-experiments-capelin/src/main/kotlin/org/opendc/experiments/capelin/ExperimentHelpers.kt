@@ -45,7 +45,6 @@ import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector
 import org.opendc.simulator.failures.FaultInjector
-import org.opendc.trace.core.EventTracer
 import java.io.File
 import java.time.Clock
 import kotlin.coroutines.resume
@@ -135,8 +134,7 @@ public fun createComputeService(
     coroutineScope: CoroutineScope,
     clock: Clock,
     environmentReader: EnvironmentReader,
-    allocationPolicy: AllocationPolicy,
-    eventTracer: EventTracer
+    allocationPolicy: AllocationPolicy
 ): ComputeService {
     val hosts = environmentReader
         .use { it.read() }
@@ -154,7 +152,7 @@ public fun createComputeService(
         }
 
     val scheduler =
-        ComputeService(coroutineScope.coroutineContext, clock, eventTracer, allocationPolicy)
+        ComputeService(coroutineScope.coroutineContext, clock, allocationPolicy)
 
     for (host in hosts) {
         scheduler.addHost(host)

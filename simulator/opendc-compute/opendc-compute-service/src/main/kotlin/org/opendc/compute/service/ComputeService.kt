@@ -27,7 +27,6 @@ import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.AllocationPolicy
-import org.opendc.trace.core.EventTracer
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 
@@ -76,17 +75,15 @@ public interface ComputeService : AutoCloseable {
          *
          * @param context The [CoroutineContext] to use in the service.
          * @param clock The clock instance to use.
-         * @param tracer The event tracer to use.
          * @param allocationPolicy The allocation policy to use.
          */
         public operator fun invoke(
             context: CoroutineContext,
             clock: Clock,
-            tracer: EventTracer,
             allocationPolicy: AllocationPolicy,
             schedulingQuantum: Long = 300000,
         ): ComputeService {
-            return ComputeServiceImpl(context, clock, tracer, allocationPolicy, schedulingQuantum)
+            return ComputeServiceImpl(context, clock, allocationPolicy, schedulingQuantum)
         }
     }
 }

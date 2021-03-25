@@ -45,7 +45,6 @@ import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
-import org.opendc.trace.core.EventTracer
 import java.io.File
 import java.time.Clock
 
@@ -96,15 +95,13 @@ class CapelinIntegrationTest {
         val environmentReader = createTestEnvironmentReader()
         lateinit var scheduler: ComputeService
         lateinit var monitorResults: MonitorResults
-        val tracer = EventTracer(clock)
 
         testScope.launch {
             scheduler = createComputeService(
                 this,
                 clock,
                 environmentReader,
-                allocationPolicy,
-                tracer
+                allocationPolicy
             )
 
             val failureDomain = if (failures) {
@@ -157,15 +154,13 @@ class CapelinIntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader(0.5, seed)
         val environmentReader = createTestEnvironmentReader("single")
-        val tracer = EventTracer(clock)
 
         testScope.launch {
             val scheduler = createComputeService(
                 this,
                 clock,
                 environmentReader,
-                allocationPolicy,
-                tracer
+                allocationPolicy
             )
             val monitorResults = attachMonitor(this, clock, scheduler, monitor)
             processTrace(
