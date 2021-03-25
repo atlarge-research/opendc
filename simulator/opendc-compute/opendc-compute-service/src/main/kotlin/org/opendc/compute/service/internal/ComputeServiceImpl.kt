@@ -22,18 +22,16 @@
 
 package org.opendc.compute.service.internal
 
+import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
 import mu.KotlinLogging
 import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.AllocationPolicy
 import org.opendc.utils.TimerScheduler
-import org.opendc.utils.flow.EventFlow
 import java.time.Clock
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -48,6 +46,7 @@ import kotlin.math.max
 internal class ComputeServiceImpl(
     private val context: CoroutineContext,
     private val clock: Clock,
+    private val meter: Meter,
     private val allocationPolicy: AllocationPolicy,
     private val schedulingQuantum: Long
 ) : ComputeService, HostListener {
@@ -101,23 +100,69 @@ internal class ComputeServiceImpl(
      */
     private val servers = mutableMapOf<UUID, InternalServer>()
 
-    private var submittedVms: Int = 0
-    private var queuedVms: Int = 0
-    private var runningVms: Int = 0
-    private var finishedVms: Int = 0
-    private var unscheduledVms: Int = 0
-
     private var maxCores = 0
     private var maxMemory = 0L
+
+    /**
+     * The number of servers that have been submitted to the service for provisioning.
+     */
+    private val _submittedServers = meter.longCounterBuilder("servers.submitted")
+        .setDescription("Number of start requests")
+        .setUnit("1")
+        .build()
+
+    /**
+     * The number of servers that failed to be scheduled.
+     */
+    private val _unscheduledServers = meter.longCounterBuilder("servers.unscheduled")
+        .setDescription("Number of unscheduled servers")
+        .setUnit("1")
+        .build()
+
+    /**
+     * The number of servers that are waiting to be provisioned.
+     */
+    private val _waitingServers = meter.longUpDownCounterBuilder("servers.waiting")
+        .setDescription("Number of servers waiting to be provisioned")
+        .setUnit("1")
+        .build()
+
+    /**
+     * The number of servers that are waiting to be provisioned.
+     */
+    private val _runningServers = meter.longUpDownCounterBuilder("servers.active")
+        .setDescription("Number of servers currently running")
+        .setUnit("1")
+        .build()
+
+    /**
+     * The number of servers that have finished running.
+     */
+    private val _finishedServers = meter.longCounterBuilder("servers.finished")
+        .setDescription("Number of servers that finished running")
+        .setUnit("1")
+        .build()
+
+    /**
+     * The number of hosts registered at the compute service.
+     */
+    private val _hostCount = meter.longUpDownCounterBuilder("hosts.total")
+        .setDescription("Number of hosts")
+        .setUnit("1")
+        .build()
+
+    /**
+     * The number of available hosts registered at the compute service.
+     */
+    private val _availableHostCount = meter.longUpDownCounterBuilder("hosts.available")
+        .setDescription("Number of available hosts")
+        .setUnit("1")
+        .build()
 
     /**
      * The allocation logic to use.
      */
     private val allocationLogic = allocationPolicy()
-
-    override val events: Flow<ComputeServiceEvent>
-        get() = _events
-    private val _events = EventFlow<ComputeServiceEvent>()
 
     /**
      * The [TimerScheduler] to use for scheduling the scheduler cycles.
@@ -204,18 +249,6 @@ internal class ComputeServiceImpl(
                 start: Boolean
             ): Server {
                 check(!isClosed) { "Client is closed" }
-                _events.emit(
-                    ComputeServiceEvent.MetricsAvailable(
-                        this@ComputeServiceImpl,
-                        hostCount,
-                        availableHosts.size,
-                        ++submittedVms,
-                        runningVms,
-                        finishedVms,
-                        ++queuedVms,
-                        unscheduledVms
-                    )
-                )
 
                 val uid = UUID(clock.millis(), random.nextLong())
                 val server = InternalServer(
@@ -269,14 +302,23 @@ internal class ComputeServiceImpl(
         hostToView[host] = hv
 
         if (host.state == HostState.UP) {
+            _availableHostCount.add(1)
             availableHosts += hv
         }
 
+        _hostCount.add(1)
         host.addListener(this)
     }
 
     override fun removeHost(host: Host) {
-        host.removeListener(this)
+        val view = hostToView.remove(host)
+        if (view != null) {
+            if (availableHosts.remove(view)) {
+                _availableHostCount.add(-1)
+            }
+            host.removeListener(this)
+            _hostCount.add(-1)
+        }
     }
 
     override fun close() {
@@ -288,6 +330,8 @@ internal class ComputeServiceImpl(
 
         val request = SchedulingRequest(server)
         queue.add(request)
+        _submittedServers.add(1)
+        _waitingServers.add(1)
         requestSchedulingCycle()
         return request
     }
@@ -332,6 +376,7 @@ internal class ComputeServiceImpl(
 
             if (request.isCancelled) {
                 queue.poll()
+                _waitingServers.add(-1)
                 continue
             }
 
@@ -341,21 +386,10 @@ internal class ComputeServiceImpl(
                 logger.trace { "Server $server selected for scheduling but no capacity available for it at the moment" }
 
                 if (server.flavor.memorySize > maxMemory || server.flavor.cpuCount > maxCores) {
-                    _events.emit(
-                        ComputeServiceEvent.MetricsAvailable(
-                            this@ComputeServiceImpl,
-                            hostCount,
-                            availableHosts.size,
-                            submittedVms,
-                            runningVms,
-                            finishedVms,
-                            --queuedVms,
-                            ++unscheduledVms
-                        )
-                    )
-
                     // Remove the incoming image
                     queue.poll()
+                    _waitingServers.add(-1)
+                    _unscheduledServers.add(1)
 
                     logger.warn("Failed to spawn $server: does not fit [${clock.millis()}]")
 
@@ -370,6 +404,7 @@ internal class ComputeServiceImpl(
 
             // Remove request from queue
             queue.poll()
+            _waitingServers.add(-1)
 
             logger.info { "Assigned server $server to host $host." }
 
@@ -384,19 +419,6 @@ internal class ComputeServiceImpl(
                     server.host = host
                     host.spawn(server)
                     activeServers[server] = host
-
-                    _events.emit(
-                        ComputeServiceEvent.MetricsAvailable(
-                            this@ComputeServiceImpl,
-                            hostCount,
-                            availableHosts.size,
-                            submittedVms,
-                            ++runningVms,
-                            finishedVms,
-                            --queuedVms,
-                            unscheduledVms
-                        )
-                    )
                 } catch (e: Throwable) {
                     logger.error("Failed to deploy VM", e)
 
@@ -427,20 +449,8 @@ internal class ComputeServiceImpl(
                 if (hv != null) {
                     // Corner case for when the hypervisor already exists
                     availableHosts += hv
+                    _availableHostCount.add(1)
                 }
-
-                _events.emit(
-                    ComputeServiceEvent.MetricsAvailable(
-                        this@ComputeServiceImpl,
-                        hostCount,
-                        availableHosts.size,
-                        submittedVms,
-                        runningVms,
-                        finishedVms,
-                        queuedVms,
-                        unscheduledVms
-                    )
-                )
 
                 // Re-schedule on the new machine
                 requestSchedulingCycle()
@@ -450,19 +460,7 @@ internal class ComputeServiceImpl(
 
                 val hv = hostToView[host] ?: return
                 availableHosts -= hv
-
-                _events.emit(
-                    ComputeServiceEvent.MetricsAvailable(
-                        this@ComputeServiceImpl,
-                        hostCount,
-                        availableHosts.size,
-                        submittedVms,
-                        runningVms,
-                        finishedVms,
-                        queuedVms,
-                        unscheduledVms
-                    )
-                )
+                _availableHostCount.add(-1)
 
                 requestSchedulingCycle()
             }
@@ -480,23 +478,15 @@ internal class ComputeServiceImpl(
 
         server.state = newState
 
-        if (newState == ServerState.TERMINATED || newState == ServerState.DELETED) {
+        if (newState == ServerState.RUNNING) {
+            _runningServers.add(1)
+        } else if (newState == ServerState.TERMINATED || newState == ServerState.DELETED) {
             logger.info { "[${clock.millis()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
 
-            _events.emit(
-                ComputeServiceEvent.MetricsAvailable(
-                    this@ComputeServiceImpl,
-                    hostCount,
-                    availableHosts.size,
-                    submittedVms,
-                    --runningVms,
-                    ++finishedVms,
-                    queuedVms,
-                    unscheduledVms
-                )
-            )
-
             activeServers -= server
+            _runningServers.add(-1)
+            _finishedServers.add(1)
+
             val hv = hostToView[host]
             if (hv != null) {
                 hv.provisionedCores -= server.flavor.cpuCount

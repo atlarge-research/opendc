@@ -23,6 +23,7 @@
 package org.opendc.compute.service
 
 import io.mockk.*
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -55,7 +56,8 @@ internal class ComputeServiceTest {
         scope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(scope)
         val policy = AvailableMemoryAllocationPolicy()
-        service = ComputeService(scope.coroutineContext, clock, policy)
+        val meter = MeterProvider.noop().get("opendc-compute")
+        service = ComputeService(scope.coroutineContext, clock, meter, policy)
     }
 
     @AfterEach

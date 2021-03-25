@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.sc18
 
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.opendc.compute.service.ComputeService
@@ -100,6 +101,7 @@ public class UnderspecificationExperiment : Experiment("underspecification") {
             val compute = ComputeService(
                 testScope.coroutineContext,
                 clock,
+                MeterProvider.noop().get("opendc-compute"),
                 NumberOfActiveServersAllocationPolicy(),
             )
 

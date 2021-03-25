@@ -59,7 +59,7 @@ public class SimHost(
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
      */
-    override val scope: CoroutineScope = CoroutineScope(context)
+    override val scope: CoroutineScope = CoroutineScope(context + Job())
 
     /**
      * The logger instance of this server.

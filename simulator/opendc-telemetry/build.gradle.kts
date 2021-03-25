@@ -19,23 +19,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-description = "OpenDC Compute Service implementation"
-
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
-
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-telemetry:opendc-telemetry-api"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging")
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
-}

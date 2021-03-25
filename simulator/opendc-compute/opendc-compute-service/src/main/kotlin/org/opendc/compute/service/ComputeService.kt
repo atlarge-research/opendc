@@ -22,6 +22,7 @@
 
 package org.opendc.compute.service
 
+import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.service.driver.Host
@@ -34,11 +35,6 @@ import kotlin.coroutines.CoroutineContext
  * The [ComputeService] hosts the API implementation of the OpenDC Compute service.
  */
 public interface ComputeService : AutoCloseable {
-    /**
-     * The events emitted by the service.
-     */
-    public val events: Flow<ComputeServiceEvent>
-
     /**
      * The hosts that are used by the compute service.
      */
@@ -80,10 +76,11 @@ public interface ComputeService : AutoCloseable {
         public operator fun invoke(
             context: CoroutineContext,
             clock: Clock,
+            meter: Meter,
             allocationPolicy: AllocationPolicy,
             schedulingQuantum: Long = 300000,
         ): ComputeService {
-            return ComputeServiceImpl(context, clock, allocationPolicy, schedulingQuantum)
+            return ComputeServiceImpl(context, clock, meter, allocationPolicy, schedulingQuantum)
         }
     }
 }

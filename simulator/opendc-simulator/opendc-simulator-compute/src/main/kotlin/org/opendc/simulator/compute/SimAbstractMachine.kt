@@ -108,8 +108,11 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
                 .launchIn(this)
 
             launch {
-                source.consume(consumer)
-                job.cancel()
+                try {
+                    source.consume(consumer)
+                } finally {
+                    job.cancel()
+                }
             }
         }
     }

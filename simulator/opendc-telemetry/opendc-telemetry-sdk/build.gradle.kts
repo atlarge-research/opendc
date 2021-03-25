@@ -20,28 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service
+description = "Telemetry SDK for OpenDC"
 
-/**
- * An event that is emitted by the [ComputeService].
- */
-public sealed class ComputeServiceEvent {
-    /**
-     * The service that has emitted the event.
-     */
-    public abstract val provisioner: ComputeService
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+}
 
-    /**
-     * An event emitted for writing metrics.
-     */
-    public data class MetricsAvailable(
-        override val provisioner: ComputeService,
-        public val totalHostCount: Int,
-        public val availableHostCount: Int,
-        public val totalVmCount: Int,
-        public val activeVmCount: Int,
-        public val inactiveVmCount: Int,
-        public val waitingVmCount: Int,
-        public val failedVmCount: Int
-    ) : ComputeServiceEvent()
+dependencies {
+    api(platform(project(":opendc-platform")))
+    api(project(":opendc-telemetry:opendc-telemetry-api"))
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    api("io.opentelemetry:opentelemetry-sdk:${versions.otelSdk}")
+    api("io.opentelemetry:opentelemetry-sdk-metrics:${versions.otelSdkMetrics}")
+
+    implementation("io.github.microutils:kotlin-logging")
 }

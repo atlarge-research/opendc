@@ -20,22 +20,15 @@
  * SOFTWARE.
  */
 
-description = "OpenDC Compute Service implementation"
+description = "Telemetry API for OpenDC"
 
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
 }
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-telemetry:opendc-telemetry-api"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging")
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
+    api("io.opentelemetry:opentelemetry-api:${versions.otelApi}")
+    api("io.opentelemetry:opentelemetry-api-metrics:${versions.otelApiMetrics}")
 }

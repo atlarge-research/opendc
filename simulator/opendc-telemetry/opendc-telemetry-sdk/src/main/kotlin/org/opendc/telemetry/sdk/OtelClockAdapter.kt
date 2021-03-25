@@ -20,22 +20,20 @@
  * SOFTWARE.
  */
 
-description = "OpenDC Compute Service implementation"
+package org.opendc.telemetry.sdk
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
+import io.opentelemetry.sdk.common.Clock
+
+/**
+ * An adapter class that bridges a [java.time.Clock] to a [Clock]
+ */
+public class OtelClockAdapter(private val clock: java.time.Clock) : Clock {
+    override fun now(): Long = clock.millis()
+
+    override fun nanoTime(): Long = clock.millis() * 1_000_000L
 }
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-telemetry:opendc-telemetry-api"))
-    implementation(project(":opendc-utils"))
-    implementation("io.github.microutils:kotlin-logging")
-
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
-}
+/**
+ * Convert the specified [java.time.Clock] to a [Clock].
+ */
+public fun java.time.Clock.toOtelClock(): Clock = OtelClockAdapter(this)

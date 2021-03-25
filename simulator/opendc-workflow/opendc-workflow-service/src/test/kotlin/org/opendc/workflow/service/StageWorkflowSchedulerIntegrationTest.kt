@@ -22,6 +22,7 @@
 
 package org.opendc.workflow.service
 
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
@@ -85,7 +86,8 @@ internal class StageWorkflowSchedulerIntegrationTest {
                     )
                 }
 
-            val compute = ComputeService(testScope.coroutineContext, clock, NumberOfActiveServersAllocationPolicy(), schedulingQuantum = 1000)
+            val meter = MeterProvider.noop().get("opendc-compute")
+            val compute = ComputeService(testScope.coroutineContext, clock, meter, NumberOfActiveServersAllocationPolicy(), schedulingQuantum = 1000)
 
             hosts.forEach { compute.addHost(it) }
 

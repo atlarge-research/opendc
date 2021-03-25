@@ -25,7 +25,6 @@ package org.opendc.experiments.capelin.monitor
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
-import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostState
 import org.opendc.experiments.capelin.telemetry.HostEvent
@@ -172,17 +171,26 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         }
     }
 
-    override fun reportProvisionerMetrics(time: Long, event: ComputeServiceEvent.MetricsAvailable) {
+    override fun reportProvisionerMetrics(
+        time: Long,
+        totalHostCount: Int,
+        availableHostCount: Int,
+        totalVmCount: Int,
+        activeVmCount: Int,
+        inactiveVmCount: Int,
+        waitingVmCount: Int,
+        failedVmCount: Int
+    ) {
         provisionerWriter.write(
             ProvisionerEvent(
                 time,
-                event.totalHostCount,
-                event.availableHostCount,
-                event.totalVmCount,
-                event.activeVmCount,
-                event.inactiveVmCount,
-                event.waitingVmCount,
-                event.failedVmCount
+                totalHostCount,
+                availableHostCount,
+                totalVmCount,
+                activeVmCount,
+                inactiveVmCount,
+                waitingVmCount,
+                failedVmCount
             )
         )
     }
