@@ -169,9 +169,8 @@ public abstract class Portfolio(name: String) : Experiment(name) {
                 null
             }
 
-            attachMonitor(this, clock, scheduler, monitor)
+            val monitorResults = attachMonitor(this, clock, scheduler, monitor)
             processTrace(
-                this,
                 clock,
                 trace,
                 scheduler,
@@ -179,11 +178,11 @@ public abstract class Portfolio(name: String) : Experiment(name) {
                 monitor
             )
 
-            logger.debug("SUBMIT=${scheduler.submittedVms}")
-            logger.debug("FAIL=${scheduler.unscheduledVms}")
-            logger.debug("QUEUED=${scheduler.queuedVms}")
-            logger.debug("RUNNING=${scheduler.runningVms}")
-            logger.debug("FINISHED=${scheduler.finishedVms}")
+            logger.debug("SUBMIT=${monitorResults.submittedVms}")
+            logger.debug("FAIL=${monitorResults.unscheduledVms}")
+            logger.debug("QUEUED=${monitorResults.queuedVms}")
+            logger.debug("RUNNING=${monitorResults.runningVms}")
+            logger.debug("FINISHED=${monitorResults.finishedVms}")
 
             failureDomain?.cancel()
             scheduler.close()

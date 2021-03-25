@@ -22,15 +22,10 @@
 
 package org.opendc.experiments.capelin
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
@@ -39,7 +34,6 @@ import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostEvent
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
-import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.AllocationPolicy
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
@@ -54,6 +48,7 @@ import org.opendc.simulator.failures.FaultInjector
 import org.opendc.trace.core.EventTracer
 import java.io.File
 import java.time.Clock
+import kotlin.coroutines.resume
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.random.Random
@@ -142,7 +137,7 @@ public fun createComputeService(
     environmentReader: EnvironmentReader,
     allocationPolicy: AllocationPolicy,
     eventTracer: EventTracer
-): ComputeServiceImpl {
+): ComputeService {
     val hosts = environmentReader
         .use { it.read() }
         .map { def ->
@@ -159,7 +154,7 @@ public fun createComputeService(
         }
 
     val scheduler =
-        ComputeService(coroutineScope.coroutineContext, clock, eventTracer, allocationPolicy) as ComputeServiceImpl
+        ComputeService(coroutineScope.coroutineContext, clock, eventTracer, allocationPolicy)
 
     for (host in hosts) {
         scheduler.addHost(host)
@@ -177,7 +172,8 @@ public fun attachMonitor(
     clock: Clock,
     scheduler: ComputeService,
     monitor: ExperimentMonitor
-) {
+): MonitorResults {
+    val results = MonitorResults()
     // Monitor host events
     for (host in scheduler.hosts) {
         monitor.reportHostStateChange(clock.millis(), host, HostState.UP)
@@ -213,18 +209,33 @@ public fun attachMonitor(
     scheduler.events
         .onEach { event ->
             when (event) {
-                is ComputeServiceEvent.MetricsAvailable ->
+                is ComputeServiceEvent.MetricsAvailable -> {
+                    results.submittedVms = event.totalVmCount
+                    results.queuedVms = event.waitingVmCount
+                    results.runningVms = event.activeVmCount
+                    results.finishedVms = event.inactiveVmCount
+                    results.unscheduledVms = event.failedVmCount
                     monitor.reportProvisionerMetrics(clock.millis(), event)
+                }
             }
         }
         .launchIn(coroutineScope)
+
+    return results
+}
+
+public class MonitorResults {
+    public var submittedVms: Int = 0
+    public var queuedVms: Int = 0
+    public var runningVms: Int = 0
+    public var finishedVms: Int = 0
+    public var unscheduledVms: Int = 0
 }
 
 /**
  * Process the trace.
  */
 public suspend fun processTrace(
-    coroutineScope: CoroutineScope,
     clock: Clock,
     reader: TraceReader<SimWorkload>,
     scheduler: ComputeService,
@@ -234,43 +245,40 @@ public suspend fun processTrace(
     val client = scheduler.newClient()
     val image = client.newImage("vm-image")
     try {
-        var submitted = 0
+        coroutineScope {
+            while (reader.hasNext()) {
+                val entry = reader.next()
 
-        while (reader.hasNext()) {
-            val entry = reader.next()
-
-            submitted++
-            delay(max(0, entry.start - clock.millis()))
-            coroutineScope.launch {
-                chan.send(Unit)
-                val server = client.newServer(
-                    entry.name,
-                    image,
-                    client.newFlavor(
+                delay(max(0, entry.start - clock.millis()))
+                launch {
+                    chan.send(Unit)
+                    val server = client.newServer(
                         entry.name,
-                        entry.meta["cores"] as Int,
-                        entry.meta["required-memory"] as Long
-                    ),
-                    meta = entry.meta
-                )
+                        image,
+                        client.newFlavor(
+                            entry.name,
+                            entry.meta["cores"] as Int,
+                            entry.meta["required-memory"] as Long
+                        ),
+                        meta = entry.meta
+                    )
 
-                server.watch(object : ServerWatcher {
-                    override fun onStateChanged(server: Server, newState: ServerState) {
-                        monitor.reportVmStateChange(clock.millis(), server, newState)
+                    suspendCancellableCoroutine { cont ->
+                        server.watch(object : ServerWatcher {
+                            override fun onStateChanged(server: Server, newState: ServerState) {
+                                monitor.reportVmStateChange(clock.millis(), server, newState)
+
+                                if (newState == ServerState.TERMINATED || newState == ServerState.ERROR) {
+                                    cont.resume(Unit)
+                                }
+                            }
+                        })
                     }
-                })
+                }
             }
         }
 
-        scheduler.events
-            .takeWhile {
-                when (it) {
-                    is ComputeServiceEvent.MetricsAvailable ->
-                        it.inactiveVmCount + it.failedVmCount != submitted
-                }
-            }
-            .collect()
-        delay(1)
+        yield()
     } finally {
         reader.close()
         client.close()

@@ -268,9 +268,8 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 null
             }
 
-            attachMonitor(this, clock, scheduler, monitor)
+            val monitorResults = attachMonitor(this, clock, scheduler, monitor)
             processTrace(
-                this,
                 clock,
                 trace,
                 scheduler,
@@ -278,11 +277,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 monitor
             )
 
-            logger.debug("SUBMIT=${scheduler.submittedVms}")
-            logger.debug("FAIL=${scheduler.unscheduledVms}")
-            logger.debug("QUEUED=${scheduler.queuedVms}")
-            logger.debug("RUNNING=${scheduler.runningVms}")
-            logger.debug("FINISHED=${scheduler.finishedVms}")
+            logger.debug { "Finish SUBMIT=${monitorResults.submittedVms} FAIL=${monitorResults.unscheduledVms} QUEUE=${monitorResults.queuedVms} RUNNING=${monitorResults.runningVms} FINISH=${monitorResults.finishedVms}" }
 
             failureDomain?.cancel()
             scheduler.close()

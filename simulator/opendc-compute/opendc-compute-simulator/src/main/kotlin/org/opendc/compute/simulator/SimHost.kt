@@ -207,6 +207,8 @@ public class SimHost(
         _state = HostState.DOWN
     }
 
+    override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
+
     /**
      * Convert flavor to machine model.
      */

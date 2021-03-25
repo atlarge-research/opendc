@@ -33,8 +33,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
-import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
@@ -94,7 +94,8 @@ class CapelinIntegrationTest {
         val allocationPolicy = AvailableCoreMemoryAllocationPolicy()
         val traceReader = createTestTraceReader()
         val environmentReader = createTestEnvironmentReader()
-        lateinit var scheduler: ComputeServiceImpl
+        lateinit var scheduler: ComputeService
+        lateinit var monitorResults: MonitorResults
         val tracer = EventTracer(clock)
 
         testScope.launch {
@@ -120,9 +121,8 @@ class CapelinIntegrationTest {
                 null
             }
 
-            attachMonitor(this, clock, scheduler, monitor)
+            monitorResults = attachMonitor(this, clock, scheduler, monitor)
             processTrace(
-                this,
                 clock,
                 traceReader,
                 scheduler,
@@ -130,7 +130,7 @@ class CapelinIntegrationTest {
                 monitor
             )
 
-            println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
+            println("Finish SUBMIT=${monitorResults.submittedVms} FAIL=${monitorResults.unscheduledVms} QUEUE=${monitorResults.queuedVms} RUNNING=${monitorResults.runningVms} FINISH=${monitorResults.finishedVms}")
 
             failureDomain?.cancel()
             scheduler.close()
@@ -141,8 +141,8 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(50, scheduler.submittedVms, "The trace contains 50 VMs") },
-            { assertEquals(50, scheduler.finishedVms, "All VMs should finish after a run") },
+            { assertEquals(50, monitorResults.submittedVms, "The trace contains 50 VMs") },
+            { assertEquals(50, monitorResults.finishedVms, "All VMs should finish after a run") },
             { assertEquals(1672916917970, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
             { assertEquals(435179794565, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
             { assertEquals(1236692477983, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
@@ -167,9 +167,8 @@ class CapelinIntegrationTest {
                 allocationPolicy,
                 tracer
             )
-            attachMonitor(this, clock, scheduler, monitor)
+            val monitorResults = attachMonitor(this, clock, scheduler, monitor)
             processTrace(
-                this,
                 clock,
                 traceReader,
                 scheduler,
@@ -179,7 +178,7 @@ class CapelinIntegrationTest {
 
             yield()
 
-            println("Finish SUBMIT=${scheduler.submittedVms} FAIL=${scheduler.unscheduledVms} QUEUE=${scheduler.queuedVms} RUNNING=${scheduler.runningVms} FINISH=${scheduler.finishedVms}")
+            println("Finish SUBMIT=${monitorResults.submittedVms} FAIL=${monitorResults.unscheduledVms} QUEUE=${monitorResults.queuedVms} RUNNING=${monitorResults.runningVms} FINISH=${monitorResults.finishedVms}")
 
             scheduler.close()
             monitor.close()

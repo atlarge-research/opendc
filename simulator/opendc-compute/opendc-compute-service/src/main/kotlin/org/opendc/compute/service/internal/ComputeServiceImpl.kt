@@ -47,7 +47,7 @@ import kotlin.math.max
  * @param context The [CoroutineContext] to use.
  * @param clock The clock instance to keep track of time.
  */
-public class ComputeServiceImpl(
+internal class ComputeServiceImpl(
     private val context: CoroutineContext,
     private val clock: Clock,
     private val tracer: EventTracer,
@@ -104,11 +104,11 @@ public class ComputeServiceImpl(
      */
     private val servers = mutableMapOf<UUID, InternalServer>()
 
-    public var submittedVms: Int = 0
-    public var queuedVms: Int = 0
-    public var runningVms: Int = 0
-    public var finishedVms: Int = 0
-    public var unscheduledVms: Int = 0
+    private var submittedVms: Int = 0
+    private var queuedVms: Int = 0
+    private var runningVms: Int = 0
+    private var finishedVms: Int = 0
+    private var unscheduledVms: Int = 0
 
     private var maxCores = 0
     private var maxMemory = 0L
