@@ -24,13 +24,9 @@ package org.opendc.workflow.service.internal
 
 import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import mu.KotlinLogging
 import org.opendc.compute.api.*
-import org.opendc.trace.core.EventTracer
-import org.opendc.trace.core.consumeAsFlow
-import org.opendc.trace.core.enable
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES
 import org.opendc.workflow.service.*
@@ -52,7 +48,6 @@ import kotlin.coroutines.resume
 public class WorkflowServiceImpl(
     context: CoroutineContext,
     internal val clock: Clock,
-    internal val tracer: EventTracer,
     private val meter: Meter,
     private val computeClient: ComputeClient,
     mode: WorkflowSchedulerMode,
@@ -249,7 +244,6 @@ public class WorkflowServiceImpl(
             conts[job] = cont
 
             submittedJobs.add(1)
-            tracer.commit(WorkflowEvent.JobSubmitted(this, jobInstance.job))
 
             requestCycle()
         }
@@ -289,12 +283,6 @@ public class WorkflowServiceImpl(
             activeJobs += jobInstance
 
             runningJobs.add(1)
-            tracer.commit(
-                WorkflowEvent.JobStarted(
-                    this,
-                    jobInstance.job
-                )
-            )
             rootListener.jobStarted(jobInstance)
         }
 
@@ -374,13 +362,6 @@ public class WorkflowServiceImpl(
                 val task = taskByServer.getValue(server)
                 task.startedAt = clock.millis()
                 runningTasks.add(1)
-                tracer.commit(
-                    WorkflowEvent.TaskStarted(
-                        this@WorkflowServiceImpl,
-                        task.job.job,
-                        task.task
-                    )
-                )
                 rootListener.taskStarted(task)
             }
             ServerState.TERMINATED, ServerState.ERROR -> {
@@ -399,13 +380,6 @@ public class WorkflowServiceImpl(
 
                 runningTasks.add(-1)
                 finishedTasks.add(1)
-                tracer.commit(
-                    WorkflowEvent.TaskFinished(
-                        this@WorkflowServiceImpl,
-                        task.job.job,
-                        task.task
-                    )
-                )
                 rootListener.taskFinished(task)
 
                 // Add job roots to the scheduling queue
@@ -434,7 +408,6 @@ public class WorkflowServiceImpl(
         activeJobs -= job
         runningJobs.add(-1)
         finishedJobs.add(1)
-        tracer.commit(WorkflowEvent.JobFinished(this, job.job))
         rootListener.jobFinished(job)
 
         conts.remove(job.job)?.resume(Unit)

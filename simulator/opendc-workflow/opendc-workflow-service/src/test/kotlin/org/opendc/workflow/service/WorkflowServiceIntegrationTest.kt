@@ -42,7 +42,6 @@ import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.telemetry.sdk.toOtelClock
-import org.opendc.trace.core.EventTracer
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
 import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
@@ -63,7 +62,6 @@ internal class WorkflowServiceIntegrationTest {
     @Test
     fun testTrace() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val tracer = EventTracer(clock)
 
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
@@ -92,7 +90,6 @@ internal class WorkflowServiceIntegrationTest {
         val scheduler = WorkflowService(
             coroutineContext,
             clock,
-            tracer,
             meterProvider.get("opendc-workflow"),
             compute.newClient(),
             mode = WorkflowSchedulerMode.Batch(100),

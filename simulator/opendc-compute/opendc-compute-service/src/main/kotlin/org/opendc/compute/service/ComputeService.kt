@@ -23,7 +23,6 @@
 package org.opendc.compute.service
 
 import io.opentelemetry.api.metrics.Meter
-import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl

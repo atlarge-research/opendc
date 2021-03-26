@@ -23,9 +23,7 @@
 package org.opendc.workflow.service
 
 import io.opentelemetry.api.metrics.Meter
-import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.api.ComputeClient
-import org.opendc.trace.core.EventTracer
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
 import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
@@ -75,7 +73,6 @@ public interface WorkflowService : AutoCloseable {
         public operator fun invoke(
             context: CoroutineContext,
             clock: Clock,
-            tracer: EventTracer,
             meter: Meter,
             compute: ComputeClient,
             mode: WorkflowSchedulerMode,
@@ -87,7 +84,6 @@ public interface WorkflowService : AutoCloseable {
             return WorkflowServiceImpl(
                 context,
                 clock,
-                tracer,
                 meter,
                 compute,
                 mode,

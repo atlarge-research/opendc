@@ -33,7 +33,6 @@ dependencies {
     api(platform(project(":opendc-platform")))
     api(project(":opendc-workflow:opendc-workflow-api"))
     api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-trace:opendc-trace-core"))
     api(project(":opendc-telemetry:opendc-telemetry-api"))
     implementation(project(":opendc-utils"))
     implementation("io.github.microutils:kotlin-logging")
