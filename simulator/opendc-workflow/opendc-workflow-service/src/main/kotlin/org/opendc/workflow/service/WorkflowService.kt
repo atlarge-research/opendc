@@ -22,6 +22,7 @@
 
 package org.opendc.workflow.service
 
+import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.api.ComputeClient
 import org.opendc.trace.core.EventTracer
@@ -42,14 +43,14 @@ import kotlin.coroutines.CoroutineContext
  */
 public interface WorkflowService : AutoCloseable {
     /**
-     * The events emitted by the workflow scheduler.
-     */
-    public val events: Flow<WorkflowEvent>
-
-    /**
      * Submit the specified [Job] to the workflow service for scheduling.
      */
     public suspend fun submit(job: Job)
+
+    /**
+     * Run the specified [Job] and suspend execution until the job is finished.
+     */
+    public suspend fun run(job: Job)
 
     /**
      * Terminate the lifecycle of the workflow service, stopping all running workflows.
@@ -63,6 +64,7 @@ public interface WorkflowService : AutoCloseable {
          * @param context The [CoroutineContext] to use in the service.
          * @param clock The clock instance to use.
          * @param tracer The event tracer to use.
+         * @param meter The meter to use.
          * @param compute The compute client to use.
          * @param mode The scheduling mode to use.
          * @param jobAdmissionPolicy The job admission policy to use.
@@ -74,6 +76,7 @@ public interface WorkflowService : AutoCloseable {
             context: CoroutineContext,
             clock: Clock,
             tracer: EventTracer,
+            meter: Meter,
             compute: ComputeClient,
             mode: WorkflowSchedulerMode,
             jobAdmissionPolicy: JobAdmissionPolicy,
@@ -85,6 +88,7 @@ public interface WorkflowService : AutoCloseable {
                 context,
                 clock,
                 tracer,
+                meter,
                 compute,
                 mode,
                 jobAdmissionPolicy,

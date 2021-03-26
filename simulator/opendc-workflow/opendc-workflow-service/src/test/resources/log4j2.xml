@@ -28,6 +28,9 @@
         </Console>
     </Appenders>
     <Loggers>
+        <Logger name="org.opendc.workflow" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Root level="warn">
             <AppenderRef ref="Console"/>
         </Root>
