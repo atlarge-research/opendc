@@ -34,8 +34,8 @@ import kotlin.math.max
 /**
  * A TimerScheduler facilitates scheduled execution of future tasks.
  *
- * @property context The [CoroutineContext] to run the tasks with.
- * @property clock The clock to keep track of the time.
+ * @param context The [CoroutineContext] to run the tasks with.
+ * @param clock The clock to keep track of the time.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clock) : AutoCloseable {
@@ -66,6 +66,8 @@ public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clo
         val timers = timers
         val queue = queue
         val clock = clock
+        val job = requireNotNull(coroutineContext[Job])
+        val exceptionHandler = coroutineContext[CoroutineExceptionHandler]
         var next: Long? = channel.receive()
 
         while (true) {
@@ -75,7 +77,7 @@ public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clo
                 val delay = next?.let { max(0L, it - clock.millis()) } ?: return@select
 
                 onTimeout(delay) {
-                    while (queue.isNotEmpty() && isActive) {
+                    while (queue.isNotEmpty() && job.isActive) {
                         val timer = queue.peek()
                         val timestamp = clock.millis()
 
@@ -93,7 +95,7 @@ public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clo
                             try {
                                 timer()
                             } catch (e: Throwable) {
-                                coroutineContext[CoroutineExceptionHandler]?.handleException(coroutineContext, e)
+                                exceptionHandler?.handleException(coroutineContext, e)
                             }
                         }
                     }
@@ -131,11 +133,13 @@ public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clo
         timer?.isCancelled = true
 
         // Optimization: check whether we are the head of the queue
-        if (queue.peek() == timer) {
+        val queue = queue
+        val peek = queue.peek()
+        if (peek == timer) {
             queue.poll()
 
             if (queue.isNotEmpty()) {
-                channel.sendBlocking(queue.peek().timestamp)
+                channel.sendBlocking(peek.timestamp)
             } else {
                 channel.sendBlocking(null)
             }
