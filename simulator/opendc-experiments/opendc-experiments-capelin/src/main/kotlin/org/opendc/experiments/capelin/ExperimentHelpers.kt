@@ -22,24 +22,19 @@
 
 package org.opendc.experiments.capelin
 
-import io.opentelemetry.api.metrics.Meter
-import io.opentelemetry.sdk.common.CompletableResultCode
-import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
 import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
-import org.opendc.compute.service.driver.HostEvent
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.AllocationPolicy
 import org.opendc.compute.simulator.SimHost
+import org.opendc.experiments.capelin.monitor.ExperimentMetricExporter
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
@@ -138,7 +133,7 @@ public fun createTraceReader(
  */
 public suspend fun withComputeService(
     clock: Clock,
-    meter: Meter,
+    meterProvider: MeterProvider,
     environmentReader: EnvironmentReader,
     allocationPolicy: AllocationPolicy,
     block: suspend CoroutineScope.(ComputeService) -> Unit
@@ -153,13 +148,15 @@ public suspend fun withComputeService(
                 def.meta,
                 coroutineContext,
                 clock,
+                meterProvider.get("opendc-compute-simulator"),
                 SimFairShareHypervisorProvider(),
                 def.powerModel
             )
         }
 
+    val schedulerMeter = meterProvider.get("opendc-compute")
     val scheduler =
-        ComputeService(coroutineContext, clock, meter, allocationPolicy)
+        ComputeService(coroutineContext, clock, schedulerMeter, allocationPolicy)
 
     for (host in hosts) {
         scheduler.addHost(host)
@@ -194,62 +191,13 @@ public suspend fun withMonitor(
                 monitor.reportHostStateChange(clock.millis(), host, newState)
             }
         })
-
-        monitorJobs += host.events
-            .onEach { event ->
-                when (event) {
-                    is HostEvent.SliceFinished -> monitor.reportHostSlice(
-                        clock.millis(),
-                        event.requestedBurst,
-                        event.grantedBurst,
-                        event.overcommissionedBurst,
-                        event.interferedBurst,
-                        event.cpuUsage,
-                        event.cpuDemand,
-                        event.numberOfDeployedImages,
-                        event.driver
-                    )
-                }
-            }
-            .launchIn(this)
-
-        monitorJobs += (host as SimHost).machine.powerDraw
-            .onEach { monitor.reportPowerConsumption(host, it) }
-            .launchIn(this)
     }
 
     val reader = CoroutineMetricReader(
-        this, listOf(metricProducer),
-        object : MetricExporter {
-            override fun export(metrics: Collection<MetricData>): CompletableResultCode {
-                val metricsByName = metrics.associateBy { it.name }
-
-                val submittedVms = metricsByName["servers.submitted"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-                val queuedVms = metricsByName["servers.waiting"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-                val unscheduledVms = metricsByName["servers.unscheduled"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-                val runningVms = metricsByName["servers.active"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-                val finishedVms = metricsByName["servers.finished"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-                val hosts = metricsByName["hosts.total"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-                val availableHosts = metricsByName["hosts.available"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-
-                monitor.reportProvisionerMetrics(
-                    clock.millis(),
-                    hosts,
-                    availableHosts,
-                    submittedVms,
-                    runningVms,
-                    finishedVms,
-                    queuedVms,
-                    unscheduledVms
-                )
-                return CompletableResultCode.ofSuccess()
-            }
-
-            override fun flush(): CompletableResultCode = CompletableResultCode.ofSuccess()
-
-            override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
-        },
-        exportInterval = 5 * 60 * 1000
+        this,
+        listOf(metricProducer),
+        ExperimentMetricExporter(monitor, clock, scheduler.hosts.associateBy { it.uid.toString() }),
+        exportInterval = 5 * 60 * 1000 /* Every 5 min (which is the granularity of the workload trace) */
     )
 
     try {

@@ -34,7 +34,6 @@ import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
-import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
@@ -226,7 +225,6 @@ public class RunnerCli : CliktCommand(name = "runner") {
                     .setClock(clock.toOtelClock())
                     .build()
                 val metricProducer = meterProvider as MetricProducer
-                val meter: Meter = meterProvider.get("opendc-compute")
 
                 val operational = scenario.get("operational", Document::class.java)
                 val allocationPolicy =
@@ -254,7 +252,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 val environment = TopologyParser(topologies, topologyId)
                 val failureFrequency = operational.get("failureFrequency", Number::class.java)?.toDouble() ?: 24.0 * 7
 
-                withComputeService(clock, meter, environment, allocationPolicy) { scheduler ->
+                withComputeService(clock, meterProvider, environment, allocationPolicy) { scheduler ->
                     val failureDomain = if (failureFrequency > 0) {
                         logger.debug { "ENABLING failures" }
                         createFailureDomain(

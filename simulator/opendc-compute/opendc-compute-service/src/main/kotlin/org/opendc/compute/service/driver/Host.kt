@@ -22,7 +22,6 @@
 
 package org.opendc.compute.service.driver
 
-import kotlinx.coroutines.flow.Flow
 import org.opendc.compute.api.Server
 import java.util.*
 
@@ -54,11 +53,6 @@ public interface Host {
      * Meta-data associated with the host.
      */
     public val meta: Map<String, Any>
-
-    /**
-     * The events emitted by the driver.
-     */
-    public val events: Flow<HostEvent>
 
     /**
      * Determine whether the specified [instance][server] can still fit on this host.

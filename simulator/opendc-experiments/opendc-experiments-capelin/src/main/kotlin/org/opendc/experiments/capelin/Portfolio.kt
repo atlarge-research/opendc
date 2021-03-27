@@ -126,8 +126,6 @@ public abstract class Portfolio(name: String) : Experiment(name) {
             .setClock(clock.toOtelClock())
             .build()
 
-        val meter = meterProvider.get("opendc-compute")
-
         val workload = workload
         val workloadNames = if (workload is CompositeWorkload) {
             workload.workloads.map { it.name }
@@ -153,7 +151,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
             4096
         )
 
-        withComputeService(clock, meter, environment, allocationPolicy) { scheduler ->
+        withComputeService(clock, meterProvider, environment, allocationPolicy) { scheduler ->
             val failureDomain = if (operationalPhenomena.failureFrequency > 0) {
                 logger.debug("ENABLING failures")
                 createFailureDomain(

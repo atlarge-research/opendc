@@ -22,8 +22,9 @@
 
 package org.opendc.compute.simulator
 
+import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.api.metrics.common.Labels
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
 import mu.KotlinLogging
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
@@ -36,7 +37,6 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.MachinePowerModel
 import org.opendc.simulator.failures.FailureDomain
-import org.opendc.utils.flow.EventFlow
 import java.time.Clock
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -52,6 +52,7 @@ public class SimHost(
     override val meta: Map<String, Any>,
     context: CoroutineContext,
     clock: Clock,
+    meter: Meter,
     hypervisor: SimHypervisorProvider,
     powerModel: MachinePowerModel = ConstantPowerModel(0.0),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
@@ -65,10 +66,6 @@ public class SimHost(
      * The logger instance of this server.
      */
     private val logger = KotlinLogging.logger {}
-
-    override val events: Flow<HostEvent>
-        get() = _events
-    internal val _events = EventFlow<HostEvent>()
 
     /**
      * The event listeners registered with this host.
@@ -99,18 +96,13 @@ public class SimHost(
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
-                _events.emit(
-                    HostEvent.SliceFinished(
-                        this@SimHost,
-                        requestedWork,
-                        grantedWork,
-                        overcommittedWork,
-                        interferedWork,
-                        cpuUsage,
-                        cpuDemand,
-                        guests.size
-                    )
-                )
+                _cpuWork.record(requestedWork.toDouble())
+                _cpuWorkGranted.record(grantedWork.toDouble())
+                _cpuWorkOvercommit.record(overcommittedWork.toDouble())
+                _cpuWorkInterference.record(interferedWork.toDouble())
+                _cpuUsage.record(cpuUsage)
+                _cpuDemand.record(cpuDemand)
+                _cpuPower.record(machine.powerDraw.value)
             }
         }
     )
@@ -131,6 +123,87 @@ public class SimHost(
         }
 
     override val model: HostModel = HostModel(model.cpus.size, model.memory.map { it.size }.sum())
+
+    /**
+     * The number of guests on the host.
+     */
+    private val _guests = meter.longUpDownCounterBuilder("guests.total")
+        .setDescription("Number of guests")
+        .setUnit("1")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The number of active guests on the host.
+     */
+    private val _activeGuests = meter.longUpDownCounterBuilder("guests.active")
+        .setDescription("Number of active guests")
+        .setUnit("1")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The CPU usage on the host.
+     */
+    private val _cpuUsage = meter.doubleValueRecorderBuilder("cpu.usage")
+        .setDescription("The amount of CPU resources used by the host")
+        .setUnit("MHz")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The CPU demand on the host.
+     */
+    private val _cpuDemand = meter.doubleValueRecorderBuilder("cpu.demand")
+        .setDescription("The amount of CPU resources the guests would use if there were no CPU contention or CPU limits")
+        .setUnit("MHz")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The requested work for the CPU.
+     */
+    private val _cpuPower = meter.doubleValueRecorderBuilder("power.usage")
+        .setDescription("The amount of power used by the CPU")
+        .setUnit("W")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The requested work for the CPU.
+     */
+    private val _cpuWork = meter.doubleValueRecorderBuilder("cpu.work.total")
+        .setDescription("The amount of work supplied to the CPU")
+        .setUnit("1")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The work actually performed by the CPU.
+     */
+    private val _cpuWorkGranted = meter.doubleValueRecorderBuilder("cpu.work.granted")
+        .setDescription("The amount of work performed by the CPU")
+        .setUnit("1")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The work that could not be performed by the CPU due to overcommitting resource.
+     */
+    private val _cpuWorkOvercommit = meter.doubleValueRecorderBuilder("cpu.work.overcommit")
+        .setDescription("The amount of work not performed by the CPU due to overcommitment")
+        .setUnit("1")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The work that could not be performed by the CPU due to interference.
+     */
+    private val _cpuWorkInterference = meter.doubleValueRecorderBuilder("cpu.work.interference")
+        .setDescription("The amount of work not performed by the CPU due to interference")
+        .setUnit("1")
+        .build()
+        .bind(Labels.of("host", uid.toString()))
 
     init {
         // Launch hypervisor onto machine
@@ -166,12 +239,11 @@ public class SimHost(
         require(canFit(server)) { "Server does not fit" }
         val guest = Guest(server, hypervisor.createMachine(server.flavor.toMachineModel()))
         guests[server] = guest
+        _guests.add(1)
 
         if (start) {
             guest.start()
         }
-
-        _events.emit(HostEvent.VmsUpdated(this, guests.count { it.value.state == ServerState.RUNNING }, availableMemory))
     }
 
     override fun contains(server: Server): Boolean {
@@ -191,6 +263,7 @@ public class SimHost(
     override suspend fun delete(server: Server) {
         val guest = guests.remove(server) ?: return
         guest.terminate()
+        _guests.add(-1)
     }
 
     override fun addListener(listener: HostListener) {
@@ -228,6 +301,7 @@ public class SimHost(
             }
         }
 
+        _activeGuests.add(1)
         listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
     }
 
@@ -238,9 +312,8 @@ public class SimHost(
             }
         }
 
+        _activeGuests.add(-1)
         listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
-
-        _events.emit(HostEvent.VmsUpdated(this@SimHost, guests.count { it.value.state == ServerState.RUNNING }, availableMemory))
     }
 
     override suspend fun fail() {

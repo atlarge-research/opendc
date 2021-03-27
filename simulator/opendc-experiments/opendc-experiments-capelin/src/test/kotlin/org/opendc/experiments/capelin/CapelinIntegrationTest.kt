@@ -22,7 +22,6 @@
 
 package org.opendc.experiments.capelin
 
-import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
@@ -82,9 +81,7 @@ class CapelinIntegrationTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val meter: Meter = meterProvider.get("opendc-compute")
-
-        withComputeService(clock, meter, environmentReader, allocationPolicy) { scheduler ->
+        withComputeService(clock, meterProvider, environmentReader, allocationPolicy) { scheduler ->
             val failureDomain = if (failures) {
                 println("ENABLING failures")
                 createFailureDomain(
@@ -142,9 +139,7 @@ class CapelinIntegrationTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val meter: Meter = meterProvider.get("opendc-compute")
-
-        withComputeService(clock, meter, environmentReader, allocationPolicy) { scheduler ->
+        withComputeService(clock, meterProvider, environmentReader, allocationPolicy) { scheduler ->
             withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
                 processTrace(
                     clock,

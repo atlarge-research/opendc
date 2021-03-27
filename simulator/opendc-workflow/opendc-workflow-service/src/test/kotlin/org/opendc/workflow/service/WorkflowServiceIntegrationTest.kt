@@ -78,6 +78,7 @@ internal class WorkflowServiceIntegrationTest {
                     def.meta,
                     coroutineContext,
                     clock,
+                    MeterProvider.noop().get("opendc-compute-simulator"),
                     SimSpaceSharedHypervisorProvider()
                 )
             }

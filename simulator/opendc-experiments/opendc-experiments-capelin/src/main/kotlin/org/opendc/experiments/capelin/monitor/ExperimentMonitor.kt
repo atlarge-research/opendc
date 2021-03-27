@@ -26,12 +26,11 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostState
-import java.io.Closeable
 
 /**
  * A monitor watches the events of an experiment.
  */
-public interface ExperimentMonitor : Closeable {
+public interface ExperimentMonitor : AutoCloseable {
     /**
      * This method is invoked when the state of a VM changes.
      */

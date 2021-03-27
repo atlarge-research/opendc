@@ -38,5 +38,6 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging")
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    testImplementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
     testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
 }
