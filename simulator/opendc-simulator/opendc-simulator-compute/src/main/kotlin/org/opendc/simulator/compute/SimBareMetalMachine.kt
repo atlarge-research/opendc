@@ -71,6 +71,7 @@ public class SimBareMetalMachine(
 
     override fun close() {
         super.close()
+
         scheduler.close()
         scope.cancel()
     }

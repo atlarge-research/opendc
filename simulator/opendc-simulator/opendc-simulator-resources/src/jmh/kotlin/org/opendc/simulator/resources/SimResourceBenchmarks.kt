@@ -71,7 +71,7 @@ class SimResourceBenchmarks {
     fun benchmarkForwardOverhead(state: Workload) {
         return scope.runBlockingTest {
             val provider = SimResourceSource(4200.0, clock, scheduler)
-            val forwarder = SimResourceTransformer()
+            val forwarder = SimResourceForwarder()
             provider.startConsumer(forwarder)
             return@runBlockingTest forwarder.consume(state.consumers[0])
         }

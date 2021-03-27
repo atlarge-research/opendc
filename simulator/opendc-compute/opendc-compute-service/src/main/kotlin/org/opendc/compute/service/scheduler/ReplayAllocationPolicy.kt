@@ -20,14 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.simulator.allocation
+package org.opendc.compute.service.scheduler
 
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
-import org.opendc.compute.service.scheduler.AllocationPolicy
-
-private val logger = KotlinLogging.logger {}
 
 /**
  * Policy replaying VM-cluster assignment.
@@ -36,6 +33,8 @@ private val logger = KotlinLogging.logger {}
  * assigned the VM image.
  */
 public class ReplayAllocationPolicy(private val vmPlacements: Map<String, String>) : AllocationPolicy {
+    private val logger = KotlinLogging.logger {}
+
     override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
         override fun select(
             hypervisors: Set<HostView>,

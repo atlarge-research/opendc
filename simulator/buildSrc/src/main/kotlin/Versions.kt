@@ -49,6 +49,11 @@ public class Versions(private val project: Project) {
 
     val kotlinxCoroutines by version(name = "kotlinx-coroutines")
 
+    val otelApi by version(name = "opentelemetry-api")
+    val otelApiMetrics by version(name = "opentelemetry-api-metrics")
+    val otelSdk by version(name = "opentelemetry-sdk")
+    val otelSdkMetrics by version(name = "opentelemetry-sdk-metrics")
+
 
     /**
      * Obtain the version for the specified [dependency][name].

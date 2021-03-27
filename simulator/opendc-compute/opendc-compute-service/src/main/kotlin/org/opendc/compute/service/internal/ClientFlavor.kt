@@ -59,4 +59,10 @@ internal class ClientFlavor(private val delegate: Flavor) : Flavor {
         labels = delegate.labels
         meta = delegate.meta
     }
+
+    override fun equals(other: Any?): Boolean = other is Flavor && other.uid == uid
+
+    override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "Flavor[uid=$uid,name=$name]"
 }

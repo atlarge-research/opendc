@@ -22,19 +22,15 @@
 
 package org.opendc.experiments.capelin
 
+import io.opentelemetry.api.metrics.MeterProvider
+import io.opentelemetry.sdk.metrics.SdkMeterProvider
+import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import mu.KotlinLogging
-import org.opendc.compute.service.scheduler.AllocationPolicy
-import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
-import org.opendc.compute.service.scheduler.AvailableMemoryAllocationPolicy
-import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
-import org.opendc.compute.service.scheduler.ProvisionedCoresAllocationPolicy
-import org.opendc.compute.service.scheduler.RandomAllocationPolicy
-import org.opendc.compute.simulator.allocation.*
+import org.opendc.compute.service.scheduler.*
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
@@ -47,7 +43,7 @@ import org.opendc.format.trace.PerformanceInterferenceModelReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.utils.DelayControllerClockAdapter
-import org.opendc.trace.core.EventTracer
+import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
@@ -117,15 +113,18 @@ public abstract class Portfolio(name: String) : Experiment(name) {
      * Perform a single trial for this portfolio.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun doRun(repeat: Int) {
-        val testScope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(testScope)
-        val tracer = EventTracer(clock)
+    override fun doRun(repeat: Int): Unit = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
         val seeder = Random(repeat)
         val environment = Sc20ClusterEnvironmentReader(File(environmentPath, "${topology.name}.txt"))
 
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = createAllocationPolicy(seeder)
+
+        val meterProvider: MeterProvider = SdkMeterProvider
+            .builder()
+            .setClock(clock.toOtelClock())
+            .build()
 
         val workload = workload
         val workloadNames = if (workload is CompositeWorkload) {
@@ -152,15 +151,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
             4096
         )
 
-        testScope.launch {
-            val scheduler = createComputeService(
-                this,
-                clock,
-                environment,
-                allocationPolicy,
-                tracer
-            )
-
+        withComputeService(clock, meterProvider, environment, allocationPolicy) { scheduler ->
             val failureDomain = if (operationalPhenomena.failureFrequency > 0) {
                 logger.debug("ENABLING failures")
                 createFailureDomain(
@@ -175,31 +166,21 @@ public abstract class Portfolio(name: String) : Experiment(name) {
                 null
             }
 
-            attachMonitor(this, clock, scheduler, monitor)
-            processTrace(
-                this,
-                clock,
-                trace,
-                scheduler,
-                chan,
-                monitor
-            )
-
-            logger.debug("SUBMIT=${scheduler.submittedVms}")
-            logger.debug("FAIL=${scheduler.unscheduledVms}")
-            logger.debug("QUEUED=${scheduler.queuedVms}")
-            logger.debug("RUNNING=${scheduler.runningVms}")
-            logger.debug("FINISHED=${scheduler.finishedVms}")
+            withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
+                processTrace(
+                    clock,
+                    trace,
+                    scheduler,
+                    chan,
+                    monitor
+                )
+            }
 
             failureDomain?.cancel()
-            scheduler.close()
         }
 
-        try {
-            testScope.advanceUntilIdle()
-        } finally {
-            monitor.close()
-        }
+        val monitorResults = collectMetrics(meterProvider as MetricProducer)
+        logger.debug { "Finish SUBMIT=${monitorResults.submittedVms} FAIL=${monitorResults.unscheduledVms} QUEUE=${monitorResults.queuedVms} RUNNING=${monitorResults.runningVms}" }
     }
 
     /**

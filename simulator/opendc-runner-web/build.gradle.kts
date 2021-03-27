@@ -48,4 +48,6 @@ dependencies {
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
     runtimeOnly("org.apache.logging.log4j:log4j-1.2-api:${versions.log4j}")
+
+    implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
 }

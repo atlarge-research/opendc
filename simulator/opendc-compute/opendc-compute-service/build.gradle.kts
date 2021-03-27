@@ -26,15 +26,16 @@ description = "OpenDC Compute Service implementation"
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {
     api(platform(project(":opendc-platform")))
     api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-trace:opendc-trace-core"))
+    api(project(":opendc-telemetry:opendc-telemetry-api"))
     implementation(project(":opendc-utils"))
     implementation("io.github.microutils:kotlin-logging")
 
     testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
 }

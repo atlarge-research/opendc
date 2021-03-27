@@ -24,15 +24,13 @@ package org.opendc.experiments.capelin.monitor
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
-import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostState
-import java.io.Closeable
 
 /**
  * A monitor watches the events of an experiment.
  */
-public interface ExperimentMonitor : Closeable {
+public interface ExperimentMonitor : AutoCloseable {
     /**
      * This method is invoked when the state of a VM changes.
      */
@@ -68,5 +66,14 @@ public interface ExperimentMonitor : Closeable {
     /**
      * This method is invoked for a provisioner event.
      */
-    public fun reportProvisionerMetrics(time: Long, event: ComputeServiceEvent.MetricsAvailable) {}
+    public fun reportProvisionerMetrics(
+        time: Long,
+        totalHostCount: Int,
+        availableHostCount: Int,
+        totalVmCount: Int,
+        activeVmCount: Int,
+        inactiveVmCount: Int,
+        waitingVmCount: Int,
+        failedVmCount: Int
+    ) {}
 }

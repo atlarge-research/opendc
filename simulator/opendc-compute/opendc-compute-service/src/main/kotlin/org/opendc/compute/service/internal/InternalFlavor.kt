@@ -58,7 +58,9 @@ internal class InternalFlavor(
         service.delete(this)
     }
 
-    override fun equals(other: Any?): Boolean = other is InternalFlavor && uid == other.uid
+    override fun equals(other: Any?): Boolean = other is Flavor && uid == other.uid
 
     override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "Flavor[uid=$uid,name=$name]"
 }

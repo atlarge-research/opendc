@@ -22,12 +22,14 @@
 
 package org.opendc.compute.simulator
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestCoroutineScope
+import io.opentelemetry.api.metrics.MeterProvider
+import io.opentelemetry.sdk.common.CompletableResultCode
+import io.opentelemetry.sdk.metrics.SdkMeterProvider
+import io.opentelemetry.sdk.metrics.data.MetricData
+import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.sdk.metrics.export.MetricProducer
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,7 +39,8 @@ import org.opendc.compute.api.Image
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
-import org.opendc.compute.service.driver.HostEvent
+import org.opendc.compute.service.driver.Host
+import org.opendc.compute.service.driver.HostListener
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -45,23 +48,20 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
-import java.time.Clock
+import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
+import org.opendc.telemetry.sdk.toOtelClock
 import java.util.UUID
+import kotlin.coroutines.resume
 
 /**
  * Basic test-suite for the hypervisor.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimHostTest {
-    private lateinit var scope: TestCoroutineScope
-    private lateinit var clock: Clock
     private lateinit var machineModel: SimMachineModel
 
     @BeforeEach
     fun setUp() {
-        scope = TestCoroutineScope()
-        clock = DelayControllerClockAdapter(scope)
-
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
         machineModel = SimMachineModel(
@@ -74,72 +74,98 @@ internal class SimHostTest {
      * Test overcommitting of resources by the hypervisor.
      */
     @Test
-    fun testOvercommitted() {
+    fun testOvercommitted() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
         var requestedWork = 0L
         var grantedWork = 0L
         var overcommittedWork = 0L
 
-        scope.launch {
-            val virtDriver = SimHost(UUID.randomUUID(), "test", machineModel, emptyMap(), coroutineContext, clock, SimFairShareHypervisorProvider())
-            val duration = 5 * 60L
-            val vmImageA = MockImage(
-                UUID.randomUUID(),
-                "<unnamed>",
-                emptyMap(),
-                mapOf(
-                    "workload" to SimTraceWorkload(
-                        sequenceOf(
-                            SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
-                            SimTraceWorkload.Fragment(duration * 1000, 3500.0, 2),
-                            SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
-                            SimTraceWorkload.Fragment(duration * 1000, 183.0, 2)
-                        ),
+        val meterProvider: MeterProvider = SdkMeterProvider
+            .builder()
+            .setClock(clock.toOtelClock())
+            .build()
+
+        val virtDriver = SimHost(UUID.randomUUID(), "test", machineModel, emptyMap(), coroutineContext, clock, meterProvider.get("opendc-compute-simulator"), SimFairShareHypervisorProvider())
+        val duration = 5 * 60L
+        val vmImageA = MockImage(
+            UUID.randomUUID(),
+            "<unnamed>",
+            emptyMap(),
+            mapOf(
+                "workload" to SimTraceWorkload(
+                    sequenceOf(
+                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 3500.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 183.0, 2)
+                    ),
+                )
+            )
+        )
+        val vmImageB = MockImage(
+            UUID.randomUUID(),
+            "<unnamed>",
+            emptyMap(),
+            mapOf(
+                "workload" to SimTraceWorkload(
+                    sequenceOf(
+                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 3100.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 73.0, 2)
                     )
                 )
             )
-            val vmImageB = MockImage(
-                UUID.randomUUID(),
-                "<unnamed>",
-                emptyMap(),
-                mapOf(
-                    "workload" to SimTraceWorkload(
-                        sequenceOf(
-                            SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
-                            SimTraceWorkload.Fragment(duration * 1000, 3100.0, 2),
-                            SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
-                            SimTraceWorkload.Fragment(duration * 1000, 73.0, 2)
-                        )
-                    )
-                )
-            )
+        )
 
-            delay(5)
+        val flavor = MockFlavor(2, 0)
 
-            val flavor = MockFlavor(2, 0)
-            virtDriver.events
-                .onEach { event ->
-                    when (event) {
-                        is HostEvent.SliceFinished -> {
-                            requestedWork += event.requestedBurst
-                            grantedWork += event.grantedBurst
-                            overcommittedWork += event.overcommissionedBurst
-                        }
-                    }
+        // Setup metric reader
+        val reader = CoroutineMetricReader(
+            this, listOf(meterProvider as MetricProducer),
+            object : MetricExporter {
+                override fun export(metrics: Collection<MetricData>): CompletableResultCode {
+                    val metricsByName = metrics.associateBy { it.name }
+                    requestedWork += metricsByName.getValue("cpu.work.total").doubleSummaryData.points.first().sum.toLong()
+                    grantedWork += metricsByName.getValue("cpu.work.granted").doubleSummaryData.points.first().sum.toLong()
+                    overcommittedWork += metricsByName.getValue("cpu.work.overcommit").doubleSummaryData.points.first().sum.toLong()
+                    return CompletableResultCode.ofSuccess()
                 }
-                .launchIn(this)
 
+                override fun flush(): CompletableResultCode = CompletableResultCode.ofSuccess()
+
+                override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
+            },
+            exportInterval = duration * 1000
+        )
+
+        coroutineScope {
             launch { virtDriver.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImageA)) }
             launch { virtDriver.spawn(MockServer(UUID.randomUUID(), "b", flavor, vmImageB)) }
+
+            suspendCancellableCoroutine<Unit> { cont ->
+                virtDriver.addListener(object : HostListener {
+                    private var finished = 0
+
+                    override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
+                        if (newState == ServerState.TERMINATED && ++finished == 2) {
+                            cont.resume(Unit)
+                        }
+                    }
+                })
+            }
         }
 
-        scope.advanceUntilIdle()
+        // Ensure last cycle is collected
+        delay(1000 * duration)
+        virtDriver.close()
+        reader.close()
 
         assertAll(
-            { assertEquals(emptyList<Throwable>(), scope.uncaughtExceptions, "No errors") },
             { assertEquals(4197600, requestedWork, "Requested work does not match") },
             { assertEquals(2157600, grantedWork, "Granted work does not match") },
             { assertEquals(2040000, overcommittedWork, "Overcommitted work does not match") },
-            { assertEquals(1200006, scope.currentTime) }
+            { assertEquals(1500001, currentTime) }
         )
     }
 

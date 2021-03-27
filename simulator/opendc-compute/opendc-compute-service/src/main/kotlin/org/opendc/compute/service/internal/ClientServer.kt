@@ -104,4 +104,10 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
             watcher.onStateChanged(this, newState)
         }
     }
+
+    override fun equals(other: Any?): Boolean = other is Server && other.uid == uid
+
+    override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "Server[uid=$uid,name=$name,state=$state]"
 }

@@ -54,8 +54,17 @@ public abstract class SimAbstractResourceContext(
     override val remainingWork: Double
         get() {
             val activeCommand = activeCommand ?: return 0.0
-            return computeRemainingWork(activeCommand, clock.millis())
+            val now = clock.millis()
+
+            return if (_remainingWorkFlush < now) {
+                _remainingWorkFlush = now
+                computeRemainingWork(activeCommand, now).also { _remainingWork = it }
+            } else {
+                _remainingWork
+            }
         }
+    private var _remainingWork: Double = 0.0
+    private var _remainingWorkFlush: Long = Long.MIN_VALUE
 
     /**
      * A flag to indicate the state of the context.
@@ -201,6 +210,9 @@ public abstract class SimAbstractResourceContext(
                     // Flush may not be called when the resource consumer has finished
                     throw IllegalStateException()
             }
+
+            // Flush remaining work cache
+            _remainingWorkFlush = Long.MIN_VALUE
         } catch (cause: Throwable) {
             doStop(cause)
         } finally {

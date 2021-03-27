@@ -52,4 +52,10 @@ internal class ClientImage(private val delegate: Image) : Image {
         labels = delegate.labels
         meta = delegate.meta
     }
+
+    override fun equals(other: Any?): Boolean = other is Image && other.uid == uid
+
+    override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "Image[uid=$uid,name=$name]"
 }

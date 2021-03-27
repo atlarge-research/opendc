@@ -25,7 +25,6 @@ package org.opendc.runner.web
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
-import org.opendc.compute.service.ComputeServiceEvent
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostState
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
@@ -205,13 +204,22 @@ public class WebExperimentMonitor : ExperimentMonitor {
 
     private var provisionerMetrics: AggregateProvisionerMetrics = AggregateProvisionerMetrics()
 
-    override fun reportProvisionerMetrics(time: Long, event: ComputeServiceEvent.MetricsAvailable) {
+    override fun reportProvisionerMetrics(
+        time: Long,
+        totalHostCount: Int,
+        availableHostCount: Int,
+        totalVmCount: Int,
+        activeVmCount: Int,
+        inactiveVmCount: Int,
+        waitingVmCount: Int,
+        failedVmCount: Int
+    ) {
         provisionerMetrics = AggregateProvisionerMetrics(
-            max(event.totalVmCount, provisionerMetrics.vmTotalCount),
-            max(event.waitingVmCount, provisionerMetrics.vmWaitingCount),
-            max(event.activeVmCount, provisionerMetrics.vmActiveCount),
-            max(event.inactiveVmCount, provisionerMetrics.vmInactiveCount),
-            max(event.failedVmCount, provisionerMetrics.vmFailedCount),
+            max(totalVmCount, provisionerMetrics.vmTotalCount),
+            max(waitingVmCount, provisionerMetrics.vmWaitingCount),
+            max(activeVmCount, provisionerMetrics.vmActiveCount),
+            max(inactiveVmCount, provisionerMetrics.vmInactiveCount),
+            max(failedVmCount, provisionerMetrics.vmFailedCount),
         )
     }
 
