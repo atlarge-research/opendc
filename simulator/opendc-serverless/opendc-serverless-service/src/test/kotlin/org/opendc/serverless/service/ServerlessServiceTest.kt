@@ -53,7 +53,7 @@ internal class ServerlessServiceTest {
         assertDoesNotThrow { client.close() }
 
         assertThrows<IllegalStateException> { client.queryFunctions() }
-        assertThrows<IllegalStateException> { client.newFunction("test") }
+        assertThrows<IllegalStateException> { client.newFunction("test", 128) }
         assertThrows<IllegalStateException> { client.invoke("test") }
         assertThrows<IllegalStateException> { client.findFunction(UUID.randomUUID()) }
         assertThrows<IllegalStateException> { client.findFunction("name") }
@@ -78,7 +78,7 @@ internal class ServerlessServiceTest {
 
         val client = service.newClient()
 
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
 
         assertEquals("test", function.name)
     }
@@ -93,7 +93,7 @@ internal class ServerlessServiceTest {
 
         assertEquals(emptyList<ServerlessFunction>(), client.queryFunctions())
 
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
 
         assertEquals(listOf(function), client.queryFunctions())
     }
@@ -108,7 +108,7 @@ internal class ServerlessServiceTest {
 
         assertEquals(emptyList<ServerlessFunction>(), client.queryFunctions())
 
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
 
         assertNotNull(client.findFunction(function.uid))
     }
@@ -123,7 +123,7 @@ internal class ServerlessServiceTest {
 
         assertEquals(emptyList<ServerlessFunction>(), client.queryFunctions())
 
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
 
         assertNotNull(client.findFunction(function.name))
     }
@@ -136,9 +136,9 @@ internal class ServerlessServiceTest {
 
         val client = service.newClient()
 
-        client.newFunction("test")
+        client.newFunction("test", 128)
 
-        assertThrows<IllegalArgumentException> { client.newFunction("test") }
+        assertThrows<IllegalArgumentException> { client.newFunction("test", 128) }
     }
 
     @Test
@@ -148,7 +148,7 @@ internal class ServerlessServiceTest {
         val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
         assertNotNull(client.findFunction(function.uid))
         function.delete()
         assertNull(client.findFunction(function.uid))
@@ -164,7 +164,7 @@ internal class ServerlessServiceTest {
         val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
         assertNotNull(client.findFunction(function.uid))
         function.delete()
 
@@ -190,7 +190,7 @@ internal class ServerlessServiceTest {
         }
 
         val client = service.newClient()
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
 
         function.invoke()
     }

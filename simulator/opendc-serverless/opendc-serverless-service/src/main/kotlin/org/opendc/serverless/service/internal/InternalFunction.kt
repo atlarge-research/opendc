@@ -32,10 +32,14 @@ internal class InternalFunction(
     private val service: ServerlessServiceImpl,
     override val uid: UUID,
     name: String,
+    allocatedMemory: Long,
     labels: Map<String, String>,
     meta: Map<String, Any>
 ) : ServerlessFunction {
     override var name: String = name
+        private set
+
+    override var memorySize: Long = allocatedMemory
         private set
 
     override val labels: MutableMap<String, String> = labels.toMutableMap()

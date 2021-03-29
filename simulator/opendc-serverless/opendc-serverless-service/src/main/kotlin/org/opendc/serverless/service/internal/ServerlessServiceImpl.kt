@@ -138,6 +138,7 @@ internal class ServerlessServiceImpl(
 
             override suspend fun newFunction(
                 name: String,
+                memorySize: Long,
                 labels: Map<String, String>,
                 meta: Map<String, Any>
             ): ServerlessFunction {
@@ -149,6 +150,7 @@ internal class ServerlessServiceImpl(
                     this@ServerlessServiceImpl,
                     uid,
                     name,
+                    memorySize,
                     labels,
                     meta
                 )

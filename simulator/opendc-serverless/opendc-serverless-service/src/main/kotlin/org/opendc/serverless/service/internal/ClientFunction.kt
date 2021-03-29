@@ -34,6 +34,9 @@ internal class ClientFunction(private val delegate: ServerlessFunction) : Server
     override var name: String = delegate.name
         private set
 
+    override var memorySize: Long = delegate.memorySize
+        private set
+
     override var labels: Map<String, String> = delegate.labels.toMap()
         private set
 
@@ -52,6 +55,7 @@ internal class ClientFunction(private val delegate: ServerlessFunction) : Server
         delegate.refresh()
 
         name = delegate.name
+        memorySize = delegate.memorySize
         labels = delegate.labels
         meta = delegate.meta
     }

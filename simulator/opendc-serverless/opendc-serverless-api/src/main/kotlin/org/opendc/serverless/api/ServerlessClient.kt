@@ -51,11 +51,13 @@ public interface ServerlessClient : AutoCloseable {
      * Create a new serverless function.
      *
      * @param name The name of the function.
+     * @param memorySize The memory allocated for the function in MB.
      * @param labels The labels associated with the function.
      * @param meta The metadata associated with the function.
      */
     public suspend fun newFunction(
         name: String,
+        memorySize: Long,
         labels: Map<String, String> = emptyMap(),
         meta: Map<String, Any> = emptyMap()
     ): ServerlessFunction

@@ -73,7 +73,7 @@ internal class SimServerlessServiceTest {
 
         val client = service.newClient()
 
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
         function.invoke()
         delay(2000)
 
