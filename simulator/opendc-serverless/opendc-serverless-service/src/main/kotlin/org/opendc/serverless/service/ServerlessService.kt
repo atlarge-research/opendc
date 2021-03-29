@@ -22,6 +22,7 @@
 
 package org.opendc.serverless.service
 
+import io.opentelemetry.api.metrics.Meter
 import org.opendc.serverless.api.ServerlessClient
 import org.opendc.serverless.service.deployer.FunctionDeployer
 import org.opendc.serverless.service.internal.ServerlessServiceImpl
@@ -49,14 +50,18 @@ public interface ServerlessService : AutoCloseable {
          *
          * @param context The [CoroutineContext] to use in the service.
          * @param clock The clock instance to use.
+         * @param meter The meter to report metrics to.
+         * @param deployer the [FunctionDeployer] to use for deploying function instances.
+         * @param routingPolicy The policy to route function invocations.
          */
         public operator fun invoke(
             context: CoroutineContext,
             clock: Clock,
+            meter: Meter,
             deployer: FunctionDeployer,
             routingPolicy: RoutingPolicy,
         ): ServerlessService {
-            return ServerlessServiceImpl(context, clock, deployer, routingPolicy)
+            return ServerlessServiceImpl(context, clock, meter, deployer, routingPolicy)
         }
     }
 }

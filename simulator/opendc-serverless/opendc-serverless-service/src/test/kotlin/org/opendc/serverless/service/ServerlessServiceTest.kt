@@ -23,6 +23,7 @@
 package org.opendc.serverless.service
 
 import io.mockk.*
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.*
@@ -44,8 +45,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientState() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = assertDoesNotThrow { service.newClient() }
         assertDoesNotThrow { client.close() }
@@ -59,8 +61,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientInvokeUnknown() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
 
@@ -69,8 +72,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientFunctionCreation() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
 
@@ -81,8 +85,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientFunctionQuery() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
 
@@ -95,8 +100,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientFunctionFindById() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
 
@@ -109,8 +115,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientFunctionFindByName() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
 
@@ -123,8 +130,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientFunctionDuplicateName() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
 
@@ -135,8 +143,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientFunctionDelete() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
         val function = client.newFunction("test")
@@ -150,8 +159,9 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientFunctionCannotInvokeDeleted() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val service = ServerlessService(coroutineContext, clock, mockk(), mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, mockk(), mockk())
 
         val client = service.newClient()
         val function = client.newFunction("test")
@@ -163,9 +173,10 @@ internal class ServerlessServiceTest {
 
     @Test
     fun testClientFunctionInvoke() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
         val deployer = mockk<FunctionDeployer>()
-        val service = ServerlessService(coroutineContext, clock, deployer, mockk())
+        val service = ServerlessService(coroutineContext, clock, meter, deployer, mockk())
 
         every { deployer.deploy(any()) } answers {
             object : FunctionInstance {

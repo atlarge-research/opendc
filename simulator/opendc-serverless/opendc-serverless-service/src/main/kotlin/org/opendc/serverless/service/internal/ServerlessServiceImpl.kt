@@ -22,6 +22,7 @@
 
 package org.opendc.serverless.service.internal
 
+import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.*
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import mu.KotlinLogging
@@ -49,6 +50,7 @@ import kotlin.coroutines.resumeWithException
 internal class ServerlessServiceImpl(
     context: CoroutineContext,
     private val clock: Clock,
+    internal val meter: Meter,
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy
 ) : ServerlessService {
@@ -87,6 +89,30 @@ internal class ServerlessServiceImpl(
      * The active function instances.
      */
     private val instancesByFunction = mutableMapOf<InternalFunction, MutableList<FunctionInstance>>()
+
+    /**
+     * The total amount of function invocations received by the service.
+     */
+    private val _invocations = meter.longCounterBuilder("invocations.total")
+        .setDescription("Number of function invocations")
+        .setUnit("1")
+        .build()
+
+    /**
+     * The amount of function invocations that could be handled directly.
+     */
+    private val _timelyInvocations = meter.longCounterBuilder("invocations.warm")
+        .setDescription("Number of function invocations handled directly")
+        .setUnit("1")
+        .build()
+
+    /**
+     * The amount of function invocations that were delayed due to function deployment.
+     */
+    private val _delayedInvocations = meter.longCounterBuilder("invocations.cold")
+        .setDescription("Number of function invocations that are delayed")
+        .setUnit("1")
+        .build()
 
     override fun newClient(): ServerlessClient {
         return object : ServerlessClient {
@@ -183,6 +209,8 @@ internal class ServerlessServiceImpl(
                 }
 
                 val instance = if (activeInstance != null) {
+                    _timelyInvocations.add(1)
+
                     activeInstance
                 } else {
                     val instance = deployer.deploy(function)
@@ -194,6 +222,8 @@ internal class ServerlessServiceImpl(
                             mutableListOf(instance)
                         }
                     }
+
+                    _delayedInvocations.add(1)
 
                     instance
                 }
@@ -209,6 +239,7 @@ internal class ServerlessServiceImpl(
     internal suspend fun invoke(function: InternalFunction) {
         check(function.uid in functions) { "Function does not exist (anymore)" }
 
+        _invocations.add(1)
         return suspendCancellableCoroutine { cont ->
             if (!queue.add(InvocationRequest(function, cont))) {
                 cont.resumeWithException(IllegalStateException("Failed to enqueue request"))
