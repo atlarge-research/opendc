@@ -32,6 +32,8 @@ import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.cpufreq.ScalingDriver
+import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
@@ -56,9 +58,24 @@ public class SimHost(
     clock: Clock,
     meter: Meter,
     hypervisor: SimHypervisorProvider,
-    powerModel: PowerModel = ConstantPowerModel(0.0),
+    scalingGovernor: ScalingGovernor,
+    scalingDriver: ScalingDriver,
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
 ) : Host, FailureDomain, AutoCloseable {
+
+    public constructor(
+        uid: UUID,
+        name: String,
+        model: SimMachineModel,
+        meta: Map<String, Any>,
+        context: CoroutineContext,
+        clock: Clock,
+        meter: Meter,
+        hypervisor: SimHypervisorProvider,
+        powerModel: PowerModel = ConstantPowerModel(0.0),
+        mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
+    ) : this(uid, name, model, meta, context, clock, meter, hypervisor, PerformanceScalingGovernor(), SimpleScalingDriver(powerModel), mapper)
+
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
      */
@@ -82,7 +99,7 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, PerformanceScalingGovernor(), SimpleScalingDriver(powerModel))
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, scalingGovernor, scalingDriver)
 
     /**
      * The hypervisor to run multiple workloads.
