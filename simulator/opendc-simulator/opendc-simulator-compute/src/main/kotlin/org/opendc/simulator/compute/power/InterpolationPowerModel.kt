@@ -16,22 +16,22 @@ import kotlin.math.floor
  */
 public class InterpolationPowerModel(
     hardwareName: String,
-) : MachinePowerModel {
+) : PowerModel {
     private val averagePowerValues: List<Double> = loadAveragePowerValue(hardwareName)
 
-    public override fun computeCpuPower(cpuUtil: Double): Double {
-        require(cpuUtil in 0.0..1.0) { "CPU utilization must be in [0, 1]" }
+    public override fun computePower(utilization: Double): Double {
+        require(utilization in 0.0..1.0) { "CPU utilization must be in [0, 1]" }
 
-        val cpuUtilFlr = floor(cpuUtil * 10).toInt()
-        val cpuUtilCil = ceil(cpuUtil * 10).toInt()
+        val cpuUtilFlr = floor(utilization * 10).toInt()
+        val cpuUtilCil = ceil(utilization * 10).toInt()
         val powerFlr: Double = getAveragePowerValue(cpuUtilFlr)
         val powerCil: Double = getAveragePowerValue(cpuUtilCil)
         val delta = (powerCil - powerFlr) / 10
 
-        return if (cpuUtil % 0.1 == 0.0)
-            getAveragePowerValue((cpuUtil * 10).toInt())
+        return if (utilization % 0.1 == 0.0)
+            getAveragePowerValue((utilization * 10).toInt())
         else
-            powerFlr + delta * (cpuUtil - cpuUtilFlr.toDouble() / 10) * 100
+            powerFlr + delta * (utilization - cpuUtilFlr.toDouble() / 10) * 100
     }
 
     /**

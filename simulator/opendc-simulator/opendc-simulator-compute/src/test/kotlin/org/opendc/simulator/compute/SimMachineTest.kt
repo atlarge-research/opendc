@@ -28,9 +28,12 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 
@@ -54,7 +57,7 @@ class SimMachineTest {
     @Test
     fun testFlopsWorkload() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
 
         try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
@@ -69,7 +72,7 @@ class SimMachineTest {
     @Test
     fun testUsage() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
 
         val res = mutableListOf<Double>()
         val job = launch { machine.usage.toList(res) }

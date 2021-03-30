@@ -24,9 +24,9 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.opendc.simulator.compute.cpufreq.ScalingDriver
+import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.MachinePowerModel
 import org.opendc.simulator.resources.*
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
@@ -47,17 +47,13 @@ public class SimBareMetalMachine(
     context: CoroutineContext,
     private val clock: Clock,
     override val model: SimMachineModel,
-    private val powerModel: MachinePowerModel = ConstantPowerModel(0.0)
+    scalingGovernor: ScalingGovernor,
+    scalingDriver: ScalingDriver
 ) : SimAbstractMachine(clock) {
     /**
      * The [Job] associated with this machine.
      */
     private val scope = CoroutineScope(context + Job())
-
-    /**
-     * The power draw of the machine.
-     */
-    public val powerDraw: StateFlow<Double> = usage.map { powerModel.computeCpuPower(it) }.stateIn(scope, SharingStarted.Eagerly, 0.0)
 
     override val context: CoroutineContext = scope.coroutineContext
 
@@ -68,6 +64,32 @@ public class SimBareMetalMachine(
 
     override val resources: Map<ProcessingUnit, SimResourceSource> =
         model.cpus.associateWith { SimResourceSource(it.frequency, clock, scheduler) }
+
+    /**
+     * Construct the [ScalingDriver.Logic] for this machine.
+     */
+    private val scalingDriver = scalingDriver.createLogic(this)
+
+    /**
+     * The scaling contexts associated with each CPU.
+     */
+    private val scalingGovernors = resources.map { (cpu, resource) ->
+        scalingGovernor.createLogic(this.scalingDriver.createContext(cpu, resource))
+    }
+
+    init {
+        scalingGovernors.forEach { it.onStart() }
+    }
+
+    /**
+     * The power draw of the machine.
+     */
+    public val powerDraw: StateFlow<Double> = usage
+        .map {
+            this.scalingGovernors.forEach { it.onLimit() }
+            this.scalingDriver.computePower()
+        }
+        .stateIn(scope, SharingStarted.Eagerly, 0.0)
 
     override fun close() {
         super.close()

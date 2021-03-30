@@ -3,10 +3,10 @@ package org.opendc.simulator.compute.power
 /**
  * A decorator for ignoring the idle power when computing energy consumption of components.
  *
- * @param delegate The [MachinePowerModel] to delegate to.
+ * @param delegate The [PowerModel] to delegate to.
  */
-public class ZeroIdlePowerDecorator(private val delegate: MachinePowerModel) : MachinePowerModel {
-    override fun computeCpuPower(cpuUtil: Double): Double {
-        return if (cpuUtil == 0.0) 0.0 else delegate.computeCpuPower(cpuUtil)
+public class ZeroIdlePowerDecorator(private val delegate: PowerModel) : PowerModel {
+    override fun computePower(utilization: Double): Double {
+        return if (utilization == 0.0) 0.0 else delegate.computePower(utilization)
     }
 }

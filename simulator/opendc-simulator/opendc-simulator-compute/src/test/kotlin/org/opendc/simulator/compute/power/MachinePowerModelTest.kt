@@ -19,21 +19,21 @@ internal class MachinePowerModelTest {
     @ParameterizedTest
     @MethodSource("MachinePowerModelArgs")
     fun `compute power consumption given CPU loads`(
-        powerModel: MachinePowerModel,
+        powerModel: PowerModel,
         expectedPowerConsumption: Double
     ) {
-        val computedPowerConsumption = powerModel.computeCpuPower(cpuUtil)
+        val computedPowerConsumption = powerModel.computePower(cpuUtil)
         assertEquals(expectedPowerConsumption, computedPowerConsumption, epsilon)
     }
 
     @ParameterizedTest
     @MethodSource("MachinePowerModelArgs")
     fun `ignore idle power when computing power consumptions`(
-        powerModel: MachinePowerModel,
+        powerModel: PowerModel,
         expectedPowerConsumption: Double
     ) {
         val zeroPowerModel = ZeroIdlePowerDecorator(powerModel)
-        val computedPowerConsumption = zeroPowerModel.computeCpuPower(0.0)
+        val computedPowerConsumption = zeroPowerModel.computePower(0.0)
         assertEquals(0.0, computedPowerConsumption)
     }
 
@@ -42,19 +42,19 @@ internal class MachinePowerModelTest {
         val powerModel = InterpolationPowerModel("IBMx3550M3_XeonX5675")
 
         assertAll(
-            { assertThrows<IllegalArgumentException> { powerModel.computeCpuPower(-1.3) } },
-            { assertThrows<IllegalArgumentException> { powerModel.computeCpuPower(1.3) } },
+            { assertThrows<IllegalArgumentException> { powerModel.computePower(-1.3) } },
+            { assertThrows<IllegalArgumentException> { powerModel.computePower(1.3) } },
         )
 
         assertAll(
-            { assertEquals(58.4, powerModel.computeCpuPower(0.0)) },
-            { assertEquals(58.4 + (98 - 58.4) / 5, powerModel.computeCpuPower(0.02)) },
-            { assertEquals(98.0, powerModel.computeCpuPower(0.1)) },
-            { assertEquals(140.0, powerModel.computeCpuPower(0.5)) },
-            { assertEquals(189.0, powerModel.computeCpuPower(0.8)) },
-            { assertEquals(189.0 + 0.7 * 10 * (205 - 189) / 10, powerModel.computeCpuPower(0.87)) },
-            { assertEquals(205.0, powerModel.computeCpuPower(0.9)) },
-            { assertEquals(222.0, powerModel.computeCpuPower(1.0)) },
+            { assertEquals(58.4, powerModel.computePower(0.0)) },
+            { assertEquals(58.4 + (98 - 58.4) / 5, powerModel.computePower(0.02)) },
+            { assertEquals(98.0, powerModel.computePower(0.1)) },
+            { assertEquals(140.0, powerModel.computePower(0.5)) },
+            { assertEquals(189.0, powerModel.computePower(0.8)) },
+            { assertEquals(189.0 + 0.7 * 10 * (205 - 189) / 10, powerModel.computePower(0.87)) },
+            { assertEquals(205.0, powerModel.computePower(0.9)) },
+            { assertEquals(222.0, powerModel.computePower(1.0)) },
         )
     }
 

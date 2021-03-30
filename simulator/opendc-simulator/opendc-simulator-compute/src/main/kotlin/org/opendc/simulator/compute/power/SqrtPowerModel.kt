@@ -14,12 +14,12 @@ import kotlin.math.sqrt
 public class SqrtPowerModel(
     private var maxPower: Double,
     staticPowerPercent: Double
-) : MachinePowerModel {
+) : PowerModel {
     private var staticPower: Double = staticPowerPercent * maxPower
     private var constPower: Double = (maxPower - staticPower) / sqrt(100.0)
 
-    override fun computeCpuPower(cpuUtil: Double): Double {
-        require(cpuUtil in 0.0..1.0) { "CPU utilization must be in [0, 1]" }
-        return staticPower + constPower * sqrt(cpuUtil * 100)
+    override fun computePower(utilization: Double): Double {
+        require(utilization in 0.0..1.0) { "CPU utilization must be in [0, 1]" }
+        return staticPower + constPower * sqrt(utilization * 100)
     }
 }

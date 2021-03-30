@@ -31,9 +31,12 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimTraceWorkload
@@ -75,7 +78,10 @@ internal class SimSpaceSharedHypervisorTest {
                 ),
             )
 
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val machine = SimBareMetalMachine(
+            coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
+            SimpleScalingDriver(ConstantPowerModel(0.0))
+        )
         val hypervisor = SimSpaceSharedHypervisor()
 
         val colA = launch { machine.usage.toList(usagePm) }
@@ -109,7 +115,10 @@ internal class SimSpaceSharedHypervisorTest {
         val clock = DelayControllerClockAdapter(this)
         val duration = 5 * 60L * 1000
         val workload = SimRuntimeWorkload(duration)
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val machine = SimBareMetalMachine(
+            coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
+            SimpleScalingDriver(ConstantPowerModel(0.0))
+        )
         val hypervisor = SimSpaceSharedHypervisor()
 
         launch { machine.run(hypervisor) }
@@ -131,7 +140,10 @@ internal class SimSpaceSharedHypervisorTest {
 
         val duration = 5 * 60L * 1000
         val workload = SimFlopsWorkload((duration * 3.2).toLong(), 1.0)
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val machine = SimBareMetalMachine(
+            coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
+            SimpleScalingDriver(ConstantPowerModel(0.0))
+        )
         val hypervisor = SimSpaceSharedHypervisor()
 
         launch { machine.run(hypervisor) }
@@ -150,7 +162,10 @@ internal class SimSpaceSharedHypervisorTest {
     fun testTwoWorkloads() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val duration = 5 * 60L * 1000
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val machine = SimBareMetalMachine(
+            coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
+            SimpleScalingDriver(ConstantPowerModel(0.0))
+        )
         val hypervisor = SimSpaceSharedHypervisor()
 
         launch { machine.run(hypervisor) }
@@ -174,8 +189,10 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testConcurrentWorkloadFails() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val machine = SimBareMetalMachine(
+            coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
+            SimpleScalingDriver(ConstantPowerModel(0.0))
+        )
         val hypervisor = SimSpaceSharedHypervisor()
 
         launch { machine.run(hypervisor) }
@@ -197,7 +214,10 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testConcurrentWorkloadSucceeds() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel)
+        val machine = SimBareMetalMachine(
+            coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
+            SimpleScalingDriver(ConstantPowerModel(0.0))
+        )
         val hypervisor = SimSpaceSharedHypervisor()
 
         launch { machine.run(hypervisor) }

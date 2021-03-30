@@ -20,16 +20,33 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.environment
+package org.opendc.simulator.compute.cpufreq
 
-import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.power.PowerModel
-import java.util.*
+import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.resources.SimResourceSource
 
-public data class MachineDef(
-    val uid: UUID,
-    val name: String,
-    val meta: Map<String, Any>,
-    val model: SimMachineModel,
-    val powerModel: PowerModel
-)
+/**
+ * A [ScalingContext] is used to communicate frequency scaling changes between the [ScalingGovernor] and driver.
+ */
+public interface ScalingContext {
+    /**
+     * The machine the processing unit belongs to.
+     */
+    public val machine: SimMachine
+
+    /**
+     * The processing unit associated with this context.
+     */
+    public val cpu: ProcessingUnit
+
+    /**
+     * The resource associated with this context.
+     */
+    public val resource: SimResourceSource
+
+    /**
+     * Target the processor to run at the specified target [frequency][freq].
+     */
+    public fun setTarget(freq: Double)
+}
