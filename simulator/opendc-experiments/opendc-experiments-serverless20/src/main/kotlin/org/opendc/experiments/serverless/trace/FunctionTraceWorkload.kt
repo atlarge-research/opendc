@@ -20,16 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.simulator.workload
+package org.opendc.experiments.serverless.trace
 
+import org.opendc.serverless.simulator.workload.SimServerlessWorkload
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * A model for a serverless workload, which may be invoked multiple times.
+ * A [SimServerlessWorkload] for a [FunctionTrace].
  */
-public interface SimServerlessWorkload : SimWorkload {
-    /**
-     * This method is invoked when an active function instance is invoked.
-     */
-    public suspend fun invoke()
+public class FunctionTraceWorkload(trace: FunctionTrace) : SimServerlessWorkload, SimWorkload by SimTraceWorkload(trace.samples.asSequence().map { SimTraceWorkload.Fragment(it.duration, it.cpuUsage, 1) }) {
+    override suspend fun invoke() {}
 }

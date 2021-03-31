@@ -22,8 +22,8 @@
 
 package org.opendc.serverless.simulator
 
+import io.mockk.coVerify
 import io.mockk.spyk
-import io.mockk.verify
 import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -65,8 +65,8 @@ internal class SimServerlessServiceTest {
     fun testSmoke() = runBlockingTest {
         val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val workload = spyk(object : SimServerlessWorkload {
-            override fun onInvoke(): SimWorkload = SimFlopsWorkload(1000)
+        val workload = spyk(object : SimServerlessWorkload, SimWorkload by SimFlopsWorkload(1000) {
+            override suspend fun invoke() {}
         })
         val deployer = SimFunctionDeployer(clock, this, machineModel) { workload }
         val service = ServerlessService(coroutineContext, clock, meter, deployer, RandomRoutingPolicy())
@@ -82,9 +82,7 @@ internal class SimServerlessServiceTest {
         yield()
 
         assertAll(
-            { verify { workload.onStart() } },
-            { verify { workload.onInvoke() } },
-            { verify { workload.onStop() } }
+            { coVerify { workload.invoke() } },
         )
     }
 }

@@ -22,12 +22,19 @@
 
 package org.opendc.experiments.serverless.trace
 
+import mu.KotlinLogging
 import java.io.File
+import kotlin.math.max
 
 /**
  * A trace reader for the serverless workload trace used in the OpenDC Serverless thesis.
  */
 public class ServerlessTraceReader {
+    /**
+     * The logger for this portfolio instance.
+     */
+    private val logger = KotlinLogging.logger {}
+
     /**
      * Parse the traces at the specified [path].
      */
@@ -37,7 +44,10 @@ public class ServerlessTraceReader {
         } else {
             path.walk()
                 .filterNot { it.isDirectory }
-                .map { parseSingle(it) }
+                .map { file ->
+                    logger.info { "Parsing $file" }
+                    parseSingle(file)
+                }
                 .toList()
         }
     }
@@ -57,16 +67,17 @@ public class ServerlessTraceReader {
         var provMemCol = 0
         var cpuUsageCol = 0
         var memoryUsageCol = 0
+        var maxMemory = 0
 
         path.forEachLine { line ->
-           if (line.startsWith("#") && line.isNotBlank()) {
-               return@forEachLine
-           }
+            if (line.startsWith("#") && line.isNotBlank()) {
+                return@forEachLine
+            }
 
             val values = line.split(",")
 
             /* Header parsing */
-            if (++idx == 0){
+            if (idx++ == 0) {
                 val header = values.mapIndexed { col, name -> Pair(name.trim(), col) }.toMap()
                 timestampCol = header["Timestamp [ms]"]!!
                 invocationsCol = header["Invocations"]!!
@@ -78,7 +89,7 @@ public class ServerlessTraceReader {
                 return@forEachLine
             }
 
-            val timestamp =  values[timestampCol].trim().toLong()
+            val timestamp = values[timestampCol].trim().toLong()
             val invocations = values[invocationsCol].trim().toInt()
             val execTime = values[execTimeCol].trim().toLong()
             val provisionedCpu = values[provCpuCol].trim().toInt()
@@ -86,9 +97,11 @@ public class ServerlessTraceReader {
             val cpuUsage = values[cpuUsageCol].trim().toDouble()
             val memoryUsage = values[memoryUsageCol].trim().toDouble()
 
+            maxMemory = max(maxMemory, provisionedMemory)
+
             samples.add(FunctionSample(timestamp, execTime, invocations, provisionedCpu, provisionedMemory, cpuUsage, memoryUsage))
         }
 
-        return FunctionTrace(id, samples)
+        return FunctionTrace(id, maxMemory, samples)
     }
 }

@@ -25,4 +25,4 @@ package org.opendc.experiments.serverless.trace
 /**
  * A trace for a single function
  */
-public data class FunctionTrace(val id: String, val samples: List<FunctionSample>)
+public data class FunctionTrace(val id: String, val maxMemory: Int, val samples: List<FunctionSample>)

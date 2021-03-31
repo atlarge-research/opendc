@@ -111,33 +111,34 @@ public class SimFunctionDeployer(
         internal fun start() {
             check(state == FunctionInstanceState.Provisioning) { "Invalid state of function instance" }
             job = scope.launch {
-                workload.onStart()
-
-                try {
-                    while (isActive) {
-                        chan.receive()
-
-                        if (queue.isNotEmpty()) {
-                            state = FunctionInstanceState.Active
-                        }
-
-                        while (queue.isNotEmpty()) {
-                            val request = queue.poll()
-                            try {
-                                machine.run(workload.onInvoke())
-                                request.cont.resume(Unit)
-                            } catch (cause: CancellationException) {
-                                request.cont.resumeWithException(cause)
-                                throw cause
-                            } catch (cause: Throwable) {
-                                request.cont.resumeWithException(cause)
-                            }
-                        }
-                        state = FunctionInstanceState.Idle
+                launch {
+                    try {
+                        machine.run(workload)
+                    } finally {
+                        state = FunctionInstanceState.Terminated
                     }
-                } finally {
-                    state = FunctionInstanceState.Terminated
-                    workload.onStop()
+                }
+
+                while (isActive) {
+                    chan.receive()
+
+                    if (queue.isNotEmpty()) {
+                        state = FunctionInstanceState.Active
+                    }
+
+                    while (queue.isNotEmpty()) {
+                        val request = queue.poll()
+                        try {
+                            workload.invoke()
+                            request.cont.resume(Unit)
+                        } catch (cause: CancellationException) {
+                            request.cont.resumeWithException(cause)
+                            throw cause
+                        } catch (cause: Throwable) {
+                            request.cont.resumeWithException(cause)
+                        }
+                    }
+                    state = FunctionInstanceState.Idle
                 }
             }
         }

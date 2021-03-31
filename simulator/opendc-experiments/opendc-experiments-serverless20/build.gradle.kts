@@ -37,4 +37,10 @@ dependencies {
     implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
 
     implementation("io.github.microutils:kotlin-logging")
+
+    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
+    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "log4j")
+    }
 }
