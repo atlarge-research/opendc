@@ -37,6 +37,8 @@ import org.opendc.harness.dsl.anyOf
 import org.opendc.serverless.service.ServerlessService
 import org.opendc.serverless.service.router.RandomRoutingPolicy
 import org.opendc.serverless.simulator.SimFunctionDeployer
+import org.opendc.serverless.simulator.delay.ColdStartModel
+import org.opendc.serverless.simulator.delay.StochasticDelayInjector
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -44,6 +46,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
+import java.util.*
 import kotlin.math.max
 
 /**
@@ -71,6 +74,11 @@ public class ServerlessExperiment : Experiment("Serverless") {
      */
     private val routingPolicy by anyOf(RandomRoutingPolicy())
 
+    /**
+     * The cold start models to test.
+     */
+    private val coldStartModel by anyOf(ColdStartModel.LAMBDA, ColdStartModel.AZURE, ColdStartModel.GOOGLE)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun doRun(repeat: Int): Unit = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
@@ -81,7 +89,8 @@ public class ServerlessExperiment : Experiment("Serverless") {
 
         val trace = ServerlessTraceReader().parse(tracePath)
         val traceById = trace.associateBy { it.id }
-        val deployer = SimFunctionDeployer(clock, this, createMachineModel()) { FunctionTraceWorkload(traceById.getValue(it.name)) }
+        val delayInjector = StochasticDelayInjector(coldStartModel, Random())
+        val deployer = SimFunctionDeployer(clock, this, createMachineModel(), delayInjector) { FunctionTraceWorkload(traceById.getValue(it.name)) }
         val service = ServerlessService(coroutineContext, clock, meterProvider.get("opendc-serverless"), deployer, routingPolicy)
         val client = service.newClient()
 

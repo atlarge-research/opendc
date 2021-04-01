@@ -28,6 +28,7 @@ import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.deployer.FunctionDeployer
 import org.opendc.serverless.service.deployer.FunctionInstance
 import org.opendc.serverless.service.deployer.FunctionInstanceState
+import org.opendc.serverless.simulator.delay.DelayInjector
 import org.opendc.serverless.simulator.workload.SimServerlessWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
@@ -48,6 +49,7 @@ public class SimFunctionDeployer(
     private val clock: Clock,
     private val scope: CoroutineScope,
     private val model: SimMachineModel,
+    private val delayInjector: DelayInjector,
     private val mapper: SimServerlessWorkloadMapper
 ) : FunctionDeployer {
 
@@ -111,6 +113,8 @@ public class SimFunctionDeployer(
         internal fun start() {
             check(state == FunctionInstanceState.Provisioning) { "Invalid state of function instance" }
             job = scope.launch {
+                delay(delayInjector.getColdStartDelay(this@Instance))
+
                 launch {
                     try {
                         machine.run(workload)
@@ -120,12 +124,11 @@ public class SimFunctionDeployer(
                 }
 
                 while (isActive) {
-                    chan.receive()
-
-                    if (queue.isNotEmpty()) {
-                        state = FunctionInstanceState.Active
+                    if (queue.isEmpty()) {
+                        chan.receive()
                     }
 
+                    state = FunctionInstanceState.Active
                     while (queue.isNotEmpty()) {
                         val request = queue.poll()
                         try {
