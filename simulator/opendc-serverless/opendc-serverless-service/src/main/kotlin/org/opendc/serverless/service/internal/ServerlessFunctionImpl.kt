@@ -23,44 +23,46 @@
 package org.opendc.serverless.service.internal
 
 import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 import java.util.*
 
 /**
- * A [ServerlessFunction] implementation that is passed to clients but delegates its implementation to another class.
+ * A [ServerlessFunction] implementation that is passed to clients.
  */
-internal class ClientFunction(private val delegate: ServerlessFunction) : ServerlessFunction {
-    override val uid: UUID = delegate.uid
+internal class ServerlessFunctionImpl(
+    private val service: ServerlessServiceImpl,
+    private val state: FunctionObject
+) : ServerlessFunction {
+    override val uid: UUID = state.uid
 
-    override var name: String = delegate.name
+    override var name: String = state.name
         private set
 
-    override var memorySize: Long = delegate.memorySize
+    override var memorySize: Long = state.memorySize
         private set
 
-    override var labels: Map<String, String> = delegate.labels.toMap()
+    override var labels: Map<String, String> = state.labels.toMap()
         private set
 
-    override var meta: Map<String, Any> = delegate.meta.toMap()
+    override var meta: Map<String, Any> = state.meta.toMap()
         private set
 
     override suspend fun delete() {
-        delegate.delete()
+        service.delete(state)
     }
 
     override suspend fun invoke() {
-        delegate.invoke()
+        service.invoke(state)
     }
 
     override suspend fun refresh() {
-        delegate.refresh()
-
-        name = delegate.name
-        memorySize = delegate.memorySize
-        labels = delegate.labels
-        meta = delegate.meta
+        name = state.name
+        memorySize = state.memorySize
+        labels = state.labels
+        meta = state.meta
     }
 
-    override fun equals(other: Any?): Boolean = other is ClientFunction && uid == other.uid
+    override fun equals(other: Any?): Boolean = other is ServerlessFunctionImpl && uid == other.uid
 
     override fun hashCode(): Int = uid.hashCode()
 

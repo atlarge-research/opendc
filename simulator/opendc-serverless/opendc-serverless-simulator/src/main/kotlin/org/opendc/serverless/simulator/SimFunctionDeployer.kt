@@ -24,7 +24,7 @@ package org.opendc.serverless.simulator
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.deployer.FunctionDeployer
 import org.opendc.serverless.service.deployer.FunctionInstance
 import org.opendc.serverless.service.deployer.FunctionInstanceState
@@ -51,7 +51,7 @@ public class SimFunctionDeployer(
     private val mapper: SimServerlessWorkloadMapper
 ) : FunctionDeployer {
 
-    override fun deploy(function: ServerlessFunction): Instance {
+    override fun deploy(function: FunctionObject): Instance {
         val instance = Instance(function)
         instance.start()
         return instance
@@ -60,7 +60,7 @@ public class SimFunctionDeployer(
     /**
      * A simulated [FunctionInstance].
      */
-    public inner class Instance(override val function: ServerlessFunction) : FunctionInstance {
+    public inner class Instance(override val function: FunctionObject) : FunctionInstance {
         /**
          * The workload associated with this instance.
          */

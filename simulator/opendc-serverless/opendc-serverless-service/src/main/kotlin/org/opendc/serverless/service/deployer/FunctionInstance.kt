@@ -22,7 +22,7 @@
 
 package org.opendc.serverless.service.deployer
 
-import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 
 /**
  * A [FunctionInstance] is a a self-contained worker—typically a container—capable of handling function executions.
@@ -36,9 +36,9 @@ public interface FunctionInstance : AutoCloseable {
     public val state: FunctionInstanceState
 
     /**
-     * The [ServerlessFunction] that is represented by this instance.
+     * The [FunctionObject] that is represented by this instance.
      */
-    public val function: ServerlessFunction
+    public val function: FunctionObject
 
     /**
      * Invoke the function instance.

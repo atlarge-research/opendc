@@ -181,7 +181,7 @@ internal class ServerlessServiceTest {
         every { deployer.deploy(any()) } answers {
             object : FunctionInstance {
                 override val state: FunctionInstanceState = FunctionInstanceState.Idle
-                override val function: ServerlessFunction = it.invocation.args[0] as ServerlessFunction
+                override val function: FunctionObject = it.invocation.args[0] as FunctionObject
 
                 override suspend fun invoke() {}
 

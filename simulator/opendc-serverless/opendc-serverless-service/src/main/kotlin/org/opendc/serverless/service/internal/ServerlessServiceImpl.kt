@@ -28,6 +28,7 @@ import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import mu.KotlinLogging
 import org.opendc.serverless.api.ServerlessClient
 import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.ServerlessService
 import org.opendc.serverless.service.deployer.FunctionDeployer
 import org.opendc.serverless.service.deployer.FunctionInstance
@@ -50,7 +51,7 @@ import kotlin.coroutines.resumeWithException
 internal class ServerlessServiceImpl(
     context: CoroutineContext,
     private val clock: Clock,
-    internal val meter: Meter,
+    private val meter: Meter,
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy
 ) : ServerlessService {
@@ -77,8 +78,8 @@ internal class ServerlessServiceImpl(
     /**
      * The registered functions for this service.
      */
-    private val functions = mutableMapOf<UUID, InternalFunction>()
-    private val functionsByName = mutableMapOf<String, InternalFunction>()
+    private val functions = mutableMapOf<UUID, FunctionObject>()
+    private val functionsByName = mutableMapOf<String, FunctionObject>()
 
     /**
      * The queue of invocation requests.
@@ -86,14 +87,9 @@ internal class ServerlessServiceImpl(
     private val queue = ArrayDeque<InvocationRequest>()
 
     /**
-     * The active function instances.
-     */
-    private val instancesByFunction = mutableMapOf<InternalFunction, MutableList<FunctionInstance>>()
-
-    /**
      * The total amount of function invocations received by the service.
      */
-    private val _invocations = meter.longCounterBuilder("invocations.total")
+    private val _invocations = meter.longCounterBuilder("service.invocations.total")
         .setDescription("Number of function invocations")
         .setUnit("1")
         .build()
@@ -101,7 +97,7 @@ internal class ServerlessServiceImpl(
     /**
      * The amount of function invocations that could be handled directly.
      */
-    private val _timelyInvocations = meter.longCounterBuilder("invocations.warm")
+    private val _timelyInvocations = meter.longCounterBuilder("service.invocations.warm")
         .setDescription("Number of function invocations handled directly")
         .setUnit("1")
         .build()
@@ -109,7 +105,7 @@ internal class ServerlessServiceImpl(
     /**
      * The amount of function invocations that were delayed due to function deployment.
      */
-    private val _delayedInvocations = meter.longCounterBuilder("invocations.cold")
+    private val _delayedInvocations = meter.longCounterBuilder("service.invocations.cold")
         .setDescription("Number of function invocations that are delayed")
         .setUnit("1")
         .build()
@@ -118,22 +114,29 @@ internal class ServerlessServiceImpl(
         return object : ServerlessClient {
             private var isClosed: Boolean = false
 
+            /**
+             * Exposes a [FunctionObject] to a client-exposed [ServerlessFunction] instance.
+             */
+            private fun FunctionObject.asClientFunction(): ServerlessFunction {
+                return ServerlessFunctionImpl(this@ServerlessServiceImpl, this)
+            }
+
             override suspend fun queryFunctions(): List<ServerlessFunction> {
                 check(!isClosed) { "Client is already closed" }
 
-                return functions.values.map { ClientFunction(it) }
+                return functions.values.map { it.asClientFunction() }
             }
 
             override suspend fun findFunction(id: UUID): ServerlessFunction? {
                 check(!isClosed) { "Client is already closed" }
 
-                return functions[id]?.let { ClientFunction(it) }
+                return functions[id]?.asClientFunction()
             }
 
             override suspend fun findFunction(name: String): ServerlessFunction? {
                 check(!isClosed) { "Client is already closed" }
 
-                return functionsByName[name]?.let { ClientFunction(it) }
+                return functionsByName[name]?.asClientFunction()
             }
 
             override suspend fun newFunction(
@@ -146,8 +149,8 @@ internal class ServerlessServiceImpl(
                 require(name !in functionsByName) { "Function with same name exists" }
 
                 val uid = UUID(clock.millis(), random.nextLong())
-                val function = InternalFunction(
-                    this@ServerlessServiceImpl,
+                val function = FunctionObject(
+                    meter,
                     uid,
                     name,
                     memorySize,
@@ -158,13 +161,14 @@ internal class ServerlessServiceImpl(
                 functionsByName[name] = function
                 functions[uid] = function
 
-                return ClientFunction(function)
+                return function.asClientFunction()
             }
 
             override suspend fun invoke(name: String) {
                 check(!isClosed) { "Client is already closed" }
 
-                requireNotNull(functionsByName[name]) { "Unknown function" }.invoke()
+                val func = requireNotNull(functionsByName[name]) { "Unknown function" }
+                this@ServerlessServiceImpl.invoke(func)
             }
 
             override fun close() {
@@ -182,7 +186,7 @@ internal class ServerlessServiceImpl(
             return
         }
 
-        val quantum = 1000
+        val quantum = 100
 
         // We assume that the provisioner runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
         // This is important because the slices of the VMs need to be aligned.
@@ -199,12 +203,12 @@ internal class ServerlessServiceImpl(
     private fun doSchedule() {
         try {
             while (queue.isNotEmpty()) {
-                val (function, cont) = queue.poll()
+                val (submitTime, function, cont) = queue.poll()
 
-                val instances = instancesByFunction[function]
+                val instances = function.instances
 
                 // Check if there exists an instance of the function
-                val activeInstance = if (instances != null && instances.isNotEmpty()) {
+                val activeInstance = if (instances.isNotEmpty()) {
                     routingPolicy.select(instances, function)
                 } else {
                     null
@@ -212,38 +216,52 @@ internal class ServerlessServiceImpl(
 
                 val instance = if (activeInstance != null) {
                     _timelyInvocations.add(1)
+                    function.timelyInvocations.add(1)
 
                     activeInstance
                 } else {
                     val instance = deployer.deploy(function)
-                    instancesByFunction.compute(function) { _, v ->
-                        if (v != null) {
-                            v.add(instance)
-                            v
-                        } else {
-                            mutableListOf(instance)
-                        }
-                    }
+                    instances.add(instance)
+
+                    function.idleInstances.add(1)
 
                     _delayedInvocations.add(1)
+                    function.delayedInvocations.add(1)
 
                     instance
                 }
 
-                // Invoke the function instance
-                suspend { instance.invoke() }.startCoroutineCancellable(cont)
+                suspend {
+                    val start = clock.millis()
+                    function.waitTime.record(start - submitTime)
+                    function.idleInstances.add(-1)
+                    function.activeInstances.add(1)
+                    try {
+                        instance.invoke()
+                    } catch (e: Throwable) {
+                        logger.debug(e) { "Function invocation failed" }
+                        function.failedInvocations.add(1)
+                    } finally {
+                        val end = clock.millis()
+                        function.activeTime.record(end - start)
+                        function.idleInstances.add(1)
+                        function.activeInstances.add(-1)
+                    }
+                }.startCoroutineCancellable(cont)
             }
         } catch (cause: Throwable) {
             logger.error(cause) { "Exception occurred during scheduling cycle" }
         }
     }
 
-    internal suspend fun invoke(function: InternalFunction) {
+    suspend fun invoke(function: FunctionObject) {
         check(function.uid in functions) { "Function does not exist (anymore)" }
 
         _invocations.add(1)
+        function.invocations.add(1)
+
         return suspendCancellableCoroutine { cont ->
-            if (!queue.add(InvocationRequest(function, cont))) {
+            if (!queue.add(InvocationRequest(clock.millis(), function, cont))) {
                 cont.resumeWithException(IllegalStateException("Failed to enqueue request"))
             } else {
                 schedule()
@@ -251,7 +269,7 @@ internal class ServerlessServiceImpl(
         }
     }
 
-    internal fun delete(function: InternalFunction) {
+    fun delete(function: FunctionObject) {
         functions.remove(function.uid)
         functionsByName.remove(function.name)
     }
@@ -260,14 +278,13 @@ internal class ServerlessServiceImpl(
         scope.cancel()
 
         // Stop all function instances
-        for ((_, instances) in instancesByFunction) {
-            instances.forEach(FunctionInstance::close)
+        for ((_, function) in functions) {
+            function.close()
         }
-        instancesByFunction.clear()
     }
 
     /**
      * A request to invoke a function.
      */
-    private data class InvocationRequest(val function: InternalFunction, val cont: Continuation<Unit>)
+    private data class InvocationRequest(val timestamp: Long, val function: FunctionObject, val cont: Continuation<Unit>)
 }

@@ -22,7 +22,7 @@
 
 package org.opendc.serverless.service.router
 
-import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.deployer.FunctionInstance
 import kotlin.random.Random
 
@@ -30,7 +30,7 @@ import kotlin.random.Random
  * A [RoutingPolicy] that selects a random function instance.
  */
 public class RandomRoutingPolicy(private val random: Random = Random(0)) : RoutingPolicy {
-    override fun select(instances: List<FunctionInstance>, function: ServerlessFunction): FunctionInstance {
+    override fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance {
         return instances.random(random)
     }
 }

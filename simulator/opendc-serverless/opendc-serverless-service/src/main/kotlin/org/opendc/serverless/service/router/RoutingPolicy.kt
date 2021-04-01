@@ -22,7 +22,7 @@
 
 package org.opendc.serverless.service.router
 
-import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.deployer.FunctionInstance
 
 /**
@@ -32,5 +32,5 @@ public interface RoutingPolicy {
     /**
      * Select the instance to which the request should be routed to.
      */
-    public fun select(instances: List<FunctionInstance>, function: ServerlessFunction): FunctionInstance?
+    public fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance?
 }

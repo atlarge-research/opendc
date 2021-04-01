@@ -23,6 +23,7 @@
 package org.opendc.serverless.simulator.workload
 
 import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 
 /**
  * A [SimServerlessWorkloadMapper] is responsible for mapping a [ServerlessFunction] to a [SimServerlessWorkload] that
@@ -32,5 +33,5 @@ public fun interface SimServerlessWorkloadMapper {
     /**
      * Map the specified [function] to a [SimServerlessWorkload] that can be simulated.
      */
-    public fun createWorkload(function: ServerlessFunction): SimServerlessWorkload
+    public fun createWorkload(function: FunctionObject): SimServerlessWorkload
 }
