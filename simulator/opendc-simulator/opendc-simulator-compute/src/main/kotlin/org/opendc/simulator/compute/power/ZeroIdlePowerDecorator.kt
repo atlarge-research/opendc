@@ -7,6 +7,11 @@ package org.opendc.simulator.compute.power
  */
 public class ZeroIdlePowerDecorator(private val delegate: PowerModel) : PowerModel {
     override fun computePower(utilization: Double): Double {
-        return if (utilization == 0.0) 0.0 else delegate.computePower(utilization)
+        return if (utilization == 0.0)
+            0.0
+        else
+            delegate.computePower(utilization)
     }
+
+    override fun toString(): String = "ZeroIdlePowerDecorator[delegate=$delegate]"
 }

@@ -1,6 +1,5 @@
 package org.opendc.simulator.compute.power
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -11,8 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 import kotlin.math.pow
 
-@OptIn(ExperimentalCoroutinesApi::class)
-internal class MachinePowerModelTest {
+internal class PowerModelTest {
     private val epsilon = 10.0.pow(-3)
     private val cpuUtil = 0.9
 
@@ -42,11 +40,6 @@ internal class MachinePowerModelTest {
         val powerModel = InterpolationPowerModel("IBMx3550M3_XeonX5675")
 
         assertAll(
-            { assertThrows<IllegalArgumentException> { powerModel.computePower(-1.3) } },
-            { assertThrows<IllegalArgumentException> { powerModel.computePower(1.3) } },
-        )
-
-        assertAll(
             { assertEquals(58.4, powerModel.computePower(0.0)) },
             { assertEquals(58.4 + (98 - 58.4) / 5, powerModel.computePower(0.02)) },
             { assertEquals(98.0, powerModel.computePower(0.1)) },
@@ -63,10 +56,10 @@ internal class MachinePowerModelTest {
         @JvmStatic
         fun MachinePowerModelArgs(): Stream<Arguments> = Stream.of(
             Arguments.of(ConstantPowerModel(0.0), 0.0),
-            Arguments.of(LinearPowerModel(350.0, 200 / 350.0), 335.0),
-            Arguments.of(SquarePowerModel(350.0, 200 / 350.0), 321.5),
-            Arguments.of(CubicPowerModel(350.0, 200 / 350.0), 309.35),
-            Arguments.of(SqrtPowerModel(350.0, 200 / 350.0), 342.302),
+            Arguments.of(LinearPowerModel(350.0, 200.0), 335.0),
+            Arguments.of(SquarePowerModel(350.0, 200.0), 321.5),
+            Arguments.of(CubicPowerModel(350.0, 200.0), 309.35),
+            Arguments.of(SqrtPowerModel(350.0, 200.0), 342.302),
         )
     }
 }

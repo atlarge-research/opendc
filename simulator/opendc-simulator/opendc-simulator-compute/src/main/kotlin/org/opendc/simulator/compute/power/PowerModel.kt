@@ -7,10 +7,10 @@ import org.opendc.simulator.compute.SimMachine
  */
 public interface PowerModel {
     /**
-     * Compute the power consumption of the CPU based on its utilization.
+     * Computes CPU power consumption for each host.
      *
-     * @param utilization The CPU utilization percentage in [0, 1].
-     * @return The power consumption of the CPU in terms of watts (W).
+     * @param utilization The CPU utilization percentage.
+     * @return A [Double] value of CPU power consumption.
      */
     public fun computePower(utilization: Double): Double
 }
