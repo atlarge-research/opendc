@@ -3,7 +3,6 @@ package org.opendc.simulator.compute.power
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -31,8 +30,11 @@ internal class PowerModelTest {
         expectedPowerConsumption: Double
     ) {
         val zeroPowerModel = ZeroIdlePowerDecorator(powerModel)
-        val computedPowerConsumption = zeroPowerModel.computePower(0.0)
-        assertEquals(0.0, computedPowerConsumption)
+
+        assertAll(
+            { assertEquals(expectedPowerConsumption, zeroPowerModel.computePower(cpuUtil), epsilon) },
+            { assertEquals(0.0, zeroPowerModel.computePower(0.0)) }
+        )
     }
 
     @Test

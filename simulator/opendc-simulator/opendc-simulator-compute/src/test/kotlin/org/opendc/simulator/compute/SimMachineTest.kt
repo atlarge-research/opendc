@@ -28,6 +28,8 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
 import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -85,5 +87,15 @@ class SimMachineTest {
         } finally {
             machine.close()
         }
+    }
+
+    @Test
+    fun testClose() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+
+        machine.close()
+        assertDoesNotThrow { machine.close() }
+        assertThrows<IllegalStateException> { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
     }
 }

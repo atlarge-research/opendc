@@ -22,33 +22,27 @@
 
 package org.opendc.simulator.compute.cpufreq
 
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.jupiter.api.Test
+
 /**
- * A [ScalingGovernor] in the CPUFreq subsystem of OpenDC is responsible for scaling the frequency of simulated CPUs
- * independent of the particular implementation of the CPU.
- *
- * Each of the scaling governors implements a single, possibly parametrized, performance scaling algorithm.
- *
- * For more information, see the documentation of the Linux CPUFreq subsystem:
- * https://www.kernel.org/doc/html/latest/admin-guide/pm/cpufreq.html
+ * Test suite for the [DemandScalingGovernor]
  */
-public interface ScalingGovernor {
-    /**
-     * Create the scaling logic for the specified [context]
-     */
-    public fun createLogic(ctx: ScalingContext): Logic
+internal class DemandScalingGovernorTest {
+    @Test
+    fun testSetDemandLimit() {
+        val ctx = mockk<ScalingContext>(relaxUnitFun = true)
 
-    /**
-     * The logic of the scaling governor.
-     */
-    public interface Logic {
-        /**
-         * This method is invoked when the governor is started.
-         */
-        public fun onStart() {}
+        every { ctx.resource.speed.value } returns 2100.0
 
-        /**
-         * This method is invoked when the governor should re-decide the frequency limits.
-         */
-        public fun onLimit() {}
+        val logic = DemandScalingGovernor().createLogic(ctx)
+
+        logic.onStart()
+        verify(exactly = 0) { ctx.setTarget(any()) }
+
+        logic.onLimit()
+        verify(exactly = 1) { ctx.setTarget(2100.0) }
     }
 }

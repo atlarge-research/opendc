@@ -28,6 +28,7 @@ import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.resources.SimResourceSource
 import java.util.*
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * A [ScalingDriver] that scales the frequency of the processor based on a discrete set of frequencies.
@@ -53,18 +54,18 @@ public class PStateScalingDriver(states: Map<Double, PowerModel>) : ScalingDrive
         }
 
         override fun computePower(): Double {
-            var freq = 0.0
+            var targetFreq = 0.0
             var totalSpeed = 0.0
-            var totalFreq = 0.0
 
             for (ctx in contexts) {
-                freq = max(ctx.target, freq)
+                targetFreq = max(ctx.target, targetFreq)
                 totalSpeed += ctx.resource.speed.value
-                totalFreq += ctx.target
             }
 
-            val (_, model) = states.ceilingEntry(freq)
-            return model.computePower(totalSpeed / totalFreq)
+            val maxFreq = states.lastKey()
+            val (actualFreq, model) = states.ceilingEntry(min(maxFreq, targetFreq))
+            val utilization = totalSpeed / (actualFreq * contexts.size)
+            return model.computePower(utilization)
         }
 
         override fun toString(): String = "PStateScalingDriver.Logic"
