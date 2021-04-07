@@ -28,7 +28,7 @@ package org.opendc.simulator.compute.cpufreq
 public class DemandScalingGovernor : ScalingGovernor {
     override fun createLogic(ctx: ScalingContext): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
         override fun onLimit() {
-            ctx.setTarget(ctx.resource.speed.value)
+            ctx.setTarget(ctx.resource.speed)
         }
 
         override fun toString(): String = "DemandScalingGovernor.Logic"

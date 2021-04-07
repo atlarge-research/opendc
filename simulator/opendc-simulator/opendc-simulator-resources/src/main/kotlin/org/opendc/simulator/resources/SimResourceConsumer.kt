@@ -23,7 +23,7 @@
 package org.opendc.simulator.resources
 
 /**
- * A [SimResourceConsumer] characterizes how a [SimResource] is consumed.
+ * A [SimResourceConsumer] characterizes how a resource is consumed.
  *
  * Implementors of this interface should be considered stateful and must be assumed not to be re-usable (concurrently)
  * for multiple resource providers, unless explicitly said otherwise.
@@ -44,6 +44,14 @@ public interface SimResourceConsumer {
      * @return The next command that the resource should execute.
      */
     public fun onNext(ctx: SimResourceContext): SimResourceCommand
+
+    /**
+     * This method is invoked when the resource provider confirms that the consumer is running at the given speed.
+     *
+     * @param ctx The execution context in which the consumer runs.
+     * @param speed The speed at which the consumer runs.
+     */
+    public fun onConfirm(ctx: SimResourceContext, speed: Double) {}
 
     /**
      * This is method is invoked when the capacity of the resource changes.

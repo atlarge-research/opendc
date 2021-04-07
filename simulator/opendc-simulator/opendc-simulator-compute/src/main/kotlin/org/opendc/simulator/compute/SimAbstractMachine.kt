@@ -25,14 +25,13 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.SimResourceProvider
 import org.opendc.simulator.resources.SimResourceSource
 import org.opendc.simulator.resources.consume
+import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 
@@ -47,9 +46,9 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     /**
      * The speed of the CPU cores.
      */
-    public val speed: List<Double>
+    public val speed: DoubleArray
         get() = _speed
-    private var _speed = mutableListOf<Double>()
+    private var _speed = doubleArrayOf()
 
     /**
      * A flag to indicate that the machine is terminated.
@@ -94,27 +93,30 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
         val ctx = Context(resources, meta)
         val totalCapacity = model.cpus.sumByDouble { it.frequency }
 
-        _speed = MutableList(model.cpus.size) { 0.0 }
+        _speed = DoubleArray(model.cpus.size) { 0.0 }
+        var totalSpeed = 0.0
 
         workload.onStart(ctx)
 
         for ((cpu, source) in resources) {
             val consumer = workload.getConsumer(ctx, cpu)
-            val job = source.speed
-                .onEach {
-                    _speed[cpu.id] = it
-                    _usage.value = _speed.sum() / totalCapacity
-                }
-                .launchIn(this)
+            val adapter = SimSpeedConsumerAdapter(consumer) { newSpeed ->
+                val oldSpeed = _speed[cpu.id]
+                _speed[cpu.id] = newSpeed
+                totalSpeed = totalSpeed - oldSpeed + newSpeed
 
-            launch {
-                try {
-                    source.consume(consumer)
-                } finally {
-                    job.cancel()
-                }
+                updateUsage(totalSpeed / totalCapacity)
             }
+
+            launch { source.consume(adapter) }
         }
+    }
+
+    /**
+     * This method is invoked when the usage of the machine is updated.
+     */
+    protected open fun updateUsage(usage: Double) {
+        _usage.value = usage
     }
 
     override fun close() {

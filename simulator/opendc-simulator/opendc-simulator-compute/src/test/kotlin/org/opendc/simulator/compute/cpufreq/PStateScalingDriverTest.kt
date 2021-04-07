@@ -59,7 +59,7 @@ internal class PStateScalingDriverTest {
         val resource = mockk<SimResourceSource>()
 
         every { cpu.frequency } returns 4100.0
-        every { resource.speed.value } returns 1200.0
+        every { resource.speed } returns 1200.0
 
         val driver = PStateScalingDriver(
             sortedMapOf(
@@ -84,7 +84,7 @@ internal class PStateScalingDriverTest {
         val resource = mockk<SimResourceSource>()
 
         every { cpu.frequency } returns 4100.0
-        every { resource.speed.value } returns 1200.0
+        every { resource.speed } returns 1200.0
 
         val driver = PStateScalingDriver(
             sortedMapOf(
@@ -125,11 +125,11 @@ internal class PStateScalingDriverTest {
 
         val scalingContext = logic.createContext(cpu, resource)
 
-        every { resource.speed.value } returns 1400.0
+        every { resource.speed } returns 1400.0
         scalingContext.setTarget(1400.0)
         assertEquals(150.0, logic.computePower())
 
-        every { resource.speed.value } returns 1400.0
+        every { resource.speed } returns 1400.0
         scalingContext.setTarget(4000.0)
         assertEquals(235.0, logic.computePower())
     }

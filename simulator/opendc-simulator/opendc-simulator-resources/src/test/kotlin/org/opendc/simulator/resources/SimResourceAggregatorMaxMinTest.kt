@@ -26,12 +26,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
@@ -47,15 +47,18 @@ internal class SimResourceAggregatorMaxMinTest {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(clock)
+        val forwarder = SimResourceForwarder()
         val sources = listOf(
-            SimResourceSource(1.0, clock, scheduler),
+            forwarder,
             SimResourceSource(1.0, clock, scheduler)
         )
         sources.forEach(aggregator::addInput)
 
         val consumer = SimWorkConsumer(1.0, 0.5)
         val usage = mutableListOf<Double>()
-        val job = launch { sources[0].speed.toList(usage) }
+        val source = SimResourceSource(1.0, clock, scheduler)
+        val adapter = SimSpeedConsumerAdapter(forwarder, usage::add)
+        source.startConsumer(adapter)
 
         try {
             aggregator.output.consume(consumer)
@@ -67,7 +70,6 @@ internal class SimResourceAggregatorMaxMinTest {
             )
         } finally {
             aggregator.output.close()
-            job.cancel()
         }
     }
 
@@ -85,18 +87,17 @@ internal class SimResourceAggregatorMaxMinTest {
 
         val consumer = SimWorkConsumer(2.0, 1.0)
         val usage = mutableListOf<Double>()
-        val job = launch { sources[0].speed.toList(usage) }
+        val adapter = SimSpeedConsumerAdapter(consumer, usage::add)
 
         try {
-            aggregator.output.consume(consumer)
+            aggregator.output.consume(adapter)
             yield()
             assertAll(
                 { assertEquals(1000, currentTime) },
-                { assertEquals(listOf(0.0, 1.0, 0.0), usage) }
+                { assertEquals(listOf(0.0, 2.0, 0.0), usage) }
             )
         } finally {
             aggregator.output.close()
-            job.cancel()
         }
     }
 

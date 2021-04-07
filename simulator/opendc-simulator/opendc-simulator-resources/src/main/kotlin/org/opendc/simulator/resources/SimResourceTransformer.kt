@@ -124,6 +124,10 @@ public class SimResourceTransformer(
         }
     }
 
+    override fun onConfirm(ctx: SimResourceContext, speed: Double) {
+        delegate?.onConfirm(ctx, speed)
+    }
+
     override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
         delegate?.onCapacityChanged(ctx, isThrottled)
     }

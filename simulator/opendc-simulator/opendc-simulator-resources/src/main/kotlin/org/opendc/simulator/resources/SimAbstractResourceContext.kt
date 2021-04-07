@@ -272,6 +272,7 @@ public abstract class SimAbstractResourceContext(
                 require(deadline >= now) { "Deadline already passed" }
 
                 speed = 0.0
+                consumer.onConfirm(this, 0.0)
 
                 onIdle(deadline)
             }
@@ -283,6 +284,7 @@ public abstract class SimAbstractResourceContext(
                 require(deadline >= now) { "Deadline already passed" }
 
                 speed = min(capacity, limit)
+                consumer.onConfirm(this, speed)
 
                 onConsume(work, limit, deadline)
             }

@@ -27,10 +27,10 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
@@ -54,11 +54,10 @@ class SimResourceSourceTest {
 
         try {
             val res = mutableListOf<Double>()
-            val job = launch { provider.speed.toList(res) }
+            val adapter = SimSpeedConsumerAdapter(consumer, res::add)
 
-            provider.consume(consumer)
+            provider.consume(adapter)
 
-            job.cancel()
             assertEquals(listOf(0.0, capacity, 0.0), res) { "Speed is reported correctly" }
         } finally {
             scheduler.close()
@@ -102,11 +101,10 @@ class SimResourceSourceTest {
 
         try {
             val res = mutableListOf<Double>()
-            val job = launch { provider.speed.toList(res) }
+            val adapter = SimSpeedConsumerAdapter(consumer, res::add)
 
-            provider.consume(consumer)
+            provider.consume(adapter)
 
-            job.cancel()
             assertEquals(listOf(0.0, capacity, 0.0), res) { "Speed is reported correctly" }
         } finally {
             scheduler.close()

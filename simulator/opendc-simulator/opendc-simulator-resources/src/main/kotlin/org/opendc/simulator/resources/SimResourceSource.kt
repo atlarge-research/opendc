@@ -22,8 +22,6 @@
 
 package org.opendc.simulator.resources
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
 import kotlin.math.ceil
@@ -42,11 +40,10 @@ public class SimResourceSource(
     private val scheduler: TimerScheduler<Any>
 ) : SimResourceProvider {
     /**
-     * The resource processing speed over time.
+     * The current processing speed of the resource.
      */
-    public val speed: StateFlow<Double>
-        get() = _speed
-    private val _speed = MutableStateFlow(0.0)
+    public val speed: Double
+        get() = ctx?.speed ?: 0.0
 
     /**
      * The capacity of the resource.
@@ -101,8 +98,6 @@ public class SimResourceSource(
      */
     private inner class Context(consumer: SimResourceConsumer) : SimAbstractResourceContext(capacity, clock, consumer) {
         override fun onIdle(deadline: Long) {
-            _speed.value = speed
-
             // Do not resume if deadline is "infinite"
             if (deadline != Long.MAX_VALUE) {
                 scheduler.startSingleTimerTo(this, deadline) { flush() }
@@ -110,15 +105,12 @@ public class SimResourceSource(
         }
 
         override fun onConsume(work: Double, limit: Double, deadline: Long) {
-            _speed.value = speed
-
             val until = min(deadline, clock.millis() + getDuration(work, speed))
 
             scheduler.startSingleTimerTo(this, until, ::flush)
         }
 
         override fun onFinish(cause: Throwable?) {
-            _speed.value = speed
             scheduler.cancel(this)
             cancel()
 
