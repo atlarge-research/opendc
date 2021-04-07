@@ -106,7 +106,7 @@ public class SimResourceDistributorMaxMin(
                 val output = iterator.next()
 
                 // Remove the output from the outputs to prevent ConcurrentModificationException when removing it
-                // during the call tou output.close()
+                // during the call to output.close()
                 iterator.remove()
 
                 output.close()
@@ -251,8 +251,8 @@ public class SimResourceDistributorMaxMin(
             totalAllocatedWork - totalRemainingWork,
             totalOvercommittedWork.toLong(),
             totalInterferedWork.toLong(),
-            totalRequestedSpeed,
             totalAllocatedSpeed,
+            totalRequestedSpeed
         )
 
         totalInterferedWork = 0.0

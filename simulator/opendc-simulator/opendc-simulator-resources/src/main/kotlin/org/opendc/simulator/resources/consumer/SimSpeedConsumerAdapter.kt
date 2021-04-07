@@ -22,8 +22,6 @@
 
 package org.opendc.simulator.resources.consumer
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
@@ -32,36 +30,51 @@ import kotlin.math.min
 /**
  * Helper class to expose an observable [speed] field describing the speed of the consumer.
  */
-public class SimSpeedConsumerAdapter(private val delegate: SimResourceConsumer) : SimResourceConsumer by delegate {
+public class SimSpeedConsumerAdapter(
+    private val delegate: SimResourceConsumer,
+    private val callback: (Double) -> Unit = {}
+) : SimResourceConsumer by delegate {
     /**
-     * The resource processing speed over time.
+     * The resource processing speed at this instant.
      */
-    public val speed: StateFlow<Double>
-        get() = _speed
-    private val _speed = MutableStateFlow(0.0)
-
-    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-        val command = delegate.onNext(ctx)
-
-        when (command) {
-            is SimResourceCommand.Idle -> _speed.value = 0.0
-            is SimResourceCommand.Consume -> _speed.value = min(ctx.capacity, command.limit)
-            is SimResourceCommand.Exit -> _speed.value = 0.0
+    public var speed: Double = 0.0
+        private set(value) {
+            if (field != value) {
+                callback(value)
+                field = value
+            }
         }
 
-        return command
+    init {
+        callback(0.0)
+    }
+
+    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+        return delegate.onNext(ctx)
+    }
+
+    override fun onConfirm(ctx: SimResourceContext, speed: Double) {
+        delegate.onConfirm(ctx, speed)
+
+        this.speed = speed
     }
 
     override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
-        val oldSpeed = _speed.value
+        val oldSpeed = speed
 
         delegate.onCapacityChanged(ctx, isThrottled)
 
         // Check if the consumer interrupted the consumer and updated the resource consumption. If not, we might
         // need to update the current speed.
-        if (oldSpeed == _speed.value) {
-            _speed.value = min(ctx.capacity, _speed.value)
+        if (oldSpeed == speed) {
+            speed = min(ctx.capacity, speed)
         }
+    }
+
+    override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
+        super.onFinish(ctx, cause)
+
+        speed = 0.0
     }
 
     override fun toString(): String = "SimSpeedConsumerAdapter[delegate=$delegate]"

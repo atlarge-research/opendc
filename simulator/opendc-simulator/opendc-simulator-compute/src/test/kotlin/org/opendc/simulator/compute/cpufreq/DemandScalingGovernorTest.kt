@@ -35,7 +35,7 @@ internal class DemandScalingGovernorTest {
     fun testSetDemandLimit() {
         val ctx = mockk<ScalingContext>(relaxUnitFun = true)
 
-        every { ctx.resource.speed.value } returns 2100.0
+        every { ctx.resource.speed } returns 2100.0
 
         val logic = DemandScalingGovernor().createLogic(ctx)
 

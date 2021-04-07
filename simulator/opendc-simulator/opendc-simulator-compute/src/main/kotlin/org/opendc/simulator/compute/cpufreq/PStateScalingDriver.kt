@@ -59,7 +59,7 @@ public class PStateScalingDriver(states: Map<Double, PowerModel>) : ScalingDrive
 
             for (ctx in contexts) {
                 targetFreq = max(ctx.target, targetFreq)
-                totalSpeed += ctx.resource.speed.value
+                totalSpeed += ctx.resource.speed
             }
 
             val maxFreq = states.lastKey()

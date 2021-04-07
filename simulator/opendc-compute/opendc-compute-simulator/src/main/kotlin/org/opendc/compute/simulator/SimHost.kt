@@ -104,7 +104,7 @@ public class SimHost(
                 _cpuWorkInterference.record(interferedWork.toDouble())
                 _cpuUsage.record(cpuUsage)
                 _cpuDemand.record(cpuDemand)
-                _cpuPower.record(machine.powerDraw.value)
+                _cpuPower.record(machine.powerDraw)
             }
         }
     )

@@ -25,14 +25,13 @@ package org.opendc.simulator.resources
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
@@ -65,17 +64,17 @@ internal class SimResourceSwitchExclusiveTest {
 
         val switch = SimResourceSwitchExclusive()
         val source = SimResourceSource(3200.0, clock, scheduler)
-
-        switch.addInput(source)
+        val forwarder = SimResourceForwarder()
+        val adapter = SimSpeedConsumerAdapter(forwarder, speed::add)
+        source.startConsumer(adapter)
+        switch.addInput(forwarder)
 
         val provider = switch.addOutput(3200.0)
-        val job = launch { source.speed.toList(speed) }
 
         try {
             provider.consume(workload)
             yield()
         } finally {
-            job.cancel()
             provider.close()
         }
 

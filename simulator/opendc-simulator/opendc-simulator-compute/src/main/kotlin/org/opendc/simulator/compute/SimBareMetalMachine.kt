@@ -84,12 +84,15 @@ public class SimBareMetalMachine(
     /**
      * The power draw of the machine.
      */
-    public val powerDraw: StateFlow<Double> = usage
-        .map {
-            this.scalingGovernors.forEach { it.onLimit() }
-            this.scalingDriver.computePower()
-        }
-        .stateIn(scope, SharingStarted.Eagerly, 0.0)
+    public var powerDraw: Double = 0.0
+        private set
+
+    override fun updateUsage(usage: Double) {
+        super.updateUsage(usage)
+
+        scalingGovernors.forEach { it.onLimit() }
+        powerDraw = scalingDriver.computePower()
+    }
 
     override fun close() {
         super.close()

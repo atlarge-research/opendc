@@ -102,7 +102,18 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
 
     private val context = object : SimAbstractResourceContext(inputContexts.sumByDouble { it.capacity }, clock, _output) {
         override val remainingWork: Double
-            get() = inputContexts.sumByDouble { it.remainingWork }
+            get() {
+                val now = clock.millis()
+
+                return if (_remainingWorkFlush < now) {
+                    _remainingWorkFlush = now
+                    _inputContexts.sumByDouble { it.remainingWork }.also { _remainingWork = it }
+                } else {
+                    _remainingWork
+                }
+            }
+        private var _remainingWork: Double = 0.0
+        private var _remainingWorkFlush: Long = Long.MIN_VALUE
 
         override fun interrupt() {
             super.interrupt()
