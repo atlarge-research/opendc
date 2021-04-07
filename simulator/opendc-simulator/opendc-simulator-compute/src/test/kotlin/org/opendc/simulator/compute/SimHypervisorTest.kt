@@ -32,9 +32,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 
@@ -91,7 +94,7 @@ internal class SimHypervisorTest {
                 ),
             )
 
-        val machine = SimBareMetalMachine(coroutineContext, clock, model)
+        val machine = SimBareMetalMachine(coroutineContext, clock, model, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
         val hypervisor = SimFairShareHypervisor(listener)
 
         launch {
@@ -163,7 +166,10 @@ internal class SimHypervisorTest {
                 )
             )
 
-        val machine = SimBareMetalMachine(coroutineContext, clock, model)
+        val machine = SimBareMetalMachine(
+            coroutineContext, clock, model, PerformanceScalingGovernor(),
+            SimpleScalingDriver(ConstantPowerModel(0.0))
+        )
         val hypervisor = SimFairShareHypervisor(listener)
 
         launch {

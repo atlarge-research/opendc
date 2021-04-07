@@ -3,6 +3,8 @@ package org.opendc.simulator.compute.power
 import org.yaml.snakeyaml.Yaml
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * The linear interpolation power model partially adapted from CloudSim.
@@ -10,29 +12,29 @@ import kotlin.math.floor
  *
  * @param hardwareName The name of the hardware vendor.
  * @see <a href="http://www.spec.org/power_ssj2008/results/res2011q1/">Machines used in the SPEC benchmark</a>
- * @property averagePowerValues A [List] of average active power measured by the power analyzer(s)
- *                          and accumulated by the PTDaemon (Power and Temperature Daemon) for this
- *                          measurement interval, displayed as watts (W).
  */
-public class InterpolationPowerModel(
-    hardwareName: String,
-) : MachinePowerModel {
+public class InterpolationPowerModel(hardwareName: String) : PowerModel {
+    /**
+     * A [List] of average active power measured by the power analyzer(s) and accumulated by the
+     * PTDaemon (Power and Temperature Daemon) for this measurement interval, displayed as watts (W).
+     */
     private val averagePowerValues: List<Double> = loadAveragePowerValue(hardwareName)
 
-    public override fun computeCpuPower(cpuUtil: Double): Double {
-        require(cpuUtil in 0.0..1.0) { "CPU utilization must be in [0, 1]" }
-
-        val cpuUtilFlr = floor(cpuUtil * 10).toInt()
-        val cpuUtilCil = ceil(cpuUtil * 10).toInt()
-        val powerFlr: Double = getAveragePowerValue(cpuUtilFlr)
-        val powerCil: Double = getAveragePowerValue(cpuUtilCil)
+    public override fun computePower(utilization: Double): Double {
+        val clampedUtilization = min(1.0, max(0.0, utilization))
+        val utilizationFlr = floor(clampedUtilization * 10).toInt()
+        val utilizationCil = ceil(clampedUtilization * 10).toInt()
+        val powerFlr: Double = getAveragePowerValue(utilizationFlr)
+        val powerCil: Double = getAveragePowerValue(utilizationCil)
         val delta = (powerCil - powerFlr) / 10
 
-        return if (cpuUtil % 0.1 == 0.0)
-            getAveragePowerValue((cpuUtil * 10).toInt())
+        return if (utilization % 0.1 == 0.0)
+            getAveragePowerValue((clampedUtilization * 10).toInt())
         else
-            powerFlr + delta * (cpuUtil - cpuUtilFlr.toDouble() / 10) * 100
+            powerFlr + delta * (clampedUtilization - utilizationFlr.toDouble() / 10) * 100
     }
+
+    override fun toString(): String = "InterpolationPowerModel[entries=${averagePowerValues.size}]"
 
     /**
      * Gets the power consumption for a given utilization percentage.

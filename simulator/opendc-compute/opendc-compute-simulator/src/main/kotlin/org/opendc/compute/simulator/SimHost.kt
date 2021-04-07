@@ -31,11 +31,13 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
 import org.opendc.simulator.compute.*
+import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.MachinePowerModel
+import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.failures.FailureDomain
 import java.time.Clock
 import java.util.*
@@ -54,7 +56,7 @@ public class SimHost(
     clock: Clock,
     meter: Meter,
     hypervisor: SimHypervisorProvider,
-    powerModel: MachinePowerModel = ConstantPowerModel(0.0),
+    powerModel: PowerModel = ConstantPowerModel(0.0),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
 ) : Host, FailureDomain, AutoCloseable {
     /**
@@ -80,7 +82,7 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, powerModel)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, PerformanceScalingGovernor(), SimpleScalingDriver(powerModel))
 
     /**
      * The hypervisor to run multiple workloads.

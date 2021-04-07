@@ -20,16 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.environment
+package org.opendc.simulator.compute.cpufreq
 
-import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.power.PowerModel
-import java.util.*
+/**
+ * A CPUFreq [ScalingGovernor] that requests the frequency based on the utilization of the machine.
+ */
+public class DemandScalingGovernor : ScalingGovernor {
+    override fun createLogic(ctx: ScalingContext): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
+        override fun onLimit() {
+            ctx.setTarget(ctx.resource.speed.value)
+        }
 
-public data class MachineDef(
-    val uid: UUID,
-    val name: String,
-    val meta: Map<String, Any>,
-    val model: SimMachineModel,
-    val powerModel: PowerModel
-)
+        override fun toString(): String = "DemandScalingGovernor.Logic"
+    }
+}

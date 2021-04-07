@@ -20,16 +20,33 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.environment
+package org.opendc.simulator.compute.cpufreq
 
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
-import java.util.*
+import org.opendc.simulator.resources.SimResourceSource
 
-public data class MachineDef(
-    val uid: UUID,
-    val name: String,
-    val meta: Map<String, Any>,
-    val model: SimMachineModel,
-    val powerModel: PowerModel
-)
+/**
+ * A [ScalingDriver] that ignores the instructions of the [ScalingGovernor] and directly computes the power consumption
+ * based on the specified [power model][model].
+ */
+public class SimpleScalingDriver(private val model: PowerModel) : ScalingDriver {
+    override fun createLogic(machine: SimMachine): ScalingDriver.Logic = object : ScalingDriver.Logic {
+        override fun createContext(cpu: ProcessingUnit, resource: SimResourceSource): ScalingContext {
+            return object : ScalingContext {
+                override val machine: SimMachine = machine
+
+                override val cpu: ProcessingUnit = cpu
+
+                override val resource: SimResourceSource = resource
+
+                override fun setTarget(freq: Double) {}
+            }
+        }
+
+        override fun computePower(): Double = model.computePower(machine.usage.value)
+
+        override fun toString(): String = "SimpleScalingDriver.Logic"
+    }
+}

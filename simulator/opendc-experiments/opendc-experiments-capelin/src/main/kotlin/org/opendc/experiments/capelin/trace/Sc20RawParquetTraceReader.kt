@@ -145,4 +145,13 @@ public class Sc20RawParquetTraceReader(private val path: File) {
      * Read the entries in the trace.
      */
     public fun read(): List<TraceEntry<SimWorkload>> = entries
+
+    /**
+     * Create a [TraceReader] instance.
+     */
+    public fun createReader(): TraceReader<SimWorkload> {
+        return object : TraceReader<SimWorkload>, Iterator<TraceEntry<SimWorkload>> by entries.iterator() {
+            override fun close() {}
+        }
+    }
 }

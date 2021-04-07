@@ -20,16 +20,35 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.environment
+package org.opendc.simulator.compute.cpufreq
 
-import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.power.PowerModel
-import java.util.*
+import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.resources.SimResourceSource
 
-public data class MachineDef(
-    val uid: UUID,
-    val name: String,
-    val meta: Map<String, Any>,
-    val model: SimMachineModel,
-    val powerModel: PowerModel
-)
+/**
+ * A [ScalingDriver] is responsible for switching the processor to the correct frequency.
+ */
+public interface ScalingDriver {
+    /**
+     * Create the scaling logic for the specified [machine]
+     */
+    public fun createLogic(machine: SimMachine): Logic
+
+    /**
+     * The logic of the scaling driver.
+     */
+    public interface Logic {
+        /**
+         * Create the [ScalingContext] for the specified [cpu] and [resource] instance.
+         */
+        public fun createContext(cpu: ProcessingUnit, resource: SimResourceSource): ScalingContext
+
+        /**
+         * Compute the power consumption of the processor.
+         *
+         * @return The power consumption of the processor in W.
+         */
+        public fun computePower(): Double
+    }
+}

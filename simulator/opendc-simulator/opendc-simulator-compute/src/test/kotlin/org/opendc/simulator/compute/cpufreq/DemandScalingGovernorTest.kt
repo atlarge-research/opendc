@@ -20,16 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.environment
+package org.opendc.simulator.compute.cpufreq
 
-import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.power.PowerModel
-import java.util.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.jupiter.api.Test
 
-public data class MachineDef(
-    val uid: UUID,
-    val name: String,
-    val meta: Map<String, Any>,
-    val model: SimMachineModel,
-    val powerModel: PowerModel
-)
+/**
+ * Test suite for the [DemandScalingGovernor]
+ */
+internal class DemandScalingGovernorTest {
+    @Test
+    fun testSetDemandLimit() {
+        val ctx = mockk<ScalingContext>(relaxUnitFun = true)
+
+        every { ctx.resource.speed.value } returns 2100.0
+
+        val logic = DemandScalingGovernor().createLogic(ctx)
+
+        logic.onStart()
+        verify(exactly = 0) { ctx.setTarget(any()) }
+
+        logic.onLimit()
+        verify(exactly = 1) { ctx.setTarget(2100.0) }
+    }
+}
