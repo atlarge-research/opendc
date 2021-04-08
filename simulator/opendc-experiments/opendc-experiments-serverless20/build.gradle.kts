@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.service.router
+description = "Experiments for OpenDC Serverless"
 
-import org.opendc.serverless.service.FunctionObject
-import org.opendc.serverless.service.deployer.FunctionInstance
-import kotlin.random.Random
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+    `experiment-conventions`
+    `testing-conventions`
+}
 
-/**
- * A [RoutingPolicy] that selects a random function instance.
- */
-public class RandomRoutingPolicy(private val random: Random = Random(0)) : RoutingPolicy {
-    override fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance {
-        return instances.random(random)
+dependencies {
+    api(platform(project(":opendc-platform")))
+    api(project(":opendc-harness"))
+    implementation(project(":opendc-serverless:opendc-serverless-service"))
+    implementation(project(":opendc-serverless:opendc-serverless-simulator"))
+    implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
+
+    implementation("io.github.microutils:kotlin-logging")
+
+    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
+    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "log4j")
     }
 }

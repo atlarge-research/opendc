@@ -20,17 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.service.router
+package org.opendc.serverless.simulator.delay
 
-import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.deployer.FunctionInstance
-import kotlin.random.Random
 
 /**
- * A [RoutingPolicy] that selects a random function instance.
+ * An interface for modeling the delay caused by function cold starts.
  */
-public class RandomRoutingPolicy(private val random: Random = Random(0)) : RoutingPolicy {
-    override fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance {
-        return instances.random(random)
-    }
+public interface DelayInjector {
+    /**
+     * Returns the cold start delay duration sampled from a normal distribution, the distribution is
+     * initialized using custom mean and standard deviation based on provisioned memory, language and
+     * failure model
+     */
+    public fun getColdStartDelay(instance: FunctionInstance): Long
 }

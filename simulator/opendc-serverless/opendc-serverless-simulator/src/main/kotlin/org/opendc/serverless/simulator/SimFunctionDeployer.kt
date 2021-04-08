@@ -24,10 +24,11 @@ package org.opendc.serverless.simulator
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.deployer.FunctionDeployer
 import org.opendc.serverless.service.deployer.FunctionInstance
 import org.opendc.serverless.service.deployer.FunctionInstanceState
+import org.opendc.serverless.simulator.delay.DelayInjector
 import org.opendc.serverless.simulator.workload.SimServerlessWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
@@ -48,10 +49,11 @@ public class SimFunctionDeployer(
     private val clock: Clock,
     private val scope: CoroutineScope,
     private val model: SimMachineModel,
+    private val delayInjector: DelayInjector,
     private val mapper: SimServerlessWorkloadMapper
 ) : FunctionDeployer {
 
-    override fun deploy(function: ServerlessFunction): Instance {
+    override fun deploy(function: FunctionObject): Instance {
         val instance = Instance(function)
         instance.start()
         return instance
@@ -60,7 +62,7 @@ public class SimFunctionDeployer(
     /**
      * A simulated [FunctionInstance].
      */
-    public inner class Instance(override val function: ServerlessFunction) : FunctionInstance {
+    public inner class Instance(override val function: FunctionObject) : FunctionInstance {
         /**
          * The workload associated with this instance.
          */
@@ -111,33 +113,35 @@ public class SimFunctionDeployer(
         internal fun start() {
             check(state == FunctionInstanceState.Provisioning) { "Invalid state of function instance" }
             job = scope.launch {
-                workload.onStart()
+                delay(delayInjector.getColdStartDelay(this@Instance))
 
-                try {
-                    while (isActive) {
-                        chan.receive()
-
-                        if (queue.isNotEmpty()) {
-                            state = FunctionInstanceState.Active
-                        }
-
-                        while (queue.isNotEmpty()) {
-                            val request = queue.poll()
-                            try {
-                                machine.run(workload.onInvoke())
-                                request.cont.resume(Unit)
-                            } catch (cause: CancellationException) {
-                                request.cont.resumeWithException(cause)
-                                throw cause
-                            } catch (cause: Throwable) {
-                                request.cont.resumeWithException(cause)
-                            }
-                        }
-                        state = FunctionInstanceState.Idle
+                launch {
+                    try {
+                        machine.run(workload)
+                    } finally {
+                        state = FunctionInstanceState.Terminated
                     }
-                } finally {
-                    state = FunctionInstanceState.Terminated
-                    workload.onStop()
+                }
+
+                while (isActive) {
+                    if (queue.isEmpty()) {
+                        chan.receive()
+                    }
+
+                    state = FunctionInstanceState.Active
+                    while (queue.isNotEmpty()) {
+                        val request = queue.poll()
+                        try {
+                            workload.invoke()
+                            request.cont.resume(Unit)
+                        } catch (cause: CancellationException) {
+                            request.cont.resumeWithException(cause)
+                            throw cause
+                        } catch (cause: Throwable) {
+                            request.cont.resumeWithException(cause)
+                        }
+                    }
+                    state = FunctionInstanceState.Idle
                 }
             }
         }

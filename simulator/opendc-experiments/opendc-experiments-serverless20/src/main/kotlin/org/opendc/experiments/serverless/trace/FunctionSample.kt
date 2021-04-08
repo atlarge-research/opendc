@@ -20,17 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.service.router
-
-import org.opendc.serverless.service.FunctionObject
-import org.opendc.serverless.service.deployer.FunctionInstance
-import kotlin.random.Random
+package org.opendc.experiments.serverless.trace
 
 /**
- * A [RoutingPolicy] that selects a random function instance.
+ * A sample of a single function.
+ *
+ * @param timestamp The timestamp of the function.
+ * @param duration The average execution time of the function.
+ * @param invocations The number of invocations.
+ * @param provisionedCpu The provisioned CPU for this function in MHz.
+ * @param provisionedMem The amount of memory provisioned for this function in MB.
+ * @param cpuUsage The actual CPU usage in MHz.
+ * @param memUsage The actual memory usage in MB.
  */
-public class RandomRoutingPolicy(private val random: Random = Random(0)) : RoutingPolicy {
-    override fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance {
-        return instances.random(random)
-    }
-}
+public data class FunctionSample(
+    val timestamp: Long,
+    val duration: Long,
+    val invocations: Int,
+    val provisionedCpu: Int,
+    val provisionedMem: Int,
+    val cpuUsage: Double,
+    val memUsage: Double
+)

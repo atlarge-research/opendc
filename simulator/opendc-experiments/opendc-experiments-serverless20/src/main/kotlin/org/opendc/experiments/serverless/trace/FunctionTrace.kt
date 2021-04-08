@@ -20,17 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.service.router
-
-import org.opendc.serverless.service.FunctionObject
-import org.opendc.serverless.service.deployer.FunctionInstance
-import kotlin.random.Random
+package org.opendc.experiments.serverless.trace
 
 /**
- * A [RoutingPolicy] that selects a random function instance.
+ * A trace for a single function
  */
-public class RandomRoutingPolicy(private val random: Random = Random(0)) : RoutingPolicy {
-    override fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance {
-        return instances.random(random)
-    }
-}
+public data class FunctionTrace(val id: String, val maxMemory: Int, val samples: List<FunctionSample>)

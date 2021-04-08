@@ -20,18 +20,51 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.simulator.workload
+package org.opendc.serverless.service.internal
 
 import org.opendc.serverless.api.ServerlessFunction
 import org.opendc.serverless.service.FunctionObject
+import java.util.*
 
 /**
- * A [SimServerlessWorkloadMapper] is responsible for mapping a [ServerlessFunction] to a [SimServerlessWorkload] that
- * can be simulated.
+ * A [ServerlessFunction] implementation that is passed to clients.
  */
-public fun interface SimServerlessWorkloadMapper {
-    /**
-     * Map the specified [function] to a [SimServerlessWorkload] that can be simulated.
-     */
-    public fun createWorkload(function: FunctionObject): SimServerlessWorkload
+internal class ServerlessFunctionImpl(
+    private val service: ServerlessServiceImpl,
+    private val state: FunctionObject
+) : ServerlessFunction {
+    override val uid: UUID = state.uid
+
+    override var name: String = state.name
+        private set
+
+    override var memorySize: Long = state.memorySize
+        private set
+
+    override var labels: Map<String, String> = state.labels.toMap()
+        private set
+
+    override var meta: Map<String, Any> = state.meta.toMap()
+        private set
+
+    override suspend fun delete() {
+        service.delete(state)
+    }
+
+    override suspend fun invoke() {
+        service.invoke(state)
+    }
+
+    override suspend fun refresh() {
+        name = state.name
+        memorySize = state.memorySize
+        labels = state.labels
+        meta = state.meta
+    }
+
+    override fun equals(other: Any?): Boolean = other is ServerlessFunctionImpl && uid == other.uid
+
+    override fun hashCode(): Int = uid.hashCode()
+
+    override fun toString(): String = "ServerlessFunction[uid=$uid,name=$name]"
 }

@@ -22,7 +22,7 @@
 
 package org.opendc.serverless.service.deployer
 
-import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.FunctionObject
 
 /**
  * A [FunctionDeployer] is responsible for ensuring that an instance of an arbitrary function, a [FunctionInstance],
@@ -39,5 +39,5 @@ public interface FunctionDeployer {
     /**
      * Deploy the specified [function].
      */
-    public fun deploy(function: ServerlessFunction): FunctionInstance
+    public fun deploy(function: FunctionObject): FunctionInstance
 }

@@ -20,41 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.service.internal
+package org.opendc.serverless.simulator.delay
 
-import org.opendc.serverless.api.ServerlessFunction
-import java.util.*
+import org.opendc.serverless.service.deployer.FunctionInstance
 
-/**
- * Internal stateful representation of a [ServerlessFunction].
- */
-internal class InternalFunction(
-    private val service: ServerlessServiceImpl,
-    override val uid: UUID,
-    name: String,
-    labels: Map<String, String>,
-    meta: Map<String, Any>
-) : ServerlessFunction {
-    override var name: String = name
-        private set
-
-    override val labels: MutableMap<String, String> = labels.toMutableMap()
-
-    override val meta: MutableMap<String, Any> = meta.toMutableMap()
-
-    override suspend fun refresh() {
-        // No-op: this object is the source-of-truth
-    }
-
-    override suspend fun invoke() {
-        service.invoke(this)
-    }
-
-    override suspend fun delete() {
-        service.delete(this)
-    }
-
-    override fun equals(other: Any?): Boolean = other is ServerlessFunction && uid == other.uid
-
-    override fun hashCode(): Int = uid.hashCode()
+public object ZeroDelayInjector : DelayInjector {
+    override fun getColdStartDelay(instance: FunctionInstance): Long = 0
 }

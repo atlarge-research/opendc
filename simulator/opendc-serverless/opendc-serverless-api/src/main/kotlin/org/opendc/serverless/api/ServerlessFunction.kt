@@ -39,6 +39,11 @@ public interface ServerlessFunction {
     public val name: String
 
     /**
+     * The amount of memory allocated for this function in MB.
+     */
+    public val memorySize: Long
+
+    /**
      * The identifying labels attached to the resource.
      */
     public val labels: Map<String, String>

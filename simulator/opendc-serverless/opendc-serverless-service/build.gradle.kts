@@ -32,6 +32,7 @@ plugins {
 dependencies {
     api(platform(project(":opendc-platform")))
     api(project(":opendc-serverless:opendc-serverless-api"))
+    api(project(":opendc-telemetry:opendc-telemetry-api"))
     implementation(project(":opendc-utils"))
     implementation("io.github.microutils:kotlin-logging")
 

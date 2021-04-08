@@ -20,17 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.service.router
+package org.opendc.experiments.serverless.trace
 
-import org.opendc.serverless.service.FunctionObject
-import org.opendc.serverless.service.deployer.FunctionInstance
-import kotlin.random.Random
+import org.opendc.serverless.simulator.workload.SimServerlessWorkload
+import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * A [RoutingPolicy] that selects a random function instance.
+ * A [SimServerlessWorkload] for a [FunctionTrace].
  */
-public class RandomRoutingPolicy(private val random: Random = Random(0)) : RoutingPolicy {
-    override fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance {
-        return instances.random(random)
-    }
+public class FunctionTraceWorkload(trace: FunctionTrace) : SimServerlessWorkload, SimWorkload by SimTraceWorkload(trace.samples.asSequence().map { SimTraceWorkload.Fragment(it.duration, it.cpuUsage, 1) }) {
+    override suspend fun invoke() {}
 }

@@ -22,8 +22,9 @@
 
 package org.opendc.serverless.simulator
 
+import io.mockk.coVerify
 import io.mockk.spyk
-import io.mockk.verify
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runBlockingTest
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.serverless.service.ServerlessService
 import org.opendc.serverless.service.router.RandomRoutingPolicy
+import org.opendc.serverless.simulator.delay.ZeroDelayInjector
 import org.opendc.serverless.simulator.workload.SimServerlessWorkload
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -62,16 +64,17 @@ internal class SimServerlessServiceTest {
 
     @Test
     fun testSmoke() = runBlockingTest {
+        val meter = MeterProvider.noop().get("opendc-serverless")
         val clock = DelayControllerClockAdapter(this)
-        val workload = spyk(object : SimServerlessWorkload {
-            override fun onInvoke(): SimWorkload = SimFlopsWorkload(1000)
+        val workload = spyk(object : SimServerlessWorkload, SimWorkload by SimFlopsWorkload(1000) {
+            override suspend fun invoke() {}
         })
-        val deployer = SimFunctionDeployer(clock, this, machineModel) { workload }
-        val service = ServerlessService(coroutineContext, clock, deployer, RandomRoutingPolicy())
+        val deployer = SimFunctionDeployer(clock, this, machineModel, ZeroDelayInjector) { workload }
+        val service = ServerlessService(coroutineContext, clock, meter, deployer, RandomRoutingPolicy())
 
         val client = service.newClient()
 
-        val function = client.newFunction("test")
+        val function = client.newFunction("test", 128)
         function.invoke()
         delay(2000)
 
@@ -80,9 +83,7 @@ internal class SimServerlessServiceTest {
         yield()
 
         assertAll(
-            { verify { workload.onStart() } },
-            { verify { workload.onInvoke() } },
-            { verify { workload.onStop() } }
+            { coVerify { workload.invoke() } },
         )
     }
 }

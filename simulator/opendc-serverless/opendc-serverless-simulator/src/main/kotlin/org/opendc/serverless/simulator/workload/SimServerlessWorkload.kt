@@ -27,19 +27,9 @@ import org.opendc.simulator.compute.workload.SimWorkload
 /**
  * A model for a serverless workload, which may be invoked multiple times.
  */
-public interface SimServerlessWorkload {
-    /**
-     * This method is invoked when a function instance is launched.
-     */
-    public fun onStart() {}
-
+public interface SimServerlessWorkload : SimWorkload {
     /**
      * This method is invoked when an active function instance is invoked.
      */
-    public fun onInvoke(): SimWorkload
-
-    /**
-     * This method is invoked when the function instance is stopped.
-     */
-    public fun onStop() {}
+    public suspend fun invoke()
 }

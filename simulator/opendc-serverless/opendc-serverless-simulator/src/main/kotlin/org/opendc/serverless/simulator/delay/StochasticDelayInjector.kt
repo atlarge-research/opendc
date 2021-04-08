@@ -20,45 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.service.internal
+package org.opendc.serverless.simulator.delay
 
-import org.opendc.serverless.api.ServerlessFunction
+import org.opendc.serverless.service.deployer.FunctionInstance
 import java.util.*
+import kotlin.math.abs
 
-/**
- * A [ServerlessFunction] implementation that is passed to clients but delegates its implementation to another class.
+/*
+ * Interface for instance deployment delay estimation.
  */
-internal class ClientFunction(private val delegate: ServerlessFunction) : ServerlessFunction {
-    override val uid: UUID = delegate.uid
-
-    override var name: String = delegate.name
-        private set
-
-    override var labels: Map<String, String> = delegate.labels.toMap()
-        private set
-
-    override var meta: Map<String, Any> = delegate.meta.toMap()
-        private set
-
-    override suspend fun delete() {
-        delegate.delete()
+public class StochasticDelayInjector(private val model: ColdStartModel, private val random: Random) : DelayInjector {
+    override fun getColdStartDelay(instance: FunctionInstance): Long {
+        val (mean, sd) = model.coldStartParam(instance.function.memorySize.toInt())
+        return abs(random.nextGaussian() * sd + mean).toLong()
     }
-
-    override suspend fun invoke() {
-        delegate.invoke()
-    }
-
-    override suspend fun refresh() {
-        delegate.refresh()
-
-        name = delegate.name
-        labels = delegate.labels
-        meta = delegate.meta
-    }
-
-    override fun equals(other: Any?): Boolean = other is ClientFunction && uid == other.uid
-
-    override fun hashCode(): Int = uid.hashCode()
-
-    override fun toString(): String = "ServerlessFunction[uid=$uid,name=$name]"
 }
