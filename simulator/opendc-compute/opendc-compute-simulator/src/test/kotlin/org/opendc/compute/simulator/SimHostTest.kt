@@ -94,10 +94,10 @@ internal class SimHostTest {
             mapOf(
                 "workload" to SimTraceWorkload(
                     sequenceOf(
-                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 3500.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 2 * 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 2 * 3500.0, 2),
                         SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 183.0, 2)
+                        SimTraceWorkload.Fragment(duration * 1000, 2 * 183.0, 2)
                     ),
                 )
             )
@@ -109,10 +109,10 @@ internal class SimHostTest {
             mapOf(
                 "workload" to SimTraceWorkload(
                     sequenceOf(
-                        SimTraceWorkload.Fragment(duration * 1000, 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 3100.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 2 * 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, 2 * 3100.0, 2),
                         SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 73.0, 2)
+                        SimTraceWorkload.Fragment(duration * 1000, 2 * 73.0, 2)
                     )
                 )
             )
