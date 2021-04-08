@@ -32,7 +32,7 @@ import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
-import org.opendc.compute.service.scheduler.AllocationPolicy
+import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.monitor.ExperimentMetricExporter
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
@@ -135,7 +135,7 @@ public suspend fun withComputeService(
     clock: Clock,
     meterProvider: MeterProvider,
     environmentReader: EnvironmentReader,
-    allocationPolicy: AllocationPolicy,
+    scheduler: ComputeScheduler,
     block: suspend CoroutineScope.(ComputeService) -> Unit
 ): Unit = coroutineScope {
     val hosts = environmentReader
@@ -154,18 +154,18 @@ public suspend fun withComputeService(
             )
         }
 
-    val schedulerMeter = meterProvider.get("opendc-compute")
-    val scheduler =
-        ComputeService(coroutineContext, clock, schedulerMeter, allocationPolicy)
+    val serviceMeter = meterProvider.get("opendc-compute")
+    val service =
+        ComputeService(coroutineContext, clock, serviceMeter, scheduler)
 
     for (host in hosts) {
-        scheduler.addHost(host)
+        service.addHost(host)
     }
 
     try {
-        block(this, scheduler)
+        block(this, service)
     } finally {
-        scheduler.close()
+        service.close()
         hosts.forEach(SimHost::close)
     }
 }

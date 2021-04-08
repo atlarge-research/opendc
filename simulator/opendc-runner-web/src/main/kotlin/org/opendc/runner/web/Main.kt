@@ -43,11 +43,10 @@ import kotlinx.coroutines.test.runBlockingTest
 import mu.KotlinLogging
 import org.bson.Document
 import org.bson.types.ObjectId
-import org.opendc.compute.service.scheduler.AvailableCoreMemoryAllocationPolicy
-import org.opendc.compute.service.scheduler.AvailableMemoryAllocationPolicy
-import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
-import org.opendc.compute.service.scheduler.ProvisionedCoresAllocationPolicy
-import org.opendc.compute.service.scheduler.RandomAllocationPolicy
+import org.opendc.compute.service.scheduler.FilterScheduler
+import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
+import org.opendc.compute.service.scheduler.filters.ComputeFilter
+import org.opendc.compute.service.scheduler.weights.*
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
@@ -229,15 +228,42 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 val operational = scenario.get("operational", Document::class.java)
                 val allocationPolicy =
                     when (val policyName = operational.getString("schedulerName")) {
-                        "mem" -> AvailableMemoryAllocationPolicy()
-                        "mem-inv" -> AvailableMemoryAllocationPolicy(true)
-                        "core-mem" -> AvailableCoreMemoryAllocationPolicy()
-                        "core-mem-inv" -> AvailableCoreMemoryAllocationPolicy(true)
-                        "active-servers" -> NumberOfActiveServersAllocationPolicy()
-                        "active-servers-inv" -> NumberOfActiveServersAllocationPolicy(true)
-                        "provisioned-cores" -> ProvisionedCoresAllocationPolicy()
-                        "provisioned-cores-inv" -> ProvisionedCoresAllocationPolicy(true)
-                        "random" -> RandomAllocationPolicy(Random(seeder.nextInt()))
+                        "mem" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(MemoryWeigher() to -1.0)
+                        )
+                        "mem-inv" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(MemoryWeigher() to -1.0)
+                        )
+                        "core-mem" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(CoreMemoryWeigher() to -1.0)
+                        )
+                        "core-mem-inv" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(CoreMemoryWeigher() to -1.0)
+                        )
+                        "active-servers" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(ProvisionedCoresWeigher() to -1.0)
+                        )
+                        "active-servers-inv" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(InstanceCountWeigher() to 1.0)
+                        )
+                        "provisioned-cores" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(ProvisionedCoresWeigher() to -1.0)
+                        )
+                        "provisioned-cores-inv" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(ProvisionedCoresWeigher() to 1.0)
+                        )
+                        "random" -> FilterScheduler(
+                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+                            weighers = listOf(RandomWeigher(java.util.Random(seeder.nextLong())) to 1.0)
+                        )
                         else -> throw IllegalArgumentException("Unknown policy $policyName")
                     }
 

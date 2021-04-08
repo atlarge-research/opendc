@@ -32,8 +32,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import mu.KotlinLogging
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.scheduler.AllocationPolicy
-import org.opendc.compute.service.scheduler.RandomAllocationPolicy
+import org.opendc.compute.service.scheduler.ComputeScheduler
+import org.opendc.compute.service.scheduler.FilterScheduler
+import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
+import org.opendc.compute.service.scheduler.filters.ComputeFilter
+import org.opendc.compute.service.scheduler.weights.RandomWeigher
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
@@ -88,7 +91,10 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
         val clock = DelayControllerClockAdapter(this)
 
         val chan = Channel<Unit>(Channel.CONFLATED)
-        val allocationPolicy = RandomAllocationPolicy()
+        val allocationPolicy = FilterScheduler(
+            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+            weighers = listOf(RandomWeigher(Random(0)) to 1.0)
+        )
 
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
@@ -125,7 +131,7 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
     public suspend fun withComputeService(
         clock: Clock,
         meterProvider: MeterProvider,
-        allocationPolicy: AllocationPolicy,
+        scheduler: ComputeScheduler,
         block: suspend CoroutineScope.(ComputeService) -> Unit
     ): Unit = coroutineScope {
         val model = createMachineModel()
@@ -144,18 +150,18 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
             )
         }
 
-        val schedulerMeter = meterProvider.get("opendc-compute")
-        val scheduler =
-            ComputeService(coroutineContext, clock, schedulerMeter, allocationPolicy)
+        val serviceMeter = meterProvider.get("opendc-compute")
+        val service =
+            ComputeService(coroutineContext, clock, serviceMeter, scheduler)
 
         for (host in hosts) {
-            scheduler.addHost(host)
+            service.addHost(host)
         }
 
         try {
-            block(this, scheduler)
+            block(this, service)
         } finally {
-            scheduler.close()
+            service.close()
             hosts.forEach(SimHost::close)
         }
     }

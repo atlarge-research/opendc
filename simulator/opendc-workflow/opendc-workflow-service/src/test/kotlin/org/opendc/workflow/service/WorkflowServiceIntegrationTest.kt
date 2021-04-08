@@ -35,7 +35,10 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.scheduler.NumberOfActiveServersAllocationPolicy
+import org.opendc.compute.service.scheduler.FilterScheduler
+import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
+import org.opendc.compute.service.scheduler.filters.ComputeFilter
+import org.opendc.compute.service.scheduler.weights.ProvisionedCoresWeigher
 import org.opendc.compute.simulator.SimHost
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
@@ -84,7 +87,11 @@ internal class WorkflowServiceIntegrationTest {
             }
 
         val meter = MeterProvider.noop().get("opendc-compute")
-        val compute = ComputeService(coroutineContext, clock, meter, NumberOfActiveServersAllocationPolicy(), schedulingQuantum = 1000)
+        val computeScheduler = FilterScheduler(
+            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+            weighers = listOf(ProvisionedCoresWeigher() to -1.0)
+        )
+        val compute = ComputeService(coroutineContext, clock, meter, computeScheduler, schedulingQuantum = 1000)
 
         hosts.forEach { compute.addHost(it) }
 
