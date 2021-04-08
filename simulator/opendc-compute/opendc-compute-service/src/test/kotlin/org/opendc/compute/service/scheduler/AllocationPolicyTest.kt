@@ -100,9 +100,9 @@ internal class AllocationPolicyTest {
                 every { view.host.model.cpuCount } returns random.nextInt(1, 16)
                 every { view.host.model.memorySize } returns random.nextLong(1024, 1024 * 1024)
                 every { view.availableMemory } returns random.nextLong(0, view.host.model.memorySize)
-                every { view.numberOfActiveServers } returns random.nextInt(0, 6)
+                every { view.instanceCount } returns random.nextInt(0, 6)
                 every { view.provisionedCores } returns random.nextInt(0, view.host.model.cpuCount)
-                every { view.toString() } returns "HostView[$i,numberOfActiveServers=${view.numberOfActiveServers}]"
+                every { view.toString() } returns "HostView[$i,numberOfActiveServers=${view.instanceCount}]"
                 view
             }
 
@@ -132,7 +132,7 @@ internal class AllocationPolicyTest {
                 every { view.host.model.cpuCount } returns random.nextInt(1, 16)
                 every { view.host.model.memorySize } returns random.nextLong(1024, 1024 * 1024)
                 every { view.availableMemory } returns random.nextLong(0, view.host.model.memorySize)
-                every { view.numberOfActiveServers } returns random.nextInt(0, 6)
+                every { view.instanceCount } returns random.nextInt(0, 6)
                 every { view.provisionedCores } returns random.nextInt(0, view.host.model.cpuCount)
                 every { view.toString() } returns "HostView[$i,availableMemory=${view.availableMemory}]"
                 view
@@ -164,7 +164,7 @@ internal class AllocationPolicyTest {
                 every { view.host.model.cpuCount } returns random.nextInt(1, 16)
                 every { view.host.model.memorySize } returns random.nextLong(1024, 1024 * 1024)
                 every { view.availableMemory } returns random.nextLong(0, view.host.model.memorySize)
-                every { view.numberOfActiveServers } returns random.nextInt(0, 6)
+                every { view.instanceCount } returns random.nextInt(0, 6)
                 every { view.provisionedCores } returns random.nextInt(0, view.host.model.cpuCount)
                 every { view.toString() } returns "HostView[$i,availableMemory=${view.availableMemory}]"
                 view
@@ -196,7 +196,7 @@ internal class AllocationPolicyTest {
                 every { view.host.model.cpuCount } returns random.nextInt(1, 16)
                 every { view.host.model.memorySize } returns random.nextLong(1024, 1024 * 1024)
                 every { view.availableMemory } returns random.nextLong(0, view.host.model.memorySize)
-                every { view.numberOfActiveServers } returns random.nextInt(0, 6)
+                every { view.instanceCount } returns random.nextInt(0, 6)
                 every { view.provisionedCores } returns random.nextInt(0, view.host.model.cpuCount)
                 every { view.toString() } returns "HostView[$i,provisionedCores=${view.provisionedCores}]"
                 view

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,31 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.internal
+package org.opendc.compute.service.scheduler
 
+import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.driver.Host
-import java.util.UUID
+import org.opendc.compute.service.internal.HostView
 
 /**
- * A view of a [Host] as seen from the [ComputeService]
+ * A generic scheduler interface used by the [ComputeService] to select hosts to place [Server]s on.
  */
-public class HostView(public val host: Host) {
+public interface ComputeScheduler {
     /**
-     * The unique identifier of the host.
+     * Register the specified [host] to be used for scheduling.
      */
-    public val uid: UUID
-        get() = host.uid
+    public fun addHost(host: HostView)
 
-    public var instanceCount: Int = 0
-    public var availableMemory: Long = host.model.memorySize
-    public var provisionedCores: Int = 0
+    /**
+     * Remove the specified [host] to be removed from the scheduling pool.
+     */
+    public fun removeHost(host: HostView)
 
-    override fun toString(): String = "HostView[host=$host]"
+    /**
+     * Select a host for the specified [server].
+     *
+     * @param server The server to select a host for.
+     * @return The host to schedule the server on or `null` if no server is available.
+     */
+    public fun select(server: Server): HostView?
 }

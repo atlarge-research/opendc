@@ -31,7 +31,7 @@ import org.opendc.compute.service.internal.HostView
  */
 public class NumberOfActiveServersAllocationPolicy(public val reversed: Boolean = false) : AllocationPolicy {
     override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
-        override val comparator: Comparator<HostView> = compareBy<HostView> { it.numberOfActiveServers }
+        override val comparator: Comparator<HostView> = compareBy<HostView> { it.instanceCount }
             .run { if (reversed) reversed() else this }
     }
 }

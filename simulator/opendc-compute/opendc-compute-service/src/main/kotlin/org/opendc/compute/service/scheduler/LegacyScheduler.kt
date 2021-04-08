@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.internal
+package org.opendc.compute.service.scheduler
 
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.driver.Host
-import java.util.UUID
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.internal.HostView
 
 /**
- * A view of a [Host] as seen from the [ComputeService]
+ * A [ComputeScheduler] that supports the legacy [AllocationPolicy] instances.
  */
-public class HostView(public val host: Host) {
-    /**
-     * The unique identifier of the host.
-     */
-    public val uid: UUID
-        get() = host.uid
+public class LegacyScheduler(policy: AllocationPolicy) : ComputeScheduler {
+    private val policy = policy.invoke()
+    private val hosts = mutableSetOf<HostView>()
 
-    public var instanceCount: Int = 0
-    public var availableMemory: Long = host.model.memorySize
-    public var provisionedCores: Int = 0
+    override fun addHost(host: HostView) {
+        hosts.add(host)
+    }
 
-    override fun toString(): String = "HostView[host=$host]"
+    override fun removeHost(host: HostView) {
+        hosts.remove(host)
+    }
+
+    override fun select(server: Server): HostView? {
+        return policy.select(hosts, server)
+    }
 }

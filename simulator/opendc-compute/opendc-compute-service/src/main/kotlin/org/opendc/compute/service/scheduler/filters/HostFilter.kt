@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.internal
+package org.opendc.compute.service.scheduler.filters
 
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.driver.Host
-import java.util.UUID
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.internal.HostView
+import org.opendc.compute.service.scheduler.FilterScheduler
 
 /**
- * A view of a [Host] as seen from the [ComputeService]
+ * A filter used by the [FilterScheduler] to filter hosts.
  */
-public class HostView(public val host: Host) {
+public fun interface HostFilter {
     /**
-     * The unique identifier of the host.
+     * Test whether the specified [host] should be included in the selection
+     * for scheduling the specified [server].
      */
-    public val uid: UUID
-        get() = host.uid
-
-    public var instanceCount: Int = 0
-    public var availableMemory: Long = host.model.memorySize
-    public var provisionedCores: Int = 0
-
-    override fun toString(): String = "HostView[host=$host]"
+    public fun test(host: HostView, server: Server): Boolean
 }
