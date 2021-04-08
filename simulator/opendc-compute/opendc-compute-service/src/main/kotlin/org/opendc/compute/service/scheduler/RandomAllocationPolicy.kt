@@ -38,7 +38,7 @@ public class RandomAllocationPolicy(private val random: Random = Random(0)) : Al
         ): HostView? {
             return hypervisors.asIterable()
                 .filter { hv ->
-                    val fitsMemory = hv.availableMemory >= (server.image.meta["required-memory"] as Long)
+                    val fitsMemory = hv.availableMemory >= server.flavor.memorySize
                     val fitsCpu = hv.host.model.cpuCount >= server.flavor.cpuCount
                     fitsMemory && fitsCpu
                 }
