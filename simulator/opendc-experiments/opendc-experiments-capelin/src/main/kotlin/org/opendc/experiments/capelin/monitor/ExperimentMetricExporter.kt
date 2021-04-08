@@ -89,11 +89,10 @@ public class ExperimentMetricExporter(
                 hostMetric.interferedBurst,
                 hostMetric.cpuUsage,
                 hostMetric.cpuDemand,
+                hostMetric.powerDraw,
                 hostMetric.numberOfDeployedImages,
                 host
             )
-
-            monitor.reportPowerConsumption(host, hostMetric.powerDraw)
         }
     }
 

@@ -197,9 +197,9 @@ class CapelinIntegrationTest {
             interferedBurst: Long,
             cpuUsage: Double,
             cpuDemand: Double,
+            powerDraw: Double,
             numberOfDeployedImages: Int,
             host: Host,
-            duration: Long
         ) {
             totalRequestedBurst += requestedBurst
             totalGrantedBurst += grantedBurst

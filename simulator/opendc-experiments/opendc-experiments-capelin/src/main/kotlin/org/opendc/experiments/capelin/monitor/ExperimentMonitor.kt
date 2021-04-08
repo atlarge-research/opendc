@@ -42,11 +42,6 @@ public interface ExperimentMonitor : AutoCloseable {
     public fun reportHostStateChange(time: Long, host: Host, newState: HostState) {}
 
     /**
-     * Report the power consumption of a host.
-     */
-    public fun reportPowerConsumption(host: Host, draw: Double) {}
-
-    /**
      * This method is invoked for a host for each slice that is finishes.
      */
     public fun reportHostSlice(
@@ -57,9 +52,9 @@ public interface ExperimentMonitor : AutoCloseable {
         interferedBurst: Long,
         cpuUsage: Double,
         cpuDemand: Double,
+        powerDraw: Double,
         numberOfDeployedImages: Int,
-        host: Host,
-        duration: Long = 5 * 60 * 1000L
+        host: Host
     ) {
     }
 
