@@ -101,11 +101,17 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
         for ((cpu, source) in resources) {
             val consumer = workload.getConsumer(ctx, cpu)
             val adapter = SimSpeedConsumerAdapter(consumer) { newSpeed ->
+                val _speed = _speed
+                val _usage = _usage
+
                 val oldSpeed = _speed[cpu.id]
                 _speed[cpu.id] = newSpeed
                 totalSpeed = totalSpeed - oldSpeed + newSpeed
 
-                updateUsage(totalSpeed / totalCapacity)
+                val newUsage = totalSpeed / totalCapacity
+                if (_usage.value != newUsage) {
+                    updateUsage(totalSpeed / totalCapacity)
+                }
             }
 
             launch { source.consume(adapter) }
