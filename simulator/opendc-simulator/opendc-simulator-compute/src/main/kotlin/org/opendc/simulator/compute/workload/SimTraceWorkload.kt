@@ -50,14 +50,15 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkloa
             override fun onNext(ctx: SimResourceContext): SimResourceCommand {
                 val now = ctx.clock.millis()
                 val fragment = fragment ?: return SimResourceCommand.Exit
-                val work = (fragment.duration / 1000) * fragment.usage
+                val usage = fragment.usage / fragment.cores
+                val work = (fragment.duration / 1000) * usage
                 val deadline = offset + fragment.duration
 
                 assert(deadline >= now) { "Deadline already passed" }
 
                 val cmd =
                     if (cpu.id < fragment.cores && work > 0.0)
-                        SimResourceCommand.Consume(work, fragment.usage, deadline)
+                        SimResourceCommand.Consume(work, usage, deadline)
                     else
                         SimResourceCommand.Idle(deadline)
 

@@ -118,9 +118,9 @@ class CapelinIntegrationTest {
             { assertEquals(0, monitorResults.runningVms, "All VMs should finish after a run") },
             { assertEquals(0, monitorResults.unscheduledVms, "No VM should not be unscheduled") },
             { assertEquals(0, monitorResults.queuedVms, "No VM should not be in the queue") },
-            { assertEquals(1672916917970, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
-            { assertEquals(434262255818, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
-            { assertEquals(1236692477983, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
+            { assertEquals(207388095207, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
+            { assertEquals(204745144701, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
+            { assertEquals(2642950497, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Incorrect interfered burst" } }
         )
     }
@@ -156,9 +156,9 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(702636229989, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
-            { assertEquals(172636987071, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
-            { assertEquals(528959213229, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
+            { assertEquals(96350072517, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
+            { assertEquals(96330335057, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
+            { assertEquals(19737460, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
         )
     }
@@ -197,9 +197,9 @@ class CapelinIntegrationTest {
             interferedBurst: Long,
             cpuUsage: Double,
             cpuDemand: Double,
+            powerDraw: Double,
             numberOfDeployedImages: Int,
             host: Host,
-            duration: Long
         ) {
             totalRequestedBurst += requestedBurst
             totalGrantedBurst += grantedBurst

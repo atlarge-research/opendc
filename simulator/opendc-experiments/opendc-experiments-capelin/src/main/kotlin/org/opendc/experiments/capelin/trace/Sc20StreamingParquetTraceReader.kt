@@ -57,8 +57,8 @@ private val logger = KotlinLogging.logger {}
 @OptIn(ExperimentalStdlibApi::class)
 public class Sc20StreamingParquetTraceReader(
     traceFile: File,
-    performanceInterferenceModel: PerformanceInterferenceModel,
-    selectedVms: List<String>,
+    performanceInterferenceModel: PerformanceInterferenceModel? = null,
+    selectedVms: List<String> = emptyList(),
     random: Random
 ) : TraceReader<SimWorkload> {
     /**
@@ -229,20 +229,26 @@ public class Sc20StreamingParquetTraceReader(
                     buffers.remove(id)
                 }
                 val relevantPerformanceInterferenceModelItems =
-                    PerformanceInterferenceModel(
-                        performanceInterferenceModel.items.filter { it.workloadNames.contains(id) }.toSortedSet(),
-                        Random(random.nextInt())
-                    )
+                    if (performanceInterferenceModel != null)
+                        PerformanceInterferenceModel(
+                            performanceInterferenceModel.items.filter { it.workloadNames.contains(id) }.toSortedSet(),
+                            Random(random.nextInt())
+                        )
+                    else
+                        null
                 val workload = SimTraceWorkload(fragments)
+                val meta = mapOf(
+                    "cores" to maxCores,
+                    "required-memory" to requiredMemory,
+                    "workload" to workload
+                )
 
                 TraceEntry(
                     uid, id, submissionTime, workload,
-                    mapOf(
-                        IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
-                        "cores" to maxCores,
-                        "required-memory" to requiredMemory,
-                        "workload" to workload
-                    )
+                    if (performanceInterferenceModel != null)
+                        meta + mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems as Any)
+                    else
+                        meta
                 )
             }
             .sortedBy { it.start }

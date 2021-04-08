@@ -36,52 +36,11 @@ import kotlin.math.max
  */
 public class WebExperimentMonitor : ExperimentMonitor {
     private val logger = KotlinLogging.logger {}
-    private val currentHostEvent = mutableMapOf<Host, HostEvent>()
-    private var startTime = -1L
 
-    override fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {
-        if (startTime < 0) {
-            startTime = time
-
-            // Update timestamp of initial event
-            currentHostEvent.replaceAll { _, v -> v.copy(timestamp = startTime) }
-        }
-    }
+    override fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {}
 
     override fun reportHostStateChange(time: Long, host: Host, newState: HostState) {
         logger.debug { "Host ${host.uid} changed state $newState [$time]" }
-
-        val previousEvent = currentHostEvent[host]
-
-        val roundedTime = previousEvent?.let {
-            val duration = time - it.timestamp
-            val k = 5 * 60 * 1000L // 5 min in ms
-            val rem = duration % k
-
-            if (rem == 0L) {
-                time
-            } else {
-                it.timestamp + duration + k - rem
-            }
-        } ?: time
-
-        reportHostSlice(
-            roundedTime,
-            0,
-            0,
-            0,
-            0,
-            0.0,
-            0.0,
-            0,
-            host
-        )
-    }
-
-    private val lastPowerConsumption = mutableMapOf<Host, Double>()
-
-    override fun reportPowerConsumption(host: Host, draw: Double) {
-        lastPowerConsumption[host] = draw
     }
 
     override fun reportHostSlice(
@@ -92,69 +51,26 @@ public class WebExperimentMonitor : ExperimentMonitor {
         interferedBurst: Long,
         cpuUsage: Double,
         cpuDemand: Double,
+        powerDraw: Double,
         numberOfDeployedImages: Int,
         host: Host,
-        duration: Long
     ) {
-        val previousEvent = currentHostEvent[host]
-        when {
-            previousEvent == null -> {
-                val event = HostEvent(
-                    time,
-                    5 * 60 * 1000L,
-                    host,
-                    numberOfDeployedImages,
-                    requestedBurst,
-                    grantedBurst,
-                    overcommissionedBurst,
-                    interferedBurst,
-                    cpuUsage,
-                    cpuDemand,
-                    lastPowerConsumption[host] ?: 200.0,
-                    host.model.cpuCount
-                )
-
-                currentHostEvent[host] = event
-            }
-            previousEvent.timestamp == time -> {
-                val event = HostEvent(
-                    time,
-                    previousEvent.duration,
-                    host,
-                    numberOfDeployedImages,
-                    requestedBurst,
-                    grantedBurst,
-                    overcommissionedBurst,
-                    interferedBurst,
-                    cpuUsage,
-                    cpuDemand,
-                    lastPowerConsumption[host] ?: 200.0,
-                    host.model.cpuCount
-                )
-
-                currentHostEvent[host] = event
-            }
-            else -> {
-                processHostEvent(previousEvent)
-
-                val event = HostEvent(
-                    time,
-                    time - previousEvent.timestamp,
-                    host,
-                    numberOfDeployedImages,
-                    requestedBurst,
-                    grantedBurst,
-                    overcommissionedBurst,
-                    interferedBurst,
-                    cpuUsage,
-                    cpuDemand,
-                    lastPowerConsumption[host] ?: 200.0,
-                    host.model.cpuCount
-                )
-
-                currentHostEvent[host] = event
-            }
-        }
+        processHostEvent(
+            HostEvent(
+                time,
+                5 * 60 * 1000L,
+                host,
+                numberOfDeployedImages,
+                requestedBurst,
+                grantedBurst,
+                overcommissionedBurst,
+                interferedBurst,
+                cpuUsage,
+                cpuDemand,
+                powerDraw,
+                host.model.cpuCount
+            )
+        )
     }
 
     private var hostAggregateMetrics: AggregateHostMetrics = AggregateHostMetrics()
@@ -231,12 +147,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
         val vmFailedCount: Int = 0
     )
 
-    override fun close() {
-        for ((_, event) in currentHostEvent) {
-            processHostEvent(event)
-        }
-        currentHostEvent.clear()
-    }
+    override fun close() {}
 
     public fun getResult(): Result {
         return Result(

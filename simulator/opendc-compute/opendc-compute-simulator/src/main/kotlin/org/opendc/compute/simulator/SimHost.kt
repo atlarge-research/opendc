@@ -32,6 +32,8 @@ import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.cpufreq.ScalingDriver
+import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
@@ -56,9 +58,24 @@ public class SimHost(
     clock: Clock,
     meter: Meter,
     hypervisor: SimHypervisorProvider,
-    powerModel: PowerModel = ConstantPowerModel(0.0),
+    scalingGovernor: ScalingGovernor,
+    scalingDriver: ScalingDriver,
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
 ) : Host, FailureDomain, AutoCloseable {
+
+    public constructor(
+        uid: UUID,
+        name: String,
+        model: SimMachineModel,
+        meta: Map<String, Any>,
+        context: CoroutineContext,
+        clock: Clock,
+        meter: Meter,
+        hypervisor: SimHypervisorProvider,
+        powerModel: PowerModel = ConstantPowerModel(0.0),
+        mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
+    ) : this(uid, name, model, meta, context, clock, meter, hypervisor, PerformanceScalingGovernor(), SimpleScalingDriver(powerModel), mapper)
+
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
      */
@@ -82,7 +99,7 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, PerformanceScalingGovernor(), SimpleScalingDriver(powerModel))
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, scalingGovernor, scalingDriver)
 
     /**
      * The hypervisor to run multiple workloads.
@@ -98,13 +115,15 @@ public class SimHost(
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
-                _cpuWork.record(requestedWork.toDouble())
-                _cpuWorkGranted.record(grantedWork.toDouble())
-                _cpuWorkOvercommit.record(overcommittedWork.toDouble())
-                _cpuWorkInterference.record(interferedWork.toDouble())
-                _cpuUsage.record(cpuUsage)
-                _cpuDemand.record(cpuDemand)
-                _cpuPower.record(machine.powerDraw)
+
+                _batch.put(_cpuWork, requestedWork.toDouble())
+                _batch.put(_cpuWorkGranted, grantedWork.toDouble())
+                _batch.put(_cpuWorkOvercommit, overcommittedWork.toDouble())
+                _batch.put(_cpuWorkInterference, interferedWork.toDouble())
+                _batch.put(_cpuUsage, cpuUsage)
+                _batch.put(_cpuDemand, cpuDemand)
+                _batch.put(_cpuPower, machine.powerDraw)
+                _batch.record()
             }
         }
     )
@@ -151,7 +170,6 @@ public class SimHost(
         .setDescription("The amount of CPU resources used by the host")
         .setUnit("MHz")
         .build()
-        .bind(Labels.of("host", uid.toString()))
 
     /**
      * The CPU demand on the host.
@@ -160,7 +178,6 @@ public class SimHost(
         .setDescription("The amount of CPU resources the guests would use if there were no CPU contention or CPU limits")
         .setUnit("MHz")
         .build()
-        .bind(Labels.of("host", uid.toString()))
 
     /**
      * The requested work for the CPU.
@@ -169,7 +186,6 @@ public class SimHost(
         .setDescription("The amount of power used by the CPU")
         .setUnit("W")
         .build()
-        .bind(Labels.of("host", uid.toString()))
 
     /**
      * The requested work for the CPU.
@@ -178,7 +194,6 @@ public class SimHost(
         .setDescription("The amount of work supplied to the CPU")
         .setUnit("1")
         .build()
-        .bind(Labels.of("host", uid.toString()))
 
     /**
      * The work actually performed by the CPU.
@@ -187,7 +202,6 @@ public class SimHost(
         .setDescription("The amount of work performed by the CPU")
         .setUnit("1")
         .build()
-        .bind(Labels.of("host", uid.toString()))
 
     /**
      * The work that could not be performed by the CPU due to overcommitting resource.
@@ -196,7 +210,6 @@ public class SimHost(
         .setDescription("The amount of work not performed by the CPU due to overcommitment")
         .setUnit("1")
         .build()
-        .bind(Labels.of("host", uid.toString()))
 
     /**
      * The work that could not be performed by the CPU due to interference.
@@ -205,7 +218,11 @@ public class SimHost(
         .setDescription("The amount of work not performed by the CPU due to interference")
         .setUnit("1")
         .build()
-        .bind(Labels.of("host", uid.toString()))
+
+    /**
+     * The batch recorder used to record multiple metrics atomically.
+     */
+    private val _batch = meter.newBatchRecorder("host", uid.toString())
 
     init {
         // Launch hypervisor onto machine

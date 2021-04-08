@@ -10,15 +10,12 @@ import kotlin.math.min
  * The linear interpolation power model partially adapted from CloudSim.
  * This model is developed to adopt the <a href="http://www.spec.org/power_ssj2008/">SPECpower benchmark</a>.
  *
- * @param hardwareName The name of the hardware vendor.
+ * @param powerValues A [List] of average active power measured by the power analyzer(s) and accumulated by the
+ * PTDaemon (Power and Temperature Daemon) for this measurement interval, displayed as watts (W).
  * @see <a href="http://www.spec.org/power_ssj2008/results/res2011q1/">Machines used in the SPEC benchmark</a>
  */
-public class InterpolationPowerModel(hardwareName: String) : PowerModel {
-    /**
-     * A [List] of average active power measured by the power analyzer(s) and accumulated by the
-     * PTDaemon (Power and Temperature Daemon) for this measurement interval, displayed as watts (W).
-     */
-    private val averagePowerValues: List<Double> = loadAveragePowerValue(hardwareName)
+public class InterpolationPowerModel(private val powerValues: List<Double>) : PowerModel {
+    public constructor(hardwareName: String) : this(loadAveragePowerValue(hardwareName))
 
     public override fun computePower(utilization: Double): Double {
         val clampedUtilization = min(1.0, max(0.0, utilization))
@@ -34,7 +31,7 @@ public class InterpolationPowerModel(hardwareName: String) : PowerModel {
             powerFlr + delta * (clampedUtilization - utilizationFlr.toDouble() / 10) * 100
     }
 
-    override fun toString(): String = "InterpolationPowerModel[entries=${averagePowerValues.size}]"
+    override fun toString(): String = "InterpolationPowerModel[entries=${powerValues.size}]"
 
     /**
      * Gets the power consumption for a given utilization percentage.
@@ -43,13 +40,15 @@ public class InterpolationPowerModel(hardwareName: String) : PowerModel {
      * where 10 means 100% of utilization.
      * @return the power consumption for the given utilization percentage
      */
-    private fun getAveragePowerValue(index: Int): Double = averagePowerValues[index]
+    private fun getAveragePowerValue(index: Int): Double = powerValues[index]
 
-    private fun loadAveragePowerValue(hardwareName: String, path: String = "spec_machines.yml"): List<Double> {
-        val content = this::class
-            .java.classLoader
-            .getResourceAsStream(path)
-        val hardwareToAveragePowerValues: Map<String, List<Double>> = Yaml().load(content)
-        return hardwareToAveragePowerValues.getOrDefault(hardwareName, listOf())
+    private companion object {
+        private fun loadAveragePowerValue(hardwareName: String, path: String = "spec_machines.yml"): List<Double> {
+            val content = this::class
+                .java.classLoader
+                .getResourceAsStream(path)
+            val hardwareToAveragePowerValues: Map<String, List<Double>> = Yaml().load(content)
+            return hardwareToAveragePowerValues.getOrDefault(hardwareName, listOf())
+        }
     }
 }
