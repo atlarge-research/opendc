@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,29 @@
 
 package org.opendc.compute.service.scheduler
 
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.internal.HostView
 
 /**
- * An [AllocationPolicy] that selects the machine with the highest/lowest amount of memory per core.
- *
- * @param reversed An option to reverse the order of the machines (lower amount of memory scores better).
+ * A generic scheduler interface used by the [ComputeService] to select hosts to place [Server]s on.
  */
-public class AvailableCoreMemoryAllocationPolicy(private val reversed: Boolean = false) : AllocationPolicy {
-    override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
-        override val comparator: Comparator<HostView> =
-            compareBy<HostView> { -it.availableMemory / it.host.model.cpuCount }
-                .run { if (reversed) reversed() else this }
-    }
+public interface ComputeScheduler {
+    /**
+     * Register the specified [host] to be used for scheduling.
+     */
+    public fun addHost(host: HostView)
+
+    /**
+     * Remove the specified [host] to be removed from the scheduling pool.
+     */
+    public fun removeHost(host: HostView)
+
+    /**
+     * Select a host for the specified [server].
+     *
+     * @param server The server to select a host for.
+     * @return The host to schedule the server on or `null` if no server is available.
+     */
+    public fun select(server: Server): HostView?
 }

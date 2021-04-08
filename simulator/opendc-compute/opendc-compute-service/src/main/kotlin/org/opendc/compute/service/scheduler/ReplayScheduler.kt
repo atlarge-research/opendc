@@ -32,25 +32,33 @@ import org.opendc.compute.service.internal.HostView
  * Within each cluster, the active servers on each node determine which node gets
  * assigned the VM image.
  */
-public class ReplayAllocationPolicy(private val vmPlacements: Map<String, String>) : AllocationPolicy {
+public class ReplayScheduler(private val vmPlacements: Map<String, String>) : ComputeScheduler {
     private val logger = KotlinLogging.logger {}
 
-    override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
-        override fun select(
-            hypervisors: Set<HostView>,
-            server: Server
-        ): HostView? {
-            val clusterName = vmPlacements[server.name]
-                ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${server.name}")
-            val machinesInCluster = hypervisors.filter { it.host.name.contains(clusterName) }
+    /**
+     * The pool of hosts available to the scheduler.
+     */
+    private val hosts = mutableListOf<HostView>()
 
-            if (machinesInCluster.isEmpty()) {
-                logger.info { "Could not find any machines belonging to cluster $clusterName for image ${server.name}, assigning randomly." }
-                return hypervisors.maxByOrNull { it.availableMemory }
-            }
+    override fun addHost(host: HostView) {
+        hosts.add(host)
+    }
 
-            return machinesInCluster.maxByOrNull { it.availableMemory }
-                ?: throw IllegalStateException("Cloud not find any machine and could not randomly assign")
+    override fun removeHost(host: HostView) {
+        hosts.remove(host)
+    }
+
+    override fun select(server: Server): HostView? {
+        val clusterName = vmPlacements[server.name]
+            ?: throw IllegalStateException("Could not find placement data in VM placement file for VM ${server.name}")
+        val machinesInCluster = hosts.filter { it.host.name.contains(clusterName) }
+
+        if (machinesInCluster.isEmpty()) {
+            logger.info { "Could not find any machines belonging to cluster $clusterName for image ${server.name}, assigning randomly." }
+            return hosts.maxByOrNull { it.availableMemory }
         }
+
+        return machinesInCluster.maxByOrNull { it.availableMemory }
+            ?: throw IllegalStateException("Cloud not find any machine and could not randomly assign")
     }
 }

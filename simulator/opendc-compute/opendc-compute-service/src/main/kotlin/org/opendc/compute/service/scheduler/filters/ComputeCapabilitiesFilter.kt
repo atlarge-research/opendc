@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler
+package org.opendc.compute.service.scheduler.filters
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
-import kotlin.random.Random
 
 /**
- * An [AllocationPolicy] that select a random node on which the server fits.
+ * A [HostFilter] that checks whether the capabilities provided by the host satisfies the requirements of the server
+ * flavor.
  */
-public class RandomAllocationPolicy(private val random: Random = Random(0)) : AllocationPolicy {
-    @OptIn(ExperimentalStdlibApi::class)
-    override fun invoke(): AllocationPolicy.Logic = object : AllocationPolicy.Logic {
-        override fun select(
-            hypervisors: Set<HostView>,
-            server: Server
-        ): HostView? {
-            return hypervisors.asIterable()
-                .filter { hv ->
-                    val fitsMemory = hv.availableMemory >= server.flavor.memorySize
-                    val fitsCpu = hv.host.model.cpuCount >= server.flavor.cpuCount
-                    fitsMemory && fitsCpu
-                }
-                .randomOrNull(random)
-        }
+public class ComputeCapabilitiesFilter : HostFilter {
+    override fun test(host: HostView, server: Server): Boolean {
+        val fitsMemory = host.availableMemory >= server.flavor.memorySize
+        val fitsCpu = host.host.model.cpuCount >= server.flavor.cpuCount
+        return fitsMemory && fitsCpu
     }
+
+    override fun toString(): String = "ComputeCapabilitiesFilter"
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,30 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler
+package org.opendc.compute.service.scheduler.weights
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 
 /**
- * A policy for selecting the [Node] an image should be deployed to,
+ * A [HostWeigher] that weighs the hosts based on the number of instances on the host.
  */
-public interface AllocationPolicy {
-    /**
-     * The logic of the allocation policy.
-     */
-    public interface Logic {
-        /**
-         * Select the node on which the server should be scheduled.
-         */
-        public fun select(
-            hypervisors: Set<HostView>,
-            server: Server
-        ): HostView?
+public class InstanceCountWeigher : HostWeigher {
+    override fun getWeight(host: HostView, server: Server): Double {
+        return host.instanceCount.toDouble()
     }
 
-    /**
-     * Builds the logic of the policy.
-     */
-    public operator fun invoke(): Logic
+    override fun toString(): String = "InstanceCountWeigher"
 }

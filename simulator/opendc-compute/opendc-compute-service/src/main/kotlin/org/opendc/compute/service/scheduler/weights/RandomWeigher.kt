@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler
+package org.opendc.compute.service.scheduler.weights
 
+import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
+import java.util.*
 
 /**
- * An [AllocationPolicy] that takes into account the number of vCPUs that have been provisioned on this machine
- * relative to its core count.
- *
- * @param reversed A flag to reverse the order of the policy, such that the machine with the most provisioned cores
- * is selected.
+ * A [HostWeigher] that assigns random weights to each host every selection.
  */
-public class ProvisionedCoresAllocationPolicy(private val reversed: Boolean = false) : AllocationPolicy {
-    override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
-        override val comparator: Comparator<HostView> =
-            compareBy<HostView> { it.provisionedCores / it.host.model.cpuCount }
-                .run { if (reversed) reversed() else this }
-    }
+public class RandomWeigher(private val random: Random) : HostWeigher {
+    override fun getWeight(host: HostView, server: Server): Double = random.nextDouble()
+
+    override fun toString(): String = "RandomWeigher"
 }

@@ -26,7 +26,7 @@ import io.opentelemetry.api.metrics.Meter
 import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
-import org.opendc.compute.service.scheduler.AllocationPolicy
+import org.opendc.compute.service.scheduler.ComputeScheduler
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 
@@ -70,16 +70,16 @@ public interface ComputeService : AutoCloseable {
          *
          * @param context The [CoroutineContext] to use in the service.
          * @param clock The clock instance to use.
-         * @param allocationPolicy The allocation policy to use.
+         * @param scheduler The scheduler implementation to use.
          */
         public operator fun invoke(
             context: CoroutineContext,
             clock: Clock,
             meter: Meter,
-            allocationPolicy: AllocationPolicy,
+            scheduler: ComputeScheduler,
             schedulingQuantum: Long = 300000,
         ): ComputeService {
-            return ComputeServiceImpl(context, clock, meter, allocationPolicy, schedulingQuantum)
+            return ComputeServiceImpl(context, clock, meter, scheduler, schedulingQuantum)
         }
     }
 }

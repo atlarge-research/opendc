@@ -39,7 +39,10 @@ import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostModel
 import org.opendc.compute.service.driver.HostState
-import org.opendc.compute.service.scheduler.AvailableMemoryAllocationPolicy
+import org.opendc.compute.service.scheduler.FilterScheduler
+import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
+import org.opendc.compute.service.scheduler.filters.ComputeFilter
+import org.opendc.compute.service.scheduler.weights.MemoryWeigher
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import java.util.*
 
@@ -55,9 +58,12 @@ internal class ComputeServiceTest {
     fun setUp() {
         scope = TestCoroutineScope()
         val clock = DelayControllerClockAdapter(scope)
-        val policy = AvailableMemoryAllocationPolicy()
+        val computeScheduler = FilterScheduler(
+            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
+            weighers = listOf(MemoryWeigher() to -1.0)
+        )
         val meter = MeterProvider.noop().get("opendc-compute")
-        service = ComputeService(scope.coroutineContext, clock, meter, policy)
+        service = ComputeService(scope.coroutineContext, clock, meter, computeScheduler)
     }
 
     @AfterEach
@@ -257,6 +263,7 @@ internal class ComputeServiceTest {
         server.start()
         delay(5 * 60 * 1000)
 
+        every { host.state } returns HostState.UP
         listeners.forEach { it.onStateChanged(host, HostState.UP) }
 
         delay(5 * 60 * 1000)
@@ -286,6 +293,7 @@ internal class ComputeServiceTest {
 
         delay(5 * 60 * 1000)
 
+        every { host.state } returns HostState.DOWN
         listeners.forEach { it.onStateChanged(host, HostState.DOWN) }
 
         server.start()

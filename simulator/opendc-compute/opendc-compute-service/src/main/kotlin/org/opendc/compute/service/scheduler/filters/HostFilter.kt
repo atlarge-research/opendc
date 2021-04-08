@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler
+package org.opendc.compute.service.scheduler.filters
 
+import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
+import org.opendc.compute.service.scheduler.FilterScheduler
 
 /**
- * Allocation policy that selects the node with the most available memory.
- *
- * @param reversed A flag to reverse the order (least amount of memory scores the best).
+ * A filter used by the [FilterScheduler] to filter hosts.
  */
-public class AvailableMemoryAllocationPolicy(public val reversed: Boolean = false) : AllocationPolicy {
-    override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
-        override val comparator: Comparator<HostView> = compareBy<HostView> { -it.availableMemory }
-            .run { if (reversed) reversed() else this }
-    }
+public fun interface HostFilter {
+    /**
+     * Test whether the specified [host] should be included in the selection
+     * for scheduling the specified [server].
+     */
+    public fun test(host: HostView, server: Server): Boolean
 }

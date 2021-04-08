@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler
+package org.opendc.compute.service.scheduler.weights
 
+import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 
 /**
- * Allocation policy that selects the node with the least amount of active servers.
- *
- * @param reversed A flag to reverse the order, such that the node with the most active servers is selected.
+ * A [HostWeigher] that weighs the hosts based on the available memory per core on the host.
  */
-public class NumberOfActiveServersAllocationPolicy(public val reversed: Boolean = false) : AllocationPolicy {
-    override fun invoke(): AllocationPolicy.Logic = object : ComparableAllocationPolicyLogic {
-        override val comparator: Comparator<HostView> = compareBy<HostView> { it.numberOfActiveServers }
-            .run { if (reversed) reversed() else this }
+public class CoreMemoryWeigher : HostWeigher {
+    override fun getWeight(host: HostView, server: Server): Double {
+        return host.availableMemory.toDouble() / host.host.model.cpuCount
     }
+
+    override fun toString(): String = "CoreMemoryWeigher"
 }

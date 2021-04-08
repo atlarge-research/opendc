@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,30 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler
+package org.opendc.compute.service.scheduler.weights
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 
 /**
- * The logic for an [AllocationPolicy] that uses a [Comparator] to select the appropriate node.
+ * A [HostWeigher] that weighs the hosts based on the available memory on the host.
  */
-public interface ComparableAllocationPolicyLogic : AllocationPolicy.Logic {
-    /**
-     * The comparator to use.
-     */
-    public val comparator: Comparator<HostView>
-
-    override fun select(
-        hypervisors: Set<HostView>,
-        server: Server
-    ): HostView? {
-        return hypervisors.asSequence()
-            .filter { hv ->
-                val fitsMemory = hv.availableMemory >= (server.flavor.memorySize)
-                val fitsCpu = hv.host.model.cpuCount >= server.flavor.cpuCount
-                fitsMemory && fitsCpu
-            }
-            .minWithOrNull(comparator.thenBy { it.host.uid })
+public class MemoryWeigher : HostWeigher {
+    override fun getWeight(host: HostView, server: Server): Double {
+        return host.availableMemory.toDouble()
     }
+
+    override fun toString(): String = "MemoryWeigher"
 }

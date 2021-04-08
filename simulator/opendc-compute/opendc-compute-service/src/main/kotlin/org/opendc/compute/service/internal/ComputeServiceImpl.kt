@@ -30,7 +30,7 @@ import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
-import org.opendc.compute.service.scheduler.AllocationPolicy
+import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
 import java.util.*
@@ -47,7 +47,7 @@ internal class ComputeServiceImpl(
     private val context: CoroutineContext,
     private val clock: Clock,
     private val meter: Meter,
-    private val allocationPolicy: AllocationPolicy,
+    private val scheduler: ComputeScheduler,
     private val schedulingQuantum: Long
 ) : ComputeService, HostListener {
     /**
@@ -160,14 +160,9 @@ internal class ComputeServiceImpl(
         .build()
 
     /**
-     * The allocation logic to use.
-     */
-    private val allocationLogic = allocationPolicy()
-
-    /**
      * The [TimerScheduler] to use for scheduling the scheduler cycles.
      */
-    private var scheduler: TimerScheduler<Unit> = TimerScheduler(scope.coroutineContext, clock)
+    private var timerScheduler: TimerScheduler<Unit> = TimerScheduler(scope.coroutineContext, clock)
 
     override val hosts: Set<Host>
         get() = hostToView.keys
@@ -306,6 +301,7 @@ internal class ComputeServiceImpl(
             availableHosts += hv
         }
 
+        scheduler.addHost(hv)
         _hostCount.add(1)
         host.addListener(this)
     }
@@ -316,6 +312,7 @@ internal class ComputeServiceImpl(
             if (availableHosts.remove(view)) {
                 _availableHostCount.add(-1)
             }
+            scheduler.removeHost(view)
             host.removeListener(this)
             _hostCount.add(-1)
         }
@@ -353,7 +350,7 @@ internal class ComputeServiceImpl(
      */
     private fun requestSchedulingCycle() {
         // Bail out in case we have already requested a new cycle or the queue is empty.
-        if (scheduler.isTimerActive(Unit) || queue.isEmpty()) {
+        if (timerScheduler.isTimerActive(Unit) || queue.isEmpty()) {
             return
         }
 
@@ -362,7 +359,7 @@ internal class ComputeServiceImpl(
         // We calculate here the delay until the next scheduling slot.
         val delay = schedulingQuantum - (clock.millis() % schedulingQuantum)
 
-        scheduler.startSingleTimer(Unit, delay) {
+        timerScheduler.startSingleTimer(Unit, delay) {
             doSchedule()
         }
     }
@@ -381,7 +378,7 @@ internal class ComputeServiceImpl(
             }
 
             val server = request.server
-            val hv = allocationLogic.select(availableHosts, request.server)
+            val hv = scheduler.select(request.server)
             if (hv == null || !hv.host.canFit(server)) {
                 logger.trace { "Server $server selected for scheduling but no capacity available for it at the moment" }
 
@@ -410,7 +407,7 @@ internal class ComputeServiceImpl(
 
             // Speculatively update the hypervisor view information to prevent other images in the queue from
             // deciding on stale values.
-            hv.numberOfActiveServers++
+            hv.instanceCount++
             hv.provisionedCores += server.flavor.cpuCount
             hv.availableMemory -= server.flavor.memorySize // XXX Temporary hack
 
@@ -422,7 +419,7 @@ internal class ComputeServiceImpl(
                 } catch (e: Throwable) {
                     logger.error("Failed to deploy VM", e)
 
-                    hv.numberOfActiveServers--
+                    hv.instanceCount--
                     hv.provisionedCores -= server.flavor.cpuCount
                     hv.availableMemory += server.flavor.memorySize
                 }
@@ -490,7 +487,7 @@ internal class ComputeServiceImpl(
             val hv = hostToView[host]
             if (hv != null) {
                 hv.provisionedCores -= server.flavor.cpuCount
-                hv.numberOfActiveServers--
+                hv.instanceCount--
                 hv.availableMemory += server.flavor.memorySize
             } else {
                 logger.error { "Unknown host $host" }
