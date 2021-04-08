@@ -103,19 +103,9 @@ public class ExperimentMetricExporter(
             val hostMetric = hostMetrics[uid]
 
             if (hostMetric != null) {
-                block(hostMetric, point.sum)
-            }
-        }
-    }
-
-    private fun mapDoubleSum(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
-        val points = data?.doubleSumData?.points ?: emptyList()
-        for (point in points) {
-            val uid = point.labels["host"]
-            val hostMetric = hostMetrics[uid]
-
-            if (hostMetric != null) {
-                block(hostMetric, point.value)
+                // Take the average of the summary
+                val avg = (point.percentileValues[0].value + point.percentileValues[1].value) / 2
+                block(hostMetric, avg)
             }
         }
     }
