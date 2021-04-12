@@ -62,6 +62,8 @@ internal class PowerModelTest {
             Arguments.of(SquarePowerModel(350.0, 200.0), 321.5),
             Arguments.of(CubicPowerModel(350.0, 200.0), 309.35),
             Arguments.of(SqrtPowerModel(350.0, 200.0), 342.302),
+            Arguments.of(AsymptoticPowerModel(350.0, 200.0, 0.3, false), 338.765),
+            Arguments.of(AsymptoticPowerModel(350.0, 200.0, 0.3, true), 323.072),
         )
     }
 }

@@ -203,6 +203,14 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
                     listOf(56.4, 100.0, 107.0, 117.0, 127.0, 138.0, 149.0, 162.0, 177.0, 191.0, 206.0)
                 )
             )
+        },
+
+        ASYMPTOTIC {
+            override val driver: ScalingDriver = SimpleScalingDriver(AsymptoticPowerModel(206.0, 56.4, 0.3, false))
+        },
+
+        ASYMPTOTIC_DVFS {
+            override val driver: ScalingDriver = SimpleScalingDriver(AsymptoticPowerModel(206.0, 56.4, 0.3, true))
         };
 
         public abstract val driver: ScalingDriver
