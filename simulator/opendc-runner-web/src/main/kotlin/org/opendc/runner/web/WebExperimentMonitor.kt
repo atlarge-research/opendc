@@ -84,7 +84,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
             hostAggregateMetrics.totalGrantedBurst + event.grantedBurst,
             hostAggregateMetrics.totalOvercommittedBurst + event.overcommissionedBurst,
             hostAggregateMetrics.totalInterferedBurst + event.interferedBurst,
-            hostAggregateMetrics.totalPowerDraw + (slices * (event.powerDraw / 12)),
+            hostAggregateMetrics.totalPowerDraw + (event.duration * event.powerDraw) / 3600,
             hostAggregateMetrics.totalFailureSlices + if (event.host.state != HostState.UP) slices else 0,
             hostAggregateMetrics.totalFailureVmSlices + if (event.host.state != HostState.UP) event.vmCount * slices else 0
         )
