@@ -276,7 +276,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 )
                 val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), ObjectId::class.java)
                 val environment = TopologyParser(topologies, topologyId)
-                val failureFrequency = operational.get("failureFrequency", Number::class.java)?.toDouble() ?: 24.0 * 7
+                val failureFrequency = if (operational.getBoolean("failuresEnabled", false)) 24.0 * 7 else 0.0
 
                 withComputeService(clock, meterProvider, environment, allocationPolicy) { scheduler ->
                     val failureDomain = if (failureFrequency > 0) {
