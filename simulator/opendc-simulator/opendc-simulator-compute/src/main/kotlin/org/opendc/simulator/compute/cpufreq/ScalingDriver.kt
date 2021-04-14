@@ -23,8 +23,7 @@
 package org.opendc.simulator.compute.cpufreq
 
 import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.resources.SimResourceSource
+import org.opendc.simulator.compute.SimProcessingUnit
 
 /**
  * A [ScalingDriver] is responsible for switching the processor to the correct frequency.
@@ -40,9 +39,9 @@ public interface ScalingDriver {
      */
     public interface Logic {
         /**
-         * Create the [ScalingContext] for the specified [cpu] and [resource] instance.
+         * Create the [ScalingContext] for the specified [cpu] instance.
          */
-        public fun createContext(cpu: ProcessingUnit, resource: SimResourceSource): ScalingContext
+        public fun createContext(cpu: SimProcessingUnit): ScalingContext
 
         /**
          * Compute the power consumption of the processor.

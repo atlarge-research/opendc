@@ -23,9 +23,8 @@
 package org.opendc.simulator.compute.cpufreq
 
 import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.SimProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
-import org.opendc.simulator.resources.SimResourceSource
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -47,8 +46,8 @@ public class PStateScalingDriver(states: Map<Double, PowerModel>) : ScalingDrive
          */
         private val contexts = mutableListOf<ScalingContextImpl>()
 
-        override fun createContext(cpu: ProcessingUnit, resource: SimResourceSource): ScalingContext {
-            val ctx = ScalingContextImpl(machine, cpu, resource)
+        override fun createContext(cpu: SimProcessingUnit): ScalingContext {
+            val ctx = ScalingContextImpl(machine, cpu)
             contexts.add(ctx)
             return ctx
         }
@@ -59,7 +58,7 @@ public class PStateScalingDriver(states: Map<Double, PowerModel>) : ScalingDrive
 
             for (ctx in contexts) {
                 targetFreq = max(ctx.target, targetFreq)
-                totalSpeed += ctx.resource.speed
+                totalSpeed += ctx.cpu.speed
             }
 
             val maxFreq = states.lastKey()
@@ -73,10 +72,9 @@ public class PStateScalingDriver(states: Map<Double, PowerModel>) : ScalingDrive
 
     private class ScalingContextImpl(
         override val machine: SimMachine,
-        override val cpu: ProcessingUnit,
-        override val resource: SimResourceSource
+        override val cpu: SimProcessingUnit
     ) : ScalingContext {
-        var target = cpu.frequency
+        var target = cpu.model.frequency
             private set
 
         override fun setTarget(freq: Double) {

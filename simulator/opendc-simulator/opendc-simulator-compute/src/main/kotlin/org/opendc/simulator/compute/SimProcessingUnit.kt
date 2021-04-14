@@ -20,27 +20,22 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute
 
-import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimProcessingUnit
+import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.resources.SimResourceProvider
 
 /**
- * A [ScalingContext] is used to communicate frequency scaling changes between the [ScalingGovernor] and driver.
+ * A simulated processing unit.
  */
-public interface ScalingContext {
+public interface SimProcessingUnit : SimResourceProvider {
     /**
-     * The machine the processing unit belongs to.
+     *  The model representing the static properties of the processing unit.
      */
-    public val machine: SimMachine
+    public val model: ProcessingUnit
 
     /**
-     * The processing unit associated with this context.
+     * The current speed of the processing unit.
      */
-    public val cpu: SimProcessingUnit
-
-    /**
-     * Target the processor to run at the specified target [frequency][freq].
-     */
-    public fun setTarget(freq: Double)
+    public val speed: Double
 }

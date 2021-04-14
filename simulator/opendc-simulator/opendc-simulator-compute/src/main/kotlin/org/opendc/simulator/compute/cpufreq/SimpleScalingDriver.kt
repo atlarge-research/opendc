@@ -23,9 +23,8 @@
 package org.opendc.simulator.compute.cpufreq
 
 import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.SimProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
-import org.opendc.simulator.resources.SimResourceSource
 
 /**
  * A [ScalingDriver] that ignores the instructions of the [ScalingGovernor] and directly computes the power consumption
@@ -33,13 +32,11 @@ import org.opendc.simulator.resources.SimResourceSource
  */
 public class SimpleScalingDriver(private val model: PowerModel) : ScalingDriver {
     override fun createLogic(machine: SimMachine): ScalingDriver.Logic = object : ScalingDriver.Logic {
-        override fun createContext(cpu: ProcessingUnit, resource: SimResourceSource): ScalingContext {
+        override fun createContext(cpu: SimProcessingUnit): ScalingContext {
             return object : ScalingContext {
                 override val machine: SimMachine = machine
 
-                override val cpu: ProcessingUnit = cpu
-
-                override val resource: SimResourceSource = resource
+                override val cpu: SimProcessingUnit = cpu
 
                 override fun setTarget(freq: Double) {}
             }

@@ -26,10 +26,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.SimResourceProvider
-import org.opendc.simulator.resources.SimResourceSource
 import org.opendc.simulator.resources.consume
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import java.time.Clock
@@ -63,34 +60,26 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     /**
      * The resources allocated for this machine.
      */
-    protected abstract val resources: Map<ProcessingUnit, SimResourceSource>
+    protected abstract val cpus: List<SimProcessingUnit>
 
     /**
      * The execution context in which the workload runs.
      */
-    private inner class Context(
-        val sources: Map<ProcessingUnit, SimResourceProvider>,
-        override val meta: Map<String, Any>
-    ) : SimMachineContext {
+    private inner class Context(override val meta: Map<String, Any>) : SimMachineContext {
         override val clock: Clock
             get() = this@SimAbstractMachine.clock
 
-        override val cpus: List<ProcessingUnit> = model.cpus
+        override val cpus: List<SimProcessingUnit> = this@SimAbstractMachine.cpus
 
         override val memory: List<MemoryUnit> = model.memory
-
-        override fun interrupt(cpu: ProcessingUnit) {
-            checkNotNull(sources[cpu]) { "Invalid resource" }.interrupt()
-        }
     }
 
     /**
      * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
      */
     override suspend fun run(workload: SimWorkload, meta: Map<String, Any>): Unit = withContext(context) {
-        val resources = resources
         require(!isTerminated) { "Machine is terminated" }
-        val ctx = Context(resources, meta)
+        val ctx = Context(meta)
         val totalCapacity = model.cpus.sumByDouble { it.frequency }
 
         _speed = DoubleArray(model.cpus.size) { 0.0 }
@@ -98,14 +87,15 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
 
         workload.onStart(ctx)
 
-        for ((cpu, source) in resources) {
-            val consumer = workload.getConsumer(ctx, cpu)
+        for (cpu in cpus) {
+            val model = cpu.model
+            val consumer = workload.getConsumer(ctx, model)
             val adapter = SimSpeedConsumerAdapter(consumer) { newSpeed ->
                 val _speed = _speed
                 val _usage = _usage
 
-                val oldSpeed = _speed[cpu.id]
-                _speed[cpu.id] = newSpeed
+                val oldSpeed = _speed[model.id]
+                _speed[model.id] = newSpeed
                 totalSpeed = totalSpeed - oldSpeed + newSpeed
 
                 val newUsage = totalSpeed / totalCapacity
@@ -114,7 +104,7 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
                 }
             }
 
-            launch { source.consume(adapter) }
+            launch { cpu.consume(adapter) }
         }
     }
 
@@ -128,7 +118,7 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     override fun close() {
         if (!isTerminated) {
             isTerminated = true
-            resources.forEach { (_, provider) -> provider.close() }
+            cpus.forEach(SimProcessingUnit::close)
         }
     }
 }

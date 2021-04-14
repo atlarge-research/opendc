@@ -27,10 +27,9 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.simulator.compute.SimBareMetalMachine
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.SimProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.LinearPowerModel
-import org.opendc.simulator.resources.SimResourceSource
 
 /**
  * Test suite for [PStateScalingDriver].
@@ -55,11 +54,10 @@ internal class PStateScalingDriverTest {
     @Test
     fun testPowerWithSingleGovernor() {
         val machine = mockk<SimBareMetalMachine>()
-        val cpu = mockk<ProcessingUnit>()
-        val resource = mockk<SimResourceSource>()
+        val cpu = mockk<SimProcessingUnit>()
 
-        every { cpu.frequency } returns 4100.0
-        every { resource.speed } returns 1200.0
+        every { cpu.model.frequency } returns 4100.0
+        every { cpu.speed } returns 1200.0
 
         val driver = PStateScalingDriver(
             sortedMapOf(
@@ -71,7 +69,7 @@ internal class PStateScalingDriverTest {
 
         val logic = driver.createLogic(machine)
 
-        val scalingContext = logic.createContext(cpu, resource)
+        val scalingContext = logic.createContext(cpu)
         scalingContext.setTarget(3200.0)
 
         assertEquals(300.0, logic.computePower())
@@ -80,11 +78,10 @@ internal class PStateScalingDriverTest {
     @Test
     fun testPowerWithMultipleGovernors() {
         val machine = mockk<SimBareMetalMachine>()
-        val cpu = mockk<ProcessingUnit>()
-        val resource = mockk<SimResourceSource>()
+        val cpu = mockk<SimProcessingUnit>()
 
-        every { cpu.frequency } returns 4100.0
-        every { resource.speed } returns 1200.0
+        every { cpu.model.frequency } returns 4100.0
+        every { cpu.speed } returns 1200.0
 
         val driver = PStateScalingDriver(
             sortedMapOf(
@@ -96,10 +93,10 @@ internal class PStateScalingDriverTest {
 
         val logic = driver.createLogic(machine)
 
-        val scalingContextA = logic.createContext(cpu, resource)
+        val scalingContextA = logic.createContext(cpu)
         scalingContextA.setTarget(1000.0)
 
-        val scalingContextB = logic.createContext(cpu, resource)
+        val scalingContextB = logic.createContext(cpu)
         scalingContextB.setTarget(3400.0)
 
         assertEquals(350.0, logic.computePower())
@@ -108,10 +105,9 @@ internal class PStateScalingDriverTest {
     @Test
     fun testPowerBasedOnUtilization() {
         val machine = mockk<SimBareMetalMachine>()
-        val cpu = mockk<ProcessingUnit>()
-        val resource = mockk<SimResourceSource>()
+        val cpu = mockk<SimProcessingUnit>()
 
-        every { cpu.frequency } returns 4200.0
+        every { cpu.model.frequency } returns 4200.0
 
         val driver = PStateScalingDriver(
             sortedMapOf(
@@ -123,13 +119,13 @@ internal class PStateScalingDriverTest {
 
         val logic = driver.createLogic(machine)
 
-        val scalingContext = logic.createContext(cpu, resource)
+        val scalingContext = logic.createContext(cpu)
 
-        every { resource.speed } returns 1400.0
+        every { cpu.speed } returns 1400.0
         scalingContext.setTarget(1400.0)
         assertEquals(150.0, logic.computePower())
 
-        every { resource.speed } returns 1400.0
+        every { cpu.speed } returns 1400.0
         scalingContext.setTarget(4000.0)
         assertEquals(235.0, logic.computePower())
     }

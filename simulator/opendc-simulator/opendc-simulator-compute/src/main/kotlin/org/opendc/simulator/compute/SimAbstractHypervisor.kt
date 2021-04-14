@@ -101,7 +101,7 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
         /**
          * The vCPUs of the machine.
          */
-        private val cpus: Map<ProcessingUnit, SimResourceProvider> = model.cpus.associateWith { switch.addOutput(it.frequency) }
+        private val cpus = model.cpus.map { ProcessingUnitImpl(it, switch) }
 
         /**
          * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
@@ -111,8 +111,7 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
                 require(!isTerminated) { "Machine is terminated" }
 
                 val ctx = object : SimMachineContext {
-                    override val cpus: List<ProcessingUnit>
-                        get() = model.cpus
+                    override val cpus: List<SimProcessingUnit> = this@VirtualMachine.cpus
 
                     override val memory: List<MemoryUnit>
                         get() = model.memory
@@ -121,17 +120,13 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
                         get() = this@SimAbstractHypervisor.context.clock
 
                     override val meta: Map<String, Any> = meta
-
-                    override fun interrupt(cpu: ProcessingUnit) {
-                        requireNotNull(this@VirtualMachine.cpus[cpu]).interrupt()
-                    }
                 }
 
                 workload.onStart(ctx)
 
-                for ((cpu, provider) in cpus) {
+                for (cpu in cpus) {
                     launch {
-                        provider.consume(workload.getConsumer(ctx, cpu))
+                        cpu.consume(workload.getConsumer(ctx, cpu.model))
                     }
                 }
             }
@@ -144,7 +139,7 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
             if (!isTerminated) {
                 isTerminated = true
 
-                cpus.forEach { (_, provider) -> provider.close() }
+                cpus.forEach(SimProcessingUnit::close)
                 _vms.remove(this)
             }
         }
@@ -159,5 +154,36 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
         val forwarder = SimResourceForwarder()
         switch.addInput(forwarder)
         return forwarder
+    }
+
+    /**
+     * The [SimProcessingUnit] of this machine.
+     */
+    public inner class ProcessingUnitImpl(override val model: ProcessingUnit, switch: SimResourceSwitch) : SimProcessingUnit {
+        /**
+         * The actual resource supporting the processing unit.
+         */
+        private val source = switch.addOutput(model.frequency)
+
+        override val speed: Double = 0.0 /* TODO Implement */
+
+        override val state: SimResourceState
+            get() = source.state
+
+        override fun startConsumer(consumer: SimResourceConsumer) {
+            source.startConsumer(consumer)
+        }
+
+        override fun interrupt() {
+            source.interrupt()
+        }
+
+        override fun cancel() {
+            source.cancel()
+        }
+
+        override fun close() {
+            source.close()
+        }
     }
 }

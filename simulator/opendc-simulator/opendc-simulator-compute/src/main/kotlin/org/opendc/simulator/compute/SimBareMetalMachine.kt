@@ -62,8 +62,7 @@ public class SimBareMetalMachine(
      */
     private val scheduler = TimerScheduler<Any>(this.context, clock)
 
-    override val resources: Map<ProcessingUnit, SimResourceSource> =
-        model.cpus.associateWith { SimResourceSource(it.frequency, clock, scheduler) }
+    override val cpus: List<SimProcessingUnit> = model.cpus.map { ProcessingUnitImpl(it) }
 
     /**
      * Construct the [ScalingDriver.Logic] for this machine.
@@ -73,8 +72,8 @@ public class SimBareMetalMachine(
     /**
      * The scaling contexts associated with each CPU.
      */
-    private val scalingGovernors = resources.map { (cpu, resource) ->
-        scalingGovernor.createLogic(this.scalingDriver.createContext(cpu, resource))
+    private val scalingGovernors = cpus.map { cpu ->
+        scalingGovernor.createLogic(this.scalingDriver.createContext(cpu))
     }
 
     init {
@@ -99,5 +98,37 @@ public class SimBareMetalMachine(
 
         scheduler.close()
         scope.cancel()
+    }
+
+    /**
+     * The [SimProcessingUnit] of this machine.
+     */
+    public inner class ProcessingUnitImpl(override val model: ProcessingUnit) : SimProcessingUnit {
+        /**
+         * The actual resource supporting the processing unit.
+         */
+        private val source = SimResourceSource(model.frequency, clock, scheduler)
+
+        override val speed: Double
+            get() = source.speed
+
+        override val state: SimResourceState
+            get() = source.state
+
+        override fun startConsumer(consumer: SimResourceConsumer) {
+            source.startConsumer(consumer)
+        }
+
+        override fun interrupt() {
+            source.interrupt()
+        }
+
+        override fun cancel() {
+            source.cancel()
+        }
+
+        override fun close() {
+            source.interrupt()
+        }
     }
 }
