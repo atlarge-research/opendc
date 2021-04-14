@@ -234,7 +234,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                         )
                         "mem-inv" -> FilterScheduler(
                             filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(MemoryWeigher() to -1.0)
+                            weighers = listOf(MemoryWeigher() to 1.0)
                         )
                         "core-mem" -> FilterScheduler(
                             filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
@@ -242,7 +242,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                         )
                         "core-mem-inv" -> FilterScheduler(
                             filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(CoreMemoryWeigher() to -1.0)
+                            weighers = listOf(CoreMemoryWeigher() to 1.0)
                         )
                         "active-servers" -> FilterScheduler(
                             filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
