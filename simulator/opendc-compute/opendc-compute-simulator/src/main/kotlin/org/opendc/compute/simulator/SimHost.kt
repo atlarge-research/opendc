@@ -296,7 +296,6 @@ public class SimHost(
     override fun close() {
         scope.cancel()
         machine.close()
-        _state = HostState.DOWN
     }
 
     override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
@@ -389,7 +388,7 @@ public class SimHost(
             assert(job == null) { "Concurrent job running" }
             val workload = mapper.createWorkload(server)
 
-            val job = scope.launch {
+            job = scope.launch {
                 delay(1) // TODO Introduce boot time
                 init()
                 cont.resume(Unit)
@@ -400,11 +399,8 @@ public class SimHost(
                     exit(cause)
                 } finally {
                     machine.close()
+                    job = null
                 }
-            }
-            this.job = job
-            job.invokeOnCompletion {
-                this.job = null
             }
         }
 

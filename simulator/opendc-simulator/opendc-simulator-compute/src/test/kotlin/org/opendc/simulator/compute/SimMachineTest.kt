@@ -72,6 +72,26 @@ class SimMachineTest {
     }
 
     @Test
+    fun testDualSocketMachine() = runBlockingTest {
+        val clock = DelayControllerClockAdapter(this)
+        val cpuNode = machineModel.cpus[0].node
+        val machineModel = SimMachineModel(
+            cpus = List(cpuNode.coreCount * 2) { ProcessingUnit(cpuNode, it % 2, 1000.0) },
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+        )
+        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+
+        try {
+            machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
+
+            // Two sockets with two cores execute 2000 MFlOps per second (500 ms)
+            assertEquals(500, currentTime)
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
     fun testUsage() = runBlockingTest {
         val clock = DelayControllerClockAdapter(this)
         val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))

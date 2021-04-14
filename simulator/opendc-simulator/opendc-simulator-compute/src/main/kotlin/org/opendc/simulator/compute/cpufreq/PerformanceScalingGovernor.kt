@@ -28,7 +28,7 @@ package org.opendc.simulator.compute.cpufreq
 public class PerformanceScalingGovernor : ScalingGovernor {
     override fun createLogic(ctx: ScalingContext): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
         override fun onLimit() {
-            ctx.setTarget(ctx.resource.capacity)
+            ctx.setTarget(ctx.cpu.model.frequency)
         }
 
         override fun toString(): String = "PerformanceScalingGovernor.Logic"
