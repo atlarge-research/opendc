@@ -42,9 +42,12 @@ import java.util.*
 /**
  * A helper class that converts the MongoDB topology into an OpenDC environment.
  */
-public class TopologyParser(private val collection: MongoCollection<Document>, private val id: ObjectId) : EnvironmentReader {
+public class TopologyParser(private val collection: MongoCollection<Document>) {
 
-    public override fun read(): List<MachineDef> {
+    /**
+     * Parse the topology from the specified [id].
+     */
+    public fun read(id: ObjectId): EnvironmentReader {
         val nodes = mutableListOf<MachineDef>()
         val random = Random(0)
 
@@ -78,15 +81,16 @@ public class TopologyParser(private val collection: MongoCollection<Document>, p
                     "node-$clusterId-$position",
                     mapOf("cluster" to clusterId),
                     SimMachineModel(processors, memoryUnits),
-                    LinearPowerModel(2 * energyConsumptionW, .5)
+                    LinearPowerModel(2 * energyConsumptionW, energyConsumptionW * 0.5)
                 )
             )
         }
 
-        return nodes
+        return object : EnvironmentReader {
+            override fun read(): List<MachineDef> = nodes
+            override fun close() {}
+        }
     }
-
-    override fun close() {}
 
     /**
      * Fetch the metadata of the topology.
