@@ -31,7 +31,6 @@ import com.mongodb.MongoClientSettings
 import com.mongodb.MongoCredential
 import com.mongodb.ServerAddress
 import com.mongodb.client.MongoClients
-import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
 import io.opentelemetry.api.metrics.MeterProvider
@@ -51,6 +50,7 @@ import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
 import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
+import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.telemetry.sdk.toOtelClock
@@ -159,7 +159,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
     /**
      * Run a single scenario.
      */
-    private suspend fun runScenario(portfolio: Document, scenario: Document, topologies: MongoCollection<Document>): List<WebExperimentMonitor.Result> {
+    private suspend fun runScenario(portfolio: Document, scenario: Document, topologyParser: TopologyParser): List<WebExperimentMonitor.Result> {
         val id = scenario.getObjectId("_id")
 
         logger.info { "Constructing performance interference model" }
@@ -182,11 +182,13 @@ public class RunnerCli : CliktCommand(name = "runner") {
         }
 
         val targets = portfolio.get("targets", Document::class.java)
+        val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), ObjectId::class.java)
+        val environment = topologyParser.read(topologyId)
 
         val results = (0 until targets.getInteger("repeatsPerScenario")).map {
             logger.info { "Starting repeat $it" }
             withTimeout(runTimeout * 1000) {
-                runRepeat(scenario, it, topologies, traceReader, performanceInterferenceReader)
+                runRepeat(scenario, it, environment, traceReader, performanceInterferenceReader)
             }
         }
 
@@ -201,7 +203,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
     private suspend fun runRepeat(
         scenario: Document,
         repeat: Int,
-        topologies: MongoCollection<Document>,
+        environment: EnvironmentReader,
         traceReader: Sc20RawParquetTraceReader,
         performanceInterferenceReader: Sc20PerformanceInterferenceReader?
     ): WebExperimentMonitor.Result {
@@ -274,8 +276,6 @@ public class RunnerCli : CliktCommand(name = "runner") {
                     Workload(workloadName, workloadFraction),
                     seed
                 )
-                val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), ObjectId::class.java)
-                val environment = TopologyParser(topologies, topologyId)
                 val failureFrequency = if (operational.getBoolean("failuresEnabled", false)) 24.0 * 7 else 0.0
 
                 withComputeService(clock, meterProvider, environment, allocationPolicy) { scheduler ->
@@ -326,6 +326,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
         val manager = ScenarioManager(database.getCollection("scenarios"))
         val portfolios = database.getCollection("portfolios")
         val topologies = database.getCollection("topologies")
+        val topologyParser = TopologyParser(topologies)
 
         logger.info { "Watching for queued scenarios" }
 
@@ -357,7 +358,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
 
                 try {
                     val portfolio = portfolios.find(Filters.eq("_id", scenario.getObjectId("portfolioId"))).first()!!
-                    val results = runScenario(portfolio, scenario, topologies)
+                    val results = runScenario(portfolio, scenario, topologyParser)
 
                     logger.info { "Writing results to database" }
 
