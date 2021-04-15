@@ -41,6 +41,7 @@ import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector
 import org.opendc.simulator.failures.FaultInjector
@@ -261,6 +262,7 @@ public suspend fun processTrace(
                 delay(max(0, (entry.start - offset) - clock.millis()))
                 launch {
                     chan.send(Unit)
+                    val workload = SimTraceWorkload((entry.meta["workload"] as SimTraceWorkload).trace)
                     val server = client.newServer(
                         entry.name,
                         image,
@@ -269,7 +271,7 @@ public suspend fun processTrace(
                             entry.meta["cores"] as Int,
                             entry.meta["required-memory"] as Long
                         ),
-                        meta = entry.meta
+                        meta = entry.meta + mapOf("workload" to workload)
                     )
 
                     suspendCancellableCoroutine { cont ->

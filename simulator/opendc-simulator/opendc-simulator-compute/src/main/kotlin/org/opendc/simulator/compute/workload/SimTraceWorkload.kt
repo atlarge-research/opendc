@@ -34,12 +34,14 @@ import org.opendc.simulator.resources.consumer.SimConsumerBarrier
  * consumption for some period of time.
  */
 public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkload {
-    private var offset = 0L
+    private var offset = Long.MIN_VALUE
     private val iterator = trace.iterator()
     private var fragment: Fragment? = null
     private lateinit var barrier: SimConsumerBarrier
 
     override fun onStart(ctx: SimMachineContext) {
+        check(offset == Long.MIN_VALUE) { "Workload does not support re-use" }
+
         barrier = SimConsumerBarrier(ctx.cpus.size)
         fragment = nextFragment()
         offset = ctx.clock.millis()
