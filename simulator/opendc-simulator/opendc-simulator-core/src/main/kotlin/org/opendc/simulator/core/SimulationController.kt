@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.utils
+package org.opendc.simulator.core
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.DelayController
+import kotlinx.coroutines.CoroutineDispatcher
 import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
 
 /**
- * A virtual [Clock] that abstracts accesses to [DelayController]'s virtual clock.
+ * Control the virtual clock of a [CoroutineDispatcher].
  */
-@OptIn(ExperimentalCoroutinesApi::class)
-public class DelayControllerClockAdapter(
-    private val delayController: DelayController,
-    private val zone: ZoneId = ZoneId.systemDefault()
-) : Clock() {
-    override fun getZone(): ZoneId = zone
+public interface SimulationController {
+    /**
+     * The current virtual clock as it is known to this Dispatcher.
+     */
+    public val clock: Clock
 
-    override fun withZone(zone: ZoneId): Clock = DelayControllerClockAdapter(delayController, zone)
-
-    override fun instant(): Instant = Instant.ofEpochMilli(millis())
-
-    override fun millis(): Long = delayController.currentTime
+    /**
+     * Immediately execute all pending tasks and advance the virtual clock-time to the last delay.
+     *
+     * If new tasks are scheduled due to advancing virtual time, they will be executed before `advanceUntilIdle`
+     * returns.
+     *
+     * @return the amount of delay-time that this Dispatcher's clock has been forwarded in milliseconds.
+     */
+    public fun advanceUntilIdle(): Long
 }

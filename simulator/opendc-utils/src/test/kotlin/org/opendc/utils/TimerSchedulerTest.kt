@@ -23,11 +23,10 @@
 package org.opendc.utils
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 
 /**
  * A test suite for the [TimerScheduler] class.
@@ -36,8 +35,7 @@ import org.opendc.simulator.utils.DelayControllerClockAdapter
 internal class TimerSchedulerTest {
     @Test
     fun testBasicTimer() {
-        runBlockingTest {
-            val clock = DelayControllerClockAdapter(this)
+        runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
@@ -49,8 +47,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testCancelNonExisting() {
-        runBlockingTest {
-            val clock = DelayControllerClockAdapter(this)
+        runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.cancel(1)
@@ -60,8 +57,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testCancelExisting() {
-        runBlockingTest {
-            val clock = DelayControllerClockAdapter(this)
+        runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
@@ -79,8 +75,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testCancelAll() {
-        runBlockingTest {
-            val clock = DelayControllerClockAdapter(this)
+        runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
@@ -97,8 +92,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testOverride() {
-        runBlockingTest {
-            val clock = DelayControllerClockAdapter(this)
+        runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
@@ -115,8 +109,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testStopped() {
-        runBlockingTest {
-            val clock = DelayControllerClockAdapter(this)
+        runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.close()
@@ -131,8 +124,7 @@ internal class TimerSchedulerTest {
 
     @Test
     fun testNegativeDelay() {
-        runBlockingTest {
-            val clock = DelayControllerClockAdapter(this)
+        runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             assertThrows<IllegalArgumentException> {

@@ -25,8 +25,6 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.runBlockingTest
 import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
 import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -34,7 +32,8 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.SimulationCoroutineScope
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.utils.TimerScheduler
 import org.openjdk.jmh.annotations.*
 import java.time.Clock
@@ -46,15 +45,14 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineBenchmarks {
-    private lateinit var scope: TestCoroutineScope
+    private lateinit var scope: SimulationCoroutineScope
     private lateinit var clock: Clock
     private lateinit var scheduler: TimerScheduler<Any>
     private lateinit var machineModel: SimMachineModel
 
     @Setup
     fun setUp() {
-        scope = TestCoroutineScope()
-        clock = DelayControllerClockAdapter(scope)
+        scope = SimulationCoroutineScope()
         scheduler = TimerScheduler(scope.coroutineContext, clock)
 
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
@@ -77,18 +75,18 @@ class SimMachineBenchmarks {
 
     @Benchmark
     fun benchmarkBareMetal(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
                 coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
                 SimpleScalingDriver(ConstantPowerModel(0.0))
             )
-            return@runBlockingTest machine.run(state.workloads[0])
+            return@runBlockingSimulation machine.run(state.workloads[0])
         }
     }
 
     @Benchmark
     fun benchmarkSpaceSharedHypervisor(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
                 coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
                 SimpleScalingDriver(ConstantPowerModel(0.0))
@@ -100,7 +98,7 @@ class SimMachineBenchmarks {
             val vm = hypervisor.createMachine(machineModel)
 
             try {
-                return@runBlockingTest vm.run(state.workloads[0])
+                return@runBlockingSimulation vm.run(state.workloads[0])
             } finally {
                 vm.close()
                 machine.close()
@@ -110,7 +108,7 @@ class SimMachineBenchmarks {
 
     @Benchmark
     fun benchmarkFairShareHypervisorSingle(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
                 coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
                 SimpleScalingDriver(ConstantPowerModel(0.0))
@@ -122,7 +120,7 @@ class SimMachineBenchmarks {
             val vm = hypervisor.createMachine(machineModel)
 
             try {
-                return@runBlockingTest vm.run(state.workloads[0])
+                return@runBlockingSimulation vm.run(state.workloads[0])
             } finally {
                 vm.close()
                 machine.close()
@@ -132,7 +130,7 @@ class SimMachineBenchmarks {
 
     @Benchmark
     fun benchmarkFairShareHypervisorDouble(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
                 coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
                 SimpleScalingDriver(ConstantPowerModel(0.0))

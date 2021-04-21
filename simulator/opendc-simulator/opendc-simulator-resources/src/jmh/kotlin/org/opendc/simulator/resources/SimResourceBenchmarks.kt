@@ -24,12 +24,10 @@ package org.opendc.simulator.resources
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.runBlockingTest
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.SimulationCoroutineScope
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.utils.TimerScheduler
 import org.openjdk.jmh.annotations.*
-import java.time.Clock
 import java.util.concurrent.TimeUnit
 
 @State(Scope.Thread)
@@ -38,15 +36,13 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimResourceBenchmarks {
-    private lateinit var scope: TestCoroutineScope
-    private lateinit var clock: Clock
+    private lateinit var scope: SimulationCoroutineScope
     private lateinit var scheduler: TimerScheduler<Any>
 
     @Setup
     fun setUp() {
-        scope = TestCoroutineScope()
-        clock = DelayControllerClockAdapter(scope)
-        scheduler = TimerScheduler(scope.coroutineContext, clock)
+        scope = SimulationCoroutineScope()
+        scheduler = TimerScheduler(scope.coroutineContext, scope.clock)
     }
 
     @State(Scope.Thread)
@@ -61,38 +57,38 @@ class SimResourceBenchmarks {
 
     @Benchmark
     fun benchmarkSource(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val provider = SimResourceSource(4200.0, clock, scheduler)
-            return@runBlockingTest provider.consume(state.consumers[0])
+            return@runBlockingSimulation provider.consume(state.consumers[0])
         }
     }
 
     @Benchmark
     fun benchmarkForwardOverhead(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val provider = SimResourceSource(4200.0, clock, scheduler)
             val forwarder = SimResourceForwarder()
             provider.startConsumer(forwarder)
-            return@runBlockingTest forwarder.consume(state.consumers[0])
+            return@runBlockingSimulation forwarder.consume(state.consumers[0])
         }
     }
 
     @Benchmark
     fun benchmarkSwitchMaxMinSingleConsumer(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val switch = SimResourceSwitchMaxMin(clock)
 
             switch.addInput(SimResourceSource(3000.0, clock, scheduler))
             switch.addInput(SimResourceSource(3000.0, clock, scheduler))
 
             val provider = switch.addOutput(3500.0)
-            return@runBlockingTest provider.consume(state.consumers[0])
+            return@runBlockingSimulation provider.consume(state.consumers[0])
         }
     }
 
     @Benchmark
     fun benchmarkSwitchMaxMinTripleConsumer(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val switch = SimResourceSwitchMaxMin(clock)
 
             switch.addInput(SimResourceSource(3000.0, clock, scheduler))
@@ -109,20 +105,20 @@ class SimResourceBenchmarks {
 
     @Benchmark
     fun benchmarkSwitchExclusiveSingleConsumer(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val switch = SimResourceSwitchExclusive()
 
             switch.addInput(SimResourceSource(3000.0, clock, scheduler))
             switch.addInput(SimResourceSource(3000.0, clock, scheduler))
 
             val provider = switch.addOutput(3500.0)
-            return@runBlockingTest provider.consume(state.consumers[0])
+            return@runBlockingSimulation provider.consume(state.consumers[0])
         }
     }
 
     @Benchmark
     fun benchmarkSwitchExclusiveTripleConsumer(state: Workload) {
-        return scope.runBlockingTest {
+        return scope.runBlockingSimulation {
             val switch = SimResourceSwitchExclusive()
 
             switch.addInput(SimResourceSource(3000.0, clock, scheduler))

@@ -25,15 +25,14 @@ package org.opendc.simulator.resources
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
-import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
 
 /**
@@ -45,8 +44,7 @@ internal class SimResourceSwitchExclusiveTest {
      * Test a trace workload.
      */
     @Test
-    fun testTrace() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testTrace() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val speed = mutableListOf<Double>()
@@ -80,7 +78,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         assertAll(
             { assertEquals(listOf(0.0, 28.0, 3200.0, 0.0, 183.0, 0.0), speed) { "Correct speed" } },
-            { assertEquals(5 * 60L * 4000, currentTime) { "Took enough time" } }
+            { assertEquals(5 * 60L * 4000, clock.millis()) { "Took enough time" } }
         )
     }
 
@@ -88,8 +86,7 @@ internal class SimResourceSwitchExclusiveTest {
      * Test runtime workload on hypervisor.
      */
     @Test
-    fun testRuntimeWorkload() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testRuntimeWorkload() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
@@ -109,15 +106,14 @@ internal class SimResourceSwitchExclusiveTest {
         } finally {
             provider.close()
         }
-        assertEquals(duration, currentTime) { "Took enough time" }
+        assertEquals(duration, clock.millis()) { "Took enough time" }
     }
 
     /**
      * Test two workloads running sequentially.
      */
     @Test
-    fun testTwoWorkloads() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testTwoWorkloads() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
@@ -152,15 +148,14 @@ internal class SimResourceSwitchExclusiveTest {
         } finally {
             provider.close()
         }
-        assertEquals(duration * 2, currentTime) { "Took enough time" }
+        assertEquals(duration * 2, clock.millis()) { "Took enough time" }
     }
 
     /**
      * Test concurrent workloads on the machine.
      */
     @Test
-    fun testConcurrentWorkloadFails() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testConcurrentWorkloadFails() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000

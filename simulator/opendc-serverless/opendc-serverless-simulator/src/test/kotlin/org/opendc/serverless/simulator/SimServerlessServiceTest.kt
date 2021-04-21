@@ -27,7 +27,6 @@ import io.mockk.spyk
 import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -42,7 +41,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 
 /**
  * A test suite for the [ServerlessService] implementation under simulated conditions.
@@ -63,9 +62,8 @@ internal class SimServerlessServiceTest {
     }
 
     @Test
-    fun testSmoke() = runBlockingTest {
+    fun testSmoke() = runBlockingSimulation {
         val meter = MeterProvider.noop().get("opendc-serverless")
-        val clock = DelayControllerClockAdapter(this)
         val workload = spyk(object : SimServerlessWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {}
         })

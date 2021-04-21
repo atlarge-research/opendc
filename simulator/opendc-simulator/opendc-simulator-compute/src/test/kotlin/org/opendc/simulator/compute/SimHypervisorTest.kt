@@ -26,7 +26,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -39,7 +38,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 
 /**
  * Test suite for the [SimHypervisor] class.
@@ -61,8 +60,7 @@ internal class SimHypervisorTest {
      * Test overcommitting of resources via the hypervisor with a single VM.
      */
     @Test
-    fun testOvercommittedSingle() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testOvercommittedSingle() = runBlockingSimulation {
         val listener = object : SimHypervisor.Listener {
             var totalRequestedWork = 0L
             var totalGrantedWork = 0L
@@ -116,7 +114,7 @@ internal class SimHypervisorTest {
             { assertEquals(1023300, listener.totalGrantedWork, "Granted Burst does not match") },
             { assertEquals(90000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
             { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), res) { "VM usage is correct" } },
-            { assertEquals(1200000, currentTime) { "Current time is correct" } }
+            { assertEquals(1200000, clock.millis()) { "Current time is correct" } }
         )
     }
 
@@ -124,8 +122,7 @@ internal class SimHypervisorTest {
      * Test overcommitting of resources via the hypervisor with two VMs.
      */
     @Test
-    fun testOvercommittedDual() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testOvercommittedDual() = runBlockingSimulation {
         val listener = object : SimHypervisor.Listener {
             var totalRequestedWork = 0L
             var totalGrantedWork = 0L
@@ -195,7 +192,7 @@ internal class SimHypervisorTest {
             { assertEquals(2082000, listener.totalRequestedWork, "Requested Burst does not match") },
             { assertEquals(1062000, listener.totalGrantedWork, "Granted Burst does not match") },
             { assertEquals(1020000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
-            { assertEquals(1200000, currentTime) }
+            { assertEquals(1200000, clock.millis()) }
         )
     }
 }

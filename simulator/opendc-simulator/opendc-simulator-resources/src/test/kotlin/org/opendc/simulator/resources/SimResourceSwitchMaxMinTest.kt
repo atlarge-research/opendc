@@ -27,12 +27,11 @@ import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
-import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
 
 /**
@@ -41,8 +40,7 @@ import org.opendc.utils.TimerScheduler
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceSwitchMaxMinTest {
     @Test
-    fun testSmoke() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testSmoke() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val switch = SimResourceSwitchMaxMin(clock)
 
@@ -67,8 +65,7 @@ internal class SimResourceSwitchMaxMinTest {
      * Test overcommitting of resources via the hypervisor with a single VM.
      */
     @Test
-    fun testOvercommittedSingle() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testOvercommittedSingle() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val listener = object : SimResourceSwitchMaxMin.Listener {
@@ -118,7 +115,7 @@ internal class SimResourceSwitchMaxMinTest {
             { assertEquals(1113300, listener.totalRequestedWork, "Requested Burst does not match") },
             { assertEquals(1023300, listener.totalGrantedWork, "Granted Burst does not match") },
             { assertEquals(90000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
-            { assertEquals(1200000, currentTime) }
+            { assertEquals(1200000, clock.millis()) }
         )
     }
 
@@ -126,8 +123,7 @@ internal class SimResourceSwitchMaxMinTest {
      * Test overcommitting of resources via the hypervisor with two VMs.
      */
     @Test
-    fun testOvercommittedDual() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testOvercommittedDual() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val listener = object : SimResourceSwitchMaxMin.Listener {
@@ -191,7 +187,7 @@ internal class SimResourceSwitchMaxMinTest {
             { assertEquals(2082000, listener.totalRequestedWork, "Requested Burst does not match") },
             { assertEquals(1062000, listener.totalGrantedWork, "Granted Burst does not match") },
             { assertEquals(1020000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
-            { assertEquals(1200000, currentTime) }
+            { assertEquals(1200000, clock.millis()) }
         )
     }
 }

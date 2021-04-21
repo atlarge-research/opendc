@@ -24,7 +24,6 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,7 +36,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 
 /**
  * Test suite for the [SimBareMetalMachine] class.
@@ -57,23 +56,21 @@ class SimMachineTest {
     }
 
     @Test
-    fun testFlopsWorkload() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testFlopsWorkload() = runBlockingSimulation {
         val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
 
         try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
 
             // Two cores execute 1000 MFlOps per second (1000 ms)
-            assertEquals(1000, currentTime)
+            assertEquals(1000, clock.millis())
         } finally {
             machine.close()
         }
     }
 
     @Test
-    fun testDualSocketMachine() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testDualSocketMachine() = runBlockingSimulation {
         val cpuNode = machineModel.cpus[0].node
         val machineModel = SimMachineModel(
             cpus = List(cpuNode.coreCount * 2) { ProcessingUnit(cpuNode, it % 2, 1000.0) },
@@ -85,15 +82,14 @@ class SimMachineTest {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
 
             // Two sockets with two cores execute 2000 MFlOps per second (500 ms)
-            assertEquals(500, currentTime)
+            assertEquals(500, clock.millis())
         } finally {
             machine.close()
         }
     }
 
     @Test
-    fun testUsage() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testUsage() = runBlockingSimulation {
         val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
 
         val res = mutableListOf<Double>()
@@ -110,8 +106,7 @@ class SimMachineTest {
     }
 
     @Test
-    fun testClose() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testClose() = runBlockingSimulation {
         val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
 
         machine.close()
