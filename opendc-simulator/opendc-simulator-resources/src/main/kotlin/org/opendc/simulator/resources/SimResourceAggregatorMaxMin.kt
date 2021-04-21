@@ -28,36 +28,46 @@ import java.time.Clock
  * A [SimResourceAggregator] that distributes the load equally across the input resources.
  */
 public class SimResourceAggregatorMaxMin(clock: Clock) : SimAbstractResourceAggregator(clock) {
-    private val consumers = mutableListOf<SimResourceContext>()
+    private val consumers = mutableListOf<Input>()
 
     override fun doConsume(work: Double, limit: Double, deadline: Long) {
         // Sort all consumers by their capacity
-        consumers.sortWith(compareBy { it.capacity })
+        consumers.sortWith(compareBy { it.ctx.capacity })
 
         // Divide the requests over the available capacity of the input resources fairly
         for (input in consumers) {
-            val inputCapacity = input.capacity
+            val inputCapacity = input.ctx.capacity
             val fraction = inputCapacity / outputContext.capacity
             val grantedSpeed = limit * fraction
             val grantedWork = fraction * work
 
-            commands[input] =
-                if (grantedWork > 0.0 && grantedSpeed > 0.0)
-                    SimResourceCommand.Consume(grantedWork, grantedSpeed, deadline)
-                else
-                    SimResourceCommand.Idle(deadline)
+            val command = if (grantedWork > 0.0 && grantedSpeed > 0.0)
+                SimResourceCommand.Consume(grantedWork, grantedSpeed, deadline)
+            else
+                SimResourceCommand.Idle(deadline)
+            input.push(command)
         }
     }
 
-    override fun onContextStarted(ctx: SimResourceContext) {
-        super.onContextStarted(ctx)
-
-        consumers.add(ctx)
+    override fun doIdle(deadline: Long) {
+        for (input in consumers) {
+            input.push(SimResourceCommand.Idle(deadline))
+        }
     }
 
-    override fun onContextFinished(ctx: SimResourceContext) {
-        super.onContextFinished(ctx)
+    override fun doFinish(cause: Throwable?) {
+        val iterator = consumers.iterator()
+        for (input in iterator) {
+            iterator.remove()
+            input.push(SimResourceCommand.Exit)
+        }
+    }
 
-        consumers.remove(ctx)
+    override fun onInputStarted(input: Input) {
+        consumers.add(input)
+    }
+
+    override fun onInputFinished(input: Input) {
+        consumers.remove(input)
     }
 }

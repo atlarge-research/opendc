@@ -112,7 +112,12 @@ public class SimResourceSource(
 
         override fun onFinish(cause: Throwable?) {
             scheduler.cancel(this)
-            cancel()
+
+            ctx = null
+
+            if (this@SimResourceSource.state != SimResourceState.Stopped) {
+                this@SimResourceSource.state = SimResourceState.Pending
+            }
 
             super.onFinish(cause)
         }

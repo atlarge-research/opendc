@@ -139,7 +139,7 @@ internal class SimResourceAggregatorMaxMinTest {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) }
             .returns(SimResourceCommand.Consume(1.0, 1.0))
-            .andThenThrows(IllegalStateException())
+            .andThenThrows(IllegalStateException("Test Exception"))
 
         try {
             assertThrows<IllegalStateException> { aggregator.output.consume(consumer) }
