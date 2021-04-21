@@ -34,7 +34,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
 import org.openjdk.jmh.annotations.*
 import java.time.Clock

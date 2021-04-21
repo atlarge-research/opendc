@@ -29,7 +29,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -43,7 +42,7 @@ import org.opendc.compute.simulator.SimHost
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
 import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
@@ -63,9 +62,7 @@ internal class WorkflowServiceIntegrationTest {
      * A large integration test where we check whether all tasks in some trace are executed correctly.
      */
     @Test
-    fun testTrace() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
-
+    fun testTrace() = runBlockingSimulation {
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
             .setClock(clock.toOtelClock())

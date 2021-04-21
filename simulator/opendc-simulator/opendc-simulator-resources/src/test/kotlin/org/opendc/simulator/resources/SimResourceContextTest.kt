@@ -26,7 +26,7 @@ import io.mockk.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.*
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.DelayControllerClockAdapter
 
 /**
  * A test suite for the [SimAbstractResourceContext] class.

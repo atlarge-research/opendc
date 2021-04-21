@@ -34,7 +34,7 @@ import org.opendc.serverless.api.ServerlessFunction
 import org.opendc.serverless.service.deployer.FunctionDeployer
 import org.opendc.serverless.service.deployer.FunctionInstance
 import org.opendc.serverless.service.deployer.FunctionInstanceState
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.DelayControllerClockAdapter
 import java.util.*
 
 /**

@@ -43,7 +43,7 @@ import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.weights.MemoryWeigher
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.DelayControllerClockAdapter
 import java.util.*
 
 /**

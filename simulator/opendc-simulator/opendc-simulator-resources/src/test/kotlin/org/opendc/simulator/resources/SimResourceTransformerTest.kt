@@ -31,8 +31,8 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.core.DelayControllerClockAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
-import org.opendc.simulator.utils.DelayControllerClockAdapter
 import org.opendc.utils.TimerScheduler
 
 /**

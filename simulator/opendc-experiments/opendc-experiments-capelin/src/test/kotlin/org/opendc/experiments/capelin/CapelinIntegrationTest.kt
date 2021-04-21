@@ -25,10 +25,8 @@ package org.opendc.experiments.capelin
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -46,14 +44,13 @@ import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 
 /**
  * An integration test suite for the SC20 experiments.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class CapelinIntegrationTest {
     /**
      * The monitor used to keep track of the metrics.
@@ -69,8 +66,7 @@ class CapelinIntegrationTest {
     }
 
     @Test
-    fun testLarge() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testLarge() = runBlockingSimulation {
         val failures = false
         val seed = 0
         val chan = Channel<Unit>(Channel.CONFLATED)
@@ -132,8 +128,7 @@ class CapelinIntegrationTest {
     }
 
     @Test
-    fun testSmall() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testSmall() = runBlockingSimulation {
         val seed = 1
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(

@@ -52,7 +52,7 @@ import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
 import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
-import org.opendc.simulator.utils.DelayControllerClockAdapter
+import org.opendc.simulator.core.DelayControllerClockAdapter
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import kotlin.random.Random
