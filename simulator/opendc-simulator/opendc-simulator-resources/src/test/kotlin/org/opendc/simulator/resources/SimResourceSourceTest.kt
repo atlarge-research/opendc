@@ -27,10 +27,9 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.*
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.utils.TimerScheduler
@@ -41,8 +40,7 @@ import org.opendc.utils.TimerScheduler
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimResourceSourceTest {
     @Test
-    fun testSpeed() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testSpeed() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -66,8 +64,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testAdjustCapacity() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testAdjustCapacity() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val provider = SimResourceSource(1.0, clock, scheduler)
 
@@ -79,7 +76,7 @@ class SimResourceSourceTest {
                 delay(1000)
                 provider.capacity = 0.5
             }
-            assertEquals(3000, currentTime)
+            assertEquals(3000, clock.millis())
             verify(exactly = 1) { consumer.onCapacityChanged(any(), true) }
         } finally {
             scheduler.close()
@@ -88,8 +85,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testSpeedLimit() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testSpeedLimit() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -117,8 +113,7 @@ class SimResourceSourceTest {
      * [SimResourceConsumer.onNext].
      */
     @Test
-    fun testIntermediateInterrupt() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testIntermediateInterrupt() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -142,8 +137,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testInterrupt() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testInterrupt() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -173,7 +167,7 @@ class SimResourceSourceTest {
             }
             provider.consume(consumer)
 
-            assertEquals(0, currentTime)
+            assertEquals(0, clock.millis())
         } finally {
             scheduler.close()
             provider.close()
@@ -181,8 +175,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testFailure() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testFailure() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -202,8 +195,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testExceptionPropagationOnNext() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testExceptionPropagationOnNext() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -224,8 +216,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testConcurrentConsumption() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testConcurrentConsumption() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -249,8 +240,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testClosedConsumption() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testClosedConsumption() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -272,8 +262,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testCloseDuringConsumption() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testCloseDuringConsumption() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -288,7 +277,7 @@ class SimResourceSourceTest {
             delay(500)
             provider.close()
 
-            assertEquals(500, currentTime)
+            assertEquals(500, clock.millis())
         } finally {
             scheduler.close()
             provider.close()
@@ -296,8 +285,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testIdle() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testIdle() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)
@@ -310,7 +298,7 @@ class SimResourceSourceTest {
         try {
             provider.consume(consumer)
 
-            assertEquals(500, currentTime)
+            assertEquals(500, clock.millis())
         } finally {
             scheduler.close()
             provider.close()
@@ -320,8 +308,7 @@ class SimResourceSourceTest {
     @Test
     fun testInfiniteSleep() {
         assertThrows<IllegalStateException> {
-            runBlockingTest {
-                val clock = DelayControllerClockAdapter(this)
+            runBlockingSimulation {
                 val scheduler = TimerScheduler<Any>(coroutineContext, clock)
                 val capacity = 4200.0
                 val provider = SimResourceSource(capacity, clock, scheduler)
@@ -342,8 +329,7 @@ class SimResourceSourceTest {
     }
 
     @Test
-    fun testIncorrectDeadline() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testIncorrectDeadline() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, clock, scheduler)

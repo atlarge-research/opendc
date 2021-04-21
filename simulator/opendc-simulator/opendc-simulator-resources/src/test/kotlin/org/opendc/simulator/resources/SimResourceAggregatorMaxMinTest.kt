@@ -26,12 +26,11 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.*
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.utils.TimerScheduler
@@ -42,8 +41,7 @@ import org.opendc.utils.TimerScheduler
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceAggregatorMaxMinTest {
     @Test
-    fun testSingleCapacity() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testSingleCapacity() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(clock)
@@ -65,7 +63,7 @@ internal class SimResourceAggregatorMaxMinTest {
             yield()
 
             assertAll(
-                { assertEquals(1000, currentTime) },
+                { assertEquals(1000, clock.millis()) },
                 { assertEquals(listOf(0.0, 0.5, 0.0), usage) }
             )
         } finally {
@@ -74,8 +72,7 @@ internal class SimResourceAggregatorMaxMinTest {
     }
 
     @Test
-    fun testDoubleCapacity() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testDoubleCapacity() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(clock)
@@ -93,7 +90,7 @@ internal class SimResourceAggregatorMaxMinTest {
             aggregator.output.consume(adapter)
             yield()
             assertAll(
-                { assertEquals(1000, currentTime) },
+                { assertEquals(1000, clock.millis()) },
                 { assertEquals(listOf(0.0, 2.0, 0.0), usage) }
             )
         } finally {
@@ -102,8 +99,7 @@ internal class SimResourceAggregatorMaxMinTest {
     }
 
     @Test
-    fun testOvercommit() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testOvercommit() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(clock)
@@ -121,7 +117,7 @@ internal class SimResourceAggregatorMaxMinTest {
         try {
             aggregator.output.consume(consumer)
             yield()
-            assertEquals(1000, currentTime)
+            assertEquals(1000, clock.millis())
 
             verify(exactly = 2) { consumer.onNext(any()) }
         } finally {
@@ -130,8 +126,7 @@ internal class SimResourceAggregatorMaxMinTest {
     }
 
     @Test
-    fun testException() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testException() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(clock)
@@ -156,8 +151,7 @@ internal class SimResourceAggregatorMaxMinTest {
     }
 
     @Test
-    fun testAdjustCapacity() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testAdjustCapacity() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(clock)
@@ -175,15 +169,14 @@ internal class SimResourceAggregatorMaxMinTest {
                 sources[0].capacity = 0.5
             }
             yield()
-            assertEquals(2334, currentTime)
+            assertEquals(2334, clock.millis())
         } finally {
             aggregator.output.close()
         }
     }
 
     @Test
-    fun testFailOverCapacity() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testFailOverCapacity() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(clock)
@@ -201,7 +194,7 @@ internal class SimResourceAggregatorMaxMinTest {
                 sources[0].capacity = 0.5
             }
             yield()
-            assertEquals(1000, currentTime)
+            assertEquals(1000, clock.millis())
         } finally {
             aggregator.output.close()
         }

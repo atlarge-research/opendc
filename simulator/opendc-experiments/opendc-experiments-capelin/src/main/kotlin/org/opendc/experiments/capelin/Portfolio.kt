@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.test.runBlockingTest
 import mu.KotlinLogging
 import org.opendc.compute.service.scheduler.*
 import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
@@ -45,7 +44,7 @@ import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.PerformanceInterferenceModelReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import java.util.*
@@ -117,8 +116,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
      * Perform a single trial for this portfolio.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun doRun(repeat: Int): Unit = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val seeder = Random(repeat.toLong())
         val environment = Sc20ClusterEnvironmentReader(File(environmentPath, "${topology.name}.txt"))
 

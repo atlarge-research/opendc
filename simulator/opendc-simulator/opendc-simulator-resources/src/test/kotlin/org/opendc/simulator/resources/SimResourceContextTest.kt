@@ -24,9 +24,8 @@ package org.opendc.simulator.resources
 
 import io.mockk.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.*
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 
 /**
  * A test suite for the [SimAbstractResourceContext] class.
@@ -34,9 +33,7 @@ import org.opendc.simulator.core.DelayControllerClockAdapter
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimResourceContextTest {
     @Test
-    fun testFlushWithoutCommand() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
-
+    fun testFlushWithoutCommand() = runBlockingSimulation {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
@@ -50,9 +47,7 @@ class SimResourceContextTest {
     }
 
     @Test
-    fun testIntermediateFlush() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
-
+    fun testIntermediateFlush() = runBlockingSimulation {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
@@ -70,9 +65,7 @@ class SimResourceContextTest {
     }
 
     @Test
-    fun testIntermediateFlushIdle() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
-
+    fun testIntermediateFlushIdle() = runBlockingSimulation {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
@@ -95,9 +88,7 @@ class SimResourceContextTest {
     }
 
     @Test
-    fun testDoubleStart() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
-
+    fun testDoubleStart() = runBlockingSimulation {
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 

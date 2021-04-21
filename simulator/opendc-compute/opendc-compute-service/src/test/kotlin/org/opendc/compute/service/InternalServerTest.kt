@@ -24,7 +24,6 @@ package org.opendc.compute.service
 
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -36,6 +35,7 @@ import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.internal.InternalFlavor
 import org.opendc.compute.service.internal.InternalImage
 import org.opendc.compute.service.internal.InternalServer
+import org.opendc.simulator.core.runBlockingSimulation
 import java.util.*
 
 /**
@@ -95,7 +95,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStartTerminatedServer() = runBlockingTest {
+    fun testStartTerminatedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -111,7 +111,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStartDeletedServer() = runBlockingTest {
+    fun testStartDeletedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -124,7 +124,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStartProvisioningServer() = runBlockingTest {
+    fun testStartProvisioningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -139,7 +139,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStartRunningServer() = runBlockingTest {
+    fun testStartRunningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -154,7 +154,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStopProvisioningServer() = runBlockingTest {
+    fun testStopProvisioningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -172,7 +172,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStopTerminatedServer() = runBlockingTest {
+    fun testStopTerminatedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -186,7 +186,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStopDeletedServer() = runBlockingTest {
+    fun testStopDeletedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -200,7 +200,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testStopRunningServer() = runBlockingTest {
+    fun testStopRunningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -217,7 +217,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testDeleteProvisioningServer() = runBlockingTest {
+    fun testDeleteProvisioningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -236,7 +236,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testDeleteTerminatedServer() = runBlockingTest {
+    fun testDeleteTerminatedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -252,7 +252,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testDeleteDeletedServer() = runBlockingTest {
+    fun testDeleteDeletedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()
@@ -266,7 +266,7 @@ class InternalServerTest {
     }
 
     @Test
-    fun testDeleteRunningServer() = runBlockingTest {
+    fun testDeleteRunningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
         val flavor = mockk<InternalFlavor>()

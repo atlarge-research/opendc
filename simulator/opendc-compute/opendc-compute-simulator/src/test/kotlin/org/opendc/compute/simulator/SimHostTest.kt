@@ -29,7 +29,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricExporter
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -47,7 +46,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.telemetry.sdk.toOtelClock
 import java.util.UUID
@@ -74,8 +73,7 @@ internal class SimHostTest {
      * Test overcommitting of resources by the hypervisor.
      */
     @Test
-    fun testOvercommitted() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testOvercommitted() = runBlockingSimulation {
         var requestedWork = 0L
         var grantedWork = 0L
         var overcommittedWork = 0L
@@ -165,7 +163,7 @@ internal class SimHostTest {
             { assertEquals(4197600, requestedWork, "Requested work does not match") },
             { assertEquals(2157600, grantedWork, "Granted work does not match") },
             { assertEquals(2040000, overcommittedWork, "Overcommitted work does not match") },
-            { assertEquals(1500001, currentTime) }
+            { assertEquals(1500001, clock.millis()) }
         )
     }
 

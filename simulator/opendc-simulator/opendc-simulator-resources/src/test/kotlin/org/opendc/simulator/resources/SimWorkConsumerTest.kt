@@ -23,10 +23,9 @@
 package org.opendc.simulator.resources
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.utils.TimerScheduler
 
@@ -36,8 +35,7 @@ import org.opendc.utils.TimerScheduler
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimWorkConsumerTest {
     @Test
-    fun testSmoke() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testSmoke() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val provider = SimResourceSource(1.0, clock, scheduler)
 
@@ -45,15 +43,14 @@ internal class SimWorkConsumerTest {
 
         try {
             provider.consume(consumer)
-            assertEquals(1000, currentTime)
+            assertEquals(1000, clock.millis())
         } finally {
             provider.close()
         }
     }
 
     @Test
-    fun testUtilization() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testUtilization() = runBlockingSimulation {
         val scheduler = TimerScheduler<Any>(coroutineContext, clock)
         val provider = SimResourceSource(1.0, clock, scheduler)
 
@@ -61,7 +58,7 @@ internal class SimWorkConsumerTest {
 
         try {
             provider.consume(consumer)
-            assertEquals(2000, currentTime)
+            assertEquals(2000, clock.millis())
         } finally {
             provider.close()
         }

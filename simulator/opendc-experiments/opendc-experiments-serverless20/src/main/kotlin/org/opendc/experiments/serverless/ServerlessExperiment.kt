@@ -28,7 +28,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runBlockingTest
 import mu.KotlinLogging
 import org.opendc.experiments.serverless.trace.FunctionTraceWorkload
 import org.opendc.experiments.serverless.trace.ServerlessTraceReader
@@ -43,7 +42,7 @@ import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import java.util.*
@@ -80,8 +79,7 @@ public class ServerlessExperiment : Experiment("Serverless") {
     private val coldStartModel by anyOf(ColdStartModel.LAMBDA, ColdStartModel.AZURE, ColdStartModel.GOOGLE)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun doRun(repeat: Int): Unit = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
             .setClock(clock.toOtelClock())

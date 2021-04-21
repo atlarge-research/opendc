@@ -39,7 +39,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.test.runBlockingTest
 import mu.KotlinLogging
 import org.bson.Document
 import org.bson.types.ObjectId
@@ -52,7 +51,7 @@ import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
 import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
 import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import kotlin.random.Random
@@ -208,14 +207,13 @@ public class RunnerCli : CliktCommand(name = "runner") {
         val monitor = WebExperimentMonitor()
 
         try {
-            runBlockingTest {
+            runBlockingSimulation {
                 val seed = repeat
                 val traceDocument = scenario.get("trace", Document::class.java)
                 val workloadName = traceDocument.getString("traceId")
                 val workloadFraction = traceDocument.get("loadSamplingFraction", Number::class.java).toDouble()
 
                 val seeder = Random(seed)
-                val clock = DelayControllerClockAdapter(this)
 
                 val chan = Channel<Unit>(Channel.CONFLATED)
 

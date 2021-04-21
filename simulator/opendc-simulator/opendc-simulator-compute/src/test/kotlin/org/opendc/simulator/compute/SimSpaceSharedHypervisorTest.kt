@@ -25,7 +25,6 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -40,7 +39,7 @@ import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 
 /**
  * A test suite for the [SimSpaceSharedHypervisor].
@@ -62,8 +61,7 @@ internal class SimSpaceSharedHypervisorTest {
      * Test a trace workload.
      */
     @Test
-    fun testTrace() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testTrace() = runBlockingSimulation {
         val usagePm = mutableListOf<Double>()
         val usageVm = mutableListOf<Double>()
 
@@ -103,7 +101,7 @@ internal class SimSpaceSharedHypervisorTest {
             { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), usagePm) { "Correct PM usage" } },
             // Temporary limitation is that VMs do not emit usage information
             // { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), usageVm) { "Correct VM usage" } },
-            { assertEquals(5 * 60L * 4000, currentTime) { "Took enough time" } }
+            { assertEquals(5 * 60L * 4000, clock.millis()) { "Took enough time" } }
         )
     }
 
@@ -111,8 +109,7 @@ internal class SimSpaceSharedHypervisorTest {
      * Test runtime workload on hypervisor.
      */
     @Test
-    fun testRuntimeWorkload() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testRuntimeWorkload() = runBlockingSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimRuntimeWorkload(duration)
         val machine = SimBareMetalMachine(
@@ -128,16 +125,14 @@ internal class SimSpaceSharedHypervisorTest {
         vm.close()
         machine.close()
 
-        assertEquals(duration, currentTime) { "Took enough time" }
+        assertEquals(duration, clock.millis()) { "Took enough time" }
     }
 
     /**
      * Test FLOPs workload on hypervisor.
      */
     @Test
-    fun testFlopsWorkload() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
-
+    fun testFlopsWorkload() = runBlockingSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimFlopsWorkload((duration * 3.2).toLong(), 1.0)
         val machine = SimBareMetalMachine(
@@ -152,15 +147,14 @@ internal class SimSpaceSharedHypervisorTest {
         vm.run(workload)
         machine.close()
 
-        assertEquals(duration, currentTime) { "Took enough time" }
+        assertEquals(duration, clock.millis()) { "Took enough time" }
     }
 
     /**
      * Test two workloads running sequentially.
      */
     @Test
-    fun testTwoWorkloads() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testTwoWorkloads() = runBlockingSimulation {
         val duration = 5 * 60L * 1000
         val machine = SimBareMetalMachine(
             coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
@@ -180,15 +174,14 @@ internal class SimSpaceSharedHypervisorTest {
         vm2.close()
         machine.close()
 
-        assertEquals(duration * 2, currentTime) { "Took enough time" }
+        assertEquals(duration * 2, clock.millis()) { "Took enough time" }
     }
 
     /**
      * Test concurrent workloads on the machine.
      */
     @Test
-    fun testConcurrentWorkloadFails() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testConcurrentWorkloadFails() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
             coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
             SimpleScalingDriver(ConstantPowerModel(0.0))
@@ -212,8 +205,7 @@ internal class SimSpaceSharedHypervisorTest {
      * Test concurrent workloads on the machine.
      */
     @Test
-    fun testConcurrentWorkloadSucceeds() = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    fun testConcurrentWorkloadSucceeds() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
             coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
             SimpleScalingDriver(ConstantPowerModel(0.0))

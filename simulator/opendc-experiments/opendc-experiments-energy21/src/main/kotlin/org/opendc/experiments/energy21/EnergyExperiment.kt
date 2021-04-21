@@ -29,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.test.runBlockingTest
 import mu.KotlinLogging
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
@@ -50,7 +49,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.*
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import java.time.Clock
@@ -87,8 +86,7 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
     private val powerModel by anyOf(PowerModelType.LINEAR, PowerModelType.CUBIC, PowerModelType.INTERPOLATION)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun doRun(repeat: Int): Unit = runBlockingTest {
-        val clock = DelayControllerClockAdapter(this)
+    override fun doRun(repeat: Int): Unit = runBlockingSimulation {
 
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(

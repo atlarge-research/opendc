@@ -26,9 +26,6 @@ import io.mockk.*
 import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.runBlockingTest
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -43,7 +40,8 @@ import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.weights.MemoryWeigher
-import org.opendc.simulator.core.DelayControllerClockAdapter
+import org.opendc.simulator.core.SimulationCoroutineScope
+import org.opendc.simulator.core.runBlockingSimulation
 import java.util.*
 
 /**
@@ -51,13 +49,13 @@ import java.util.*
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class ComputeServiceTest {
-    lateinit var scope: TestCoroutineScope
+    lateinit var scope: SimulationCoroutineScope
     lateinit var service: ComputeService
 
     @BeforeEach
     fun setUp() {
-        scope = TestCoroutineScope()
-        val clock = DelayControllerClockAdapter(scope)
+        scope = SimulationCoroutineScope()
+        val clock = scope.clock
         val computeScheduler = FilterScheduler(
             filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
             weighers = listOf(MemoryWeigher() to -1.0)
@@ -66,13 +64,8 @@ internal class ComputeServiceTest {
         service = ComputeService(scope.coroutineContext, clock, meter, computeScheduler)
     }
 
-    @AfterEach
-    fun tearDown() {
-        scope.cleanupTestCoroutines()
-    }
-
     @Test
-    fun testClientClose() = scope.runBlockingTest {
+    fun testClientClose() = scope.runBlockingSimulation {
         val client = service.newClient()
 
         assertEquals(emptyList<Flavor>(), client.queryFlavors())
@@ -95,7 +88,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testClientCreate() = scope.runBlockingTest {
+    fun testClientCreate() = scope.runBlockingSimulation {
         val client = service.newClient()
 
         val flavor = client.newFlavor("test", 1, 1024)
@@ -121,7 +114,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testClientOnClose() = scope.runBlockingTest {
+    fun testClientOnClose() = scope.runBlockingSimulation {
         service.close()
         assertThrows<IllegalStateException> {
             service.newClient()
@@ -129,7 +122,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testAddHost() = scope.runBlockingTest {
+    fun testAddHost() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
 
         every { host.model } returns HostModel(4, 2048)
@@ -151,7 +144,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testAddHostDouble() = scope.runBlockingTest {
+    fun testAddHostDouble() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
 
         every { host.model } returns HostModel(4, 2048)
@@ -167,7 +160,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testServerStartWithoutEnoughCpus() = scope.runBlockingTest {
+    fun testServerStartWithoutEnoughCpus() = scope.runBlockingSimulation {
         val client = service.newClient()
         val flavor = client.newFlavor("test", 1, 0)
         val image = client.newImage("test")
@@ -180,7 +173,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testServerStartWithoutEnoughMemory() = scope.runBlockingTest {
+    fun testServerStartWithoutEnoughMemory() = scope.runBlockingSimulation {
         val client = service.newClient()
         val flavor = client.newFlavor("test", 0, 1024)
         val image = client.newImage("test")
@@ -193,7 +186,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testServerStartWithoutEnoughResources() = scope.runBlockingTest {
+    fun testServerStartWithoutEnoughResources() = scope.runBlockingSimulation {
         val client = service.newClient()
         val flavor = client.newFlavor("test", 1, 1024)
         val image = client.newImage("test")
@@ -206,7 +199,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testServerCancelRequest() = scope.runBlockingTest {
+    fun testServerCancelRequest() = scope.runBlockingSimulation {
         val client = service.newClient()
         val flavor = client.newFlavor("test", 1, 1024)
         val image = client.newImage("test")
@@ -220,7 +213,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testServerCannotFitOnHost() = scope.runBlockingTest {
+    fun testServerCannotFitOnHost() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
 
         every { host.model } returns HostModel(4, 2048)
@@ -243,7 +236,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testHostAvailableAfterSomeTime() = scope.runBlockingTest {
+    fun testHostAvailableAfterSomeTime() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
         val listeners = mutableListOf<HostListener>()
 
@@ -274,7 +267,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testHostUnavailableAfterSomeTime() = scope.runBlockingTest {
+    fun testHostUnavailableAfterSomeTime() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
         val listeners = mutableListOf<HostListener>()
 
@@ -305,7 +298,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testServerInvalidType() = scope.runBlockingTest {
+    fun testServerInvalidType() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
         val listeners = mutableListOf<HostListener>()
 
@@ -328,7 +321,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testServerDeploy() = scope.runBlockingTest {
+    fun testServerDeploy() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
         val listeners = mutableListOf<HostListener>()
 
@@ -371,7 +364,7 @@ internal class ComputeServiceTest {
     }
 
     @Test
-    fun testServerDeployFailure() = scope.runBlockingTest {
+    fun testServerDeployFailure() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
         val listeners = mutableListOf<HostListener>()
 
