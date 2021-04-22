@@ -40,7 +40,7 @@ class SimResourceContextTest {
         val context = object : SimAbstractResourceContext(4200.0, clock, consumer) {
             override fun onIdle(deadline: Long) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
-            override fun onFinish(cause: Throwable?) {}
+            override fun onFinish() {}
         }
 
         context.flush()
@@ -53,7 +53,7 @@ class SimResourceContextTest {
 
         val context = spyk(object : SimAbstractResourceContext(4200.0, clock, consumer) {
             override fun onIdle(deadline: Long) {}
-            override fun onFinish(cause: Throwable?) {}
+            override fun onFinish() {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
         })
 
@@ -71,7 +71,7 @@ class SimResourceContextTest {
 
         val context = spyk(object : SimAbstractResourceContext(4200.0, clock, consumer) {
             override fun onIdle(deadline: Long) {}
-            override fun onFinish(cause: Throwable?) {}
+            override fun onFinish() {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
         })
 
@@ -83,7 +83,7 @@ class SimResourceContextTest {
 
         assertAll(
             { verify(exactly = 2) { context.onIdle(any()) } },
-            { verify(exactly = 1) { context.onFinish(null) } }
+            { verify(exactly = 1) { context.onFinish() } }
         )
     }
 
@@ -94,7 +94,7 @@ class SimResourceContextTest {
 
         val context = object : SimAbstractResourceContext(4200.0, clock, consumer) {
             override fun onIdle(deadline: Long) {}
-            override fun onFinish(cause: Throwable?) {}
+            override fun onFinish() {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
         }
 

@@ -118,7 +118,7 @@ internal class SimResourceTransformerTest {
         forwarder.startConsumer(consumer)
         forwarder.cancel()
 
-        verify(exactly = 0) { consumer.onFinish(any(), null) }
+        verify(exactly = 0) { consumer.onEvent(any(), SimResourceEvent.Exit) }
     }
 
     @Test
@@ -136,8 +136,8 @@ internal class SimResourceTransformerTest {
         yield()
         forwarder.cancel()
 
-        verify(exactly = 1) { consumer.onStart(any()) }
-        verify(exactly = 1) { consumer.onFinish(any(), null) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Start) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Exit) }
     }
 
     @Test
@@ -155,8 +155,8 @@ internal class SimResourceTransformerTest {
         yield()
         source.cancel()
 
-        verify(exactly = 1) { consumer.onStart(any()) }
-        verify(exactly = 1) { consumer.onFinish(any(), null) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Start) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Exit) }
     }
 
     @Test
@@ -191,7 +191,7 @@ internal class SimResourceTransformerTest {
         }
 
         assertEquals(3000, clock.millis())
-        verify(exactly = 1) { consumer.onCapacityChanged(any(), true) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Capacity) }
     }
 
     @Test

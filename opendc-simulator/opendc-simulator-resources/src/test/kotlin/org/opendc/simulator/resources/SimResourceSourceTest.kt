@@ -77,7 +77,7 @@ class SimResourceSourceTest {
                 provider.capacity = 0.5
             }
             assertEquals(3000, clock.millis())
-            verify(exactly = 1) { consumer.onCapacityChanged(any(), true) }
+            verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Capacity) }
         } finally {
             scheduler.close()
             provider.close()
@@ -119,12 +119,12 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(capacity, clock, scheduler)
 
         val consumer = object : SimResourceConsumer {
-            override fun onStart(ctx: SimResourceContext) {
-                ctx.interrupt()
-            }
-
             override fun onNext(ctx: SimResourceContext): SimResourceCommand {
                 return SimResourceCommand.Exit
+            }
+
+            override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+                ctx.interrupt()
             }
         }
 
@@ -145,8 +145,12 @@ class SimResourceSourceTest {
 
         val consumer = object : SimResourceConsumer {
             var isFirst = true
-            override fun onStart(ctx: SimResourceContext) {
-                resCtx = ctx
+
+            override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+                when (event) {
+                    SimResourceEvent.Start -> resCtx = ctx
+                    else -> {}
+                }
             }
 
             override fun onNext(ctx: SimResourceContext): SimResourceCommand {
@@ -181,7 +185,7 @@ class SimResourceSourceTest {
         val provider = SimResourceSource(capacity, clock, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onStart(any()) }
+        every { consumer.onEvent(any(), eq(SimResourceEvent.Start)) }
             .throws(IllegalStateException())
 
         try {

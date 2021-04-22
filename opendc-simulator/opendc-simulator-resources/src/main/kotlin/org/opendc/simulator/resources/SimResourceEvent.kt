@@ -22,35 +22,27 @@
 
 package org.opendc.simulator.resources
 
-import java.time.Clock
-
 /**
- * The execution context in which a [SimResourceConsumer] runs. It facilitates the communication and control between a
- * resource and a resource consumer.
+ * A resource event that is communicated to the resource consumer.
  */
-public interface SimResourceContext {
+public enum class SimResourceEvent {
     /**
-     * The virtual clock tracking simulation time.
+     * This event is emitted to the consumer when it has started.
      */
-    public val clock: Clock
+    Start,
 
     /**
-     * The resource capacity available at this instant.
+     * This event is emitted to the consumer when it has exited.
      */
-    public val capacity: Double
+    Exit,
 
     /**
-     * The resource processing speed at this instant.
+     * This event is emitted to the consumer when it has started a new resource consumption or idle cycle.
      */
-    public val speed: Double
+    Run,
 
     /**
-     * The amount of work still remaining at this instant.
+     * This event is emitted to the consumer when the capacity of the resource has changed.
      */
-    public val remainingWork: Double
-
-    /**
-     * Ask the resource provider to interrupt its resource.
-     */
-    public fun interrupt()
+    Capacity,
 }

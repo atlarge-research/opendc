@@ -90,26 +90,28 @@ public class SimResourceDistributorMaxMin(
         val remainingWork: Double
             get() = ctx.remainingWork
 
-        override fun onStart(ctx: SimResourceContext) {
-            this.ctx = ctx
-        }
-
         override fun onNext(ctx: SimResourceContext): SimResourceCommand {
             return doNext(ctx.capacity)
         }
 
-        override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
-            super.onFinish(ctx, cause)
+        override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+            when (event) {
+                SimResourceEvent.Start -> {
+                    this.ctx = ctx
+                }
+                SimResourceEvent.Exit -> {
+                    val iterator = _outputs.iterator()
+                    while (iterator.hasNext()) {
+                        val output = iterator.next()
 
-            val iterator = _outputs.iterator()
-            while (iterator.hasNext()) {
-                val output = iterator.next()
+                        // Remove the output from the outputs to prevent ConcurrentModificationException when removing it
+                        // during the call to output.close()
+                        iterator.remove()
 
-                // Remove the output from the outputs to prevent ConcurrentModificationException when removing it
-                // during the call to output.close()
-                iterator.remove()
-
-                output.close()
+                        output.close()
+                    }
+                }
+                else -> {}
             }
         }
     }
@@ -370,13 +372,11 @@ public class SimResourceDistributorMaxMin(
             activeCommand = SimResourceCommand.Consume(work, limit, deadline)
         }
 
-        override fun onFinish(cause: Throwable?) {
+        override fun onFinish() {
             reportOvercommit()
 
             activeCommand = SimResourceCommand.Exit
             provider.cancel()
-
-            super.onFinish(cause)
         }
 
         override fun getRemainingWork(work: Double, speed: Double, duration: Long): Double {

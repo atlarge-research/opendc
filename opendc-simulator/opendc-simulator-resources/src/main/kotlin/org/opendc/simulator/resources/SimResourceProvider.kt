@@ -23,6 +23,8 @@
 package org.opendc.simulator.resources
 
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
  * A [SimResourceProvider] provides some resource of type [R].
@@ -65,15 +67,27 @@ public interface SimResourceProvider : AutoCloseable {
 public suspend fun SimResourceProvider.consume(consumer: SimResourceConsumer) {
     return suspendCancellableCoroutine { cont ->
         startConsumer(object : SimResourceConsumer by consumer {
-            override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
-                assert(!cont.isCompleted) { "Coroutine already completed" }
+            override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+                consumer.onEvent(ctx, event)
 
-                consumer.onFinish(ctx, cause)
+                if (event == SimResourceEvent.Exit && !cont.isCompleted) {
+                    cont.resume(Unit)
+                }
+            }
 
-                cont.resumeWith(if (cause != null) Result.failure(cause) else Result.success(Unit))
+            override fun onFailure(ctx: SimResourceContext, cause: Throwable) {
+                try {
+                    consumer.onFailure(ctx, cause)
+                    cont.resumeWithException(cause)
+                } catch (e: Throwable) {
+                    e.addSuppressed(cause)
+                    cont.resumeWithException(e)
+                }
             }
 
             override fun toString(): String = "SimSuspendingResourceConsumer"
         })
+
+        cont.invokeOnCancellation { cancel() }
     }
 }

@@ -120,8 +120,11 @@ internal class SimResourceSwitchExclusiveTest {
         val workload = object : SimResourceConsumer {
             var isFirst = true
 
-            override fun onStart(ctx: SimResourceContext) {
-                isFirst = true
+            override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+                when (event) {
+                    SimResourceEvent.Start -> isFirst = true
+                    else -> {}
+                }
             }
 
             override fun onNext(ctx: SimResourceContext): SimResourceCommand {

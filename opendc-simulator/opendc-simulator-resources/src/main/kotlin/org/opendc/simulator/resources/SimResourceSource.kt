@@ -110,7 +110,7 @@ public class SimResourceSource(
             scheduler.startSingleTimerTo(this, until, ::flush)
         }
 
-        override fun onFinish(cause: Throwable?) {
+        override fun onFinish() {
             scheduler.cancel(this)
 
             ctx = null
@@ -118,8 +118,6 @@ public class SimResourceSource(
             if (this@SimResourceSource.state != SimResourceState.Stopped) {
                 this@SimResourceSource.state = SimResourceState.Pending
             }
-
-            super.onFinish(cause)
         }
 
         override fun toString(): String = "SimResourceSource.Context[capacity=$capacity]"

@@ -96,10 +96,8 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
 
         override fun onIdle(deadline: Long) = doIdle(deadline)
 
-        override fun onFinish(cause: Throwable?) {
-            doFinish(cause)
-
-            super.onFinish(cause)
+        override fun onFinish() {
+            doFinish(null)
         }
     }
 
@@ -134,6 +132,11 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
          */
         private var command: SimResourceCommand? = null
 
+        private fun updateCapacity() {
+            // Adjust capacity of output resource
+            context.capacity = _inputConsumers.sumByDouble { it._ctx?.capacity ?: 0.0 }
+        }
+
         /* Input */
         override fun push(command: SimResourceCommand) {
             this.command = command
@@ -141,18 +144,6 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
         }
 
         /* SimResourceConsumer */
-        override fun onStart(ctx: SimResourceContext) {
-            _ctx = ctx
-            onCapacityChanged(ctx, false)
-
-            // Make sure we initialize the output if we have not done so yet
-            if (context.state == SimResourceState.Pending) {
-                context.start()
-            }
-
-            onInputStarted(this)
-        }
-
         override fun onNext(ctx: SimResourceContext): SimResourceCommand {
             var next = command
 
@@ -167,13 +158,23 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
             }
         }
 
-        override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
-            // Adjust capacity of output resource
-            context.capacity = _inputConsumers.sumByDouble { it._ctx?.capacity ?: 0.0 }
-        }
+        override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+            when (event) {
+                SimResourceEvent.Start -> {
+                    _ctx = ctx
+                    updateCapacity()
 
-        override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
-            onInputFinished(this)
+                    // Make sure we initialize the output if we have not done so yet
+                    if (context.state == SimResourceState.Pending) {
+                        context.start()
+                    }
+
+                    onInputStarted(this)
+                }
+                SimResourceEvent.Capacity -> updateCapacity()
+                SimResourceEvent.Exit -> onInputFinished(this)
+                else -> {}
+            }
         }
     }
 }
