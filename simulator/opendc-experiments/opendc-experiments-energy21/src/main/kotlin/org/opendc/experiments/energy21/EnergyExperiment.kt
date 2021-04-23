@@ -203,6 +203,10 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
             )
         },
 
+        MSE {
+            override val driver: ScalingDriver = SimpleScalingDriver(MsePowerModel(206.0, 56.4, 1.4))
+        },
+
         ASYMPTOTIC {
             override val driver: ScalingDriver = SimpleScalingDriver(AsymptoticPowerModel(206.0, 56.4, 0.3, false))
         },
