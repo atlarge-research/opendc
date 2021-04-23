@@ -31,9 +31,16 @@ import kotlin.math.min
  */
 public abstract class SimAbstractResourceContext(
     initialCapacity: Double,
-    override val clock: Clock,
+    private val scheduler: SimResourceScheduler,
     private val consumer: SimResourceConsumer
-) : SimResourceContext {
+) : SimResourceContext, SimResourceFlushable {
+
+    /**
+     * The clock of the context.
+     */
+    public override val clock: Clock
+        get() = scheduler.clock
+
     /**
      * The capacity of the resource.
      */
@@ -143,21 +150,12 @@ public abstract class SimAbstractResourceContext(
 
             flush(isIntermediate = true)
             doStop()
-        } catch (cause: Throwable) {
-            doFail(cause)
         } finally {
             isProcessing = false
         }
     }
 
-    /**
-     * Flush the current active resource consumption.
-     *
-     * @param isIntermediate A flag to indicate that the intermediate progress of the resource consumer should be
-     * flushed, but without interrupting the resource consumer to submit a new command. If false, the resource consumer
-     * will be asked to deliver a new command and is essentially interrupted.
-     */
-    public fun flush(isIntermediate: Boolean = false) {
+    override fun flush(isIntermediate: Boolean) {
         // Flush is no-op when the consumer is finished or not yet started
         if (state != SimResourceState.Active) {
             return
@@ -226,7 +224,7 @@ public abstract class SimAbstractResourceContext(
             return
         }
 
-        flush()
+        scheduler.schedule(this, isIntermediate = false)
     }
 
     override fun toString(): String = "SimAbstractResourceContext[capacity=$capacity]"
@@ -234,7 +232,7 @@ public abstract class SimAbstractResourceContext(
     /**
      * A flag to indicate that the resource is currently processing a command.
      */
-    protected var isProcessing: Boolean = false
+    private var isProcessing: Boolean = false
 
     /**
      * The current command that is being processed.

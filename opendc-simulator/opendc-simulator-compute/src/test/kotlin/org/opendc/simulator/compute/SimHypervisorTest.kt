@@ -39,6 +39,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.resources.SimResourceSchedulerTrampoline
 
 /**
  * Test suite for the [SimHypervisor] class.
@@ -93,7 +94,7 @@ internal class SimHypervisorTest {
             )
 
         val machine = SimBareMetalMachine(coroutineContext, clock, model, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(listener)
+        val hypervisor = SimFairShareHypervisor(SimResourceSchedulerTrampoline(coroutineContext, clock), listener)
 
         launch {
             machine.run(hypervisor)
@@ -167,7 +168,7 @@ internal class SimHypervisorTest {
             coroutineContext, clock, model, PerformanceScalingGovernor(),
             SimpleScalingDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(listener)
+        val hypervisor = SimFairShareHypervisor(SimResourceSchedulerTrampoline(coroutineContext, clock), listener)
 
         launch {
             machine.run(hypervisor)

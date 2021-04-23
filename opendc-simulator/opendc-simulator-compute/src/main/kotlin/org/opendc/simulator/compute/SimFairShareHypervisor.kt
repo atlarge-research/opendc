@@ -31,13 +31,13 @@ import org.opendc.simulator.resources.*
  *
  * @param listener The hypervisor listener to use.
  */
-public class SimFairShareHypervisor(private val listener: SimHypervisor.Listener? = null) : SimAbstractHypervisor() {
+public class SimFairShareHypervisor(private val scheduler: SimResourceScheduler, private val listener: SimHypervisor.Listener? = null) : SimAbstractHypervisor() {
 
     override fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean = true
 
     override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch {
         return SimResourceSwitchMaxMin(
-            ctx.clock,
+            scheduler,
             object : SimResourceSwitchMaxMin.Listener {
                 override fun onSliceFinish(
                     switch: SimResourceSwitchMaxMin,

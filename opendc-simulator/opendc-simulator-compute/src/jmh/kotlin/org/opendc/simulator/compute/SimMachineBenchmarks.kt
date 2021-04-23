@@ -34,7 +34,8 @@ import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.SimulationCoroutineScope
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.utils.TimerScheduler
+import org.opendc.simulator.resources.SimResourceScheduler
+import org.opendc.simulator.resources.SimResourceSchedulerTrampoline
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
 
@@ -45,13 +46,13 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineBenchmarks {
     private lateinit var scope: SimulationCoroutineScope
-    private lateinit var scheduler: TimerScheduler<Any>
+    private lateinit var scheduler: SimResourceScheduler
     private lateinit var machineModel: SimMachineModel
 
     @Setup
     fun setUp() {
         scope = SimulationCoroutineScope()
-        scheduler = TimerScheduler(scope.coroutineContext, scope.clock)
+        scheduler = SimResourceSchedulerTrampoline(scope.coroutineContext, scope.clock)
 
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
@@ -61,7 +62,7 @@ class SimMachineBenchmarks {
         )
     }
 
-    @State(Scope.Thread)
+    @State(Scope.Benchmark)
     class Workload {
         lateinit var trace: Sequence<SimTraceWorkload.Fragment>
 
@@ -120,7 +121,7 @@ class SimMachineBenchmarks {
                 coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
                 SimpleScalingDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor()
+            val hypervisor = SimFairShareHypervisor(scheduler)
 
             launch { machine.run(hypervisor) }
 
@@ -142,12 +143,12 @@ class SimMachineBenchmarks {
                 coroutineContext, clock, machineModel, PerformanceScalingGovernor(),
                 SimpleScalingDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor()
+            val hypervisor = SimFairShareHypervisor(scheduler)
 
             launch { machine.run(hypervisor) }
 
             coroutineScope {
-                repeat(2) { i ->
+                repeat(2) {
                     val vm = hypervisor.createMachine(machineModel)
 
                     launch {

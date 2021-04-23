@@ -22,8 +22,6 @@
 
 package org.opendc.simulator.resources
 
-import org.opendc.utils.TimerScheduler
-import java.time.Clock
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -31,13 +29,11 @@ import kotlin.math.min
  * A [SimResourceSource] represents a source for some resource of type [R] that provides bounded processing capacity.
  *
  * @param initialCapacity The initial capacity of the resource.
- * @param clock The virtual clock to track simulation time.
  * @param scheduler The scheduler to schedule the interrupts.
  */
 public class SimResourceSource(
     initialCapacity: Double,
-    private val clock: Clock,
-    private val scheduler: TimerScheduler<Any>
+    private val scheduler: SimResourceScheduler
 ) : SimResourceProvider {
     /**
      * The current processing speed of the resource.
@@ -96,22 +92,21 @@ public class SimResourceSource(
     /**
      * Internal implementation of [SimResourceContext] for this class.
      */
-    private inner class Context(consumer: SimResourceConsumer) : SimAbstractResourceContext(capacity, clock, consumer) {
+    private inner class Context(consumer: SimResourceConsumer) : SimAbstractResourceContext(capacity, scheduler, consumer) {
         override fun onIdle(deadline: Long) {
             // Do not resume if deadline is "infinite"
             if (deadline != Long.MAX_VALUE) {
-                scheduler.startSingleTimerTo(this, deadline) { flush() }
+                scheduler.schedule(this, deadline)
             }
         }
 
         override fun onConsume(work: Double, limit: Double, deadline: Long) {
             val until = min(deadline, clock.millis() + getDuration(work, speed))
-
-            scheduler.startSingleTimerTo(this, until, ::flush)
+            scheduler.schedule(this, until)
         }
 
         override fun onFinish() {
-            scheduler.cancel(this)
+            cancel()
 
             ctx = null
 

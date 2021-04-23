@@ -22,12 +22,10 @@
 
 package org.opendc.simulator.resources
 
-import java.time.Clock
-
 /**
  * A [SimResourceAggregator] that distributes the load equally across the input resources.
  */
-public class SimResourceAggregatorMaxMin(clock: Clock) : SimAbstractResourceAggregator(clock) {
+public class SimResourceAggregatorMaxMin(scheduler: SimResourceScheduler) : SimAbstractResourceAggregator(scheduler) {
     private val consumers = mutableListOf<Input>()
 
     override fun doConsume(work: Double, limit: Double, deadline: Long) {

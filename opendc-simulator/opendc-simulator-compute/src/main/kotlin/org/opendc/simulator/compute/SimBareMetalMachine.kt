@@ -23,7 +23,6 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
 import org.opendc.simulator.compute.cpufreq.ScalingDriver
 import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -60,7 +59,7 @@ public class SimBareMetalMachine(
     /**
      * The [TimerScheduler] to use for scheduling the interrupts.
      */
-    private val scheduler = TimerScheduler<Any>(this.context, clock)
+    private val scheduler = SimResourceSchedulerTrampoline(this.context, clock)
 
     override val cpus: List<SimProcessingUnit> = model.cpus.map { ProcessingUnitImpl(it) }
 
@@ -96,7 +95,6 @@ public class SimBareMetalMachine(
     override fun close() {
         super.close()
 
-        scheduler.close()
         scope.cancel()
     }
 
@@ -107,7 +105,7 @@ public class SimBareMetalMachine(
         /**
          * The actual resource supporting the processing unit.
          */
-        private val source = SimResourceSource(model.frequency, clock, scheduler)
+        private val source = SimResourceSource(model.frequency, scheduler)
 
         override val speed: Double
             get() = source.speed

@@ -22,11 +22,16 @@
 
 package org.opendc.simulator.compute
 
+import java.time.Clock
+import kotlin.coroutines.CoroutineContext
+
 /**
  * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
  */
 public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
     override val id: String = "space-shared"
 
-    override fun create(listener: SimHypervisor.Listener?): SimHypervisor = SimSpaceSharedHypervisor()
+    override fun create(context: CoroutineContext, clock: Clock, listener: SimHypervisor.Listener?): SimHypervisor {
+        return SimSpaceSharedHypervisor()
+    }
 }

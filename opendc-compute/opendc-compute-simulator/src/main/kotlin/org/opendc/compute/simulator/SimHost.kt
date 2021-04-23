@@ -105,6 +105,7 @@ public class SimHost(
      * The hypervisor to run multiple workloads.
      */
     public val hypervisor: SimHypervisor = hypervisor.create(
+        scope.coroutineContext, clock,
         object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,

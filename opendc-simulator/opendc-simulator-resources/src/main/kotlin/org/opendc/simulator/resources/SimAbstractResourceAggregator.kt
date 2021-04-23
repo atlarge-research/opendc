@@ -22,12 +22,10 @@
 
 package org.opendc.simulator.resources
 
-import java.time.Clock
-
 /**
  * Abstract implementation of [SimResourceAggregator].
  */
-public abstract class SimAbstractResourceAggregator(private val clock: Clock) : SimResourceAggregator {
+public abstract class SimAbstractResourceAggregator(private val scheduler: SimResourceScheduler) : SimResourceAggregator {
     /**
      * This method is invoked when the resource consumer consumes resources.
      */
@@ -77,7 +75,7 @@ public abstract class SimAbstractResourceAggregator(private val clock: Clock) : 
 
     protected val outputContext: SimResourceContext
         get() = context
-    private val context = object : SimAbstractResourceContext(0.0, clock, _output) {
+    private val context = object : SimAbstractResourceContext(0.0, scheduler, _output) {
         override val remainingWork: Double
             get() {
                 val now = clock.millis()
