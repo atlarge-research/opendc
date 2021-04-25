@@ -4,10 +4,6 @@ on:
   pull_request:
     branches: [master]
 
-defaults:
-  run:
-    working-directory: simulator
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -56,5 +52,5 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./simulator/build/reports/jacoco/report.xml
+          files: ./build/reports/jacoco/report.xml
           flags: simulator

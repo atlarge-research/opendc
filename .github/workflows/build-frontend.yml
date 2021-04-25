@@ -6,7 +6,7 @@ on:
 
 defaults:
   run:
-    working-directory: frontend
+    working-directory: opendc-web/opendc-web-ui
 
 jobs:
   build:
