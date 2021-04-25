@@ -100,3 +100,6 @@ docker-compose up
 ```
 
 Wait a few seconds and open `http://localhost:8080` in your browser to use OpenDC. We recommend Google Chrome for the best development experience.
+
+## License
+OpenDC is distributed under the MIT license. See [LICENSE.txt](/LICENSE.txt).
