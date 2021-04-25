@@ -18,3 +18,7 @@ trim_trailing_whitespace = false
 # Ensure YAML formatting adheres to standard
 [*.{yml,yaml}]
 indent_size = 2
+
+# ktlint
+[*.{kt, kts}]
+disabled_rules = no-wildcard-imports
