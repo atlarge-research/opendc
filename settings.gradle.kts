@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-rootProject.name = "opendc-simulator"
+rootProject.name = "opendc"
 
 include(":opendc-platform")
 include(":opendc-compute:opendc-compute-api")
@@ -34,7 +34,9 @@ include(":opendc-format")
 include(":opendc-experiments:opendc-experiments-capelin")
 include(":opendc-experiments:opendc-experiments-energy21")
 include(":opendc-experiments:opendc-experiments-serverless20")
-include(":opendc-runner-web")
+include(":opendc-web:opendc-web-api")
+include(":opendc-web:opendc-web-ui")
+include(":opendc-web:opendc-web-runner")
 include(":opendc-simulator:opendc-simulator-core")
 include(":opendc-simulator:opendc-simulator-resources")
 include(":opendc-simulator:opendc-simulator-compute")

@@ -6,7 +6,7 @@ on:
 
 defaults:
   run:
-    working-directory: api
+    working-directory: opendc-web/opendc-web-api
 
 jobs:
   build:
@@ -40,6 +40,6 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./api/.coverage
+          files: opendc-web/opendc-web-api/.coverage
           flags: api
 

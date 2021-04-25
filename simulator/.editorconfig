@@ -1,7 +1,0 @@
-# EditorConfig helps developers define and maintain consistent
-# coding styles between different editors and IDEs
-# editorconfig.org
-
-# ktlint
-[*.{kt, kts}]
-disabled_rules = no-wildcard-imports
