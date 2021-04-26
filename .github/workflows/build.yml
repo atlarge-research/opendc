@@ -1,0 +1,115 @@
+name: Build
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-simulator:
+    name: Build Simulator (Java ${{ matrix.java }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        java: [8, 15]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-${{ matrix.java }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.java }}-gradle-
+      - name: Build with Gradle
+        run: ./gradlew assemble
+      - name: Check with Gradle
+        run: ./gradlew check codeCoverageReport
+      - name: Publish report
+        if: always()
+        uses: mikepenz/action-junit-report@v2
+        with:
+          check_name: test (Java ${{ matrix.java }})
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: reports-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: |
+            ./**/build/reports/**/*
+            ./**/build/test-results/**/*
+          retention-days: 5
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./build/reports/jacoco/report.xml
+          flags: simulator
+  build-api:
+    name: Build API (Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python: [3.8]
+    defaults:
+      run:
+        working-directory: opendc-web/opendc-web-api
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Lint with pylint
+        run: ./check.sh
+      - name: Test with pytest
+        run: pytest --cov=opendc/ --junitxml=.junit-report.xml
+      - name: Publish report
+        if: always()
+        uses: mikepenz/action-junit-report@v2
+        with:
+          check_name: test (Python ${{ matrix.python }})
+          report_paths: '**/.junit-report.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: opendc-web/opendc-web-api/.coverage
+          flags: api
+  build-ui:
+    name: Build UI (Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [14.x]
+    defaults:
+      run:
+        working-directory: opendc-web/opendc-web-ui
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install
+      - run: npm run build --if-present
+      - run: npm test
+        env:
+          CI: true

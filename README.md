@@ -9,7 +9,7 @@ Collaborative Datacenter Simulation and Exploration for Everybody
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](/LICENSE.txt)
 [![Documentation](https://img.shields.io/badge/docs-master-green.svg)](./docs)
 [![GitHub release](https://img.shields.io/github/release/atlarge-research/opendc)](https://github.com/atlarge-research/opendc/releases)
-[![Build](https://github.com/atlarge-research/opendc/actions/workflows/build-simulator.yml/badge.svg)](https://github.com/atlarge-research/opendc/actions/workflows/build-simulator.yml)
+[![Build](https://github.com/atlarge-research/opendc/actions/workflows/build.yml/badge.svg)](https://github.com/atlarge-research/opendc/actions/workflows/build.yml)
 
 -----
 
