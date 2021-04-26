@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,31 @@
  * SOFTWARE.
  */
 
+import org.gradle.api.distribution.DistributionContainer
+
+
 plugins {
-    `dokka-conventions`
-    `jacoco-aggregation`
-    `distribution-conventions`
+    distribution
 }
 
-allprojects {
-    group = "org.opendc"
-    version = "2.0.0"
+tasks.named("assembleDist") {
+    val tasks = getTasksByName("assembleDist", true).filter { it.project != project }
+    dependsOn(tasks)
+}
+
+distributions {
+    main {
+        contents {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+            from("README.md")
+            from("LICENSE.txt")
+
+            // Include the distributions of the sub project.
+            getTasksByName("assembleDist", true)
+                .filter { it.project != project }
+                .map { it.project.the<DistributionContainer>()["main"] }
+                .forEach { with(it.contents) }
+        }
+    }
 }
