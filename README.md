@@ -38,6 +38,7 @@ The documentation is located in the [docs/](docs) directory and is divided as fo
 
 1. [Deployment Guide](docs/deploy.md)
 1. [Architectural Overview](docs/architecture.md)
+1. [Toolchain Setup](docs/toolchain.md)
 1. [Contributing Guide](CONTRIBUTING.md)
 
 ## Contributing
