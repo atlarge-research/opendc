@@ -20,10 +20,31 @@
  * SOFTWARE.
  */
 
+import org.gradle.api.distribution.DistributionContainer
+
+
 plugins {
-    id("org.jetbrains.dokka")
+    distribution
 }
 
-repositories {
-    mavenCentral()
+tasks.named("assembleDist") {
+    val tasks = getTasksByName("assembleDist", true).filter { it.project != project }
+    dependsOn(tasks)
+}
+
+distributions {
+    main {
+        contents {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+            from("README.md")
+            from("LICENSE.txt")
+
+            // Include the distributions of the sub project.
+            getTasksByName("assembleDist", true)
+                .filter { it.project != project }
+                .map { it.project.the<DistributionContainer>()["main"] }
+                .forEach { with(it.contents) }
+        }
+    }
 }

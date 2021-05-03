@@ -23,6 +23,7 @@
 plugins {
     `dokka-conventions`
     `jacoco-aggregation`
+    `distribution-conventions`
 }
 
 allprojects {

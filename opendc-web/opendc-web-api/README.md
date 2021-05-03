@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="../misc/artwork/logo.png" width="100" alt="OpenDC">
+    <img src="../../docs/images/logo.png" width="100" alt="OpenDC">
     <br>
     OpenDC Web Server
 </h1>
@@ -9,7 +9,7 @@
 
 <br>
 
-The OpenDC web server is the bridge between OpenDC's frontend and database. It is built with Flask/SocketIO in Python and implements the OpenAPI-compliant [OpenDC API specification](../opendc-api-spec.yml).
+The OpenDC web server is the bridge between OpenDC's frontend and database. It is built with Flask/SocketIO in Python and implements the OpenAPI-compliant [OpenDC API specification](../../opendc-api-spec.yml).
 
 This document explains a high-level view of the web server architecture ([jump](#architecture)), and describes how to set up the web server for local development ([jump](#setup-for-local-development)).
 
