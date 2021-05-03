@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
-import org.opendc.utils.TimerScheduler
 
 /**
  * A test suite for the [SimResourceTransformer] class.
@@ -42,8 +41,8 @@ internal class SimResourceTransformerTest {
     @Test
     fun testExitImmediately() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(2000.0, clock, scheduler)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val source = SimResourceSource(2000.0, scheduler)
 
         launch {
             source.consume(forwarder)
@@ -57,14 +56,13 @@ internal class SimResourceTransformerTest {
         })
 
         forwarder.close()
-        scheduler.close()
     }
 
     @Test
     fun testExit() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(2000.0, clock, scheduler)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val source = SimResourceSource(2000.0, scheduler)
 
         launch {
             source.consume(forwarder)
@@ -118,14 +116,14 @@ internal class SimResourceTransformerTest {
         forwarder.startConsumer(consumer)
         forwarder.cancel()
 
-        verify(exactly = 0) { consumer.onFinish(any(), null) }
+        verify(exactly = 0) { consumer.onEvent(any(), SimResourceEvent.Exit) }
     }
 
     @Test
     fun testCancelStartedDelegate() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(2000.0, clock, scheduler)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10)
@@ -136,15 +134,15 @@ internal class SimResourceTransformerTest {
         yield()
         forwarder.cancel()
 
-        verify(exactly = 1) { consumer.onStart(any()) }
-        verify(exactly = 1) { consumer.onFinish(any(), null) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Start) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Exit) }
     }
 
     @Test
     fun testCancelPropagation() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(2000.0, clock, scheduler)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10)
@@ -155,15 +153,15 @@ internal class SimResourceTransformerTest {
         yield()
         source.cancel()
 
-        verify(exactly = 1) { consumer.onStart(any()) }
-        verify(exactly = 1) { consumer.onFinish(any(), null) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Start) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Exit) }
     }
 
     @Test
     fun testExitPropagation() = runBlockingSimulation {
         val forwarder = SimResourceForwarder(isCoupled = true)
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(2000.0, clock, scheduler)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Exit
@@ -178,8 +176,8 @@ internal class SimResourceTransformerTest {
     @Test
     fun testAdjustCapacity() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(1.0, clock, scheduler)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val source = SimResourceSource(1.0, scheduler)
 
         val consumer = spyk(SimWorkConsumer(2.0, 1.0))
         source.startConsumer(forwarder)
@@ -191,14 +189,14 @@ internal class SimResourceTransformerTest {
         }
 
         assertEquals(3000, clock.millis())
-        verify(exactly = 1) { consumer.onCapacityChanged(any(), true) }
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Capacity) }
     }
 
     @Test
     fun testTransformExit() = runBlockingSimulation {
         val forwarder = SimResourceTransformer { _, _ -> SimResourceCommand.Exit }
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
-        val source = SimResourceSource(1.0, clock, scheduler)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val source = SimResourceSource(1.0, scheduler)
 
         val consumer = spyk(SimWorkConsumer(2.0, 1.0))
         source.startConsumer(forwarder)

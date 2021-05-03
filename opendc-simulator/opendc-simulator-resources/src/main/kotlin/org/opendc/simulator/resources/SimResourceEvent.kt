@@ -20,24 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
-
-import org.opendc.simulator.compute.workload.SimTraceWorkload
+package org.opendc.simulator.resources
 
 /**
- * Helper function to create simple consumer workload.
+ * A resource event that is communicated to the resource consumer.
  */
-fun createSimpleConsumer(): SimTraceWorkload {
-    return SimTraceWorkload(
-        sequenceOf(
-            SimTraceWorkload.Fragment(1000, 28.0, 1),
-            SimTraceWorkload.Fragment(1000, 3500.0, 1),
-            SimTraceWorkload.Fragment(1000, 0.0, 1),
-            SimTraceWorkload.Fragment(1000, 183.0, 1),
-            SimTraceWorkload.Fragment(1000, 400.0, 1),
-            SimTraceWorkload.Fragment(1000, 100.0, 1),
-            SimTraceWorkload.Fragment(1000, 3000.0, 1),
-            SimTraceWorkload.Fragment(1000, 4500.0, 1),
-        ),
-    )
+public enum class SimResourceEvent {
+    /**
+     * This event is emitted to the consumer when it has started.
+     */
+    Start,
+
+    /**
+     * This event is emitted to the consumer when it has exited.
+     */
+    Exit,
+
+    /**
+     * This event is emitted to the consumer when it has started a new resource consumption or idle cycle.
+     */
+    Run,
+
+    /**
+     * This event is emitted to the consumer when the capacity of the resource has changed.
+     */
+    Capacity,
 }

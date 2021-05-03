@@ -25,6 +25,7 @@ package org.opendc.simulator.resources.consumer
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
+import org.opendc.simulator.resources.SimResourceEvent
 import kotlin.math.min
 
 /**
@@ -53,28 +54,29 @@ public class SimSpeedConsumerAdapter(
         return delegate.onNext(ctx)
     }
 
-    override fun onConfirm(ctx: SimResourceContext, speed: Double) {
-        delegate.onConfirm(ctx, speed)
-
-        this.speed = speed
-    }
-
-    override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
+    override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
         val oldSpeed = speed
 
-        delegate.onCapacityChanged(ctx, isThrottled)
+        delegate.onEvent(ctx, event)
 
-        // Check if the consumer interrupted the consumer and updated the resource consumption. If not, we might
-        // need to update the current speed.
-        if (oldSpeed == speed) {
-            speed = min(ctx.capacity, speed)
+        when (event) {
+            SimResourceEvent.Run -> speed = ctx.speed
+            SimResourceEvent.Capacity -> {
+                // Check if the consumer interrupted the consumer and updated the resource consumption. If not, we might
+                // need to update the current speed.
+                if (oldSpeed == speed) {
+                    speed = min(ctx.capacity, speed)
+                }
+            }
+            SimResourceEvent.Exit -> speed = 0.0
+            else -> {}
         }
     }
 
-    override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
-        super.onFinish(ctx, cause)
-
+    override fun onFailure(ctx: SimResourceContext, cause: Throwable) {
         speed = 0.0
+
+        delegate.onFailure(ctx, cause)
     }
 
     override fun toString(): String = "SimSpeedConsumerAdapter[delegate=$delegate]"

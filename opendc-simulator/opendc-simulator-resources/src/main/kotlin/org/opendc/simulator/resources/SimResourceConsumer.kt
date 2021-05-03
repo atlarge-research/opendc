@@ -30,13 +30,6 @@ package org.opendc.simulator.resources
  */
 public interface SimResourceConsumer {
     /**
-     * This method is invoked when the consumer is started for some resource.
-     *
-     * @param ctx The execution context in which the consumer runs.
-     */
-    public fun onStart(ctx: SimResourceContext) {}
-
-    /**
      * This method is invoked when a resource asks for the next [command][SimResourceCommand] to process, either because
      * the resource finished processing, reached its deadline or was interrupted.
      *
@@ -46,34 +39,18 @@ public interface SimResourceConsumer {
     public fun onNext(ctx: SimResourceContext): SimResourceCommand
 
     /**
-     * This method is invoked when the resource provider confirms that the consumer is running at the given speed.
+     * This method is invoked when an event has occurred.
      *
      * @param ctx The execution context in which the consumer runs.
-     * @param speed The speed at which the consumer runs.
+     * @param event The event that has occurred.
      */
-    public fun onConfirm(ctx: SimResourceContext, speed: Double) {}
+    public fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {}
 
     /**
-     * This is method is invoked when the capacity of the resource changes.
-     *
-     * After being informed of such an event, the consumer might decide to adjust its consumption by interrupting the
-     * resource via [SimResourceContext.interrupt]. Alternatively, the consumer may decide to ignore the event, possibly
-     * causing the active resource command to finish at a later moment than initially planned.
+     * This method is invoked when a resource consumer throws an exception.
      *
      * @param ctx The execution context in which the consumer runs.
-     * @param isThrottled A flag to indicate that the active resource command will be throttled as a result of the
-     * capacity change.
+     * @param cause The cause of the failure.
      */
-    public fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {}
-
-    /**
-     * This method is invoked when the consumer has finished, either because it exited via [SimResourceCommand.Exit],
-     * the resource finished itself, or a failure occurred at the resource.
-     *
-     * Note that throwing an exception in [onStart] or [onNext] is undefined behavior and up to the resource provider.
-     *
-     * @param ctx The execution context in which the consumer ran.
-     * @param cause The cause of the finish in case the resource finished exceptionally.
-     */
-    public fun onFinish(ctx: SimResourceContext, cause: Throwable? = null) {}
+    public fun onFailure(ctx: SimResourceContext, cause: Throwable) {}
 }

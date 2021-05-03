@@ -34,26 +34,28 @@ import org.opendc.simulator.core.runBlockingSimulation
 class SimResourceContextTest {
     @Test
     fun testFlushWithoutCommand() = runBlockingSimulation {
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
-        val context = object : SimAbstractResourceContext(4200.0, clock, consumer) {
+        val context = object : SimAbstractResourceContext(4200.0, scheduler, consumer) {
             override fun onIdle(deadline: Long) {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
-            override fun onFinish(cause: Throwable?) {}
+            override fun onFinish() {}
         }
 
-        context.flush()
+        context.flush(isIntermediate = false)
     }
 
     @Test
     fun testIntermediateFlush() = runBlockingSimulation {
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
 
-        val context = spyk(object : SimAbstractResourceContext(4200.0, clock, consumer) {
+        val context = spyk(object : SimAbstractResourceContext(4200.0, scheduler, consumer) {
             override fun onIdle(deadline: Long) {}
-            override fun onFinish(cause: Throwable?) {}
+            override fun onFinish() {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
         })
 
@@ -66,12 +68,13 @@ class SimResourceContextTest {
 
     @Test
     fun testIntermediateFlushIdle() = runBlockingSimulation {
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
-        val context = spyk(object : SimAbstractResourceContext(4200.0, clock, consumer) {
+        val context = spyk(object : SimAbstractResourceContext(4200.0, scheduler, consumer) {
             override fun onIdle(deadline: Long) {}
-            override fun onFinish(cause: Throwable?) {}
+            override fun onFinish() {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
         })
 
@@ -83,22 +86,62 @@ class SimResourceContextTest {
 
         assertAll(
             { verify(exactly = 2) { context.onIdle(any()) } },
-            { verify(exactly = 1) { context.onFinish(null) } }
+            { verify(exactly = 1) { context.onFinish() } }
         )
     }
 
     @Test
     fun testDoubleStart() = runBlockingSimulation {
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10) andThen SimResourceCommand.Exit
 
-        val context = object : SimAbstractResourceContext(4200.0, clock, consumer) {
+        val context = object : SimAbstractResourceContext(4200.0, scheduler, consumer) {
             override fun onIdle(deadline: Long) {}
-            override fun onFinish(cause: Throwable?) {}
+            override fun onFinish() {}
             override fun onConsume(work: Double, limit: Double, deadline: Long) {}
         }
 
         context.start()
         assertThrows<IllegalStateException> { context.start() }
+    }
+
+    @Test
+    fun testIdempodentCapacityChange() = runBlockingSimulation {
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
+        every { consumer.onNext(any()) } returns SimResourceCommand.Consume(10.0, 1.0) andThen SimResourceCommand.Exit
+
+        val context = object : SimAbstractResourceContext(4200.0, scheduler, consumer) {
+            override fun onIdle(deadline: Long) {}
+            override fun onConsume(work: Double, limit: Double, deadline: Long) {}
+            override fun onFinish() {}
+        }
+
+        context.start()
+        context.capacity = 4200.0
+
+        verify(exactly = 0) { consumer.onEvent(any(), SimResourceEvent.Capacity) }
+    }
+
+    @Test
+    fun testFailureNoInfiniteLoop() = runBlockingSimulation {
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
+        every { consumer.onNext(any()) } returns SimResourceCommand.Exit
+        every { consumer.onEvent(any(), SimResourceEvent.Exit) } throws IllegalStateException("onEvent")
+        every { consumer.onFailure(any(), any()) } throws IllegalStateException("onFailure")
+
+        val context = object : SimAbstractResourceContext(4200.0, scheduler, consumer) {
+            override fun onIdle(deadline: Long) {}
+            override fun onConsume(work: Double, limit: Double, deadline: Long) {}
+            override fun onFinish() {}
+        }
+
+        context.start()
+
+        delay(1)
+
+        verify(exactly = 1) { consumer.onFailure(any(), any()) }
     }
 }

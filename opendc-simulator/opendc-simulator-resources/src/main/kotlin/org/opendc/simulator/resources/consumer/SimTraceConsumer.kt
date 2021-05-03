@@ -25,6 +25,7 @@ package org.opendc.simulator.resources.consumer
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
+import org.opendc.simulator.resources.SimResourceEvent
 
 /**
  * A [SimResourceConsumer] that replays a workload trace consisting of multiple fragments, each indicating the resource
@@ -32,11 +33,6 @@ import org.opendc.simulator.resources.SimResourceContext
  */
 public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResourceConsumer {
     private var iterator: Iterator<Fragment>? = null
-
-    override fun onStart(ctx: SimResourceContext) {
-        check(iterator == null) { "Consumer already running" }
-        iterator = trace.iterator()
-    }
 
     override fun onNext(ctx: SimResourceContext): SimResourceCommand {
         val iterator = checkNotNull(iterator)
@@ -57,8 +53,17 @@ public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResour
         }
     }
 
-    override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
-        iterator = null
+    override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+        when (event) {
+            SimResourceEvent.Start -> {
+                check(iterator == null) { "Consumer already running" }
+                iterator = trace.iterator()
+            }
+            SimResourceEvent.Exit -> {
+                iterator = null
+            }
+            else -> {}
+        }
     }
 
     /**

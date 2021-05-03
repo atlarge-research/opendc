@@ -33,7 +33,6 @@ import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
-import org.opendc.utils.TimerScheduler
 
 /**
  * Test suite for the [SimResourceSwitchExclusive] class.
@@ -45,7 +44,7 @@ internal class SimResourceSwitchExclusiveTest {
      */
     @Test
     fun testTrace() = runBlockingSimulation {
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
 
         val speed = mutableListOf<Double>()
 
@@ -61,7 +60,7 @@ internal class SimResourceSwitchExclusiveTest {
             )
 
         val switch = SimResourceSwitchExclusive()
-        val source = SimResourceSource(3200.0, clock, scheduler)
+        val source = SimResourceSource(3200.0, scheduler)
         val forwarder = SimResourceForwarder()
         val adapter = SimSpeedConsumerAdapter(forwarder, speed::add)
         source.startConsumer(adapter)
@@ -87,14 +86,14 @@ internal class SimResourceSwitchExclusiveTest {
      */
     @Test
     fun testRuntimeWorkload() = runBlockingSimulation {
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
         val workload = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { workload.onNext(any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
 
         val switch = SimResourceSwitchExclusive()
-        val source = SimResourceSource(3200.0, clock, scheduler)
+        val source = SimResourceSource(3200.0, scheduler)
 
         switch.addInput(source)
 
@@ -114,14 +113,17 @@ internal class SimResourceSwitchExclusiveTest {
      */
     @Test
     fun testTwoWorkloads() = runBlockingSimulation {
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
         val workload = object : SimResourceConsumer {
             var isFirst = true
 
-            override fun onStart(ctx: SimResourceContext) {
-                isFirst = true
+            override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+                when (event) {
+                    SimResourceEvent.Start -> isFirst = true
+                    else -> {}
+                }
             }
 
             override fun onNext(ctx: SimResourceContext): SimResourceCommand {
@@ -135,7 +137,7 @@ internal class SimResourceSwitchExclusiveTest {
         }
 
         val switch = SimResourceSwitchExclusive()
-        val source = SimResourceSource(3200.0, clock, scheduler)
+        val source = SimResourceSource(3200.0, scheduler)
 
         switch.addInput(source)
 
@@ -156,14 +158,14 @@ internal class SimResourceSwitchExclusiveTest {
      */
     @Test
     fun testConcurrentWorkloadFails() = runBlockingSimulation {
-        val scheduler = TimerScheduler<Any>(coroutineContext, clock)
+        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
         val workload = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { workload.onNext(any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
 
         val switch = SimResourceSwitchExclusive()
-        val source = SimResourceSource(3200.0, clock, scheduler)
+        val source = SimResourceSource(3200.0, scheduler)
 
         switch.addInput(source)
 

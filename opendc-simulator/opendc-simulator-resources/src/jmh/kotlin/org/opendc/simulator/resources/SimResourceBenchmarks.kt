@@ -26,7 +26,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import org.opendc.simulator.core.SimulationCoroutineScope
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.utils.TimerScheduler
+import org.opendc.simulator.resources.consumer.SimTraceConsumer
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
 
@@ -37,67 +37,76 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimResourceBenchmarks {
     private lateinit var scope: SimulationCoroutineScope
-    private lateinit var scheduler: TimerScheduler<Any>
+    private lateinit var scheduler: SimResourceScheduler
 
     @Setup
     fun setUp() {
         scope = SimulationCoroutineScope()
-        scheduler = TimerScheduler(scope.coroutineContext, scope.clock)
+        scheduler = SimResourceSchedulerTrampoline(scope.coroutineContext, scope.clock)
     }
 
     @State(Scope.Thread)
     class Workload {
-        lateinit var consumers: Array<SimResourceConsumer>
+        lateinit var trace: Sequence<SimTraceConsumer.Fragment>
 
         @Setup
         fun setUp() {
-            consumers = Array(3) { createSimpleConsumer() }
+            trace = sequenceOf(
+                SimTraceConsumer.Fragment(1000, 28.0),
+                SimTraceConsumer.Fragment(1000, 3500.0),
+                SimTraceConsumer.Fragment(1000, 0.0),
+                SimTraceConsumer.Fragment(1000, 183.0),
+                SimTraceConsumer.Fragment(1000, 400.0),
+                SimTraceConsumer.Fragment(1000, 100.0),
+                SimTraceConsumer.Fragment(1000, 3000.0),
+                SimTraceConsumer.Fragment(1000, 4500.0),
+            )
         }
     }
 
     @Benchmark
     fun benchmarkSource(state: Workload) {
         return scope.runBlockingSimulation {
-            val provider = SimResourceSource(4200.0, clock, scheduler)
-            return@runBlockingSimulation provider.consume(state.consumers[0])
+            val provider = SimResourceSource(4200.0, scheduler)
+            return@runBlockingSimulation provider.consume(SimTraceConsumer(state.trace))
         }
     }
 
     @Benchmark
     fun benchmarkForwardOverhead(state: Workload) {
         return scope.runBlockingSimulation {
-            val provider = SimResourceSource(4200.0, clock, scheduler)
+            val provider = SimResourceSource(4200.0, scheduler)
             val forwarder = SimResourceForwarder()
             provider.startConsumer(forwarder)
-            return@runBlockingSimulation forwarder.consume(state.consumers[0])
+            return@runBlockingSimulation forwarder.consume(SimTraceConsumer(state.trace))
         }
     }
 
     @Benchmark
     fun benchmarkSwitchMaxMinSingleConsumer(state: Workload) {
         return scope.runBlockingSimulation {
-            val switch = SimResourceSwitchMaxMin(clock)
+            val switch = SimResourceSwitchMaxMin(scheduler)
 
-            switch.addInput(SimResourceSource(3000.0, clock, scheduler))
-            switch.addInput(SimResourceSource(3000.0, clock, scheduler))
+            switch.addInput(SimResourceSource(3000.0, scheduler))
+            switch.addInput(SimResourceSource(3000.0, scheduler))
 
             val provider = switch.addOutput(3500.0)
-            return@runBlockingSimulation provider.consume(state.consumers[0])
+            return@runBlockingSimulation provider.consume(SimTraceConsumer(state.trace))
         }
     }
 
     @Benchmark
     fun benchmarkSwitchMaxMinTripleConsumer(state: Workload) {
         return scope.runBlockingSimulation {
-            val switch = SimResourceSwitchMaxMin(clock)
+            val switch = SimResourceSwitchMaxMin(scheduler)
 
-            switch.addInput(SimResourceSource(3000.0, clock, scheduler))
-            switch.addInput(SimResourceSource(3000.0, clock, scheduler))
+            switch.addInput(SimResourceSource(3000.0, scheduler))
+            switch.addInput(SimResourceSource(3000.0, scheduler))
 
             repeat(3) { i ->
                 launch {
                     val provider = switch.addOutput(3500.0)
-                    provider.consume(state.consumers[i])
+                    provider.consume(SimTraceConsumer(state.trace))
                 }
             }
         }
@@ -108,11 +117,11 @@ class SimResourceBenchmarks {
         return scope.runBlockingSimulation {
             val switch = SimResourceSwitchExclusive()
 
-            switch.addInput(SimResourceSource(3000.0, clock, scheduler))
-            switch.addInput(SimResourceSource(3000.0, clock, scheduler))
+            switch.addInput(SimResourceSource(3000.0, scheduler))
+            switch.addInput(SimResourceSource(3000.0, scheduler))
 
             val provider = switch.addOutput(3500.0)
-            return@runBlockingSimulation provider.consume(state.consumers[0])
+            return@runBlockingSimulation provider.consume(SimTraceConsumer(state.trace))
         }
     }
 
@@ -121,13 +130,13 @@ class SimResourceBenchmarks {
         return scope.runBlockingSimulation {
             val switch = SimResourceSwitchExclusive()
 
-            switch.addInput(SimResourceSource(3000.0, clock, scheduler))
-            switch.addInput(SimResourceSource(3000.0, clock, scheduler))
+            switch.addInput(SimResourceSource(3000.0, scheduler))
+            switch.addInput(SimResourceSource(3000.0, scheduler))
 
-            repeat(2) { i ->
+            repeat(2) {
                 launch {
                     val provider = switch.addOutput(3500.0)
-                    provider.consume(state.consumers[i])
+                    provider.consume(SimTraceConsumer(state.trace))
                 }
             }
         }

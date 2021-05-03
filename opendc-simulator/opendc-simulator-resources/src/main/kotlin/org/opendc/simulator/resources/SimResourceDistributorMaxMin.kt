@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.resources
 
-import java.time.Clock
 import kotlin.math.max
 import kotlin.math.min
 
@@ -31,7 +30,7 @@ import kotlin.math.min
  */
 public class SimResourceDistributorMaxMin(
     override val input: SimResourceProvider,
-    private val clock: Clock,
+    private val scheduler: SimResourceScheduler,
     private val listener: Listener? = null
 ) : SimResourceDistributor {
     override val outputs: Set<SimResourceProvider>
@@ -90,26 +89,28 @@ public class SimResourceDistributorMaxMin(
         val remainingWork: Double
             get() = ctx.remainingWork
 
-        override fun onStart(ctx: SimResourceContext) {
-            this.ctx = ctx
-        }
-
         override fun onNext(ctx: SimResourceContext): SimResourceCommand {
             return doNext(ctx.capacity)
         }
 
-        override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
-            super.onFinish(ctx, cause)
+        override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+            when (event) {
+                SimResourceEvent.Start -> {
+                    this.ctx = ctx
+                }
+                SimResourceEvent.Exit -> {
+                    val iterator = _outputs.iterator()
+                    while (iterator.hasNext()) {
+                        val output = iterator.next()
 
-            val iterator = _outputs.iterator()
-            while (iterator.hasNext()) {
-                val output = iterator.next()
+                        // Remove the output from the outputs to prevent ConcurrentModificationException when removing it
+                        // during the call to output.close()
+                        iterator.remove()
 
-                // Remove the output from the outputs to prevent ConcurrentModificationException when removing it
-                // during the call to output.close()
-                iterator.remove()
-
-                output.close()
+                        output.close()
+                    }
+                }
+                else -> {}
             }
         }
     }
@@ -218,7 +219,7 @@ public class SimResourceDistributorMaxMin(
             }
         }
 
-        assert(deadline >= clock.millis()) { "Deadline already passed" }
+        assert(deadline >= scheduler.clock.millis()) { "Deadline already passed" }
 
         this.totalRequestedSpeed = totalRequestedSpeed
         this.totalRequestedWork = totalRequestedWork
@@ -335,7 +336,7 @@ public class SimResourceDistributorMaxMin(
     private inner class OutputContext(
         private val provider: OutputProvider,
         consumer: SimResourceConsumer
-    ) : SimAbstractResourceContext(provider.capacity, clock, consumer), Comparable<OutputContext> {
+    ) : SimAbstractResourceContext(provider.capacity, scheduler, consumer), Comparable<OutputContext> {
         /**
          * The current command that is processed by the vCPU.
          */
@@ -370,13 +371,11 @@ public class SimResourceDistributorMaxMin(
             activeCommand = SimResourceCommand.Consume(work, limit, deadline)
         }
 
-        override fun onFinish(cause: Throwable?) {
+        override fun onFinish() {
             reportOvercommit()
 
             activeCommand = SimResourceCommand.Exit
             provider.cancel()
-
-            super.onFinish(cause)
         }
 
         override fun getRemainingWork(work: Double, speed: Double, duration: Long): Double {
@@ -402,6 +401,8 @@ public class SimResourceDistributorMaxMin(
             }
         }
 
+        private var isProcessing: Boolean = false
+
         override fun interrupt() {
             // Prevent users from interrupting the CPU while it is constructing its next command, this will only lead
             // to infinite recursion.
@@ -409,10 +410,16 @@ public class SimResourceDistributorMaxMin(
                 return
             }
 
-            super.interrupt()
+            try {
+                isProcessing = false
 
-            // Force the scheduler to re-schedule
-            schedule()
+                super.interrupt()
+
+                // Force the scheduler to re-schedule
+                schedule()
+            } finally {
+                isProcessing = true
+            }
         }
 
         override fun compareTo(other: OutputContext): Int = allowedSpeed.compareTo(other.allowedSpeed)

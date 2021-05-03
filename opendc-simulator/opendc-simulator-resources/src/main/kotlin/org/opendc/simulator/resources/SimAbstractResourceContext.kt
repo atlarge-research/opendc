@@ -31,9 +31,16 @@ import kotlin.math.min
  */
 public abstract class SimAbstractResourceContext(
     initialCapacity: Double,
-    override val clock: Clock,
+    private val scheduler: SimResourceScheduler,
     private val consumer: SimResourceConsumer
-) : SimResourceContext {
+) : SimResourceContext, SimResourceFlushable {
+
+    /**
+     * The clock of the context.
+     */
+    public override val clock: Clock
+        get() = scheduler.clock
+
     /**
      * The capacity of the resource.
      */
@@ -75,7 +82,7 @@ public abstract class SimAbstractResourceContext(
     /**
      * The current processing speed of the resource.
      */
-    public var speed: Double = 0.0
+    final override var speed: Double = 0.0
         private set
 
     /**
@@ -92,9 +99,7 @@ public abstract class SimAbstractResourceContext(
     /**
      * This method is invoked when the resource consumer has finished.
      */
-    public open fun onFinish(cause: Throwable?) {
-        consumer.onFinish(this, cause)
-    }
+    public abstract fun onFinish()
 
     /**
      * Get the remaining work to process after a resource consumption.
@@ -126,10 +131,10 @@ public abstract class SimAbstractResourceContext(
         latestFlush = now
 
         try {
-            consumer.onStart(this)
+            consumer.onEvent(this, SimResourceEvent.Start)
             activeCommand = interpret(consumer.onNext(this), now)
         } catch (cause: Throwable) {
-            doStop(cause)
+            doFail(cause)
         } finally {
             isProcessing = false
         }
@@ -144,22 +149,13 @@ public abstract class SimAbstractResourceContext(
             latestFlush = clock.millis()
 
             flush(isIntermediate = true)
-            doStop(null)
-        } catch (cause: Throwable) {
-            doStop(cause)
+            doStop()
         } finally {
             isProcessing = false
         }
     }
 
-    /**
-     * Flush the current active resource consumption.
-     *
-     * @param isIntermediate A flag to indicate that the intermediate progress of the resource consumer should be
-     * flushed, but without interrupting the resource consumer to submit a new command. If false, the resource consumer
-     * will be asked to deliver a new command and is essentially interrupted.
-     */
-    public fun flush(isIntermediate: Boolean = false) {
+    override fun flush(isIntermediate: Boolean) {
         // Flush is no-op when the consumer is finished or not yet started
         if (state != SimResourceState.Active) {
             return
@@ -214,7 +210,7 @@ public abstract class SimAbstractResourceContext(
             // Flush remaining work cache
             _remainingWorkFlush = Long.MIN_VALUE
         } catch (cause: Throwable) {
-            doStop(cause)
+            doFail(cause)
         } finally {
             latestFlush = now
             isProcessing = false
@@ -228,7 +224,7 @@ public abstract class SimAbstractResourceContext(
             return
         }
 
-        flush()
+        scheduler.schedule(this, isIntermediate = false)
     }
 
     override fun toString(): String = "SimAbstractResourceContext[capacity=$capacity]"
@@ -236,7 +232,7 @@ public abstract class SimAbstractResourceContext(
     /**
      * A flag to indicate that the resource is currently processing a command.
      */
-    protected var isProcessing: Boolean = false
+    private var isProcessing: Boolean = false
 
     /**
      * The current command that is being processed.
@@ -251,13 +247,18 @@ public abstract class SimAbstractResourceContext(
     /**
      * Finish the consumer and resource provider.
      */
-    private fun doStop(cause: Throwable?) {
+    private fun doStop() {
         val state = state
         this.state = SimResourceState.Stopped
 
         if (state == SimResourceState.Active) {
             activeCommand = null
-            onFinish(cause)
+            try {
+                consumer.onEvent(this, SimResourceEvent.Exit)
+                onFinish()
+            } catch (cause: Throwable) {
+                doFail(cause)
+            }
         }
     }
 
@@ -272,9 +273,9 @@ public abstract class SimAbstractResourceContext(
                 require(deadline >= now) { "Deadline already passed" }
 
                 speed = 0.0
-                consumer.onConfirm(this, 0.0)
 
                 onIdle(deadline)
+                consumer.onEvent(this, SimResourceEvent.Run)
             }
             is SimResourceCommand.Consume -> {
                 val work = command.work
@@ -284,14 +285,13 @@ public abstract class SimAbstractResourceContext(
                 require(deadline >= now) { "Deadline already passed" }
 
                 speed = min(capacity, limit)
-                consumer.onConfirm(this, speed)
-
                 onConsume(work, limit, deadline)
+                consumer.onEvent(this, SimResourceEvent.Run)
             }
             is SimResourceCommand.Exit -> {
                 speed = 0.0
 
-                doStop(null)
+                doStop()
 
                 // No need to set the next active command
                 return null
@@ -319,6 +319,23 @@ public abstract class SimAbstractResourceContext(
     }
 
     /**
+     * Fail the resource consumer.
+     */
+    private fun doFail(cause: Throwable) {
+        state = SimResourceState.Stopped
+        activeCommand = null
+
+        try {
+            consumer.onFailure(this, cause)
+        } catch (e: Throwable) {
+            e.addSuppressed(cause)
+            e.printStackTrace()
+        }
+
+        onFinish()
+    }
+
+    /**
      * Indicate that the capacity of the resource has changed.
      */
     private fun onCapacityChange() {
@@ -328,7 +345,8 @@ public abstract class SimAbstractResourceContext(
         }
 
         val isThrottled = speed > capacity
-        consumer.onCapacityChanged(this, isThrottled)
+
+        consumer.onEvent(this, SimResourceEvent.Capacity)
 
         // Optimization: only flush changes if the new capacity cannot satisfy the active resource command.
         // Alternatively, if the consumer already interrupts the resource, the fast-path will be taken in flush().

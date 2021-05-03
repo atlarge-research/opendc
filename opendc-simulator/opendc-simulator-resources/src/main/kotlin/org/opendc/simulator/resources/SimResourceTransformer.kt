@@ -75,7 +75,7 @@ public class SimResourceTransformer(
 
         if (delegate != null && ctx != null) {
             this.delegate = null
-            delegate.onFinish(ctx)
+            delegate.onEvent(ctx, SimResourceEvent.Exit)
         }
     }
 
@@ -88,10 +88,6 @@ public class SimResourceTransformer(
             this.ctx = null
             ctx.interrupt()
         }
-    }
-
-    override fun onStart(ctx: SimResourceContext) {
-        this.ctx = ctx
     }
 
     override fun onNext(ctx: SimResourceContext): SimResourceCommand {
@@ -110,7 +106,7 @@ public class SimResourceTransformer(
                 // reset beforehand the existing state and check whether it has been updated afterwards
                 reset()
 
-                delegate.onFinish(ctx)
+                delegate.onEvent(ctx, SimResourceEvent.Exit)
 
                 if (isCoupled || state == SimResourceState.Stopped)
                     SimResourceCommand.Exit
@@ -124,21 +120,31 @@ public class SimResourceTransformer(
         }
     }
 
-    override fun onConfirm(ctx: SimResourceContext, speed: Double) {
-        delegate?.onConfirm(ctx, speed)
+    override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+        when (event) {
+            SimResourceEvent.Start -> {
+                this.ctx = ctx
+            }
+            SimResourceEvent.Exit -> {
+                this.ctx = null
+
+                val delegate = delegate
+                if (delegate != null) {
+                    reset()
+                    delegate.onEvent(ctx, SimResourceEvent.Exit)
+                }
+            }
+            else -> delegate?.onEvent(ctx, event)
+        }
     }
 
-    override fun onCapacityChanged(ctx: SimResourceContext, isThrottled: Boolean) {
-        delegate?.onCapacityChanged(ctx, isThrottled)
-    }
-
-    override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
+    override fun onFailure(ctx: SimResourceContext, cause: Throwable) {
         this.ctx = null
 
         val delegate = delegate
         if (delegate != null) {
             reset()
-            delegate.onFinish(ctx, cause)
+            delegate.onFailure(ctx, cause)
         }
     }
 
@@ -147,7 +153,7 @@ public class SimResourceTransformer(
      */
     private fun start() {
         val delegate = delegate ?: return
-        delegate.onStart(checkNotNull(ctx))
+        delegate.onEvent(checkNotNull(ctx), SimResourceEvent.Start)
 
         hasDelegateStarted = true
     }

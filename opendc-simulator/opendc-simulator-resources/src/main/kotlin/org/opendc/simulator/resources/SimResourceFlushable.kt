@@ -22,22 +22,16 @@
 
 package org.opendc.simulator.resources
 
-import org.opendc.simulator.resources.consumer.SimTraceConsumer
-
 /**
- * Helper function to create simple consumer workload.
+ * An interface used by the [SimResourceScheduler] to flush the progress of resource consumer.
  */
-fun createSimpleConsumer(): SimResourceConsumer {
-    return SimTraceConsumer(
-        sequenceOf(
-            SimTraceConsumer.Fragment(1000, 28.0),
-            SimTraceConsumer.Fragment(1000, 3500.0),
-            SimTraceConsumer.Fragment(1000, 0.0),
-            SimTraceConsumer.Fragment(1000, 183.0),
-            SimTraceConsumer.Fragment(1000, 400.0),
-            SimTraceConsumer.Fragment(1000, 100.0),
-            SimTraceConsumer.Fragment(1000, 3000.0),
-            SimTraceConsumer.Fragment(1000, 4500.0),
-        ),
-    )
+public interface SimResourceFlushable {
+    /**
+     * Flush the current active resource consumption.
+     *
+     * @param isIntermediate A flag to indicate that the intermediate progress of the resource consumer should be
+     * flushed, but without interrupting the resource consumer to submit a new command. If false, the resource consumer
+     * will be asked to deliver a new command and is essentially interrupted.
+     */
+    public fun flush(isIntermediate: Boolean)
 }

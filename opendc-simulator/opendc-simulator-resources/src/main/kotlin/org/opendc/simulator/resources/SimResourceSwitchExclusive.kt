@@ -66,10 +66,13 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
         availableResources += forwarder
 
         input.startConsumer(object : SimResourceConsumer by forwarder {
-            override fun onFinish(ctx: SimResourceContext, cause: Throwable?) {
-                // De-register the input after it has finished
-                _inputs -= input
-                forwarder.onFinish(ctx, cause)
+            override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+                if (event == SimResourceEvent.Exit) {
+                    // De-register the input after it has finished
+                    _inputs -= input
+                }
+
+                forwarder.onEvent(ctx, event)
             }
         })
     }
