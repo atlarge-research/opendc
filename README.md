@@ -13,7 +13,7 @@ Collaborative Datacenter Simulation and Exploration for Everybody
 
 -----
 
-OpenDC is an open-source simulation platform for datacenters aimed at both research and education.
+OpenDC is a free and open-source platform for datacenter simulation aimed at both research and education.
 
 ![Datacenter construction in OpenDC](docs/images/opendc-frontend-construction.png)
 
@@ -24,6 +24,10 @@ datacenters perform under different workloads and schedulers (see below).
 
 The simulator is accessible both as a ready-to-use website hosted by us at [opendc.org](https://opendc.org), and as
 source code that users can run locally on their own machine, through Docker.
+
+To learn more
+about OpenDC, have a look through our paper [OpenDC 2.0](https://atlarge-research.com/pdfs/ccgrid21-opendc-paper.pdf)
+or on our [vision](https://atlarge-research.com/pdfs/opendc-vision17ispdc_cr.pdf).
 
 🛠 OpenDC is a project by the [@Large Research Group](https://atlarge-research.com).
 
@@ -39,6 +43,7 @@ The documentation is located in the [docs/](docs) directory and is divided as fo
 1. [Deployment Guide](docs/deploy.md)
 1. [Architectural Overview](docs/architecture.md)
 1. [Toolchain Setup](docs/toolchain.md)
+1. [Research with OpenDC](docs/research.md)
 1. [Contributing Guide](CONTRIBUTING.md)
 
 ## Contributing
