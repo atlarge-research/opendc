@@ -85,6 +85,9 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
         _speed = DoubleArray(model.cpus.size) { 0.0 }
         var totalSpeed = 0.0
 
+        // Before the workload starts, initialize the initial power draw
+        updateUsage(0.0)
+
         workload.onStart(ctx)
 
         for (cpu in cpus) {
