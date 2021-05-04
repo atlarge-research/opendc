@@ -22,8 +22,6 @@
 
 package org.opendc.experiments.capelin
 
-import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -45,7 +43,6 @@ import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 
 /**
@@ -78,11 +75,7 @@ class CapelinIntegrationTest {
         val environmentReader = createTestEnvironmentReader()
         lateinit var monitorResults: ComputeMetrics
 
-        val meterProvider: MeterProvider = SdkMeterProvider
-            .builder()
-            .setClock(clock.toOtelClock())
-            .build()
-
+        val meterProvider = createMeterProvider(clock)
         withComputeService(clock, meterProvider, environmentReader, allocationPolicy) { scheduler ->
             val failureDomain = if (failures) {
                 println("ENABLING failures")
@@ -138,10 +131,7 @@ class CapelinIntegrationTest {
         val traceReader = createTestTraceReader(0.5, seed)
         val environmentReader = createTestEnvironmentReader("single")
 
-        val meterProvider: MeterProvider = SdkMeterProvider
-            .builder()
-            .setClock(clock.toOtelClock())
-            .build()
+        val meterProvider = createMeterProvider(clock)
 
         withComputeService(clock, meterProvider, environmentReader, allocationPolicy) { scheduler ->
             withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
