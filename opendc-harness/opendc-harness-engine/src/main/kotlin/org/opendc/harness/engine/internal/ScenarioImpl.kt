@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,30 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.harness.engine.internal
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.harness.api.ExperimentDefinition
+import org.opendc.harness.api.Parameter
+import org.opendc.harness.api.Scenario
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness:opendc-harness-engine"))
-    implementation(project(":opendc-serverless:opendc-serverless-service"))
-    implementation(project(":opendc-serverless:opendc-serverless-simulator"))
-    implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
-    implementation(project(":opendc-harness:opendc-harness-cli"))
-    implementation("io.github.microutils:kotlin-logging")
+/**
+ * Internal implementation of a [Scenario].
+ */
+internal data class ScenarioImpl(
+    override val id: Int,
+    override val experiment: ExperimentDefinition,
+    val parameters: Map<Parameter<*>, Any?>
+) : Scenario {
 
-    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
-    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
+    override fun <T> get(param: Parameter<T>): T {
+        if (!parameters.containsKey(param)) {
+            throw IllegalArgumentException("Unknown parameter for this scenario.")
+        }
+
+        // This cast should always succeed
+        @Suppress("UNCHECKED_CAST")
+        return parameters[param] as T
     }
+
+    override fun toString(): String = "Scenario"
 }

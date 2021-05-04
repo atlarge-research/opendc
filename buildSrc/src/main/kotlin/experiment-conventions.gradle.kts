@@ -25,7 +25,8 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":opendc-harness"))
+    implementation(project(":opendc-harness:opendc-harness-engine"))
+    runtimeOnly(project(":opendc-harness:opendc-harness-junit5"))
 }
 
 tasks.register<Test>("experiment") {

@@ -31,13 +31,13 @@ plugins {
 }
 
 application {
-    mainClass.set("org.opendc.harness.runner.console.ConsoleRunnerKt")
+    mainClass.set("org.opendc.harness.runner.cli.ConsoleRunnerKt")
     applicationDefaultJvmArgs = listOf("-Xms2500M")
 }
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
+    api(project(":opendc-harness:opendc-harness-engine"))
     implementation(project(":opendc-format"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-simulator:opendc-simulator-compute"))

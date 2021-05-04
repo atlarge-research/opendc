@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,28 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.harness.engine.internal
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `experiment-conventions`
-    `testing-conventions`
-}
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
+import org.opendc.harness.api.ExperimentDefinition
+import org.opendc.harness.engine.discovery.Discovery
+import org.opendc.harness.engine.discovery.DiscoveryProvider
+import org.opendc.harness.engine.discovery.DiscoveryRequest
 
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness:opendc-harness-engine"))
-    implementation(project(":opendc-serverless:opendc-serverless-service"))
-    implementation(project(":opendc-serverless:opendc-serverless-simulator"))
-    implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
-    implementation(project(":opendc-harness:opendc-harness-cli"))
-    implementation("io.github.microutils:kotlin-logging")
+/**
+ * A composite [Discovery] instance that combines the results of multiple delegate instances.
+ */
+internal class CompositeDiscovery(providers: Iterable<DiscoveryProvider>) : Discovery {
+    /**
+     * The [Discovery] instances to delegate to.
+     */
+    private val delegates = providers.map { it.create() }
 
-    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
-    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
+    @OptIn(FlowPreview::class)
+    override fun discover(request: DiscoveryRequest): Flow<ExperimentDefinition> {
+        return delegates.asFlow()
+            .map { it.discover(request) }
+            .flattenMerge(delegates.size)
     }
 }

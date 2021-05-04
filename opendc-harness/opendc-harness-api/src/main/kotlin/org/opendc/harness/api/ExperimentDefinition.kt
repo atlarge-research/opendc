@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,20 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.harness.api
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `experiment-conventions`
-    `testing-conventions`
-}
-
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness:opendc-harness-engine"))
-    implementation(project(":opendc-serverless:opendc-serverless-service"))
-    implementation(project(":opendc-serverless:opendc-serverless-simulator"))
-    implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
-    implementation(project(":opendc-harness:opendc-harness-cli"))
-    implementation("io.github.microutils:kotlin-logging")
-
-    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
-    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
-}
+/**
+ * A definition for a repeatable experiment which consists of multiple scenarios derived from pre-defined experiment
+ * parameters.
+ *
+ * @property name The name of the experiment.
+ * @property parameters The parameters of the experiments.
+ * @property evaluator The function to evaluate a single experiment trial.
+ * @property meta The metadata for the experiment.
+ */
+public data class ExperimentDefinition(
+    val name: String,
+    val parameters: Set<Parameter<*>>,
+    val evaluator: (Trial) -> Unit,
+    val meta: Map<String, Any> = emptyMap()
+)

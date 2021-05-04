@@ -21,25 +21,3 @@
  */
 
 description = "Harness for defining repeatable experiments using OpenDC"
-
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
-
-dependencies {
-    api(platform(project(":opendc-platform")))
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    api("org.junit.platform:junit-platform-commons:${versions.junitPlatform}")
-
-    implementation("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")
-    implementation("io.github.classgraph:classgraph:${versions["classgraph"]}")
-    implementation("io.github.microutils:kotlin-logging")
-
-    implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
-    implementation("me.tongfei:progressbar:${versions["progressbar"]}")
-
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
-}
