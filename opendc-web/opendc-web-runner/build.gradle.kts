@@ -42,7 +42,10 @@ dependencies {
 
     implementation(libs.kotlin.logging)
     implementation(libs.clikt)
-    implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.module.kotlin) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
+    implementation(kotlin("reflect"))
     implementation(libs.sentry.log4j2)
     implementation(libs.mongodb)
 

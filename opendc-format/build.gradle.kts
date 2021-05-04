@@ -35,7 +35,10 @@ dependencies {
     api(projects.opendcWorkflow.opendcWorkflowApi)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcCompute.opendcComputeSimulator)
-    api(libs.jackson.module.kotlin)
+    api(libs.jackson.module.kotlin) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
+    implementation(kotlin("reflect"))
 
     implementation(libs.parquet)
     implementation(libs.hadoop.client) {
