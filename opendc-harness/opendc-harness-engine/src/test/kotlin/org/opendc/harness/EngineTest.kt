@@ -50,7 +50,7 @@ internal class EngineTest {
     @Test
     fun discovery() {
         runBlocking {
-            val discovery = DiscoveryProvider.findById("dsl")?.create()
+            val discovery = DiscoveryProvider.findById("dsl")?.create(Thread.currentThread().contextClassLoader)
             assertNotNull(discovery)
             val res = mutableListOf<ExperimentDefinition>()
             discovery?.discover(DiscoveryRequest())?.toList(res)

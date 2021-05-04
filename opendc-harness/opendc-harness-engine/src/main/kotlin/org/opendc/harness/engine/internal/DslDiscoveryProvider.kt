@@ -32,5 +32,5 @@ import org.opendc.harness.engine.discovery.DiscoveryProvider
 public class DslDiscoveryProvider : DiscoveryProvider {
     override val id: String = "dsl"
 
-    override fun create(): Discovery = DslDiscovery()
+    override fun create(classLoader: ClassLoader): Discovery = DslDiscovery(classLoader)
 }

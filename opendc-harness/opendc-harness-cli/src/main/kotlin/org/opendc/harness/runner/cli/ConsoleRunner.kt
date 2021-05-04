@@ -23,16 +23,23 @@
 package org.opendc.harness.runner.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.arguments.unique
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.unique
+import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import mu.KotlinLogging
+import org.junit.platform.commons.util.ClassLoaderUtils
 import org.opendc.harness.engine.ExperimentEngineLauncher
 import org.opendc.harness.engine.discovery.DiscoveryProvider
 import org.opendc.harness.engine.discovery.DiscoveryRequest
 import org.opendc.harness.engine.discovery.DiscoverySelector
 import org.opendc.harness.engine.scheduler.ThreadPoolExperimentScheduler
+import java.net.URLClassLoader
 
 /**
  * The logger for this experiment runner.
@@ -53,23 +60,38 @@ public class ConsoleRunner : CliktCommand(name = "opendc-harness") {
     /**
      * The selected experiments to run by name.
      */
-    private val experiments by option("-e", "--experiments", help = "Names of experiments to explore")
-        .multiple(emptyList())
+    private val experiments by argument(help = "Experiments to explore")
+        .multiple()
+        .unique()
 
     /**
      * The maximum number of worker threads to use.
      */
     private val parallelism by option("-p", "--parallelism", help = "Maximum number of concurrent simulation runs")
         .int()
-        .default(Runtime.getRuntime().availableProcessors())
+        .default(Runtime.getRuntime().availableProcessors() - 1)
+
+    /**
+     * Additional classpath entries to load.
+     */
+    private val additionalClasspathEntries by option("--class-path", help = "Additional classpath entries to load")
+        .file(mustExist = true)
+        .multiple()
+        .unique()
 
     override fun run() {
         logger.info { "Starting OpenDC Console Experiment Runner" }
 
-        val discovery = DiscoveryProvider.createComposite()
+        val classLoader = createClassLoader()
+        // TODO: Add way to specify class loader for scheduler
+        Thread.currentThread().contextClassLoader = classLoader
+
+        val discovery = DiscoveryProvider.createComposite(classLoader)
         val experiments = discovery.discover(
             DiscoveryRequest(
-                selectors = experiments.map { DiscoverySelector.Name(it) }
+                selectors = experiments.flatMap {
+                    listOf(DiscoverySelector.Name(it), DiscoverySelector.Meta("class.name", it))
+                }
             )
         )
 
@@ -90,6 +112,30 @@ public class ConsoleRunner : CliktCommand(name = "opendc-harness") {
         }
 
         logger.info { "Finished all experiments. Exiting." }
+    }
+
+    /**
+     * Create a [ClassLoader] that is used to load the
+     */
+    private fun createClassLoader(): ClassLoader {
+        val parent = ClassLoaderUtils.getDefaultClassLoader()
+
+        if (additionalClasspathEntries.isNotEmpty()) {
+            val urls = additionalClasspathEntries.flatMap { file ->
+                if (file.isDirectory) {
+                    file.walk()
+                        .filter { it.extension == "jar" }
+                        .map { it.toURI().toURL() }
+                        .toList()
+                } else {
+                    listOf(file.toURI().toURL())
+                }
+            }
+
+            return URLClassLoader.newInstance(urls.toTypedArray(), parent)
+        }
+
+        return parent
     }
 }
 

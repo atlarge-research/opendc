@@ -36,7 +36,7 @@ import org.opendc.harness.engine.discovery.DiscoverySelector
 /**
  * A [Discovery] implementation that discovers [Experiment] instances on the classpath.
  */
-internal class DslDiscovery : Discovery {
+internal class DslDiscovery(private val classLoader: ClassLoader) : Discovery {
     /*
      * Lazily memoize the results of the classpath scan.
      */
@@ -84,6 +84,7 @@ internal class DslDiscovery : Discovery {
      */
     private fun scan(): ScanResult {
         return ClassGraph()
+            .addClassLoader(classLoader)
             .enableClassInfo()
             .enableExternalClasses()
             .ignoreClassVisibility()

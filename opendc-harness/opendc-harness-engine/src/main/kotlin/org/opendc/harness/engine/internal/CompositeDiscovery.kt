@@ -32,11 +32,11 @@ import org.opendc.harness.engine.discovery.DiscoveryRequest
 /**
  * A composite [Discovery] instance that combines the results of multiple delegate instances.
  */
-internal class CompositeDiscovery(providers: Iterable<DiscoveryProvider>) : Discovery {
+internal class CompositeDiscovery(classLoader: ClassLoader, providers: Iterable<DiscoveryProvider>) : Discovery {
     /**
      * The [Discovery] instances to delegate to.
      */
-    private val delegates = providers.map { it.create() }
+    private val delegates = providers.map { it.create(classLoader) }
 
     @OptIn(FlowPreview::class)
     override fun discover(request: DiscoveryRequest): Flow<ExperimentDefinition> {

@@ -27,12 +27,6 @@ plugins {
     `kotlin-library-conventions`
     `experiment-conventions`
     `testing-conventions`
-    application
-}
-
-application {
-    mainClass.set("org.opendc.harness.runner.cli.ConsoleRunnerKt")
-    applicationDefaultJvmArgs = listOf("-Xms2500M")
 }
 
 dependencies {

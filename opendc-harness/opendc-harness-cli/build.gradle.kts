@@ -25,6 +25,12 @@ description = "Command line interface of OpenDC Harness"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
+    application
+}
+
+application {
+    applicationName = "opendc-harness"
+    mainClass.set("org.opendc.harness.runner.cli.ConsoleRunnerKt")
 }
 
 dependencies {

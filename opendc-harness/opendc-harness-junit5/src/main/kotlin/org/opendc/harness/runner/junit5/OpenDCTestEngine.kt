@@ -25,6 +25,7 @@ package org.opendc.harness.runner.junit5
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import mu.KotlinLogging
+import org.junit.platform.commons.util.ClassLoaderUtils
 import org.junit.platform.engine.*
 import org.junit.platform.engine.discovery.ClassNameFilter
 import org.junit.platform.engine.discovery.ClassSelector
@@ -63,7 +64,7 @@ public class OpenDCTestEngine : TestEngine {
         val classNames = request.getSelectorsByType(ClassSelector::class.java).map { DiscoverySelector.Meta("class.name", it.className) }
         val classNameFilters = request.getFiltersByType(ClassNameFilter::class.java).map { DiscoveryFilter.Name(it.toPredicate()) }
 
-        val discovery = DiscoveryProvider.createComposite()
+        val discovery = DiscoveryProvider.createComposite(ClassLoaderUtils.getDefaultClassLoader())
         val definitions = discovery.discover(DiscoveryRequest(classNames, classNameFilters))
 
         return ExperimentEngineDescriptor(uniqueId, definitions)

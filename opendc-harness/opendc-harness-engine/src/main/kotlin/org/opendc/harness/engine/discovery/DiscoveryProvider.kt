@@ -40,7 +40,7 @@ public interface DiscoveryProvider {
     /**
      * Factory method for creating a new [Discovery] instance.
      */
-    public fun create(): Discovery
+    public fun create(classLoader: ClassLoader): Discovery
 
     public companion object {
         /**
@@ -58,8 +58,8 @@ public interface DiscoveryProvider {
         /**
          * Obtain a composite [Discovery] that combines the results of all available providers.
          */
-        public fun createComposite(): Discovery {
-            return CompositeDiscovery(providers)
+        public fun createComposite(classLoader: ClassLoader): Discovery {
+            return CompositeDiscovery(classLoader, providers)
         }
     }
 }

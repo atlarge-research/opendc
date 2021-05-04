@@ -26,7 +26,6 @@ import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import mu.KotlinLogging
@@ -85,9 +84,7 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
      */
     private val powerModel by anyOf(PowerModelType.LINEAR, PowerModelType.CUBIC, PowerModelType.INTERPOLATION)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
-
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
             filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
