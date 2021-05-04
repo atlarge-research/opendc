@@ -39,6 +39,7 @@ dependencies {
     implementation(project(":opendc-compute:opendc-compute-simulator"))
 
     implementation("io.github.microutils:kotlin-logging")
+    implementation("com.typesafe:config")
     implementation("me.tongfei:progressbar:${versions["progressbar"]}")
     implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
 

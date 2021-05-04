@@ -37,6 +37,7 @@ dependencies {
     implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
     implementation(project(":opendc-harness:opendc-harness-cli"))
     implementation("io.github.microutils:kotlin-logging")
+    implementation("com.typesafe:config")
 
     implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
     implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {

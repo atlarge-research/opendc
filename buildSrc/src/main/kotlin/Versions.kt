@@ -26,7 +26,6 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.extra
 import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
 
 /**
  * This class contains the versions of the dependencies shared by the different
@@ -46,6 +45,7 @@ public class Versions(private val project: Project) {
     val slf4j by version()
     val kotlinLogging by version(name = "kotlin-logging")
     val log4j by version()
+    val config by version()
 
     val kotlinxCoroutines by version(name = "kotlinx-coroutines")
 

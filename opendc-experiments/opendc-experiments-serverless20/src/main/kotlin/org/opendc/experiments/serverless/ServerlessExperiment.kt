@@ -22,9 +22,9 @@
 
 package org.opendc.experiments.serverless
 
+import com.typesafe.config.ConfigFactory
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -59,14 +59,9 @@ public class ServerlessExperiment : Experiment("Serverless") {
     private val logger = KotlinLogging.logger {}
 
     /**
-     * The path to where the traces are located.
+     * The configuration to use.
      */
-    private val tracePath by anyOf(File("../../input/traces/serverless"))
-
-    /**
-     * The path to where the output results should be written.
-     */
-    private val outputPath by anyOf(File("output/"))
+    private val config = ConfigFactory.load().getConfig("opendc.experiments.serverless20")
 
     /**
      * The routing policy to test.
@@ -78,14 +73,13 @@ public class ServerlessExperiment : Experiment("Serverless") {
      */
     private val coldStartModel by anyOf(ColdStartModel.LAMBDA, ColdStartModel.AZURE, ColdStartModel.GOOGLE)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
             .setClock(clock.toOtelClock())
             .build()
 
-        val trace = ServerlessTraceReader().parse(tracePath)
+        val trace = ServerlessTraceReader().parse(File(config.getString("trace-path")))
         val traceById = trace.associateBy { it.id }
         val delayInjector = StochasticDelayInjector(coldStartModel, Random())
         val deployer = SimFunctionDeployer(clock, this, createMachineModel(), delayInjector) { FunctionTraceWorkload(traceById.getValue(it.name)) }
