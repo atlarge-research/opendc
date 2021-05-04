@@ -55,7 +55,7 @@ public class ExperimentMetricExporter(
             m.cpuUsage = v
         }
 
-        mapDoubleSummary(metrics["power.usage"], hostMetrics) { m, v ->
+        mapDoubleGauge(metrics["power.usage"], hostMetrics) { m, v ->
             m.powerDraw = v
         }
 
@@ -106,6 +106,18 @@ public class ExperimentMetricExporter(
                 // Take the average of the summary
                 val avg = (point.percentileValues[0].value + point.percentileValues[1].value) / 2
                 block(hostMetric, avg)
+            }
+        }
+    }
+
+    private fun mapDoubleGauge(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
+        val points = data?.doubleGaugeData?.points ?: emptyList()
+        for (point in points) {
+            val uid = point.labels["host"]
+            val hostMetric = hostMetrics[uid]
+
+            if (hostMetric != null) {
+                block(hostMetric, point.value)
             }
         }
     }

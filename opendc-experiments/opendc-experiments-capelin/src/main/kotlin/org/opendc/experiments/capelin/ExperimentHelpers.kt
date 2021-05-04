@@ -23,7 +23,12 @@
 package org.opendc.experiments.capelin
 
 import io.opentelemetry.api.metrics.MeterProvider
+import io.opentelemetry.sdk.metrics.SdkMeterProvider
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory
+import io.opentelemetry.sdk.metrics.common.InstrumentType
 import io.opentelemetry.sdk.metrics.export.MetricProducer
+import io.opentelemetry.sdk.metrics.view.InstrumentSelector
+import io.opentelemetry.sdk.metrics.view.View
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
@@ -46,9 +51,9 @@ import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector
 import org.opendc.simulator.failures.FaultInjector
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
+import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import java.time.Clock
-import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import kotlin.math.ln
 import kotlin.math.max
@@ -294,4 +299,23 @@ public suspend fun processTrace(
         reader.close()
         client.close()
     }
+}
+
+/**
+ * Create a [MeterProvider] instance for the experiment.
+ */
+public fun createMeterProvider(clock: Clock): MeterProvider {
+    val powerSelector = InstrumentSelector.builder()
+        .setInstrumentNameRegex("power\\.usage")
+        .setInstrumentType(InstrumentType.VALUE_RECORDER)
+        .build()
+    val powerView = View.builder()
+        .setAggregatorFactory(AggregatorFactory.lastValue())
+        .build()
+
+    return SdkMeterProvider
+        .builder()
+        .setClock(clock.toOtelClock())
+        .registerView(powerSelector, powerView)
+        .build()
 }

@@ -22,8 +22,6 @@
 
 package org.opendc.experiments.capelin
 
-import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -45,7 +43,6 @@ import org.opendc.format.trace.PerformanceInterferenceModelReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -123,11 +120,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = createComputeScheduler(seeder)
 
-        val meterProvider: MeterProvider = SdkMeterProvider
-            .builder()
-            .setClock(clock.toOtelClock())
-            .build()
-
+        val meterProvider = createMeterProvider(clock)
         val workload = workload
         val workloadNames = if (workload is CompositeWorkload) {
             workload.workloads.map { it.name }
