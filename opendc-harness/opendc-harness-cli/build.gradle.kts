@@ -24,7 +24,7 @@ description = "Command line interface of OpenDC Harness"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-conventions`
+    `kotlin-conventions`
     application
 }
 

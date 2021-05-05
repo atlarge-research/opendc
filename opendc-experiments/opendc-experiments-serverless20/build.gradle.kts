@@ -24,7 +24,6 @@ description = "Experiments for OpenDC Serverless"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-conventions`
     `experiment-conventions`
     `testing-conventions`
 }

@@ -24,7 +24,6 @@ description = "Experiments for the OpenDC Energy work"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-conventions`
     `experiment-conventions`
     `testing-conventions`
 }

@@ -23,8 +23,8 @@ import gradle.kotlin.dsl.accessors._9bf86420fccbde1948375f641de89b70.sourceSets
  */
 
 plugins {
-    `java-library`
     distribution
+    id("kotlin-conventions")
     id("com.github.johnrengelman.shadow")
 }
 
