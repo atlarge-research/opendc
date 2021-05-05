@@ -79,8 +79,19 @@ public class ConsoleRunner : CliktCommand(name = "opendc-harness") {
         .multiple()
         .unique()
 
+    /**
+     * Configuration file to load.
+     */
+    private val config by option("-c", "--config", help = "Configuration file for the experiments")
+        .file(mustExist = true, canBeDir = false, mustBeReadable = true)
+
     override fun run() {
         logger.info { "Starting OpenDC Console Experiment Runner" }
+
+        val config = config
+        if (config != null) {
+            System.setProperty("config.file", config.path)
+        }
 
         val classLoader = createClassLoader()
         // TODO: Add way to specify class loader for scheduler
