@@ -82,7 +82,7 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
 
                 return if (_remainingWorkFlush < now) {
                     _remainingWorkFlush = now
-                    _inputConsumers.sumByDouble { it._ctx?.remainingWork ?: 0.0 }.also { _remainingWork = it }
+                    _inputConsumers.sumOf { it._ctx?.remainingWork ?: 0.0 }.also { _remainingWork = it }
                 } else {
                     _remainingWork
                 }
@@ -132,7 +132,7 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
 
         private fun updateCapacity() {
             // Adjust capacity of output resource
-            context.capacity = _inputConsumers.sumByDouble { it._ctx?.capacity ?: 0.0 }
+            context.capacity = _inputConsumers.sumOf { it._ctx?.capacity ?: 0.0 }
         }
 
         /* Input */

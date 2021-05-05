@@ -82,7 +82,7 @@ public class NetworkController(context: CoroutineContext, clock: Clock) : AutoCl
 
         val target = channels[to] ?: return // Drop if destination not found
 
-        scheduler.startSingleTimer(message, delayTime) { target.offer(message) }
+        scheduler.startSingleTimer(message, delayTime) { target.trySend(message) }
     }
 
     /**

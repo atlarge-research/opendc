@@ -69,7 +69,7 @@ public fun sampleRegularWorkload(
     val totalLoad = if (workload is CompositeWorkload) {
         workload.totalLoad
     } else {
-        shuffled.sumByDouble { it.meta.getValue("total-load") as Double }
+        shuffled.sumOf { it.meta.getValue("total-load") as Double }
     }
     var currentLoad = 0.0
 
@@ -129,7 +129,7 @@ public fun sampleHpcWorkload(
     val totalLoad = if (workload is CompositeWorkload) {
         workload.totalLoad
     } else {
-        trace.sumByDouble { it.meta.getValue("total-load") as Double }
+        trace.sumOf { it.meta.getValue("total-load") as Double }
     }
 
     logger.debug { "Total trace load: $totalLoad" }

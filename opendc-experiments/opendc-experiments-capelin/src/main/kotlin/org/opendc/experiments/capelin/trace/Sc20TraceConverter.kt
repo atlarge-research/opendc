@@ -109,6 +109,7 @@ public class TraceConverterCli : CliktCommand(name = "trace-converter") {
             traceParquet.delete()
         }
 
+        @Suppress("DEPRECATION")
         val metaWriter = AvroParquetWriter.builder<GenericData.Record>(Path(metaParquet.toURI()))
             .withSchema(metaSchema)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
@@ -116,6 +117,7 @@ public class TraceConverterCli : CliktCommand(name = "trace-converter") {
             .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
             .build()
 
+        @Suppress("DEPRECATION")
         val writer = AvroParquetWriter.builder<GenericData.Record>(Path(traceParquet.toURI()))
             .withSchema(schema)
             .withCompressionCodec(CompressionCodecName.SNAPPY)

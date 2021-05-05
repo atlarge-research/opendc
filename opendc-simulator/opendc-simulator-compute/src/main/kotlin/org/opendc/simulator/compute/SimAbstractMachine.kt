@@ -80,7 +80,7 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     override suspend fun run(workload: SimWorkload, meta: Map<String, Any>): Unit = withContext(context) {
         require(!isTerminated) { "Machine is terminated" }
         val ctx = Context(meta)
-        val totalCapacity = model.cpus.sumByDouble { it.frequency }
+        val totalCapacity = model.cpus.sumOf { it.frequency }
 
         _speed = DoubleArray(model.cpus.size) { 0.0 }
         var totalSpeed = 0.0

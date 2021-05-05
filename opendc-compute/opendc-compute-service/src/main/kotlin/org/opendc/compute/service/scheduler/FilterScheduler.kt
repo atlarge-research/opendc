@@ -59,7 +59,7 @@ public class FilterScheduler(private val filters: List<HostFilter>, private val 
                 true
             }
             .sortedByDescending { host ->
-                weighers.sumByDouble { (weigher, factor) -> weigher.getWeight(host, server) * factor }
+                weighers.sumOf { (weigher, factor) -> weigher.getWeight(host, server) * factor }
             }
             .firstOrNull()
     }

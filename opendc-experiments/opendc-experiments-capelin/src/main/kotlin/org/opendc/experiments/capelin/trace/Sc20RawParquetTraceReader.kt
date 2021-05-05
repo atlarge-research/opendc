@@ -105,7 +105,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
                 val vmFragments = fragments.getValue(id).asSequence()
-                val totalLoad = vmFragments.sumByDouble { it.usage } * 5 * 60 // avg MHz * duration = MFLOPs
+                val totalLoad = vmFragments.sumOf { it.usage } * 5 * 60 // avg MHz * duration = MFLOPs
                 val workload = SimTraceWorkload(vmFragments)
                 entries.add(
                     TraceEntry(

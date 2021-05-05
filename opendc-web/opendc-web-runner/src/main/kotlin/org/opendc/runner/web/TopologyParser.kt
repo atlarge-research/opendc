@@ -73,7 +73,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>) {
                 )
             }
 
-            val energyConsumptionW = machine.getList("cpus", Document::class.java).sumBy { it.getInteger("energyConsumptionW") }.toDouble()
+            val energyConsumptionW = machine.getList("cpus", Document::class.java).sumOf { it.getInteger("energyConsumptionW") }.toDouble()
 
             nodes.add(
                 MachineDef(

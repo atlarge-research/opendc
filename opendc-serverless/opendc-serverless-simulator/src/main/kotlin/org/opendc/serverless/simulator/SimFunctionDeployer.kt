@@ -102,7 +102,7 @@ public class SimFunctionDeployer(
             check(state != FunctionInstanceState.Deleted) { "Function instance has been released" }
             return suspendCancellableCoroutine { cont ->
                 queue.add(InvocationRequest(cont))
-                chan.offer(Unit)
+                chan.trySend(Unit)
             }
         }
 
