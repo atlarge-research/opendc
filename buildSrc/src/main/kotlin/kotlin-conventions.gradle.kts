@@ -20,17 +20,25 @@
  * SOFTWARE.
  */
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-    id("kotlin-conventions")
-    id("publishing-conventions")
-    id("dokka-conventions")
+    `java-library`
+    kotlin("jvm")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 /* Project configuration */
-java {
-    withSourcesJar()
+repositories {
+    mavenCentral()
 }
 
-kotlin {
-    explicitApi()
+java {
+    sourceCompatibility = Versions.jvmTarget
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions.jvmTarget = Versions.jvmTarget.toString()
+    kotlinOptions.useIR = true
+    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
 }
