@@ -27,17 +27,11 @@ plugins {
     `kotlin-library-conventions`
     `experiment-conventions`
     `testing-conventions`
-    application
-}
-
-application {
-    mainClass.set("org.opendc.harness.runner.console.ConsoleRunnerKt")
-    applicationDefaultJvmArgs = listOf("-Xms2500M")
 }
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
+    api(project(":opendc-harness:opendc-harness-engine"))
     implementation(project(":opendc-format"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-simulator:opendc-simulator-compute"))
@@ -45,6 +39,7 @@ dependencies {
     implementation(project(":opendc-experiments:opendc-experiments-capelin"))
     implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
     implementation("io.github.microutils:kotlin-logging")
+    implementation("com.typesafe:config")
 
     implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
     implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {

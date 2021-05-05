@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.capelin
 
+import com.typesafe.config.ConfigFactory
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -60,19 +61,9 @@ public abstract class Portfolio(name: String) : Experiment(name) {
     private val logger = KotlinLogging.logger {}
 
     /**
-     * The path to where the environments are located.
+     * The configuration to use.
      */
-    private val environmentPath by anyOf(File("input/environments/"))
-
-    /**
-     * The path to where the traces are located.
-     */
-    private val tracePath by anyOf(File("input/traces/"))
-
-    /**
-     * The path to where the output results should be written.
-     */
-    private val outputPath by anyOf(File("output/"))
+    private val config = ConfigFactory.load().getConfig("opendc.experiments.capelin")
 
     /**
      * The path to the original VM placements file.
@@ -115,7 +106,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val seeder = Random(repeat.toLong())
-        val environment = Sc20ClusterEnvironmentReader(File(environmentPath, "${topology.name}.txt"))
+        val environment = Sc20ClusterEnvironmentReader(File(config.getString("env-path"), "${topology.name}.txt"))
 
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = createComputeScheduler(seeder)
@@ -131,7 +122,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
         val rawReaders = workloadNames.map { workloadName ->
             traceReaders.computeIfAbsent(workloadName) {
                 logger.info { "Loading trace $workloadName" }
-                Sc20RawParquetTraceReader(File(tracePath, workloadName))
+                Sc20RawParquetTraceReader(File(config.getString("trace-path"), workloadName))
             }
         }
 
@@ -141,7 +132,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
         val trace = Sc20ParquetTraceReader(rawReaders, performanceInterferenceModel, workload, seeder.nextInt())
 
         val monitor = ParquetExperimentMonitor(
-            outputPath,
+            File(config.getString("output-path")),
             "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
             4096
         )

@@ -31,6 +31,7 @@ dependencies {
         api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.kotlinxCoroutines}")
         api("org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.kotlinxCoroutines}")
 
+        api("com.typesafe:config:1.4.1")
         api("io.github.microutils:kotlin-logging:${versions.kotlinLogging}")
         runtime("org.slf4j:slf4j-simple:${versions.slf4j}")
         runtime("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")

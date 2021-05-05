@@ -31,7 +31,7 @@ plugins {
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
+    api(project(":opendc-harness:opendc-harness-engine"))
     implementation(project(":opendc-format"))
     implementation(project(":opendc-simulator:opendc-simulator-core"))
     implementation(project(":opendc-simulator:opendc-simulator-compute"))
@@ -39,6 +39,7 @@ dependencies {
     implementation(project(":opendc-compute:opendc-compute-simulator"))
 
     implementation("io.github.microutils:kotlin-logging")
+    implementation("com.typesafe:config")
     implementation("me.tongfei:progressbar:${versions["progressbar"]}")
     implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
 

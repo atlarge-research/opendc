@@ -31,12 +31,13 @@ plugins {
 
 dependencies {
     api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness"))
+    api(project(":opendc-harness:opendc-harness-engine"))
     implementation(project(":opendc-serverless:opendc-serverless-service"))
     implementation(project(":opendc-serverless:opendc-serverless-simulator"))
     implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
-
+    implementation(project(":opendc-harness:opendc-harness-cli"))
     implementation("io.github.microutils:kotlin-logging")
+    implementation("com.typesafe:config")
 
     implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
     implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {

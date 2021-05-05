@@ -1,3 +1,5 @@
+import gradle.kotlin.dsl.accessors._9bf86420fccbde1948375f641de89b70.sourceSets
+
 /*
  * Copyright (c) 2021 AtLarge Research
  *
@@ -22,10 +24,12 @@
 
 plugins {
     `java-library`
+    distribution
+    id("com.github.johnrengelman.shadow")
 }
 
 dependencies {
-    implementation(project(":opendc-harness"))
+    runtimeOnly(project(":opendc-harness:opendc-harness-junit5"))
 }
 
 tasks.register<Test>("experiment") {
@@ -37,4 +41,21 @@ tasks.register<Test>("experiment") {
 
     testClassesDirs = sourceSets["main"].output.classesDirs
     classpath = sourceSets["main"].runtimeClasspath
+}
+
+distributions {
+    create("experiment") {
+        contents {
+            from("README.md")
+            from(tasks.shadowJar.get())
+        }
+    }
+}
+
+tasks.shadowJar {
+    dependencies {
+        // Do not include the JUnit 5 runner in the final shadow jar, since it is only necessary for development
+        // inside IDE
+        exclude(project(":opendc-harness:opendc-harness-junit5"))
+    }
 }

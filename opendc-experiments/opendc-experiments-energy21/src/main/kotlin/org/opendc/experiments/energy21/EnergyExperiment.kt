@@ -22,11 +22,11 @@
 
 package org.opendc.experiments.energy21
 
+import com.typesafe.config.ConfigFactory
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import mu.KotlinLogging
@@ -66,14 +66,9 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
     private val logger = KotlinLogging.logger {}
 
     /**
-     * The path to where the traces are located.
+     * The configuration to use.
      */
-    private val tracePath by anyOf(File("input/traces/"))
-
-    /**
-     * The path to where the output results should be written.
-     */
-    private val outputPath by anyOf(File("output/"))
+    private val config = ConfigFactory.load().getConfig("opendc.experiments.energy21")
 
     /**
      * The traces to test.
@@ -85,9 +80,7 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
      */
     private val powerModel by anyOf(PowerModelType.LINEAR, PowerModelType.CUBIC, PowerModelType.INTERPOLATION)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
-
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
             filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
@@ -99,8 +92,8 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
             .setClock(clock.toOtelClock())
             .build()
 
-        val monitor = ParquetExperimentMonitor(outputPath, "power_model=$powerModel/run_id=$repeat", 4096)
-        val trace = Sc20StreamingParquetTraceReader(File(tracePath, trace), random = Random(1).asKotlinRandom())
+        val monitor = ParquetExperimentMonitor(File(config.getString("output-path")), "power_model=$powerModel/run_id=$repeat", 4096)
+        val trace = Sc20StreamingParquetTraceReader(File(config.getString("trace-path"), trace), random = Random(1).asKotlinRandom())
 
         withComputeService(clock, meterProvider, allocationPolicy) { scheduler ->
             withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
