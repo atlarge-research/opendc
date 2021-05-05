@@ -12,10 +12,11 @@ setupSocketConnection(() => {
     const store = configureStore()
 
     // Initialize Sentry if the user has configured a DSN
-    if (process.env.REACT_APP_SENTRY_DSN) {
+    const dsn = window.$$env['SENTRY_DSN']
+    if (dsn) {
         Sentry.init({
             environment: process.env.NODE_ENV,
-            dsn: process.env.REACT_APP_SENTRY_DSN,
+            dsn: dsn,
             integrations: [new Integrations.BrowserTracing()],
             tracesSampleRate: 0.1,
         })

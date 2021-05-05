@@ -3,11 +3,10 @@ version: "3.8"
 # Docker Compose overrides for development environments
 services:
   frontend:
-    build:
-      args:
-        OPENDC_API_BASE_URL: http://localhost:8081
     ports:
       - "8080:80"
+    environment:
+      API_BASE_URL: http://localhost:8081
 
   api:
     ports:

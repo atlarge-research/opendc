@@ -33,7 +33,7 @@
     <meta property="og:locale" content="en_US">
 
     <!-- Google meta tags -->
-    <meta name="google-signin-client_id" content="%REACT_APP_OAUTH_CLIENT_ID%">
+    <meta name="google-signin-client_id" content="$OAUTH_CLIENT_ID">
     <meta name="google-site-verification" content="YIR4LkQTv6WmOdWv8MkeiUKni-0Yu3WHylLp4VvUMig"/>
 
     <!-- CDN dependencies -->
@@ -51,6 +51,13 @@
 
         gtag('js', new Date())
         gtag('config', 'UA-84285092-3')
+    </script>
+    <script>
+        window.$$env = {
+            API_BASE_URL: "$API_BASE_URL",
+            OAUTH_CLIENT_ID: "$OAUTH_CLIENT_ID",
+            SENTRY_DSN: "$SENTRY_DSN",
+        };
     </script>
 </head>
 <body>

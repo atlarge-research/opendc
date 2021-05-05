@@ -7,7 +7,7 @@ const callbacks = {}
 
 export function setupSocketConnection(onConnect) {
     const apiUrl =
-        process.env.REACT_APP_API_BASE_URL ||
+        window.$$env['API_BASE_URL'] ||
         `${window.location.protocol}//${window.location.hostname}:${window.location.port}`
 
     socket = io.connect(apiUrl)

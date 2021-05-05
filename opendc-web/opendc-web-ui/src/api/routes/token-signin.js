@@ -1,5 +1,5 @@
 export function performTokenSignIn(token) {
-    const apiUrl = process.env.REACT_APP_API_BASE_URL || ''
+    const apiUrl = window.$$env['API_BASE_URL'] || ''
 
     return fetch(`${apiUrl}/tokensignin`, {
         method: 'POST',
