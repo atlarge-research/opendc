@@ -30,12 +30,12 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness:opendc-harness-engine"))
-    implementation(project(":opendc-serverless:opendc-serverless-service"))
-    implementation(project(":opendc-serverless:opendc-serverless-simulator"))
-    implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
-    implementation(project(":opendc-harness:opendc-harness-cli"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcHarness.opendcHarnessApi)
+    implementation(projects.opendcSimulator.opendcSimulatorCore)
+    implementation(projects.opendcServerless.opendcServerlessService)
+    implementation(projects.opendcServerless.opendcServerlessSimulator)
+    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
     implementation("io.github.microutils:kotlin-logging")
     implementation("com.typesafe:config")
 

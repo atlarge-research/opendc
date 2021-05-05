@@ -30,9 +30,9 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-simulator:opendc-simulator-core"))
-    api(project(":opendc-simulator:opendc-simulator-resources"))
-    implementation(project(":opendc-utils"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcSimulator.opendcSimulatorResources)
+    implementation(projects.opendcSimulator.opendcSimulatorCore)
+    implementation(projects.opendcUtils)
     implementation("org.yaml:snakeyaml:1.28")
 }

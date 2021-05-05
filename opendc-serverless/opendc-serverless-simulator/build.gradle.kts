@@ -30,10 +30,10 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-serverless:opendc-serverless-service"))
-    api(project(":opendc-simulator:opendc-simulator-compute"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcServerless.opendcServerlessService)
+    api(projects.opendcSimulator.opendcSimulatorCompute)
 
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
 }

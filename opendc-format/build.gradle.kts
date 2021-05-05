@@ -30,11 +30,11 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-workflow:opendc-workflow-api"))
-    implementation(project(":opendc-simulator:opendc-simulator-compute"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcCompute.opendcComputeApi)
+    api(projects.opendcWorkflow.opendcWorkflowApi)
+    implementation(projects.opendcSimulator.opendcSimulatorCompute)
+    implementation(projects.opendcCompute.opendcComputeSimulator)
     api("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
 
     implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")

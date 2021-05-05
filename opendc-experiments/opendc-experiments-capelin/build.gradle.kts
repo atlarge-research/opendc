@@ -30,13 +30,13 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness:opendc-harness-engine"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-simulator:opendc-simulator-compute"))
-    implementation(project(":opendc-simulator:opendc-simulator-failures"))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcHarness.opendcHarnessApi)
+    implementation(projects.opendcFormat)
+    implementation(projects.opendcSimulator.opendcSimulatorCore)
+    implementation(projects.opendcSimulator.opendcSimulatorCompute)
+    implementation(projects.opendcSimulator.opendcSimulatorFailures)
+    implementation(projects.opendcCompute.opendcComputeSimulator)
 
     implementation("io.github.microutils:kotlin-logging")
     implementation("com.typesafe:config")
@@ -49,5 +49,5 @@ dependencies {
         exclude(group = "log4j")
     }
 
-    implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
+    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
 }
