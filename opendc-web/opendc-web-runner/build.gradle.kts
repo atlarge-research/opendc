@@ -24,7 +24,7 @@ description = "Experiment runner for OpenDC"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-conventions`
+    `kotlin-conventions`
     application
 }
 
@@ -33,12 +33,12 @@ application {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    implementation(project(":opendc-compute:opendc-compute-simulator"))
-    implementation(project(":opendc-format"))
-    implementation(project(":opendc-experiments:opendc-experiments-capelin"))
-    implementation(project(":opendc-simulator:opendc-simulator-core"))
-    implementation(project(":opendc-simulator:opendc-simulator-compute"))
+    api(platform(projects.opendcPlatform))
+    implementation(projects.opendcCompute.opendcComputeSimulator)
+    implementation(projects.opendcFormat)
+    implementation(projects.opendcExperiments.opendcExperimentsCapelin)
+    implementation(projects.opendcSimulator.opendcSimulatorCore)
+    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
 
     implementation("io.github.microutils:kotlin-logging")
     implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
@@ -48,6 +48,4 @@ dependencies {
 
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
     runtimeOnly("org.apache.logging.log4j:log4j-1.2-api:${versions.log4j}")
-
-    implementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
 }

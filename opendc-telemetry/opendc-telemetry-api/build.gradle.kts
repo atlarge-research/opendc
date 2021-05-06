@@ -28,7 +28,7 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
+    api(platform(projects.opendcPlatform))
     api("io.opentelemetry:opentelemetry-api:${versions.otelApi}")
     api("io.opentelemetry:opentelemetry-api-metrics:${versions.otelApiMetrics}")
 }

@@ -28,8 +28,8 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness:opendc-harness-engine"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcHarness.opendcHarnessEngine)
 
     implementation("io.github.microutils:kotlin-logging")
     implementation("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")

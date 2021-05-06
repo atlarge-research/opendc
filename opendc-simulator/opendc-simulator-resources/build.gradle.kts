@@ -30,10 +30,10 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
+    api(platform(projects.opendcPlatform))
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation(project(":opendc-utils"))
+    implementation(projects.opendcUtils)
 
-    jmhImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    jmhImplementation(projects.opendcSimulator.opendcSimulatorCore)
+    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }

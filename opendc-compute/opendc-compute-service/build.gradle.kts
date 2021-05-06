@@ -30,12 +30,12 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-telemetry:opendc-telemetry-api"))
-    implementation(project(":opendc-utils"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcCompute.opendcComputeApi)
+    api(projects.opendcTelemetry.opendcTelemetryApi)
+    implementation(projects.opendcUtils)
     implementation("io.github.microutils:kotlin-logging")
 
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
+    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
 }

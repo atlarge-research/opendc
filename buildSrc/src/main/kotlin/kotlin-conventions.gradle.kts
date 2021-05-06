@@ -20,16 +20,25 @@
  * SOFTWARE.
  */
 
-description = "API for OpenDC Experiment Harness"
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-/* Build configuration */
 plugins {
-    `kotlin-library-conventions`
+    `java-library`
+    kotlin("jvm")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api("org.junit.platform:junit-platform-commons:${versions.junitPlatform}")
+/* Project configuration */
+repositories {
+    mavenCentral()
+}
 
-    implementation("io.github.microutils:kotlin-logging")
+java {
+    sourceCompatibility = Versions.jvmTarget
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions.jvmTarget = Versions.jvmTarget.toString()
+    kotlinOptions.useIR = true
+    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
 }

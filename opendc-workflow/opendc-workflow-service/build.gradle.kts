@@ -30,17 +30,17 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-workflow:opendc-workflow-api"))
-    api(project(":opendc-compute:opendc-compute-api"))
-    api(project(":opendc-telemetry:opendc-telemetry-api"))
-    implementation(project(":opendc-utils"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcWorkflow.opendcWorkflowApi)
+    api(projects.opendcCompute.opendcComputeApi)
+    api(projects.opendcTelemetry.opendcTelemetryApi)
+    implementation(projects.opendcUtils)
     implementation("io.github.microutils:kotlin-logging")
 
-    testImplementation(project(":opendc-simulator:opendc-simulator-core"))
-    testImplementation(project(":opendc-compute:opendc-compute-simulator"))
-    testImplementation(project(":opendc-format"))
-    testImplementation(project(":opendc-telemetry:opendc-telemetry-sdk"))
+    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
+    testImplementation(projects.opendcCompute.opendcComputeSimulator)
+    testImplementation(projects.opendcFormat)
+    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
     testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
 }

@@ -24,7 +24,7 @@ description = "Command line interface of OpenDC Harness"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-conventions`
+    `kotlin-conventions`
     application
 }
 
@@ -34,8 +34,8 @@ application {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-harness:opendc-harness-engine"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcHarness.opendcHarnessEngine)
 
     implementation("io.github.microutils:kotlin-logging")
     implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")

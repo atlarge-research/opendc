@@ -3,13 +3,13 @@ services:
   frontend:
     build:
       context: opendc-web/opendc-web-ui
-      args:
-        OPENDC_OAUTH_CLIENT_ID: ${OPENDC_OAUTH_CLIENT_ID}
-        OPENDC_FRONTEND_SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN}
     image: frontend
     restart: on-failure
     networks:
       - backend
+    environment:
+      OAUTH_CLIENT_ID: ${OPENDC_OAUTH_CLIENT_ID}
+      SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN}
 
   api:
     build: opendc-web/opendc-web-api

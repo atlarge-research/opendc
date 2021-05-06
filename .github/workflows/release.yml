@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    name: Build OpenDC
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ 15 ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-${{ matrix.java }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.java }}-gradle-
+      - name: Build with Gradle
+        run: ./gradlew :assembleDist
+      - name: Publish with Gradle
+        run: ./gradlew publish
+        env:
+          ORG_GRADLE_PROJECT_signingKeyId: F8134F9C
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PASSPHRASE }}
+          ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-m') }}
+          files: build/distributions/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

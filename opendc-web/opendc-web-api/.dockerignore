@@ -5,5 +5,4 @@ Dockerfile
 *.iml
 .idea_modules/
 
-node_modules
-build
+.pytest_cache

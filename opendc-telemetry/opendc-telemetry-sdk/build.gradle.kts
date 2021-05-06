@@ -28,8 +28,8 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":opendc-platform")))
-    api(project(":opendc-telemetry:opendc-telemetry-api"))
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcTelemetry.opendcTelemetryApi)
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     api("io.opentelemetry:opentelemetry-sdk:${versions.otelSdk}")
     api("io.opentelemetry:opentelemetry-sdk-metrics:${versions.otelSdkMetrics}")

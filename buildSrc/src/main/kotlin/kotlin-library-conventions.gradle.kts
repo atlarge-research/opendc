@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +20,17 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    `java-library`
-    kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
+    id("kotlin-conventions")
+    id("publishing-conventions")
     id("dokka-conventions")
 }
 
 /* Project configuration */
-repositories {
-    mavenCentral()
-}
-
 java {
-    sourceCompatibility = Versions.jvmTarget
+    withSourcesJar()
 }
 
 kotlin {
     explicitApi()
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Versions.jvmTarget.toString()
-    kotlinOptions.useIR = true
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
 }
