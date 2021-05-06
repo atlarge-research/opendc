@@ -41,6 +41,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          draft: true
           prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-m') }}
           files: build/distributions/*
         env:
