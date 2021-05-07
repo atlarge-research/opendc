@@ -35,12 +35,12 @@ dependencies {
     api(projects.opendcCompute.opendcComputeApi)
     api(projects.opendcTelemetry.opendcTelemetryApi)
     implementation(projects.opendcUtils)
-    implementation("io.github.microutils:kotlin-logging")
+    implementation(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcCompute.opendcComputeSimulator)
     testImplementation(projects.opendcFormat)
     testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
-    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
+    testImplementation(libs.jackson.module.kotlin)
+    testRuntimeOnly(libs.log4j.slf4j)
 }

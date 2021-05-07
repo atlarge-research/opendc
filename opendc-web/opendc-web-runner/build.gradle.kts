@@ -40,12 +40,11 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
 
-    implementation("io.github.microutils:kotlin-logging")
-    implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${versions["jackson-module-kotlin"]}")
-    implementation("io.sentry:sentry-log4j2:${versions["sentry-log4j2"]}")
-    implementation("org.mongodb:mongodb-driver-sync:${versions["mongodb-driver-sync"]}")
+    implementation(libs.kotlin.logging)
+    implementation(libs.clikt)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.sentry.log4j2)
+    implementation(libs.mongodb)
 
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
-    runtimeOnly("org.apache.logging.log4j:log4j-1.2-api:${versions.log4j}")
+    runtimeOnly(libs.log4j.slf4j)
 }

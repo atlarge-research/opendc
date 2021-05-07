@@ -32,8 +32,8 @@ plugins {
 dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    api(libs.kotlinx.coroutines)
 
-    implementation("io.github.classgraph:classgraph:${versions["classgraph"]}")
-    implementation("io.github.microutils:kotlin-logging")
+    implementation(libs.classgraph)
+    implementation(libs.kotlin.logging)
 }

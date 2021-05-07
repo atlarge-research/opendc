@@ -34,5 +34,5 @@ dependencies {
     api(projects.opendcSimulator.opendcSimulatorResources)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcUtils)
-    implementation("org.yaml:snakeyaml:1.28")
+    implementation(libs.yaml)
 }

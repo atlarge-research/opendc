@@ -30,5 +30,5 @@ plugins {
 dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcCompute.opendcComputeApi)
-    implementation("io.github.microutils:kotlin-logging")
+    implementation(libs.kotlin.logging)
 }

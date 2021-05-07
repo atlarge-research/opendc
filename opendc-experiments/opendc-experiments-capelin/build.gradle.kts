@@ -36,17 +36,16 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcSimulator.opendcSimulatorFailures)
     implementation(projects.opendcCompute.opendcComputeSimulator)
+    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
 
-    implementation("io.github.microutils:kotlin-logging")
-    implementation("com.typesafe:config")
-    implementation("me.tongfei:progressbar:${versions["progressbar"]}")
-    implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
+    implementation(libs.kotlin.logging)
+    implementation(libs.config)
+    implementation(libs.progressbar)
+    implementation(libs.clikt)
 
-    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
-    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
+    implementation(libs.parquet)
+    implementation(libs.hadoop.client) {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }
-
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
 }

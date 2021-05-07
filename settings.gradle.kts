@@ -49,4 +49,5 @@ include(":opendc-harness:opendc-harness-cli")
 include(":opendc-harness:opendc-harness-junit5")
 include(":opendc-utils")
 
+enableFeaturePreview("VERSION_CATALOGS")
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

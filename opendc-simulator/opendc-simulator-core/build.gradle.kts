@@ -29,5 +29,5 @@ plugins {
 
 dependencies {
     api(platform(projects.opendcPlatform))
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    api(libs.kotlinx.coroutines)
 }

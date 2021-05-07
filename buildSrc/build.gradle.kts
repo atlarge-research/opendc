@@ -28,12 +28,8 @@ plugins {
 
 /* Project configuration */
 repositories {
+    mavenCentral()
     gradlePluginPortal()
-    maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven") {
-        content {
-            includeGroup("org.jetbrains.kotlinx")
-        }
-    }
 }
 
 dependencies {

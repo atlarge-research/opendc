@@ -35,9 +35,9 @@ dependencies {
     api(projects.opendcSimulator.opendcSimulatorCompute)
     api(projects.opendcSimulator.opendcSimulatorFailures)
     implementation(projects.opendcUtils)
-    implementation("io.github.microutils:kotlin-logging")
+    implementation(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
+    testRuntimeOnly(libs.slf4j.simple)
 }
