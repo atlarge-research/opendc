@@ -20,27 +20,9 @@
  * SOFTWARE.
  */
 
-description = "Experiments with the OpenDC TensorFlow model"
+package org.opendc.experiments.tf20.network
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
-
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcUtils)
-
-    implementation(libs.kotlin.logging)
-    implementation(libs.parquet)
-    implementation(libs.hadoop.client) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
-}
+/**
+ * A node represents a machine with which other nodes can communicate.
+ */
+public data class NetworkNode(val hostname: String)

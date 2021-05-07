@@ -20,27 +20,20 @@
  * SOFTWARE.
  */
 
-description = "Experiments with the OpenDC TensorFlow model"
+package org.opendc.experiments.tf20.network
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
-
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcUtils)
-
-    implementation(libs.kotlin.logging)
-    implementation(libs.parquet)
-    implementation(libs.hadoop.client) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
-}
+/**
+ * A communication message between TensorFlow worker and master nodes.
+ *
+ * @property from The source node.
+ * @property to The destination node.
+ * @property type The type of message sent.
+ * @property dataSize message data size.
+ */
+public data class Message(
+    val from: NetworkNode,
+    val to: NetworkNode,
+    val type: MessageType,
+    val dataSize: Long,
+    val iterations: Int
+)
