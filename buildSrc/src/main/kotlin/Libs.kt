@@ -24,41 +24,35 @@
 
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.extra
+import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.kotlin.dsl.getByType
 import kotlin.properties.ReadOnlyProperty
 
 /**
- * This class contains the versions of the dependencies shared by the different
- * subprojects.
+ * This class makes the version catalog accessible for the build scripts until Gradle adds support for it.
+ *
+ * See https://github.com/gradle/gradle/issues/15383
  */
-public class Versions(private val project: Project) {
+@Suppress("UnstableApiUsage")
+public class Libs(project: Project) {
+    /**
+     * The version catalog of the project.
+     */
+    private val versionCatalog = project.extensions.getByType(VersionCatalogsExtension::class).named("libs")
+
     /**
      * A delegate for obtaining configuration values from a [Project] instance.
      */
-    private fun version(name: String? = null): ReadOnlyProperty<Versions, String> =
+    private fun lib(name: String? = null): ReadOnlyProperty<Libs, String> =
         ReadOnlyProperty { _, property -> get(name ?: property.name) }
-
-    val junitJupiter by version(name = "junit-jupiter")
-    val junitPlatform by version(name = "junit-platform")
-    val mockk by version()
-
-    val slf4j by version()
-    val kotlinLogging by version(name = "kotlin-logging")
-    val log4j by version()
-    val config by version()
-
-    val kotlinxCoroutines by version(name = "kotlinx-coroutines")
-
-    val otelApi by version(name = "opentelemetry-api")
-    val otelApiMetrics by version(name = "opentelemetry-api-metrics")
-    val otelSdk by version(name = "opentelemetry-sdk")
-    val otelSdkMetrics by version(name = "opentelemetry-sdk-metrics")
-
 
     /**
      * Obtain the version for the specified [dependency][name].
      */
-    operator fun get(name: String) = project.extra.get("$name.version") as String
+    operator fun get(name: String): String {
+        val dep = versionCatalog.findDependency(name).get().get()
+        return "${dep.module.group}:${dep.module.name}:${dep.versionConstraint.displayName}"
+    }
 
     companion object {
         /**

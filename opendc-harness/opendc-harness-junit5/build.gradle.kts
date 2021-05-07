@@ -31,6 +31,6 @@ dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessEngine)
 
-    implementation("io.github.microutils:kotlin-logging")
-    implementation("org.junit.platform:junit-platform-engine:${versions.junitPlatform}")
+    implementation(libs.kotlin.logging)
+    implementation(libs.junit.platform.engine)
 }

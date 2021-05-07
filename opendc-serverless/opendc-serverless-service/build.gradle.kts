@@ -34,8 +34,8 @@ dependencies {
     api(projects.opendcServerless.opendcServerlessApi)
     api(projects.opendcTelemetry.opendcTelemetryApi)
     implementation(projects.opendcUtils)
-    implementation("io.github.microutils:kotlin-logging")
+    implementation(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
+    testRuntimeOnly(libs.log4j.slf4j)
 }

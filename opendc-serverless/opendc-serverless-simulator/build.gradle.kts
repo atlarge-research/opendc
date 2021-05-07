@@ -35,5 +35,5 @@ dependencies {
     api(projects.opendcSimulator.opendcSimulatorCompute)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly("org.slf4j:slf4j-simple:${versions.slf4j}")
+    testRuntimeOnly(libs.slf4j.simple)
 }

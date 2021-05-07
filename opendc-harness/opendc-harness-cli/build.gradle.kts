@@ -37,9 +37,9 @@ dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessEngine)
 
-    implementation("io.github.microutils:kotlin-logging")
-    implementation("com.github.ajalt.clikt:clikt:${versions["clikt"]}")
-    implementation("me.tongfei:progressbar:${versions["progressbar"]}")
+    implementation(libs.kotlin.logging)
+    implementation(libs.clikt)
+    implementation(libs.progressbar)
 
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}")
+    runtimeOnly(libs.log4j.slf4j)
 }

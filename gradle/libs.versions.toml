@@ -1,0 +1,48 @@
+[versions]
+junit-jupiter = "5.7.1"
+junit-platform = "1.7.1"
+slf4j = "1.7.30"
+log4j = "2.14.1"
+opentelemetry-main = "1.1.0"
+opentelemetry-metrics = "1.1.0-alpha"
+
+[libraries]
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.4.3" }
+
+# Logging
+kotlin-logging = { module = "io.github.microutils:kotlin-logging", version = "2.0.6" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version = "4.3.0" }
+
+# Telemetry
+opentelemetry-api-main = { module = "io.opentelemetry:opentelemetry-api", version.ref = "opentelemetry-main" }
+opentelemetry-sdk-main = { module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry-main" }
+opentelemetry-api-metrics = { module = "io.opentelemetry:opentelemetry-api-metrics", version.ref = "opentelemetry-metrics" }
+opentelemetry-sdk-metrics = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version.ref = "opentelemetry-metrics" }
+
+# Testing
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
+junit-platform-commons = { module = "org.junit.platform:junit-platform-commons", version.ref = "junit-platform" }
+junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", version.ref = "junit-platform" }
+mockk = { module = "io.mockk:mockk", version = "1.11.0" }
+
+# CLI
+clikt = { module = "com.github.ajalt.clikt:clikt", version = "3.1.0" }
+progressbar = { module = "me.tongfei:progressbar", version = "0.9.0" }
+
+# Format
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version = "2.12.0" }
+parquet = { module = "org.apache.parquet:parquet-avro", version = "1.12.0" }
+yaml = { module = "org.yaml:snakeyaml", version = "1.28" }
+config = { module = "com.typesafe:config", version = "1.4.1" }
+
+# Benchmark
+kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm", version = "0.3.0" }
+
+# Other
+mongodb = { module = "org.mongodb:mongodb-driver-sync", version = "4.2.3" }
+classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.105" }
+hadoop-client = { module = "org.apache.hadoop:hadoop-client", version = "3.2.1" }

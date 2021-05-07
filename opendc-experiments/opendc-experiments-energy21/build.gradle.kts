@@ -38,11 +38,10 @@ dependencies {
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcExperiments.opendcExperimentsCapelin)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation("io.github.microutils:kotlin-logging")
-    implementation("com.typesafe:config")
+    implementation(libs.kotlin.logging)
+    implementation(libs.config)
 
-    implementation("org.apache.parquet:parquet-avro:${versions["parquet-avro"]}")
-    implementation("org.apache.hadoop:hadoop-client:${versions["hadoop-client"]}") {
+    implementation(libs.parquet) {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }

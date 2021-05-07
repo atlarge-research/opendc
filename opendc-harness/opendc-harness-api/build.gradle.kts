@@ -29,7 +29,7 @@ plugins {
 
 dependencies {
     api(platform(projects.opendcPlatform))
-    api("org.junit.platform:junit-platform-commons:${versions.junitPlatform}")
+    api(libs.junit.platform.commons)
 
-    implementation("io.github.microutils:kotlin-logging")
+    implementation(libs.kotlin.logging)
 }

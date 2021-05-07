@@ -30,9 +30,9 @@ plugins {
 dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcTelemetry.opendcTelemetryApi)
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    api("io.opentelemetry:opentelemetry-sdk:${versions.otelSdk}")
-    api("io.opentelemetry:opentelemetry-sdk-metrics:${versions.otelSdkMetrics}")
+    api(libs.kotlinx.coroutines)
+    api(libs.opentelemetry.sdk.main)
+    api(libs.opentelemetry.sdk.metrics)
 
-    implementation("io.github.microutils:kotlin-logging")
+    implementation(libs.kotlin.logging)
 }
