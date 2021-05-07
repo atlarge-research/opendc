@@ -34,8 +34,9 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
+    implementation(projects.opendcFormat)
 
+    implementation(libs.kotlin.logging)
     implementation(libs.parquet)
     implementation(libs.hadoop.client) {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
