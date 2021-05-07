@@ -39,6 +39,9 @@ parquet = { module = "org.apache.parquet:parquet-avro", version = "1.12.0" }
 yaml = { module = "org.yaml:snakeyaml", version = "1.28" }
 config = { module = "com.typesafe:config", version = "1.4.1" }
 
+# Benchmark
+kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm", version = "0.3.0" }
+
 # Other
 mongodb = { module = "org.mongodb:mongodb-driver-sync", version = "4.2.3" }
 classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.105" }

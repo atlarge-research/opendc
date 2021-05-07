@@ -34,8 +34,10 @@ tasks.test {
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${versions.junitJupiter}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${versions.junitJupiter}")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:${versions.junitJupiter}")
-    testImplementation("io.mockk:mockk:${versions.mockk}")
+    val libs = Libs(project)
+
+    testImplementation(libs["junit-jupiter-api"])
+    testImplementation(libs["junit-jupiter-params"])
+    testImplementation(libs["mockk"])
+    testRuntimeOnly(libs["junit-jupiter-engine"])
 }

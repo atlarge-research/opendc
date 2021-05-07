@@ -55,13 +55,14 @@ benchmark {
     }
 }
 
+dependencies {
+    val libs = Libs(project)
+    implementation(libs["kotlinx-benchmark-runtime-jvm"])
+}
+
 // Workaround for https://github.com/Kotlin/kotlinx-benchmark/issues/39
 afterEvaluate {
     tasks.named<org.gradle.jvm.tasks.Jar>("jmhBenchmarkJar") {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
-}
-
-dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm:0.3.0")
 }
