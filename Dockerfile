@@ -13,5 +13,6 @@ RUN ./gradlew --no-daemon :installDist
 
 FROM openjdk:15-slim
 COPY --from=0 /app/build/install /opt/
+COPY --from=0 /app/traces /opt/opendc/traces
 WORKDIR /opt/opendc
 CMD bin/opendc-web-runner
