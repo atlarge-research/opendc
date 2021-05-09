@@ -1,5 +1,6 @@
 import io from 'socket.io-client'
 import { getAuthToken } from '../auth/index'
+import config from '../config'
 
 let socket
 let requestIdCounter = 0
@@ -7,8 +8,7 @@ const callbacks = {}
 
 export function setupSocketConnection(onConnect) {
     const apiUrl =
-        window.$$env['API_BASE_URL'] ||
-        `${window.location.protocol}//${window.location.hostname}:${window.location.port}`
+        config['API_BASE_URL'] || `${window.location.protocol}//${window.location.hostname}:${window.location.port}`
 
     socket = io.connect(apiUrl)
     socket.on('connect', onConnect)

@@ -6,13 +6,16 @@ import { Provider } from 'react-redux'
 import { setupSocketConnection } from './api/socket'
 import './index.sass'
 import Routes from './routes'
+import config from './config'
 import configureStore from './store/configure-store'
 
 setupSocketConnection(() => {
     const store = configureStore()
 
+    console.log('test', config)
+
     // Initialize Sentry if the user has configured a DSN
-    const dsn = window.$$env['SENTRY_DSN']
+    const dsn = config['SENTRY_DSN']
     if (dsn) {
         Sentry.init({
             environment: process.env.NODE_ENV,

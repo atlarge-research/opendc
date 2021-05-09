@@ -1,52 +1,64 @@
 import React from 'react'
+import { Row, Col } from 'reactstrap'
 import ContentSection from './ContentSection'
 
-const TeamMember = ({ photoId, name, description }) => (
-    <div className="col-xl-4 col-lg-4 col-md-5 col-sm-6 col-12 justify-content-center">
-        <img
+const TeamLead = ({ photoId, name, description }) => (
+    <Col xl="3" lg="3" md="4" sm="6" className="justify-content-center">
+        <Col
+            tag="img"
             src={'img/portraits/' + photoId + '.png'}
-            className="col-xl-10 col-lg-10 col-md-10 col-sm-8 col-5 mb-2 mt-2"
+            xl="10"
+            lg="10"
+            md="10"
+            sm="8"
+            col="5"
+            className="mb-2 mt-2"
             alt={name}
         />
-        <div className="col-12">
+        <Col>
             <h4>{name}</h4>
             <div className="team-member-description">{description}</div>
-        </div>
-    </div>
+        </Col>
+    </Col>
+)
+
+const TeamMember = ({ photoId, name }) => (
+    <Col xl="2" lg="2" md="3" sm="4" className="justify-content-center">
+        <Col
+            tag="img"
+            src={'img/portraits/' + photoId + '.png'}
+            xl="10"
+            lg="10"
+            md="10"
+            sm="8"
+            col="5"
+            className="mb-2 mt-2"
+            alt={name}
+        />
+        <Col>
+            <h5>{name}</h5>
+        </Col>
+    </Col>
 )
 
 const TeamSection = () => (
-    <ContentSection name="team" title="Core Team">
-        <div className="row justify-content-center">
-            <TeamMember photoId="aiosup" name="Prof. dr. ir. Alexandru Iosup" description="Project Lead" />
-            <TeamMember
-                photoId="gandreadis"
-                name="Georgios Andreadis"
-                description="Software Engineer responsible for the frontend web application"
-            />
-            <TeamMember
-                photoId="fmastenbroek"
-                name="Fabian Mastenbroek"
-                description="Software Engineer responsible for the datacenter simulator"
-            />
-            <TeamMember
-                photoId="jburley"
-                name="Jacob Burley"
-                description="Software Engineer responsible for prefabricated components"
-            />
-            <TeamMember
-                photoId="loverweel"
-                name="Leon Overweel"
-                description="Former product lead and Software Engineer"
-            />
-        </div>
-        <div className="text-center lead mt-3">
-            See{' '}
-            <a target="_blank" href="http://atlarge.science/opendc#team" rel="noopener noreferrer">
-                atlarge.science/opendc
-            </a>{' '}
-            for the full team!
-        </div>
+    <ContentSection name="team" title="OpenDC Team">
+        <Row className="justify-content-center">
+            <TeamLead photoId="aiosup" name="Prof. dr. ir. Alexandru Iosup" description="Project Lead" />
+            <TeamLead photoId="fmastenbroek" name="Fabian Mastenbroek" description="Technology Lead" />
+            <TeamLead photoId="gandreadis" name="Georgios Andreadis" description="Former Technology Lead (2018-2020)" />
+            <TeamLead photoId="vvanbeek" name="Vincent van Beek" description="Former Technology Lead (2017-2018)" />
+        </Row>
+        <Row className="justify-content-center mt-5">
+            <TeamMember photoId="loverweel" name="Leon Overweel" />
+            <TeamMember photoId="lfdversluis" name="Laurens Versluis" />
+            <TeamMember photoId="evaneyk" name="Erwin van Eyk" />
+            <TeamMember photoId="sjounaid" name="Soufiane Jounaid" />
+            <TeamMember photoId="wlai" name="Wenchen Lai" />
+            <TeamMember photoId="hhe" name="Hongyu He" />
+            <TeamMember photoId="jburley" name="Jacob Burley" />
+            <TeamMember photoId="jbosch" name="Jaro Bosch" />
+        </Row>
     </ContentSection>
 )
 

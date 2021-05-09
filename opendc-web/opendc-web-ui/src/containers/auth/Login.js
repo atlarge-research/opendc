@@ -3,6 +3,7 @@ import React from 'react'
 import GoogleLogin from 'react-google-login'
 import { connect } from 'react-redux'
 import { logIn } from '../../actions/auth'
+import config from '../../config'
 
 class LoginContainer extends React.Component {
     static propTypes = {
@@ -32,12 +33,12 @@ class LoginContainer extends React.Component {
 
         return (
             <GoogleLogin
-                clientId={window.$$env['OAUTH_CLIENT_ID']}
+                clientId={config['OAUTH_CLIENT_ID']}
                 onSuccess={this.onAuthResponse.bind(this)}
                 onFailure={this.onAuthFailure.bind(this)}
                 render={(renderProps) => (
                     <span onClick={renderProps.onClick} className="login btn btn-primary">
-                        <span className="fa fa-google"/> Login with Google
+                        <span className="fa fa-google" /> Login with Google
                     </span>
                 )}
             />

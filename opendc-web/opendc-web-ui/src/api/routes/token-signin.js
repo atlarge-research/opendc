@@ -1,5 +1,7 @@
+import config from '../../config'
+
 export function performTokenSignIn(token) {
-    const apiUrl = window.$$env['API_BASE_URL'] || ''
+    const apiUrl = config['API_BASE_URL']
 
     return fetch(`${apiUrl}/tokensignin`, {
         method: 'POST',

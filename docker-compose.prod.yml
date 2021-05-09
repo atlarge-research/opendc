@@ -6,7 +6,7 @@ services:
     ports:
       - "8080:80"
     environment:
-      API_BASE_URL: ${OPENDC_API_BASE_URL}
+      REACT_APP_API_BASE_URL: ${OPENDC_API_BASE_URL}
 
   api:
     ports:
