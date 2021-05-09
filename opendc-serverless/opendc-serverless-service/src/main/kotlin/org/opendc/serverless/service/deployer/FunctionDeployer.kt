@@ -39,5 +39,5 @@ public interface FunctionDeployer {
     /**
      * Deploy the specified [function].
      */
-    public fun deploy(function: FunctionObject): FunctionInstance
+    public fun deploy(function: FunctionObject, listener: FunctionInstanceListener): FunctionInstance
 }

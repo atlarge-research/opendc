@@ -34,6 +34,7 @@ import org.opendc.experiments.serverless.trace.ServerlessTraceReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.serverless.service.ServerlessService
+import org.opendc.serverless.service.autoscaler.FunctionTerminationPolicyFixed
 import org.opendc.serverless.service.router.RandomRoutingPolicy
 import org.opendc.serverless.simulator.SimFunctionDeployer
 import org.opendc.serverless.simulator.delay.ColdStartModel
@@ -83,7 +84,8 @@ public class ServerlessExperiment : Experiment("Serverless") {
         val traceById = trace.associateBy { it.id }
         val delayInjector = StochasticDelayInjector(coldStartModel, Random())
         val deployer = SimFunctionDeployer(clock, this, createMachineModel(), delayInjector) { FunctionTraceWorkload(traceById.getValue(it.name)) }
-        val service = ServerlessService(coroutineContext, clock, meterProvider.get("opendc-serverless"), deployer, routingPolicy)
+        val service =
+            ServerlessService(coroutineContext, clock, meterProvider.get("opendc-serverless"), deployer, routingPolicy, FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = 10 * 60 * 1000))
         val client = service.newClient()
 
         coroutineScope {

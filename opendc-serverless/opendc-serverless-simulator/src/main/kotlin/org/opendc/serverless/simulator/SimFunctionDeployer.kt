@@ -27,6 +27,7 @@ import kotlinx.coroutines.channels.Channel
 import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.deployer.FunctionDeployer
 import org.opendc.serverless.service.deployer.FunctionInstance
+import org.opendc.serverless.service.deployer.FunctionInstanceListener
 import org.opendc.serverless.service.deployer.FunctionInstanceState
 import org.opendc.serverless.simulator.delay.DelayInjector
 import org.opendc.serverless.simulator.workload.SimServerlessWorkloadMapper
@@ -53,8 +54,8 @@ public class SimFunctionDeployer(
     private val mapper: SimServerlessWorkloadMapper
 ) : FunctionDeployer {
 
-    override fun deploy(function: FunctionObject): Instance {
-        val instance = Instance(function)
+    override fun deploy(function: FunctionObject, listener: FunctionInstanceListener): Instance {
+        val instance = Instance(function, listener)
         instance.start()
         return instance
     }
@@ -62,7 +63,7 @@ public class SimFunctionDeployer(
     /**
      * A simulated [FunctionInstance].
      */
-    public inner class Instance(override val function: FunctionObject) : FunctionInstance {
+    public inner class Instance(override val function: FunctionObject, private val listener: FunctionInstanceListener) : FunctionInstance {
         /**
          * The workload associated with this instance.
          */
@@ -89,6 +90,13 @@ public class SimFunctionDeployer(
         private val chan = Channel<Unit>(Channel.RENDEZVOUS)
 
         override var state: FunctionInstanceState = FunctionInstanceState.Provisioning
+            set(value) {
+                if (field != value) {
+                    listener.onStateChanged(this, value)
+                }
+
+                field = value
+            }
 
         override suspend fun invoke() {
             check(state != FunctionInstanceState.Deleted) { "Function instance has been released" }
@@ -119,7 +127,7 @@ public class SimFunctionDeployer(
                     try {
                         machine.run(workload)
                     } finally {
-                        state = FunctionInstanceState.Terminated
+                        state = FunctionInstanceState.Deleted
                     }
                 }
 

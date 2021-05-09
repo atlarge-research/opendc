@@ -30,8 +30,11 @@ import org.opendc.serverless.api.ServerlessClient
 import org.opendc.serverless.api.ServerlessFunction
 import org.opendc.serverless.service.FunctionObject
 import org.opendc.serverless.service.ServerlessService
+import org.opendc.serverless.service.autoscaler.FunctionTerminationPolicy
 import org.opendc.serverless.service.deployer.FunctionDeployer
 import org.opendc.serverless.service.deployer.FunctionInstance
+import org.opendc.serverless.service.deployer.FunctionInstanceListener
+import org.opendc.serverless.service.deployer.FunctionInstanceState
 import org.opendc.serverless.service.router.RoutingPolicy
 import org.opendc.utils.TimerScheduler
 import java.lang.IllegalStateException
@@ -53,8 +56,9 @@ internal class ServerlessServiceImpl(
     private val clock: Clock,
     private val meter: Meter,
     private val deployer: FunctionDeployer,
-    private val routingPolicy: RoutingPolicy
-) : ServerlessService {
+    private val routingPolicy: RoutingPolicy,
+    private val terminationPolicy: FunctionTerminationPolicy
+) : ServerlessService, FunctionInstanceListener {
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
      */
@@ -220,8 +224,9 @@ internal class ServerlessServiceImpl(
 
                     activeInstance
                 } else {
-                    val instance = deployer.deploy(function)
+                    val instance = deployer.deploy(function, this)
                     instances.add(instance)
+                    terminationPolicy.enqueue(instance)
 
                     function.idleInstances.add(1)
 
@@ -280,6 +285,15 @@ internal class ServerlessServiceImpl(
         // Stop all function instances
         for ((_, function) in functions) {
             function.close()
+        }
+    }
+
+    override fun onStateChanged(instance: FunctionInstance, newState: FunctionInstanceState) {
+        terminationPolicy.onStateChanged(instance, newState)
+
+        if (newState == FunctionInstanceState.Deleted) {
+            val function = instance.function
+            function.instances.remove(instance)
         }
     }
 

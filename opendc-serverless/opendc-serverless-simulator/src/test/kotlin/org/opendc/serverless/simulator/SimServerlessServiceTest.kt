@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.serverless.service.ServerlessService
+import org.opendc.serverless.service.autoscaler.FunctionTerminationPolicyFixed
 import org.opendc.serverless.service.router.RandomRoutingPolicy
 import org.opendc.serverless.simulator.delay.ZeroDelayInjector
 import org.opendc.serverless.simulator.workload.SimServerlessWorkload
@@ -68,7 +69,10 @@ internal class SimServerlessServiceTest {
             override suspend fun invoke() {}
         })
         val deployer = SimFunctionDeployer(clock, this, machineModel, ZeroDelayInjector) { workload }
-        val service = ServerlessService(coroutineContext, clock, meter, deployer, RandomRoutingPolicy())
+        val service = ServerlessService(
+            coroutineContext, clock, meter, deployer, RandomRoutingPolicy(),
+            FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = 10000)
+        )
 
         val client = service.newClient()
 

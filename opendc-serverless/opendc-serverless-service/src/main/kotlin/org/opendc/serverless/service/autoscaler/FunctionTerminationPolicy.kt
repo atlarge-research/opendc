@@ -20,29 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.serverless.service.deployer
+package org.opendc.serverless.service.autoscaler
+
+import org.opendc.serverless.service.deployer.FunctionInstance
+import org.opendc.serverless.service.deployer.FunctionInstanceListener
 
 /**
- * This enumeration describes the states of a [FunctionInstance].
+ * A management policy that is responsible for downscaling the active function instances for a function.
  */
-public enum class FunctionInstanceState {
+public interface FunctionTerminationPolicy : FunctionInstanceListener {
     /**
-     * The function instance is currently being provisioned.
+     * Enqueue the specified [instance] to be scheduled for termination a
      */
-    Provisioning,
-
-    /**
-     * The function instance is idle and ready to execute.
-     */
-    Idle,
-
-    /**
-     * The function instance is executing.
-     */
-    Active,
-
-    /**
-     * The function instance is released and cannot be used anymore.
-     */
-    Deleted
+    public fun enqueue(instance: FunctionInstance)
 }

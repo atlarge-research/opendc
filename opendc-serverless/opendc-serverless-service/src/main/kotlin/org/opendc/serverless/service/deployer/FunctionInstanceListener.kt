@@ -23,26 +23,11 @@
 package org.opendc.serverless.service.deployer
 
 /**
- * This enumeration describes the states of a [FunctionInstance].
+ * Listener interface for events originating from a [FunctionInstance].
  */
-public enum class FunctionInstanceState {
+public interface FunctionInstanceListener {
     /**
-     * The function instance is currently being provisioned.
+     * This method is invoked when the state of a [FunctionInstance] has changed.
      */
-    Provisioning,
-
-    /**
-     * The function instance is idle and ready to execute.
-     */
-    Idle,
-
-    /**
-     * The function instance is executing.
-     */
-    Active,
-
-    /**
-     * The function instance is released and cannot be used anymore.
-     */
-    Deleted
+    public fun onStateChanged(instance: FunctionInstance, newState: FunctionInstanceState) {}
 }
