@@ -11,6 +11,7 @@ FROM node:15 AS build
 COPY ./ /opendc
 COPY --from=staging /opendc/node_modules /opendc/node_modules
 RUN cd /opendc/ \
+    && export REACT_APP_OAUTH_CLIENT_ID="\\\$REACT_APP_OAUTH_CLIENT_ID" \
     && yarn build \
     && mv build/index.html build/index.html.template
 
