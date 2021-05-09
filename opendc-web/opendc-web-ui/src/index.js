@@ -12,8 +12,6 @@ import configureStore from './store/configure-store'
 setupSocketConnection(() => {
     const store = configureStore()
 
-    console.log('test', config)
-
     // Initialize Sentry if the user has configured a DSN
     const dsn = config['SENTRY_DSN']
     if (dsn) {
