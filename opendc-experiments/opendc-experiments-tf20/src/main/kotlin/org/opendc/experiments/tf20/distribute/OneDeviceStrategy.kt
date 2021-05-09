@@ -20,31 +20,15 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.tf20.keras.layer.core
+package org.opendc.experiments.tf20.distribute
 
-import org.opendc.experiments.tf20.keras.layer.Layer
-import org.opendc.experiments.tf20.keras.shape.TensorShape
+import org.opendc.experiments.tf20.core.TFDevice
 
 /**
- * This layer is responsible for the input shape of the built model.
+ * A distribution [Strategy] that places all variables and computation on a single specified device.
  */
-public class Input(vararg dims: Long, name: String) : Layer(name) {
-    /**
-     * Input data dimensions. Rank = 3 or 4 for most popular supported cases.
-     */
-    public val packedDims: LongArray = dims
-
-    override fun build(inputShape: TensorShape) {}
-
-    override fun getOutputShape(inputShape: TensorShape): TensorShape {
-        return inputShape
-    }
-
-    override fun forward(): Double = 0.0
-
-    override fun backward(): Double = 0.0
-
-    override fun toString(): String {
-        return "Input[shape=${packedDims.contentToString()}]"
+public class OneDeviceStrategy(val device: TFDevice) : Strategy {
+    override suspend fun run(forward: Double, backward: Double, batchSize: Int) {
+        device.compute(forward * batchSize + backward)
     }
 }

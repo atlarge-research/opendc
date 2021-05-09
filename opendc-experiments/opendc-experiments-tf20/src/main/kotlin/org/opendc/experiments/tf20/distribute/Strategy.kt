@@ -20,31 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.tf20.keras.layer.core
-
-import org.opendc.experiments.tf20.keras.layer.Layer
-import org.opendc.experiments.tf20.keras.shape.TensorShape
+package org.opendc.experiments.tf20.distribute
 
 /**
- * This layer is responsible for the input shape of the built model.
+ * A strategy for distributing TensorFlow state and computation over multiple devices.
  */
-public class Input(vararg dims: Long, name: String) : Layer(name) {
+public interface Strategy {
     /**
-     * Input data dimensions. Rank = 3 or 4 for most popular supported cases.
+     * Run the specified batch using the given strategy.
      */
-    public val packedDims: LongArray = dims
-
-    override fun build(inputShape: TensorShape) {}
-
-    override fun getOutputShape(inputShape: TensorShape): TensorShape {
-        return inputShape
-    }
-
-    override fun forward(): Double = 0.0
-
-    override fun backward(): Double = 0.0
-
-    override fun toString(): String {
-        return "Input[shape=${packedDims.contentToString()}]"
-    }
+    public suspend fun run(forward: Double, backward: Double, batchSize: Int)
 }

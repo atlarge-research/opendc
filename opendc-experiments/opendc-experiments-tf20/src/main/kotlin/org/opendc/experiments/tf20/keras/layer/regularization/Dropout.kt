@@ -46,5 +46,12 @@ public class Dropout(
         return inputShape
     }
 
+    override fun forward(): Double {
+        val output = outputTensor
+        return output[0] * output[1] * output[2] * output[3] * 4.0 / 1_000_000
+    }
+
+    override fun backward(): Double = forward()
+
     override fun toString(): String = "Dropout[keepProbability=$keepProbability]"
 }

@@ -71,6 +71,22 @@ public class Pool2D(
         return TensorShape(inputShape[0], outHeight, outWidth, inputShape[3])
     }
 
+    override fun forward(): Double {
+        val output = outputTensor
+        // Per output pixel: kernel_w x kernel_h x in_channel
+        var flops: Long = 2 * poolSize[1] * poolSize[2] * inputTensor[3]
+
+        // Flops per output map.
+        flops *= output[2] * output[1]
+
+        // Flops across multiple input patches.
+        flops *= inputTensor[0]
+
+        return flops * 4.0 / 1_000_000
+    }
+
+    override fun backward(): Double = forward()
+
     override fun toString(): String {
         return "MaxPool2D[poolSize=${poolSize.contentToString()}, strides=${strides.contentToString()}, padding=$padding]"
     }

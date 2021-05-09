@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.tf20.keras.layer
 
+import org.opendc.experiments.tf20.keras.TrainableModel
 import org.opendc.experiments.tf20.keras.shape.TensorShape
 
 /**
@@ -30,6 +31,23 @@ import org.opendc.experiments.tf20.keras.shape.TensorShape
  * @param name The name of the layer.
  */
 public abstract class Layer(public val name: String) {
+    /**
+     * TrainableModel in which the layer exists.
+     */
+    internal var parentModel: TrainableModel? = null
+
+    /**
+     * The input shape of the layer.
+     */
+    public lateinit var inputTensor: TensorShape
+        internal set
+
+    /**
+     * The output shape of the layer.
+     */
+    public lateinit var outputTensor: TensorShape
+        internal set
+
     /**
      * Build the layer for the specified [inputShape].
      *
@@ -41,4 +59,14 @@ public abstract class Layer(public val name: String) {
      * Compute output shape of this layer, based on [inputShape] and [Layer] type.
      */
     public abstract fun getOutputShape(inputShape: TensorShape): TensorShape
+
+    /**
+     * Perform a forward propagation
+     */
+    public abstract fun forward(): Double
+
+    /**
+     * Perform a backward propagation.
+     */
+    public abstract fun backward(): Double
 }

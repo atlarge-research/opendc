@@ -45,12 +45,10 @@ public class Conv2D(
     private var padHeight: Double = 0.0
     private var padWidth: Double = 0.0
 
-    override fun build(inputShape: TensorShape) {
-        TODO("not implemented")
-    }
+    override fun build(inputShape: TensorShape) {}
 
     override fun getOutputShape(inputShape: TensorShape): TensorShape {
-        check(filter[2] != inputShape[3]) { "Input channel ${filter[2]} and ${inputShape[3]} shall match" }
+        check(filter[2] == inputShape[3]) { "Input channel ${filter[2]} and ${inputShape[3]} shall match" }
 
         var outHeight = 0L
         var outWidth = 0L
@@ -73,6 +71,27 @@ public class Conv2D(
 
         return TensorShape(inputShape[0], outHeight, outWidth, filter[3])
     }
+
+    override fun forward(): Double {
+        // Mul and add per output pixel: kernel_w x kernel_h x in_channel
+        var flops: Long = (2 * filter[0] * filter[1] * filter[2])
+
+        val output = outputTensor
+        // Flops per output map.
+        flops *= output[1] * output[2] * filter[3]
+
+        // Flops across multiple input patches.
+        flops *= inputTensor[0]
+
+        if (activation == Activation.Relu) {
+            flops += output[0] * output[1] * output[2] * output[3]
+        }
+
+        // return paramsNum() * output.H * output.W * FLOAT_BYTES / MILLION
+        return flops * 4.0 / 1_000_000
+    }
+
+    override fun backward(): Double = forward()
 
     override fun toString(): String {
         return "Conv2D[filter=${filter.contentToString()}, strides=${strides.contentToString()}, activation=$activation, padding=$padding]"

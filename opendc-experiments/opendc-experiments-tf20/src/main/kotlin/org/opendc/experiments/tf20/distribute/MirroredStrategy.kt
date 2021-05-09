@@ -20,39 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.tf20.keras
+package org.opendc.experiments.tf20.distribute
 
-import org.opendc.experiments.tf20.keras.layer.Layer
-import org.opendc.experiments.tf20.keras.layer.core.Input
-import org.opendc.experiments.tf20.keras.shape.TensorShape
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import org.opendc.experiments.tf20.core.TFDevice
 
 /**
- * Sequential model groups a linear stack of layers into a TensorFlow TrainableModel.
+ * A distribution [Strategy] that supports synchronous distributed training on multiple GPUs on one machine.
  *
- * @param [layers] The layers to describe the model design.
+ * It creates one replica per GPU device. Each variable in the model is mirrored across all the replicas.
  */
-public class Sequential(vararg layers: Layer) : TrainableModel(*layers) {
-    override fun buildLayers() {
-        val inputShape = TensorShape(*inputLayer.packedDims)
-        inputLayer.inputTensor = inputShape
-        inputLayer.build(inputShape)
-        var nextShape: TensorShape = inputLayer.getOutputShape(inputShape)
-        inputLayer.outputTensor = nextShape
-
-        layers.filter { it !is Input }.forEach {
-            it.inputTensor = nextShape
-            it.build(nextShape)
-
-            nextShape = it.getOutputShape(nextShape)
-            it.outputTensor = nextShape
+public class MirroredStrategy(val devices: List<TFDevice>) : Strategy {
+    override suspend fun run(forward: Double, backward: Double, batchSize: Int) = coroutineScope {
+        for (device in devices) {
+            launch { device.compute(forward * batchSize / devices.size + backward) }
         }
-    }
-
-    override fun forward(): Double {
-        return layers.sumByDouble { it.forward() }
-    }
-
-    override fun backward(): Double {
-        return layers.sumByDouble { it.backward() }
     }
 }

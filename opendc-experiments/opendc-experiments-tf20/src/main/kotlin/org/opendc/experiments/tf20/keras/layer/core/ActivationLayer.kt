@@ -40,6 +40,10 @@ public class ActivationLayer(
 
     override fun getOutputShape(inputShape: TensorShape): TensorShape = inputShape
 
+    override fun forward(): Double = 0.0
+
+    override fun backward(): Double = forward()
+
     override fun toString(): String {
         return "ActivationLayer[activation=$activation]"
     }
