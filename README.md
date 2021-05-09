@@ -15,12 +15,12 @@ Collaborative Datacenter Simulation and Exploration for Everybody
 
 OpenDC is a free and open-source platform for datacenter simulation aimed at both research and education.
 
-![Datacenter construction in OpenDC](docs/images/opendc-frontend-construction.png)
+![Datacenter construction in OpenDC](docs/images/screenshot-construction.png)
 
 Users can construct datacenters (see above) and define portfolios of scenarios (experiments) to see how these
 datacenters perform under different workloads and schedulers (see below).
 
-![Datacenter simulation in OpenDC](docs/images/opendc-frontend-simulation.png)
+![Datacenter simulation in OpenDC](docs/images/screenshot-simulation.png)
 
 The simulator is accessible both as a ready-to-use website hosted by us at [opendc.org](https://opendc.org), and as
 source code that users can run locally on their own machine, through Docker.
