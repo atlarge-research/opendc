@@ -24,12 +24,18 @@ This document contains publications related to OpenDC or publications that have 
 1. [Capelin: Fast Data-Driven Capacity Planning for Cloud Datacenters](https://repository.tudelft.nl/islandora/object/uuid:d6d50861-86a3-4dd3-a13f-42d84db7af66?collection=education)  
    **Master Thesis, 2020**  
    Georgios Andreadis
+1. [Modeling and Simulation of the Google TensorFlow Ecosystem](https://atlarge-research.com/pdfs/lai2020thesis.pdf)  
+   **Master Thesis, 2020**  
+   Wenchen Lai
 1. [OpenDC Serverless: Design, Implementation and Evaluation of a FaaS Platform Simulator](https://zenodo.org/record/4046675)  
    **Bachelor Thesis, 2020**  
    Soufiane Jounaid
 1. [LEGO, but with Servers: Creating the Building Blocks to Design and Simulate Datacenters](https://atlarge-research.com/pdfs/BSc-Thesis-JACOB_BURLEY_FINAL.pdf)  
    **Bachelor Thesis, 2020**  
    Jacob Burley
+1. [A Trace-Based Validation Study of OpenDC](https://atlarge-research.com/pdfs/2020-12-02_bsc_thesis_jaro_final.pdf)  
+   **Bachelor Thesis, 2020**  
+   Jaro Bosch
 1. [A Systematic Design Space Exploration of Datacenter Schedulers](https://repository.tudelft.nl/islandora/object/uuid%3A20478016-cc7d-4c87-aa12-25b46f511277?collection=education)  
    **Bachelor Thesis, 2019**  
    Fabian S. Mastenbroek
