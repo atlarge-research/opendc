@@ -22,6 +22,18 @@
 
 plugins {
     `java-platform`
+    `publishing-conventions`
 }
 
 description = "Java platform for the OpenDC project"
+
+publishing.publications.named<MavenPublication>("maven") {
+    from(components["javaPlatform"])
+
+    pom {
+        description.set(
+            "This Bill of Materials POM can be used to ease dependency management " +
+                "when referencing multiple OpenDC artifacts using Gradle or Maven."
+        )
+    }
+}

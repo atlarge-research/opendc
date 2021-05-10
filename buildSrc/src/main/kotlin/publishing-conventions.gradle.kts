@@ -25,7 +25,6 @@ import org.gradle.api.credentials.PasswordCredentials
 plugins {
     `maven-publish`
     signing
-    id("dokka-conventions")
 }
 
 val isSnapshot = project.version.toString().contains("SNAPSHOT")
@@ -36,13 +35,6 @@ tasks.withType<PublishToMavenRepository>().configureEach {
 }
 tasks.withType<PublishToMavenLocal>().configureEach {
     dependsOn(tasks.build)
-}
-
-val javadocJar by tasks.registering(Jar::class) {
-    // Note that we publish the Dokka HTML artifacts as Javadoc
-    dependsOn(tasks.dokkaHtml)
-    archiveClassifier.set("javadoc")
-    from(tasks.dokkaHtml)
 }
 
 signing {
@@ -64,9 +56,6 @@ signing {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components["java"])
-            artifact(javadocJar)
-
             pom {
                 name.set(project.name)
                 description.set("Open-source platform for datacenter simulation")

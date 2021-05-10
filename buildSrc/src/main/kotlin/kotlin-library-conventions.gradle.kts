@@ -34,3 +34,19 @@ java {
 kotlin {
     explicitApi()
 }
+
+val javadocJar by tasks.registering(Jar::class) {
+    // Note that we publish the Dokka HTML artifacts as Javadoc
+    dependsOn(tasks.dokkaHtml)
+    archiveClassifier.set("javadoc")
+    from(tasks.dokkaHtml)
+}
+
+configure<PublishingExtension> {
+    publications {
+        named<MavenPublication>("maven") {
+            from(components["java"])
+            artifact(javadocJar)
+        }
+    }
+}
