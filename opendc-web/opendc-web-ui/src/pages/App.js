@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
-import DocumentTitle from 'react-document-title'
 import { HotKeys } from 'react-hotkeys'
 import { useDispatch, useSelector } from 'react-redux'
 import { openPortfolioSucceeded } from '../actions/portfolios'
@@ -23,6 +22,7 @@ import NewPortfolioModal from '../containers/modals/NewPortfolioModal'
 import NewScenarioModal from '../containers/modals/NewScenarioModal'
 import PortfolioResultsContainer from '../containers/app/results/PortfolioResultsContainer'
 import KeymapConfiguration from '../shortcuts/keymap'
+import { useDocumentTitle } from '../util/hooks'
 
 const App = ({ projectId, portfolioId, scenarioId }) => {
     const projectName = useSelector(
@@ -76,21 +76,21 @@ const App = ({ projectId, portfolioId, scenarioId }) => {
         </div>
     )
 
+    useDocumentTitle(projectName ? projectName + ' - OpenDC' : 'Simulation - OpenDC')
+
     return (
-        <DocumentTitle title={projectName ? projectName + ' - OpenDC' : 'Simulation - OpenDC'}>
-            <HotKeys keyMap={KeymapConfiguration} className="page-container full-height">
-                <AppNavbarContainer fullWidth={true} />
-                {scenarioId ? scenarioElements : portfolioId ? portfolioElements : constructionElements}
-                <NewTopologyModal />
-                <NewPortfolioModal />
-                <NewScenarioModal />
-                <EditRoomNameModal />
-                <DeleteRoomModal />
-                <EditRackNameModal />
-                <DeleteRackModal />
-                <DeleteMachineModal />
-            </HotKeys>
-        </DocumentTitle>
+        <HotKeys keyMap={KeymapConfiguration} className="page-container full-height">
+            <AppNavbarContainer fullWidth={true} />
+            {scenarioId ? scenarioElements : portfolioId ? portfolioElements : constructionElements}
+            <NewTopologyModal />
+            <NewPortfolioModal />
+            <NewScenarioModal />
+            <EditRoomNameModal />
+            <DeleteRoomModal />
+            <EditRackNameModal />
+            <DeleteRackModal />
+            <DeleteMachineModal />
+        </HotKeys>
     )
 }
 

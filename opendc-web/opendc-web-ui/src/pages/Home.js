@@ -1,5 +1,4 @@
 import React from 'react'
-import DocumentTitle from 'react-document-title'
 import ContactSection from '../components/home/ContactSection'
 import IntroSection from '../components/home/IntroSection'
 import JumbotronHeader from '../components/home/JumbotronHeader'
@@ -10,8 +9,10 @@ import TeamSection from '../components/home/TeamSection'
 import TechnologiesSection from '../components/home/TechnologiesSection'
 import HomeNavbar from '../components/navigation/HomeNavbar'
 import './Home.sass'
+import { useDocumentTitle } from '../util/hooks'
 
 function Home() {
+    useDocumentTitle('OpenDC')
     return (
         <div>
             <HomeNavbar />
@@ -24,7 +25,6 @@ function Home() {
                 <TechnologiesSection />
                 <TeamSection />
                 <ContactSection />
-                <DocumentTitle title="OpenDC" />
             </div>
         </div>
     )
