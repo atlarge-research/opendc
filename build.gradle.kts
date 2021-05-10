@@ -28,5 +28,5 @@ plugins {
 
 allprojects {
     group = "org.opendc"
-    version = "2.0-rc1"
+    version = "2.0"
 }

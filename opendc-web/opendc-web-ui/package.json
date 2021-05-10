@@ -1,6 +1,6 @@
 {
     "name": "opendc-frontend",
-    "version": "0.1.0",
+    "version": "2.0",
     "description": "The user-facing component of the OpenDC stack, allowing users to build and interact with their own (virtual) datacenters.",
     "keywords": [
         "opendc",
