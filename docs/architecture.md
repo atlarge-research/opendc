@@ -3,9 +3,7 @@
 OpenDC consists of four components: a Kotlin simulator, a MongoDB database, a Python
 Flask [API](/opendc-web/opendc-web-api), and a React.js [frontend](/opendc-web/opendc-web-ui).
 
-<p align="center">
-    <img src="https://raw.githubusercontent.com/atlarge-research/opendc/master/misc/artwork/opendc-component-diagram.png" alt="OpenDC Component Diagram">
-</p>
+![OpenDC Component Diagram](./images/component-diagram.png)
 
 On the frontend, users can construct a topology by specifying a datacenter's rooms, racks and machines, and create
 scenarios to see how a workload trace runs on that topology. The frontend communicates with the web server over
