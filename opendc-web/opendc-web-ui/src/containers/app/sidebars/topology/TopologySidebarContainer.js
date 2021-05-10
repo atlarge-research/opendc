@@ -1,12 +1,10 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import TopologySidebarComponent from '../../../../components/app/sidebars/topology/TopologySidebarComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        interactionLevel: state.interactionLevel,
-    }
+const TopologySidebarContainer = (props) => {
+    const interactionLevel = useSelector((state) => state.interactionLevel)
+    return <TopologySidebarComponent {...props} interactionLevel={interactionLevel} />
 }
-
-const TopologySidebarContainer = connect(mapStateToProps)(TopologySidebarComponent)
 
 export default TopologySidebarContainer

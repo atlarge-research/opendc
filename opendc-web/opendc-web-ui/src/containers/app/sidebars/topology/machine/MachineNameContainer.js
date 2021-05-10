@@ -1,12 +1,10 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import MachineNameComponent from '../../../../../components/app/sidebars/topology/machine/MachineNameComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        position: state.interactionLevel.position,
-    }
+const MachineNameContainer = (props) => {
+    const position = useSelector((state) => state.interactionLevel.position)
+    return <MachineNameComponent {...props} position={position} />
 }
-
-const MachineNameContainer = connect(mapStateToProps)(MachineNameComponent)
 
 export default MachineNameContainer

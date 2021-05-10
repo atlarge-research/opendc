@@ -1,17 +1,17 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import UnitListComponent from '../../../../../components/app/sidebars/topology/machine/UnitListComponent'
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        unitIds:
+const UnitListContainer = (props) => {
+    const unitIds = useSelector(
+        (state) =>
             state.objects.machine[
                 state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].machineIds[
                     state.interactionLevel.position - 1
                 ]
-            ][ownProps.unitType + 'Ids'],
-    }
+            ][props.unitType + 'Ids']
+    )
+    return <UnitListComponent {...props} unitIds={unitIds} />
 }
-
-const UnitListContainer = connect(mapStateToProps)(UnitListComponent)
 
 export default UnitListContainer

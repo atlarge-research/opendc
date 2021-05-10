@@ -1,17 +1,14 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import TopologyGroup from '../../../components/app/map/groups/TopologyGroup'
 
-const mapStateToProps = (state) => {
-    if (state.currentTopologyId === '-1') {
-        return {}
-    }
+const TopologyContainer = () => {
+    const topology = useSelector(
+        (state) => state.currentTopologyId !== '-1' && state.objects.topology[state.currentTopologyId]
+    )
+    const interactionLevel = useSelector((state) => state.interactionLevel)
 
-    return {
-        topology: state.objects.topology[state.currentTopologyId],
-        interactionLevel: state.interactionLevel,
-    }
+    return <TopologyGroup topology={topology} interactionLevel={interactionLevel} />
 }
-
-const TopologyContainer = connect(mapStateToProps)(TopologyGroup)
 
 export default TopologyContainer

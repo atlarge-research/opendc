@@ -1,29 +1,35 @@
 import React from 'react'
+import { Row, Col } from 'reactstrap'
 import ContentSection from './ContentSection'
 
 const Stakeholder = ({ name, title, subtitle }) => (
-    <div className="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-6">
-        <img
+    <Col xl="4" lg="4" md="4" sm="6">
+        <Col
+            tag="img"
+            xl="3"
+            lg="3"
+            md="4"
+            sm="4"
             src={'img/stakeholders/' + name + '.png'}
-            className="col-xl-3 col-lg-4 col-md-4 col-sm-4 col-4 img-fluid"
+            className="img-fluid"
             alt={title}
         />
         <div className="text-center mt-2">
             <h4>{title}</h4>
             <p>{subtitle}</p>
         </div>
-    </div>
+    </Col>
 )
 
 const StakeholderSection = () => (
     <ContentSection name="stakeholders" title="Stakeholders">
-        <div className="row justify-content-center">
+        <Row className="justify-content-center">
             <Stakeholder name="Manager" title="Managers" subtitle="Seeing is deciding" />
             <Stakeholder name="Sales" title="Sales" subtitle="Demo concepts" />
             <Stakeholder name="Developer" title="DevOps" subtitle="Develop & tune" />
             <Stakeholder name="Researcher" title="Researchers" subtitle="Understand & design" />
             <Stakeholder name="Student" title="Students" subtitle="Grasp complex concepts" />
-        </div>
+        </Row>
     </ContentSection>
 )
 

@@ -1,6 +1,6 @@
 import React from 'react'
+import { HotKeys } from 'react-hotkeys'
 import { Stage } from 'react-konva'
-import { Shortcuts } from 'react-shortcuts'
 import MapLayer from '../../../containers/app/map/layers/MapLayer'
 import ObjectHoverLayer from '../../../containers/app/map/layers/ObjectHoverLayer'
 import RoomHoverLayer from '../../../containers/app/map/layers/RoomHoverLayer'
@@ -46,7 +46,6 @@ class MapStageComponent extends React.Component {
     }
 
     updateScale(e) {
-        e.preventDefault()
         this.props.zoomInOnPosition(e.deltaY < 0, this.state.mouseX, this.state.mouseY)
     }
 
@@ -55,23 +54,11 @@ class MapStageComponent extends React.Component {
         this.setState({ mouseX: mousePos.x, mouseY: mousePos.y })
     }
 
-    handleShortcuts(action) {
-        switch (action) {
-            case 'MOVE_LEFT':
-                this.moveWithDelta(MAP_MOVE_PIXELS_PER_EVENT, 0)
-                break
-            case 'MOVE_RIGHT':
-                this.moveWithDelta(-MAP_MOVE_PIXELS_PER_EVENT, 0)
-                break
-            case 'MOVE_UP':
-                this.moveWithDelta(0, MAP_MOVE_PIXELS_PER_EVENT)
-                break
-            case 'MOVE_DOWN':
-                this.moveWithDelta(0, -MAP_MOVE_PIXELS_PER_EVENT)
-                break
-            default:
-                break
-        }
+    handlers = {
+        MOVE_LEFT: () => this.moveWithDelta(MAP_MOVE_PIXELS_PER_EVENT, 0),
+        MOVE_RIGHT: () => this.moveWithDelta(-MAP_MOVE_PIXELS_PER_EVENT, 0),
+        MOVE_UP: () => this.moveWithDelta(0, MAP_MOVE_PIXELS_PER_EVENT),
+        MOVE_DOWN: () => this.moveWithDelta(0, -MAP_MOVE_PIXELS_PER_EVENT),
     }
 
     moveWithDelta(deltaX, deltaY) {
@@ -80,7 +67,7 @@ class MapStageComponent extends React.Component {
 
     render() {
         return (
-            <Shortcuts name="MAP" handler={this.handleShortcuts.bind(this)} targetNodeSelector="body">
+            <HotKeys handlers={this.handlers}>
                 <Stage
                     ref={(stage) => {
                         this.stage = stage
@@ -95,7 +82,7 @@ class MapStageComponent extends React.Component {
                         <ObjectHoverLayer mouseX={this.state.mouseX} mouseY={this.state.mouseY} />
                     </Provider>
                 </Stage>
-            </Shortcuts>
+            </HotKeys>
         )
     }
 }

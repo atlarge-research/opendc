@@ -1,22 +1,23 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { setMapDimensions, setMapPositionWithBoundsCheck, zoomInOnPosition } from '../../../actions/map'
 import MapStageComponent from '../../../components/app/map/MapStageComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        mapPosition: state.map.position,
-        mapDimensions: state.map.dimensions,
-    }
+const MapStage = () => {
+    const { position, dimensions } = useSelector((state) => state.map)
+    const dispatch = useDispatch()
+    const zoomInOnPositionA = (zoomIn, x, y) => dispatch(zoomInOnPosition(zoomIn, x, y))
+    const setMapPositionWithBoundsCheckA = (x, y) => dispatch(setMapPositionWithBoundsCheck(x, y))
+    const setMapDimensionsA = (width, height) => dispatch(setMapDimensions(width, height))
+    return (
+        <MapStageComponent
+            mapPosition={position}
+            mapDimensions={dimensions}
+            zoomInOnPosition={zoomInOnPositionA}
+            setMapPositionWithBoundsCheck={setMapPositionWithBoundsCheckA}
+            setMapDimensions={setMapDimensionsA}
+        />
+    )
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        zoomInOnPosition: (zoomIn, x, y) => dispatch(zoomInOnPosition(zoomIn, x, y)),
-        setMapPositionWithBoundsCheck: (x, y) => dispatch(setMapPositionWithBoundsCheck(x, y)),
-        setMapDimensions: (width, height) => dispatch(setMapDimensions(width, height)),
-    }
-}
-
-const MapStage = connect(mapStateToProps, mapDispatchToProps)(MapStageComponent)
 
 export default MapStage

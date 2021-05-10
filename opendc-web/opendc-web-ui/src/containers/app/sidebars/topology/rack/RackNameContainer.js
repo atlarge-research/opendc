@@ -1,19 +1,14 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { openEditRackNameModal } from '../../../../../actions/modals/topology'
 import RackNameComponent from '../../../../../components/app/sidebars/topology/rack/RackNameComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        rackName: state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].name,
-    }
+const RackNameContainer = (props) => {
+    const rackName = useSelector(
+        (state) => state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].name
+    )
+    const dispatch = useDispatch()
+    return <RackNameComponent {...props} rackName={rackName} onEdit={() => dispatch(openEditRackNameModal())} />
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onEdit: () => dispatch(openEditRackNameModal()),
-    }
-}
-
-const RackNameContainer = connect(mapStateToProps, mapDispatchToProps)(RackNameComponent)
 
 export default RackNameContainer

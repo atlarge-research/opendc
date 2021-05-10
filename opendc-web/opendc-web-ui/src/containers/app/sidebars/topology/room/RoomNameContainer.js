@@ -1,19 +1,13 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { openEditRoomNameModal } from '../../../../../actions/modals/topology'
 import RoomNameComponent from '../../../../../components/app/sidebars/topology/room/RoomNameComponent'
 
-const mapStateToProps = (state) => {
-    return {
-        roomName: state.objects.room[state.interactionLevel.roomId].name,
-    }
+const RoomNameContainer = (props) => {
+    const roomName = useSelector((state) => state.objects.room[state.interactionLevel.roomId].name)
+    const dispatch = useDispatch()
+    const onEdit = () => dispatch(openEditRoomNameModal())
+    return <RoomNameComponent {...props} onEdit={onEdit} roomName={roomName} />
 }
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onEdit: () => dispatch(openEditRoomNameModal()),
-    }
-}
-
-const RoomNameContainer = connect(mapStateToProps, mapDispatchToProps)(RoomNameComponent)
 
 export default RoomNameContainer

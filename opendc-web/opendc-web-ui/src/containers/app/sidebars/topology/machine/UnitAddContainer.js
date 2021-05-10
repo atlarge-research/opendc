@@ -1,19 +1,15 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { addUnit } from '../../../../../actions/topology/machine'
 import UnitAddComponent from '../../../../../components/app/sidebars/topology/machine/UnitAddComponent'
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        units: Object.values(state.objects[ownProps.unitType]),
-    }
-}
+const UnitAddContainer = (props) => {
+    const units = useSelector((state) => Object.values(state.objects[props.unitType]))
+    const dispatch = useDispatch()
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
-        onAdd: (id) => dispatch(addUnit(ownProps.unitType, id)),
-    }
-}
+    const onAdd = (id) => dispatch(addUnit(props.unitType, id))
 
-const UnitAddContainer = connect(mapStateToProps, mapDispatchToProps)(UnitAddComponent)
+    return <UnitAddComponent {...props} onAdd={onAdd} units={units} />
+}
 
 export default UnitAddContainer

@@ -1,12 +1,16 @@
 import React from 'react'
-import DocumentTitle from 'react-document-title'
-import { connect } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { openDeleteProfileModal } from '../actions/modals/profile'
 import DeleteProfileModal from '../containers/modals/DeleteProfileModal'
 import AppNavbarContainer from '../containers/navigation/AppNavbarContainer'
+import { useDocumentTitle } from '../util/hooks'
 
-const ProfileContainer = ({ onDelete }) => (
-    <DocumentTitle title="My Profile - OpenDC">
+const Profile = () => {
+    const dispatch = useDispatch()
+    const onDelete = () => dispatch(openDeleteProfileModal())
+
+    useDocumentTitle('My Profile - OpenDC')
+    return (
         <div className="full-height">
             <AppNavbarContainer fullWidth={false} />
             <div className="container text-page-container full-height">
@@ -21,15 +25,7 @@ const ProfileContainer = ({ onDelete }) => (
             </div>
             <DeleteProfileModal />
         </div>
-    </DocumentTitle>
-)
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onDelete: () => dispatch(openDeleteProfileModal()),
-    }
+    )
 }
-
-const Profile = connect(undefined, mapDispatchToProps)(ProfileContainer)
 
 export default Profile

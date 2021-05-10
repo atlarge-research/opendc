@@ -1,12 +1,12 @@
-import { connect } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import WallGroup from '../../../components/app/map/groups/WallGroup'
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        tiles: state.objects.room[ownProps.roomId].tileIds.map((tileId) => state.objects.tile[tileId]),
-    }
+const WallContainer = (props) => {
+    const tiles = useSelector((state) =>
+        state.objects.room[props.roomId].tileIds.map((tileId) => state.objects.tile[tileId])
+    )
+    return <WallGroup {...props} tiles={tiles} />
 }
-
-const WallContainer = connect(mapStateToProps)(WallGroup)
 
 export default WallContainer
