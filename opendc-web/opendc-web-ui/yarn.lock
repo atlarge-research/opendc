@@ -4240,7 +4240,7 @@ decimal.js-light@^2.4.1:
   resolved "https://registry.yarnpkg.com/decimal.js-light/-/decimal.js-light-2.5.1.tgz#134fd32508f19e208f4fb2f8dac0d2626a867934"
   integrity sha512-qIMFpTMZmny+MMIitAB6D7iVPEorVw6YQRWkvarTkT4tBeSLLiHzcwj6q0MmYSFCiVpiqPJTJEYIrpcPzVEIvg==
 
-decimal.js@^10.2.0, decimal.js@^10.2.1:
+decimal.js@^10.2.1:
   version "10.2.1"
   resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.2.1.tgz#238ae7b0f0c793d3e3cea410108b35a2c01426a3"
   integrity sha512-KaL7+6Fw6i5A2XSnsbhm/6B+NuEA7TZ4vqxnd5tXz9sbKtrN9Srj8ab4vKVdK8YAqZO9P1kg45Y6YLoduPf+kw==
@@ -7577,13 +7577,13 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-mathjs@~7.1.0:
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-7.1.0.tgz#83226e336b8b258b046a139865373e667db94afb"
-  integrity sha512-Km6PO2UR+COs5mru5auKQKi84GKBryuL5JDdKeAxAi0QV8mH/qwpZKLnzrycxBacQ/X/4Z4Kn+gtYc5gEeWsDQ==
+mathjs@~7.6.0:
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-7.6.0.tgz#f0b7579e0756b13422995d0c4f29bd17d65d4dcc"
+  integrity sha512-abywR28hUpKF4at5jE8Ys+Kigk40eKMT5mcBLD0/dtsqjfOLbtzd3WjlRqIopNo7oQ6FME51qph6lb8h/bhpUg==
   dependencies:
     complex.js "^2.0.11"
-    decimal.js "^10.2.0"
+    decimal.js "^10.2.1"
     escape-latex "^1.2.0"
     fraction.js "^4.0.12"
     javascript-natural-sort "^0.7.1"
