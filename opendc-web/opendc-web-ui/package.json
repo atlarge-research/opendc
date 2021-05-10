@@ -18,8 +18,8 @@
     "private": true,
     "proxy": "http://localhost:8081",
     "dependencies": {
-        "@sentry/react": "^5.27.3",
-        "@sentry/tracing": "^5.27.3",
+        "@sentry/react": "^5.30.0",
+        "@sentry/tracing": "^5.30.0",
         "approximate-number": "~2.0.0",
         "bootstrap": "4.5.3",
         "classnames": "~2.2.5",
