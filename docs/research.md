@@ -27,7 +27,7 @@ This document contains publications related to OpenDC or publications that have 
 1. [OpenDC Serverless: Design, Implementation and Evaluation of a FaaS Platform Simulator](https://zenodo.org/record/4046675)  
    **Bachelor Thesis, 2020**  
    Soufiane Jounaid
-1. LEGO, but with Servers: Creating the Building Blocks to Design and Simulate Datacenters  
+1. [LEGO, but with Servers: Creating the Building Blocks to Design and Simulate Datacenters](https://atlarge-research.com/pdfs/BSc-Thesis-JACOB_BURLEY_FINAL.pdf)  
    **Bachelor Thesis, 2020**  
    Jacob Burley
 1. [A Systematic Design Space Exploration of Datacenter Schedulers](https://repository.tudelft.nl/islandora/object/uuid%3A20478016-cc7d-4c87-aa12-25b46f511277?collection=education)  
