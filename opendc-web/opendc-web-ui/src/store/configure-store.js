@@ -6,23 +6,15 @@ import thunk from 'redux-thunk'
 import { authRedirectMiddleware } from '../auth/index'
 import rootReducer from '../reducers/index'
 import rootSaga from '../sagas/index'
-import { dummyMiddleware } from './middlewares/dummy-middleware'
 import { viewportAdjustmentMiddleware } from './middlewares/viewport-adjustment'
 
 const sagaMiddleware = createSagaMiddleware()
 
-let logger
-if (process.env.NODE_ENV !== 'production') {
-    logger = createLogger()
-}
+const middlewares = [thunk, sagaMiddleware, authRedirectMiddleware, viewportAdjustmentMiddleware]
 
-const middlewares = [
-    process.env.NODE_ENV === 'production' ? dummyMiddleware : logger,
-    thunk,
-    sagaMiddleware,
-    authRedirectMiddleware,
-    viewportAdjustmentMiddleware,
-]
+if (process.env.NODE_ENV !== 'production') {
+    middlewares.push(createLogger())
+}
 
 export let store = undefined
 
