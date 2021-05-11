@@ -1,40 +1,17 @@
-import { sendRequest } from '../index'
-import { deleteById, getById } from './util'
+import { request } from '../index'
 
 export function getPrefab(prefabId) {
-    return getById('/prefabs/{prefabId}', { prefabId })
+    return request(`prefabs/${prefabId}`)
 }
 
 export function addPrefab(prefab) {
-    return sendRequest({
-        path: '/prefabs',
-        method: 'POST',
-        parameters: {
-            body: {
-                prefab,
-            },
-            path: {},
-            query: {},
-        },
-    })
+    return request('prefabs', 'POST', { prefab })
 }
 
 export function updatePrefab(prefab) {
-    return sendRequest({
-        path: '/prefabs/{prefabId}',
-        method: 'PUT',
-        parameters: {
-            body: {
-                prefab,
-            },
-            path: {
-                prefabId: prefab._id,
-            },
-            query: {},
-        },
-    })
+    return request(`prefabs/${prefab._id}`, 'PUT', { prefab })
 }
 
 export function deletePrefab(prefabId) {
-    return deleteById('/prefabs/{prefabId}', { prefabId })
+    return request(`prefabs/${prefabId}`, 'DELETE')
 }

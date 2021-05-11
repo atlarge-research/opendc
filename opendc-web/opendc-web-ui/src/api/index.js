@@ -1,13 +1,22 @@
-import { sendSocketRequest } from './socket'
+import config from '../config'
+import { getAuthToken } from '../auth'
 
-export function sendRequest(request) {
-    return new Promise((resolve, reject) => {
-        sendSocketRequest(request, (response) => {
-            if (response.status.code === 200) {
-                resolve(response.content)
-            } else {
-                reject(response)
-            }
-        })
+const apiUrl = config['API_BASE_URL']
+
+export async function request(path, method = 'GET', body) {
+    const res = await fetch(`${apiUrl}/v2/${path}`, {
+        method: method,
+        headers: {
+            'auth-token': getAuthToken(),
+            'Content-Type': 'application/json',
+        },
+        body: body && JSON.stringify(body),
     })
+    const { status, content } = await res.json()
+
+    if (status.code !== 200) {
+        throw status
+    }
+
+    return content
 }

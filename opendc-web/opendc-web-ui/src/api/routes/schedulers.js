@@ -1,5 +1,5 @@
-import { getAll } from './util'
+import { request } from '../index'
 
 export function getAllSchedulers() {
-    return getAll('/schedulers')
+    return request('schedulers')
 }

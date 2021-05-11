@@ -1,40 +1,17 @@
-import { sendRequest } from '../index'
-import { deleteById, getById } from './util'
+import { request } from '../index'
 
 export function getProject(projectId) {
-    return getById('/projects/{projectId}', { projectId })
+    return request(`projects/${projectId}`)
 }
 
 export function addProject(project) {
-    return sendRequest({
-        path: '/projects',
-        method: 'POST',
-        parameters: {
-            body: {
-                project,
-            },
-            path: {},
-            query: {},
-        },
-    })
+    return request('projects', 'POST', { project })
 }
 
 export function updateProject(project) {
-    return sendRequest({
-        path: '/projects/{projectId}',
-        method: 'PUT',
-        parameters: {
-            body: {
-                project,
-            },
-            path: {
-                projectId: project._id,
-            },
-            query: {},
-        },
-    })
+    return request(`projects/${project._id}`, 'PUT', { project })
 }
 
 export function deleteProject(projectId) {
-    return deleteById('/projects/{projectId}', { projectId })
+    return request(`projects/${projectId}`, 'DELETE')
 }

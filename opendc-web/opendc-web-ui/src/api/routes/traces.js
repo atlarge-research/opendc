@@ -1,5 +1,5 @@
-import { getAll } from './util'
+import { request } from '../index'
 
 export function getAllTraces() {
-    return getAll('/traces')
+    return request('traces')
 }

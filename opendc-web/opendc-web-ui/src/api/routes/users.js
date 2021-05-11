@@ -1,48 +1,17 @@
-import { sendRequest } from '../index'
-import { deleteById } from './util'
+import { request } from '../index'
 
 export function getUserByEmail(email) {
-    return sendRequest({
-        path: '/users',
-        method: 'GET',
-        parameters: {
-            body: {},
-            path: {},
-            query: {
-                email,
-            },
-        },
-    })
+    return request(`users` + new URLSearchParams({ email }))
 }
 
 export function addUser(user) {
-    return sendRequest({
-        path: '/users',
-        method: 'POST',
-        parameters: {
-            body: {
-                user,
-            },
-            path: {},
-            query: {},
-        },
-    })
+    return request('users', 'POST', { user })
 }
 
 export function getUser(userId) {
-    return sendRequest({
-        path: '/users/{userId}',
-        method: 'GET',
-        parameters: {
-            body: {},
-            path: {
-                userId,
-            },
-            query: {},
-        },
-    })
+    return request(`users/${userId}`)
 }
 
 export function deleteUser(userId) {
-    return deleteById('/users/{userId}', { userId })
+    return request(`users/${userId}`, 'DELETE')
 }

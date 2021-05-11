@@ -1,42 +1,17 @@
-import { deleteById, getById } from './util'
-import { sendRequest } from '../index'
+import { request } from '../index'
 
 export function addPortfolio(projectId, portfolio) {
-    return sendRequest({
-        path: '/projects/{projectId}/portfolios',
-        method: 'POST',
-        parameters: {
-            body: {
-                portfolio,
-            },
-            path: {
-                projectId,
-            },
-            query: {},
-        },
-    })
+    return request(`projects/${projectId}/portfolios`, 'POST', { portfolio })
 }
 
 export function getPortfolio(portfolioId) {
-    return getById('/portfolios/{portfolioId}', { portfolioId })
+    return request(`portfolios/${portfolioId}`)
 }
 
 export function updatePortfolio(portfolioId, portfolio) {
-    return sendRequest({
-        path: '/portfolios/{projectId}',
-        method: 'POST',
-        parameters: {
-            body: {
-                portfolio,
-            },
-            path: {
-                portfolioId,
-            },
-            query: {},
-        },
-    })
+    return request(`portfolios/${portfolioId}`, 'PUT', { portfolio })
 }
 
 export function deletePortfolio(portfolioId) {
-    return deleteById('/portfolios/{portfolioId}', { portfolioId })
+    return request(`portfolios/${portfolioId}`, 'DELETE')
 }

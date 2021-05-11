@@ -1,42 +1,17 @@
-import { deleteById, getById } from './util'
-import { sendRequest } from '../index'
+import { request } from '../index'
 
 export function addTopology(topology) {
-    return sendRequest({
-        path: '/projects/{projectId}/topologies',
-        method: 'POST',
-        parameters: {
-            body: {
-                topology,
-            },
-            path: {
-                projectId: topology.projectId,
-            },
-            query: {},
-        },
-    })
+    return request(`projects/${topology.projectId}/topologies`, 'POST', { topology })
 }
 
 export function getTopology(topologyId) {
-    return getById('/topologies/{topologyId}', { topologyId })
+    return request(`topologies/${topologyId}`)
 }
 
 export function updateTopology(topology) {
-    return sendRequest({
-        path: '/topologies/{topologyId}',
-        method: 'PUT',
-        parameters: {
-            body: {
-                topology,
-            },
-            path: {
-                topologyId: topology._id,
-            },
-            query: {},
-        },
-    })
+    return request(`topologies/${topology._id}`, 'PUT', { topology })
 }
 
 export function deleteTopology(topologyId) {
-    return deleteById('/topologies/{topologyId}', { topologyId })
+    return request(`topologies/${topologyId}`, 'DELETE')
 }
