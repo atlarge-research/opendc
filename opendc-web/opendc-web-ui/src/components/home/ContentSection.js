@@ -2,10 +2,10 @@ import React from 'react'
 import classNames from 'classnames'
 import { Container } from 'reactstrap'
 import PropTypes from 'prop-types'
-import './ContentSection.sass'
+import { contentSection } from './ContentSection.module.scss'
 
 const ContentSection = ({ name, title, children, className }) => (
-    <section id={name} className={classNames(className, name + '-section', 'content-section')}>
+    <section id={name} className={classNames(className, contentSection)}>
         <Container>
             <h1>{title}</h1>
             {children}

@@ -3,8 +3,8 @@ import FontAwesome from 'react-fontawesome'
 import { ListGroup, ListGroupItem } from 'reactstrap'
 import ContentSection from './ContentSection'
 
-const TechnologiesSection = () => (
-    <ContentSection name="technologies" title="Technologies">
+const TechnologiesSection = ({ className }) => (
+    <ContentSection name="technologies" title="Technologies" className={className}>
         <ListGroup className="list-group text-left">
             <ListGroupItem color="primary" className="d-flex justify-content-between align-items-center">
                 <span style={{ minWidth: 100 }}>

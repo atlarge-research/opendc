@@ -1,13 +1,13 @@
 import React from 'react'
 import { Container, Jumbotron, Button } from 'reactstrap'
-import './JumbotronHeader.sass'
+import { jumbotronHeader, jumbotron, dc } from './JumbotronHeader.module.scss'
 
 const JumbotronHeader = () => (
-    <section className="jumbotron-header">
+    <section className={jumbotronHeader}>
         <Container>
-            <Jumbotron className="text-center">
+            <Jumbotron className={jumbotron}>
                 <h1>
-                    Open<span className="dc">DC</span>
+                    Open<span className={dc}>DC</span>
                 </h1>
                 <p className="lead">Collaborative Datacenter Simulation and Exploration for Everybody</p>
                 <img src="img/logo.png" className="img-responsive mt-3" alt="OpenDC" />

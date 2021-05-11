@@ -2,9 +2,9 @@ import React from 'react'
 import { Col, Row } from 'reactstrap'
 import ContentSection from './ContentSection'
 
-const SimulationSection = () => {
+const SimulationSection = ({ className }) => {
     return (
-        <ContentSection name="project" title="Datecenter Simulation">
+        <ContentSection name="project" title="Datecenter Simulation" className={className}>
             <Row>
                 <Col xl="5" lg="5" md="5" sm="2" className="text-left my-auto order-1">
                     <h3>Working with OpenDC:</h3>

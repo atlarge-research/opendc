@@ -8,7 +8,14 @@ import StakeholderSection from '../components/home/StakeholderSection'
 import TeamSection from '../components/home/TeamSection'
 import TechnologiesSection from '../components/home/TechnologiesSection'
 import HomeNavbar from '../components/navigation/HomeNavbar'
-import './Home.sass'
+import {
+    introSection,
+    stakeholderSection,
+    modelingSection,
+    simulationSection,
+    technologiesSection,
+    teamSection,
+} from './Home.module.scss'
 import { useDocumentTitle } from '../util/hooks'
 
 function Home() {
@@ -18,12 +25,12 @@ function Home() {
             <HomeNavbar />
             <div className="body-wrapper page-container">
                 <JumbotronHeader />
-                <IntroSection />
-                <StakeholderSection />
-                <ModelingSection />
-                <SimulationSection />
-                <TechnologiesSection />
-                <TeamSection />
+                <IntroSection className={introSection} />
+                <StakeholderSection className={stakeholderSection} />
+                <ModelingSection className={modelingSection} />
+                <SimulationSection className={simulationSection} />
+                <TechnologiesSection className={technologiesSection} />
+                <TeamSection className={teamSection} />
                 <ContactSection />
             </div>
         </div>

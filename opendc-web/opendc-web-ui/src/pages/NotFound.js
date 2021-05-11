@@ -1,12 +1,12 @@
 import React from 'react'
 import TerminalWindow from '../components/not-found/TerminalWindow'
-import './NotFound.sass'
+import style from './NotFound.module.scss'
 import { useDocumentTitle } from '../util/hooks'
 
 const NotFound = () => {
     useDocumentTitle('Page Not Found - OpenDC')
     return (
-        <div className="not-found-backdrop">
+        <div className={style['not-found-backdrop']}>
             <TerminalWindow />
         </div>
     )

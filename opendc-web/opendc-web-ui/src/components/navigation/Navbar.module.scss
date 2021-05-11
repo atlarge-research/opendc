@@ -1,0 +1,36 @@
+@import '../../style-globals/_mixins.scss';
+@import '../../style-globals/_variables.scss';
+
+.navbar {
+    border-top: $blue 3px solid;
+    border-bottom: $gray-semi-dark 1px solid;
+    color: $gray-very-dark;
+    background: #fafafb;
+}
+
+.opendcBrand {
+    display: inline-block;
+    color: $gray-very-dark;
+
+    transition: background $transition-length;
+
+    img {
+        position: relative;
+        bottom: 3px;
+        display: inline-block;
+        width: 30px;
+    }
+}
+
+.login {
+    height: 40px;
+    background: $blue;
+    border: none;
+    padding-top: 10px;
+
+    @include clickable;
+
+    &:hover {
+        background: $blue-dark;
+    }
+}

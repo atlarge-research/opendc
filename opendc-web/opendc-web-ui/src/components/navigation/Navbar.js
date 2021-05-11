@@ -14,7 +14,7 @@ import { userIsLoggedIn } from '../../auth/index'
 import Login from '../../containers/auth/Login'
 import Logout from '../../containers/auth/Logout'
 import ProfileName from '../../containers/auth/ProfileName'
-import './Navbar.sass'
+import { login, navbar, opendcBrand } from './Navbar.module.scss'
 
 export const NAVBAR_HEIGHT = 60
 
@@ -59,7 +59,7 @@ export const LoggedInSection = () => {
             ) : (
                 <NavItem route="login">
                     <GitHubLink />
-                    <Login visible={true} />
+                    <Login visible={true} className={login} />
                 </NavItem>
             )}
         </Nav>
@@ -71,10 +71,10 @@ const Navbar = ({ fullWidth, children }) => {
     const toggle = () => setIsOpen(!isOpen)
 
     return (
-        <RNavbar fixed="top" color="light" light expand="lg" id="navbar">
+        <RNavbar fixed="top" color="light" light expand="lg" id="navbar" className={navbar}>
             <Container fluid={fullWidth}>
                 <NavbarToggler onClick={toggle} />
-                <NavbarBrand tag={Link} to="/" title="OpenDC" className="opendc-brand">
+                <NavbarBrand tag={Link} to="/" title="OpenDC" className={opendcBrand}>
                     <img src="/img/logo.png" alt="OpenDC" />
                 </NavbarBrand>
 

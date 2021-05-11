@@ -1,6 +1,6 @@
 import React from 'react'
-import './BlinkingCursor.sass'
+import { blinkingCursor } from './BlinkingCursor.module.scss'
 
-const BlinkingCursor = () => <span className="blinking-cursor">_</span>
+const BlinkingCursor = () => <span className={blinkingCursor}>_</span>
 
 export default BlinkingCursor

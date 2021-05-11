@@ -3,10 +3,10 @@ import FontAwesome from 'react-fontawesome'
 import { Row, Col } from 'reactstrap'
 import ContentSection from './ContentSection'
 
-import './ContactSection.sass'
+import { contactSection, tudelftIcon } from './ContactSection.module.scss'
 
 const ContactSection = () => (
-    <ContentSection name="contact" title="Contact" className="contact-section">
+    <ContentSection name="contact" title="Contact" className={contactSection}>
         <Row className="justify-content-center">
             <Col md="4">
                 <a href="https://github.com/atlarge-research/opendc">
@@ -25,7 +25,7 @@ const ContactSection = () => (
         </Row>
         <Row>
             <Col className="text-center">
-                <img src="img/tudelft-icon.png" className="img-fluid tudelft-icon" height="100" alt="TU Delft" />
+                <img src="img/tudelft-icon.png" className={`img-fluid ${tudelftIcon}`} height="100" alt="TU Delft" />
             </Col>
         </Row>
         <Row>

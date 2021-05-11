@@ -1,8 +1,8 @@
 import React from 'react'
 import { Container, Row, Col } from 'reactstrap'
 
-const IntroSection = () => (
-    <section id="intro" className="intro-section">
+const IntroSection = ({ className }) => (
+    <section id="intro" className={className}>
         <Container className="pt-5 pb-3">
             <Row className="justify-content-center">
                 <Col xl="4" lg="4" md="4" sm="8">

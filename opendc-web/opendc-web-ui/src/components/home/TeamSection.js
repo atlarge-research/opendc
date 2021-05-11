@@ -41,8 +41,8 @@ const TeamMember = ({ photoId, name }) => (
     </Col>
 )
 
-const TeamSection = () => (
-    <ContentSection name="team" title="OpenDC Team">
+const TeamSection = ({ className }) => (
+    <ContentSection name="team" title="OpenDC Team" className={className}>
         <Row className="justify-content-center">
             <TeamLead photoId="aiosup" name="Prof. dr. ir. Alexandru Iosup" description="Project Lead" />
             <TeamLead photoId="fmastenbroek" name="Fabian Mastenbroek" description="Technology Lead" />

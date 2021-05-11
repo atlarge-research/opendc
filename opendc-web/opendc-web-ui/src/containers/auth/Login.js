@@ -2,10 +2,10 @@ import React from 'react'
 import GoogleLogin from 'react-google-login'
 import { useDispatch } from 'react-redux'
 import { logIn } from '../../actions/auth'
+import { Button } from 'reactstrap'
 import config from '../../config'
 
-const Login = (props) => {
-    const { visible } = props
+function Login({ visible, className }) {
     const dispatch = useDispatch()
 
     const onLogin = (payload) => dispatch(logIn(payload))
@@ -34,9 +34,9 @@ const Login = (props) => {
             onSuccess={onAuthResponse}
             onFailure={onAuthFailure}
             render={(renderProps) => (
-                <span onClick={renderProps.onClick} className="login btn btn-primary">
+                <Button color="primary" onClick={renderProps.onClick} className={className}>
                     <span className="fa fa-google" /> Login with Google
-                </span>
+                </Button>
             )}
         />
     )

@@ -1,0 +1,57 @@
+@import '../../../style-globals/_variables.scss';
+@import '../../../style-globals/_mixins.scss';
+
+.collapseButton {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    padding: 5px 7px;
+
+    background: white;
+    border: solid 1px $gray-semi-light;
+    z-index: 99;
+
+    @include clickable;
+    border-radius: 5px;
+    transition: background 200ms;
+
+    &.collapseButtonRight {
+        left: auto;
+        right: 5px;
+        top: 5px;
+    }
+
+    &:hover {
+        background: #eeeeee;
+    }
+}
+
+.sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: $side-bar-width;
+
+    z-index: 100;
+    background: white;
+
+    border-right: $gray-semi-dark 1px solid;
+
+    .collapseButton {
+        left: auto;
+        right: -25px;
+    }
+}
+
+.sidebarRight {
+    left: auto;
+    right: 0;
+
+    border-left: $gray-semi-dark 1px solid;
+    border-right: none;
+
+    .collapseButtonRight {
+        left: -25px;
+        right: auto;
+    }
+}

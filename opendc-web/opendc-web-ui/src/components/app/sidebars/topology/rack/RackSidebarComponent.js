@@ -3,19 +3,19 @@ import BackToRoomContainer from '../../../../../containers/app/sidebars/topology
 import DeleteRackContainer from '../../../../../containers/app/sidebars/topology/rack/DeleteRackContainer'
 import MachineListContainer from '../../../../../containers/app/sidebars/topology/rack/MachineListContainer'
 import RackNameContainer from '../../../../../containers/app/sidebars/topology/rack/RackNameContainer'
-import './RackSidebarComponent.sass'
+import { sidebarContainer, sidebarHeaderContainer, machineListContainer } from './RackSidebarComponent.module.scss'
 import AddPrefabContainer from '../../../../../containers/app/sidebars/topology/rack/AddPrefabContainer'
 
 const RackSidebarComponent = () => {
     return (
-        <div className="rack-sidebar-container flex-column">
-            <div className="rack-sidebar-header-container">
+        <div className={`${sidebarContainer} flex-column`}>
+            <div className={sidebarHeaderContainer}>
                 <RackNameContainer />
                 <BackToRoomContainer />
                 <AddPrefabContainer />
                 <DeleteRackContainer />
             </div>
-            <div className="machine-list-container mt-2">
+            <div className={`${machineListContainer} mt-2`}>
                 <MachineListContainer />
             </div>
         </div>

@@ -1,11 +1,11 @@
 import React from 'react'
 import EmptySlotContainer from '../../../../../containers/app/sidebars/topology/rack/EmptySlotContainer'
 import MachineContainer from '../../../../../containers/app/sidebars/topology/rack/MachineContainer'
-import './MachineListComponent.sass'
+import { machineList } from './MachineListComponent.module.scss'
 
 const MachineListComponent = ({ machineIds }) => {
     return (
-        <ul className="list-group machine-list">
+        <ul className={`list-group ${machineList}`}>
             {machineIds.map((machineId, index) => {
                 if (machineId === null) {
                     return <EmptySlotContainer key={index} position={index + 1} />
