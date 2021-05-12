@@ -1,7 +1,5 @@
-import config from '../../config'
-
 export function performTokenSignIn(token) {
-    const apiUrl = config['API_BASE_URL']
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
     return fetch(`${apiUrl}/tokensignin`, {
         method: 'POST',

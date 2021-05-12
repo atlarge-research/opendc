@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import Shapes from '../../../../shapes'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import FontAwesome from 'react-fontawesome'
 import ScenarioListContainer from '../../../../containers/app/sidebars/project/ScenarioListContainer'
 
@@ -44,11 +44,12 @@ class PortfolioListComponent extends React.Component {
                                 {portfolio.name}
                             </div>
                             <div className="col-5 text-right">
-                                <Link
-                                    className="btn btn-outline-primary mr-1 fa fa-play"
-                                    to={`/projects/${this.props.currentProjectId}/portfolios/${portfolio._id}`}
-                                    onClick={() => this.props.onChoosePortfolio(portfolio._id)}
-                                />
+                                <Link href={`/projects/${this.props.currentProjectId}/portfolios/${portfolio._id}`}>
+                                    <a
+                                        className="btn btn-outline-primary mr-1 fa fa-play"
+                                        onClick={() => this.props.onChoosePortfolio(portfolio._id)}
+                                    />
+                                </Link>
                                 <span
                                     className="btn btn-outline-danger fa fa-trash"
                                     onClick={() => this.onDelete(portfolio._id)}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import {
     Navbar as RNavbar,
     NavItem as RNavItem,
@@ -15,6 +16,7 @@ import Login from '../../containers/auth/Login'
 import Logout from '../../containers/auth/Logout'
 import ProfileName from '../../containers/auth/ProfileName'
 import { login, navbar, opendcBrand } from './Navbar.module.scss'
+import { useAuth } from '../../auth/hook'
 
 export const NAVBAR_HEIGHT = 60
 
@@ -24,32 +26,45 @@ const GitHubLink = () => (
         className="ml-2 mr-3 text-dark"
         style={{ position: 'relative', top: 7 }}
     >
-        <span className="fa fa-github fa-2x" />
+        <span aria-hidden className="fa fa-github fa-2x" />
     </a>
 )
 
 export const NavItem = ({ route, children }) => {
-    const location = useLocation()
-    return <RNavItem active={location.pathname === route}>{children}</RNavItem>
+    const router = useRouter()
+    const handleClick = (e) => {
+        e.preventDefault()
+        router.push(route)
+    }
+    return (
+        <RNavItem onClick={handleClick} active={router.asPath === route}>
+            {children}
+        </RNavItem>
+    )
 }
 
 export const LoggedInSection = () => {
-    const location = useLocation()
+    const router = useRouter()
+    const isLoggedIn = useAuth()
     return (
         <Nav navbar className="auth-links">
-            {userIsLoggedIn() ? (
+            {isLoggedIn ? (
                 [
-                    location.pathname === '/' ? (
+                    router.asPath === '/' ? (
                         <NavItem route="/projects" key="projects">
-                            <NavLink tag={Link} title="My Projects" to="/projects">
-                                My Projects
-                            </NavLink>
+                            <Link href="/projects">
+                                <NavLink title="My Projects" to="/projects">
+                                    My Projects
+                                </NavLink>
+                            </Link>
                         </NavItem>
                     ) : (
                         <NavItem route="/profile" key="profile">
-                            <NavLink tag={Link} title="My Profile" to="/profile">
-                                <ProfileName />
-                            </NavLink>
+                            <Link href="/profile">
+                                <NavLink title="My Profile">
+                                    <ProfileName />
+                                </NavLink>
+                            </Link>
                         </NavItem>
                     ),
                     <NavItem route="logout" key="logout">
@@ -57,10 +72,10 @@ export const LoggedInSection = () => {
                     </NavItem>,
                 ]
             ) : (
-                <NavItem route="login">
+                <RNavItem>
                     <GitHubLink />
                     <Login visible={true} className={login} />
-                </NavItem>
+                </RNavItem>
             )}
         </Nav>
     )
@@ -74,7 +89,7 @@ const Navbar = ({ fullWidth, children }) => {
         <RNavbar fixed="top" color="light" light expand="lg" id="navbar" className={navbar}>
             <Container fluid={fullWidth}>
                 <NavbarToggler onClick={toggle} />
-                <NavbarBrand tag={Link} to="/" title="OpenDC" className={opendcBrand}>
+                <NavbarBrand href="/" title="OpenDC" className={opendcBrand}>
                     <img src="/img/logo.png" alt="OpenDC" />
                 </NavbarBrand>
 

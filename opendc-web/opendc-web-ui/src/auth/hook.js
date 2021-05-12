@@ -20,30 +20,25 @@
  * SOFTWARE.
  */
 
-import { getAuthToken } from '../auth'
+import { useEffect, useState } from 'react'
+import { userIsLoggedIn } from './index'
+import { useRouter } from 'next/router'
 
-const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+export function useAuth() {
+    const [isLoggedIn, setLoggedIn] = useState(false)
 
-/**
- * Send the specified request to the OpenDC API.
- * @param path Relative path for the API.
- * @param method The method to use for the request.
- * @param body The body of the request.
- */
-export async function request(path, method = 'GET', body) {
-    const res = await fetch(`${apiUrl}/v2/${path}`, {
-        method: method,
-        headers: {
-            'auth-token': getAuthToken(),
-            'Content-Type': 'application/json',
-        },
-        body: body && JSON.stringify(body),
+    useEffect(() => {
+        setLoggedIn(userIsLoggedIn())
+    }, [])
+
+    return isLoggedIn
+}
+
+export function useRequireAuth() {
+    const router = useRouter()
+    useEffect(() => {
+        if (!userIsLoggedIn()) {
+            router.replace('/')
+        }
     })
-    const { status, content } = await res.json()
-
-    if (status.code !== 200) {
-        throw status
-    }
-
-    return content
 }

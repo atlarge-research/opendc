@@ -6,8 +6,6 @@ import { closeNewScenarioModal } from '../../actions/modals/scenarios'
 
 const NewScenarioModal = (props) => {
     const topologies = useSelector(({ currentProjectId, objects }) => {
-        console.log(currentProjectId, objects)
-
         if (currentProjectId === '-1' || !objects.project[currentProjectId]) {
             return []
         }

@@ -1,11 +1,13 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 
 const ProjectActionButtons = ({ projectId, onViewUsers, onDelete }) => (
     <td className="text-right">
-        <Link to={'/projects/' + projectId} className="btn btn-outline-primary btn-sm mr-2" title="Open this project">
-            <span className="fa fa-play" />
+        <Link href={`/projects/${projectId}`}>
+            <a className="btn btn-outline-primary btn-sm mr-2" title="Open this project">
+                <span className="fa fa-play" />
+            </a>
         </Link>
         <div
             className="btn btn-outline-success btn-sm disabled mr-2"

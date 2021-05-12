@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import BlinkingCursor from './BlinkingCursor'
 import CodeBlock from './CodeBlock'
 import { terminalWindow, terminalHeader, terminalBody, segfault, subTitle, homeBtn } from './TerminalWindow.module.scss'
@@ -23,8 +23,10 @@ const TerminalWindow = () => (
                 Got lost?
                 <BlinkingCursor />
             </div>
-            <Link to="/" className={homeBtn}>
-                <span className="fa fa-home" /> GET ME BACK TO OPENDC
+            <Link href="/">
+                <a className={homeBtn}>
+                    <span className="fa fa-home" /> GET ME BACK TO OPENDC
+                </a>
             </Link>
         </div>
     </div>

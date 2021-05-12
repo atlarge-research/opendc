@@ -2,7 +2,7 @@ import { LOG_IN_SUCCEEDED, LOG_OUT } from '../actions/auth'
 import { DELETE_CURRENT_USER_SUCCEEDED } from '../actions/users'
 
 const getAuthObject = () => {
-    const authItem = localStorage.getItem('auth')
+    const authItem = global.localStorage && localStorage.getItem('auth')
     if (!authItem || authItem === '{}') {
         return undefined
     }

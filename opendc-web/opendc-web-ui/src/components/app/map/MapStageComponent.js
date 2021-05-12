@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { HotKeys } from 'react-hotkeys'
 import { Stage } from 'react-konva'
 import MapLayer from '../../../containers/app/map/layers/MapLayer'
@@ -6,85 +6,75 @@ import ObjectHoverLayer from '../../../containers/app/map/layers/ObjectHoverLaye
 import RoomHoverLayer from '../../../containers/app/map/layers/RoomHoverLayer'
 import { NAVBAR_HEIGHT } from '../../navigation/Navbar'
 import { MAP_MOVE_PIXELS_PER_EVENT } from './MapConstants'
-import { Provider } from 'react-redux'
-import { store } from '../../../store/configure-store'
+import { Provider, useStore } from 'react-redux'
 
-class MapStageComponent extends React.Component {
-    state = {
-        mouseX: 0,
-        mouseY: 0,
+function MapStageComponent({
+    mapDimensions,
+    mapPosition,
+    setMapDimensions,
+    setMapPositionWithBoundsCheck,
+    zoomInOnPosition,
+}) {
+    const [pos, setPos] = useState([0, 0])
+    const stage = useRef(null)
+    const [x, y] = pos
+    const handlers = {
+        MOVE_LEFT: () => moveWithDelta(MAP_MOVE_PIXELS_PER_EVENT, 0),
+        MOVE_RIGHT: () => moveWithDelta(-MAP_MOVE_PIXELS_PER_EVENT, 0),
+        MOVE_UP: () => moveWithDelta(0, MAP_MOVE_PIXELS_PER_EVENT),
+        MOVE_DOWN: () => moveWithDelta(0, -MAP_MOVE_PIXELS_PER_EVENT),
     }
 
-    constructor(props) {
-        super(props)
+    const moveWithDelta = (deltaX, deltaY) =>
+        setMapPositionWithBoundsCheck(mapPosition.x + deltaX, mapPosition.y + deltaY)
+    const updateMousePosition = () => {
+        if (!stage.current) {
+            return
+        }
 
-        this.updateDimensions = this.updateDimensions.bind(this)
-        this.updateScale = this.updateScale.bind(this)
+        const mousePos = stage.current.getStage().getPointerPosition()
+        setPos([mousePos.x, mousePos.y])
     }
+    const updateDimensions = () => setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
+    const updateScale = (e) => zoomInOnPosition(e.deltaY < 0, x, y)
 
-    componentDidMount() {
-        this.updateDimensions()
+    useEffect(() => {
+        updateDimensions()
 
-        window.addEventListener('resize', this.updateDimensions)
-        window.addEventListener('wheel', this.updateScale)
+        window.addEventListener('resize', updateDimensions)
+        window.addEventListener('wheel', updateScale)
 
         window['exportCanvasToImage'] = () => {
             const download = document.createElement('a')
-            download.href = this.stage.getStage().toDataURL()
+            download.href = stage.current.getStage().toDataURL()
             download.download = 'opendc-canvas-export-' + Date.now() + '.png'
             download.click()
         }
-    }
 
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.updateDimensions)
-        window.removeEventListener('wheel', this.updateScale)
-    }
+        return () => {
+            window.removeEventListener('resize', updateDimensions)
+            window.removeEventListener('wheel', updateScale)
+        }
+    }, [])
 
-    updateDimensions() {
-        this.props.setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
-    }
+    const store = useStore()
 
-    updateScale(e) {
-        this.props.zoomInOnPosition(e.deltaY < 0, this.state.mouseX, this.state.mouseY)
-    }
-
-    updateMousePosition() {
-        const mousePos = this.stage.getStage().getPointerPosition()
-        this.setState({ mouseX: mousePos.x, mouseY: mousePos.y })
-    }
-
-    handlers = {
-        MOVE_LEFT: () => this.moveWithDelta(MAP_MOVE_PIXELS_PER_EVENT, 0),
-        MOVE_RIGHT: () => this.moveWithDelta(-MAP_MOVE_PIXELS_PER_EVENT, 0),
-        MOVE_UP: () => this.moveWithDelta(0, MAP_MOVE_PIXELS_PER_EVENT),
-        MOVE_DOWN: () => this.moveWithDelta(0, -MAP_MOVE_PIXELS_PER_EVENT),
-    }
-
-    moveWithDelta(deltaX, deltaY) {
-        this.props.setMapPositionWithBoundsCheck(this.props.mapPosition.x + deltaX, this.props.mapPosition.y + deltaY)
-    }
-
-    render() {
-        return (
-            <HotKeys handlers={this.handlers}>
-                <Stage
-                    ref={(stage) => {
-                        this.stage = stage
-                    }}
-                    width={this.props.mapDimensions.width}
-                    height={this.props.mapDimensions.height}
-                    onMouseMove={this.updateMousePosition.bind(this)}
-                >
-                    <Provider store={store}>
-                        <MapLayer />
-                        <RoomHoverLayer mouseX={this.state.mouseX} mouseY={this.state.mouseY} />
-                        <ObjectHoverLayer mouseX={this.state.mouseX} mouseY={this.state.mouseY} />
-                    </Provider>
-                </Stage>
-            </HotKeys>
-        )
-    }
+    return (
+        <HotKeys handlers={handlers} allowChanges={true}>
+            <Stage
+                ref={stage}
+                width={mapDimensions.width}
+                height={mapDimensions.height}
+                onMouseMove={updateMousePosition}
+            >
+                <Provider store={store}>
+                    <MapLayer />
+                    <RoomHoverLayer mouseX={x} mouseY={y} />
+                    <ObjectHoverLayer mouseX={x} mouseY={y} />
+                </Provider>
+            </Stage>
+        </HotKeys>
+    )
 }
 
 export default MapStageComponent

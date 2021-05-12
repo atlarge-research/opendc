@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import Shapes from '../../../../shapes'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import FontAwesome from 'react-fontawesome'
 
 class ScenarioListComponent extends React.Component {
@@ -34,10 +34,13 @@ class ScenarioListComponent extends React.Component {
                         </div>
                         <div className="col-5 text-right">
                             <Link
-                                className="btn btn-outline-primary mr-1 fa fa-play disabled"
-                                to={`/projects/${this.props.currentProjectId}/portfolios/${scenario.portfolioId}/scenarios/${scenario._id}`}
-                                onClick={() => this.props.onChooseScenario(scenario.portfolioId, scenario._id)}
-                            />
+                                href={`/projects/${this.props.currentProjectId}/portfolios/${scenario.portfolioId}/scenarios/${scenario._id}`}
+                            >
+                                <a
+                                    className="btn btn-outline-primary mr-1 fa fa-play disabled"
+                                    onClick={() => this.props.onChooseScenario(scenario.portfolioId, scenario._id)}
+                                />
+                            </Link>
                             <span
                                 className={'btn btn-outline-danger fa fa-trash ' + (idx === 0 ? 'disabled' : '')}
                                 onClick={() => (idx !== 0 ? this.onDelete(scenario._id) : undefined)}

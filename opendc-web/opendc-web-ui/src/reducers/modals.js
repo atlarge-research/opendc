@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux'
-import { CLOSE_DELETE_PROFILE_MODAL, OPEN_DELETE_PROFILE_MODAL } from '../actions/modals/profile'
 import { CLOSE_NEW_PROJECT_MODAL, OPEN_NEW_PROJECT_MODAL } from '../actions/modals/projects'
 import {
     CLOSE_NEW_TOPOLOGY_MODAL,
@@ -33,7 +32,6 @@ function modal(openAction, closeAction) {
 
 export const modals = combineReducers({
     newProjectModalVisible: modal(OPEN_NEW_PROJECT_MODAL, CLOSE_NEW_PROJECT_MODAL),
-    deleteProfileModalVisible: modal(OPEN_DELETE_PROFILE_MODAL, CLOSE_DELETE_PROFILE_MODAL),
     changeTopologyModalVisible: modal(OPEN_NEW_TOPOLOGY_MODAL, CLOSE_NEW_TOPOLOGY_MODAL),
     editRoomNameModalVisible: modal(OPEN_EDIT_ROOM_NAME_MODAL, CLOSE_EDIT_ROOM_NAME_MODAL),
     deleteRoomModalVisible: modal(OPEN_DELETE_ROOM_MODAL, CLOSE_DELETE_ROOM_MODAL),

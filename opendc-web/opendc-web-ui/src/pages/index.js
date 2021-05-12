@@ -1,4 +1,5 @@
 import React from 'react'
+import Head from 'next/head'
 import ContactSection from '../components/home/ContactSection'
 import IntroSection from '../components/home/IntroSection'
 import JumbotronHeader from '../components/home/JumbotronHeader'
@@ -15,13 +16,14 @@ import {
     simulationSection,
     technologiesSection,
     teamSection,
-} from './Home.module.scss'
-import { useDocumentTitle } from '../util/hooks'
+} from './index.module.scss'
 
 function Home() {
-    useDocumentTitle('OpenDC')
     return (
-        <div>
+        <>
+            <Head>
+                <title>OpenDC</title>
+            </Head>
             <HomeNavbar />
             <div className="body-wrapper page-container">
                 <JumbotronHeader />
@@ -33,7 +35,7 @@ function Home() {
                 <TeamSection className={teamSection} />
                 <ContactSection />
             </div>
-        </div>
+        </>
     )
 }
 

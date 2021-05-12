@@ -20,10 +20,18 @@
  * SOFTWARE.
  */
 
-import { useEffect } from 'react'
+import { useRouter } from 'next/router'
+import App from '../../../../containers/app/App'
 
-export function useDocumentTitle(title) {
-    useEffect(() => {
-        document.title = title
-    }, [title])
+function Project() {
+    const router = useRouter()
+    const { project, portfolio } = router.query
+
+    if (project && portfolio) {
+        return <App projectId={project} portfolioId={portfolio} />
+    }
+
+    return <div />
 }
+
+export default Project

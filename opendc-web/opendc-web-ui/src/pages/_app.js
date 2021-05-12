@@ -20,30 +20,23 @@
  * SOFTWARE.
  */
 
-import { getAuthToken } from '../auth'
+import Head from 'next/head'
+import { Provider } from 'react-redux'
+import { useStore } from '../store/configure-store'
+import '../index.scss'
 
-const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+export default function App({ Component, pageProps }) {
+    const store = useStore(pageProps.initialReduxState)
 
-/**
- * Send the specified request to the OpenDC API.
- * @param path Relative path for the API.
- * @param method The method to use for the request.
- * @param body The body of the request.
- */
-export async function request(path, method = 'GET', body) {
-    const res = await fetch(`${apiUrl}/v2/${path}`, {
-        method: method,
-        headers: {
-            'auth-token': getAuthToken(),
-            'Content-Type': 'application/json',
-        },
-        body: body && JSON.stringify(body),
-    })
-    const { status, content } = await res.json()
-
-    if (status.code !== 200) {
-        throw status
-    }
-
-    return content
+    return (
+        <>
+            <Head>
+                <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+                <meta name="theme-color" content="#00A6D6" />
+            </Head>
+            <Provider store={store}>
+                <Component {...pageProps} />
+            </Provider>
+        </>
+    )
 }

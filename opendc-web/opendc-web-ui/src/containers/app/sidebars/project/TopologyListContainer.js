@@ -3,13 +3,13 @@ import { useDispatch, useSelector } from 'react-redux'
 import TopologyListComponent from '../../../../components/app/sidebars/project/TopologyListComponent'
 import { setCurrentTopology } from '../../../../actions/topology/building'
 import { openNewTopologyModal } from '../../../../actions/modals/topology'
-import { useHistory } from 'react-router-dom'
+import { useRouter } from 'next/router'
 import { getState } from '../../../../util/state-utils'
 import { deleteTopology } from '../../../../actions/topologies'
 
 const TopologyListContainer = () => {
     const dispatch = useDispatch()
-    const history = useHistory()
+    const router = useRouter()
 
     const topologies = useSelector((state) => {
         let topologies = state.objects.project[state.currentProjectId]
@@ -26,7 +26,7 @@ const TopologyListContainer = () => {
     const onChooseTopology = async (id) => {
         dispatch(setCurrentTopology(id))
         const state = await getState(dispatch)
-        history.push(`/projects/${state.currentProjectId}`)
+        router.push(`/projects/${state.currentProjectId}`)
     }
     const onNewTopology = () => {
         dispatch(openNewTopologyModal())
@@ -36,7 +36,7 @@ const TopologyListContainer = () => {
             const state = await getState(dispatch)
             dispatch(deleteTopology(id))
             dispatch(setCurrentTopology(state.objects.project[state.currentProjectId].topologyIds[0]))
-            history.push(`/projects/${state.currentProjectId}`)
+            router.push(`/projects/${state.currentProjectId}`)
         }
     }
 

@@ -3,7 +3,6 @@ import GoogleLogin from 'react-google-login'
 import { useDispatch } from 'react-redux'
 import { logIn } from '../../actions/auth'
 import { Button } from 'reactstrap'
-import config from '../../config'
 
 function Login({ visible, className }) {
     const dispatch = useDispatch()
@@ -30,12 +29,12 @@ function Login({ visible, className }) {
 
     return (
         <GoogleLogin
-            clientId={config.OAUTH_CLIENT_ID}
+            clientId={process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID}
             onSuccess={onAuthResponse}
             onFailure={onAuthFailure}
             render={(renderProps) => (
                 <Button color="primary" onClick={renderProps.onClick} className={className}>
-                    <span className="fa fa-google" /> Login with Google
+                    <span aria-hidden className="fa fa-google" /> Login with Google
                 </Button>
             )}
         />

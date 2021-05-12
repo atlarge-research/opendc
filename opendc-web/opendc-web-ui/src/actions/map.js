@@ -64,6 +64,7 @@ export function setMapPositionWithBoundsCheck(x, y) {
         const state = getState()
 
         const scaledMapSize = MAP_SIZE_IN_PIXELS * state.map.scale
+
         const updatedX =
             x > 0
                 ? 0

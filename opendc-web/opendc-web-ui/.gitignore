@@ -22,7 +22,9 @@ yarn-error.log*
 /.idea
 
 # Environment variables
-.env
+.env.local
 
 # Sass output
 *.css
+
+/.next

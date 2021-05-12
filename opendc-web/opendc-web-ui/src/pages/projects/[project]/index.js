@@ -20,21 +20,18 @@
  * SOFTWARE.
  */
 
-function getConfig(name) {
-    if (process.env.NODE_ENV === 'production' && window.config_overrides) {
-        const value = window.config_overrides[name]
-        if (value !== `$${name}`) {
-            return value
-        }
+import { useRouter } from 'next/router'
+import App from '../../../containers/app/App'
+
+function Project() {
+    const router = useRouter()
+    const { project } = router.query
+
+    if (project) {
+        return <App projectId={project} />
     }
 
-    return process.env[name]
+    return <div />
 }
 
-const config = {
-    API_BASE_URL: getConfig('REACT_APP_API_BASE_URL'),
-    OAUTH_CLIENT_ID: getConfig('REACT_APP_OAUTH_CLIENT_ID'),
-    SENTRY_DSN: getConfig('REACT_APP_SENTRY_DSN'),
-}
-
-export default config
+export default Project

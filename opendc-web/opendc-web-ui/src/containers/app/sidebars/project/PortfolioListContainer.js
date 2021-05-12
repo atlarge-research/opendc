@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useRouter } from 'next/router'
 import PortfolioListComponent from '../../../../components/app/sidebars/project/PortfolioListComponent'
 import { deletePortfolio, setCurrentPortfolio } from '../../../../actions/portfolios'
 import { openNewPortfolioModal } from '../../../../actions/modals/portfolios'
@@ -24,7 +24,7 @@ const PortfolioListContainer = (props) => {
     })
 
     const dispatch = useDispatch()
-    const history = useHistory()
+    const router = useRouter()
     const actions = {
         onNewPortfolio: () => {
             dispatch(openNewPortfolioModal())
@@ -37,7 +37,7 @@ const PortfolioListContainer = (props) => {
                 const state = await getState(dispatch)
                 dispatch(deletePortfolio(id))
                 dispatch(setCurrentTopology(state.objects.project[state.currentProjectId].topologyIds[0]))
-                history.push(`/projects/${state.currentProjectId}`)
+                router.push(`/projects/${state.currentProjectId}`)
             }
         },
     }
