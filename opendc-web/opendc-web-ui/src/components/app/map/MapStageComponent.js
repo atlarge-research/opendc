@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { HotKeys } from 'react-hotkeys'
 import { Stage } from 'react-konva'
 import MapLayer from '../../../containers/app/map/layers/MapLayer'

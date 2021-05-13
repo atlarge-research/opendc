@@ -1,6 +1,6 @@
 import React from 'react'
 import { Line } from 'react-konva'
-import Shapes from '../../../../shapes/index'
+import { WallSegment as WallSegmentShape } from '../../../../shapes'
 import { WALL_COLOR } from '../../../../util/colors'
 import { TILE_SIZE_IN_PIXELS, WALL_WIDTH_IN_PIXELS } from '../MapConstants'
 
@@ -26,7 +26,7 @@ const WallSegment = ({ wallSegment }) => {
 }
 
 WallSegment.propTypes = {
-    wallSegment: Shapes.WallSegment,
+    wallSegment: WallSegmentShape,
 }
 
 export default WallSegment

@@ -20,30 +20,22 @@
  * SOFTWARE.
  */
 
-import { useEffect, useState } from 'react'
-import { userIsLoggedIn } from './index'
-import { useRouter } from 'next/router'
 import { useSelector } from 'react-redux'
 
-export function useIsLoggedIn() {
-    const [isLoggedIn, setLoggedIn] = useState(false)
-
-    useEffect(() => {
-        setLoggedIn(userIsLoggedIn())
-    }, [])
-
-    return isLoggedIn
+/**
+ * Return the map scale.
+ */
+export function useMapScale() {
+    return useSelector((state) => state.map.scale)
 }
 
-export function useRequireAuth() {
-    const router = useRouter()
-    useEffect(() => {
-        if (!userIsLoggedIn()) {
-            router.replace('/')
-        }
-    })
+/**
+ * Return the map position.
+ */
+export function useMapPosition() {
+    return useSelector((state) => state.map.position)
 }
 
-export function useUser() {
-    return useSelector((state) => state.auth)
+export function useMapDimensions() {
+    return useSelector((state) => state.map.dimensions)
 }

@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import React from 'react'
 import ProjectActions from '../../containers/projects/ProjectActions'
-import Shapes from '../../shapes/index'
+import { Authorization } from '../../shapes/index'
 import { AUTH_DESCRIPTION_MAP, AUTH_ICON_MAP } from '../../util/authorizations'
 import { parseAndFormatDateTime } from '../../util/date-time'
 
@@ -18,7 +18,7 @@ const ProjectAuthRow = ({ projectAuth }) => (
 )
 
 ProjectAuthRow.propTypes = {
-    projectAuth: Shapes.Authorization.isRequired,
+    projectAuth: Authorization.isRequired,
 }
 
 export default ProjectAuthRow

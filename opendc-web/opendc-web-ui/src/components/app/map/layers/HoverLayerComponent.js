@@ -1,75 +1,63 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Layer } from 'react-konva'
 import HoverTile from '../elements/HoverTile'
 import { TILE_SIZE_IN_PIXELS } from '../MapConstants'
 
-class HoverLayerComponent extends React.Component {
-    static propTypes = {
-        mouseX: PropTypes.number.isRequired,
-        mouseY: PropTypes.number.isRequired,
-        mapPosition: PropTypes.object.isRequired,
-        mapScale: PropTypes.number.isRequired,
-        isEnabled: PropTypes.func.isRequired,
-        onClick: PropTypes.func.isRequired,
-    }
+function HoverLayerComponent({ mouseX, mouseY, mapPosition, mapScale, isEnabled, isValid, onClick, children }) {
+    const [pos, setPos] = useState([-1, -1])
+    const [x, y] = pos
+    const [valid, setValid] = useState(false)
 
-    state = {
-        positionX: -1,
-        positionY: -1,
-        validity: false,
-    }
-
-    componentDidUpdate() {
-        if (!this.props.isEnabled()) {
+    useEffect(() => {
+        if (!isEnabled()) {
             return
         }
 
-        const positionX = Math.floor(
-            (this.props.mouseX - this.props.mapPosition.x) / (this.props.mapScale * TILE_SIZE_IN_PIXELS)
-        )
-        const positionY = Math.floor(
-            (this.props.mouseY - this.props.mapPosition.y) / (this.props.mapScale * TILE_SIZE_IN_PIXELS)
-        )
+        const positionX = Math.floor((mouseX - mapPosition.x) / (mapScale * TILE_SIZE_IN_PIXELS))
+        const positionY = Math.floor((mouseY - mapPosition.y) / (mapScale * TILE_SIZE_IN_PIXELS))
 
-        if (positionX !== this.state.positionX || positionY !== this.state.positionY) {
-            this.setState({
-                positionX,
-                positionY,
-                validity: this.props.isValid(positionX, positionY),
-            })
+        if (positionX !== x || positionY !== y) {
+            setPos([positionX, positionY])
+            setValid(isValid(positionX, positionY))
         }
+    }, [mouseX, mouseY, mapPosition, mapScale])
+
+    if (!isEnabled()) {
+        return <Layer />
     }
 
-    render() {
-        if (!this.props.isEnabled()) {
-            return <Layer />
-        }
+    const pixelX = mapScale * x * TILE_SIZE_IN_PIXELS + mapPosition.x
+    const pixelY = mapScale * y * TILE_SIZE_IN_PIXELS + mapPosition.y
 
-        const pixelX = this.props.mapScale * this.state.positionX * TILE_SIZE_IN_PIXELS + this.props.mapPosition.x
-        const pixelY = this.props.mapScale * this.state.positionY * TILE_SIZE_IN_PIXELS + this.props.mapPosition.y
+    return (
+        <Layer opacity={0.6}>
+            <HoverTile
+                pixelX={pixelX}
+                pixelY={pixelY}
+                scale={mapScale}
+                isValid={valid}
+                onClick={() => (valid ? onClick(x, y) : undefined)}
+            />
+            {children
+                ? React.cloneElement(children, {
+                      pixelX,
+                      pixelY,
+                      scale: mapScale,
+                  })
+                : undefined}
+        </Layer>
+    )
+}
 
-        return (
-            <Layer opacity={0.6}>
-                <HoverTile
-                    pixelX={pixelX}
-                    pixelY={pixelY}
-                    scale={this.props.mapScale}
-                    isValid={this.state.validity}
-                    onClick={() =>
-                        this.state.validity ? this.props.onClick(this.state.positionX, this.state.positionY) : undefined
-                    }
-                />
-                {this.props.children
-                    ? React.cloneElement(this.props.children, {
-                          pixelX,
-                          pixelY,
-                          scale: this.props.mapScale,
-                      })
-                    : undefined}
-            </Layer>
-        )
-    }
+HoverLayerComponent.propTypes = {
+    mouseX: PropTypes.number.isRequired,
+    mouseY: PropTypes.number.isRequired,
+    mapPosition: PropTypes.object.isRequired,
+    mapScale: PropTypes.number.isRequired,
+    isEnabled: PropTypes.func.isRequired,
+    isValid: PropTypes.func.isRequired,
+    onClick: PropTypes.func.isRequired,
 }
 
 export default HoverLayerComponent

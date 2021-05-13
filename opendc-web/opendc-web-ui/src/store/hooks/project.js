@@ -20,30 +20,13 @@
  * SOFTWARE.
  */
 
-import { useEffect, useState } from 'react'
-import { userIsLoggedIn } from './index'
-import { useRouter } from 'next/router'
 import { useSelector } from 'react-redux'
 
-export function useIsLoggedIn() {
-    const [isLoggedIn, setLoggedIn] = useState(false)
-
-    useEffect(() => {
-        setLoggedIn(userIsLoggedIn())
-    }, [])
-
-    return isLoggedIn
-}
-
-export function useRequireAuth() {
-    const router = useRouter()
-    useEffect(() => {
-        if (!userIsLoggedIn()) {
-            router.replace('/')
-        }
-    })
-}
-
-export function useUser() {
-    return useSelector((state) => state.auth)
+/**
+ * Return the current active project.
+ */
+export function useProject() {
+    return useSelector((state) =>
+        state.currentProjectId !== '-1' ? state.objects.project[state.currentProjectId] : undefined
+    )
 }

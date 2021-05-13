@@ -2,7 +2,7 @@ import React from 'react'
 import { Group } from 'react-konva'
 import GrayContainer from '../../../../containers/app/map/GrayContainer'
 import RoomContainer from '../../../../containers/app/map/RoomContainer'
-import Shapes from '../../../../shapes/index'
+import { InteractionLevel, Topology } from '../../../../shapes'
 
 const TopologyGroup = ({ topology, interactionLevel }) => {
     if (!topology) {
@@ -37,8 +37,8 @@ const TopologyGroup = ({ topology, interactionLevel }) => {
 }
 
 TopologyGroup.propTypes = {
-    topology: Shapes.Topology,
-    interactionLevel: Shapes.InteractionLevel,
+    topology: Topology,
+    interactionLevel: InteractionLevel,
 }
 
 export default TopologyGroup

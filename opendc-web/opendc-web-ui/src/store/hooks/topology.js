@@ -20,30 +20,11 @@
  * SOFTWARE.
  */
 
-import { useEffect, useState } from 'react'
-import { userIsLoggedIn } from './index'
-import { useRouter } from 'next/router'
 import { useSelector } from 'react-redux'
 
-export function useIsLoggedIn() {
-    const [isLoggedIn, setLoggedIn] = useState(false)
-
-    useEffect(() => {
-        setLoggedIn(userIsLoggedIn())
-    }, [])
-
-    return isLoggedIn
-}
-
-export function useRequireAuth() {
-    const router = useRouter()
-    useEffect(() => {
-        if (!userIsLoggedIn()) {
-            router.replace('/')
-        }
-    })
-}
-
-export function useUser() {
-    return useSelector((state) => state.auth)
+/**
+ * Return the current active topology.
+ */
+export function useTopology() {
+    return useSelector((state) => state.currentTopologyId !== '-1' && state.objects.topology[state.currentTopologyId])
 }

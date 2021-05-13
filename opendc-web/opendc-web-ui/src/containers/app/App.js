@@ -23,7 +23,6 @@
 import PropTypes from 'prop-types'
 import React, { useEffect } from 'react'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
 import { HotKeys } from 'react-hotkeys'
 import { useDispatch, useSelector } from 'react-redux'
 import { openPortfolioSucceeded } from '../../actions/portfolios'
@@ -47,17 +46,13 @@ import NewScenarioModal from '../../containers/modals/NewScenarioModal'
 import PortfolioResultsContainer from '../../containers/app/results/PortfolioResultsContainer'
 import KeymapConfiguration from '../../shortcuts/keymap'
 import { useRequireAuth } from '../../auth/hook'
+import { useProject } from '../../store/hooks/project'
 
 const App = ({ projectId, portfolioId, scenarioId }) => {
     useRequireAuth()
 
-    const projectName = useSelector(
-        (state) =>
-            state.currentProjectId !== '-1' &&
-            state.objects.project[state.currentProjectId] &&
-            state.objects.project[state.currentProjectId].name
-    )
-    const topologyIsLoading = useSelector((state) => state.currentTopologyIdd === '-1')
+    const projectName = useProject()?.name
+    const topologyIsLoading = useSelector((state) => state.currentTopologyId === '-1')
 
     const dispatch = useDispatch()
     useEffect(() => {

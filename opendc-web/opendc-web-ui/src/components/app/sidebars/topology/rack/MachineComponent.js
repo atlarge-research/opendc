@@ -1,5 +1,5 @@
 import React from 'react'
-import Shapes from '../../../../../shapes'
+import { Machine } from '../../../../../shapes'
 
 const UnitIcon = ({ id, type }) => (
     <div>
@@ -37,7 +37,7 @@ const MachineComponent = ({ position, machine, onClick }) => {
 }
 
 MachineComponent.propTypes = {
-    machine: Shapes.Machine,
+    machine: Machine,
 }
 
 export default MachineComponent

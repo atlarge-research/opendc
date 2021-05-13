@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { Form, FormGroup, Input, Label } from 'reactstrap'
 import React, { useRef } from 'react'
-import Shapes from '../../../shapes'
+import { Topology } from '../../../shapes'
 import Modal from '../Modal'
 
 const NewTopologyModalComponent = ({ show, onCreateTopology, onDuplicateTopology, onCancel, topologies }) => {
@@ -62,7 +62,7 @@ const NewTopologyModalComponent = ({ show, onCreateTopology, onDuplicateTopology
 
 NewTopologyModalComponent.propTypes = {
     show: PropTypes.bool.isRequired,
-    topologies: PropTypes.arrayOf(Shapes.Topology),
+    topologies: PropTypes.arrayOf(Topology),
     onCreateTopology: PropTypes.func.isRequired,
     onDuplicateTopology: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,

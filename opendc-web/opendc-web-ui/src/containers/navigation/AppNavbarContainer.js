@@ -1,11 +1,9 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import AppNavbarComponent from '../../components/navigation/AppNavbarComponent'
+import { useProject } from '../../store/hooks/project'
 
 const AppNavbarContainer = (props) => {
-    const project = useSelector((state) =>
-        state.currentProjectId !== '-1' ? state.objects.project[state.currentProjectId] : undefined
-    )
+    const project = useProject()
     return <AppNavbarComponent {...props} project={project} />
 }
 

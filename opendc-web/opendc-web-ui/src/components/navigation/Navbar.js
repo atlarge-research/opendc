@@ -11,12 +11,11 @@ import {
     Nav,
     Container,
 } from 'reactstrap'
-import { userIsLoggedIn } from '../../auth/index'
 import Login from '../../containers/auth/Login'
 import Logout from '../../containers/auth/Logout'
 import ProfileName from '../../containers/auth/ProfileName'
 import { login, navbar, opendcBrand } from './Navbar.module.scss'
-import { useAuth } from '../../auth/hook'
+import { useIsLoggedIn } from '../../auth/hook'
 
 export const NAVBAR_HEIGHT = 60
 
@@ -45,7 +44,7 @@ export const NavItem = ({ route, children }) => {
 
 export const LoggedInSection = () => {
     const router = useRouter()
-    const isLoggedIn = useAuth()
+    const isLoggedIn = useIsLoggedIn()
     return (
         <Nav navbar className="auth-links">
             {isLoggedIn ? (

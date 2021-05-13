@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useRef } from 'react'
 import { Form, FormGroup, Input, Label } from 'reactstrap'
-import Shapes from '../../../shapes'
+import { Scheduler, Topology, Trace } from '../../../shapes'
 import Modal from '../Modal'
 
 const NewScenarioModalComponent = ({
@@ -135,9 +135,9 @@ NewScenarioModalComponent.propTypes = {
     show: PropTypes.bool.isRequired,
     currentPortfolioId: PropTypes.string.isRequired,
     currentPortfolioScenarioIds: PropTypes.arrayOf(PropTypes.string),
-    traces: PropTypes.arrayOf(Shapes.Trace),
-    topologies: PropTypes.arrayOf(Shapes.Topology),
-    schedulers: PropTypes.arrayOf(Shapes.Scheduler),
+    traces: PropTypes.arrayOf(Trace),
+    topologies: PropTypes.arrayOf(Topology),
+    schedulers: PropTypes.arrayOf(Scheduler),
     callback: PropTypes.func.isRequired,
 }
 

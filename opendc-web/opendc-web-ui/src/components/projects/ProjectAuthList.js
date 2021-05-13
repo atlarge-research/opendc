@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import Shapes from '../../shapes/index'
+import { Authorization } from '../../shapes'
 import ProjectAuthRow from './ProjectAuthRow'
 
 const ProjectAuthList = ({ authorizations }) => {
@@ -33,7 +33,7 @@ const ProjectAuthList = ({ authorizations }) => {
 }
 
 ProjectAuthList.propTypes = {
-    authorizations: PropTypes.arrayOf(Shapes.Authorization).isRequired,
+    authorizations: PropTypes.arrayOf(Authorization).isRequired,
 }
 
 export default ProjectAuthList

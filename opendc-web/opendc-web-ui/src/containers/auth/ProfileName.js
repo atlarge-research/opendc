@@ -1,9 +1,13 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
+import { useUser } from '../../auth/hook'
 
 function ProfileName() {
-    const name = useSelector((state) => `${state.auth.givenName} ${state.auth.familyName}`)
-    return <span>{name}</span>
+    const user = useUser()
+    return (
+        <span>
+            {user.givenName} {user.familyName}
+        </span>
+    )
 }
 
 export default ProfileName

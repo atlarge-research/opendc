@@ -1,11 +1,12 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { setMapDimensions, setMapPositionWithBoundsCheck, zoomInOnPosition } from '../../../actions/map'
 import MapStageComponent from '../../../components/app/map/MapStageComponent'
+import { useMapDimensions, useMapPosition } from '../../../store/hooks/map'
 
 const MapStage = () => {
-    const position = useSelector((state) => state.map.position)
-    const dimensions = useSelector((state) => state.map.dimensions)
+    const position = useMapPosition()
+    const dimensions = useMapDimensions()
     const dispatch = useDispatch()
     const zoomInOnPositionA = (zoomIn, x, y) => dispatch(zoomInOnPosition(zoomIn, x, y))
     const setMapPositionWithBoundsCheckA = (x, y) => dispatch(setMapPositionWithBoundsCheck(x, y))
