@@ -1,28 +1,27 @@
-import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
 import ScenarioListComponent from '../../../../components/app/sidebars/project/ScenarioListComponent'
-import { openNewScenarioModal } from '../../../../actions/modals/scenarios'
-import { deleteScenario, setCurrentScenario } from '../../../../actions/scenarios'
+import { addScenario, deleteScenario, setCurrentScenario } from '../../../../actions/scenarios'
 import { setCurrentPortfolio } from '../../../../actions/portfolios'
+import NewScenarioModalComponent from '../../../../components/modals/custom-components/NewScenarioModalComponent'
+import { useProjectTopologies } from '../../../../store/hooks/topology'
+import { useActiveScenario, useActiveProject, useScenarios } from '../../../../store/hooks/project'
+import { useSchedulers, useTraces } from '../../../../store/hooks/experiments'
 
-const ScenarioListContainer = ({ portfolioId, children }) => {
-    const currentProjectId = useSelector((state) => state.currentProjectId)
-    const currentScenarioId = useSelector((state) => state.currentScenarioId)
-    const scenarios = useSelector((state) => {
-        let scenarios = state.objects.portfolio[portfolioId]
-            ? state.objects.portfolio[portfolioId].scenarioIds.map((t) => state.objects.scenario[t])
-            : []
-        if (scenarios.filter((t) => !t).length > 0) {
-            scenarios = []
-        }
-
-        return scenarios
-    })
+const ScenarioListContainer = ({ portfolioId }) => {
+    const currentProjectId = useActiveProject()?._id
+    const currentScenarioId = useActiveScenario()?._id
+    const scenarios = useScenarios(portfolioId)
+    const topologies = useProjectTopologies()
+    const traces = useTraces()
+    const schedulers = useSchedulers()
 
     const dispatch = useDispatch()
+    const [isVisible, setVisible] = useState(false)
+
     const onNewScenario = (currentPortfolioId) => {
         dispatch(setCurrentPortfolio(currentPortfolioId))
-        dispatch(openNewScenarioModal())
+        setVisible(true)
     }
     const onChooseScenario = (portfolioId, scenarioId) => {
         dispatch(setCurrentScenario(portfolioId, scenarioId))
@@ -32,17 +31,43 @@ const ScenarioListContainer = ({ portfolioId, children }) => {
             dispatch(deleteScenario(id))
         }
     }
+    const callback = (name, portfolioId, trace, topology, operational) => {
+        if (name) {
+            dispatch(
+                addScenario({
+                    portfolioId,
+                    name,
+                    trace,
+                    topology,
+                    operational,
+                })
+            )
+        }
+
+        setVisible(false)
+    }
 
     return (
-        <ScenarioListComponent
-            portfolioId={portfolioId}
-            currentProjectId={currentProjectId}
-            currentScenarioId={currentScenarioId}
-            scenarios={scenarios}
-            onNewScenario={onNewScenario}
-            onChooseScenario={onChooseScenario}
-            onDeleteScenario={onDeleteScenario}
-        />
+        <>
+            <ScenarioListComponent
+                portfolioId={portfolioId}
+                currentProjectId={currentProjectId}
+                currentScenarioId={currentScenarioId}
+                scenarios={scenarios}
+                onNewScenario={onNewScenario}
+                onChooseScenario={onChooseScenario}
+                onDeleteScenario={onDeleteScenario}
+            />
+            <NewScenarioModalComponent
+                show={isVisible}
+                currentPortfolioId={currentProjectId}
+                currentPortfolioScenarioIds={scenarios.map((s) => s._id)}
+                traces={traces}
+                schedulers={schedulers}
+                topologies={topologies}
+                callback={callback}
+            />
+        </>
     )
 }
 

@@ -1,10 +1,9 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import MachineNameComponent from '../../../../../components/app/sidebars/topology/machine/MachineNameComponent'
 
-const MachineNameContainer = (props) => {
+const MachineNameContainer = () => {
     const position = useSelector((state) => state.interactionLevel.position)
-    return <MachineNameComponent {...props} position={position} />
+    return <h2>Machine at slot {position}</h2>
 }
 
 export default MachineNameContainer

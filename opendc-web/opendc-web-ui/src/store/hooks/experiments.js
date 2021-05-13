@@ -23,27 +23,15 @@
 import { useSelector } from 'react-redux'
 
 /**
- * Return the current active topology.
+ * Return the available traces to experiment with.
  */
-export function useActiveTopology() {
-    return useSelector((state) => state.currentTopologyId !== '-1' && state.objects.topology[state.currentTopologyId])
+export function useTraces() {
+    return useSelector((state) => Object.values(state.objects.trace))
 }
 
 /**
- * Return the topologies for the active project.
+ * Return the available schedulers to experiment with.
  */
-export function useProjectTopologies() {
-    return useSelector(({ currentProjectId, objects }) => {
-        if (currentProjectId === '-1' || !objects.project[currentProjectId]) {
-            return []
-        }
-
-        const topologies = objects.project[currentProjectId].topologyIds.map((t) => objects.topology[t])
-
-        if (topologies.filter((t) => !t).length > 0) {
-            return []
-        }
-
-        return topologies
-    })
+export function useSchedulers() {
+    return useSelector((state) => Object.values(state.objects.scheduler))
 }

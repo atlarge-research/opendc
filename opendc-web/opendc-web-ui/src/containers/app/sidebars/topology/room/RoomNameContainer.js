@@ -1,13 +1,31 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { openEditRoomNameModal } from '../../../../../actions/modals/topology'
-import RoomNameComponent from '../../../../../components/app/sidebars/topology/room/RoomNameComponent'
+import NameComponent from '../../../../../components/app/sidebars/topology/NameComponent'
+import TextInputModal from '../../../../../components/modals/TextInputModal'
+import { editRoomName } from '../../../../../actions/topology/room'
 
-const RoomNameContainer = (props) => {
+const RoomNameContainer = () => {
+    const [isVisible, setVisible] = useState(false)
     const roomName = useSelector((state) => state.objects.room[state.interactionLevel.roomId].name)
     const dispatch = useDispatch()
-    const onEdit = () => dispatch(openEditRoomNameModal())
-    return <RoomNameComponent {...props} onEdit={onEdit} roomName={roomName} />
+    const callback = (name) => {
+        if (name) {
+            dispatch(editRoomName(name))
+        }
+        setVisible(false)
+    }
+    return (
+        <>
+            <NameComponent name={roomName} onEdit={() => setVisible(true)} />
+            <TextInputModal
+                title="Edit room name"
+                label="Room name"
+                show={isVisible}
+                initialValue={roomName}
+                callback={callback}
+            />
+        </>
+    )
 }
 
 export default RoomNameContainer

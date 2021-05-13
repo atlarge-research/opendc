@@ -3,6 +3,8 @@ import React from 'react'
 import { Scenario } from '../../../../shapes'
 import Link from 'next/link'
 import FontAwesome from 'react-fontawesome'
+import { Button, Col, Row } from 'reactstrap'
+import classNames from 'classnames'
 
 function ScenarioListComponent({
     scenarios,
@@ -16,36 +18,42 @@ function ScenarioListComponent({
     return (
         <>
             {scenarios.map((scenario, idx) => (
-                <div key={scenario._id} className="row mb-1">
-                    <div
-                        className={
-                            'col-7 pl-5 align-self-center ' +
-                            (scenario._id === currentScenarioId ? 'font-weight-bold' : '')
-                        }
+                <Row key={scenario._id} className="mb-1">
+                    <Col
+                        xs="7"
+                        className={classNames('pl-5 align-self-center', {
+                            'font-weight-bold': scenario._id === currentScenarioId,
+                        })}
                     >
                         {scenario.name}
-                    </div>
-                    <div className="col-5 text-right">
+                    </Col>
+                    <Col xs="5" className="text-right">
                         <Link
                             href={`/projects/${currentProjectId}/portfolios/${scenario.portfolioId}/scenarios/${scenario._id}`}
                         >
-                            <a
-                                className="btn btn-outline-primary mr-1 fa fa-play disabled"
+                            <Button
+                                color="primary"
+                                outline
+                                disabled
+                                className="mr-1 fa fa-play"
                                 onClick={() => onChooseScenario(scenario.portfolioId, scenario._id)}
                             />
                         </Link>
-                        <span
-                            className={'btn btn-outline-danger fa fa-trash ' + (idx === 0 ? 'disabled' : '')}
+                        <Button
+                            color="danger"
+                            outline
+                            className="fa fa-trash"
+                            disabled={idx === 0}
                             onClick={() => (idx !== 0 ? onDeleteScenario(scenario._id) : undefined)}
                         />
-                    </div>
-                </div>
+                    </Col>
+                </Row>
             ))}
             <div className="pl-4 mb-2">
-                <div className="btn btn-outline-primary" onClick={() => onNewScenario(this.props.portfolioId)}>
+                <Button color="primary" outline onClick={() => onNewScenario(portfolioId)}>
                     <FontAwesome name="plus" className="mr-1" />
                     New scenario
-                </div>
+                </Button>
             </div>
         </>
     )

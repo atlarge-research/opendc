@@ -32,26 +32,18 @@ import LoadingScreen from '../../components/app/map/LoadingScreen'
 import ScaleIndicatorContainer from '../../containers/app/map/controls/ScaleIndicatorContainer'
 import MapStage from '../../containers/app/map/MapStage'
 import TopologySidebarContainer from '../../containers/app/sidebars/topology/TopologySidebarContainer'
-import DeleteMachineModal from '../../containers/modals/DeleteMachineModal'
-import DeleteRackModal from '../../containers/modals/DeleteRackModal'
-import DeleteRoomModal from '../../containers/modals/DeleteRoomModal'
-import EditRackNameModal from '../../containers/modals/EditRackNameModal'
-import EditRoomNameModal from '../../containers/modals/EditRoomNameModal'
-import NewTopologyModal from '../../containers/modals/NewTopologyModal'
 import AppNavbarContainer from '../../containers/navigation/AppNavbarContainer'
 import ProjectSidebarContainer from '../../containers/app/sidebars/project/ProjectSidebarContainer'
 import { openScenarioSucceeded } from '../../actions/scenarios'
-import NewPortfolioModal from '../../containers/modals/NewPortfolioModal'
-import NewScenarioModal from '../../containers/modals/NewScenarioModal'
 import PortfolioResultsContainer from '../../containers/app/results/PortfolioResultsContainer'
 import KeymapConfiguration from '../../shortcuts/keymap'
 import { useRequireAuth } from '../../auth/hook'
-import { useProject } from '../../store/hooks/project'
+import { useActiveProject } from '../../store/hooks/project'
 
 const App = ({ projectId, portfolioId, scenarioId }) => {
     useRequireAuth()
 
-    const projectName = useProject()?.name
+    const projectName = useActiveProject()?.name
     const topologyIsLoading = useSelector((state) => state.currentTopologyId === '-1')
 
     const dispatch = useDispatch()
@@ -106,14 +98,6 @@ const App = ({ projectId, portfolioId, scenarioId }) => {
             </Head>
             <AppNavbarContainer fullWidth={true} />
             {scenarioId ? scenarioElements : portfolioId ? portfolioElements : constructionElements}
-            <NewTopologyModal />
-            <NewPortfolioModal />
-            <NewScenarioModal />
-            <EditRoomNameModal />
-            <DeleteRoomModal />
-            <EditRackNameModal />
-            <DeleteRackModal />
-            <DeleteMachineModal />
         </HotKeys>
     )
 }

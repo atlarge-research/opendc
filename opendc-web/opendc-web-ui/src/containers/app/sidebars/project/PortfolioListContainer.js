@@ -1,34 +1,23 @@
-import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/router'
 import PortfolioListComponent from '../../../../components/app/sidebars/project/PortfolioListComponent'
-import { deletePortfolio, setCurrentPortfolio } from '../../../../actions/portfolios'
-import { openNewPortfolioModal } from '../../../../actions/modals/portfolios'
+import { addPortfolio, deletePortfolio, setCurrentPortfolio } from '../../../../actions/portfolios'
 import { getState } from '../../../../util/state-utils'
 import { setCurrentTopology } from '../../../../actions/topology/building'
+import NewPortfolioModalComponent from '../../../../components/modals/custom-components/NewPortfolioModalComponent'
+import { useActivePortfolio, useActiveProject, usePortfolios } from '../../../../store/hooks/project'
 
-const PortfolioListContainer = (props) => {
-    const state = useSelector((state) => {
-        let portfolios = state.objects.project[state.currentProjectId]
-            ? state.objects.project[state.currentProjectId].portfolioIds.map((t) => state.objects.portfolio[t])
-            : []
-        if (portfolios.filter((t) => !t).length > 0) {
-            portfolios = []
-        }
-
-        return {
-            currentProjectId: state.currentProjectId,
-            currentPortfolioId: state.currentPortfolioId,
-            portfolios,
-        }
-    })
+const PortfolioListContainer = () => {
+    const currentProjectId = useActiveProject()?._id
+    const currentPortfolioId = useActivePortfolio()?._id
+    const portfolios = usePortfolios(currentProjectId)
 
     const dispatch = useDispatch()
+    const [isVisible, setVisible] = useState(false)
     const router = useRouter()
     const actions = {
-        onNewPortfolio: () => {
-            dispatch(openNewPortfolioModal())
-        },
+        onNewPortfolio: () => setVisible(true),
         onChoosePortfolio: (portfolioId) => {
             dispatch(setCurrentPortfolio(portfolioId))
         },
@@ -41,7 +30,28 @@ const PortfolioListContainer = (props) => {
             }
         },
     }
-    return <PortfolioListComponent {...props} {...state} {...actions} />
+    const callback = (name, targets) => {
+        if (name) {
+            dispatch(
+                addPortfolio({
+                    name,
+                    targets,
+                })
+            )
+        }
+        setVisible(false)
+    }
+    return (
+        <>
+            <PortfolioListComponent
+                currentProjectId={currentProjectId}
+                currentPortfolioId={currentPortfolioId}
+                portfolios={portfolios}
+                {...actions}
+            />
+            <NewPortfolioModalComponent callback={callback} show={isVisible} />
+        </>
+    )
 }
 
 export default PortfolioListContainer

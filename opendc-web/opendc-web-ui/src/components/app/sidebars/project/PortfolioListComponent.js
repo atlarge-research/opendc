@@ -4,6 +4,8 @@ import { Portfolio } from '../../../../shapes'
 import Link from 'next/link'
 import FontAwesome from 'react-fontawesome'
 import ScenarioListContainer from '../../../../containers/app/sidebars/project/ScenarioListContainer'
+import { Button, Col, Row } from 'reactstrap'
+import classNames from 'classnames'
 
 function PortfolioListComponent({
     portfolios,
@@ -17,35 +19,39 @@ function PortfolioListComponent({
         <div className="pb-3">
             <h2>
                 Portfolios
-                <button className="btn btn-outline-primary float-right" onClick={(e) => onNewPortfolio(e)}>
+                <Button color="primary" outline className="float-right" onClick={(e) => onNewPortfolio(e)}>
                     <FontAwesome name="plus" />
-                </button>
+                </Button>
             </h2>
 
             {portfolios.map((portfolio, idx) => (
                 <div key={portfolio._id}>
-                    <div className="row mb-1">
-                        <div
-                            className={
-                                'col-7 align-self-center ' +
-                                (portfolio._id === currentPortfolioId ? 'font-weight-bold' : '')
-                            }
+                    <Row className="row mb-1">
+                        <Col
+                            xs="7"
+                            className={classNames('align-self-center', {
+                                'font-weight-bold': portfolio._id === currentPortfolioId,
+                            })}
                         >
                             {portfolio.name}
-                        </div>
-                        <div className="col-5 text-right">
+                        </Col>
+                        <Col xs="5" className="text-right">
                             <Link href={`/projects/${currentProjectId}/portfolios/${portfolio._id}`}>
-                                <a
-                                    className="btn btn-outline-primary mr-1 fa fa-play"
+                                <Button
+                                    color="primary"
+                                    outline
+                                    className="mr-1 fa fa-play"
                                     onClick={() => onChoosePortfolio(portfolio._id)}
                                 />
                             </Link>
-                            <span
-                                className="btn btn-outline-danger fa fa-trash"
+                            <Button
+                                color="danger"
+                                outline
+                                className="fa fa-trash"
                                 onClick={() => onDeletePortfolio(portfolio._id)}
                             />
-                        </div>
-                    </div>
+                        </Col>
+                    </Row>
                     <ScenarioListContainer portfolioId={portfolio._id} />
                 </div>
             ))}
