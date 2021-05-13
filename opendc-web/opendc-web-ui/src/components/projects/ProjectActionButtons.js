@@ -1,24 +1,29 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import Link from 'next/link'
+import { Button } from 'reactstrap'
 
 const ProjectActionButtons = ({ projectId, onViewUsers, onDelete }) => (
     <td className="text-right">
         <Link href={`/projects/${projectId}`}>
-            <a className="btn btn-outline-primary btn-sm mr-2" title="Open this project">
+            <Button color="primary" outline size="sm" className="mr-2" title="Open this project">
                 <span className="fa fa-play" />
-            </a>
+            </Button>
         </Link>
-        <div
-            className="btn btn-outline-success btn-sm disabled mr-2"
+        <Button
+            color="success"
+            outline
+            size="sm"
+            disabled
+            className="mr-2"
             title="View and edit collaborators (not supported currently)"
             onClick={() => onViewUsers(projectId)}
         >
             <span className="fa fa-users" />
-        </div>
-        <div className="btn btn-outline-danger btn-sm" title="Delete this project" onClick={() => onDelete(projectId)}>
+        </Button>
+        <Button color="danger" outline size="sm" title="Delete this project" onClick={() => onDelete(projectId)}>
             <span className="fa fa-trash" />
-        </div>
+        </Button>
     </td>
 )
 

@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Authorization } from '../../shapes'
-import ProjectAuthRow from './ProjectAuthRow'
+import ProjectRow from './ProjectRow'
 
-const ProjectAuthList = ({ authorizations }) => {
+const ProjectList = ({ authorizations }) => {
     return (
         <div className="vertically-expanding-container">
             {authorizations.length === 0 ? (
@@ -23,7 +23,7 @@ const ProjectAuthList = ({ authorizations }) => {
                     </thead>
                     <tbody>
                         {authorizations.map((authorization) => (
-                            <ProjectAuthRow projectAuth={authorization} key={authorization.project._id} />
+                            <ProjectRow projectAuth={authorization} key={authorization.project._id} />
                         ))}
                     </tbody>
                 </table>
@@ -32,8 +32,8 @@ const ProjectAuthList = ({ authorizations }) => {
     )
 }
 
-ProjectAuthList.propTypes = {
+ProjectList.propTypes = {
     authorizations: PropTypes.arrayOf(Authorization).isRequired,
 }
 
-export default ProjectAuthList
+export default ProjectList

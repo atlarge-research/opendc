@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import { ADD_PROJECT_SUCCEEDED, DELETE_PROJECT_SUCCEEDED, SET_AUTH_VISIBILITY_FILTER } from '../actions/projects'
+import { ADD_PROJECT_SUCCEEDED, DELETE_PROJECT_SUCCEEDED } from '../actions/projects'
 import { FETCH_AUTHORIZATIONS_OF_CURRENT_USER_SUCCEEDED } from '../actions/users'
 
 export function authorizationsOfCurrentUser(state = [], action) {
@@ -15,16 +15,4 @@ export function authorizationsOfCurrentUser(state = [], action) {
     }
 }
 
-export function authVisibilityFilter(state = 'SHOW_ALL', action) {
-    switch (action.type) {
-        case SET_AUTH_VISIBILITY_FILTER:
-            return action.filter
-        default:
-            return state
-    }
-}
-
-export const projectList = combineReducers({
-    authorizationsOfCurrentUser,
-    authVisibilityFilter,
-})
+export const projectList = combineReducers({ authorizationsOfCurrentUser })

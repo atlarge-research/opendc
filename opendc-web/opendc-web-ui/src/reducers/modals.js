@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux'
-import { CLOSE_NEW_PROJECT_MODAL, OPEN_NEW_PROJECT_MODAL } from '../actions/modals/projects'
 import {
     CLOSE_NEW_TOPOLOGY_MODAL,
     CLOSE_DELETE_MACHINE_MODAL,
@@ -31,7 +30,6 @@ function modal(openAction, closeAction) {
 }
 
 export const modals = combineReducers({
-    newProjectModalVisible: modal(OPEN_NEW_PROJECT_MODAL, CLOSE_NEW_PROJECT_MODAL),
     changeTopologyModalVisible: modal(OPEN_NEW_TOPOLOGY_MODAL, CLOSE_NEW_TOPOLOGY_MODAL),
     editRoomNameModalVisible: modal(OPEN_EDIT_ROOM_NAME_MODAL, CLOSE_EDIT_ROOM_NAME_MODAL),
     deleteRoomModalVisible: modal(OPEN_DELETE_ROOM_MODAL, CLOSE_DELETE_ROOM_MODAL),

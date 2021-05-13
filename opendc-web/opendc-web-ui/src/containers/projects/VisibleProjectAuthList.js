@@ -1,6 +1,7 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
-import ProjectList from '../../components/projects/ProjectAuthList'
+import ProjectList from '../../components/projects/ProjectList'
 
 const getVisibleProjectAuths = (projectAuths, filter) => {
     switch (filter) {
@@ -15,7 +16,7 @@ const getVisibleProjectAuths = (projectAuths, filter) => {
     }
 }
 
-const VisibleProjectAuthList = (props) => {
+const VisibleProjectAuthList = ({ filter }) => {
     const authorizations = useSelector((state) => {
         const denormalizedAuthorizations = state.projectList.authorizationsOfCurrentUser.map((authorizationIds) => {
             const authorization = state.objects.authorization[authorizationIds]
@@ -24,9 +25,13 @@ const VisibleProjectAuthList = (props) => {
             return authorization
         })
 
-        return getVisibleProjectAuths(denormalizedAuthorizations, state.projectList.authVisibilityFilter)
+        return getVisibleProjectAuths(denormalizedAuthorizations, filter)
     })
-    return <ProjectList {...props} authorizations={authorizations} />
+    return <ProjectList authorizations={authorizations} />
+}
+
+VisibleProjectAuthList.propTypes = {
+    filter: PropTypes.string.isRequired,
 }
 
 export default VisibleProjectAuthList

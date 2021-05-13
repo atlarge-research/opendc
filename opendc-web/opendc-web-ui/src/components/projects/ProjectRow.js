@@ -5,7 +5,7 @@ import { Authorization } from '../../shapes/index'
 import { AUTH_DESCRIPTION_MAP, AUTH_ICON_MAP } from '../../util/authorizations'
 import { parseAndFormatDateTime } from '../../util/date-time'
 
-const ProjectAuthRow = ({ projectAuth }) => (
+const ProjectRow = ({ projectAuth }) => (
     <tr>
         <td className="pt-3">{projectAuth.project.name}</td>
         <td className="pt-3">{parseAndFormatDateTime(projectAuth.project.datetimeLastEdited)}</td>
@@ -17,8 +17,8 @@ const ProjectAuthRow = ({ projectAuth }) => (
     </tr>
 )
 
-ProjectAuthRow.propTypes = {
+ProjectRow.propTypes = {
     projectAuth: Authorization.isRequired,
 }
 
-export default ProjectAuthRow
+export default ProjectRow

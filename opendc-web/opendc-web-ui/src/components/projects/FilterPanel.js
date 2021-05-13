@@ -1,13 +1,28 @@
 import React from 'react'
-import FilterLink from '../../containers/projects/FilterLink'
+import PropTypes from 'prop-types'
+import { Button, ButtonGroup } from 'reactstrap'
 import { filterPanel } from './FilterPanel.module.scss'
 
-const FilterPanel = () => (
-    <div className={`btn-group ${filterPanel} mb-2`}>
-        <FilterLink filter="SHOW_ALL">All Projects</FilterLink>
-        <FilterLink filter="SHOW_OWN">My Projects</FilterLink>
-        <FilterLink filter="SHOW_SHARED">Shared with me</FilterLink>
-    </div>
+export const FILTERS = { SHOW_ALL: 'All Projects', SHOW_OWN: 'My Projects', SHOW_SHARED: 'Shared with me' }
+
+const FilterPanel = ({ onSelect, activeFilter = 'SHOW_ALL' }) => (
+    <ButtonGroup className={`${filterPanel} mb-2`}>
+        {Object.keys(FILTERS).map((filter) => (
+            <Button
+                color="secondary"
+                key={filter}
+                onClick={() => activeFilter === filter || onSelect(filter)}
+                active={activeFilter === filter}
+            >
+                {FILTERS[filter]}
+            </Button>
+        ))}
+    </ButtonGroup>
 )
+
+FilterPanel.propTypes = {
+    onSelect: PropTypes.func.isRequired,
+    activeFilter: PropTypes.string,
+}
 
 export default FilterPanel

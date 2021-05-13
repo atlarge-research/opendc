@@ -1,19 +1,21 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { useDispatch } from 'react-redux'
 import { fetchAuthorizationsOfCurrentUser } from '../../actions/users'
 import ProjectFilterPanel from '../../components/projects/FilterPanel'
-import NewProjectModal from '../../containers/modals/NewProjectModal'
-import NewProjectButtonContainer from '../../containers/projects/NewProjectButtonContainer'
+import NewProjectContainer from '../../containers/projects/NewProjectContainer'
 import VisibleProjectList from '../../containers/projects/VisibleProjectAuthList'
 import AppNavbarContainer from '../../containers/navigation/AppNavbarContainer'
 import { useRequireAuth } from '../../auth/hook'
+import { Container } from 'reactstrap'
 
 function Projects() {
-    const dispatch = useDispatch()
-
     useRequireAuth()
-    useEffect(() => dispatch(fetchAuthorizationsOfCurrentUser()))
+
+    const dispatch = useDispatch()
+    const [filter, setFilter] = useState('SHOW_ALL')
+
+    useEffect(() => dispatch(fetchAuthorizationsOfCurrentUser()), [])
 
     return (
         <>
@@ -22,12 +24,11 @@ function Projects() {
             </Head>
             <div className="full-height">
                 <AppNavbarContainer fullWidth={false} />
-                <div className="container text-page-container full-height">
-                    <ProjectFilterPanel />
-                    <VisibleProjectList />
-                    <NewProjectButtonContainer />
-                </div>
-                <NewProjectModal />
+                <Container className="text-page-container">
+                    <ProjectFilterPanel onSelect={setFilter} activeFilter={filter} />
+                    <VisibleProjectList filter={filter} />
+                    <NewProjectContainer />
+                </Container>
             </div>
         </>
     )
