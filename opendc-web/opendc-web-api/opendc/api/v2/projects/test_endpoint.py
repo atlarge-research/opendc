@@ -3,6 +3,13 @@ from opendc.util.database import DB
 test_id = 24 * '1'
 
 
+def test_get_user_projects(client, mocker):
+    mocker.patch.object(DB, 'fetch_all', return_value={'_id': test_id, 'authorizations': [{'userId': 'test',
+                                                                                           'authorizationLevel': 'OWN'}]})
+    res = client.get('/v2/projects')
+    assert '200' in res.status
+
+
 def test_add_project_missing_parameter(client):
     assert '400' in client.post('/v2/projects').status
 

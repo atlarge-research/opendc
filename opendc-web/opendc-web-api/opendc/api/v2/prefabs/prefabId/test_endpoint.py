@@ -32,7 +32,7 @@ def test_get_private_prefab(client, mocker):
     DB.fetch_one.side_effect = [{
         '_id': test_id,
         'name': 'test prefab',
-        'authorId': test_id,
+        'authorId': 'test',
         'visibility': 'private',
         'rack': {}
     },
@@ -92,7 +92,7 @@ def test_update_prefab(client, mocker):
     DB.fetch_one.side_effect = [{
         '_id': test_id,
         'name': 'test prefab',
-        'authorId': test_id,
+        'authorId': 'test',
         'visibility': 'private',
         'rack': {}
     },
@@ -132,7 +132,7 @@ def test_delete_prefab(client, mocker):
     DB.fetch_one.side_effect = [{
         '_id': test_id,
         'name': 'test prefab',
-        'authorId': test_id,
+        'authorId': 'test',
         'visibility': 'private',
         'rack': {}
     },

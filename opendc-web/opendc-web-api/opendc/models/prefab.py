@@ -1,5 +1,4 @@
 from opendc.models.model import Model
-from opendc.models.user import User
 from opendc.util.exceptions import ClientError
 from opendc.util.rest import Response
 
@@ -9,20 +8,10 @@ class Prefab(Model):
 
     collection_name = 'prefabs'
 
-    def check_user_access(self, google_id):
-        """Raises an error if the user with given [google_id] has insufficient access to view this prefab.
+    def check_user_access(self, user_id):
+        """Raises an error if the user with given [user_id] has insufficient access to view this prefab.
 
-        :param google_id: The Google ID of the user.
+        :param user_id: The Google ID of the user.
         """
-        user = User.from_google_id(google_id)
-
-        # TODO(Jacob) add special handling for OpenDC-provided prefabs
-
-        #try:
-
-        print(self.obj)
-        if self.obj['authorId'] != user.get_id() and self.obj['visibility'] == "private":
+        if self.obj['authorId'] != user_id and self.obj['visibility'] == "private":
             raise ClientError(Response(403, "Forbidden from retrieving prefab."))
-        #except KeyError:
-            # OpenDC-authored objects don't necessarily have an authorId
-        #    return

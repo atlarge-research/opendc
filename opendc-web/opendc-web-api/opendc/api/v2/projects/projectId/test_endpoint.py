@@ -20,10 +20,7 @@ def test_get_project_not_authorized(client, mocker):
                         'fetch_one',
                         return_value={
                             '_id': test_id,
-                            'authorizations': [{
-                                'projectId': test_id_2,
-                                'authorizationLevel': 'OWN'
-                            }]
+                            'authorizations': []
                         })
     res = client.get(f'/v2/projects/{test_id}')
     assert '403' in res.status
@@ -35,7 +32,7 @@ def test_get_project(client, mocker):
                         return_value={
                             '_id': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'EDIT'
                             }]
                         })
@@ -58,7 +55,7 @@ def test_update_project_not_authorized(client, mocker):
                         return_value={
                             '_id': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'VIEW'
                             }]
                         })
@@ -72,7 +69,7 @@ def test_update_project(client, mocker):
                         return_value={
                             '_id': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'OWN'
                             }]
                         })
@@ -94,7 +91,7 @@ def test_delete_project_different_user(client, mocker):
                             '_id': test_id,
                             'googleId': 'other_test',
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'VIEW'
                             }],
                             'topologyIds': []
@@ -110,7 +107,7 @@ def test_delete_project(client, mocker):
                             '_id': test_id,
                             'googleId': 'test',
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'OWN'
                             }],
                             'topologyIds': [],

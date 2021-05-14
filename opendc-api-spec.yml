@@ -9,129 +9,20 @@ schemes:
   - https
 
 paths:
-  '/users':
-    get:
-      tags:
-        - users
-      description: Search for a User using their email address.
-      parameters:
-        - name: email
-          in: query
-          description: User's email address.
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Successfully searched Users.
-          schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '404':
-          description: User not found.
-    post:
-      tags:
-        - users
-      description: Add a new User.
-      parameters:
-        - name: user
-          in: body
-          description: The new User.
-          required: true
-          schema:
-            $ref: '#/definitions/User'
-      responses:
-        '200':
-          description: Successfully added User.
-          schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '409':
-          description: User already exists.
-  '/users/{userId}':
-    get:
-      tags:
-        - users
-      description: Get this User.
-      parameters:
-        - name: userId
-          in: path
-          description: User's ID.
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Successfully retrieved User.
-          schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '404':
-          description: User not found.
-    put:
-      tags:
-        - users
-      description: Update this User's given name and/ or family name.
-      parameters:
-        - name: userId
-          in: path
-          description: User's ID.
-          required: true
-          type: string
-        - name: user
-          in: body
-          description: User's new properties.
-          required: true
-          schema:
-            properties:
-              givenName:
-                type: string
-              familyName:
-                type: string
-      responses:
-        '200':
-          description: Successfully updated User.
-          schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from updating User.
-        '404':
-          description: User not found.
-    delete:
-      tags:
-        - users
-      description: Delete this User.
-      parameters:
-        - name: userId
-          in: path
-          description: User's ID.
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Successfully deleted User.
-          schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from deleting User.
-        '404':
-          description: User not found.
   '/projects':
+    get:
+      tags:
+        - projects
+      description: List Projects of the active user
+      responses:
+        '200':
+          description: Successfully
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Project'
+        '401':
+          description: Unauthorized.
     post:
       tags:
         - projects
@@ -230,39 +121,6 @@ paths:
           description: Unauthorized.
         '403':
           description: Forbidden from deleting Project.
-        '404':
-          description: Project not found.
-  '/projects/{projectId}/authorizations':
-    get:
-      tags:
-        - projects
-      description: Get this Project's Authorizations.
-      parameters:
-        - name: projectId
-          in: path
-          description: Project's ID.
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Successfully retrieved Project's Authorizations.
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                userId:
-                  type: string
-                projectId:
-                  type: string
-                authorizationLevel:
-                  type: string
-        '400':
-          description: Missing or incorrectly typed parameter.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden from retrieving this Project's Authorizations.
         '404':
           description: Project not found.
   '/projects/{projectId}/topologies':
@@ -900,28 +758,6 @@ definitions:
         type: string
       type:
         type: string
-  User:
-    type: object
-    properties:
-      _id:
-        type: string
-      googleId:
-        type: integer
-      email:
-        type: string
-      givenName:
-        type: string
-      familyName:
-        type: string
-      authorizations:
-        type: array
-        items:
-          type: object
-          properties:
-            projectId:
-              type: string
-            authorizationLevel:
-              type: string
   Prefab:
     type: object
     properties:

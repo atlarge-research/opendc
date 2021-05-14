@@ -28,7 +28,7 @@ def test_add_portfolio_not_authorized(client, mocker):
                             '_id': test_id,
                             'projectId': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'VIEW'
                             }]
                         })
@@ -52,7 +52,7 @@ def test_add_portfolio(client, mocker):
                             'projectId': test_id,
                             'portfolioIds': [test_id],
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'EDIT'
                             }]
                         })

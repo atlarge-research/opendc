@@ -13,7 +13,7 @@ def test_add_topology(client, mocker):
                         return_value={
                             '_id': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'OWN'
                             }],
                             'topologyIds': []
@@ -39,7 +39,7 @@ def test_add_topology_not_authorized(client, mocker):
                             '_id': test_id,
                             'projectId': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'VIEW'
                             }]
                         })

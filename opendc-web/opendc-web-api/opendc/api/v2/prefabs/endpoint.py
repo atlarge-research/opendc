@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from opendc.models.prefab import Prefab
-from opendc.models.user import User
 from opendc.util.database import Database
 from opendc.util.rest import Response
 
@@ -15,8 +14,8 @@ def POST(request):
     prefab.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     prefab.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
 
-    user = User.from_google_id(request.current_user['sub'])
-    prefab.set_property('authorId', user.get_id())
+    user_id = request.current_user['sub']
+    prefab.set_property('authorId', user_id)
 
     prefab.insert()
 

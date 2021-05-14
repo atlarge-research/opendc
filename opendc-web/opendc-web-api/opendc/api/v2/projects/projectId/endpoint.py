@@ -3,7 +3,6 @@ from datetime import datetime
 from opendc.models.portfolio import Portfolio
 from opendc.models.project import Project
 from opendc.models.topology import Topology
-from opendc.models.user import User
 from opendc.util.database import Database
 from opendc.util.rest import Response
 
@@ -55,11 +54,6 @@ def DELETE(request):
     for portfolio_id in project.obj['portfolioIds']:
         portfolio = Portfolio.from_id(portfolio_id)
         portfolio.delete()
-
-    user = User.from_google_id(request.current_user['sub'])
-    user.obj['authorizations'] = list(
-        filter(lambda x: x['projectId'] != project.get_id(), user.obj['authorizations']))
-    user.update()
 
     old_object = project.delete()
 

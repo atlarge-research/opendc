@@ -37,7 +37,7 @@ def test_add_scenario_not_authorized(client, mocker):
                             'projectId': test_id,
                             'portfolioId': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'VIEW'
                             }]
                         })
@@ -71,7 +71,7 @@ def test_add_scenario(client, mocker):
                             'portfolioIds': [test_id],
                             'scenarioIds': [test_id],
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'EDIT'
                             }],
                             'simulation': {

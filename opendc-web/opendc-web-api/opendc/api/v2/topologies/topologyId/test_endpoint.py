@@ -11,7 +11,7 @@ def test_get_topology(client, mocker):
                             '_id': test_id,
                             'projectId': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'EDIT'
                             }]
                         })
@@ -30,10 +30,7 @@ def test_get_topology_not_authorized(client, mocker):
                         return_value={
                             '_id': test_id,
                             'projectId': test_id,
-                            'authorizations': [{
-                                'projectId': test_id_2,
-                                'authorizationLevel': 'OWN'
-                            }]
+                            'authorizations': []
                         })
     res = client.get(f'/v2/topologies/{test_id}')
     assert '403' in res.status
@@ -60,10 +57,7 @@ def test_update_topology_not_authorized(client, mocker):
                         return_value={
                             '_id': test_id,
                             'projectId': test_id,
-                            'authorizations': [{
-                                'projectId': test_id,
-                                'authorizationLevel': 'VIEW'
-                            }]
+                            'authorizations': []
                         })
     mocker.patch.object(DB, 'update', return_value={})
     assert '403' in client.put(f'/v2/topologies/{test_id}', json={
@@ -81,7 +75,7 @@ def test_update_topology(client, mocker):
                             '_id': test_id,
                             'projectId': test_id,
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'OWN'
                             }]
                         })
@@ -104,7 +98,7 @@ def test_delete_topology(client, mocker):
                             'googleId': 'test',
                             'topologyIds': [test_id],
                             'authorizations': [{
-                                'projectId': test_id,
+                                'userId': 'test',
                                 'authorizationLevel': 'OWN'
                             }]
                         })
