@@ -5,7 +5,6 @@ import sys
 import traceback
 import urllib.request
 
-import flask_socketio
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_compress import Compress
@@ -40,23 +39,21 @@ if not TEST_MODE:
         host=os.environ.get('OPENDC_DB_HOST', 'localhost'))
 
 # Set up the core app
-FLASK_CORE_APP = Flask(__name__)
-FLASK_CORE_APP.testing = TEST_MODE
-FLASK_CORE_APP.config['SECRET_KEY'] = os.environ['OPENDC_FLASK_SECRET']
-FLASK_CORE_APP.json_encoder = JSONEncoder
+app = Flask("opendc")
+app.testing = TEST_MODE
+app.config['SECRET_KEY'] = os.environ['OPENDC_FLASK_SECRET']
+app.json_encoder = JSONEncoder
 
 # Set up CORS support
-CORS(FLASK_CORE_APP)
+CORS(app)
 
 compress = Compress()
-compress.init_app(FLASK_CORE_APP)
-
-SOCKET_IO_CORE = flask_socketio.SocketIO(FLASK_CORE_APP, cors_allowed_origins="*")
+compress.init_app(app)
 
 API_VERSIONS = {'v2'}
 
 
-@FLASK_CORE_APP.route('/tokensignin', methods=['POST'])
+@app.route('/tokensignin', methods=['POST'])
 def sign_in():
     """Authenticate a user with Google sign in"""
 
@@ -92,7 +89,7 @@ def sign_in():
     return jsonify(**data)
 
 
-@FLASK_CORE_APP.route('/<string:version>/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/<string:version>/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def api_call(version, endpoint_path):
     """Call an API endpoint directly over HTTP."""
 
@@ -137,17 +134,6 @@ def api_call(version, endpoint_path):
     return flask_response
 
 
-@SOCKET_IO_CORE.on('request')
-def receive_message(message):
-    """"Receive a SocketIO request"""
-    (req, res) = _process_message(message)
-
-    print(f'Socket: {req.method} to `/{req.path}` resulted in {res.status["code"]}: {res.status["description"]}')
-    sys.stdout.flush()
-
-    flask_socketio.emit('response', res.to_JSON(), json=True)
-
-
 def _process_message(message):
     """Process a request message and return the response."""
 
@@ -184,5 +170,4 @@ def _process_message(message):
 
 
 if __name__ == '__main__':
-    print("Web server started on 8081")
-    SOCKET_IO_CORE.run(FLASK_CORE_APP, host='0.0.0.0', port=8081, use_reloader=False)
+    app.run()

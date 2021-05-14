@@ -3,13 +3,13 @@ Configuration file for all unit tests.
 """
 import pytest
 
-from main import FLASK_CORE_APP
+from app import app
 
 
 @pytest.fixture
 def client():
     """Returns a Flask API client to interact with."""
-    FLASK_CORE_APP.config['TESTING'] = True
+    app.config['TESTING'] = True
 
-    with FLASK_CORE_APP.test_client() as client:
+    with app.test_client() as client:
         yield client
