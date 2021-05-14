@@ -25,7 +25,7 @@ def POST(request):
     topology.set_property('projectId', project.get_id())
     topology.update()
 
-    user = User.from_google_id(request.google_id)
+    user = User.from_google_id(request.current_user['sub'])
     user.obj['authorizations'].append({'projectId': project.get_id(), 'authorizationLevel': 'OWN'})
     user.update()
 

@@ -14,7 +14,7 @@ def GET(request):
     topology = Topology.from_id(request.params_path['topologyId'])
 
     topology.check_exists()
-    topology.check_user_access(request.google_id, False)
+    topology.check_user_access(request.current_user['sub'], False)
 
     return Response(200, 'Successfully retrieved topology.', topology.obj)
 
@@ -25,7 +25,7 @@ def PUT(request):
     topology = Topology.from_id(request.params_path['topologyId'])
 
     topology.check_exists()
-    topology.check_user_access(request.google_id, True)
+    topology.check_user_access(request.current_user['sub'], True)
 
     topology.set_property('name', request.params_body['topology']['name'])
     topology.set_property('rooms', request.params_body['topology']['rooms'])
@@ -43,7 +43,7 @@ def DELETE(request):
     topology = Topology.from_id(request.params_path['topologyId'])
 
     topology.check_exists()
-    topology.check_user_access(request.google_id, True)
+    topology.check_user_access(request.current_user['sub'], True)
 
     topology_id = topology.get_id()
 

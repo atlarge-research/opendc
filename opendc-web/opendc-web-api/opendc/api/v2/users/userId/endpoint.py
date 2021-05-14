@@ -27,7 +27,7 @@ def PUT(request):
     user = User.from_id(request.params_path['userId'])
 
     user.check_exists()
-    user.check_correct_user(request.google_id)
+    user.check_correct_user(request.current_user['sub'])
 
     user.set_property('givenName', request.params_body['user']['givenName'])
     user.set_property('familyName', request.params_body['user']['familyName'])
@@ -45,7 +45,7 @@ def DELETE(request):
     user = User.from_id(request.params_path['userId'])
 
     user.check_exists()
-    user.check_correct_user(request.google_id)
+    user.check_correct_user(request.current_user['sub'])
 
     for authorization in user.obj['authorizations']:
         if authorization['authorizationLevel'] != 'OWN':

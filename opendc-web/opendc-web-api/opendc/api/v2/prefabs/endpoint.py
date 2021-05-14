@@ -15,7 +15,7 @@ def POST(request):
     prefab.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
     prefab.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
 
-    user = User.from_google_id(request.google_id)
+    user = User.from_google_id(request.current_user['sub'])
     prefab.set_property('authorId', user.get_id())
 
     prefab.insert()

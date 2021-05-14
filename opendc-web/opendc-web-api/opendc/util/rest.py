@@ -1,11 +1,9 @@
 import importlib
 import json
-import os
-
-from oauth2client import client, crypt
 
 from opendc.util import exceptions, parameter_checker
 from opendc.util.exceptions import ClientError
+from opendc.util.auth import current_user
 
 
 class Request:
@@ -57,16 +55,7 @@ class Request:
             raise exceptions.UnsupportedMethodError('Unimplemented method at endpoint {}: {}'.format(
                 self.path, self.method))
 
-        # Verify the user
-
-        if "OPENDC_FLASK_TESTING" in os.environ:
-            self.google_id = 'test'
-            return
-
-        try:
-            self.google_id = self._verify_token(self.token)
-        except crypt.AppIdentityError as e:
-            raise exceptions.AuthorizationTokenError(e)
+        self.current_user = current_user
 
     def check_required_parameters(self, **kwargs):
         """Raise an error if a parameter is missing or of the wrong type."""
@@ -98,27 +87,6 @@ class Request:
         self.message['token'] = None
 
         return json.dumps(self.message)
-
-    @staticmethod
-    def _verify_token(token):
-        """Return the ID of the signed-in user.
-
-        Or throw an Exception if the token is invalid.
-        """
-
-        try:
-            id_info = client.verify_id_token(token, os.environ['OPENDC_OAUTH_CLIENT_ID'])
-        except Exception as e:
-            print(e)
-            raise crypt.AppIdentityError('Exception caught trying to verify ID token: {}'.format(e))
-
-        if id_info['aud'] != os.environ['OPENDC_OAUTH_CLIENT_ID']:
-            raise crypt.AppIdentityError('Unrecognized client.')
-
-        if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-            raise crypt.AppIdentityError('Wrong issuer.')
-
-        return id_info['sub']
 
 
 class Response:

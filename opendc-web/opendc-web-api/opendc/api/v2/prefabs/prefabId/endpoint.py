@@ -12,7 +12,7 @@ def GET(request):
 
     prefab = Prefab.from_id(request.params_path['prefabId'])
     prefab.check_exists()
-    prefab.check_user_access(request.google_id)
+    prefab.check_user_access(request.current_user['sub'])
 
     return Response(200, 'Successfully retrieved prefab', prefab.obj)
 
@@ -25,7 +25,7 @@ def PUT(request):
     prefab = Prefab.from_id(request.params_path['prefabId'])
 
     prefab.check_exists()
-    prefab.check_user_access(request.google_id)
+    prefab.check_user_access(request.current_user['sub'])
 
     prefab.set_property('name', request.params_body['prefab']['name'])
     prefab.set_property('rack', request.params_body['prefab']['rack'])
@@ -43,7 +43,7 @@ def DELETE(request):
     prefab = Prefab.from_id(request.params_path['prefabId'])
 
     prefab.check_exists()
-    prefab.check_user_access(request.google_id)
+    prefab.check_user_access(request.current_user['sub'])
 
     old_object = prefab.delete()
 

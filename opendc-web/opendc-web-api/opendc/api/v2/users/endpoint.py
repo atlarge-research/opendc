@@ -20,7 +20,7 @@ def POST(request):
     request.check_required_parameters(body={'user': {'email': 'string'}})
 
     user = User(request.params_body['user'])
-    user.set_property('googleId', request.google_id)
+    user.set_property('googleId', request.current_user['sub'])
     user.set_property('authorizations', [])
 
     user.check_already_exists()

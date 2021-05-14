@@ -7,7 +7,7 @@ from opendc.util.rest import Response
 def GET(request):
     """Return all prefabs the user is authorized to access"""
 
-    user = User.from_google_id(request.google_id)
+    user = User.from_google_id(request.current_user['sub'])
 
     user.check_exists()
 

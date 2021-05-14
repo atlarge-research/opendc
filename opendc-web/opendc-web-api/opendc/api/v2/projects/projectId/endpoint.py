@@ -16,7 +16,7 @@ def GET(request):
     project = Project.from_id(request.params_path['projectId'])
 
     project.check_exists()
-    project.check_user_access(request.google_id, False)
+    project.check_user_access(request.current_user['sub'], False)
 
     return Response(200, 'Successfully retrieved project', project.obj)
 
@@ -29,7 +29,7 @@ def PUT(request):
     project = Project.from_id(request.params_path['projectId'])
 
     project.check_exists()
-    project.check_user_access(request.google_id, True)
+    project.check_user_access(request.current_user['sub'], True)
 
     project.set_property('name', request.params_body['project']['name'])
     project.set_property('datetime_last_edited', Database.datetime_to_string(datetime.now()))
@@ -46,7 +46,7 @@ def DELETE(request):
     project = Project.from_id(request.params_path['projectId'])
 
     project.check_exists()
-    project.check_user_access(request.google_id, True)
+    project.check_user_access(request.current_user['sub'], True)
 
     for topology_id in project.obj['topologyIds']:
         topology = Topology.from_id(topology_id)
@@ -56,7 +56,7 @@ def DELETE(request):
         portfolio = Portfolio.from_id(portfolio_id)
         portfolio.delete()
 
-    user = User.from_google_id(request.google_id)
+    user = User.from_google_id(request.current_user['sub'])
     user.obj['authorizations'] = list(
         filter(lambda x: x['projectId'] != project.get_id(), user.obj['authorizations']))
     user.update()

@@ -33,8 +33,8 @@ The `Util` package handles several miscellaneous tasks:
   database.
 * `Exceptions`: Holds definitions for exceptions used throughout the web server.
 * `Parameter Checker`: Recursively checks whether required `Request` parameters are present and correctly typed.
-* `REST`: Parses HTTP messages into `Request` objects, and calls the appropriate `API` endpoint to get
-  a `Response` object to return to the `Main Server Loop`.
+* `REST`: Parses HTTP messages into `Request` objects, and calls the appropriate `API` endpoint to get a `Response`
+  object to return to the `Main Server Loop`.
 
 ### API Package
 
@@ -80,8 +80,8 @@ repository.
 
 #### Get and configure the code
 
-Clone OpenDC and follow the [instructions in the main repository](../../) to set up a Google OAuth ID and environment
-variables.
+Clone OpenDC and follow the [instructions in the main repository](../../) to set up an [Auth0](https://auth0.com)
+application and environment variables.
 
 **Important:** Be sure to set up environment variables according to those instructions, in a `.env` file.
 

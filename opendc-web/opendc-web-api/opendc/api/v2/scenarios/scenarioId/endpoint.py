@@ -11,7 +11,7 @@ def GET(request):
     scenario = Scenario.from_id(request.params_path['scenarioId'])
 
     scenario.check_exists()
-    scenario.check_user_access(request.google_id, False)
+    scenario.check_user_access(request.current_user['sub'], False)
 
     return Response(200, 'Successfully retrieved scenario.', scenario.obj)
 
@@ -26,7 +26,7 @@ def PUT(request):
     scenario = Scenario.from_id(request.params_path['scenarioId'])
 
     scenario.check_exists()
-    scenario.check_user_access(request.google_id, True)
+    scenario.check_user_access(request.current_user['sub'], True)
 
     scenario.set_property('name',
                           request.params_body['scenario']['name'])
@@ -44,7 +44,7 @@ def DELETE(request):
     scenario = Scenario.from_id(request.params_path['scenarioId'])
 
     scenario.check_exists()
-    scenario.check_user_access(request.google_id, True)
+    scenario.check_user_access(request.current_user['sub'], True)
 
     scenario_id = scenario.get_id()
 

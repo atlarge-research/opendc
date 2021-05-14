@@ -11,7 +11,7 @@ def GET(request):
     portfolio = Portfolio.from_id(request.params_path['portfolioId'])
 
     portfolio.check_exists()
-    portfolio.check_user_access(request.google_id, False)
+    portfolio.check_user_access(request.current_user['sub'], False)
 
     return Response(200, 'Successfully retrieved portfolio.', portfolio.obj)
 
@@ -30,7 +30,7 @@ def PUT(request):
     portfolio = Portfolio.from_id(request.params_path['portfolioId'])
 
     portfolio.check_exists()
-    portfolio.check_user_access(request.google_id, True)
+    portfolio.check_user_access(request.current_user['sub'], True)
 
     portfolio.set_property('name',
                            request.params_body['portfolio']['name'])
@@ -52,7 +52,7 @@ def DELETE(request):
     portfolio = Portfolio.from_id(request.params_path['portfolioId'])
 
     portfolio.check_exists()
-    portfolio.check_user_access(request.google_id, True)
+    portfolio.check_user_access(request.current_user['sub'], True)
 
     portfolio_id = portfolio.get_id()
 

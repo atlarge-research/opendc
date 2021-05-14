@@ -29,13 +29,13 @@ def POST(request):
     portfolio = Portfolio.from_id(request.params_path['portfolioId'])
 
     portfolio.check_exists()
-    portfolio.check_user_access(request.google_id, True)
+    portfolio.check_user_access(request.current_user['sub'], True)
 
     scenario = Scenario(request.params_body['scenario'])
 
     topology = Topology.from_id(scenario.obj['topology']['topologyId'])
     topology.check_exists()
-    topology.check_user_access(request.google_id, True)
+    topology.check_user_access(request.current_user['sub'], True)
 
     scenario.set_property('portfolioId', portfolio.get_id())
     scenario.set_property('simulation', {'state': 'QUEUED'})

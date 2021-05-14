@@ -3,16 +3,14 @@ import json
 import os
 import sys
 import traceback
-import urllib.request
 
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_compress import Compress
 from flask_cors import CORS
-from oauth2client import client, crypt
 
-from opendc.models.user import User
 from opendc.util import rest, path_parser, database
+from opendc.util.auth import AuthError, AuthManager, AsymmetricJwtAlgorithm
 from opendc.util.exceptions import AuthorizationTokenError, RequestInitializationError
 from opendc.util.json import JSONEncoder
 
@@ -50,46 +48,21 @@ CORS(app)
 compress = Compress()
 compress.init_app(app)
 
+auth = AuthManager(AsymmetricJwtAlgorithm(jwks_url=f"https://{os.environ['AUTH0_DOMAIN']}/.well-known/jwks.json"),
+                   issuer=f"https://{os.environ['AUTH0_DOMAIN']}/", audience=os.environ['AUTH0_AUDIENCE'])
+
 API_VERSIONS = {'v2'}
 
 
-@app.route('/tokensignin', methods=['POST'])
-def sign_in():
-    """Authenticate a user with Google sign in"""
-
-    try:
-        token = request.form['idtoken']
-    except KeyError:
-        return 'No idtoken provided', 401
-
-    try:
-        idinfo = client.verify_id_token(token, os.environ['OPENDC_OAUTH_CLIENT_ID'])
-
-        if idinfo['aud'] != os.environ['OPENDC_OAUTH_CLIENT_ID']:
-            raise crypt.AppIdentityError('Unrecognized client.')
-
-        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-            raise crypt.AppIdentityError('Wrong issuer.')
-    except ValueError:
-        url = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={}".format(token)
-        req = urllib.request.Request(url)
-        response = urllib.request.urlopen(url=req, timeout=30)
-        res = response.read()
-        idinfo = json.loads(res)
-    except crypt.AppIdentityError as e:
-        return 'Did not successfully authenticate'
-
-    user = User.from_google_id(idinfo['sub'])
-
-    data = {'isNewUser': user.obj is None}
-
-    if user.obj is not None:
-        data['userId'] = user.get_id()
-
-    return jsonify(**data)
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
 
 
 @app.route('/<string:version>/<path:endpoint_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@auth.require
 def api_call(version, endpoint_path):
     """Call an API endpoint directly over HTTP."""
 

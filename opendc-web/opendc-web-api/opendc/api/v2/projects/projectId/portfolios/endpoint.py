@@ -20,7 +20,7 @@ def POST(request):
     project = Project.from_id(request.params_path['projectId'])
 
     project.check_exists()
-    project.check_user_access(request.google_id, True)
+    project.check_user_access(request.current_user['sub'], True)
 
     portfolio = Portfolio(request.params_body['portfolio'])
 
