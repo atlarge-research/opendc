@@ -1,5 +1,81 @@
+from marshmallow import Schema, fields
+
 from opendc.models.project import Project
 from opendc.models.model import Model
+
+
+class MemorySchema(Schema):
+    """
+    Schema representing a memory unit.
+    """
+    _id = fields.String()
+    name = fields.String()
+    speedMbPerS = fields.Integer()
+    sizeMb = fields.Integer()
+    energyConsumptionW = fields.Integer()
+
+
+class PuSchema(Schema):
+    """
+    Schema representing a processing unit.
+    """
+    _id = fields.String()
+    name = fields.String()
+    clockRateMhz = fields.Integer()
+    numberOfCores = fields.Integer()
+    energyConsumptionW = fields.Integer()
+
+
+class MachineSchema(Schema):
+    """
+    Schema representing a machine.
+    """
+    _id = fields.String()
+    position = fields.Integer()
+    cpus = fields.List(fields.Nested(PuSchema))
+    gpus = fields.List(fields.Nested(PuSchema))
+    memories = fields.List(fields.Nested(MemorySchema))
+    storages = fields.List(fields.Nested(MemorySchema))
+
+
+class ObjectSchema(Schema):
+    """
+    Schema representing a room object.
+    """
+    _id = fields.String()
+    name = fields.String()
+    capacity = fields.Integer()
+    powerCapacityW = fields.Integer()
+    machines = fields.List(fields.Nested(MachineSchema))
+
+
+class TileSchema(Schema):
+    """
+    Schema representing a room tile.
+    """
+    _id = fields.String()
+    positionX = fields.Integer()
+    positionY = fields.Integer()
+    rack = fields.Nested(ObjectSchema)
+
+
+class RoomSchema(Schema):
+    """
+    Schema representing a room.
+    """
+    _id = fields.String()
+    name = fields.String(required=True)
+    tiles = fields.List(fields.Nested(TileSchema), required=True)
+
+
+class TopologySchema(Schema):
+    """
+    Schema representing a datacenter topology.
+    """
+    _id = fields.String()
+    projectId = fields.String()
+    name = fields.String(required=True)
+    rooms = fields.List(fields.Nested(RoomSchema), required=True)
 
 
 class Topology(Model):

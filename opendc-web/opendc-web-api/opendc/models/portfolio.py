@@ -1,5 +1,26 @@
+from marshmallow import Schema, fields
+
 from opendc.models.project import Project
 from opendc.models.model import Model
+
+
+class TargetSchema(Schema):
+    """
+    Schema representing a target.
+    """
+    enabledMetrics = fields.List(fields.String())
+    repeatsPerScenario = fields.Integer(required=True)
+
+
+class PortfolioSchema(Schema):
+    """
+    Schema representing a portfolio.
+    """
+    _id = fields.String()
+    projectId = fields.String()
+    name = fields.String(required=True)
+    scenarioIds = fields.List(fields.String())
+    targets = fields.Nested(TargetSchema)
 
 
 class Portfolio(Model):

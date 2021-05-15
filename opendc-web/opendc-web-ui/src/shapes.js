@@ -23,7 +23,7 @@ export const Authorization = PropTypes.shape({
     user: User,
     projectId: PropTypes.string.isRequired,
     project: Project,
-    authorizationLevel: PropTypes.string.isRequired,
+    level: PropTypes.string.isRequired,
 })
 
 export const ProcessingUnit = PropTypes.shape({

@@ -9,6 +9,7 @@ Flask==1.1.2
 Flask-Compress==1.5.0
 Flask-Cors==3.0.9
 Flask-SocketIO==4.3.1
+Flask-Restful==0.3.8
 greenlet==0.4.17
 httplib2==0.19.0
 isort==4.3.21
@@ -16,6 +17,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.3
 lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
+marshmallow==3.12.1
 mccabe==0.6.1
 monotonic==1.5
 more-itertools==8.6.0
