@@ -1,5 +1,5 @@
-@import '../../style-globals/_mixins.scss';
-@import '../../style-globals/_variables.scss';
+@import 'src/style/_mixins.scss';
+@import 'src/style/_variables.scss';
 
 .navbar {
     border-top: $blue 3px solid;

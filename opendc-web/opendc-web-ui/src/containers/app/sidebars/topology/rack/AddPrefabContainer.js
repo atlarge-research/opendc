@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { addPrefab } from '../../../../../actions/prefabs'
+import { addPrefab } from '../../../../../redux/actions/prefabs'
 import AddPrefabComponent from '../../../../../components/app/sidebars/topology/rack/AddPrefabComponent'
 
 const AddPrefabContainer = (props) => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import ConfirmationModal from '../../../../../components/modals/ConfirmationModal'
-import { deleteRack } from '../../../../../actions/topology/rack'
+import { deleteRack } from '../../../../../redux/actions/topology/rack'
 import { Button } from 'reactstrap'
 
 const DeleteRackContainer = () => {

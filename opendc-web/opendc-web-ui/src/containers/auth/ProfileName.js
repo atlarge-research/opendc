@@ -1,5 +1,5 @@
 import React from 'react'
-import { useUser } from '../../auth/hook'
+import { useUser } from '../../auth'
 
 function ProfileName() {
     const user = useUser()

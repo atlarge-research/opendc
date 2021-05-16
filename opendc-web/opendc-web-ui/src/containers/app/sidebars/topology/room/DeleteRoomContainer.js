@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Button } from 'reactstrap'
 import ConfirmationModal from '../../../../../components/modals/ConfirmationModal'
-import { deleteRoom } from '../../../../../actions/topology/room'
+import { deleteRoom } from '../../../../../redux/actions/topology/room'
 
 const DeleteRoomContainer = () => {
     const dispatch = useDispatch()

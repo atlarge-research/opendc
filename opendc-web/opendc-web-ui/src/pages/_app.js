@@ -22,7 +22,7 @@
 
 import Head from 'next/head'
 import { Provider } from 'react-redux'
-import { useStore } from '../store/configure-store'
+import { useStore } from '../redux'
 import '../index.scss'
 
 export default function App({ Component, pageProps }) {

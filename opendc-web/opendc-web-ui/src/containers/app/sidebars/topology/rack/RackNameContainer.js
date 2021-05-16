@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import NameComponent from '../../../../../components/app/sidebars/topology/NameComponent'
 import TextInputModal from '../../../../../components/modals/TextInputModal'
-import { editRackName } from '../../../../../actions/topology/rack'
+import { editRackName } from '../../../../../redux/actions/topology/rack'
 
 const RackNameContainer = () => {
     const [isVisible, setVisible] = useState(false)

@@ -1,8 +1,8 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { setMapDimensions, setMapPositionWithBoundsCheck, zoomInOnPosition } from '../../../actions/map'
+import { setMapDimensions, setMapPositionWithBoundsCheck, zoomInOnPosition } from '../../../redux/actions/map'
 import MapStageComponent from '../../../components/app/map/MapStageComponent'
-import { useMapDimensions, useMapPosition } from '../../../store/hooks/map'
+import { useMapDimensions, useMapPosition } from '../../../data/map'
 
 const MapStage = () => {
     const position = useMapPosition()

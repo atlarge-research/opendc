@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { finishRoomEdit, startRoomEdit } from '../../../../../actions/topology/building'
+import { finishRoomEdit, startRoomEdit } from '../../../../../redux/actions/topology/building'
 import { Button } from 'reactstrap'
 
 const EditRoomContainer = () => {

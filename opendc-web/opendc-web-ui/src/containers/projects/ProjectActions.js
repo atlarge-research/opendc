@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { deleteProject } from '../../actions/projects'
+import { deleteProject } from '../../redux/actions/projects'
 import ProjectActionButtons from '../../components/projects/ProjectActionButtons'
 
 const ProjectActions = (props) => {

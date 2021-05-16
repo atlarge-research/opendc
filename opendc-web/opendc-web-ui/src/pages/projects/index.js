@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { useDispatch } from 'react-redux'
-import { fetchAuthorizationsOfCurrentUser } from '../../actions/users'
+import { fetchAuthorizationsOfCurrentUser } from '../../redux/actions/users'
 import ProjectFilterPanel from '../../components/projects/FilterPanel'
 import NewProjectContainer from '../../containers/projects/NewProjectContainer'
 import VisibleProjectList from '../../containers/projects/VisibleProjectAuthList'
 import AppNavbarContainer from '../../containers/navigation/AppNavbarContainer'
-import { useRequireAuth } from '../../auth/hook'
+import { useRequireAuth } from '../../auth'
 import { Container } from 'reactstrap'
 
 function Projects() {

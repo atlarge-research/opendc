@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import TopologyGroup from '../../../components/app/map/groups/TopologyGroup'
-import { useActiveTopology } from '../../../store/hooks/topology'
+import { useActiveTopology } from '../../../data/topology'
 
 const TopologyContainer = () => {
     const topology = useActiveTopology()

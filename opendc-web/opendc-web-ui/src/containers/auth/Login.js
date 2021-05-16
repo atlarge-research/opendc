@@ -1,7 +1,7 @@
 import React from 'react'
 import GoogleLogin from 'react-google-login'
 import { useDispatch } from 'react-redux'
-import { logIn } from '../../actions/auth'
+import { logIn } from '../../redux/actions/auth'
 import { Button } from 'reactstrap'
 
 function Login({ visible, className }) {

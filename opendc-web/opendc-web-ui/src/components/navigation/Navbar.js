@@ -15,7 +15,7 @@ import Login from '../../containers/auth/Login'
 import Logout from '../../containers/auth/Logout'
 import ProfileName from '../../containers/auth/ProfileName'
 import { login, navbar, opendcBrand } from './Navbar.module.scss'
-import { useIsLoggedIn } from '../../auth/hook'
+import { useIsLoggedIn } from '../../auth'
 
 export const NAVBAR_HEIGHT = 60
 

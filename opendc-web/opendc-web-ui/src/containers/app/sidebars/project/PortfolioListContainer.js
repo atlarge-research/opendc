@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/router'
 import PortfolioListComponent from '../../../../components/app/sidebars/project/PortfolioListComponent'
-import { addPortfolio, deletePortfolio, setCurrentPortfolio } from '../../../../actions/portfolios'
+import { addPortfolio, deletePortfolio, setCurrentPortfolio } from '../../../../redux/actions/portfolios'
 import { getState } from '../../../../util/state-utils'
-import { setCurrentTopology } from '../../../../actions/topology/building'
+import { setCurrentTopology } from '../../../../redux/actions/topology/building'
 import NewPortfolioModalComponent from '../../../../components/modals/custom-components/NewPortfolioModalComponent'
-import { useActivePortfolio, useActiveProject, usePortfolios } from '../../../../store/hooks/project'
+import { useActivePortfolio, useActiveProject, usePortfolios } from '../../../../data/project'
 
 const PortfolioListContainer = () => {
     const currentProjectId = useActiveProject()?._id

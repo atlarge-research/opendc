@@ -1,8 +1,8 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { zoomInOnCenter } from '../../../../actions/map'
+import { zoomInOnCenter } from '../../../../redux/actions/map'
 import ZoomControlComponent from '../../../../components/app/map/controls/ZoomControlComponent'
-import { useMapScale } from '../../../../store/hooks/map'
+import { useMapScale } from '../../../../data/map'
 
 const ZoomControlContainer = () => {
     const dispatch = useDispatch()

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { logOut } from '../../actions/auth'
+import { logOut } from '../../redux/actions/auth'
 import LogoutButton from '../../components/navigation/LogoutButton'
 
 const Logout = (props) => {

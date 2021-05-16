@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Group } from 'react-konva'
-import { Tile } from '../../../../shapes/index'
+import { Tile } from '../../../../shapes'
 import { deriveWallLocations } from '../../../../util/tile-calculations'
 import WallSegment from '../elements/WallSegment'
 

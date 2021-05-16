@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import TopologyListComponent from '../../../../components/app/sidebars/project/TopologyListComponent'
-import { setCurrentTopology } from '../../../../actions/topology/building'
+import { setCurrentTopology } from '../../../../redux/actions/topology/building'
 import { useRouter } from 'next/router'
 import { getState } from '../../../../util/state-utils'
-import { addTopology, deleteTopology } from '../../../../actions/topologies'
+import { addTopology, deleteTopology } from '../../../../redux/actions/topologies'
 import NewTopologyModalComponent from '../../../../components/modals/custom-components/NewTopologyModalComponent'
-import { useActiveTopology, useProjectTopologies } from '../../../../store/hooks/topology'
+import { useActiveTopology, useProjectTopologies } from '../../../../data/topology'
 
 const TopologyListContainer = () => {
     const dispatch = useDispatch()

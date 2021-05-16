@@ -1,6 +1,6 @@
 import React from 'react'
 import MapLayerComponent from '../../../../components/app/map/layers/MapLayerComponent'
-import { useMapPosition, useMapScale } from '../../../../store/hooks/map'
+import { useMapPosition, useMapScale } from '../../../../data/map'
 
 const MapLayer = (props) => {
     const position = useMapPosition()

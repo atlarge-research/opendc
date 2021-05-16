@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { addProject } from '../../actions/projects'
+import { addProject } from '../../redux/actions/projects'
 import TextInputModal from '../../components/modals/TextInputModal'
 import { Button } from 'reactstrap'
 

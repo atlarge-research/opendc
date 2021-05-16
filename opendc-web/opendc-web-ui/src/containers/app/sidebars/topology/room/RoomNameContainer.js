@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import NameComponent from '../../../../../components/app/sidebars/topology/NameComponent'
 import TextInputModal from '../../../../../components/modals/TextInputModal'
-import { editRoomName } from '../../../../../actions/topology/room'
+import { editRoomName } from '../../../../../redux/actions/topology/room'
 
 const RoomNameContainer = () => {
     const [isVisible, setVisible] = useState(false)

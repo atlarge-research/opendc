@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { goFromBuildingToRoom } from '../../../actions/interaction-level'
+import { goFromBuildingToRoom } from '../../../redux/actions/interaction-level'
 import RoomGroup from '../../../components/app/map/groups/RoomGroup'
 
 const RoomContainer = (props) => {

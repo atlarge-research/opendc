@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { deleteUnit } from '../../../../../actions/topology/machine'
+import { deleteUnit } from '../../../../../redux/actions/topology/machine'
 import UnitComponent from '../../../../../components/app/sidebars/topology/machine/UnitComponent'
 
 const UnitContainer = ({ unitId, unitType }) => {

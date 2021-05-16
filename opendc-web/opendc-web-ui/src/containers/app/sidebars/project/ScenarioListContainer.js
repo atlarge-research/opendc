@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import ScenarioListComponent from '../../../../components/app/sidebars/project/ScenarioListComponent'
-import { addScenario, deleteScenario, setCurrentScenario } from '../../../../actions/scenarios'
-import { setCurrentPortfolio } from '../../../../actions/portfolios'
+import { addScenario, deleteScenario, setCurrentScenario } from '../../../../redux/actions/scenarios'
+import { setCurrentPortfolio } from '../../../../redux/actions/portfolios'
 import NewScenarioModalComponent from '../../../../components/modals/custom-components/NewScenarioModalComponent'
-import { useProjectTopologies } from '../../../../store/hooks/topology'
-import { useActiveScenario, useActiveProject, useScenarios } from '../../../../store/hooks/project'
-import { useSchedulers, useTraces } from '../../../../store/hooks/experiments'
+import { useProjectTopologies } from '../../../../data/topology'
+import { useActiveScenario, useActiveProject, useScenarios } from '../../../../data/project'
+import { useSchedulers, useTraces } from '../../../../data/experiments'
 
 const ScenarioListContainer = ({ portfolioId }) => {
     const currentProjectId = useActiveProject()?._id

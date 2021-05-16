@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { goDownOneInteractionLevel } from '../../../../../actions/interaction-level'
+import { goDownOneInteractionLevel } from '../../../../../redux/actions/interaction-level'
 import BackToRackComponent from '../../../../../components/app/sidebars/topology/machine/BackToRackComponent'
 
 const BackToRackContainer = (props) => {
