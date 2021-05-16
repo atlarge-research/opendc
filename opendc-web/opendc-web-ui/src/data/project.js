@@ -23,6 +23,13 @@
 import { useSelector } from 'react-redux'
 
 /**
+ * Return the available projects.
+ */
+export function useProjects() {
+    return useSelector((state) => state.projects)
+}
+
+/**
  * Return the current active project.
  */
 export function useActiveProject() {

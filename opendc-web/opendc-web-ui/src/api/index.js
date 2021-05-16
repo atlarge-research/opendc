@@ -20,30 +20,32 @@
  * SOFTWARE.
  */
 
-import { getAuthToken } from '../auth'
-
 const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
 /**
  * Send the specified request to the OpenDC API.
+ *
+ * @param auth The authentication context.
  * @param path Relative path for the API.
  * @param method The method to use for the request.
  * @param body The body of the request.
  */
-export async function request(path, method = 'GET', body) {
-    const res = await fetch(`${apiUrl}/v2/${path}`, {
+export async function request(auth, path, method = 'GET', body) {
+    const { getAccessTokenSilently } = auth
+    const token = await getAccessTokenSilently()
+    const response = await fetch(`${apiUrl}/${path}`, {
         method: method,
         headers: {
-            'auth-token': getAuthToken(),
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
         body: body && JSON.stringify(body),
     })
-    const { status, content } = await res.json()
+    const json = await response.json()
 
-    if (status.code !== 200) {
-        throw status
+    if (!response.ok) {
+        throw response.message
     }
 
-    return content
+    return json.data
 }

@@ -1,9 +1,8 @@
-import { call, put, select } from 'redux-saga/effects'
+import { call, put, select, getContext } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
 import { getAllSchedulers } from '../../api/schedulers'
 import { getProject } from '../../api/projects'
 import { getAllTraces } from '../../api/traces'
-import { getUser } from '../../api/users'
 import { getTopology, updateTopology } from '../../api/topologies'
 import { uuid } from 'uuidv4'
 
@@ -42,9 +41,10 @@ function* fetchAndStoreObjects(objectType, apiCall) {
     return objects
 }
 
-export const fetchAndStoreProject = (id) => fetchAndStoreObject('project', id, call(getProject, id))
-
-export const fetchAndStoreUser = (id) => fetchAndStoreObject('user', id, call(getUser, id))
+export const fetchAndStoreProject = function* (id) {
+    const auth = yield getContext('auth')
+    return yield fetchAndStoreObject('project', id, call(getProject, auth, id))
+}
 
 export const fetchAndStoreTopology = function* (id) {
     const topologyStore = yield select(OBJECT_SELECTORS['topology'])
@@ -52,10 +52,11 @@ export const fetchAndStoreTopology = function* (id) {
     const tileStore = yield select(OBJECT_SELECTORS['tile'])
     const rackStore = yield select(OBJECT_SELECTORS['rack'])
     const machineStore = yield select(OBJECT_SELECTORS['machine'])
+    const auth = yield getContext('auth')
 
     let topology = topologyStore[id]
     if (!topology) {
-        const fullTopology = yield call(getTopology, id)
+        const fullTopology = yield call(getTopology, auth, id)
 
         for (let roomIdx in fullTopology.rooms) {
             const fullRoom = fullTopology.rooms[roomIdx]
@@ -142,8 +143,8 @@ const generateIdIfNotPresent = (obj) => {
 
 export const updateTopologyOnServer = function* (id) {
     const topology = yield getTopologyAsObject(id, true)
-
-    yield call(updateTopology, topology)
+    const auth = yield getContext('auth')
+    yield call(updateTopology, auth, topology)
 }
 
 export const getTopologyAsObject = function* (id, keepIds) {
@@ -217,10 +218,14 @@ export const getRackById = function* (id, keepIds) {
     }
 }
 
-export const fetchAndStoreAllTraces = () => fetchAndStoreObjects('trace', call(getAllTraces))
+export const fetchAndStoreAllTraces = function* () {
+    const auth = yield getContext('auth')
+    return yield fetchAndStoreObjects('trace', call(getAllTraces, auth))
+}
 
 export const fetchAndStoreAllSchedulers = function* () {
-    const objects = yield call(getAllSchedulers)
+    const auth = yield getContext('auth')
+    const objects = yield call(getAllSchedulers, auth)
     for (let object of objects) {
         object._id = object.name
         yield put(addToStore('scheduler', object))

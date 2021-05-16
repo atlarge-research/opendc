@@ -1,40 +1,32 @@
 import { useMemo } from 'react'
-import { applyMiddleware, compose, createStore } from 'redux'
+import { applyMiddleware, createStore } from 'redux'
 import { createLogger } from 'redux-logger'
-import persistState from 'redux-localstorage'
 import createSagaMiddleware from 'redux-saga'
 import thunk from 'redux-thunk'
-import { authRedirectMiddleware } from '../auth'
 import rootReducer from './reducers'
 import rootSaga from './sagas'
 import { viewportAdjustmentMiddleware } from './middleware/viewport-adjustment'
 
 let store
 
-function initStore(initialState) {
-    const sagaMiddleware = createSagaMiddleware()
+function initStore(initialState, ctx) {
+    const sagaMiddleware = createSagaMiddleware({ context: ctx })
 
-    const middlewares = [thunk, sagaMiddleware, authRedirectMiddleware, viewportAdjustmentMiddleware]
+    const middlewares = [thunk, sagaMiddleware, viewportAdjustmentMiddleware]
 
     if (process.env.NODE_ENV !== 'production') {
         middlewares.push(createLogger())
     }
 
-    let enhancer = applyMiddleware(...middlewares)
-
-    if (global.localStorage) {
-        enhancer = compose(persistState('auth'), enhancer)
-    }
-
-    const configuredStore = createStore(rootReducer, enhancer)
+    const configuredStore = createStore(rootReducer, initialState, applyMiddleware(...middlewares))
     sagaMiddleware.run(rootSaga)
     store = configuredStore
 
     return configuredStore
 }
 
-export const initializeStore = (preloadedState) => {
-    let _store = store ?? initStore(preloadedState)
+export const initializeStore = (preloadedState, ctx) => {
+    let _store = store ?? initStore(preloadedState, ctx)
 
     // After navigating to a page with an initial Redux state, merge that state
     // with the current state in the store, and create a new store
@@ -55,6 +47,6 @@ export const initializeStore = (preloadedState) => {
     return _store
 }
 
-export function useStore(initialState) {
-    return useMemo(() => initializeStore(initialState), [initialState])
+export function useStore(initialState, ctx) {
+    return useMemo(() => initializeStore(initialState, ctx), [initialState, ctx])
 }

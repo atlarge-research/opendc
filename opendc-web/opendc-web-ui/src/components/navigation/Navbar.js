@@ -15,7 +15,7 @@ import Login from '../../containers/auth/Login'
 import Logout from '../../containers/auth/Logout'
 import ProfileName from '../../containers/auth/ProfileName'
 import { login, navbar, opendcBrand } from './Navbar.module.scss'
-import { useIsLoggedIn } from '../../auth'
+import { useAuth } from '../../auth'
 
 export const NAVBAR_HEIGHT = 60
 
@@ -44,10 +44,10 @@ export const NavItem = ({ route, children }) => {
 
 export const LoggedInSection = () => {
     const router = useRouter()
-    const isLoggedIn = useIsLoggedIn()
+    const { isAuthenticated } = useAuth()
     return (
         <Nav navbar className="auth-links">
-            {isLoggedIn ? (
+            {isAuthenticated ? (
                 [
                     router.asPath === '/' ? (
                         <NavItem route="/projects" key="projects">
@@ -58,12 +58,10 @@ export const LoggedInSection = () => {
                             </Link>
                         </NavItem>
                     ) : (
-                        <NavItem route="/profile" key="profile">
-                            <Link href="/profile">
-                                <NavLink title="My Profile">
-                                    <ProfileName />
-                                </NavLink>
-                            </Link>
+                        <NavItem key="profile">
+                            <NavLink title="My Profile">
+                                <ProfileName />
+                            </NavLink>
                         </NavItem>
                     ),
                     <NavItem route="logout" key="logout">

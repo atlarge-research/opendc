@@ -20,20 +20,20 @@
  * SOFTWARE.
  */
 
-import { request } from './index'
+import React from 'react'
+import Head from 'next/head'
+import AppNavbarContainer from '../containers/navigation/AppNavbarContainer'
 
-export function getUserByEmail(email) {
-    return request(`users` + new URLSearchParams({ email }))
+function Logout() {
+    return (
+        <>
+            <Head>
+                <title>Logged Out - OpenDC</title>
+            </Head>
+            <AppNavbarContainer fullWidth={false} />
+            <span>Logged out successfully</span>
+        </>
+    )
 }
 
-export function addUser(user) {
-    return request('users', 'POST', { user })
-}
-
-export function getUser(userId) {
-    return request(`users/${userId}`)
-}
-
-export function deleteUser(userId) {
-    return request(`users/${userId}`, 'DELETE')
-}
+export default Logout

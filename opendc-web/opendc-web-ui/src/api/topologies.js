@@ -22,18 +22,18 @@
 
 import { request } from './index'
 
-export function addTopology(topology) {
-    return request(`projects/${topology.projectId}/topologies`, 'POST', { topology })
+export function addTopology(auth, topology) {
+    return request(auth, `projects/${topology.projectId}/topologies`, 'POST', { topology })
 }
 
-export function getTopology(topologyId) {
-    return request(`topologies/${topologyId}`)
+export function getTopology(auth, topologyId) {
+    return request(auth, `topologies/${topologyId}`)
 }
 
-export function updateTopology(topology) {
-    return request(`topologies/${topology._id}`, 'PUT', { topology })
+export function updateTopology(auth, topology) {
+    return request(auth, `topologies/${topology._id}`, 'PUT', { topology })
 }
 
-export function deleteTopology(topologyId) {
-    return request(`topologies/${topologyId}`, 'DELETE')
+export function deleteTopology(auth, topologyId) {
+    return request(auth, `topologies/${topologyId}`, 'DELETE')
 }

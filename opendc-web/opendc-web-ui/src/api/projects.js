@@ -22,18 +22,22 @@
 
 import { request } from './index'
 
-export function getProject(projectId) {
-    return request(`projects/${projectId}`)
+export function getProjects(auth) {
+    return request(auth, `projects/`)
 }
 
-export function addProject(project) {
-    return request('projects', 'POST', { project })
+export function getProject(auth, projectId) {
+    return request(auth, `projects/${projectId}`)
 }
 
-export function updateProject(project) {
-    return request(`projects/${project._id}`, 'PUT', { project })
+export function addProject(auth, project) {
+    return request(auth, 'projects/', 'POST', { project })
 }
 
-export function deleteProject(projectId) {
-    return request(`projects/${projectId}`, 'DELETE')
+export function updateProject(auth, project) {
+    return request(auth, `projects/${project._id}`, 'PUT', { project })
+}
+
+export function deleteProject(auth, projectId) {
+    return request(auth, `projects/${projectId}`, 'DELETE')
 }

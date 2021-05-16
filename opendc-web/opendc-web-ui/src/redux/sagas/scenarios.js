@@ -1,4 +1,4 @@
-import { call, put, select } from 'redux-saga/effects'
+import { call, put, select, getContext } from 'redux-saga/effects'
 import { addPropToStoreObject, addToStore } from '../actions/objects'
 import { getProject } from '../../api/projects'
 import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
@@ -8,7 +8,8 @@ import { fetchPortfolioWithScenarios, watchForPortfolioResults } from './portfol
 
 export function* onOpenScenarioSucceeded(action) {
     try {
-        const project = yield call(getProject, action.projectId)
+        const auth = yield getContext('auth')
+        const project = yield call(getProject, auth, action.projectId)
         yield put(addToStore('project', project))
         yield fetchAndStoreAllTopologiesOfProject(project._id)
         yield fetchAndStoreAllSchedulers()
@@ -23,7 +24,8 @@ export function* onOpenScenarioSucceeded(action) {
 
 export function* onAddScenario(action) {
     try {
-        const scenario = yield call(addScenario, action.scenario.portfolioId, action.scenario)
+        const auth = yield getContext('auth')
+        const scenario = yield call(addScenario, auth, action.scenario.portfolioId, action.scenario)
         yield put(addToStore('scenario', scenario))
 
         const scenarioIds = yield select((state) => state.objects.portfolio[action.scenario.portfolioId].scenarioIds)
@@ -40,7 +42,8 @@ export function* onAddScenario(action) {
 
 export function* onUpdateScenario(action) {
     try {
-        const scenario = yield call(updateScenario, action.scenario._id, action.scenario)
+        const auth = yield getContext('auth')
+        const scenario = yield call(updateScenario, auth, action.scenario._id, action.scenario)
         yield put(addToStore('scenario', scenario))
     } catch (error) {
         console.error(error)
@@ -49,7 +52,8 @@ export function* onUpdateScenario(action) {
 
 export function* onDeleteScenario(action) {
     try {
-        yield call(deleteScenario, action.id)
+        const auth = yield getContext('auth')
+        yield call(deleteScenario, auth, action.id)
 
         const currentPortfolioId = yield select((state) => state.currentPortfolioId)
         const scenarioIds = yield select((state) => state.objects.portfolio[currentPortfolioId].scenarioIds)

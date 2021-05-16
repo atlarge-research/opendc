@@ -22,6 +22,6 @@
 
 import { request } from './index'
 
-export function getAllTraces() {
-    return request('traces')
+export function getAllTraces(auth) {
+    return request(auth, 'traces/')
 }

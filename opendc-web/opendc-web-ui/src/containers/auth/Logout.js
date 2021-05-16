@@ -1,11 +1,10 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import { logOut } from '../../redux/actions/auth'
 import LogoutButton from '../../components/navigation/LogoutButton'
+import { useAuth } from '../../auth'
 
 const Logout = (props) => {
-    const dispatch = useDispatch()
-    return <LogoutButton {...props} onLogout={() => dispatch(logOut())} />
+    const { logout } = useAuth()
+    return <LogoutButton {...props} onLogout={() => logout({ returnTo: window.location.origin })} />
 }
 
 export default Logout

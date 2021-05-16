@@ -22,18 +22,18 @@
 
 import { request } from './index'
 
-export function getPrefab(prefabId) {
-    return request(`prefabs/${prefabId}`)
+export function getPrefab(auth, prefabId) {
+    return request(auth, `prefabs/${prefabId}`)
 }
 
-export function addPrefab(prefab) {
-    return request('prefabs', 'POST', { prefab })
+export function addPrefab(auth, prefab) {
+    return request(auth, 'prefabs/', 'POST', { prefab })
 }
 
-export function updatePrefab(prefab) {
-    return request(`prefabs/${prefab._id}`, 'PUT', { prefab })
+export function updatePrefab(auth, prefab) {
+    return request(auth, `prefabs/${prefab._id}`, 'PUT', { prefab })
 }
 
-export function deletePrefab(prefabId) {
-    return request(`prefabs/${prefabId}`, 'DELETE')
+export function deletePrefab(auth, prefabId) {
+    return request(auth, `prefabs/${prefabId}`, 'DELETE')
 }

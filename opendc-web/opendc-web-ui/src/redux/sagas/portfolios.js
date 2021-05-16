@@ -1,4 +1,4 @@
-import { call, put, select, delay } from 'redux-saga/effects'
+import { call, put, select, delay, getContext } from 'redux-saga/effects'
 import { addPropToStoreObject, addToStore } from '../actions/objects'
 import { addPortfolio, deletePortfolio, getPortfolio, updatePortfolio } from '../../api/portfolios'
 import { getProject } from '../../api/projects'
@@ -8,7 +8,8 @@ import { getScenario } from '../../api/scenarios'
 
 export function* onOpenPortfolioSucceeded(action) {
     try {
-        const project = yield call(getProject, action.projectId)
+        const auth = yield getContext('auth')
+        const project = yield call(getProject, auth, action.projectId)
         yield put(addToStore('project', project))
         yield fetchAndStoreAllTopologiesOfProject(project._id)
         yield fetchPortfoliosOfProject()
@@ -66,11 +67,12 @@ export function* fetchPortfoliosOfProject() {
 
 export function* fetchPortfolioWithScenarios(portfolioId) {
     try {
-        const portfolio = yield call(getPortfolio, portfolioId)
+        const auth = yield getContext('auth')
+        const portfolio = yield call(getPortfolio, auth, portfolioId)
         yield put(addToStore('portfolio', portfolio))
 
         for (let i in portfolio.scenarioIds) {
-            const scenario = yield call(getScenario, portfolio.scenarioIds[i])
+            const scenario = yield call(getScenario, auth, portfolio.scenarioIds[i])
             yield put(addToStore('scenario', scenario))
         }
         return portfolio
@@ -82,9 +84,10 @@ export function* fetchPortfolioWithScenarios(portfolioId) {
 export function* onAddPortfolio(action) {
     try {
         const currentProjectId = yield select((state) => state.currentProjectId)
-
+        const auth = yield getContext('auth')
         const portfolio = yield call(
             addPortfolio,
+            auth,
             currentProjectId,
             Object.assign({}, action.portfolio, {
                 projectId: currentProjectId,
@@ -106,7 +109,8 @@ export function* onAddPortfolio(action) {
 
 export function* onUpdatePortfolio(action) {
     try {
-        const portfolio = yield call(updatePortfolio, action.portfolio._id, action.portfolio)
+        const auth = yield getContext('auth')
+        const portfolio = yield call(updatePortfolio, auth, action.portfolio._id, action.portfolio)
         yield put(addToStore('portfolio', portfolio))
     } catch (error) {
         console.error(error)
@@ -115,7 +119,8 @@ export function* onUpdatePortfolio(action) {
 
 export function* onDeletePortfolio(action) {
     try {
-        yield call(deletePortfolio, action.id)
+        const auth = yield getContext('auth')
+        yield call(deletePortfolio, auth, action.id)
 
         const currentProjectId = yield select((state) => state.currentProjectId)
         const portfolioIds = yield select((state) => state.objects.project[currentProjectId].portfolioIds)

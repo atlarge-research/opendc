@@ -24,19 +24,29 @@ import Head from 'next/head'
 import { Provider } from 'react-redux'
 import { useStore } from '../redux'
 import '../index.scss'
+import { AuthProvider, useAuth } from '../auth'
 
-export default function App({ Component, pageProps }) {
-    const store = useStore(pageProps.initialReduxState)
+// This setup is necessary to forward the Auth0 context to the Redux context
+const Inner = ({ Component, pageProps }) => {
+    const auth = useAuth()
+    const store = useStore(pageProps.initialReduxState, { auth })
+    return (
+        <Provider store={store}>
+            <Component {...pageProps} />
+        </Provider>
+    )
+}
 
+export default function App(props) {
     return (
         <>
             <Head>
                 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
                 <meta name="theme-color" content="#00A6D6" />
             </Head>
-            <Provider store={store}>
-                <Component {...pageProps} />
-            </Provider>
+            <AuthProvider>
+                <Inner {...props} />
+            </AuthProvider>
         </>
     )
 }

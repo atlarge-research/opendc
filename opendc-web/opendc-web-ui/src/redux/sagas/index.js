@@ -1,7 +1,6 @@
 import { takeEvery } from 'redux-saga/effects'
-import { LOG_IN } from '../actions/auth'
 import { ADD_PORTFOLIO, DELETE_PORTFOLIO, OPEN_PORTFOLIO_SUCCEEDED, UPDATE_PORTFOLIO } from '../actions/portfolios'
-import { ADD_PROJECT, DELETE_PROJECT, OPEN_PROJECT_SUCCEEDED } from '../actions/projects'
+import { ADD_PROJECT, DELETE_PROJECT, FETCH_PROJECTS, OPEN_PROJECT_SUCCEEDED } from '../actions/projects'
 import {
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
@@ -11,10 +10,8 @@ import {
 import { ADD_UNIT, DELETE_MACHINE, DELETE_UNIT } from '../actions/topology/machine'
 import { ADD_MACHINE, DELETE_RACK, EDIT_RACK_NAME } from '../actions/topology/rack'
 import { ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME } from '../actions/topology/room'
-import { DELETE_CURRENT_USER, FETCH_AUTHORIZATIONS_OF_CURRENT_USER } from '../actions/users'
 import { onAddPortfolio, onDeletePortfolio, onOpenPortfolioSucceeded, onUpdatePortfolio } from './portfolios'
-import { onDeleteCurrentUser } from './profile'
-import { onOpenProjectSucceeded, onProjectAdd, onProjectDelete } from './projects'
+import { onFetchProjects, onOpenProjectSucceeded, onProjectAdd, onProjectDelete } from './projects'
 import {
     onAddMachine,
     onAddRackToTile,
@@ -32,7 +29,6 @@ import {
     onEditRoomName,
     onStartNewRoomConstruction,
 } from './topology'
-import { onFetchAuthorizationsOfCurrentUser, onFetchLoggedInUser } from './users'
 import { ADD_TOPOLOGY, DELETE_TOPOLOGY } from '../actions/topologies'
 import { ADD_SCENARIO, DELETE_SCENARIO, OPEN_SCENARIO_SUCCEEDED, UPDATE_SCENARIO } from '../actions/scenarios'
 import { onAddScenario, onDeleteScenario, onOpenScenarioSucceeded, onUpdateScenario } from './scenarios'
@@ -40,13 +36,9 @@ import { onAddPrefab } from './prefabs'
 import { ADD_PREFAB } from '../actions/prefabs'
 
 export default function* rootSaga() {
-    yield takeEvery(LOG_IN, onFetchLoggedInUser)
-
-    yield takeEvery(FETCH_AUTHORIZATIONS_OF_CURRENT_USER, onFetchAuthorizationsOfCurrentUser)
+    yield takeEvery(FETCH_PROJECTS, onFetchProjects)
     yield takeEvery(ADD_PROJECT, onProjectAdd)
     yield takeEvery(DELETE_PROJECT, onProjectDelete)
-
-    yield takeEvery(DELETE_CURRENT_USER, onDeleteCurrentUser)
 
     yield takeEvery(OPEN_PROJECT_SUCCEEDED, onOpenProjectSucceeded)
     yield takeEvery(OPEN_PORTFOLIO_SUCCEEDED, onOpenPortfolioSucceeded)

@@ -1,4 +1,4 @@
-import { call, put, select } from 'redux-saga/effects'
+import { call, put, select, getContext } from 'redux-saga/effects'
 import { goDownOneInteractionLevel } from '../actions/interaction-level'
 import {
     addIdToStoreObjectListProp,
@@ -50,8 +50,10 @@ export function* onAddTopology(action) {
             topologyToBeCreated = { name: action.name, rooms: [] }
         }
 
+        const auth = yield getContext('auth')
         const topology = yield call(
             addTopology,
+            auth,
             Object.assign({}, topologyToBeCreated, {
                 projectId: currentProjectId,
             })
@@ -79,7 +81,8 @@ export function* onDeleteTopology(action) {
             yield put(setCurrentTopology(topologyIds.filter((t) => t !== action.id)[0]))
         }
 
-        yield call(deleteTopology, action.id)
+        const auth = yield getContext('auth')
+        yield call(deleteTopology, auth, action.id)
 
         yield put(
             addPropToStoreObject('project', currentProjectId, {

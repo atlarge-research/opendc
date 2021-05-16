@@ -60,7 +60,7 @@ const ScenarioListContainer = ({ portfolioId }) => {
             />
             <NewScenarioModalComponent
                 show={isVisible}
-                currentPortfolioId={currentProjectId}
+                currentPortfolioId={portfolioId}
                 currentPortfolioScenarioIds={scenarios.map((s) => s._id)}
                 traces={traces}
                 schedulers={schedulers}

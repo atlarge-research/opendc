@@ -22,6 +22,6 @@
 
 import { request } from './index'
 
-export function getAllSchedulers() {
-    return request('schedulers')
+export function getAllSchedulers(auth) {
+    return request(auth, 'schedulers/')
 }

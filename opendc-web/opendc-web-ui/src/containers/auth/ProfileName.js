@@ -1,13 +1,9 @@
 import React from 'react'
-import { useUser } from '../../auth'
+import { useAuth } from '../../auth'
 
 function ProfileName() {
-    const user = useUser()
-    return (
-        <span>
-            {user.givenName} {user.familyName}
-        </span>
-    )
+    const { isLoading, user } = useAuth()
+    return isLoading ? <span>Loading...</span> : <span>{user.name}</span>
 }
 
 export default ProfileName

@@ -1,83 +1,65 @@
-import { LOG_IN_SUCCEEDED, LOG_OUT } from './redux/actions/auth'
-import { DELETE_CURRENT_USER_SUCCEEDED } from './redux/actions/users'
-import { useEffect, useState } from 'react'
+/*
+ * Copyright (c) 2021 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+import { Auth0Provider, useAuth0 } from '@auth0/auth0-react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { useSelector } from 'react-redux'
 
-const getAuthObject = () => {
-    const authItem = global.localStorage && localStorage.getItem('auth')
-    if (!authItem || authItem === '{}') {
-        return undefined
-    }
-    return JSON.parse(authItem)
+/**
+ * Obtain the authentication context.
+ */
+export function useAuth() {
+    return useAuth0()
 }
 
-export const userIsLoggedIn = () => {
-    const authObj = getAuthObject()
-
-    if (!authObj || !authObj.googleId) {
-        return false
-    }
-
-    const currentTime = new Date().getTime()
-    return parseInt(authObj.expiresAt, 10) - currentTime > 0
-}
-
-export const getAuthToken = () => {
-    const authObj = getAuthObject()
-    if (!authObj) {
-        return undefined
-    }
-
-    return authObj.authToken
-}
-
-export const saveAuthLocalStorage = (payload) => {
-    localStorage.setItem('auth', JSON.stringify(payload))
-}
-
-export const clearAuthLocalStorage = () => {
-    localStorage.setItem('auth', '')
-}
-
-export const authRedirectMiddleware = (store) => (next) => (action) => {
-    switch (action.type) {
-        case LOG_IN_SUCCEEDED:
-            saveAuthLocalStorage(action.payload)
-            window.location.href = '/projects'
-            break
-        case LOG_OUT:
-        case DELETE_CURRENT_USER_SUCCEEDED:
-            clearAuthLocalStorage()
-            window.location.href = '/'
-            break
-        default:
-            next(action)
-            return
-    }
-
-    next(action)
-}
-
-export function useIsLoggedIn() {
-    const [isLoggedIn, setLoggedIn] = useState(false)
-
-    useEffect(() => {
-        setLoggedIn(userIsLoggedIn())
-    }, [])
-
-    return isLoggedIn
-}
-
+/**
+ * Force the user to be authenticated or redirect to the homepage.
+ */
 export function useRequireAuth() {
+    const auth = useAuth()
     const router = useRouter()
+    const { isLoading, isAuthenticated } = auth
+
     useEffect(() => {
-        if (!userIsLoggedIn()) {
+        if (!isLoading && !isAuthenticated) {
             router.replace('/')
         }
-    })
+    }, [isLoading, isAuthenticated])
+
+    return auth
 }
 
-export function useUser() {
-    return useSelector((state) => state.auth)
+/**
+ * AuthProvider which provides an authentication context.
+ */
+export function AuthProvider({ children }) {
+    return (
+        <Auth0Provider
+            domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN}
+            clientId={process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID}
+            redirectUri={global.window && global.window.location.origin}
+            audience={process.env.NEXT_PUBLIC_AUTH0_AUDIENCE}
+        >
+            {children}
+        </Auth0Provider>
+    )
 }

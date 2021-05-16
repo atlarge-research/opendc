@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Authorization } from '../../shapes'
+import { Project } from '../../shapes'
 import ProjectRow from './ProjectRow'
 
-const ProjectList = ({ authorizations }) => {
+const ProjectList = ({ projects }) => {
     return (
         <div className="vertically-expanding-container">
-            {authorizations.length === 0 ? (
+            {projects.length === 0 ? (
                 <div className="alert alert-info">
                     <span className="info-icon fa fa-question-circle mr-2" />
                     <strong>No projects here yet...</strong> Add some with the 'New Project' button!
@@ -22,8 +22,8 @@ const ProjectList = ({ authorizations }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {authorizations.map((authorization) => (
-                            <ProjectRow projectAuth={authorization} key={authorization.project._id} />
+                        {projects.map((project) => (
+                            <ProjectRow project={project} key={project._id} />
                         ))}
                     </tbody>
                 </table>
@@ -33,7 +33,7 @@ const ProjectList = ({ authorizations }) => {
 }
 
 ProjectList.propTypes = {
-    authorizations: PropTypes.arrayOf(Authorization).isRequired,
+    projects: PropTypes.arrayOf(Project).isRequired,
 }
 
 export default ProjectList
