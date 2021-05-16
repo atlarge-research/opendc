@@ -9,6 +9,7 @@ Flask==1.1.2
 Flask-Compress==1.5.0
 Flask-Cors==3.0.9
 Flask-SocketIO==4.3.1
+flask-swagger-ui==3.36.0
 Flask-Restful==0.3.8
 greenlet==0.4.17
 httplib2==0.19.0

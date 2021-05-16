@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+import mimetypes
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect
 from flask_compress import Compress
 from flask_cors import CORS
 from flask_restful import Api
+from flask_swagger_ui import get_swaggerui_blueprint
 from marshmallow import ValidationError
 
 from opendc.api.portfolios import Portfolio, PortfolioScenarios
@@ -72,12 +74,32 @@ def setup_api(app):
     return api
 
 
+def setup_swagger(app):
+    """
+    Setup Swagger UI
+    """
+    SWAGGER_URL = '/docs'
+    API_URL = '../schema.yml'
+
+    swaggerui_blueprint = get_swaggerui_blueprint(
+        SWAGGER_URL,
+        API_URL,
+        config={
+            'app_name': "OpenDC API v2"
+        }
+    )
+    app.register_blueprint(swaggerui_blueprint)
+
+
 def create_app(testing=False):
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='/')
     app.config['TESTING'] = testing
     app.config['SECRET_KEY'] = os.environ['OPENDC_FLASK_SECRET']
     app.config['RESTFUL_JSON'] = {'cls': JSONEncoder}
     app.json_encoder = JSONEncoder
+
+    # Define YAML content type
+    mimetypes.add_type('text/yaml', '.yml')
 
     # Setup Sentry if DSN is specified
     setup_sentry()
@@ -89,8 +111,15 @@ def create_app(testing=False):
     compress = Compress()
     compress.init_app(app)
 
-    # Setup API
     setup_api(app)
+    setup_swagger(app)
+
+    @app.route('/')
+    def index():
+        """
+        Redirect the user to the API documentation if it accesses the API root.
+        """
+        return redirect('docs/')
 
     return app
 

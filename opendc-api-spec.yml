@@ -3,10 +3,24 @@ info:
   version: 2.0.0
   title: OpenDC API
   description: 'OpenDC is an open-source datacenter simulator for education, featuring real-time online collaboration, diverse simulation models, and detailed performance feedback statistics.'
-host: opendc.org
+host: api.opendc.org
 basePath: /v2
 schemes:
   - https
+
+security:
+  - auth0:
+      - openid
+
+securityDefinitions:
+  auth0:
+    type: oauth2
+    scopes:
+      openid: Grants access to user_id
+    flow: accessCode
+    authorizationUrl: https://opendc.eu.auth0.com/authorize
+    tokenUrl: https://opendc.eu.auth0.com/oauth/token
+    x-token-validation-url: https://opendc.eu.auth0.com/userinfo
 
 paths:
   '/projects':
