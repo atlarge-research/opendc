@@ -80,7 +80,7 @@ repository.
 
 #### Get and configure the code
 
-Clone OpenDC and follow the [instructions in the main repository](../../) to set up an [Auth0](https://auth0.com)
+Clone OpenDC and follow the [instructions from the deployment guide](../../docs/deploy.md) to set up an [Auth0](https://auth0.com)
 application and environment variables.
 
 **Important:** Be sure to set up environment variables according to those instructions, in a `.env` file.

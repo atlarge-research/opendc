@@ -12,7 +12,7 @@ datacenters. Built in *React.js* and *Redux*, with the help of [Next.js](https:/
 
 ## Get Up and Running
 
-Looking for the full OpenDC stack? Check out the [root](https://github.com/atlarge-research/opendc) for instructions on
+Looking for the full OpenDC stack? Check out the [deployment guide](../../docs/deploy.md) for instructions on
 how to set up a Docker container with all of OpenDC, without the hassle of running each of the components manually.
 
 ### Installation
@@ -27,11 +27,11 @@ yarn
 
 ### Running the development server
 
-First, you need to have a Google OAuth client ID set up. Check
-the [documentation of the main OpenDC repo](https://github.com/atlarge-research/opendc) if you're not sure how to do
-this. Once you have such an ID, you need to set it as environment variable `NEXT_PUBLIC_OAUTH_CLIENT_ID`. One way of
-doing this is to create an `.env.local` file with content `NEXT_PUBLIC_OAUTH_CLIENT_ID=YOUR_ID` (`YOUR_ID` without
-quotes), in the root directory of this repo.
+First, you need to set up an [Auth0](https://auth0.com) application. Check
+the [documentation in the deployment guide](../../docs/deploy.md) if you're not sure how to do this. Once you have such
+an ID, you need to set it as environment variable `NEXT_PUBLIC_AUTH0_CLIENT_ID` and `NEXT_PUBLIC_AUTH0_DOMAIN`
+One way of doing this is to create an `.env.local` file with content `NEXT_PUBLIC_AUTH0_CLIENT_ID=YOUR_ID` and
+`NEXT_PUBLIC_AUTH0_DOMAIN=YOUR_AUTH0_DOMAIN` in the root directory of this repo.
 
 Once you've set this variable, start the OpenDC `docker-compose` setup. See the root README for instructions on this.
 
@@ -48,6 +48,12 @@ To compile everything for camera-ready deployment, use the following command:
 
 ```bash
 yarn build
+```
+
+You can run the production server using Next.js as follows:
+
+```bash
+yarn start
 ```
 
 ## Architecture
