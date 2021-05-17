@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
-import { applyMiddleware, createStore } from 'redux'
+import {applyMiddleware, compose, createStore} from 'redux'
 import { createLogger } from 'redux-logger'
 import createSagaMiddleware from 'redux-saga'
 import thunk from 'redux-thunk'
 import rootReducer from './reducers'
 import rootSaga from './sagas'
 import { viewportAdjustmentMiddleware } from './middleware/viewport-adjustment'
+import { createReduxEnhancer } from "@sentry/react";
 
 let store
 
@@ -18,7 +19,13 @@ function initStore(initialState, ctx) {
         middlewares.push(createLogger())
     }
 
-    const configuredStore = createStore(rootReducer, initialState, applyMiddleware(...middlewares))
+    let middleware = applyMiddleware(...middlewares)
+
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+        middleware = compose(middleware, createReduxEnhancer())
+    }
+
+    const configuredStore = createStore(rootReducer, initialState, middleware)
     sagaMiddleware.run(rootSaga)
     store = configuredStore
 

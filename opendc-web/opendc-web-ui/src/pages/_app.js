@@ -25,6 +25,8 @@ import { Provider } from 'react-redux'
 import { useStore } from '../redux'
 import '../index.scss'
 import { AuthProvider, useAuth } from '../auth'
+import * as Sentry from '@sentry/react'
+import { Integrations } from '@sentry/tracing'
 
 // This setup is necessary to forward the Auth0 context to the Redux context
 const Inner = ({ Component, pageProps }) => {
@@ -37,6 +39,19 @@ const Inner = ({ Component, pageProps }) => {
     )
 }
 
+const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
+// Initialize Sentry if the user has configured a DSN
+if (process.browser && dsn) {
+    if (dsn) {
+        Sentry.init({
+            environment: process.env.NODE_ENV,
+            dsn: dsn,
+            integrations: [new Integrations.BrowserTracing()],
+            tracesSampleRate: 0.1,
+        })
+    }
+}
+
 export default function App(props) {
     return (
         <>
@@ -44,9 +59,11 @@ export default function App(props) {
                 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
                 <meta name="theme-color" content="#00A6D6" />
             </Head>
-            <AuthProvider>
-                <Inner {...props} />
-            </AuthProvider>
+            <Sentry.ErrorBoundary fallback={"An error has occurred"}>
+                <AuthProvider>
+                    <Inner {...props} />
+                </AuthProvider>
+            </Sentry.ErrorBoundary>
         </>
     )
 }
