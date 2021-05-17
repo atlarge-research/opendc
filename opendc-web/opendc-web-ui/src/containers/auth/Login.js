@@ -1,6 +1,8 @@
 import React from 'react'
 import { Button } from 'reactstrap'
 import { useAuth } from '../../auth'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSignInAlt } from '@fortawesome/free-solid-svg-icons'
 
 function Login({ visible, className }) {
     const { loginWithRedirect } = useAuth()
@@ -11,7 +13,7 @@ function Login({ visible, className }) {
 
     return (
         <Button color="primary" onClick={() => loginWithRedirect()} className={className}>
-            <span aria-hidden className="fa fa-sign-in" /> Sign In
+            <FontAwesomeIcon icon={faSignInAlt} /> Sign In
         </Button>
     )
 }

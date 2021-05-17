@@ -1,26 +1,29 @@
-import classNames from 'classnames'
 import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { Button } from 'reactstrap'
 
 const RackConstructionComponent = ({ onStart, onStop, inRackConstructionMode, isEditingRoom }) => {
     if (inRackConstructionMode) {
         return (
-            <div className="btn btn-primary btn-block" onClick={onStop}>
-                <span className="fa fa-times mr-2" />
+            <Button color="primary" block onClick={onStop}>
+                <FontAwesomeIcon icon={faTimes} className="mr-2" />
                 Stop rack construction
-            </div>
+            </Button>
         )
     }
 
     return (
-        <div
-            className={classNames('btn btn-outline-primary btn-block', {
-                disabled: isEditingRoom,
-            })}
+        <Button
+            color="primary"
+            outline
+            block
+            disabled={isEditingRoom}
             onClick={() => (isEditingRoom ? undefined : onStart())}
         >
-            <span className="fa fa-plus mr-2" />
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
             Start rack construction
-        </div>
+        </Button>
     )
 }
 

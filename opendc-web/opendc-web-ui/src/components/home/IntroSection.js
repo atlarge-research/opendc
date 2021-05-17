@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import { Container, Row, Col } from 'reactstrap'
 
 const IntroSection = ({ className }) => (
@@ -14,9 +15,12 @@ const IntroSection = ({ className }) => (
                     </ul>
                 </Col>
                 <Col xl="4" lg="4" md="4" sm="8">
-                    <img
-                        src="img/datacenter-drawing.png"
-                        className="col-12 img-fluid"
+                    <Image
+                        src="/img/datacenter-drawing.png"
+                        className="col-12"
+                        layout="intrinsic"
+                        width={350}
+                        height={197}
                         alt="Schematic top-down view of a datacenter"
                     />
                     <p className="col-12 figure-caption text-center">

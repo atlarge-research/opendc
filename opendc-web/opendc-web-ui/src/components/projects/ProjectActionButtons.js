@@ -2,12 +2,14 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import Link from 'next/link'
 import { Button } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlay, faUsers, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 const ProjectActionButtons = ({ projectId, onViewUsers, onDelete }) => (
     <td className="text-right">
         <Link href={`/projects/${projectId}`}>
             <Button color="primary" outline size="sm" className="mr-2" title="Open this project">
-                <span className="fa fa-play" />
+                <FontAwesomeIcon icon={faPlay} />
             </Button>
         </Link>
         <Button
@@ -19,10 +21,10 @@ const ProjectActionButtons = ({ projectId, onViewUsers, onDelete }) => (
             title="View and edit collaborators (not supported currently)"
             onClick={() => onViewUsers(projectId)}
         >
-            <span className="fa fa-users" />
+            <FontAwesomeIcon icon={faUsers} />
         </Button>
         <Button color="danger" outline size="sm" title="Delete this project" onClick={() => onDelete(projectId)}>
-            <span className="fa fa-trash" />
+            <FontAwesomeIcon icon={faTrash} />
         </Button>
     </td>
 )

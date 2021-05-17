@@ -1,11 +1,12 @@
 import React from 'react'
-import FontAwesome from 'react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 
 const NameComponent = ({ name, onEdit }) => (
     <h2>
         {name}
         <button className="btn btn-outline-secondary float-right" onClick={onEdit}>
-            <FontAwesome name="pencil" />
+            <FontAwesomeIcon icon={faPencilAlt} />
         </button>
     </h2>
 )

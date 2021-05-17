@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Topology } from '../../../../shapes'
-import FontAwesome from 'react-fontawesome'
 import { Button, Col, Row } from 'reactstrap'
 import classNames from 'classnames'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faPlay, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 function TopologyListComponent({ topologies, currentTopologyId, onChooseTopology, onNewTopology, onDeleteTopology }) {
     return (
@@ -11,7 +12,7 @@ function TopologyListComponent({ topologies, currentTopologyId, onChooseTopology
             <h2>
                 Topologies
                 <Button color="primary" outline className="float-right" onClick={onNewTopology}>
-                    <FontAwesome name="plus" />
+                    <FontAwesomeIcon icon={faPlus} />
                 </Button>
             </h2>
 
@@ -26,19 +27,17 @@ function TopologyListComponent({ topologies, currentTopologyId, onChooseTopology
                         {topology.name}
                     </Col>
                     <Col xs="5" className="text-right">
-                        <Button
-                            color="primary"
-                            outline
-                            className="mr-1 fa fa-play"
-                            onClick={() => onChooseTopology(topology._id)}
-                        />
+                        <Button color="primary" outline className="mr-1" onClick={() => onChooseTopology(topology._id)}>
+                            <FontAwesomeIcon icon={faPlay} />
+                        </Button>
                         <Button
                             color="danger"
                             outline
-                            className="fa fa-trash"
-                            disable={idx === 0}
+                            disabled={idx === 0}
                             onClick={() => (idx !== 0 ? onDeleteTopology(topology._id) : undefined)}
-                        />
+                        >
+                            <FontAwesomeIcon icon={faTrash} />
+                        </Button>
                     </Col>
                 </Row>
             ))}

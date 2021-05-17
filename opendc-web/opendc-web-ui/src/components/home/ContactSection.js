@@ -1,8 +1,10 @@
 import React from 'react'
-import FontAwesome from 'react-fontawesome'
+import Image from 'next/image'
 import { Row, Col } from 'reactstrap'
 import ContentSection from './ContentSection'
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faExclamationTriangle, faEnvelope } from '@fortawesome/free-solid-svg-icons'
+import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { contactSection, tudelftIcon } from './ContactSection.module.scss'
 
 const ContactSection = () => (
@@ -10,14 +12,14 @@ const ContactSection = () => (
         <Row className="justify-content-center">
             <Col md="4">
                 <a href="https://github.com/atlarge-research/opendc">
-                    <FontAwesome name="github" size="3x" className="mb-2" />
+                    <FontAwesomeIcon icon={faGithub} size="3x" className="mb-2" />
                     <div className="w-100" />
                     atlarge-research/opendc
                 </a>
             </Col>
             <Col md="4">
                 <a href="mailto:opendc@atlarge-research.com">
-                    <FontAwesome name="envelope" size="3x" className="mb-2" />
+                    <FontAwesomeIcon icon={faEnvelope} size="3x" className="mb-2" />
                     <div className="w-100" />
                     opendc@atlarge-research.com
                 </a>
@@ -25,7 +27,14 @@ const ContactSection = () => (
         </Row>
         <Row>
             <Col className="text-center">
-                <img src="img/tudelft-icon.png" className={`img-fluid ${tudelftIcon}`} height="100" alt="TU Delft" />
+                <Image
+                    src="/img/tudelft-icon.png"
+                    className={tudelftIcon}
+                    layout="intrinsic"
+                    width={162}
+                    height={100}
+                    alt="TU Delft"
+                />
             </Col>
         </Row>
         <Row>
@@ -39,7 +48,7 @@ const ContactSection = () => (
         </Row>
         <Row>
             <Col className="text-center disclaimer mt-5 small">
-                <FontAwesome name="exclamation-triangle" size="2x" className="mr-2" />
+                <FontAwesomeIcon icon={faExclamationTriangle} size="2x" className="mr-2" />
                 <br />
                 <strong>Disclaimer: </strong>
                 OpenDC is an experimental tool. Your data may get lost, overwritten, or otherwise become unavailable.

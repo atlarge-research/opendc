@@ -2,6 +2,8 @@ import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import React, { useState } from 'react'
 import { collapseButton, collapseButtonRight, sidebar, sidebarRight } from './Sidebar.module.scss'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'
 
 function Sidebar({ isRight, collapsible = true, children }) {
     const [isCollapsed, setCollapsed] = useState(false)
@@ -14,9 +16,9 @@ function Sidebar({ isRight, collapsible = true, children }) {
             onClick={() => setCollapsed(!isCollapsed)}
         >
             {(isCollapsed && isRight) || (!isCollapsed && !isRight) ? (
-                <span className="fa fa-angle-left" title={isRight ? 'Expand' : 'Collapse'} />
+                <FontAwesomeIcon icon={faAngleLeft} title={isRight ? 'Expand' : 'Collapse'} />
             ) : (
-                <span className="fa fa-angle-right" title={isRight ? 'Collapse' : 'Expand'} />
+                <FontAwesomeIcon icon={faAngleRight} title={isRight ? 'Collapse' : 'Expand'} />
             )}
         </div>
     )

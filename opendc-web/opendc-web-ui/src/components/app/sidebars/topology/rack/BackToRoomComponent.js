@@ -1,10 +1,13 @@
 import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faAngleLeft } from '@fortawesome/free-solid-svg-icons'
+import { Button } from 'reactstrap'
 
 const BackToRoomComponent = ({ onClick }) => (
-    <div className="btn btn-secondary btn-block mb-2" onClick={onClick}>
-        <span className="fa fa-angle-left mr-2" />
+    <Button color="secondary" block className="mb-2" onClick={onClick}>
+        <FontAwesomeIcon icon={faAngleLeft} className="mr-2" />
         Back to room
-    </div>
+    </Button>
 )
 
 export default BackToRoomComponent

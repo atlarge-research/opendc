@@ -1,29 +1,28 @@
 import PropTypes from 'prop-types'
 import React, { useRef } from 'react'
+import { Button, Form, FormGroup, Input } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 
 function UnitAddComponent({ units, onAdd }) {
     const unitSelect = useRef(null)
 
     return (
-        <div className="form-inline">
-            <div className="form-group w-100">
-                <select className="form-control w-70 mr-1" ref={unitSelect}>
+        <Form inline>
+            <FormGroup className="w-100">
+                <Input type="select" className="w-70 mr-1" innerRef={unitSelect}>
                     {units.map((unit) => (
                         <option value={unit._id} key={unit._id}>
                             {unit.name}
                         </option>
                     ))}
-                </select>
-                <button
-                    type="submit"
-                    className="btn btn-outline-primary"
-                    onClick={() => onAdd(unitSelect.current.value)}
-                >
-                    <span className="fa fa-plus mr-2" />
+                </Input>
+                <Button color="primary" outline onClick={() => onAdd(unitSelect.current.value)}>
+                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
                     Add
-                </button>
-            </div>
-        </div>
+                </Button>
+            </FormGroup>
+        </Form>
     )
 }
 

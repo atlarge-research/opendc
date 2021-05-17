@@ -2,10 +2,11 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { Portfolio } from '../../../../shapes'
 import Link from 'next/link'
-import FontAwesome from 'react-fontawesome'
 import ScenarioListContainer from '../../../../containers/app/sidebars/project/ScenarioListContainer'
 import { Button, Col, Row } from 'reactstrap'
 import classNames from 'classnames'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faPlay, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 function PortfolioListComponent({
     portfolios,
@@ -20,7 +21,7 @@ function PortfolioListComponent({
             <h2>
                 Portfolios
                 <Button color="primary" outline className="float-right" onClick={(e) => onNewPortfolio(e)}>
-                    <FontAwesome name="plus" />
+                    <FontAwesomeIcon icon={faPlus} />
                 </Button>
             </h2>
 
@@ -40,16 +41,15 @@ function PortfolioListComponent({
                                 <Button
                                     color="primary"
                                     outline
-                                    className="mr-1 fa fa-play"
+                                    className="mr-1"
                                     onClick={() => onChoosePortfolio(portfolio._id)}
-                                />
+                                >
+                                    <FontAwesomeIcon icon={faPlay} />
+                                </Button>
                             </Link>
-                            <Button
-                                color="danger"
-                                outline
-                                className="fa fa-trash"
-                                onClick={() => onDeletePortfolio(portfolio._id)}
-                            />
+                            <Button color="danger" outline onClick={() => onDeletePortfolio(portfolio._id)}>
+                                <FontAwesomeIcon icon={faTrash} />
+                            </Button>
                         </Col>
                     </Row>
                     <ScenarioListContainer portfolioId={portfolio._id} />

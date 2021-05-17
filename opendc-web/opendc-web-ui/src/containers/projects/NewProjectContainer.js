@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux'
 import { addProject } from '../../redux/actions/projects'
 import TextInputModal from '../../components/modals/TextInputModal'
 import { Button } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 
 /**
  * A container for creating a new project.
@@ -21,7 +23,7 @@ const NewProjectContainer = () => {
         <>
             <div className="bottom-btn-container">
                 <Button color="primary" className="float-right" onClick={() => setVisible(true)}>
-                    <span className="fa fa-plus mr-2" />
+                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
                     New Project
                 </Button>
             </div>

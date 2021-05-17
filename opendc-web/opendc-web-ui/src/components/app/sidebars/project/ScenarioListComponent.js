@@ -2,9 +2,10 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { Scenario } from '../../../../shapes'
 import Link from 'next/link'
-import FontAwesome from 'react-fontawesome'
 import { Button, Col, Row } from 'reactstrap'
 import classNames from 'classnames'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faPlay, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 function ScenarioListComponent({
     scenarios,
@@ -35,23 +36,26 @@ function ScenarioListComponent({
                                 color="primary"
                                 outline
                                 disabled
-                                className="mr-1 fa fa-play"
+                                className="mr-1"
                                 onClick={() => onChooseScenario(scenario.portfolioId, scenario._id)}
-                            />
+                            >
+                                <FontAwesomeIcon icon={faPlay} />
+                            </Button>
                         </Link>
                         <Button
                             color="danger"
                             outline
-                            className="fa fa-trash"
                             disabled={idx === 0}
                             onClick={() => (idx !== 0 ? onDeleteScenario(scenario._id) : undefined)}
-                        />
+                        >
+                            <FontAwesomeIcon icon={faTrash} />
+                        </Button>
                     </Col>
                 </Row>
             ))}
             <div className="pl-4 mb-2">
                 <Button color="primary" outline onClick={() => onNewScenario(portfolioId)}>
-                    <FontAwesome name="plus" className="mr-1" />
+                    <FontAwesomeIcon icon={faPlus} className="mr-1" />
                     New scenario
                 </Button>
             </div>

@@ -1,16 +1,17 @@
 import React from 'react'
-import FontAwesome from 'react-fontawesome'
 import Link from 'next/link'
 import { NavLink } from 'reactstrap'
 import Navbar, { NavItem } from './Navbar'
 import {} from './Navbar.module.scss'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faList } from '@fortawesome/free-solid-svg-icons'
 
 const AppNavbarComponent = ({ project, fullWidth }) => (
     <Navbar fullWidth={fullWidth}>
         <NavItem route="/projects">
             <Link href="/projects">
                 <NavLink title="My Projects">
-                    <FontAwesome name="list" className="mr-2" />
+                    <FontAwesomeIcon icon={faList} className="mr-2" />
                     My Projects
                 </NavLink>
             </Link>

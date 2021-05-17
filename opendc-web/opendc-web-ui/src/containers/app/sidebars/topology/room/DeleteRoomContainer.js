@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux'
 import { Button } from 'reactstrap'
 import ConfirmationModal from '../../../../../components/modals/ConfirmationModal'
 import { deleteRoom } from '../../../../../redux/actions/topology/room'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 
 const DeleteRoomContainer = () => {
     const dispatch = useDispatch()
@@ -16,7 +18,7 @@ const DeleteRoomContainer = () => {
     return (
         <>
             <Button color="danger" outline block onClick={() => setVisible(true)}>
-                <span className="fa fa-trash mr-2" />
+                <FontAwesomeIcon icon={faTrash} className="mr-2" />
                 Delete this room
             </Button>
             <ConfirmationModal

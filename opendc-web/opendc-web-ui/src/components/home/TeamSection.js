@@ -1,43 +1,44 @@
 import React from 'react'
+import Image from 'next/image'
 import { Row, Col } from 'reactstrap'
 import ContentSection from './ContentSection'
 
 const TeamLead = ({ photoId, name, description }) => (
     <Col xl="3" lg="3" md="4" sm="6" className="justify-content-center">
-        <Col
-            tag="img"
-            src={'img/portraits/' + photoId + '.png'}
-            xl="10"
-            lg="10"
-            md="10"
-            sm="8"
-            col="5"
-            className="mb-2 mt-2"
-            alt={name}
-        />
-        <Col>
-            <h4>{name}</h4>
-            <div className="team-member-description">{description}</div>
-        </Col>
+        <Row>
+            <Col xl="10" lg="10" md="10" sm="8" col="5" className="my-2 mx-auto" alt={name}>
+                <Image
+                    src={'/img/portraits/' + photoId + '.png'}
+                    layout="intrinsic"
+                    width={182}
+                    height={182}
+                    alt={name}
+                />
+            </Col>
+            <Col>
+                <h4>{name}</h4>
+                <div className="team-member-description">{description}</div>
+            </Col>
+        </Row>
     </Col>
 )
 
 const TeamMember = ({ photoId, name }) => (
     <Col xl="2" lg="2" md="3" sm="4" className="justify-content-center">
-        <Col
-            tag="img"
-            src={'img/portraits/' + photoId + '.png'}
-            xl="10"
-            lg="10"
-            md="10"
-            sm="8"
-            col="5"
-            className="mb-2 mt-2"
-            alt={name}
-        />
-        <Col>
-            <h5>{name}</h5>
-        </Col>
+        <Row>
+            <Col xl="10" lg="10" md="10" sm="8" xs="5" className="my-2 mx-auto">
+                <Image
+                    src={'/img/portraits/' + photoId + '.png'}
+                    layout="intrinsic"
+                    width={100}
+                    height={100}
+                    alt={name}
+                />
+            </Col>
+            <Col>
+                <h5>{name}</h5>
+            </Col>
+        </Row>
     </Col>
 )
 

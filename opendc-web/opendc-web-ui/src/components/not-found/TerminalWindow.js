@@ -3,6 +3,8 @@ import Link from 'next/link'
 import BlinkingCursor from './BlinkingCursor'
 import CodeBlock from './CodeBlock'
 import { terminalWindow, terminalHeader, terminalBody, segfault, subTitle, homeBtn } from './TerminalWindow.module.scss'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHome } from '@fortawesome/free-solid-svg-icons'
 
 const TerminalWindow = () => (
     <div className={terminalWindow}>
@@ -25,7 +27,7 @@ const TerminalWindow = () => (
             </div>
             <Link href="/">
                 <a className={homeBtn}>
-                    <span className="fa fa-home" /> GET ME BACK TO OPENDC
+                    <FontAwesomeIcon icon={faHome} /> GET ME BACK TO OPENDC
                 </a>
             </Link>
         </div>

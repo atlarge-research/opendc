@@ -1,24 +1,27 @@
 import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { Button } from 'reactstrap'
 
 const NewRoomConstructionComponent = ({ onStart, onFinish, onCancel, currentRoomInConstruction }) => {
     if (currentRoomInConstruction === '-1') {
         return (
             <div className="btn btn-outline-primary btn-block" onClick={onStart}>
-                <span className="fa fa-plus mr-2" />
+                <FontAwesomeIcon icon={faPlus} className="mr-2" />
                 Construct a new room
             </div>
         )
     }
     return (
         <div>
-            <div className="btn btn-primary btn-block" onClick={onFinish}>
-                <span className="fa fa-check mr-2" />
+            <Button color="primary" block onClick={onFinish}>
+                <FontAwesomeIcon icon={faCheck} className="mr-2" />
                 Finalize new room
-            </div>
-            <div className="btn btn-default btn-block" onClick={onCancel}>
-                <span className="fa fa-times mr-2" />
+            </Button>
+            <Button color="default" block onClick={onCancel}>
+                <FontAwesomeIcon icon={faTimes} className="mr-2" />
                 Cancel construction
-            </div>
+            </Button>
         </div>
     )
 }

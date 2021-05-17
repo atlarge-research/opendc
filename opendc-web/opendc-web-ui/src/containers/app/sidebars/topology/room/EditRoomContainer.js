@@ -2,6 +2,8 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { finishRoomEdit, startRoomEdit } from '../../../../../redux/actions/topology/building'
 import { Button } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 
 const EditRoomContainer = () => {
     const isEditing = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
@@ -13,7 +15,7 @@ const EditRoomContainer = () => {
 
     return isEditing ? (
         <Button color="info" outline block onClick={onFinish}>
-            <span className="fa fa-check mr-2" />
+            <FontAwesomeIcon icon={faCheck} className="mr-2" />
             Finish editing room
         </Button>
     ) : (
@@ -24,7 +26,7 @@ const EditRoomContainer = () => {
             disabled={isInRackConstructionMode}
             onClick={() => (isInRackConstructionMode ? undefined : onEdit())}
         >
-            <span className="fa fa-pencil mr-2" />
+            <FontAwesomeIcon icon={faPencilAlt} className="mr-2" />
             Edit the tiles of this room
         </Button>
     )

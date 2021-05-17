@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import {
     Navbar as RNavbar,
     NavItem as RNavItem,
@@ -16,6 +17,8 @@ import Logout from '../../containers/auth/Logout'
 import ProfileName from '../../containers/auth/ProfileName'
 import { login, navbar, opendcBrand } from './Navbar.module.scss'
 import { useAuth } from '../../auth'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faGithub } from '@fortawesome/free-brands-svg-icons'
 
 export const NAVBAR_HEIGHT = 60
 
@@ -25,7 +28,7 @@ const GitHubLink = () => (
         className="ml-2 mr-3 text-dark"
         style={{ position: 'relative', top: 7 }}
     >
-        <span aria-hidden className="fa fa-github fa-2x" />
+        <FontAwesomeIcon icon={faGithub} size="2x" />
     </a>
 )
 
@@ -87,7 +90,9 @@ const Navbar = ({ fullWidth, children }) => {
             <Container fluid={fullWidth}>
                 <NavbarToggler onClick={toggle} />
                 <NavbarBrand href="/" title="OpenDC" className={opendcBrand}>
-                    <img src="/img/logo.png" alt="OpenDC" />
+                    <div className="mb-n1">
+                        <Image src="/img/logo.png" layout="fixed" width={30} height={30} alt="OpenDC" />
+                    </div>
                 </NavbarBrand>
 
                 <Collapse isOpen={isOpen} navbar>
