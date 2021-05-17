@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.9-slim
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
 # Ensure the STDOUT is not buffered by Python so that our logs become visible
