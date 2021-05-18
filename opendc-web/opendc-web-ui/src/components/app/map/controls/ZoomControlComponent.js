@@ -1,4 +1,6 @@
 import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons'
 
 const ZoomControlComponent = ({ zoomInOnCenter }) => {
     return (
@@ -8,14 +10,14 @@ const ZoomControlComponent = ({ zoomInOnCenter }) => {
                 title="Zoom in"
                 onClick={() => zoomInOnCenter(true)}
             >
-                <span className="fa fa-plus" />
+                <FontAwesomeIcon icon={faPlus} />
             </button>
             <button
                 className="btn btn-default btn-circle btn-sm mr-1"
                 title="Zoom out"
                 onClick={() => zoomInOnCenter(false)}
             >
-                <span className="fa fa-minus" />
+                <FontAwesomeIcon icon={faMinus} />
             </button>
         </span>
     )

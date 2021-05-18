@@ -4,13 +4,13 @@ version: "3.8"
 services:
   frontend:
     ports:
-      - "8080:80"
+      - "8080:3000"
     environment:
-      REACT_APP_API_BASE_URL: ${OPENDC_API_BASE_URL}
+      NEXT_PUBLIC_API_BASE_URL: ${OPENDC_API_BASE_URL}
 
   api:
     ports:
-      - "8081:8081"
+      - "8081:80"
     environment:
       SENTRY_ENVIRONMENT: "production"
 

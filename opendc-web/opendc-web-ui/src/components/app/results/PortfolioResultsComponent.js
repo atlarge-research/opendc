@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Bar, CartesianGrid, ComposedChart, ErrorBar, ResponsiveContainer, Scatter, XAxis, YAxis } from 'recharts'
 import { AVAILABLE_METRICS, METRIC_NAMES_SHORT, METRIC_UNITS } from '../../../util/available-metrics'
 import { mean, std } from 'mathjs'
-import Shapes from '../../../shapes/index'
+import { Portfolio, Scenario } from '../../../shapes'
 import approx from 'approximate-number'
 
 const PortfolioResultsComponent = ({ portfolio, scenarios }) => {
@@ -86,8 +86,8 @@ const PortfolioResultsComponent = ({ portfolio, scenarios }) => {
 }
 
 PortfolioResultsComponent.propTypes = {
-    portfolio: Shapes.Portfolio,
-    scenarios: PropTypes.arrayOf(Shapes.Scenario),
+    portfolio: Portfolio,
+    scenarios: PropTypes.arrayOf(Scenario),
 }
 
 export default PortfolioResultsComponent

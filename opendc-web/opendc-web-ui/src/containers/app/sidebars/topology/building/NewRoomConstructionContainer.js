@@ -4,7 +4,7 @@ import {
     cancelNewRoomConstruction,
     finishNewRoomConstruction,
     startNewRoomConstruction,
-} from '../../../../../actions/topology/building'
+} from '../../../../../redux/actions/topology/building'
 import StartNewRoomConstructionComponent from '../../../../../components/app/sidebars/topology/building/NewRoomConstructionComponent'
 
 const NewRoomConstructionButton = (props) => {

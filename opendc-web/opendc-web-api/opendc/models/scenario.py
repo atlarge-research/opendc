@@ -1,8 +1,50 @@
+from marshmallow import Schema, fields
 from opendc.models.model import Model
 from opendc.models.portfolio import Portfolio
-from opendc.models.user import User
-from opendc.util.exceptions import ClientError
-from opendc.util.rest import Response
+
+
+class SimulationSchema(Schema):
+    """
+    Simulation details.
+    """
+    state = fields.String()
+
+
+class TraceSchema(Schema):
+    """
+    Schema for specifying the trace of a scenario.
+    """
+    traceId = fields.String()
+    loadSamplingFraction = fields.Float()
+
+
+class TopologySchema(Schema):
+    """
+    Schema for topology specification for a scenario.
+    """
+    topologyId = fields.String()
+
+
+class OperationalSchema(Schema):
+    """
+    Schema for the operational phenomena for a scenario.
+    """
+    failuresEnabled = fields.Boolean()
+    performanceInterferenceEnabled = fields.Boolean()
+    schedulerName = fields.String()
+
+
+class ScenarioSchema(Schema):
+    """
+    Schema representing a scenario.
+    """
+    _id = fields.String()
+    portfolioId = fields.String()
+    name = fields.String(required=True)
+    simulation = fields.Nested(SimulationSchema)
+    trace = fields.Nested(TraceSchema)
+    topology = fields.Nested(TopologySchema)
+    operational = fields.Nested(OperationalSchema)
 
 
 class Scenario(Model):
@@ -10,17 +52,13 @@ class Scenario(Model):
 
     collection_name = 'scenarios'
 
-    def check_user_access(self, google_id, edit_access):
-        """Raises an error if the user with given [google_id] has insufficient access.
+    def check_user_access(self, user_id, edit_access):
+        """Raises an error if the user with given [user_id] has insufficient access.
 
         Checks access on the parent project.
 
-        :param google_id: The Google ID of the user.
+        :param user_id: The User ID of the user.
         :param edit_access: True when edit access should be checked, otherwise view access.
         """
         portfolio = Portfolio.from_id(self.obj['portfolioId'])
-        user = User.from_google_id(google_id)
-        authorizations = list(
-            filter(lambda x: str(x['projectId']) == str(portfolio.obj['projectId']), user.obj['authorizations']))
-        if len(authorizations) == 0 or (edit_access and authorizations[0]['authorizationLevel'] == 'VIEW'):
-            raise ClientError(Response(403, 'Forbidden from retrieving/editing scenario.'))
+        portfolio.check_user_access(user_id, edit_access)

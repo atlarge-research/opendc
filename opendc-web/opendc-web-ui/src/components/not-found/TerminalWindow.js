@@ -1,14 +1,16 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import BlinkingCursor from './BlinkingCursor'
 import CodeBlock from './CodeBlock'
-import './TerminalWindow.sass'
+import { terminalWindow, terminalHeader, terminalBody, segfault, subTitle, homeBtn } from './TerminalWindow.module.scss'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHome } from '@fortawesome/free-solid-svg-icons'
 
 const TerminalWindow = () => (
-    <div className="terminal-window">
-        <div className="terminal-header">Terminal -- bash</div>
-        <div className="terminal-body">
-            <div className="segfault">
+    <div className={terminalWindow}>
+        <div className={terminalHeader}>Terminal -- bash</div>
+        <div className={terminalBody}>
+            <div className={segfault}>
                 $ status
                 <br />
                 opendc[4264]: segfault at 0000051497be459d1 err 12 in libopendc.9.0.4
@@ -19,12 +21,14 @@ const TerminalWindow = () => (
                 <br />
             </div>
             <CodeBlock />
-            <div className="sub-title">
+            <div className={subTitle}>
                 Got lost?
                 <BlinkingCursor />
             </div>
-            <Link to="/" className="home-btn">
-                <span className="fa fa-home" /> GET ME BACK TO OPENDC
+            <Link href="/">
+                <a className={homeBtn}>
+                    <FontAwesomeIcon icon={faHome} /> GET ME BACK TO OPENDC
+                </a>
             </Link>
         </div>
     </div>

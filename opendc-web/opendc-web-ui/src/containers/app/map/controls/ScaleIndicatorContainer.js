@@ -1,9 +1,9 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import ScaleIndicatorComponent from '../../../../components/app/map/controls/ScaleIndicatorComponent'
+import { useMapScale } from '../../../../data/map'
 
 const ScaleIndicatorContainer = (props) => {
-    const scale = useSelector((state) => state.map.scale)
+    const scale = useMapScale()
     return <ScaleIndicatorComponent {...props} scale={scale} />
 }
 

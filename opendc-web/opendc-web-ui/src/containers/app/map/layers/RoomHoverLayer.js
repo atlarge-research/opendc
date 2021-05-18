@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { toggleTileAtLocation } from '../../../../actions/topology/building'
+import { toggleTileAtLocation } from '../../../../redux/actions/topology/building'
 import RoomHoverLayerComponent from '../../../../components/app/map/layers/RoomHoverLayerComponent'
 import {
     deriveValidNextTilePositions,

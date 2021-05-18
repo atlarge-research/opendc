@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { startRackConstruction, stopRackConstruction } from '../../../../../actions/topology/room'
+import { startRackConstruction, stopRackConstruction } from '../../../../../redux/actions/topology/room'
 import RackConstructionComponent from '../../../../../components/app/sidebars/topology/room/RackConstructionComponent'
 
 const RackConstructionContainer = (props) => {

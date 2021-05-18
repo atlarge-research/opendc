@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { addUnit } from '../../../../../actions/topology/machine'
+import { addUnit } from '../../../../../redux/actions/topology/machine'
 import UnitAddComponent from '../../../../../components/app/sidebars/topology/machine/UnitAddComponent'
 
 const UnitAddContainer = (props) => {

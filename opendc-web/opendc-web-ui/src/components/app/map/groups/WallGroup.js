@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Group } from 'react-konva'
-import Shapes from '../../../../shapes/index'
+import { Tile } from '../../../../shapes'
 import { deriveWallLocations } from '../../../../util/tile-calculations'
 import WallSegment from '../elements/WallSegment'
 
@@ -16,7 +16,7 @@ const WallGroup = ({ tiles }) => {
 }
 
 WallGroup.propTypes = {
-    tiles: PropTypes.arrayOf(Shapes.Tile).isRequired,
+    tiles: PropTypes.arrayOf(Tile).isRequired,
 }
 
 export default WallGroup

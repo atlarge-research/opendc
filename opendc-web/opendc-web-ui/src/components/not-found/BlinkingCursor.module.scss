@@ -1,0 +1,13 @@
+.blinkingCursor {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    from,
+    to {
+        color: #eeeeee;
+    }
+    50% {
+        color: #333333;
+    }
+}

@@ -1,60 +1,56 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import Shapes from '../../../../shapes'
-import FontAwesome from 'react-fontawesome'
+import { Topology } from '../../../../shapes'
+import { Button, Col, Row } from 'reactstrap'
+import classNames from 'classnames'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faPlay, faTrash } from '@fortawesome/free-solid-svg-icons'
 
-class TopologyListComponent extends React.Component {
-    static propTypes = {
-        topologies: PropTypes.arrayOf(Shapes.Topology),
-        currentTopologyId: PropTypes.string,
-        onChooseTopology: PropTypes.func.isRequired,
-        onNewTopology: PropTypes.func.isRequired,
-        onDeleteTopology: PropTypes.func.isRequired,
-    }
+function TopologyListComponent({ topologies, currentTopologyId, onChooseTopology, onNewTopology, onDeleteTopology }) {
+    return (
+        <div className="pb-3">
+            <h2>
+                Topologies
+                <Button color="primary" outline className="float-right" onClick={onNewTopology}>
+                    <FontAwesomeIcon icon={faPlus} />
+                </Button>
+            </h2>
 
-    onChoose(id) {
-        this.props.onChooseTopology(id)
-    }
-
-    onDelete(id) {
-        this.props.onDeleteTopology(id)
-    }
-
-    render() {
-        return (
-            <div className="pb-3">
-                <h2>
-                    Topologies
-                    <button className="btn btn-outline-primary float-right" onClick={this.props.onNewTopology}>
-                        <FontAwesome name="plus" />
-                    </button>
-                </h2>
-
-                {this.props.topologies.map((topology, idx) => (
-                    <div key={topology._id} className="row mb-1">
-                        <div
-                            className={
-                                'col-7 align-self-center ' +
-                                (topology._id === this.props.currentTopologyId ? 'font-weight-bold' : '')
-                            }
+            {topologies.map((topology, idx) => (
+                <Row key={topology._id} className="mb-1">
+                    <Col
+                        xs="7"
+                        className={classNames('align-self-center', {
+                            'font-weight-bold': topology._id === currentTopologyId,
+                        })}
+                    >
+                        {topology.name}
+                    </Col>
+                    <Col xs="5" className="text-right">
+                        <Button color="primary" outline className="mr-1" onClick={() => onChooseTopology(topology._id)}>
+                            <FontAwesomeIcon icon={faPlay} />
+                        </Button>
+                        <Button
+                            color="danger"
+                            outline
+                            disabled={idx === 0}
+                            onClick={() => (idx !== 0 ? onDeleteTopology(topology._id) : undefined)}
                         >
-                            {topology.name}
-                        </div>
-                        <div className="col-5 text-right">
-                            <span
-                                className="btn btn-outline-primary mr-1 fa fa-play"
-                                onClick={() => this.onChoose(topology._id)}
-                            />
-                            <span
-                                className={'btn btn-outline-danger fa fa-trash ' + (idx === 0 ? 'disabled' : '')}
-                                onClick={() => (idx !== 0 ? this.onDelete(topology._id) : undefined)}
-                            />
-                        </div>
-                    </div>
-                ))}
-            </div>
-        )
-    }
+                            <FontAwesomeIcon icon={faTrash} />
+                        </Button>
+                    </Col>
+                </Row>
+            ))}
+        </div>
+    )
+}
+
+TopologyListComponent.propTypes = {
+    topologies: PropTypes.arrayOf(Topology),
+    currentTopologyId: PropTypes.string,
+    onChooseTopology: PropTypes.func.isRequired,
+    onNewTopology: PropTypes.func.isRequired,
+    onDeleteTopology: PropTypes.func.isRequired,
 }
 
 export default TopologyListComponent

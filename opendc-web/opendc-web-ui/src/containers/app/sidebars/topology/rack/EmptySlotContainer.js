@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { addMachine } from '../../../../../actions/topology/rack'
+import { addMachine } from '../../../../../redux/actions/topology/rack'
 import EmptySlotComponent from '../../../../../components/app/sidebars/topology/rack/EmptySlotComponent'
 
 const EmptySlotContainer = (props) => {

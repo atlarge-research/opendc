@@ -1,4 +1,6 @@
 import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCamera } from '@fortawesome/free-solid-svg-icons'
 
 const ExportCanvasComponent = () => (
     <button
@@ -6,7 +8,7 @@ const ExportCanvasComponent = () => (
         title="Export Canvas to PNG Image"
         onClick={() => window['exportCanvasToImage']()}
     >
-        <span className="fa fa-camera" />
+        <FontAwesomeIcon icon={faCamera} />
     </button>
 )
 

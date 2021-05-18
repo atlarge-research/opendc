@@ -9,6 +9,8 @@ Flask==1.1.2
 Flask-Compress==1.5.0
 Flask-Cors==3.0.9
 Flask-SocketIO==4.3.1
+flask-swagger-ui==3.36.0
+Flask-Restful==0.3.8
 greenlet==0.4.17
 httplib2==0.19.0
 isort==4.3.21
@@ -16,6 +18,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.3
 lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
+marshmallow==3.12.1
 mccabe==0.6.1
 monotonic==1.5
 more-itertools==8.6.0
@@ -33,8 +36,7 @@ pytest-cov==2.11.1
 pytest-env==0.6.2
 pytest-mock==3.2.0
 python-dotenv==0.14.0
-python-engineio==3.13.2
-python-socketio==4.6.0
+python-jose==3.2.0
 rsa==4.7
 sentry-sdk==0.19.2
 six==1.15.0

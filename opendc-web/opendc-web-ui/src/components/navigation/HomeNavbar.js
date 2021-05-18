@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavItem, NavLink } from 'reactstrap'
 import Navbar from './Navbar'
-import './Navbar.sass'
+import {} from './Navbar.module.scss'
 
 const ScrollNavItem = ({ id, name }) => (
     <NavItem>

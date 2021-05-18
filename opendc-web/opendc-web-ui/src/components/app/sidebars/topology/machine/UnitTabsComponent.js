@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
+import { Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap'
 import UnitAddContainer from '../../../../../containers/app/sidebars/topology/machine/UnitAddContainer'
 import UnitListContainer from '../../../../../containers/app/sidebars/topology/machine/UnitListContainer'
 
@@ -10,7 +10,7 @@ const UnitTabsComponent = () => {
     }
 
     return (
-        <div>
+        <div className="mt-2">
             <Nav tabs>
                 <NavItem>
                     <NavLink
@@ -55,20 +55,28 @@ const UnitTabsComponent = () => {
             </Nav>
             <TabContent activeTab={activeTab}>
                 <TabPane tabId="cpu-units">
-                    <UnitAddContainer unitType="cpu" />
-                    <UnitListContainer unitType="cpu" />
+                    <div className="py-2">
+                        <UnitAddContainer unitType="cpu" />
+                        <UnitListContainer unitType="cpu" />
+                    </div>
                 </TabPane>
                 <TabPane tabId="gpu-units">
-                    <UnitAddContainer unitType="gpu" />
-                    <UnitListContainer unitType="gpu" />
+                    <div className="py-2">
+                        <UnitAddContainer unitType="gpu" />
+                        <UnitListContainer unitType="gpu" />
+                    </div>
                 </TabPane>
                 <TabPane tabId="memory-units">
-                    <UnitAddContainer unitType="memory" />
-                    <UnitListContainer unitType="memory" />
+                    <div className="py-2">
+                        <UnitAddContainer unitType="memory" />
+                        <UnitListContainer unitType="memory" />
+                    </div>
                 </TabPane>
                 <TabPane tabId="storage-units">
-                    <UnitAddContainer unitType="storage" />
-                    <UnitListContainer unitType="storage" />
+                    <div className="py-2">
+                        <UnitAddContainer unitType="storage" />
+                        <UnitListContainer unitType="storage" />
+                    </div>
                 </TabPane>
             </TabContent>
         </div>

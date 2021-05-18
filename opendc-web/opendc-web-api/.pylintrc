@@ -65,7 +65,8 @@ disable=duplicate-code,
         invalid-name,
         bare-except,
         too-few-public-methods,
-        fixme
+        fixme,
+        no-self-use
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

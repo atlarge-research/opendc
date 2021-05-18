@@ -1,0 +1,10 @@
+.scaleIndicator {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 50;
+
+    border: solid 2px #212529;
+    border-top: none;
+    border-left: none;
+}

@@ -1,5 +1,7 @@
 import React from 'react'
 import { UncontrolledPopover, PopoverHeader, PopoverBody, Button } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 
 function UnitComponent({ index, unitType, unit, onDelete }) {
     let unitInfo
@@ -37,13 +39,17 @@ function UnitComponent({ index, unitType, unit, onDelete }) {
         <li className="d-flex list-group-item justify-content-between align-items-center">
             <span style={{ maxWidth: '60%' }}>{unit.name}</span>
             <span>
-                <Button outline={true} color="info" className="mr-1 fa fa-info-circle" id={`unit-${index}`} />
+                <Button outline={true} color="info" className="mr-1" id={`unit-${index}`}>
+                    <FontAwesomeIcon icon={faInfoCircle} />
+                </Button>
                 <UncontrolledPopover trigger="focus" placement="left" target={`unit-${index}`}>
                     <PopoverHeader>Unit Information</PopoverHeader>
                     <PopoverBody>{unitInfo}</PopoverBody>
                 </UncontrolledPopover>
 
-                <span className="btn btn-outline-danger fa fa-trash" onClick={onDelete} />
+                <Button outline color="danger" onClick={onDelete}>
+                    <FontAwesomeIcon icon={faTrash} />
+                </Button>
             </span>
         </li>
     )

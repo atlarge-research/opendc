@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { goFromRackToMachine } from '../../../../../actions/interaction-level'
+import { goFromRackToMachine } from '../../../../../redux/actions/interaction-level'
 import MachineComponent from '../../../../../components/app/sidebars/topology/rack/MachineComponent'
 
 const MachineContainer = (props) => {

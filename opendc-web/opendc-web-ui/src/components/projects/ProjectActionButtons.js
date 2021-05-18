@@ -1,22 +1,31 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
+import { Button } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlay, faUsers, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 const ProjectActionButtons = ({ projectId, onViewUsers, onDelete }) => (
     <td className="text-right">
-        <Link to={'/projects/' + projectId} className="btn btn-outline-primary btn-sm mr-2" title="Open this project">
-            <span className="fa fa-play" />
+        <Link href={`/projects/${projectId}`}>
+            <Button color="primary" outline size="sm" className="mr-2" title="Open this project">
+                <FontAwesomeIcon icon={faPlay} />
+            </Button>
         </Link>
-        <div
-            className="btn btn-outline-success btn-sm disabled mr-2"
+        <Button
+            color="success"
+            outline
+            size="sm"
+            disabled
+            className="mr-2"
             title="View and edit collaborators (not supported currently)"
             onClick={() => onViewUsers(projectId)}
         >
-            <span className="fa fa-users" />
-        </div>
-        <div className="btn btn-outline-danger btn-sm" title="Delete this project" onClick={() => onDelete(projectId)}>
-            <span className="fa fa-trash" />
-        </div>
+            <FontAwesomeIcon icon={faUsers} />
+        </Button>
+        <Button color="danger" outline size="sm" title="Delete this project" onClick={() => onDelete(projectId)}>
+            <FontAwesomeIcon icon={faTrash} />
+        </Button>
     </td>
 )
 

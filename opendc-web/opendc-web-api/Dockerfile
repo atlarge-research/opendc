@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.9-slim
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
 # Ensure the STDOUT is not buffered by Python so that our logs become visible
@@ -9,9 +9,15 @@ ENV PYTHONUNBUFFERED 1
 COPY ./ /opendc
 
 # Fetch web server dependencies
-RUN pip install -r /opendc/requirements.txt
+RUN pip install -r /opendc/requirements.txt && pip install pyuwsgi
+
+# Create opendc user
+RUN groupadd --gid 1000 opendc \
+  && useradd --uid 1000 --gid opendc --shell /bin/bash --create-home opendc
+RUN chown -R opendc:opendc /opendc
+USER opendc
 
 # Set working directory
 WORKDIR /opendc
 
-CMD ["python3", "main.py"]
+CMD uwsgi -M --socket 0.0.0.0:80 --protocol=http --wsgi-file app.py --enable-threads --processes 2 --lazy-app

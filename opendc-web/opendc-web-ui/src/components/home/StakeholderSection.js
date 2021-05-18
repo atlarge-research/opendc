@@ -21,8 +21,8 @@ const Stakeholder = ({ name, title, subtitle }) => (
     </Col>
 )
 
-const StakeholderSection = () => (
-    <ContentSection name="stakeholders" title="Stakeholders">
+const StakeholderSection = ({ className }) => (
+    <ContentSection name="stakeholders" title="Stakeholders" className={className}>
         <Row className="justify-content-center">
             <Stakeholder name="Manager" title="Managers" subtitle="Seeing is deciding" />
             <Stakeholder name="Sales" title="Sales" subtitle="Demo concepts" />

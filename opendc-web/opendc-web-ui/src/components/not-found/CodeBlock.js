@@ -1,5 +1,5 @@
 import React from 'react'
-import './CodeBlock.sass'
+import { codeBlock } from './CodeBlock.module.scss'
 
 const CodeBlock = () => {
     const textBlock =
@@ -22,7 +22,7 @@ const CodeBlock = () => {
         }
     }
 
-    return <div className="code-block" dangerouslySetInnerHTML={{ __html: textBlock }} />
+    return <div className={codeBlock} dangerouslySetInnerHTML={{ __html: textBlock }} />
 }
 
 export default CodeBlock

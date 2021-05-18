@@ -1,9 +1,10 @@
 import React from 'react'
-import FontAwesome from 'react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 const LoadingScreen = () => (
     <div className="display-4">
-        <FontAwesome name="refresh" className="mr-4" spin />
+        <FontAwesomeIcon icon={faSpinner} spin className="mr-4" />
         Loading your project...
     </div>
 )

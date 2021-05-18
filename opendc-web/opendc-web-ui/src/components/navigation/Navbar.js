@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import Image from 'next/image'
 import {
     Navbar as RNavbar,
     NavItem as RNavItem,
@@ -10,11 +12,13 @@ import {
     Nav,
     Container,
 } from 'reactstrap'
-import { userIsLoggedIn } from '../../auth/index'
 import Login from '../../containers/auth/Login'
 import Logout from '../../containers/auth/Logout'
 import ProfileName from '../../containers/auth/ProfileName'
-import './Navbar.sass'
+import { login, navbar, opendcBrand } from './Navbar.module.scss'
+import { useAuth } from '../../auth'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faGithub } from '@fortawesome/free-brands-svg-icons'
 
 export const NAVBAR_HEIGHT = 60
 
@@ -24,30 +28,41 @@ const GitHubLink = () => (
         className="ml-2 mr-3 text-dark"
         style={{ position: 'relative', top: 7 }}
     >
-        <span className="fa fa-github fa-2x" />
+        <FontAwesomeIcon icon={faGithub} size="2x" />
     </a>
 )
 
 export const NavItem = ({ route, children }) => {
-    const location = useLocation()
-    return <RNavItem active={location.pathname === route}>{children}</RNavItem>
+    const router = useRouter()
+    const handleClick = (e) => {
+        e.preventDefault()
+        router.push(route)
+    }
+    return (
+        <RNavItem onClick={handleClick} active={router.asPath === route}>
+            {children}
+        </RNavItem>
+    )
 }
 
 export const LoggedInSection = () => {
-    const location = useLocation()
+    const router = useRouter()
+    const { isAuthenticated } = useAuth()
     return (
         <Nav navbar className="auth-links">
-            {userIsLoggedIn() ? (
+            {isAuthenticated ? (
                 [
-                    location.pathname === '/' ? (
+                    router.asPath === '/' ? (
                         <NavItem route="/projects" key="projects">
-                            <NavLink tag={Link} title="My Projects" to="/projects">
-                                My Projects
-                            </NavLink>
+                            <Link href="/projects">
+                                <NavLink title="My Projects" to="/projects">
+                                    My Projects
+                                </NavLink>
+                            </Link>
                         </NavItem>
                     ) : (
-                        <NavItem route="/profile" key="profile">
-                            <NavLink tag={Link} title="My Profile" to="/profile">
+                        <NavItem key="profile">
+                            <NavLink title="My Profile">
                                 <ProfileName />
                             </NavLink>
                         </NavItem>
@@ -57,10 +72,10 @@ export const LoggedInSection = () => {
                     </NavItem>,
                 ]
             ) : (
-                <NavItem route="login">
+                <RNavItem>
                     <GitHubLink />
-                    <Login visible={true} />
-                </NavItem>
+                    <Login visible={true} className={login} />
+                </RNavItem>
             )}
         </Nav>
     )
@@ -71,11 +86,13 @@ const Navbar = ({ fullWidth, children }) => {
     const toggle = () => setIsOpen(!isOpen)
 
     return (
-        <RNavbar fixed="top" color="light" light expand="lg" id="navbar">
+        <RNavbar fixed="top" color="light" light expand="lg" id="navbar" className={navbar}>
             <Container fluid={fullWidth}>
                 <NavbarToggler onClick={toggle} />
-                <NavbarBrand tag={Link} to="/" title="OpenDC" className="opendc-brand">
-                    <img src="/img/logo.png" alt="OpenDC" />
+                <NavbarBrand href="/" title="OpenDC" className={opendcBrand}>
+                    <div className="mb-n1">
+                        <Image src="/img/logo.png" layout="fixed" width={30} height={30} alt="OpenDC" />
+                    </div>
                 </NavbarBrand>
 
                 <Collapse isOpen={isOpen} navbar>

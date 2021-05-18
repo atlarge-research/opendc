@@ -1,11 +1,12 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { zoomInOnCenter } from '../../../../actions/map'
+import { useDispatch } from 'react-redux'
+import { zoomInOnCenter } from '../../../../redux/actions/map'
 import ZoomControlComponent from '../../../../components/app/map/controls/ZoomControlComponent'
+import { useMapScale } from '../../../../data/map'
 
 const ZoomControlContainer = () => {
     const dispatch = useDispatch()
-    const scale = useSelector((state) => state.map.scale)
+    const scale = useMapScale()
     return <ZoomControlComponent mapScale={scale} zoomInOnCenter={(zoomIn) => dispatch(zoomInOnCenter(zoomIn))} />
 }
 

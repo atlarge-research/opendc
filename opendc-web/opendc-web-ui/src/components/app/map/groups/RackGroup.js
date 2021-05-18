@@ -2,7 +2,7 @@ import React from 'react'
 import { Group } from 'react-konva'
 import RackEnergyFillContainer from '../../../../containers/app/map/RackEnergyFillContainer'
 import RackSpaceFillContainer from '../../../../containers/app/map/RackSpaceFillContainer'
-import Shapes from '../../../../shapes/index'
+import { Tile } from '../../../../shapes'
 import { RACK_BACKGROUND_COLOR } from '../../../../util/colors'
 import TileObject from '../elements/TileObject'
 
@@ -19,7 +19,7 @@ const RackGroup = ({ tile }) => {
 }
 
 RackGroup.propTypes = {
-    tile: Shapes.Tile,
+    tile: Tile,
 }
 
 export default RackGroup

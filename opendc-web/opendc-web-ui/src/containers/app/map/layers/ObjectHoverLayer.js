@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { addRackToTile } from '../../../../actions/topology/room'
+import { addRackToTile } from '../../../../redux/actions/topology/room'
 import ObjectHoverLayerComponent from '../../../../components/app/map/layers/ObjectHoverLayerComponent'
 import { findTileWithPosition } from '../../../../util/tile-calculations'
 

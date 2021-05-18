@@ -1,6 +1,6 @@
 import React from 'react'
 import { Rect } from 'react-konva'
-import Shapes from '../../../../shapes/index'
+import { Tile } from '../../../../shapes'
 import { TILE_SIZE_IN_PIXELS } from '../MapConstants'
 
 const RoomTile = ({ tile, color }) => (
@@ -14,7 +14,7 @@ const RoomTile = ({ tile, color }) => (
 )
 
 RoomTile.propTypes = {
-    tile: Shapes.Tile,
+    tile: Tile,
 }
 
 export default RoomTile

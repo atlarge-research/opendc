@@ -1,13 +1,14 @@
 import React from 'react'
 import ScreenshotSection from './ScreenshotSection'
 
-const ModelingSection = () => (
+const ModelingSection = ({ className }) => (
     <ScreenshotSection
         name="modeling"
         title="Datacenter Modeling"
         imageUrl="/img/screenshot-construction.png"
         caption="Building a datacenter in OpenDC"
         imageIsRight={true}
+        className={className}
     >
         <h3>Collaboratively...</h3>
         <ul>

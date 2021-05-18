@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import FontAwesome from 'react-fontawesome'
-import { Link } from 'react-router-dom'
 import { NavLink } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 
 const LogoutButton = ({ onLogout }) => (
-    <NavLink tag={Link} className="logout" title="Sign out" to="#" onClick={onLogout}>
-        <FontAwesome name="power-off" size="lg" />
+    <NavLink className="logout" title="Sign out" onClick={onLogout}>
+        <FontAwesomeIcon icon={faSignOutAlt} size="lg" />
     </NavLink>
 )
 

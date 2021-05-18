@@ -1,10 +1,11 @@
 import React from 'react'
+import Image from 'next/image'
 import { Col, Row } from 'reactstrap'
 import ContentSection from './ContentSection'
 
-const SimulationSection = () => {
+const SimulationSection = ({ className }) => {
     return (
-        <ContentSection name="project" title="Datecenter Simulation">
+        <ContentSection name="project" title="Datecenter Simulation" className={className}>
             <Row>
                 <Col xl="5" lg="5" md="5" sm="2" className="text-left my-auto order-1">
                     <h3>Working with OpenDC:</h3>
@@ -18,9 +19,12 @@ const SimulationSection = () => {
                     </ul>
                 </Col>
                 <Col xl="7" lg="7" md="7" sm="12">
-                    <img
+                    <Image
                         src="/img/screenshot-simulation.png"
-                        className="col-12 screenshot"
+                        className="col-12"
+                        layout="intrinsic"
+                        width={635}
+                        height={419}
                         alt="Running an experiment in OpenDC"
                     />
                     <Row className="text-muted justify-content-center">Running an experiment in OpenDC</Row>
@@ -39,7 +43,14 @@ const SimulationSection = () => {
                 </Col>
 
                 <Col xl="7" lg="7" md="7" sm="12">
-                    <img src="/img/opendc-architecture.png" className="col-12 screenshot" alt="OpenDC's Architecture" />
+                    <Image
+                        src="/img/opendc-architecture.png"
+                        className="col-12"
+                        layout="intrinsic"
+                        width={635}
+                        height={232}
+                        alt="OpenDC's Architecture"
+                    />
                     <Row className="text-muted justify-content-center">OpenDC's Architecture</Row>
                 </Col>
             </Row>

@@ -1,13 +1,18 @@
 import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { ListGroupItem, Badge, Button } from 'reactstrap'
 
 const EmptySlotComponent = ({ position, onAdd }) => (
-    <li className="list-group-item d-flex justify-content-between align-items-center">
-        <span className="badge badge-default badge-info mr-1 disabled">{position}</span>
-        <button className="btn btn-outline-primary" onClick={onAdd}>
-            <span className="fa fa-plus mr-2" />
+    <ListGroupItem className="d-flex justify-content-between align-items-center">
+        <Badge color="info" className="mr-1">
+            {position}
+        </Badge>
+        <Button color="primary" outline onClick={onAdd}>
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
             Add machine
-        </button>
-    </li>
+        </Button>
+    </ListGroupItem>
 )
 
 export default EmptySlotComponent

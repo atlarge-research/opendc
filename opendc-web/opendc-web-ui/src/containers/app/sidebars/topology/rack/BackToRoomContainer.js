@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import { goDownOneInteractionLevel } from '../../../../../actions/interaction-level'
+import { goDownOneInteractionLevel } from '../../../../../redux/actions/interaction-level'
 import BackToRoomComponent from '../../../../../components/app/sidebars/topology/rack/BackToRoomComponent'
 
 const BackToRoomContainer = (props) => {

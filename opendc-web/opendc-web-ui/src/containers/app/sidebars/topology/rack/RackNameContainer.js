@@ -1,14 +1,33 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { openEditRackNameModal } from '../../../../../actions/modals/topology'
-import RackNameComponent from '../../../../../components/app/sidebars/topology/rack/RackNameComponent'
+import NameComponent from '../../../../../components/app/sidebars/topology/NameComponent'
+import TextInputModal from '../../../../../components/modals/TextInputModal'
+import { editRackName } from '../../../../../redux/actions/topology/rack'
 
-const RackNameContainer = (props) => {
+const RackNameContainer = () => {
+    const [isVisible, setVisible] = useState(false)
     const rackName = useSelector(
         (state) => state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].name
     )
     const dispatch = useDispatch()
-    return <RackNameComponent {...props} rackName={rackName} onEdit={() => dispatch(openEditRackNameModal())} />
+    const callback = (name) => {
+        if (name) {
+            dispatch(editRackName(name))
+        }
+        setVisible(false)
+    }
+    return (
+        <>
+            <NameComponent name={rackName} onEdit={() => setVisible(true)} />
+            <TextInputModal
+                title="Edit rack name"
+                label="Rack name"
+                show={isVisible}
+                initialValue={rackName}
+                callback={callback}
+            />
+        </>
+    )
 }
 
 export default RackNameContainer

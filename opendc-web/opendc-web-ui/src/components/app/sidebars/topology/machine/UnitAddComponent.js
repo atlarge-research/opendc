@@ -1,35 +1,34 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useRef } from 'react'
+import { Button, Form, FormGroup, Input } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 
-class UnitAddComponent extends React.Component {
-    static propTypes = {
-        units: PropTypes.array.isRequired,
-        onAdd: PropTypes.func.isRequired,
-    }
+function UnitAddComponent({ units, onAdd }) {
+    const unitSelect = useRef(null)
 
-    render() {
-        return (
-            <div className="form-inline">
-                <div className="form-group w-100">
-                    <select className="form-control w-70 mr-1" ref={(unitSelect) => (this.unitSelect = unitSelect)}>
-                        {this.props.units.map((unit) => (
-                            <option value={unit._id} key={unit._id}>
-                                {unit.name}
-                            </option>
-                        ))}
-                    </select>
-                    <button
-                        type="submit"
-                        className="btn btn-outline-primary"
-                        onClick={() => this.props.onAdd(this.unitSelect.value)}
-                    >
-                        <span className="fa fa-plus mr-2" />
-                        Add
-                    </button>
-                </div>
-            </div>
-        )
-    }
+    return (
+        <Form inline>
+            <FormGroup className="w-100">
+                <Input type="select" className="w-70 mr-1" innerRef={unitSelect}>
+                    {units.map((unit) => (
+                        <option value={unit._id} key={unit._id}>
+                            {unit.name}
+                        </option>
+                    ))}
+                </Input>
+                <Button color="primary" outline onClick={() => onAdd(unitSelect.current.value)}>
+                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                    Add
+                </Button>
+            </FormGroup>
+        </Form>
+    )
+}
+
+UnitAddComponent.propTypes = {
+    units: PropTypes.array.isRequired,
+    onAdd: PropTypes.func.isRequired,
 }
 
 export default UnitAddComponent

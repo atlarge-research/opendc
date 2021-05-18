@@ -1,2 +1,2 @@
-export const isCollapsible = (location) =>
-    location.pathname.indexOf('portfolios') === -1 && location.pathname.indexOf('scenarios') === -1
+export const isCollapsible = (router) =>
+    router.asPath.indexOf('portfolios') === -1 && router.asPath.indexOf('scenarios') === -1
