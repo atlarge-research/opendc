@@ -69,8 +69,6 @@ public class SwfTraceReader(
         var cores: Int
         var memory: Long
         var slicedWaitTime: Long
-        var flopsPerSecond: Long
-        var flopsPartialSlice: Long
         var runtimePartialSliceRemainder: Long
 
         BufferedReader(FileReader(file)).use { reader ->
@@ -121,9 +119,7 @@ public class SwfTraceReader(
 
                     // Insert run time slices
 
-                    flopsPerSecond = 4_000L * cores
                     runtimePartialSliceRemainder = runTime % sliceDuration
-                    flopsPartialSlice = flopsPerSecond * runtimePartialSliceRemainder
 
                     for (
                         tick in (submitTime + slicedWaitTime)

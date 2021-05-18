@@ -24,7 +24,6 @@ package org.opendc.utils
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.selects.select
 import java.time.Clock
 import java.util.*
@@ -145,9 +144,9 @@ public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clo
             queue.poll()
 
             if (queue.isNotEmpty()) {
-                channel.sendBlocking(peek.timestamp)
+                channel.trySend(peek.timestamp)
             } else {
-                channel.sendBlocking(null)
+                channel.trySend(null)
             }
         }
     }
@@ -212,7 +211,7 @@ public class TimerScheduler<T>(context: CoroutineContext, private val clock: Clo
                 // Check if we need to push the interruption forward
                 // Note that we check by timer reference
                 if (queue.peek() === timer) {
-                    channel.offer(timer.timestamp)
+                    channel.trySend(timer.timestamp)
                 }
 
                 timer

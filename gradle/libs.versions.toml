@@ -1,13 +1,13 @@
 [versions]
-junit-jupiter = "5.7.1"
-junit-platform = "1.7.1"
+junit-jupiter = "5.7.2"
+junit-platform = "1.7.2"
 slf4j = "1.7.30"
 log4j = "2.14.1"
-opentelemetry-main = "1.1.0"
-opentelemetry-metrics = "1.1.0-alpha"
+opentelemetry-main = "1.2.0"
+opentelemetry-metrics = "1.2.0-alpha"
 
 [libraries]
-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.4.3" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.5.0" }
 
 # Logging
 kotlin-logging = { module = "io.github.microutils:kotlin-logging", version = "2.0.6" }
@@ -30,7 +30,7 @@ junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", v
 mockk = { module = "io.mockk:mockk", version = "1.11.0" }
 
 # CLI
-clikt = { module = "com.github.ajalt.clikt:clikt", version = "3.1.0" }
+clikt = { module = "com.github.ajalt.clikt:clikt", version = "3.2.0" }
 progressbar = { module = "me.tongfei:progressbar", version = "0.9.0" }
 
 # Format
@@ -45,4 +45,4 @@ kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchm
 # Other
 mongodb = { module = "org.mongodb:mongodb-driver-sync", version = "4.2.3" }
 classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.105" }
-hadoop-client = { module = "org.apache.hadoop:hadoop-client", version = "3.2.1" }
+hadoop-client = { module = "org.apache.hadoop:hadoop-client", version = "3.3.0" }

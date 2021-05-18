@@ -52,6 +52,7 @@ public open class ParquetEventWriter<in T : Event>(
     /**
      * The writer to write the Parquet file.
      */
+    @Suppress("DEPRECATION")
     private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(path.absolutePath))
         .withSchema(schema)
         .withCompressionCodec(CompressionCodecName.SNAPPY)

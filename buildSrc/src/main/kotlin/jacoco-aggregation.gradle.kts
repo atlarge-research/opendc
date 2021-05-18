@@ -1,3 +1,5 @@
+import gradle.kotlin.dsl.accessors._a850a9ab866951e91ee43960bbc39582.jacoco
+
 /*
  * MIT License
  *
@@ -30,6 +32,11 @@ plugins {
 repositories {
     mavenLocal()
     mavenCentral()
+}
+
+jacoco {
+    // Necessary for Kotlin 1.5.0. See https://github.com/jacoco/jacoco/issues/1155
+    toolVersion = "0.8.7"
 }
 
 tasks.register<JacocoReport>("codeCoverageReport") {

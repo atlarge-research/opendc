@@ -41,6 +41,9 @@ dependencies {
     testImplementation(projects.opendcCompute.opendcComputeSimulator)
     testImplementation(projects.opendcFormat)
     testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testImplementation(libs.jackson.module.kotlin)
+    testImplementation(libs.jackson.module.kotlin) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
+    testImplementation(kotlin("reflect"))
     testRuntimeOnly(libs.log4j.slf4j)
 }
