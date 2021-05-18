@@ -60,7 +60,8 @@
         "precommit": "lint-staged",
         "dev": "next dev",
         "build": "next build",
-        "start": "next start"
+        "start": "next start",
+        "export": "next export -o build"
     },
     "browserslist": {
         "production": [

@@ -4,9 +4,9 @@ version: "3.8"
 services:
   frontend:
     ports:
-      - "8080:80"
+      - "8080:3000"
     environment:
-      REACT_APP_API_BASE_URL: http://localhost:8081
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8081
 
   api:
     ports:
