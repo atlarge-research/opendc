@@ -25,7 +25,10 @@ package org.opendc.simulator.resources
 /**
  * A [SimResourceAggregator] that distributes the load equally across the input resources.
  */
-public class SimResourceAggregatorMaxMin(scheduler: SimResourceScheduler) : SimAbstractResourceAggregator(scheduler) {
+public class SimResourceAggregatorMaxMin(
+    interpreter: SimResourceInterpreter,
+    parent: SimResourceSystem? = null
+) : SimAbstractResourceAggregator(interpreter, parent) {
     private val consumers = mutableListOf<Input>()
 
     override fun doConsume(work: Double, limit: Double, deadline: Long) {

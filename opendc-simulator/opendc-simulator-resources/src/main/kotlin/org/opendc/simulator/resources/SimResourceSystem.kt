@@ -23,15 +23,21 @@
 package org.opendc.simulator.resources
 
 /**
- * An interface used by the [SimResourceScheduler] to flush the progress of resource consumer.
+ * A system of possible multiple sub-resources.
+ *
+ * This interface is used to model hierarchies of resource providers, which can listen efficiently to changes of the
+ * resource provider.
  */
-public interface SimResourceFlushable {
+public interface SimResourceSystem {
     /**
-     * Flush the current active resource consumption.
-     *
-     * @param isIntermediate A flag to indicate that the intermediate progress of the resource consumer should be
-     * flushed, but without interrupting the resource consumer to submit a new command. If false, the resource consumer
-     * will be asked to deliver a new command and is essentially interrupted.
+     * The parent system to which this system belongs or `null` if it has no parent.
      */
-    public fun flush(isIntermediate: Boolean)
+    public val parent: SimResourceSystem?
+
+    /**
+     * This method is invoked when the system has converged to a steady-state.
+     *
+     * @param timestamp The timestamp at which the system converged.
+     */
+    public fun onConverge(timestamp: Long)
 }

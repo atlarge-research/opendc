@@ -23,26 +23,42 @@
 package org.opendc.simulator.resources
 
 /**
- * A [SimResourceAggregator] aggregates the capacity of multiple resources into a single resource.
+ * A controllable [SimResourceContext].
+ *
+ * This interface is used by resource providers to control the resource context.
  */
-public interface SimResourceAggregator : AutoCloseable {
+public interface SimResourceControllableContext : SimResourceContext, AutoCloseable {
     /**
-     * The output resource provider to which resource consumers can be attached.
+     * The state of the resource context.
      */
-    public val output: SimResourceProvider
+    public val state: SimResourceState
 
     /**
-     * The input resources that will be switched between the output providers.
+     * The capacity of the resource.
      */
-    public val inputs: Set<SimResourceProvider>
+    public override var capacity: Double
 
     /**
-     * Add the specified [input] to the aggregator.
+     * Start the resource context.
      */
-    public fun addInput(input: SimResourceProvider)
+    public fun start()
 
     /**
-     * End the lifecycle of the aggregator.
+     * Stop the resource context.
      */
     public override fun close()
+
+    /**
+     * Invalidate the resource context's state.
+     *
+     * By invalidating the resource context's current state, the state is re-computed and the current progress is
+     * materialized during the next interpreter cycle. As a result, this call run asynchronously. See [flush] for the
+     * synchronous variant.
+     */
+    public fun invalidate()
+
+    /**
+     * Synchronously flush the progress of the resource context and materialize its current progress.
+     */
+    public fun flush()
 }

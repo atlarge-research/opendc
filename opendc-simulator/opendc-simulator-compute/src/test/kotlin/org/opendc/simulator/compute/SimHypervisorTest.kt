@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
 import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -39,7 +40,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceSchedulerTrampoline
+import org.opendc.simulator.resources.SimResourceInterpreter
 
 /**
  * Test suite for the [SimHypervisor] class.
@@ -93,8 +94,9 @@ internal class SimHypervisorTest {
                 ),
             )
 
-        val machine = SimBareMetalMachine(coroutineContext, clock, model, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(SimResourceSchedulerTrampoline(coroutineContext, clock), listener)
+        val platform = SimResourceInterpreter(coroutineContext, clock)
+        val machine = SimBareMetalMachine(platform, model, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimFairShareHypervisor(platform, listener)
 
         launch {
             machine.run(hypervisor)
@@ -164,11 +166,12 @@ internal class SimHypervisorTest {
                 )
             )
 
+        val platform = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            coroutineContext, clock, model, PerformanceScalingGovernor(),
+            platform, model, PerformanceScalingGovernor(),
             SimpleScalingDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(SimResourceSchedulerTrampoline(coroutineContext, clock), listener)
+        val hypervisor = SimFairShareHypervisor(platform, listener)
 
         launch {
             machine.run(hypervisor)
@@ -190,10 +193,34 @@ internal class SimHypervisorTest {
         yield()
 
         assertAll(
-            { assertEquals(2082000, listener.totalRequestedWork, "Requested Burst does not match") },
-            { assertEquals(1062000, listener.totalGrantedWork, "Granted Burst does not match") },
+            { assertEquals(2073600, listener.totalRequestedWork, "Requested Burst does not match") },
+            { assertEquals(1053600, listener.totalGrantedWork, "Granted Burst does not match") },
             { assertEquals(1020000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
             { assertEquals(1200000, clock.millis()) }
         )
+    }
+
+    @Test
+    fun testMultipleCPUs() = runBlockingSimulation {
+        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
+        val model = SimMachineModel(
+            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+        )
+
+        val platform = SimResourceInterpreter(coroutineContext, clock)
+        val machine = SimBareMetalMachine(
+            platform, model, PerformanceScalingGovernor(),
+            SimpleScalingDriver(ConstantPowerModel(0.0))
+        )
+        val hypervisor = SimFairShareHypervisor(platform)
+
+        assertDoesNotThrow {
+            launch {
+                machine.run(hypervisor)
+            }
+        }
+
+        machine.close()
     }
 }

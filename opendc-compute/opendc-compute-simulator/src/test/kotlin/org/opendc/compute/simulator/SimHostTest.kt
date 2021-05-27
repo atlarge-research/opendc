@@ -124,9 +124,18 @@ internal class SimHostTest {
             object : MetricExporter {
                 override fun export(metrics: Collection<MetricData>): CompletableResultCode {
                     val metricsByName = metrics.associateBy { it.name }
-                    requestedWork += metricsByName.getValue("cpu.work.total").doubleSummaryData.points.first().sum.toLong()
-                    grantedWork += metricsByName.getValue("cpu.work.granted").doubleSummaryData.points.first().sum.toLong()
-                    overcommittedWork += metricsByName.getValue("cpu.work.overcommit").doubleSummaryData.points.first().sum.toLong()
+                    val totalWork = metricsByName["cpu.work.total"]
+                    if (totalWork != null) {
+                        requestedWork += totalWork.doubleSummaryData.points.first().sum.toLong()
+                    }
+                    val grantedWorkCycle = metricsByName["cpu.work.granted"]
+                    if (grantedWorkCycle != null) {
+                        grantedWork += grantedWorkCycle.doubleSummaryData.points.first().sum.toLong()
+                    }
+                    val overcommittedWorkCycle = metricsByName["cpu.work.overcommit"]
+                    if (overcommittedWorkCycle != null) {
+                        overcommittedWork += overcommittedWorkCycle.doubleSummaryData.points.first().sum.toLong()
+                    }
                     return CompletableResultCode.ofSuccess()
                 }
 
@@ -160,8 +169,8 @@ internal class SimHostTest {
         reader.close()
 
         assertAll(
-            { assertEquals(4197600, requestedWork, "Requested work does not match") },
-            { assertEquals(2157600, grantedWork, "Granted work does not match") },
+            { assertEquals(4147200, requestedWork, "Requested work does not match") },
+            { assertEquals(2107200, grantedWork, "Granted work does not match") },
             { assertEquals(2040000, overcommittedWork, "Overcommitted work does not match") },
             { assertEquals(1500001, clock.millis()) }
         )

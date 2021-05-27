@@ -22,14 +22,13 @@
 
 package org.opendc.simulator.resources
 
-import kotlinx.coroutines.*
-
 /**
  * A [SimResourceSwitch] implementation that switches resource consumptions over the available resources using max-min
  * fair sharing.
  */
 public class SimResourceSwitchMaxMin(
-    scheduler: SimResourceScheduler,
+    interpreter: SimResourceInterpreter,
+    parent: SimResourceSystem? = null,
     private val listener: Listener? = null
 ) : SimResourceSwitch {
     private val _outputs = mutableSetOf<SimResourceProvider>()
@@ -48,13 +47,13 @@ public class SimResourceSwitchMaxMin(
     /**
      * The aggregator to aggregate the resources.
      */
-    private val aggregator = SimResourceAggregatorMaxMin(scheduler)
+    private val aggregator = SimResourceAggregatorMaxMin(interpreter, parent)
 
     /**
      * The distributor to distribute the aggregated resources.
      */
     private val distributor = SimResourceDistributorMaxMin(
-        aggregator.output, scheduler,
+        aggregator.output, interpreter, parent,
         object : SimResourceDistributorMaxMin.Listener {
             override fun onSliceFinish(
                 switch: SimResourceDistributor,
@@ -71,7 +70,7 @@ public class SimResourceSwitchMaxMin(
     )
 
     /**
-     * Add an output to the switch represented by [resource].
+     * Add an output to the switch with the specified [capacity].
      */
     override fun addOutput(capacity: Double): SimResourceProvider {
         check(!isClosed) { "Switch has been closed" }

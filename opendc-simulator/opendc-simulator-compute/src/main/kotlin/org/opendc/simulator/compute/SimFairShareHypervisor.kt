@@ -23,7 +23,9 @@
 package org.opendc.simulator.compute
 
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.*
+import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSwitch
+import org.opendc.simulator.resources.SimResourceSwitchMaxMin
 
 /**
  * A [SimHypervisor] that distributes the computing requirements of multiple [SimWorkload] on a single
@@ -31,13 +33,13 @@ import org.opendc.simulator.resources.*
  *
  * @param listener The hypervisor listener to use.
  */
-public class SimFairShareHypervisor(private val scheduler: SimResourceScheduler, private val listener: SimHypervisor.Listener? = null) : SimAbstractHypervisor() {
+public class SimFairShareHypervisor(private val interpreter: SimResourceInterpreter, private val listener: SimHypervisor.Listener? = null) : SimAbstractHypervisor(interpreter) {
 
     override fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean = true
 
     override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch {
         return SimResourceSwitchMaxMin(
-            scheduler,
+            interpreter, null,
             object : SimResourceSwitchMaxMin.Listener {
                 override fun onSliceFinish(
                     switch: SimResourceSwitchMaxMin,

@@ -25,7 +25,10 @@ package org.opendc.simulator.resources
 /**
  * Abstract implementation of [SimResourceAggregator].
  */
-public abstract class SimAbstractResourceAggregator(private val scheduler: SimResourceScheduler) : SimResourceAggregator {
+public abstract class SimAbstractResourceAggregator(
+    interpreter: SimResourceInterpreter,
+    parent: SimResourceSystem?
+) : SimResourceAggregator {
     /**
      * This method is invoked when the resource consumer consumes resources.
      */
@@ -75,29 +78,29 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
 
     protected val outputContext: SimResourceContext
         get() = context
-    private val context = object : SimAbstractResourceContext(0.0, scheduler, _output) {
-        override val remainingWork: Double
-            get() {
-                val now = clock.millis()
-
-                return if (_remainingWorkFlush < now) {
-                    _remainingWorkFlush = now
-                    _inputConsumers.sumOf { it._ctx?.remainingWork ?: 0.0 }.also { _remainingWork = it }
-                } else {
-                    _remainingWork
-                }
+    private val context = interpreter.newContext(
+        _output,
+        object : SimResourceProviderLogic {
+            override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
+                doIdle(deadline)
+                return Long.MAX_VALUE
             }
-        private var _remainingWork: Double = 0.0
-        private var _remainingWorkFlush: Long = Long.MIN_VALUE
 
-        override fun onConsume(work: Double, limit: Double, deadline: Long) = doConsume(work, limit, deadline)
+            override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
+                doConsume(work, limit, deadline)
+                return Long.MAX_VALUE
+            }
 
-        override fun onIdle(deadline: Long) = doIdle(deadline)
+            override fun onFinish(ctx: SimResourceControllableContext) {
+                doFinish(null)
+            }
 
-        override fun onFinish() {
-            doFinish(null)
-        }
-    }
+            override fun getRemainingWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
+                return _inputConsumers.sumOf { it.remainingWork }
+            }
+        },
+        parent
+    )
 
     /**
      * An input for the resource aggregator.
@@ -123,7 +126,13 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
          */
         override val ctx: SimResourceContext
             get() = _ctx!!
-        var _ctx: SimResourceContext? = null
+        private var _ctx: SimResourceContext? = null
+
+        /**
+         * The remaining work of the consumer.
+         */
+        val remainingWork: Double
+            get() = _ctx?.remainingWork ?: 0.0
 
         /**
          * The resource command to run next.
@@ -149,7 +158,8 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
                 this.command = null
                 next
             } else {
-                context.flush(isIntermediate = true)
+                context.flush()
+
                 next = command
                 this.command = null
                 next ?: SimResourceCommand.Idle()

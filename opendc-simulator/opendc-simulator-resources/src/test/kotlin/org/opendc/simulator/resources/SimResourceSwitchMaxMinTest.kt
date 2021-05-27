@@ -32,6 +32,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
+import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
  * Test suite for the [SimResourceSwitch] implementations
@@ -40,7 +41,7 @@ import org.opendc.simulator.resources.consumer.SimTraceConsumer
 internal class SimResourceSwitchMaxMinTest {
     @Test
     fun testSmoke() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val switch = SimResourceSwitchMaxMin(scheduler)
 
         val sources = List(2) { SimResourceSource(2000.0, scheduler) }
@@ -64,7 +65,7 @@ internal class SimResourceSwitchMaxMinTest {
      */
     @Test
     fun testOvercommittedSingle() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val listener = object : SimResourceSwitchMaxMin.Listener {
             var totalRequestedWork = 0L
@@ -97,7 +98,7 @@ internal class SimResourceSwitchMaxMinTest {
                 ),
             )
 
-        val switch = SimResourceSwitchMaxMin(scheduler, listener)
+        val switch = SimResourceSwitchMaxMin(scheduler, null, listener)
         val provider = switch.addOutput(3200.0)
 
         try {
@@ -121,7 +122,7 @@ internal class SimResourceSwitchMaxMinTest {
      */
     @Test
     fun testOvercommittedDual() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val listener = object : SimResourceSwitchMaxMin.Listener {
             var totalRequestedWork = 0L
@@ -163,7 +164,7 @@ internal class SimResourceSwitchMaxMinTest {
                 )
             )
 
-        val switch = SimResourceSwitchMaxMin(scheduler, listener)
+        val switch = SimResourceSwitchMaxMin(scheduler, null, listener)
         val providerA = switch.addOutput(3200.0)
         val providerB = switch.addOutput(3200.0)
 
@@ -180,8 +181,8 @@ internal class SimResourceSwitchMaxMinTest {
             switch.close()
         }
         assertAll(
-            { assertEquals(2082000, listener.totalRequestedWork, "Requested Burst does not match") },
-            { assertEquals(1062000, listener.totalGrantedWork, "Granted Burst does not match") },
+            { assertEquals(2073600, listener.totalRequestedWork, "Requested Burst does not match") },
+            { assertEquals(1053600, listener.totalGrantedWork, "Granted Burst does not match") },
             { assertEquals(1020000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
             { assertEquals(1200000, clock.millis()) }
         )

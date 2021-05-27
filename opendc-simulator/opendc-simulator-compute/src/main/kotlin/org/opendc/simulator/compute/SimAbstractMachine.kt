@@ -27,15 +27,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSystem
+import org.opendc.simulator.resources.batch
 import org.opendc.simulator.resources.consume
-import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import java.time.Clock
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Abstract implementation of the [SimMachine] interface.
+ *
+ * @param interpreter The interpreter to manage the machine's resources.
  */
-public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine {
+public abstract class SimAbstractMachine(protected val interpreter: SimResourceInterpreter) : SimMachine, SimResourceSystem {
     private val _usage = MutableStateFlow(0.0)
     override val usage: StateFlow<Double>
         get() = _usage
@@ -53,11 +56,6 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     private var isTerminated = false
 
     /**
-     * The [CoroutineContext] to run in.
-     */
-    protected abstract val context: CoroutineContext
-
-    /**
      * The resources allocated for this machine.
      */
     protected abstract val cpus: List<SimProcessingUnit>
@@ -67,7 +65,7 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
      */
     private inner class Context(override val meta: Map<String, Any>) : SimMachineContext {
         override val clock: Clock
-            get() = this@SimAbstractMachine.clock
+            get() = interpreter.clock
 
         override val cpus: List<SimProcessingUnit> = this@SimAbstractMachine.cpus
 
@@ -77,38 +75,35 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     /**
      * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
      */
-    override suspend fun run(workload: SimWorkload, meta: Map<String, Any>): Unit = withContext(context) {
-        require(!isTerminated) { "Machine is terminated" }
+    override suspend fun run(workload: SimWorkload, meta: Map<String, Any>): Unit = coroutineScope {
+        check(!isTerminated) { "Machine is terminated" }
         val ctx = Context(meta)
-        val totalCapacity = model.cpus.sumOf { it.frequency }
-
-        _speed = DoubleArray(model.cpus.size) { 0.0 }
-        var totalSpeed = 0.0
 
         // Before the workload starts, initialize the initial power draw
+        _speed = DoubleArray(model.cpus.size) { 0.0 }
         updateUsage(0.0)
 
-        workload.onStart(ctx)
+        interpreter.batch {
+            workload.onStart(ctx)
 
-        for (cpu in cpus) {
-            val model = cpu.model
-            val consumer = workload.getConsumer(ctx, model)
-            val adapter = SimSpeedConsumerAdapter(consumer) { newSpeed ->
-                val _speed = _speed
-                val _usage = _usage
-
-                val oldSpeed = _speed[model.id]
-                _speed[model.id] = newSpeed
-                totalSpeed = totalSpeed - oldSpeed + newSpeed
-
-                val newUsage = totalSpeed / totalCapacity
-                if (_usage.value != newUsage) {
-                    updateUsage(totalSpeed / totalCapacity)
-                }
+            for (cpu in cpus) {
+                val model = cpu.model
+                val consumer = workload.getConsumer(ctx, model)
+                launch { cpu.consume(consumer) }
             }
-
-            launch { cpu.consume(adapter) }
         }
+    }
+
+    override fun onConverge(timestamp: Long) {
+        val totalCapacity = model.cpus.sumOf { it.frequency }
+        val cpus = cpus
+        var totalSpeed = 0.0
+        for (cpu in cpus) {
+            _speed[cpu.model.id] = cpu.speed
+            totalSpeed += cpu.speed
+        }
+
+        updateUsage(totalSpeed / totalCapacity)
     }
 
     /**
@@ -119,9 +114,11 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     }
 
     override fun close() {
-        if (!isTerminated) {
-            isTerminated = true
-            cpus.forEach(SimProcessingUnit::close)
+        if (isTerminated) {
+            return
         }
+
+        isTerminated = true
+        cpus.forEach(SimProcessingUnit::close)
     }
 }

@@ -31,12 +31,13 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
+import org.opendc.simulator.resources.SimResourceSwitch
 import java.time.Clock
 
 /**
  * Abstract implementation of the [SimHypervisor] interface.
  */
-public abstract class SimAbstractHypervisor : SimHypervisor {
+public abstract class SimAbstractHypervisor(private val interpreter: SimResourceInterpreter) : SimHypervisor {
     /**
      * The machine on which the hypervisor runs.
      */
@@ -122,11 +123,13 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
                     override val meta: Map<String, Any> = meta
                 }
 
-                workload.onStart(ctx)
+                interpreter.batch {
+                    workload.onStart(ctx)
 
-                for (cpu in cpus) {
-                    launch {
-                        cpu.consume(workload.getConsumer(ctx, cpu.model))
+                    for (cpu in cpus) {
+                        launch {
+                            cpu.consume(workload.getConsumer(ctx, cpu.model))
+                        }
                     }
                 }
             }

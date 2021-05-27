@@ -41,6 +41,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.failures.FailureDomain
+import org.opendc.simulator.resources.SimResourceInterpreter
 import java.time.Clock
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -94,18 +95,23 @@ public class SimHost(
     /**
      * Current total memory use of the images on this hypervisor.
      */
-    private var availableMemory: Long = model.memory.map { it.size }.sum()
+    private var availableMemory: Long = model.memory.sumOf { it.size }
+
+    /**
+     * The resource interpreter to schedule the resource interactions.
+     */
+    private val interpreter = SimResourceInterpreter(context, clock)
 
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, scalingGovernor, scalingDriver)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model, scalingGovernor, scalingDriver)
 
     /**
      * The hypervisor to run multiple workloads.
      */
     public val hypervisor: SimHypervisor = hypervisor.create(
-        scope.coroutineContext, clock,
+        interpreter,
         object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,

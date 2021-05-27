@@ -35,10 +35,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.SimResourceCommand
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceContext
-import org.opendc.simulator.resources.SimResourceEvent
+import org.opendc.simulator.resources.*
 import java.time.Clock
 import java.util.*
 import kotlin.coroutines.Continuation
@@ -67,7 +64,7 @@ public class SimTFDevice(
      * The [SimMachine] representing the device.
      */
     private val machine = SimBareMetalMachine(
-        scope.coroutineContext, clock, SimMachineModel(listOf(pu), listOf(memory)),
+        SimResourceInterpreter(scope.coroutineContext, clock), SimMachineModel(listOf(pu), listOf(memory)),
         PerformanceScalingGovernor(), SimpleScalingDriver(powerModel)
     )
 

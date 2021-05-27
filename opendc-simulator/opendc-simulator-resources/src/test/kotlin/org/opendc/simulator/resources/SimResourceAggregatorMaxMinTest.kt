@@ -33,6 +33,7 @@ import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
  * Test suite for the [SimResourceAggregatorMaxMin] class.
@@ -41,7 +42,7 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 internal class SimResourceAggregatorMaxMinTest {
     @Test
     fun testSingleCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val forwarder = SimResourceForwarder()
@@ -72,7 +73,7 @@ internal class SimResourceAggregatorMaxMinTest {
 
     @Test
     fun testDoubleCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -99,7 +100,7 @@ internal class SimResourceAggregatorMaxMinTest {
 
     @Test
     fun testOvercommit() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -126,7 +127,7 @@ internal class SimResourceAggregatorMaxMinTest {
 
     @Test
     fun testException() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -151,7 +152,7 @@ internal class SimResourceAggregatorMaxMinTest {
 
     @Test
     fun testAdjustCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -176,7 +177,7 @@ internal class SimResourceAggregatorMaxMinTest {
 
     @Test
     fun testFailOverCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(

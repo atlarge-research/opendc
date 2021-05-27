@@ -27,8 +27,7 @@ import org.opendc.simulator.compute.cpufreq.ScalingDriver
 import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.*
-import org.opendc.utils.TimerScheduler
-import java.time.Clock
+import org.opendc.simulator.resources.SimResourceInterpreter
 import kotlin.coroutines.*
 
 /**
@@ -43,24 +42,11 @@ import kotlin.coroutines.*
  */
 @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
 public class SimBareMetalMachine(
-    context: CoroutineContext,
-    private val clock: Clock,
+    platform: SimResourceInterpreter,
     override val model: SimMachineModel,
     scalingGovernor: ScalingGovernor,
     scalingDriver: ScalingDriver
-) : SimAbstractMachine(clock) {
-    /**
-     * The [Job] associated with this machine.
-     */
-    private val scope = CoroutineScope(context + Job())
-
-    override val context: CoroutineContext = scope.coroutineContext
-
-    /**
-     * The [TimerScheduler] to use for scheduling the interrupts.
-     */
-    private val scheduler = SimResourceSchedulerTrampoline(this.context, clock)
-
+) : SimAbstractMachine(platform) {
     override val cpus: List<SimProcessingUnit> = model.cpus.map { ProcessingUnitImpl(it) }
 
     /**
@@ -74,6 +60,8 @@ public class SimBareMetalMachine(
     private val scalingGovernors = cpus.map { cpu ->
         scalingGovernor.createLogic(this.scalingDriver.createContext(cpu))
     }
+
+    override val parent: SimResourceSystem? = null
 
     init {
         scalingGovernors.forEach { it.onStart() }
@@ -92,12 +80,6 @@ public class SimBareMetalMachine(
         powerDraw = scalingDriver.computePower()
     }
 
-    override fun close() {
-        super.close()
-
-        scope.cancel()
-    }
-
     /**
      * The [SimProcessingUnit] of this machine.
      */
@@ -105,7 +87,7 @@ public class SimBareMetalMachine(
         /**
          * The actual resource supporting the processing unit.
          */
-        private val source = SimResourceSource(model.frequency, scheduler)
+        private val source = SimResourceSource(model.frequency, interpreter, this@SimBareMetalMachine)
 
         override val speed: Double
             get() = source.speed
@@ -126,7 +108,7 @@ public class SimBareMetalMachine(
         }
 
         override fun close() {
-            source.interrupt()
+            source.close()
         }
     }
 }

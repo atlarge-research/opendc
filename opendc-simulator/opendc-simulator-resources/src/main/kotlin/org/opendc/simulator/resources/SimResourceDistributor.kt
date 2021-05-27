@@ -37,7 +37,7 @@ public interface SimResourceDistributor : AutoCloseable {
     public val input: SimResourceProvider
 
     /**
-     * Add an output to the switch with the specified [capacity].
+     * Create a new output for the distributor with the specified [capacity].
      */
     public fun addOutput(capacity: Double): SimResourceProvider
 }

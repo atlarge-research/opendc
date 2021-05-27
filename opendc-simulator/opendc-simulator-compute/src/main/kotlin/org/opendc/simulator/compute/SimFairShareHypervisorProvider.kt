@@ -22,9 +22,7 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.resources.SimResourceSchedulerTrampoline
-import java.time.Clock
-import kotlin.coroutines.CoroutineContext
+import org.opendc.simulator.resources.SimResourceInterpreter
 
 /**
  * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
@@ -32,7 +30,7 @@ import kotlin.coroutines.CoroutineContext
 public class SimFairShareHypervisorProvider : SimHypervisorProvider {
     override val id: String = "fair-share"
 
-    override fun create(context: CoroutineContext, clock: Clock, listener: SimHypervisor.Listener?): SimHypervisor {
-        return SimFairShareHypervisor(SimResourceSchedulerTrampoline(context, clock), listener)
+    override fun create(interpreter: SimResourceInterpreter, listener: SimHypervisor.Listener?): SimHypervisor {
+        return SimFairShareHypervisor(interpreter, listener)
     }
 }

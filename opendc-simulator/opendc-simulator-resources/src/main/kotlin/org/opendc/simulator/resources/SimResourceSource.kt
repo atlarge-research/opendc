@@ -26,15 +26,17 @@ import kotlin.math.ceil
 import kotlin.math.min
 
 /**
- * A [SimResourceSource] represents a source for some resource of type [R] that provides bounded processing capacity.
+ * A [SimResourceSource] represents a source for some resource that provides bounded processing capacity.
  *
  * @param initialCapacity The initial capacity of the resource.
- * @param scheduler The scheduler to schedule the interrupts.
+ * @param interpreter The interpreter that is used for managing the resource contexts.
+ * @param parent The parent resource system.
  */
 public class SimResourceSource(
     initialCapacity: Double,
-    private val scheduler: SimResourceScheduler
-) : SimResourceProvider {
+    private val interpreter: SimResourceInterpreter,
+    private val parent: SimResourceSystem? = null
+) : SimAbstractResourceProvider(interpreter, parent, initialCapacity) {
     /**
      * The current processing speed of the resource.
      */
@@ -44,79 +46,29 @@ public class SimResourceSource(
     /**
      * The capacity of the resource.
      */
-    public var capacity: Double = initialCapacity
+    public override var capacity: Double = initialCapacity
         set(value) {
             field = value
             ctx?.capacity = value
         }
 
-    /**
-     * The [Context] that is currently running.
-     */
-    private var ctx: Context? = null
+    override fun createLogic(): SimResourceProviderLogic {
+        return object : SimResourceProviderLogic {
+            override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
+                return deadline
+            }
 
-    override var state: SimResourceState = SimResourceState.Pending
-        private set
+            override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
+                return min(deadline, ctx.clock.millis() + getDuration(work, speed))
+            }
 
-    override fun startConsumer(consumer: SimResourceConsumer) {
-        check(state == SimResourceState.Pending) { "Resource is in invalid state" }
-        val ctx = Context(consumer)
-
-        this.ctx = ctx
-        this.state = SimResourceState.Active
-
-        ctx.start()
-    }
-
-    override fun close() {
-        cancel()
-        state = SimResourceState.Stopped
-    }
-
-    override fun interrupt() {
-        ctx?.interrupt()
-    }
-
-    override fun cancel() {
-        val ctx = ctx
-        if (ctx != null) {
-            this.ctx = null
-            ctx.stop()
-        }
-
-        if (state != SimResourceState.Stopped) {
-            state = SimResourceState.Pending
-        }
-    }
-
-    /**
-     * Internal implementation of [SimResourceContext] for this class.
-     */
-    private inner class Context(consumer: SimResourceConsumer) : SimAbstractResourceContext(capacity, scheduler, consumer) {
-        override fun onIdle(deadline: Long) {
-            // Do not resume if deadline is "infinite"
-            if (deadline != Long.MAX_VALUE) {
-                scheduler.schedule(this, deadline)
+            override fun onFinish(ctx: SimResourceControllableContext) {
+                cancel()
             }
         }
-
-        override fun onConsume(work: Double, limit: Double, deadline: Long) {
-            val until = min(deadline, clock.millis() + getDuration(work, speed))
-            scheduler.schedule(this, until)
-        }
-
-        override fun onFinish() {
-            cancel()
-
-            ctx = null
-
-            if (this@SimResourceSource.state != SimResourceState.Stopped) {
-                this@SimResourceSource.state = SimResourceState.Pending
-            }
-        }
-
-        override fun toString(): String = "SimResourceSource.Context[capacity=$capacity]"
     }
+
+    override fun toString(): String = "SimResourceSource[capacity=$capacity]"
 
     /**
      * Compute the duration that a resource consumption will take with the specified [speed].

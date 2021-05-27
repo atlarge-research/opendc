@@ -22,8 +22,7 @@
 
 package org.opendc.simulator.compute
 
-import java.time.Clock
-import kotlin.coroutines.CoroutineContext
+import org.opendc.simulator.resources.SimResourceInterpreter
 
 /**
  * A service provider interface for constructing a [SimHypervisor].
@@ -40,5 +39,5 @@ public interface SimHypervisorProvider {
     /**
      * Create a [SimHypervisor] instance with the specified [listener].
      */
-    public fun create(context: CoroutineContext, clock: Clock, listener: SimHypervisor.Listener? = null): SimHypervisor
+    public fun create(interpreter: SimResourceInterpreter, listener: SimHypervisor.Listener? = null): SimHypervisor
 }

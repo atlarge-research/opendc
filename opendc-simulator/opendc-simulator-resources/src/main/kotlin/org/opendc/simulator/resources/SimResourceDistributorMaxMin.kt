@@ -30,17 +30,18 @@ import kotlin.math.min
  */
 public class SimResourceDistributorMaxMin(
     override val input: SimResourceProvider,
-    private val scheduler: SimResourceScheduler,
+    private val interpreter: SimResourceInterpreter,
+    private val parent: SimResourceSystem? = null,
     private val listener: Listener? = null
 ) : SimResourceDistributor {
     override val outputs: Set<SimResourceProvider>
         get() = _outputs
-    private val _outputs = mutableSetOf<OutputProvider>()
+    private val _outputs = mutableSetOf<Output>()
 
     /**
-     * The active output contexts.
+     * The active outputs.
      */
-    private val outputContexts: MutableList<OutputContext> = mutableListOf()
+    private val activeOutputs: MutableList<Output> = mutableListOf()
 
     /**
      * The total speed requested by the output resources.
@@ -71,6 +72,11 @@ public class SimResourceDistributorMaxMin(
      * The amount of work that was lost due to interference.
      */
     private var totalInterferedWork = 0.0
+
+    /**
+     * The timestamp of the last report.
+     */
+    private var lastReport: Long = Long.MIN_VALUE
 
     /**
      * A flag to indicate that the switch is closed.
@@ -121,10 +127,14 @@ public class SimResourceDistributorMaxMin(
     private val totalRemainingWork: Double
         get() = consumer.remainingWork
 
+    init {
+        input.startConsumer(consumer)
+    }
+
     override fun addOutput(capacity: Double): SimResourceProvider {
         check(!isClosed) { "Distributor has been closed" }
 
-        val provider = OutputProvider(capacity)
+        val provider = Output(capacity)
         _outputs.add(provider)
         return provider
     }
@@ -136,23 +146,12 @@ public class SimResourceDistributorMaxMin(
         }
     }
 
-    init {
-        input.startConsumer(consumer)
-    }
-
-    /**
-     * Indicate that the workloads should be re-scheduled.
-     */
-    private fun schedule() {
-        input.interrupt()
-    }
-
     /**
      * Schedule the work over the physical CPUs.
      */
     private fun doSchedule(capacity: Double): SimResourceCommand {
         // If there is no work yet, mark all inputs as idle.
-        if (outputContexts.isEmpty()) {
+        if (activeOutputs.isEmpty()) {
             return SimResourceCommand.Idle()
         }
 
@@ -164,25 +163,25 @@ public class SimResourceDistributorMaxMin(
         var totalRequestedWork = 0.0
 
         // Flush the work of the outputs
-        var outputIterator = outputContexts.listIterator()
+        var outputIterator = activeOutputs.listIterator()
         while (outputIterator.hasNext()) {
             val output = outputIterator.next()
 
-            output.flush(isIntermediate = true)
+            output.pull()
 
-            if (output.activeCommand == SimResourceCommand.Exit) {
-                // Apparently the output consumer has exited, so remove it from the scheduling queue.
+            if (output.isFinished) {
+                // The output consumer has exited, so remove it from the scheduling queue.
                 outputIterator.remove()
             }
         }
 
         // Sort the outputs based on their requested usage
         // Profiling shows that it is faster to sort every slice instead of maintaining some kind of sorted set
-        outputContexts.sort()
+        activeOutputs.sort()
 
         // Divide the available input capacity fairly across the outputs using max-min fair sharing
-        outputIterator = outputContexts.listIterator()
-        var remaining = outputContexts.size
+        outputIterator = activeOutputs.listIterator()
+        var remaining = activeOutputs.size
         while (outputIterator.hasNext()) {
             val output = outputIterator.next()
             val availableShare = availableSpeed / remaining--
@@ -219,12 +218,12 @@ public class SimResourceDistributorMaxMin(
             }
         }
 
-        assert(deadline >= scheduler.clock.millis()) { "Deadline already passed" }
+        assert(deadline >= interpreter.clock.millis()) { "Deadline already passed" }
 
         this.totalRequestedSpeed = totalRequestedSpeed
         this.totalRequestedWork = totalRequestedWork
         this.totalAllocatedSpeed = maxUsage - availableSpeed
-        this.totalAllocatedWork = min(totalRequestedWork, totalAllocatedSpeed * duration)
+        this.totalAllocatedWork = min(totalRequestedWork, totalAllocatedSpeed * min((deadline - interpreter.clock.millis()) / 1000.0, duration))
 
         return if (totalAllocatedWork > 0.0 && totalAllocatedSpeed > 0.0)
             SimResourceCommand.Consume(totalAllocatedWork, totalAllocatedSpeed, deadline)
@@ -237,24 +236,28 @@ public class SimResourceDistributorMaxMin(
      */
     private fun doNext(capacity: Double): SimResourceCommand {
         val totalRequestedWork = totalRequestedWork.toLong()
-        val totalRemainingWork = totalRemainingWork.toLong()
         val totalAllocatedWork = totalAllocatedWork.toLong()
+        val totalRemainingWork = totalRemainingWork.toLong()
         val totalRequestedSpeed = totalRequestedSpeed
         val totalAllocatedSpeed = totalAllocatedSpeed
 
         // Force all inputs to re-schedule their work.
         val command = doSchedule(capacity)
 
-        // Report metrics
-        listener?.onSliceFinish(
-            this,
-            totalRequestedWork,
-            totalAllocatedWork - totalRemainingWork,
-            totalOvercommittedWork.toLong(),
-            totalInterferedWork.toLong(),
-            totalAllocatedSpeed,
-            totalRequestedSpeed
-        )
+        val now = interpreter.clock.millis()
+        if (lastReport < now) {
+            // Report metrics
+            listener?.onSliceFinish(
+                this,
+                totalRequestedWork,
+                totalAllocatedWork - totalRemainingWork,
+                totalOvercommittedWork.toLong(),
+                totalInterferedWork.toLong(),
+                totalAllocatedSpeed,
+                totalRequestedSpeed
+            )
+            lastReport = now
+        }
 
         totalInterferedWork = 0.0
         totalOvercommittedWork = 0.0
@@ -283,62 +286,9 @@ public class SimResourceDistributorMaxMin(
     /**
      * An internal [SimResourceProvider] implementation for switch outputs.
      */
-    private inner class OutputProvider(val capacity: Double) : SimResourceProvider {
+    private inner class Output(capacity: Double) : SimAbstractResourceProvider(interpreter, parent, capacity), SimResourceProviderLogic, Comparable<Output> {
         /**
-         * The [OutputContext] that is currently running.
-         */
-        private var ctx: OutputContext? = null
-
-        override var state: SimResourceState = SimResourceState.Pending
-            internal set
-
-        override fun startConsumer(consumer: SimResourceConsumer) {
-            check(state == SimResourceState.Pending) { "Resource cannot be consumed" }
-
-            val ctx = OutputContext(this, consumer)
-            this.ctx = ctx
-            this.state = SimResourceState.Active
-            outputContexts += ctx
-
-            ctx.start()
-            schedule()
-        }
-
-        override fun close() {
-            cancel()
-
-            if (state != SimResourceState.Stopped) {
-                state = SimResourceState.Stopped
-                _outputs.remove(this)
-            }
-        }
-
-        override fun interrupt() {
-            ctx?.interrupt()
-        }
-
-        override fun cancel() {
-            val ctx = ctx
-            if (ctx != null) {
-                this.ctx = null
-                ctx.stop()
-            }
-
-            if (state != SimResourceState.Stopped) {
-                state = SimResourceState.Pending
-            }
-        }
-    }
-
-    /**
-     * A [SimAbstractResourceContext] for the output resources.
-     */
-    private inner class OutputContext(
-        private val provider: OutputProvider,
-        consumer: SimResourceConsumer
-    ) : SimAbstractResourceContext(provider.capacity, scheduler, consumer), Comparable<OutputContext> {
-        /**
-         * The current command that is processed by the vCPU.
+         * The current command that is processed by the resource.
          */
         var activeCommand: SimResourceCommand = SimResourceCommand.Idle()
 
@@ -352,33 +302,69 @@ public class SimResourceDistributorMaxMin(
          */
         var actualSpeed: Double = 0.0
 
-        private fun reportOvercommit() {
-            val remainingWork = remainingWork
-            totalOvercommittedWork += remainingWork
+        /**
+         * A flag to indicate that the output is finished.
+         */
+        val isFinished
+            get() = activeCommand is SimResourceCommand.Exit
+
+        /**
+         * The timestamp at which we received the last command.
+         */
+        private var lastCommandTimestamp: Long = Long.MIN_VALUE
+
+        /* SimAbstractResourceProvider */
+        override fun createLogic(): SimResourceProviderLogic = this
+
+        override fun start(ctx: SimResourceControllableContext) {
+            activeOutputs += this
+
+            interpreter.batch {
+                ctx.start()
+                // Interrupt the input to re-schedule the resources
+                input.interrupt()
+            }
         }
 
-        override fun onIdle(deadline: Long) {
-            reportOvercommit()
+        override fun close() {
+            val state = state
+
+            super.close()
+
+            if (state != SimResourceState.Stopped) {
+                _outputs.remove(this)
+            }
+        }
+
+        /* SimResourceProviderLogic */
+        override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
+            reportOvercommit(ctx.remainingWork)
 
             allowedSpeed = 0.0
             activeCommand = SimResourceCommand.Idle(deadline)
+            lastCommandTimestamp = ctx.clock.millis()
+
+            return Long.MAX_VALUE
         }
 
-        override fun onConsume(work: Double, limit: Double, deadline: Long) {
-            reportOvercommit()
+        override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
+            reportOvercommit(ctx.remainingWork)
 
-            allowedSpeed = speed
+            allowedSpeed = ctx.speed
             activeCommand = SimResourceCommand.Consume(work, limit, deadline)
+            lastCommandTimestamp = ctx.clock.millis()
+
+            return Long.MAX_VALUE
         }
 
-        override fun onFinish() {
-            reportOvercommit()
+        override fun onFinish(ctx: SimResourceControllableContext) {
+            reportOvercommit(ctx.remainingWork)
 
             activeCommand = SimResourceCommand.Exit
-            provider.cancel()
+            lastCommandTimestamp = ctx.clock.millis()
         }
 
-        override fun getRemainingWork(work: Double, speed: Double, duration: Long): Double {
+        override fun getRemainingWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
             // Apply performance interference model
             val performanceScore = 1.0
 
@@ -401,27 +387,21 @@ public class SimResourceDistributorMaxMin(
             }
         }
 
-        private var isProcessing: Boolean = false
+        /* Comparable */
+        override fun compareTo(other: Output): Int = allowedSpeed.compareTo(other.allowedSpeed)
 
-        override fun interrupt() {
-            // Prevent users from interrupting the CPU while it is constructing its next command, this will only lead
-            // to infinite recursion.
-            if (isProcessing) {
-                return
-            }
-
-            try {
-                isProcessing = false
-
-                super.interrupt()
-
-                // Force the scheduler to re-schedule
-                schedule()
-            } finally {
-                isProcessing = true
+        /**
+         * Pull the next command if necessary.
+         */
+        fun pull() {
+            val ctx = ctx
+            if (ctx != null && lastCommandTimestamp < ctx.clock.millis()) {
+                ctx.flush()
             }
         }
 
-        override fun compareTo(other: OutputContext): Int = allowedSpeed.compareTo(other.allowedSpeed)
+        private fun reportOvercommit(remainingWork: Double) {
+            totalOvercommittedWork += remainingWork
+        }
     }
 }
