@@ -20,8 +20,6 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     `kotlin-dsl`
 }
@@ -33,9 +31,9 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("gradle-plugin", version = "1.5.0"))
+    implementation(kotlin("gradle-plugin", version = "1.5.10"))
     implementation("org.jlleitschuh.gradle:ktlint-gradle:10.0.0")
-    implementation("org.jetbrains.kotlin:kotlin-allopen:1.4.31")
+    implementation("org.jetbrains.kotlin:kotlin-allopen:1.5.10")
     implementation("org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.3.0")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.4.32")
     implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0")
