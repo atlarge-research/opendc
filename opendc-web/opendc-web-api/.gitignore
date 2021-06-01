@@ -15,4 +15,5 @@ config.json
 test.json
 .env*
 .coverage
-.junit-report.xml
+coverage.xml
+junit-report.xml
