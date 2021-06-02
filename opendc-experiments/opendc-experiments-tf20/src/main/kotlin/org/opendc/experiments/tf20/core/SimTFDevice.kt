@@ -29,11 +29,10 @@ import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
 import java.time.Clock
@@ -65,7 +64,7 @@ public class SimTFDevice(
      */
     private val machine = SimBareMetalMachine(
         SimResourceInterpreter(scope.coroutineContext, clock), SimMachineModel(listOf(pu), listOf(memory)),
-        PerformanceScalingGovernor(), SimpleScalingDriver(powerModel)
+        SimplePowerDriver(powerModel)
     )
 
     /**

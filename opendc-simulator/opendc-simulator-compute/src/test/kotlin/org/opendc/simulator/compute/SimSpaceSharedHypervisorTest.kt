@@ -30,12 +30,11 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimTraceWorkload
@@ -79,8 +78,7 @@ internal class SimSpaceSharedHypervisorTest {
 
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock), machineModel, PerformanceScalingGovernor(),
-            SimpleScalingDriver(ConstantPowerModel(0.0))
+            SimResourceInterpreter(coroutineContext, clock), machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val hypervisor = SimSpaceSharedHypervisor(interpreter)
 
@@ -116,8 +114,7 @@ internal class SimSpaceSharedHypervisorTest {
         val workload = SimRuntimeWorkload(duration)
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter, machineModel, PerformanceScalingGovernor(),
-            SimpleScalingDriver(ConstantPowerModel(0.0))
+            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val hypervisor = SimSpaceSharedHypervisor(interpreter)
 
@@ -140,8 +137,7 @@ internal class SimSpaceSharedHypervisorTest {
         val workload = SimFlopsWorkload((duration * 3.2).toLong(), 1.0)
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter, machineModel, PerformanceScalingGovernor(),
-            SimpleScalingDriver(ConstantPowerModel(0.0))
+            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val hypervisor = SimSpaceSharedHypervisor(interpreter)
 
@@ -162,8 +158,7 @@ internal class SimSpaceSharedHypervisorTest {
         val duration = 5 * 60L * 1000
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter, machineModel, PerformanceScalingGovernor(),
-            SimpleScalingDriver(ConstantPowerModel(0.0))
+            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val hypervisor = SimSpaceSharedHypervisor(interpreter)
 
@@ -189,8 +184,7 @@ internal class SimSpaceSharedHypervisorTest {
     fun testConcurrentWorkloadFails() = runBlockingSimulation {
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter, machineModel, PerformanceScalingGovernor(),
-            SimpleScalingDriver(ConstantPowerModel(0.0))
+            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val hypervisor = SimSpaceSharedHypervisor(interpreter)
 
@@ -214,8 +208,7 @@ internal class SimSpaceSharedHypervisorTest {
     fun testConcurrentWorkloadSucceeds() = runBlockingSimulation {
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter, machineModel, PerformanceScalingGovernor(),
-            SimpleScalingDriver(ConstantPowerModel(0.0))
+            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val hypervisor = SimSpaceSharedHypervisor(interpreter)
 

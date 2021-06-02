@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.power
 
 import io.mockk.every
 import io.mockk.mockk
@@ -28,18 +28,16 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimProcessingUnit
-import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.LinearPowerModel
 
 /**
- * Test suite for [PStateScalingDriver].
+ * Test suite for [PStatePowerDriver].
  */
-internal class PStateScalingDriverTest {
+internal class PStatePowerDriverTest {
     @Test
-    fun testPowerWithoutGovernor() {
+    fun testPowerBaseline() {
         val machine = mockk<SimBareMetalMachine>()
 
-        val driver = PStateScalingDriver(
+        val driver = PStatePowerDriver(
             sortedMapOf(
                 2800.0 to ConstantPowerModel(200.0),
                 3300.0 to ConstantPowerModel(300.0),
@@ -47,19 +45,19 @@ internal class PStateScalingDriverTest {
             )
         )
 
-        val logic = driver.createLogic(machine)
+        val logic = driver.createLogic(machine, emptyList())
         assertEquals(200.0, logic.computePower())
     }
 
     @Test
-    fun testPowerWithSingleGovernor() {
+    fun testPowerWithSingleCpu() {
         val machine = mockk<SimBareMetalMachine>()
         val cpu = mockk<SimProcessingUnit>()
 
-        every { cpu.model.frequency } returns 4100.0
+        every { cpu.capacity } returns 3200.0
         every { cpu.speed } returns 1200.0
 
-        val driver = PStateScalingDriver(
+        val driver = PStatePowerDriver(
             sortedMapOf(
                 2800.0 to ConstantPowerModel(200.0),
                 3300.0 to ConstantPowerModel(300.0),
@@ -67,23 +65,26 @@ internal class PStateScalingDriverTest {
             )
         )
 
-        val logic = driver.createLogic(machine)
-
-        val scalingContext = logic.createContext(cpu)
-        scalingContext.setTarget(3200.0)
+        val logic = driver.createLogic(machine, listOf(cpu))
 
         assertEquals(300.0, logic.computePower())
     }
 
     @Test
-    fun testPowerWithMultipleGovernors() {
+    fun testPowerWithMultipleCpus() {
         val machine = mockk<SimBareMetalMachine>()
-        val cpu = mockk<SimProcessingUnit>()
+        val cpus = listOf(
+            mockk<SimProcessingUnit>(),
+            mockk()
+        )
 
-        every { cpu.model.frequency } returns 4100.0
-        every { cpu.speed } returns 1200.0
+        every { cpus[0].capacity } returns 1000.0
+        every { cpus[0].speed } returns 1200.0
 
-        val driver = PStateScalingDriver(
+        every { cpus[1].capacity } returns 3500.0
+        every { cpus[1].speed } returns 1200.0
+
+        val driver = PStatePowerDriver(
             sortedMapOf(
                 2800.0 to ConstantPowerModel(200.0),
                 3300.0 to ConstantPowerModel(300.0),
@@ -91,13 +92,7 @@ internal class PStateScalingDriverTest {
             )
         )
 
-        val logic = driver.createLogic(machine)
-
-        val scalingContextA = logic.createContext(cpu)
-        scalingContextA.setTarget(1000.0)
-
-        val scalingContextB = logic.createContext(cpu)
-        scalingContextB.setTarget(3400.0)
+        val logic = driver.createLogic(machine, cpus)
 
         assertEquals(350.0, logic.computePower())
     }
@@ -109,7 +104,7 @@ internal class PStateScalingDriverTest {
 
         every { cpu.model.frequency } returns 4200.0
 
-        val driver = PStateScalingDriver(
+        val driver = PStatePowerDriver(
             sortedMapOf(
                 2800.0 to LinearPowerModel(200.0, 100.0),
                 3300.0 to LinearPowerModel(250.0, 150.0),
@@ -117,16 +112,14 @@ internal class PStateScalingDriverTest {
             )
         )
 
-        val logic = driver.createLogic(machine)
-
-        val scalingContext = logic.createContext(cpu)
+        val logic = driver.createLogic(machine, listOf(cpu))
 
         every { cpu.speed } returns 1400.0
-        scalingContext.setTarget(1400.0)
+        every { cpu.capacity } returns 1400.0
         assertEquals(150.0, logic.computePower())
 
         every { cpu.speed } returns 1400.0
-        scalingContext.setTarget(4000.0)
+        every { cpu.capacity } returns 4000.0
         assertEquals(235.0, logic.computePower())
     }
 }

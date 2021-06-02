@@ -22,10 +22,8 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.*
-import org.opendc.simulator.compute.cpufreq.ScalingDriver
-import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.resources.*
 import org.opendc.simulator.resources.SimResourceInterpreter
 
@@ -37,16 +35,13 @@ import org.opendc.simulator.resources.SimResourceInterpreter
  *
  * @param interpreter The [SimResourceInterpreter] to drive the simulation.
  * @param model The machine model to simulate.
- * @param scalingGovernor The CPU frequency scaling governor to use.
- * @param scalingDriver The CPU frequency scaling driver to use.
+ * @param powerDriver The power driver to use.
  * @param parent The parent simulation system.
  */
-@OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
 public class SimBareMetalMachine(
     interpreter: SimResourceInterpreter,
     model: SimMachineModel,
-    scalingGovernor: ScalingGovernor,
-    scalingDriver: ScalingDriver,
+    powerDriver: PowerDriver,
     parent: SimResourceSystem? = null,
 ) : SimAbstractMachine(interpreter, parent, model) {
     override val cpus: List<SimProcessingUnit> = model.cpus.map { cpu ->
@@ -54,20 +49,9 @@ public class SimBareMetalMachine(
     }
 
     /**
-     * Construct the [ScalingDriver.Logic] for this machine.
+     * Construct the [PowerDriver.Logic] for this machine.
      */
-    private val scalingDriver = scalingDriver.createLogic(this)
-
-    /**
-     * The scaling contexts associated with each CPU.
-     */
-    private val scalingGovernors = cpus.map { cpu ->
-        scalingGovernor.createLogic(this.scalingDriver.createContext(cpu))
-    }
-
-    init {
-        scalingGovernors.forEach { it.onStart() }
-    }
+    private val powerDriver = powerDriver.createLogic(this, cpus)
 
     /**
      * The power draw of the machine.
@@ -78,8 +62,7 @@ public class SimBareMetalMachine(
     override fun updateUsage(usage: Double) {
         super.updateUsage(usage)
 
-        scalingGovernors.forEach { it.onLimit() }
-        powerDraw = scalingDriver.computePower()
+        powerDraw = powerDriver.computePower()
     }
 
     /**

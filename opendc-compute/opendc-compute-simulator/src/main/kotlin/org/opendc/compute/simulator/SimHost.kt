@@ -32,14 +32,14 @@ import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.ScalingDriver
 import org.opendc.simulator.compute.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.simulator.resources.SimResourceInterpreter
 import java.time.Clock
@@ -60,7 +60,7 @@ public class SimHost(
     meter: Meter,
     hypervisor: SimHypervisorProvider,
     scalingGovernor: ScalingGovernor,
-    scalingDriver: ScalingDriver,
+    scalingDriver: PowerDriver,
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
 ) : Host, FailureDomain, AutoCloseable {
 
@@ -75,7 +75,7 @@ public class SimHost(
         hypervisor: SimHypervisorProvider,
         powerModel: PowerModel = ConstantPowerModel(0.0),
         mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    ) : this(uid, name, model, meta, context, clock, meter, hypervisor, PerformanceScalingGovernor(), SimpleScalingDriver(powerModel), mapper)
+    ) : this(uid, name, model, meta, context, clock, meter, hypervisor, PerformanceScalingGovernor(), SimplePowerDriver(powerModel), mapper)
 
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
@@ -105,7 +105,7 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model, scalingGovernor, scalingDriver)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model, scalingDriver)
 
     /**
      * The hypervisor to run multiple workloads.

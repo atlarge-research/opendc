@@ -25,12 +25,11 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.SimulationCoroutineScope
 import org.opendc.simulator.core.runBlockingSimulation
@@ -84,8 +83,7 @@ class SimMachineBenchmarks {
     fun benchmarkBareMetal(state: Workload) {
         return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
-                interpreter, machineModel, PerformanceScalingGovernor(),
-                SimpleScalingDriver(ConstantPowerModel(0.0))
+                interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
             return@runBlockingSimulation machine.run(SimTraceWorkload(state.trace))
         }
@@ -95,8 +93,7 @@ class SimMachineBenchmarks {
     fun benchmarkSpaceSharedHypervisor(state: Workload) {
         return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
-                interpreter, machineModel, PerformanceScalingGovernor(),
-                SimpleScalingDriver(ConstantPowerModel(0.0))
+                interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
             val hypervisor = SimSpaceSharedHypervisor(interpreter)
 
@@ -117,8 +114,7 @@ class SimMachineBenchmarks {
     fun benchmarkFairShareHypervisorSingle(state: Workload) {
         return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
-                interpreter, machineModel, PerformanceScalingGovernor(),
-                SimpleScalingDriver(ConstantPowerModel(0.0))
+                interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
             val hypervisor = SimFairShareHypervisor(interpreter)
 
@@ -139,8 +135,7 @@ class SimMachineBenchmarks {
     fun benchmarkFairShareHypervisorDouble(state: Workload) {
         return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
-                interpreter, machineModel, PerformanceScalingGovernor(),
-                SimpleScalingDriver(ConstantPowerModel(0.0))
+                interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
             val hypervisor = SimFairShareHypervisor(interpreter)
 

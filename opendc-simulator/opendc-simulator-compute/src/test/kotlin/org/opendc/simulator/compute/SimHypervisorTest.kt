@@ -32,12 +32,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
@@ -95,7 +94,7 @@ internal class SimHypervisorTest {
             )
 
         val platform = SimResourceInterpreter(coroutineContext, clock)
-        val machine = SimBareMetalMachine(platform, model, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+        val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
         val hypervisor = SimFairShareHypervisor(platform, null, listener)
 
         launch {
@@ -168,8 +167,7 @@ internal class SimHypervisorTest {
 
         val platform = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            platform, model, PerformanceScalingGovernor(),
-            SimpleScalingDriver(ConstantPowerModel(0.0))
+            platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val hypervisor = SimFairShareHypervisor(platform, null, listener)
 
@@ -210,8 +208,7 @@ internal class SimHypervisorTest {
 
         val platform = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            platform, model, PerformanceScalingGovernor(),
-            SimpleScalingDriver(ConstantPowerModel(0.0))
+            platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
         val hypervisor = SimFairShareHypervisor(platform)
 

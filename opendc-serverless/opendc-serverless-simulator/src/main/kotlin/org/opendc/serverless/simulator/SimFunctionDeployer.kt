@@ -34,9 +34,8 @@ import org.opendc.serverless.simulator.workload.SimServerlessWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.resources.SimResourceInterpreter
 import java.time.Clock
 import java.util.ArrayDeque
@@ -73,7 +72,11 @@ public class SimFunctionDeployer(
         /**
          * The machine that will execute the workloads.
          */
-        public val machine: SimMachine = SimBareMetalMachine(SimResourceInterpreter(scope.coroutineContext, clock), model, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+        public val machine: SimMachine = SimBareMetalMachine(
+            SimResourceInterpreter(scope.coroutineContext, clock),
+            model,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
 
         /**
          * The job associated with the lifecycle of the instance.

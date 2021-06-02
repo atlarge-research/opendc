@@ -20,30 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.power
 
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimProcessingUnit
-import org.opendc.simulator.compute.power.PowerModel
 
 /**
- * A [ScalingDriver] that ignores the instructions of the [ScalingGovernor] and directly computes the power consumption
- * based on the specified [power model][model].
+ * A [PowerDriver] is responsible for switching the processor to the correct frequency.
  */
-public class SimpleScalingDriver(private val model: PowerModel) : ScalingDriver {
-    override fun createLogic(machine: SimMachine): ScalingDriver.Logic = object : ScalingDriver.Logic {
-        override fun createContext(cpu: SimProcessingUnit): ScalingContext {
-            return object : ScalingContext {
-                override val machine: SimMachine = machine
+public interface PowerDriver {
+    /**
+     * Create the scaling logic for the specified [machine]
+     */
+    public fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): Logic
 
-                override val cpu: SimProcessingUnit = cpu
-
-                override fun setTarget(freq: Double) {}
-            }
-        }
-
-        override fun computePower(): Double = model.computePower(machine.usage.value)
-
-        override fun toString(): String = "SimpleScalingDriver.Logic"
+    /**
+     * The logic of the scaling driver.
+     */
+    public interface Logic {
+        /**
+         * Compute the power consumption of the processor.
+         *
+         * @return The power consumption of the processor in W.
+         */
+        public fun computePower(): Double
     }
 }

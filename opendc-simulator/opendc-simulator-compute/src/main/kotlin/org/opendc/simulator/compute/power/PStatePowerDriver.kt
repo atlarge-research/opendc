@@ -20,67 +20,41 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.power
 
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimProcessingUnit
-import org.opendc.simulator.compute.power.PowerModel
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
 /**
- * A [ScalingDriver] that scales the frequency of the processor based on a discrete set of frequencies.
+ * A [PowerDriver] that computes the power draw using multiple [PowerModel]s based on multiple frequency states.
  *
  * @param states A map describing the states of the driver.
  */
-public class PStateScalingDriver(states: Map<Double, PowerModel>) : ScalingDriver {
+public class PStatePowerDriver(states: Map<Double, PowerModel>) : PowerDriver {
     /**
      * The P-States defined by the user and ordered by key.
      */
     private val states = TreeMap(states)
 
-    override fun createLogic(machine: SimMachine): ScalingDriver.Logic = object : ScalingDriver.Logic {
-        /**
-         * The scaling contexts.
-         */
-        private val contexts = mutableListOf<ScalingContextImpl>()
-
-        override fun createContext(cpu: SimProcessingUnit): ScalingContext {
-            val ctx = ScalingContextImpl(machine, cpu)
-            contexts.add(ctx)
-            return ctx
-        }
-
+    override fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): PowerDriver.Logic = object : PowerDriver.Logic {
         override fun computePower(): Double {
             var targetFreq = 0.0
             var totalSpeed = 0.0
 
-            for (ctx in contexts) {
-                targetFreq = max(ctx.target, targetFreq)
-                totalSpeed += ctx.cpu.speed
+            for (cpu in cpus) {
+                targetFreq = max(cpu.capacity, targetFreq)
+                totalSpeed += cpu.speed
             }
 
             val maxFreq = states.lastKey()
             val (actualFreq, model) = states.ceilingEntry(min(maxFreq, targetFreq))
-            val utilization = totalSpeed / (actualFreq * contexts.size)
+            val utilization = totalSpeed / (actualFreq * cpus.size)
             return model.computePower(utilization)
         }
 
-        override fun toString(): String = "PStateScalingDriver.Logic"
-    }
-
-    private class ScalingContextImpl(
-        override val machine: SimMachine,
-        override val cpu: SimProcessingUnit
-    ) : ScalingContext {
-        var target = cpu.model.frequency
-            private set
-
-        override fun setTarget(freq: Double) {
-            target = freq
-        }
-
-        override fun toString(): String = "PStateScalingDriver.Context"
+        override fun toString(): String = "PStatePowerDriver.Logic"
     }
 }
