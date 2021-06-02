@@ -37,8 +37,12 @@ import java.time.Clock
  * Abstract implementation of the [SimMachine] interface.
  *
  * @param interpreter The interpreter to manage the machine's resources.
+ * @param parent The parent simulation system.
  */
-public abstract class SimAbstractMachine(protected val interpreter: SimResourceInterpreter) : SimMachine, SimResourceSystem {
+public abstract class SimAbstractMachine(
+    protected val interpreter: SimResourceInterpreter,
+    final override val parent: SimResourceSystem?
+) : SimMachine, SimResourceSystem {
     private val _usage = MutableStateFlow(0.0)
     override val usage: StateFlow<Double>
         get() = _usage

@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute
 
 import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSystem
 
 /**
  * A service provider interface for constructing a [SimHypervisor].
@@ -39,5 +40,9 @@ public interface SimHypervisorProvider {
     /**
      * Create a [SimHypervisor] instance with the specified [listener].
      */
-    public fun create(interpreter: SimResourceInterpreter, listener: SimHypervisor.Listener? = null): SimHypervisor
+    public fun create(
+        interpreter: SimResourceInterpreter,
+        parent: SimResourceSystem? = null,
+        listener: SimHypervisor.Listener? = null
+    ): SimHypervisor
 }

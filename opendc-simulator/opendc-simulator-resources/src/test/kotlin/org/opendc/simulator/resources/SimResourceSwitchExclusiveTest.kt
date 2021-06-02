@@ -67,7 +67,7 @@ internal class SimResourceSwitchExclusiveTest {
         source.startConsumer(adapter)
         switch.addInput(forwarder)
 
-        val provider = switch.addOutput(3200.0)
+        val provider = switch.newOutput()
 
         try {
             provider.consume(workload)
@@ -98,7 +98,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         switch.addInput(source)
 
-        val provider = switch.addOutput(3200.0)
+        val provider = switch.newOutput()
 
         try {
             provider.consume(workload)
@@ -142,7 +142,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         switch.addInput(source)
 
-        val provider = switch.addOutput(3200.0)
+        val provider = switch.newOutput()
 
         try {
             provider.consume(workload)
@@ -170,7 +170,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         switch.addInput(source)
 
-        switch.addOutput(3200.0)
-        assertThrows<IllegalStateException> { switch.addOutput(3200.0) }
+        switch.newOutput()
+        assertThrows<IllegalStateException> { switch.newOutput() }
     }
 }

@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute
 
 import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSystem
 
 /**
  * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
@@ -30,7 +31,9 @@ import org.opendc.simulator.resources.SimResourceInterpreter
 public class SimFairShareHypervisorProvider : SimHypervisorProvider {
     override val id: String = "fair-share"
 
-    override fun create(interpreter: SimResourceInterpreter, listener: SimHypervisor.Listener?): SimHypervisor {
-        return SimFairShareHypervisor(interpreter, listener)
-    }
+    override fun create(
+        interpreter: SimResourceInterpreter,
+        parent: SimResourceSystem?,
+        listener: SimHypervisor.Listener?
+    ): SimHypervisor = SimFairShareHypervisor(interpreter, parent, listener)
 }

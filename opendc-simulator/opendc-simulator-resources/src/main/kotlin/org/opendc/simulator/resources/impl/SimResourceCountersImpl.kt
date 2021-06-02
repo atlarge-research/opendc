@@ -20,19 +20,23 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.resources
+package org.opendc.simulator.resources.impl
+
+import org.opendc.simulator.resources.SimResourceCounters
 
 /**
- * A [SimResourceAggregator] aggregates the capacity of multiple resources into a single resource.
+ * Mutable implementation of the [SimResourceCounters] interface.
  */
-public interface SimResourceAggregator : SimResourceProvider {
-    /**
-     * The input resources that will be switched between the output providers.
-     */
-    public val inputs: Set<SimResourceProvider>
+internal class SimResourceCountersImpl : SimResourceCounters {
+    override var demand: Double = 0.0
+    override var actual: Double = 0.0
+    override var overcommit: Double = 0.0
 
-    /**
-     * Add the specified [input] to the aggregator.
-     */
-    public fun addInput(input: SimResourceProvider)
+    override fun reset() {
+        demand = 0.0
+        actual = 0.0
+        overcommit = 0.0
+    }
+
+    override fun toString(): String = "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
 }

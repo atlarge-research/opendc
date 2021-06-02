@@ -38,7 +38,7 @@ public class SimResourceAggregatorMaxMin(
         // Divide the requests over the available capacity of the input resources fairly
         for (input in consumers) {
             val inputCapacity = input.ctx.capacity
-            val fraction = inputCapacity / outputContext.capacity
+            val fraction = inputCapacity / capacity
             val grantedSpeed = limit * fraction
             val grantedWork = fraction * work
 
@@ -56,7 +56,7 @@ public class SimResourceAggregatorMaxMin(
         }
     }
 
-    override fun doFinish(cause: Throwable?) {
+    override fun doFinish() {
         val iterator = consumers.iterator()
         for (input in iterator) {
             iterator.remove()

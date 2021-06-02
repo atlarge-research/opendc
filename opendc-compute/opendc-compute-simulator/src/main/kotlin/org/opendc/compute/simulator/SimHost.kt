@@ -112,7 +112,7 @@ public class SimHost(
      */
     public val hypervisor: SimHypervisor = hypervisor.create(
         interpreter,
-        object : SimHypervisor.Listener {
+        listener = object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
                 requestedWork: Long,

@@ -29,7 +29,7 @@ import kotlin.math.max
  */
 public interface SimResourceProviderLogic {
     /**
-     * This method is invoked when the resource will idle until the specified [deadline].
+     * This method is invoked when the resource is reported to idle until the specified [deadline].
      *
      * @param ctx The context in which the provider runs.
      * @param deadline The deadline that was requested by the resource consumer.
@@ -38,8 +38,8 @@ public interface SimResourceProviderLogic {
     public fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long
 
     /**
-     * This method is invoked when the resource will be consumed until the specified [work] was processed or the
-     * [deadline] was reached.
+     * This method is invoked when the resource will be consumed until the specified amount of [work] was processed
+     * or [deadline] is reached.
      *
      * @param ctx The context in which the provider runs.
      * @param work The amount of work that was requested by the resource consumer.
@@ -48,6 +48,14 @@ public interface SimResourceProviderLogic {
      * @return The instant at which to resume the consumer.
      */
     public fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long
+
+    /**
+     * This method is invoked when the progress of the resource consumer is materialized.
+     *
+     * @param ctx The context in which the provider runs.
+     * @param work The amount of work that was requested by the resource consumer.
+     */
+    public fun onUpdate(ctx: SimResourceControllableContext, work: Double) {}
 
     /**
      * This method is invoked when the resource consumer has finished.

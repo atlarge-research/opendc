@@ -114,7 +114,7 @@ class CapelinIntegrationTest {
             { assertEquals(0, monitorResults.unscheduledVms, "No VM should not be unscheduled") },
             { assertEquals(0, monitorResults.queuedVms, "No VM should not be in the queue") },
             { assertEquals(207380244590, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
-            { assertEquals(207112418947, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
+            { assertEquals(207112418950, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
             { assertEquals(267825640, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Incorrect interfered burst" } }
         )

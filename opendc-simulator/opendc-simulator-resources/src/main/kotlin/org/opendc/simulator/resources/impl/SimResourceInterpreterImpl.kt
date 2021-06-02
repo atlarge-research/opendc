@@ -61,6 +61,11 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
     private val futureInvocations = ArrayDeque<Invocation>()
 
     /**
+     * The systems that have been visited during the interpreter cycle.
+     */
+    private val visited = linkedSetOf<SimResourceSystem>()
+
+    /**
      * The index in the batch stack.
      */
     private var batchIndex = 0
@@ -79,6 +84,30 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
      */
     fun scheduleImmediate(ctx: SimResourceContextImpl) {
         queue.add(Update(ctx, Long.MIN_VALUE))
+
+        // In-case the interpreter is already running in the call-stack, return immediately. The changes will be picked
+        // up by the active interpreter.
+        if (isRunning) {
+            return
+        }
+
+        try {
+            batchIndex++
+            runInterpreter()
+        } finally {
+            batchIndex--
+        }
+    }
+
+    /**
+     * Update the specified [ctx] synchronously.
+     */
+    fun scheduleSync(ctx: SimResourceContextImpl) {
+        ctx.doUpdate(clock.millis())
+
+        if (visited.add(ctx)) {
+            collectAncestors(ctx, visited)
+        }
 
         // In-case the interpreter is already running in the call-stack, return immediately. The changes will be picked
         // up by the active interpreter.
@@ -148,7 +177,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
         val queue = queue
         val futureQueue = futureQueue
         val futureInvocations = futureInvocations
-        val visited = linkedSetOf<SimResourceSystem>()
+        val visited = visited
 
         // Execute all scheduled updates at current timestamp
         while (true) {
@@ -183,6 +212,8 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
             for (system in visited) {
                 system.onConverge(now)
             }
+
+            visited.clear()
         } while (queue.isNotEmpty())
     }
 

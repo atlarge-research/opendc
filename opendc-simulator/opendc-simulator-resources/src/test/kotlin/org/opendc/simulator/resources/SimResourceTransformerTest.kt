@@ -206,4 +206,21 @@ internal class SimResourceTransformerTest {
         assertEquals(0, clock.millis())
         verify(exactly = 1) { consumer.onNext(any()) }
     }
+
+    @Test
+    fun testCounters() = runBlockingSimulation {
+        val forwarder = SimResourceForwarder()
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
+        val source = SimResourceSource(1.0, scheduler)
+
+        val consumer = SimWorkConsumer(2.0, 1.0)
+        source.startConsumer(forwarder)
+
+        forwarder.consume(consumer)
+
+        assertEquals(source.counters.actual, forwarder.counters.actual) { "Actual work" }
+        assertEquals(source.counters.demand, forwarder.counters.demand) { "Work demand" }
+        assertEquals(source.counters.overcommit, forwarder.counters.overcommit) { "Overcommitted work" }
+        assertEquals(2000, clock.millis())
+    }
 }

@@ -45,6 +45,11 @@ public interface SimResourceContext {
     public val speed: Double
 
     /**
+     * The resource processing speed demand at this instant.
+     */
+    public val demand: Double
+
+    /**
      * The amount of work still remaining at this instant.
      */
     public val remainingWork: Double

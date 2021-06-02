@@ -33,9 +33,4 @@ public interface SimProcessingUnit : SimResourceProvider {
      *  The model representing the static properties of the processing unit.
      */
     public val model: ProcessingUnit
-
-    /**
-     * The current speed of the processing unit.
-     */
-    public val speed: Double
 }

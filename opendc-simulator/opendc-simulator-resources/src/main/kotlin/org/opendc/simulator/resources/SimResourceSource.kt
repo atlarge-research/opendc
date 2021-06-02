@@ -37,21 +37,6 @@ public class SimResourceSource(
     private val interpreter: SimResourceInterpreter,
     private val parent: SimResourceSystem? = null
 ) : SimAbstractResourceProvider(interpreter, parent, initialCapacity) {
-    /**
-     * The current processing speed of the resource.
-     */
-    public val speed: Double
-        get() = ctx?.speed ?: 0.0
-
-    /**
-     * The capacity of the resource.
-     */
-    public override var capacity: Double = initialCapacity
-        set(value) {
-            field = value
-            ctx?.capacity = value
-        }
-
     override fun createLogic(): SimResourceProviderLogic {
         return object : SimResourceProviderLogic {
             override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
@@ -60,6 +45,10 @@ public class SimResourceSource(
 
             override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
                 return min(deadline, ctx.clock.millis() + getDuration(work, speed))
+            }
+
+            override fun onUpdate(ctx: SimResourceControllableContext, work: Double) {
+                updateCounters(ctx, work)
             }
 
             override fun onFinish(ctx: SimResourceControllableContext) {

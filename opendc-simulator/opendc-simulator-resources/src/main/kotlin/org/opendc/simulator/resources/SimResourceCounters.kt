@@ -23,16 +23,26 @@
 package org.opendc.simulator.resources
 
 /**
- * A [SimResourceAggregator] aggregates the capacity of multiple resources into a single resource.
+ * An interface that tracks cumulative counts of the work performed by a resource.
  */
-public interface SimResourceAggregator : SimResourceProvider {
+public interface SimResourceCounters {
     /**
-     * The input resources that will be switched between the output providers.
+     * The amount of work that resource consumers wanted the resource to perform.
      */
-    public val inputs: Set<SimResourceProvider>
+    public val demand: Double
 
     /**
-     * Add the specified [input] to the aggregator.
+     * The amount of work performed by the resource.
      */
-    public fun addInput(input: SimResourceProvider)
+    public val actual: Double
+
+    /**
+     * The amount of work that could not be completed due to overcommitted resources.
+     */
+    public val overcommit: Double
+
+    /**
+     * Reset the resource counters.
+     */
+    public fun reset()
 }

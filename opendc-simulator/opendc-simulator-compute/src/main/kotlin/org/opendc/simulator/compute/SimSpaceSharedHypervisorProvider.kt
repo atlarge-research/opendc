@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute
 
 import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSystem
 
 /**
  * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
@@ -30,7 +31,9 @@ import org.opendc.simulator.resources.SimResourceInterpreter
 public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
     override val id: String = "space-shared"
 
-    override fun create(interpreter: SimResourceInterpreter, listener: SimHypervisor.Listener?): SimHypervisor {
-        return SimSpaceSharedHypervisor(interpreter)
-    }
+    override fun create(
+        interpreter: SimResourceInterpreter,
+        parent: SimResourceSystem?,
+        listener: SimHypervisor.Listener?
+    ): SimHypervisor = SimSpaceSharedHypervisor(interpreter)
 }

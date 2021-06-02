@@ -87,6 +87,26 @@ internal class SimResourceContextImpl(
     private var _speed = 0.0
 
     /**
+     * The current resource processing demand.
+     */
+    override val demand: Double
+        get() = _limit
+
+    private val counters = object : SimResourceCounters {
+        override var demand: Double = 0.0
+        override var actual: Double = 0.0
+        override var overcommit: Double = 0.0
+
+        override fun reset() {
+            demand = 0.0
+            actual = 0.0
+            overcommit = 0.0
+        }
+
+        override fun toString(): String = "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
+    }
+
+    /**
      * The current state of the resource context.
      */
     private var _timestamp: Long = Long.MIN_VALUE
@@ -145,7 +165,7 @@ internal class SimResourceContextImpl(
             return
         }
 
-        doUpdate(clock.millis())
+        interpreter.scheduleSync(this)
     }
 
     /**
@@ -205,6 +225,11 @@ internal class SimResourceContextImpl(
                 val isInterrupted = _flag == Flag.Interrupt
                 val remainingWork = remainingWork
                 val isConsume = _limit > 0.0
+
+                // Update the resource counters only if there is some progress
+                if (timestamp > _timestamp) {
+                    logic.onUpdate(this, _work)
+                }
 
                 // We should only continue processing the next command if:
                 // 1. The resource consumption was finished.

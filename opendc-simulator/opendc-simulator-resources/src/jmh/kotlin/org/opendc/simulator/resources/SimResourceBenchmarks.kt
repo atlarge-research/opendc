@@ -90,7 +90,7 @@ class SimResourceBenchmarks {
             switch.addInput(SimResourceSource(3000.0, interpreter))
             switch.addInput(SimResourceSource(3000.0, interpreter))
 
-            val provider = switch.addOutput(3500.0)
+            val provider = switch.newOutput()
             return@runBlockingSimulation provider.consume(SimTraceConsumer(state.trace))
         }
     }
@@ -105,7 +105,7 @@ class SimResourceBenchmarks {
 
             repeat(3) {
                 launch {
-                    val provider = switch.addOutput(3500.0)
+                    val provider = switch.newOutput()
                     provider.consume(SimTraceConsumer(state.trace))
                 }
             }
@@ -120,7 +120,7 @@ class SimResourceBenchmarks {
             switch.addInput(SimResourceSource(3000.0, interpreter))
             switch.addInput(SimResourceSource(3000.0, interpreter))
 
-            val provider = switch.addOutput(3500.0)
+            val provider = switch.newOutput()
             return@runBlockingSimulation provider.consume(SimTraceConsumer(state.trace))
         }
     }
@@ -135,7 +135,7 @@ class SimResourceBenchmarks {
 
             repeat(2) {
                 launch {
-                    val provider = switch.addOutput(3500.0)
+                    val provider = switch.newOutput()
                     provider.consume(SimTraceConsumer(state.trace))
                 }
             }

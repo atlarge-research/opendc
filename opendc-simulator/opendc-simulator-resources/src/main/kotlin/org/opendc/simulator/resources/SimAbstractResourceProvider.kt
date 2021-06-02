@@ -22,27 +22,49 @@
 
 package org.opendc.simulator.resources
 
+import org.opendc.simulator.resources.impl.SimResourceCountersImpl
+
 /**
  * Abstract implementation of the [SimResourceProvider] which can be re-used by other implementations.
  */
 public abstract class SimAbstractResourceProvider(
     private val interpreter: SimResourceInterpreter,
-    private val parent: SimResourceSystem? = null,
+    private val parent: SimResourceSystem?,
     initialCapacity: Double
 ) : SimResourceProvider {
     /**
      * The capacity of the resource.
      */
-    public open var capacity: Double = initialCapacity
-        protected set(value) {
+    public override var capacity: Double = initialCapacity
+        set(value) {
             field = value
             ctx?.capacity = value
         }
 
     /**
+     * The current processing speed of the resource.
+     */
+    public override val speed: Double
+        get() = ctx?.speed ?: 0.0
+
+    /**
+     * The resource processing speed demand at this instant.
+     */
+    public override val demand: Double
+        get() = ctx?.demand ?: 0.0
+
+    /**
+     * The resource counters to track the execution metrics of the resource.
+     */
+    public override val counters: SimResourceCounters
+        get() = _counters
+    private val _counters = SimResourceCountersImpl()
+
+    /**
      * The [SimResourceControllableContext] that is currently running.
      */
     protected var ctx: SimResourceControllableContext? = null
+        private set
 
     /**
      * The state of the resource provider.
@@ -60,6 +82,17 @@ public abstract class SimAbstractResourceProvider(
      */
     protected open fun start(ctx: SimResourceControllableContext) {
         ctx.start()
+    }
+
+    /**
+     * Update the counters of the resource provider.
+     */
+    protected fun updateCounters(ctx: SimResourceContext, work: Double) {
+        val counters = _counters
+        val remainingWork = ctx.remainingWork
+        counters.demand += work
+        counters.actual += work - remainingWork
+        counters.overcommit += remainingWork
     }
 
     final override fun startConsumer(consumer: SimResourceConsumer) {

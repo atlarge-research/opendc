@@ -96,7 +96,7 @@ internal class SimHypervisorTest {
 
         val platform = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, listener)
+        val hypervisor = SimFairShareHypervisor(platform, null, listener)
 
         launch {
             machine.run(hypervisor)
@@ -171,7 +171,7 @@ internal class SimHypervisorTest {
             platform, model, PerformanceScalingGovernor(),
             SimpleScalingDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, listener)
+        val hypervisor = SimFairShareHypervisor(platform, null, listener)
 
         launch {
             machine.run(hypervisor)

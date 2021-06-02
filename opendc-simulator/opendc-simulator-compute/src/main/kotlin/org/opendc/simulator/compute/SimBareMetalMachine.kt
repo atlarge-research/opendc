@@ -28,25 +28,27 @@ import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.*
 import org.opendc.simulator.resources.SimResourceInterpreter
-import kotlin.coroutines.*
 
 /**
  * A simulated bare-metal machine that is able to run a single workload.
  *
  * A [SimBareMetalMachine] is a stateful object and you should be careful when operating this object concurrently. For
- * example. the class expects only a single concurrent call to [run].
+ * example. The class expects only a single concurrent call to [run].
  *
- * @param context The [CoroutineContext] to run the simulated workload in.
- * @param clock The virtual clock to track the simulation time.
+ * @param interpreter The [SimResourceInterpreter] to drive the simulation.
  * @param model The machine model to simulate.
+ * @param scalingGovernor The CPU frequency scaling governor to use.
+ * @param scalingDriver The CPU frequency scaling driver to use.
+ * @param parent The parent simulation system.
  */
 @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
 public class SimBareMetalMachine(
-    platform: SimResourceInterpreter,
+    interpreter: SimResourceInterpreter,
     override val model: SimMachineModel,
     scalingGovernor: ScalingGovernor,
-    scalingDriver: ScalingDriver
-) : SimAbstractMachine(platform) {
+    scalingDriver: ScalingDriver,
+    parent: SimResourceSystem? = null,
+) : SimAbstractMachine(interpreter, parent) {
     override val cpus: List<SimProcessingUnit> = model.cpus.map { ProcessingUnitImpl(it) }
 
     /**
@@ -60,8 +62,6 @@ public class SimBareMetalMachine(
     private val scalingGovernors = cpus.map { cpu ->
         scalingGovernor.createLogic(this.scalingDriver.createContext(cpu))
     }
-
-    override val parent: SimResourceSystem? = null
 
     init {
         scalingGovernors.forEach { it.onStart() }
@@ -89,11 +89,20 @@ public class SimBareMetalMachine(
          */
         private val source = SimResourceSource(model.frequency, interpreter, this@SimBareMetalMachine)
 
+        override val state: SimResourceState
+            get() = source.state
+
+        override val capacity: Double
+            get() = source.capacity
+
         override val speed: Double
             get() = source.speed
 
-        override val state: SimResourceState
-            get() = source.state
+        override val demand: Double
+            get() = source.demand
+
+        override val counters: SimResourceCounters
+            get() = source.counters
 
         override fun startConsumer(consumer: SimResourceConsumer) {
             source.startConsumer(consumer)

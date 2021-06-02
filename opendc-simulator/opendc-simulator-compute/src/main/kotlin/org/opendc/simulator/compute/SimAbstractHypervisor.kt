@@ -166,12 +166,22 @@ public abstract class SimAbstractHypervisor(private val interpreter: SimResource
         /**
          * The actual resource supporting the processing unit.
          */
-        private val source = switch.addOutput(model.frequency)
-
-        override val speed: Double = 0.0 /* TODO Implement */
+        private val source = switch.newOutput()
 
         override val state: SimResourceState
             get() = source.state
+
+        override val capacity: Double
+            get() = source.capacity
+
+        override val speed: Double
+            get() = source.speed
+
+        override val demand: Double
+            get() = source.demand
+
+        override val counters: SimResourceCounters
+            get() = source.counters
 
         override fun startConsumer(consumer: SimResourceConsumer) {
             source.startConsumer(consumer)
