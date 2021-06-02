@@ -23,8 +23,6 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.resources.SimResourceConsumer
 
 /**
  * A model that characterizes the runtime behavior of some particular workload.
@@ -35,11 +33,8 @@ import org.opendc.simulator.resources.SimResourceConsumer
 public interface SimWorkload {
     /**
      * This method is invoked when the workload is started.
+     *
+     * @param ctx The execution context in which the machine runs.
      */
     public fun onStart(ctx: SimMachineContext)
-
-    /**
-     * Obtain the resource consumer for the specified processing unit.
-     */
-    public fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer
 }

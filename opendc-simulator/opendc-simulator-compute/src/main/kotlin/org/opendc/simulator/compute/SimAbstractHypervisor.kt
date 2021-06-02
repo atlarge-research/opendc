@@ -22,17 +22,10 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
-import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
 import org.opendc.simulator.resources.SimResourceSwitch
-import java.time.Clock
 
 /**
  * Abstract implementation of the [SimHypervisor] interface.
@@ -86,117 +79,37 @@ public abstract class SimAbstractHypervisor(private val interpreter: SimResource
      * @property performanceInterferenceModel The performance interference model to utilize.
      */
     private inner class VirtualMachine(
-        override val model: SimMachineModel,
+        model: SimMachineModel,
         val performanceInterferenceModel: PerformanceInterferenceModel? = null,
-    ) : SimMachine {
-        /**
-         * A [StateFlow] representing the CPU usage of the simulated machine.
-         */
-        override val usage: MutableStateFlow<Double> = MutableStateFlow(0.0)
-
-        /**
-         *  A flag to indicate that the machine is terminated.
-         */
-        private var isTerminated = false
-
+    ) : SimAbstractMachine(interpreter, parent = null, model) {
         /**
          * The vCPUs of the machine.
          */
-        private val cpus = model.cpus.map { ProcessingUnitImpl(it, switch) }
+        override val cpus = model.cpus.map { VCpu(switch.newOutput(), it) }
 
-        /**
-         * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
-         */
-        override suspend fun run(workload: SimWorkload, meta: Map<String, Any>) {
-            coroutineScope {
-                require(!isTerminated) { "Machine is terminated" }
-
-                val ctx = object : SimMachineContext {
-                    override val cpus: List<SimProcessingUnit> = this@VirtualMachine.cpus
-
-                    override val memory: List<MemoryUnit>
-                        get() = model.memory
-
-                    override val clock: Clock
-                        get() = this@SimAbstractHypervisor.context.clock
-
-                    override val meta: Map<String, Any> = meta
-                }
-
-                interpreter.batch {
-                    workload.onStart(ctx)
-
-                    for (cpu in cpus) {
-                        launch {
-                            cpu.consume(workload.getConsumer(ctx, cpu.model))
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Terminate this VM instance.
-         */
         override fun close() {
-            if (!isTerminated) {
-                isTerminated = true
+            super.close()
 
-                cpus.forEach(SimProcessingUnit::close)
-                _vms.remove(this)
-            }
+            _vms.remove(this)
         }
     }
 
     override fun onStart(ctx: SimMachineContext) {
         context = ctx
         switch = createSwitch(ctx)
-    }
 
-    override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer {
-        val forwarder = SimResourceForwarder()
-        switch.addInput(forwarder)
-        return forwarder
+        for (cpu in ctx.cpus) {
+            switch.addInput(cpu)
+        }
     }
 
     /**
-     * The [SimProcessingUnit] of this machine.
+     * A [SimProcessingUnit] of a virtual machine.
      */
-    public inner class ProcessingUnitImpl(override val model: ProcessingUnit, switch: SimResourceSwitch) : SimProcessingUnit {
-        /**
-         * The actual resource supporting the processing unit.
-         */
-        private val source = switch.newOutput()
-
-        override val state: SimResourceState
-            get() = source.state
-
-        override val capacity: Double
-            get() = source.capacity
-
-        override val speed: Double
-            get() = source.speed
-
-        override val demand: Double
-            get() = source.demand
-
-        override val counters: SimResourceCounters
-            get() = source.counters
-
-        override fun startConsumer(consumer: SimResourceConsumer) {
-            source.startConsumer(consumer)
-        }
-
-        override fun interrupt() {
-            source.interrupt()
-        }
-
-        override fun cancel() {
-            source.cancel()
-        }
-
-        override fun close() {
-            source.close()
-        }
+    private class VCpu(
+        private val source: SimResourceProvider,
+        override val model: ProcessingUnit
+    ) : SimProcessingUnit, SimResourceProvider by source {
+        override fun toString(): String = "SimAbstractHypervisor.VCpu[model=$model]"
     }
 }

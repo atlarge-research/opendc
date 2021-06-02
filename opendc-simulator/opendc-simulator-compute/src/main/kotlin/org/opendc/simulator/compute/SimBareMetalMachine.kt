@@ -44,12 +44,14 @@ import org.opendc.simulator.resources.SimResourceInterpreter
 @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
 public class SimBareMetalMachine(
     interpreter: SimResourceInterpreter,
-    override val model: SimMachineModel,
+    model: SimMachineModel,
     scalingGovernor: ScalingGovernor,
     scalingDriver: ScalingDriver,
     parent: SimResourceSystem? = null,
-) : SimAbstractMachine(interpreter, parent) {
-    override val cpus: List<SimProcessingUnit> = model.cpus.map { ProcessingUnitImpl(it) }
+) : SimAbstractMachine(interpreter, parent, model) {
+    override val cpus: List<SimProcessingUnit> = model.cpus.map { cpu ->
+        Cpu(SimResourceSource(cpu.frequency, interpreter, this@SimBareMetalMachine), cpu)
+    }
 
     /**
      * Construct the [ScalingDriver.Logic] for this machine.
@@ -81,43 +83,12 @@ public class SimBareMetalMachine(
     }
 
     /**
-     * The [SimProcessingUnit] of this machine.
+     * A [SimProcessingUnit] of a bare-metal machine.
      */
-    public inner class ProcessingUnitImpl(override val model: ProcessingUnit) : SimProcessingUnit {
-        /**
-         * The actual resource supporting the processing unit.
-         */
-        private val source = SimResourceSource(model.frequency, interpreter, this@SimBareMetalMachine)
-
-        override val state: SimResourceState
-            get() = source.state
-
-        override val capacity: Double
-            get() = source.capacity
-
-        override val speed: Double
-            get() = source.speed
-
-        override val demand: Double
-            get() = source.demand
-
-        override val counters: SimResourceCounters
-            get() = source.counters
-
-        override fun startConsumer(consumer: SimResourceConsumer) {
-            source.startConsumer(consumer)
-        }
-
-        override fun interrupt() {
-            source.interrupt()
-        }
-
-        override fun cancel() {
-            source.cancel()
-        }
-
-        override fun close() {
-            source.close()
-        }
+    private class Cpu(
+        private val source: SimResourceProvider,
+        override val model: ProcessingUnit
+    ) : SimProcessingUnit, SimResourceProvider by source {
+        override fun toString(): String = "SimBareMetalMachine.Cpu[model=$model]"
     }
 }

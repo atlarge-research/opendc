@@ -116,9 +116,11 @@ public class SimTFDevice(
          */
         private var activeWork: Work? = null
 
-        override fun onStart(ctx: SimMachineContext) {}
-
-        override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer = this
+        override fun onStart(ctx: SimMachineContext) {
+            for (cpu in ctx.cpus) {
+                cpu.startConsumer(this)
+            }
+        }
 
         override fun onNext(ctx: SimResourceContext): SimResourceCommand {
             val activeWork = activeWork
