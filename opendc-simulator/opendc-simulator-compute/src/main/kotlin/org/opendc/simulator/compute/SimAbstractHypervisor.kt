@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute
 
+import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.*
@@ -29,8 +30,14 @@ import org.opendc.simulator.resources.SimResourceSwitch
 
 /**
  * Abstract implementation of the [SimHypervisor] interface.
+ *
+ * @param interpreter The resource interpreter to use.
+ * @param scalingGovernor The scaling governor to use for scaling the CPU frequency of the underlying hardware.
  */
-public abstract class SimAbstractHypervisor(private val interpreter: SimResourceInterpreter) : SimHypervisor {
+public abstract class SimAbstractHypervisor(
+    private val interpreter: SimResourceInterpreter,
+    private val scalingGovernor: ScalingGovernor?
+) : SimHypervisor {
     /**
      * The machine on which the hypervisor runs.
      */
@@ -49,6 +56,11 @@ public abstract class SimAbstractHypervisor(private val interpreter: SimResource
         get() = _vms
 
     /**
+     * The scaling governors attached to the physical CPUs backing this hypervisor.
+     */
+    private val governors = mutableListOf<ScalingGovernor.Logic>()
+
+    /**
      * Construct the [SimResourceSwitch] implementation that performs the actual scheduling of the CPUs.
      */
     public abstract fun createSwitch(ctx: SimMachineContext): SimResourceSwitch
@@ -58,6 +70,16 @@ public abstract class SimAbstractHypervisor(private val interpreter: SimResource
      */
     public abstract fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean
 
+    /**
+     * Trigger the governors to recompute the scaling limits.
+     */
+    protected fun triggerGovernors(load: Double) {
+        for (governor in governors) {
+            governor.onLimit(load)
+        }
+    }
+
+    /* SimHypervisor */
     override fun canFit(model: SimMachineModel): Boolean {
         return canFit(model, switch)
     }
@@ -70,6 +92,21 @@ public abstract class SimAbstractHypervisor(private val interpreter: SimResource
         val vm = VirtualMachine(model, performanceInterferenceModel)
         _vms.add(vm)
         return vm
+    }
+
+    /* SimWorkload */
+    override fun onStart(ctx: SimMachineContext) {
+        context = ctx
+        switch = createSwitch(ctx)
+
+        for (cpu in ctx.cpus) {
+            val governor = scalingGovernor?.createLogic(cpu)
+            if (governor != null) {
+                governors.add(governor)
+                governor.onStart()
+            }
+            switch.addInput(cpu)
+        }
     }
 
     /**
@@ -94,15 +131,6 @@ public abstract class SimAbstractHypervisor(private val interpreter: SimResource
         }
     }
 
-    override fun onStart(ctx: SimMachineContext) {
-        context = ctx
-        switch = createSwitch(ctx)
-
-        for (cpu in ctx.cpus) {
-            switch.addInput(cpu)
-        }
-    }
-
     /**
      * A [SimProcessingUnit] of a virtual machine.
      */
@@ -110,6 +138,12 @@ public abstract class SimAbstractHypervisor(private val interpreter: SimResource
         private val source: SimResourceProvider,
         override val model: ProcessingUnit
     ) : SimProcessingUnit, SimResourceProvider by source {
+        override var capacity: Double
+            get() = source.capacity
+            set(_) {
+                // Ignore capacity changes
+            }
+
         override fun toString(): String = "SimAbstractHypervisor.VCpu[model=$model]"
     }
 }

@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -95,7 +96,7 @@ internal class SimHypervisorTest {
 
         val platform = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, null, listener)
+        val hypervisor = SimFairShareHypervisor(platform, scalingGovernor = PerformanceScalingGovernor(), listener = listener)
 
         launch {
             machine.run(hypervisor)
@@ -169,7 +170,7 @@ internal class SimHypervisorTest {
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, null, listener)
+        val hypervisor = SimFairShareHypervisor(platform, listener = listener)
 
         launch {
             machine.run(hypervisor)

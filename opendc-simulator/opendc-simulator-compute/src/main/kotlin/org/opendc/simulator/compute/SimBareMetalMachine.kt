@@ -69,9 +69,18 @@ public class SimBareMetalMachine(
      * A [SimProcessingUnit] of a bare-metal machine.
      */
     private class Cpu(
-        private val source: SimResourceProvider,
+        private val source: SimResourceSource,
         override val model: ProcessingUnit
     ) : SimProcessingUnit, SimResourceProvider by source {
+        override var capacity: Double
+            get() = source.capacity
+            set(value) {
+                // Clamp the capacity of the CPU between [0.0, maxFreq]
+                if (value >= 0.0 && value <= model.frequency) {
+                    source.capacity = value
+                }
+            }
+
         override fun toString(): String = "SimBareMetalMachine.Cpu[model=$model]"
     }
 }

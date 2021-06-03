@@ -35,5 +35,5 @@ public class SimFairShareHypervisorProvider : SimHypervisorProvider {
         interpreter: SimResourceInterpreter,
         parent: SimResourceSystem?,
         listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimFairShareHypervisor(interpreter, parent, listener)
+    ): SimHypervisor = SimFairShareHypervisor(interpreter, parent, listener = listener)
 }

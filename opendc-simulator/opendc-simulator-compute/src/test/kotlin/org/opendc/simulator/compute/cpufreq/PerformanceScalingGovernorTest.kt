@@ -22,25 +22,28 @@
 
 package org.opendc.simulator.compute.cpufreq
 
-import org.opendc.simulator.compute.SimMachine
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.jupiter.api.Test
 import org.opendc.simulator.compute.SimProcessingUnit
 
 /**
- * A [ScalingContext] is used to communicate frequency scaling changes between the [ScalingGovernor] and driver.
+ * Test suite for the [PerformanceScalingGovernor]
  */
-public interface ScalingContext {
-    /**
-     * The machine the processing unit belongs to.
-     */
-    public val machine: SimMachine
+internal class PerformanceScalingGovernorTest {
+    @Test
+    fun testSetStartLimit() {
+        val cpu = mockk<SimProcessingUnit>(relaxUnitFun = true)
 
-    /**
-     * The processing unit associated with this context.
-     */
-    public val cpu: SimProcessingUnit
+        every { cpu.model.frequency } returns 4100.0
+        every { cpu.speed } returns 2100.0
 
-    /**
-     * Target the processor to run at the specified target [frequency][freq].
-     */
-    public fun setTarget(freq: Double)
+        val logic = PerformanceScalingGovernor().createLogic(cpu)
+
+        logic.onStart()
+        logic.onLimit(1.0)
+
+        verify(exactly = 1) { cpu.capacity = 4100.0 }
+    }
 }

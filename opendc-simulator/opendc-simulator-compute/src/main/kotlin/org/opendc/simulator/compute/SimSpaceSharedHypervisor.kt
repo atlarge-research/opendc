@@ -29,7 +29,7 @@ import org.opendc.simulator.resources.SimResourceSwitchExclusive
 /**
  * A [SimHypervisor] that allocates its sub-resources exclusively for the virtual machine that it hosts.
  */
-public class SimSpaceSharedHypervisor(interpreter: SimResourceInterpreter) : SimAbstractHypervisor(interpreter) {
+public class SimSpaceSharedHypervisor(interpreter: SimResourceInterpreter) : SimAbstractHypervisor(interpreter, null) {
     override fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean {
         return switch.inputs.size - switch.outputs.size >= model.cpus.size
     }

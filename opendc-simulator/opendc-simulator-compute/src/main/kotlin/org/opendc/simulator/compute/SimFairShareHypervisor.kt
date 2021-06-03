@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute
 
+import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.simulator.resources.SimResourceSwitch
@@ -34,21 +35,23 @@ import org.opendc.simulator.resources.SimResourceSystem
  *
  * @param interpreter The interpreter to manage the machine's resources.
  * @param parent The parent simulation system.
+ * @param scalingGovernor The CPU frequency scaling governor to use for the hypervisor.
  * @param listener The hypervisor listener to use.
  */
 public class SimFairShareHypervisor(
     private val interpreter: SimResourceInterpreter,
     private val parent: SimResourceSystem? = null,
+    scalingGovernor: ScalingGovernor? = null,
     private val listener: SimHypervisor.Listener? = null
-) : SimAbstractHypervisor(interpreter) {
+) : SimAbstractHypervisor(interpreter, scalingGovernor) {
 
     override fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean = true
 
     override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch {
-        return SwitchSystem().switch
+        return SwitchSystem(ctx).switch
     }
 
-    private inner class SwitchSystem : SimResourceSystem {
+    private inner class SwitchSystem(private val ctx: SimMachineContext) : SimResourceSystem {
         val switch = SimResourceSwitchMaxMin(interpreter, this)
 
         override val parent: SimResourceSystem? = this@SimFairShareHypervisor.parent
@@ -82,6 +85,9 @@ public class SimFairShareHypervisor(
             lastDemand = counters.demand
             lastActual = counters.actual
             lastOvercommit = counters.overcommit
+
+            val load = lastCpuDemand / ctx.cpus.sumOf { it.model.frequency }
+            triggerGovernors(load)
         }
     }
 }

@@ -30,6 +30,11 @@ import org.opendc.simulator.resources.SimResourceProvider
  */
 public interface SimProcessingUnit : SimResourceProvider {
     /**
+     * The capacity of the processing unit, which can be adjusted by the workload if supported by the machine.
+     */
+    public override var capacity: Double
+
+    /**
      *  The model representing the static properties of the processing unit.
      */
     public val model: ProcessingUnit
