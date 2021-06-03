@@ -37,12 +37,12 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimResourceBenchmarks {
     private lateinit var scope: SimulationCoroutineScope
-    private lateinit var scheduler: SimResourceScheduler
+    private lateinit var interpreter: SimResourceInterpreter
 
     @Setup
     fun setUp() {
         scope = SimulationCoroutineScope()
-        scheduler = SimResourceSchedulerTrampoline(scope.coroutineContext, scope.clock)
+        interpreter = SimResourceInterpreter(scope.coroutineContext, scope.clock)
     }
 
     @State(Scope.Thread)
@@ -67,7 +67,7 @@ class SimResourceBenchmarks {
     @Benchmark
     fun benchmarkSource(state: Workload) {
         return scope.runBlockingSimulation {
-            val provider = SimResourceSource(4200.0, scheduler)
+            val provider = SimResourceSource(4200.0, interpreter)
             return@runBlockingSimulation provider.consume(SimTraceConsumer(state.trace))
         }
     }
@@ -75,7 +75,7 @@ class SimResourceBenchmarks {
     @Benchmark
     fun benchmarkForwardOverhead(state: Workload) {
         return scope.runBlockingSimulation {
-            val provider = SimResourceSource(4200.0, scheduler)
+            val provider = SimResourceSource(4200.0, interpreter)
             val forwarder = SimResourceForwarder()
             provider.startConsumer(forwarder)
             return@runBlockingSimulation forwarder.consume(SimTraceConsumer(state.trace))
@@ -85,12 +85,12 @@ class SimResourceBenchmarks {
     @Benchmark
     fun benchmarkSwitchMaxMinSingleConsumer(state: Workload) {
         return scope.runBlockingSimulation {
-            val switch = SimResourceSwitchMaxMin(scheduler)
+            val switch = SimResourceSwitchMaxMin(interpreter)
 
-            switch.addInput(SimResourceSource(3000.0, scheduler))
-            switch.addInput(SimResourceSource(3000.0, scheduler))
+            switch.addInput(SimResourceSource(3000.0, interpreter))
+            switch.addInput(SimResourceSource(3000.0, interpreter))
 
-            val provider = switch.addOutput(3500.0)
+            val provider = switch.newOutput()
             return@runBlockingSimulation provider.consume(SimTraceConsumer(state.trace))
         }
     }
@@ -98,14 +98,14 @@ class SimResourceBenchmarks {
     @Benchmark
     fun benchmarkSwitchMaxMinTripleConsumer(state: Workload) {
         return scope.runBlockingSimulation {
-            val switch = SimResourceSwitchMaxMin(scheduler)
+            val switch = SimResourceSwitchMaxMin(interpreter)
 
-            switch.addInput(SimResourceSource(3000.0, scheduler))
-            switch.addInput(SimResourceSource(3000.0, scheduler))
+            switch.addInput(SimResourceSource(3000.0, interpreter))
+            switch.addInput(SimResourceSource(3000.0, interpreter))
 
-            repeat(3) { i ->
+            repeat(3) {
                 launch {
-                    val provider = switch.addOutput(3500.0)
+                    val provider = switch.newOutput()
                     provider.consume(SimTraceConsumer(state.trace))
                 }
             }
@@ -117,10 +117,10 @@ class SimResourceBenchmarks {
         return scope.runBlockingSimulation {
             val switch = SimResourceSwitchExclusive()
 
-            switch.addInput(SimResourceSource(3000.0, scheduler))
-            switch.addInput(SimResourceSource(3000.0, scheduler))
+            switch.addInput(SimResourceSource(3000.0, interpreter))
+            switch.addInput(SimResourceSource(3000.0, interpreter))
 
-            val provider = switch.addOutput(3500.0)
+            val provider = switch.newOutput()
             return@runBlockingSimulation provider.consume(SimTraceConsumer(state.trace))
         }
     }
@@ -130,12 +130,12 @@ class SimResourceBenchmarks {
         return scope.runBlockingSimulation {
             val switch = SimResourceSwitchExclusive()
 
-            switch.addInput(SimResourceSource(3000.0, scheduler))
-            switch.addInput(SimResourceSource(3000.0, scheduler))
+            switch.addInput(SimResourceSource(3000.0, interpreter))
+            switch.addInput(SimResourceSource(3000.0, interpreter))
 
             repeat(2) {
                 launch {
-                    val provider = switch.addOutput(3500.0)
+                    val provider = switch.newOutput()
                     provider.consume(SimTraceConsumer(state.trace))
                 }
             }

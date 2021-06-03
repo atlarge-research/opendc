@@ -32,6 +32,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
+import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
  * Test suite for the [SimResourceSwitch] implementations
@@ -40,13 +41,13 @@ import org.opendc.simulator.resources.consumer.SimTraceConsumer
 internal class SimResourceSwitchMaxMinTest {
     @Test
     fun testSmoke() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val switch = SimResourceSwitchMaxMin(scheduler)
 
         val sources = List(2) { SimResourceSource(2000.0, scheduler) }
         sources.forEach { switch.addInput(it) }
 
-        val provider = switch.addOutput(1000.0)
+        val provider = switch.newOutput()
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
         every { consumer.onNext(any()) } returns SimResourceCommand.Consume(1.0, 1.0) andThen SimResourceCommand.Exit
@@ -64,27 +65,7 @@ internal class SimResourceSwitchMaxMinTest {
      */
     @Test
     fun testOvercommittedSingle() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
-
-        val listener = object : SimResourceSwitchMaxMin.Listener {
-            var totalRequestedWork = 0L
-            var totalGrantedWork = 0L
-            var totalOvercommittedWork = 0L
-
-            override fun onSliceFinish(
-                switch: SimResourceSwitchMaxMin,
-                requestedWork: Long,
-                grantedWork: Long,
-                overcommittedWork: Long,
-                interferedWork: Long,
-                cpuUsage: Double,
-                cpuDemand: Double
-            ) {
-                totalRequestedWork += requestedWork
-                totalGrantedWork += grantedWork
-                totalOvercommittedWork += overcommittedWork
-            }
-        }
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val duration = 5 * 60L
         val workload =
@@ -97,8 +78,8 @@ internal class SimResourceSwitchMaxMinTest {
                 ),
             )
 
-        val switch = SimResourceSwitchMaxMin(scheduler, listener)
-        val provider = switch.addOutput(3200.0)
+        val switch = SimResourceSwitchMaxMin(scheduler)
+        val provider = switch.newOutput()
 
         try {
             switch.addInput(SimResourceSource(3200.0, scheduler))
@@ -109,9 +90,9 @@ internal class SimResourceSwitchMaxMinTest {
         }
 
         assertAll(
-            { assertEquals(1113300, listener.totalRequestedWork, "Requested Burst does not match") },
-            { assertEquals(1023300, listener.totalGrantedWork, "Granted Burst does not match") },
-            { assertEquals(90000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
+            { assertEquals(1113300.0, switch.counters.demand, "Requested work does not match") },
+            { assertEquals(1023300.0, switch.counters.actual, "Actual work does not match") },
+            { assertEquals(90000.0, switch.counters.overcommit, "Overcommitted work does not match") },
             { assertEquals(1200000, clock.millis()) }
         )
     }
@@ -121,27 +102,7 @@ internal class SimResourceSwitchMaxMinTest {
      */
     @Test
     fun testOvercommittedDual() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
-
-        val listener = object : SimResourceSwitchMaxMin.Listener {
-            var totalRequestedWork = 0L
-            var totalGrantedWork = 0L
-            var totalOvercommittedWork = 0L
-
-            override fun onSliceFinish(
-                switch: SimResourceSwitchMaxMin,
-                requestedWork: Long,
-                grantedWork: Long,
-                overcommittedWork: Long,
-                interferedWork: Long,
-                cpuUsage: Double,
-                cpuDemand: Double
-            ) {
-                totalRequestedWork += requestedWork
-                totalGrantedWork += grantedWork
-                totalOvercommittedWork += overcommittedWork
-            }
-        }
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val duration = 5 * 60L
         val workloadA =
@@ -163,9 +124,9 @@ internal class SimResourceSwitchMaxMinTest {
                 )
             )
 
-        val switch = SimResourceSwitchMaxMin(scheduler, listener)
-        val providerA = switch.addOutput(3200.0)
-        val providerB = switch.addOutput(3200.0)
+        val switch = SimResourceSwitchMaxMin(scheduler)
+        val providerA = switch.newOutput()
+        val providerB = switch.newOutput()
 
         try {
             switch.addInput(SimResourceSource(3200.0, scheduler))
@@ -180,9 +141,9 @@ internal class SimResourceSwitchMaxMinTest {
             switch.close()
         }
         assertAll(
-            { assertEquals(2082000, listener.totalRequestedWork, "Requested Burst does not match") },
-            { assertEquals(1062000, listener.totalGrantedWork, "Granted Burst does not match") },
-            { assertEquals(1020000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
+            { assertEquals(2073600.0, switch.counters.demand, "Requested work does not match") },
+            { assertEquals(1053600.0, switch.counters.actual, "Granted work does not match") },
+            { assertEquals(1020000.0, switch.counters.overcommit, "Overcommitted work does not match") },
             { assertEquals(1200000, clock.millis()) }
         )
     }

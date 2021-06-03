@@ -32,15 +32,16 @@ import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
 import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.ScalingDriver
 import org.opendc.simulator.compute.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.failures.FailureDomain
+import org.opendc.simulator.resources.SimResourceInterpreter
 import java.time.Clock
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -59,7 +60,7 @@ public class SimHost(
     meter: Meter,
     hypervisor: SimHypervisorProvider,
     scalingGovernor: ScalingGovernor,
-    scalingDriver: ScalingDriver,
+    scalingDriver: PowerDriver,
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
 ) : Host, FailureDomain, AutoCloseable {
 
@@ -74,7 +75,7 @@ public class SimHost(
         hypervisor: SimHypervisorProvider,
         powerModel: PowerModel = ConstantPowerModel(0.0),
         mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    ) : this(uid, name, model, meta, context, clock, meter, hypervisor, PerformanceScalingGovernor(), SimpleScalingDriver(powerModel), mapper)
+    ) : this(uid, name, model, meta, context, clock, meter, hypervisor, PerformanceScalingGovernor(), SimplePowerDriver(powerModel), mapper)
 
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
@@ -94,19 +95,24 @@ public class SimHost(
     /**
      * Current total memory use of the images on this hypervisor.
      */
-    private var availableMemory: Long = model.memory.map { it.size }.sum()
+    private var availableMemory: Long = model.memory.sumOf { it.size }
+
+    /**
+     * The resource interpreter to schedule the resource interactions.
+     */
+    private val interpreter = SimResourceInterpreter(context, clock)
 
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, scalingGovernor, scalingDriver)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model, scalingDriver)
 
     /**
      * The hypervisor to run multiple workloads.
      */
     public val hypervisor: SimHypervisor = hypervisor.create(
-        scope.coroutineContext, clock,
-        object : SimHypervisor.Listener {
+        interpreter,
+        listener = object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
                 requestedWork: Long,

@@ -20,18 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.resources
+package org.opendc.simulator.compute.power
+
+import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.SimProcessingUnit
 
 /**
- * An interface used by the [SimResourceScheduler] to flush the progress of resource consumer.
+ * A [PowerDriver] is responsible for switching the processor to the correct frequency.
  */
-public interface SimResourceFlushable {
+public interface PowerDriver {
     /**
-     * Flush the current active resource consumption.
-     *
-     * @param isIntermediate A flag to indicate that the intermediate progress of the resource consumer should be
-     * flushed, but without interrupting the resource consumer to submit a new command. If false, the resource consumer
-     * will be asked to deliver a new command and is essentially interrupted.
+     * Create the scaling logic for the specified [machine]
      */
-    public fun flush(isIntermediate: Boolean)
+    public fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): Logic
+
+    /**
+     * The logic of the scaling driver.
+     */
+    public interface Logic {
+        /**
+         * Compute the power consumption of the processor.
+         *
+         * @return The power consumption of the processor in W.
+         */
+        public fun computePower(): Double
+    }
 }

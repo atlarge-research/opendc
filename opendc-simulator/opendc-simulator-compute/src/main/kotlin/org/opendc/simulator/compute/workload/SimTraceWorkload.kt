@@ -24,6 +24,7 @@ package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.util.SimWorkloadLifecycle
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
@@ -44,33 +45,12 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkloa
 
         barrier = SimConsumerBarrier(ctx.cpus.size)
         fragment = nextFragment()
-        offset = ctx.clock.millis()
-    }
+        offset = ctx.interpreter.clock.millis()
 
-    override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer {
-        return object : SimResourceConsumer {
-            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-                val now = ctx.clock.millis()
-                val fragment = fragment ?: return SimResourceCommand.Exit
-                val usage = fragment.usage / fragment.cores
-                val work = (fragment.duration / 1000) * usage
-                val deadline = offset + fragment.duration
+        val lifecycle = SimWorkloadLifecycle(ctx)
 
-                assert(deadline >= now) { "Deadline already passed" }
-
-                val cmd =
-                    if (cpu.id < fragment.cores && work > 0.0)
-                        SimResourceCommand.Consume(work, usage, deadline)
-                    else
-                        SimResourceCommand.Idle(deadline)
-
-                if (barrier.enter()) {
-                    this@SimTraceWorkload.fragment = nextFragment()
-                    this@SimTraceWorkload.offset += fragment.duration
-                }
-
-                return cmd
-            }
+        for (cpu in ctx.cpus) {
+            cpu.startConsumer(lifecycle.waitFor(Consumer(cpu.model)))
         }
     }
 
@@ -84,6 +64,31 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkloa
             iterator.next()
         } else {
             null
+        }
+    }
+
+    private inner class Consumer(val cpu: ProcessingUnit) : SimResourceConsumer {
+        override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+            val now = ctx.clock.millis()
+            val fragment = fragment ?: return SimResourceCommand.Exit
+            val usage = fragment.usage / fragment.cores
+            val work = (fragment.duration / 1000) * usage
+            val deadline = offset + fragment.duration
+
+            assert(deadline >= now) { "Deadline already passed" }
+
+            val cmd =
+                if (cpu.id < fragment.cores && work > 0.0)
+                    SimResourceCommand.Consume(work, usage, deadline)
+                else
+                    SimResourceCommand.Idle(deadline)
+
+            if (barrier.enter()) {
+                this@SimTraceWorkload.fragment = nextFragment()
+                this@SimTraceWorkload.offset += fragment.duration
+            }
+
+            return cmd
         }
     }
 

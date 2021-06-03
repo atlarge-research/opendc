@@ -48,4 +48,6 @@ dependencies {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }
+
+    testImplementation(libs.log4j.slf4j)
 }

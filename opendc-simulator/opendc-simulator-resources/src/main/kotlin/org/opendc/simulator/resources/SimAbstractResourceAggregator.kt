@@ -25,7 +25,10 @@ package org.opendc.simulator.resources
 /**
  * Abstract implementation of [SimResourceAggregator].
  */
-public abstract class SimAbstractResourceAggregator(private val scheduler: SimResourceScheduler) : SimResourceAggregator {
+public abstract class SimAbstractResourceAggregator(
+    interpreter: SimResourceInterpreter,
+    parent: SimResourceSystem?
+) : SimResourceAggregator {
     /**
      * This method is invoked when the resource consumer consumes resources.
      */
@@ -39,7 +42,7 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
     /**
      * This method is invoked when the resource consumer finishes processing.
      */
-    protected abstract fun doFinish(cause: Throwable?)
+    protected abstract fun doFinish()
 
     /**
      * This method is invoked when an input context is started.
@@ -51,8 +54,9 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
      */
     protected abstract fun onInputFinished(input: Input)
 
+    /* SimResourceAggregator */
     override fun addInput(input: SimResourceProvider) {
-        check(output.state != SimResourceState.Stopped) { "Aggregator has been stopped" }
+        check(state != SimResourceState.Stopped) { "Aggregator has been stopped" }
 
         val consumer = Consumer()
         _inputs.add(input)
@@ -60,42 +64,75 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
         input.startConsumer(consumer)
     }
 
-    override fun close() {
-        output.close()
-    }
-
-    override val output: SimResourceProvider
-        get() = _output
-    private val _output = SimResourceForwarder()
-
     override val inputs: Set<SimResourceProvider>
         get() = _inputs
     private val _inputs = mutableSetOf<SimResourceProvider>()
     private val _inputConsumers = mutableListOf<Consumer>()
 
-    protected val outputContext: SimResourceContext
-        get() = context
-    private val context = object : SimAbstractResourceContext(0.0, scheduler, _output) {
-        override val remainingWork: Double
-            get() {
-                val now = clock.millis()
+    /* SimResourceProvider */
+    override val state: SimResourceState
+        get() = _output.state
 
-                return if (_remainingWorkFlush < now) {
-                    _remainingWorkFlush = now
-                    _inputConsumers.sumOf { it._ctx?.remainingWork ?: 0.0 }.also { _remainingWork = it }
-                } else {
-                    _remainingWork
+    override val capacity: Double
+        get() = _output.capacity
+
+    override val speed: Double
+        get() = _output.speed
+
+    override val demand: Double
+        get() = _output.demand
+
+    override val counters: SimResourceCounters
+        get() = _output.counters
+
+    override fun startConsumer(consumer: SimResourceConsumer) {
+        _output.startConsumer(consumer)
+    }
+
+    override fun cancel() {
+        _output.cancel()
+    }
+
+    override fun interrupt() {
+        _output.interrupt()
+    }
+
+    override fun close() {
+        _output.close()
+    }
+
+    private val _output = object : SimAbstractResourceProvider(interpreter, parent, initialCapacity = 0.0) {
+        override fun createLogic(): SimResourceProviderLogic {
+            return object : SimResourceProviderLogic {
+                override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
+                    doIdle(deadline)
+                    return Long.MAX_VALUE
+                }
+
+                override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
+                    doConsume(work, limit, deadline)
+                    return Long.MAX_VALUE
+                }
+
+                override fun onFinish(ctx: SimResourceControllableContext) {
+                    doFinish()
+                }
+
+                override fun onUpdate(ctx: SimResourceControllableContext, work: Double) {
+                    updateCounters(ctx, work)
+                }
+
+                override fun getRemainingWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
+                    return _inputConsumers.sumOf { it.remainingWork }
                 }
             }
-        private var _remainingWork: Double = 0.0
-        private var _remainingWorkFlush: Long = Long.MIN_VALUE
+        }
 
-        override fun onConsume(work: Double, limit: Double, deadline: Long) = doConsume(work, limit, deadline)
-
-        override fun onIdle(deadline: Long) = doIdle(deadline)
-
-        override fun onFinish() {
-            doFinish(null)
+        /**
+         * Flush the progress of the output if possible.
+         */
+        fun flush() {
+            ctx?.flush()
         }
     }
 
@@ -123,7 +160,13 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
          */
         override val ctx: SimResourceContext
             get() = _ctx!!
-        var _ctx: SimResourceContext? = null
+        private var _ctx: SimResourceContext? = null
+
+        /**
+         * The remaining work of the consumer.
+         */
+        val remainingWork: Double
+            get() = _ctx?.remainingWork ?: 0.0
 
         /**
          * The resource command to run next.
@@ -132,7 +175,7 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
 
         private fun updateCapacity() {
             // Adjust capacity of output resource
-            context.capacity = _inputConsumers.sumOf { it._ctx?.capacity ?: 0.0 }
+            _output.capacity = _inputConsumers.sumOf { it._ctx?.capacity ?: 0.0 }
         }
 
         /* Input */
@@ -149,7 +192,8 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
                 this.command = null
                 next
             } else {
-                context.flush(isIntermediate = true)
+                _output.flush()
+
                 next = command
                 this.command = null
                 next ?: SimResourceCommand.Idle()
@@ -161,11 +205,6 @@ public abstract class SimAbstractResourceAggregator(private val scheduler: SimRe
                 SimResourceEvent.Start -> {
                     _ctx = ctx
                     updateCapacity()
-
-                    // Make sure we initialize the output if we have not done so yet
-                    if (context.state == SimResourceState.Pending) {
-                        context.start()
-                    }
 
                     onInputStarted(this)
                 }

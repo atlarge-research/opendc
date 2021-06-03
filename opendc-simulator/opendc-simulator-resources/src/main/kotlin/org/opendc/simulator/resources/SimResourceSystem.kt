@@ -20,34 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
-
-import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimProcessingUnit
+package org.opendc.simulator.resources
 
 /**
- * A [ScalingDriver] is responsible for switching the processor to the correct frequency.
+ * A system of possible multiple sub-resources.
+ *
+ * This interface is used to model hierarchies of resource providers, which can listen efficiently to changes of the
+ * resource provider.
  */
-public interface ScalingDriver {
+public interface SimResourceSystem {
     /**
-     * Create the scaling logic for the specified [machine]
+     * The parent system to which this system belongs or `null` if it has no parent.
      */
-    public fun createLogic(machine: SimMachine): Logic
+    public val parent: SimResourceSystem?
 
     /**
-     * The logic of the scaling driver.
+     * This method is invoked when the system has converged to a steady-state.
+     *
+     * @param timestamp The timestamp at which the system converged.
      */
-    public interface Logic {
-        /**
-         * Create the [ScalingContext] for the specified [cpu] instance.
-         */
-        public fun createContext(cpu: SimProcessingUnit): ScalingContext
-
-        /**
-         * Compute the power consumption of the processor.
-         *
-         * @return The power consumption of the processor in W.
-         */
-        public fun computePower(): Double
-    }
+    public fun onConverge(timestamp: Long)
 }

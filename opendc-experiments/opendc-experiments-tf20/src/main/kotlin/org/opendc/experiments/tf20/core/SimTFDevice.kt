@@ -29,16 +29,12 @@ import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.SimResourceCommand
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceContext
-import org.opendc.simulator.resources.SimResourceEvent
+import org.opendc.simulator.resources.*
 import java.time.Clock
 import java.util.*
 import kotlin.coroutines.Continuation
@@ -67,8 +63,8 @@ public class SimTFDevice(
      * The [SimMachine] representing the device.
      */
     private val machine = SimBareMetalMachine(
-        scope.coroutineContext, clock, SimMachineModel(listOf(pu), listOf(memory)),
-        PerformanceScalingGovernor(), SimpleScalingDriver(powerModel)
+        SimResourceInterpreter(scope.coroutineContext, clock), SimMachineModel(listOf(pu), listOf(memory)),
+        SimplePowerDriver(powerModel)
     )
 
     /**
@@ -119,9 +115,11 @@ public class SimTFDevice(
          */
         private var activeWork: Work? = null
 
-        override fun onStart(ctx: SimMachineContext) {}
-
-        override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer = this
+        override fun onStart(ctx: SimMachineContext) {
+            for (cpu in ctx.cpus) {
+                cpu.startConsumer(this)
+            }
+        }
 
         override fun onNext(ctx: SimResourceContext): SimResourceCommand {
             val activeWork = activeWork

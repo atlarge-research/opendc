@@ -173,23 +173,23 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
      */
     public enum class PowerModelType {
         CUBIC {
-            override val driver: ScalingDriver = SimpleScalingDriver(CubicPowerModel(206.0, 56.4))
+            override val driver: PowerDriver = SimplePowerDriver(CubicPowerModel(206.0, 56.4))
         },
 
         LINEAR {
-            override val driver: ScalingDriver = SimpleScalingDriver(LinearPowerModel(206.0, 56.4))
+            override val driver: PowerDriver = SimplePowerDriver(LinearPowerModel(206.0, 56.4))
         },
 
         SQRT {
-            override val driver: ScalingDriver = SimpleScalingDriver(SqrtPowerModel(206.0, 56.4))
+            override val driver: PowerDriver = SimplePowerDriver(SqrtPowerModel(206.0, 56.4))
         },
 
         SQUARE {
-            override val driver: ScalingDriver = SimpleScalingDriver(SquarePowerModel(206.0, 56.4))
+            override val driver: PowerDriver = SimplePowerDriver(SquarePowerModel(206.0, 56.4))
         },
 
         INTERPOLATION {
-            override val driver: ScalingDriver = SimpleScalingDriver(
+            override val driver: PowerDriver = SimplePowerDriver(
                 InterpolationPowerModel(
                     listOf(56.4, 100.0, 107.0, 117.0, 127.0, 138.0, 149.0, 162.0, 177.0, 191.0, 206.0)
                 )
@@ -197,17 +197,17 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
         },
 
         MSE {
-            override val driver: ScalingDriver = SimpleScalingDriver(MsePowerModel(206.0, 56.4, 1.4))
+            override val driver: PowerDriver = SimplePowerDriver(MsePowerModel(206.0, 56.4, 1.4))
         },
 
         ASYMPTOTIC {
-            override val driver: ScalingDriver = SimpleScalingDriver(AsymptoticPowerModel(206.0, 56.4, 0.3, false))
+            override val driver: PowerDriver = SimplePowerDriver(AsymptoticPowerModel(206.0, 56.4, 0.3, false))
         },
 
         ASYMPTOTIC_DVFS {
-            override val driver: ScalingDriver = SimpleScalingDriver(AsymptoticPowerModel(206.0, 56.4, 0.3, true))
+            override val driver: PowerDriver = SimplePowerDriver(AsymptoticPowerModel(206.0, 56.4, 0.3, true))
         };
 
-        public abstract val driver: ScalingDriver
+        public abstract val driver: PowerDriver
     }
 }

@@ -20,29 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
-
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import org.junit.jupiter.api.Test
+package org.opendc.simulator.resources
 
 /**
- * Test suite for the [DemandScalingGovernor]
+ * An interface that tracks cumulative counts of the work performed by a resource.
  */
-internal class DemandScalingGovernorTest {
-    @Test
-    fun testSetDemandLimit() {
-        val ctx = mockk<ScalingContext>(relaxUnitFun = true)
+public interface SimResourceCounters {
+    /**
+     * The amount of work that resource consumers wanted the resource to perform.
+     */
+    public val demand: Double
 
-        every { ctx.cpu.speed } returns 2100.0
+    /**
+     * The amount of work performed by the resource.
+     */
+    public val actual: Double
 
-        val logic = DemandScalingGovernor().createLogic(ctx)
+    /**
+     * The amount of work that could not be completed due to overcommitted resources.
+     */
+    public val overcommit: Double
 
-        logic.onStart()
-        verify(exactly = 0) { ctx.setTarget(any()) }
-
-        logic.onLimit()
-        verify(exactly = 1) { ctx.setTarget(2100.0) }
-    }
+    /**
+     * Reset the resource counters.
+     */
+    public fun reset()
 }

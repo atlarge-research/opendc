@@ -29,14 +29,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.resources.SimResourceInterpreter
 
 /**
  * Test suite for the [SimBareMetalMachine] class.
@@ -57,7 +57,11 @@ class SimMachineTest {
 
     @Test
     fun testFlopsWorkload() = runBlockingSimulation {
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
 
         try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
@@ -76,7 +80,11 @@ class SimMachineTest {
             cpus = List(cpuNode.coreCount * 2) { ProcessingUnit(cpuNode, it % 2, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
 
         try {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
@@ -90,7 +98,11 @@ class SimMachineTest {
 
     @Test
     fun testUsage() = runBlockingSimulation {
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
 
         val res = mutableListOf<Double>()
         val job = launch { machine.usage.toList(res) }
@@ -99,7 +111,7 @@ class SimMachineTest {
             machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
             yield()
             job.cancel()
-            assertEquals(listOf(0.0, 0.5, 1.0, 0.5, 0.0), res) { "Machine is fully utilized" }
+            assertEquals(listOf(0.0, 1.0, 0.0), res) { "Machine is fully utilized" }
         } finally {
             machine.close()
         }
@@ -107,7 +119,11 @@ class SimMachineTest {
 
     @Test
     fun testClose() = runBlockingSimulation {
-        val machine = SimBareMetalMachine(coroutineContext, clock, machineModel, PerformanceScalingGovernor(), SimpleScalingDriver(ConstantPowerModel(0.0)))
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
 
         machine.close()
         assertDoesNotThrow { machine.close() }

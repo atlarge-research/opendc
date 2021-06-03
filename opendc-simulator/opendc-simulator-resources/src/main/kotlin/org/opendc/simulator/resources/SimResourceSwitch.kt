@@ -37,9 +37,14 @@ public interface SimResourceSwitch : AutoCloseable {
     public val inputs: Set<SimResourceProvider>
 
     /**
-     * Add an output to the switch with the specified [capacity].
+     * The resource counters to track the execution metrics of all switch resources.
      */
-    public fun addOutput(capacity: Double): SimResourceProvider
+    public val counters: SimResourceCounters
+
+    /**
+     * Create a new output on the switch.
+     */
+    public fun newOutput(): SimResourceProvider
 
     /**
      * Add the specified [input] to the switch.

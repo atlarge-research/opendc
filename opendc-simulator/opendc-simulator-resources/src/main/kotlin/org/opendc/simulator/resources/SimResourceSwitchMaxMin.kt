@@ -22,23 +22,31 @@
 
 package org.opendc.simulator.resources
 
-import kotlinx.coroutines.*
-
 /**
  * A [SimResourceSwitch] implementation that switches resource consumptions over the available resources using max-min
  * fair sharing.
  */
 public class SimResourceSwitchMaxMin(
-    scheduler: SimResourceScheduler,
-    private val listener: Listener? = null
+    interpreter: SimResourceInterpreter,
+    parent: SimResourceSystem? = null
 ) : SimResourceSwitch {
-    private val _outputs = mutableSetOf<SimResourceProvider>()
+    /**
+     * The output resource providers to which resource consumers can be attached.
+     */
     override val outputs: Set<SimResourceProvider>
-        get() = _outputs
+        get() = distributor.outputs
 
-    private val _inputs = mutableSetOf<SimResourceProvider>()
+    /**
+     * The input resources that will be switched between the output providers.
+     */
     override val inputs: Set<SimResourceProvider>
-        get() = _inputs
+        get() = aggregator.inputs
+
+    /**
+     * The resource counters to track the execution metrics of all switch resources.
+     */
+    override val counters: SimResourceCounters
+        get() = aggregator.counters
 
     /**
      * A flag to indicate that the switch was closed.
@@ -48,37 +56,24 @@ public class SimResourceSwitchMaxMin(
     /**
      * The aggregator to aggregate the resources.
      */
-    private val aggregator = SimResourceAggregatorMaxMin(scheduler)
+    private val aggregator = SimResourceAggregatorMaxMin(interpreter, parent)
 
     /**
      * The distributor to distribute the aggregated resources.
      */
-    private val distributor = SimResourceDistributorMaxMin(
-        aggregator.output, scheduler,
-        object : SimResourceDistributorMaxMin.Listener {
-            override fun onSliceFinish(
-                switch: SimResourceDistributor,
-                requestedWork: Long,
-                grantedWork: Long,
-                overcommittedWork: Long,
-                interferedWork: Long,
-                cpuUsage: Double,
-                cpuDemand: Double
-            ) {
-                listener?.onSliceFinish(this@SimResourceSwitchMaxMin, requestedWork, grantedWork, overcommittedWork, interferedWork, cpuUsage, cpuDemand)
-            }
-        }
-    )
+    private val distributor = SimResourceDistributorMaxMin(interpreter, parent)
+
+    init {
+        aggregator.startConsumer(distributor)
+    }
 
     /**
-     * Add an output to the switch represented by [resource].
+     * Add an output to the switch.
      */
-    override fun addOutput(capacity: Double): SimResourceProvider {
+    override fun newOutput(): SimResourceProvider {
         check(!isClosed) { "Switch has been closed" }
 
-        val provider = distributor.addOutput(capacity)
-        _outputs.add(provider)
-        return provider
+        return distributor.newOutput()
     }
 
     /**
@@ -93,26 +88,7 @@ public class SimResourceSwitchMaxMin(
     override fun close() {
         if (!isClosed) {
             isClosed = true
-            distributor.close()
             aggregator.close()
         }
-    }
-
-    /**
-     * Event listener for hypervisor events.
-     */
-    public interface Listener {
-        /**
-         * This method is invoked when a slice is finished.
-         */
-        public fun onSliceFinish(
-            switch: SimResourceSwitchMaxMin,
-            requestedWork: Long,
-            grantedWork: Long,
-            overcommittedWork: Long,
-            interferedWork: Long,
-            cpuUsage: Double,
-            cpuDemand: Double
-        )
     }
 }

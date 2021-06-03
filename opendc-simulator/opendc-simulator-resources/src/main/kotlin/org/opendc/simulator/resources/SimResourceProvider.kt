@@ -27,13 +27,33 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
- * A [SimResourceProvider] provides some resource of type [R].
+ * A [SimResourceProvider] provides a resource that can be consumed by a [SimResourceConsumer].
  */
 public interface SimResourceProvider : AutoCloseable {
     /**
      * The state of the resource.
      */
     public val state: SimResourceState
+
+    /**
+     * The resource capacity available at this instant.
+     */
+    public val capacity: Double
+
+    /**
+     * The current processing speed of the resource.
+     */
+    public val speed: Double
+
+    /**
+     * The resource processing speed demand at this instant.
+     */
+    public val demand: Double
+
+    /**
+     * The resource counters to track the execution metrics of the resource.
+     */
+    public val counters: SimResourceCounters
 
     /**
      * Start the specified [resource consumer][consumer] in the context of this resource provider asynchronously.

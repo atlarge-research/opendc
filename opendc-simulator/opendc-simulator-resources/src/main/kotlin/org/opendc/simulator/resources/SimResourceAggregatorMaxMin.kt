@@ -25,7 +25,10 @@ package org.opendc.simulator.resources
 /**
  * A [SimResourceAggregator] that distributes the load equally across the input resources.
  */
-public class SimResourceAggregatorMaxMin(scheduler: SimResourceScheduler) : SimAbstractResourceAggregator(scheduler) {
+public class SimResourceAggregatorMaxMin(
+    interpreter: SimResourceInterpreter,
+    parent: SimResourceSystem? = null
+) : SimAbstractResourceAggregator(interpreter, parent) {
     private val consumers = mutableListOf<Input>()
 
     override fun doConsume(work: Double, limit: Double, deadline: Long) {
@@ -35,7 +38,7 @@ public class SimResourceAggregatorMaxMin(scheduler: SimResourceScheduler) : SimA
         // Divide the requests over the available capacity of the input resources fairly
         for (input in consumers) {
             val inputCapacity = input.ctx.capacity
-            val fraction = inputCapacity / outputContext.capacity
+            val fraction = inputCapacity / capacity
             val grantedSpeed = limit * fraction
             val grantedWork = fraction * work
 
@@ -53,7 +56,7 @@ public class SimResourceAggregatorMaxMin(scheduler: SimResourceScheduler) : SimA
         }
     }
 
-    override fun doFinish(cause: Throwable?) {
+    override fun doFinish() {
         val iterator = consumers.iterator()
         for (input in iterator) {
             iterator.remove()

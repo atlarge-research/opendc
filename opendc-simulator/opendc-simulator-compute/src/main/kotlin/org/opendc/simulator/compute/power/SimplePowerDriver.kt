@@ -20,27 +20,20 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.power
 
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimProcessingUnit
 
 /**
- * A [ScalingContext] is used to communicate frequency scaling changes between the [ScalingGovernor] and driver.
+ * A [PowerDriver] that computes the power consumption based on a single specified [power model][model].
  */
-public interface ScalingContext {
-    /**
-     * The machine the processing unit belongs to.
-     */
-    public val machine: SimMachine
+public class SimplePowerDriver(private val model: PowerModel) : PowerDriver {
+    override fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): PowerDriver.Logic = object : PowerDriver.Logic {
+        override fun computePower(): Double {
+            return model.computePower(machine.usage.value)
+        }
 
-    /**
-     * The processing unit associated with this context.
-     */
-    public val cpu: SimProcessingUnit
-
-    /**
-     * Target the processor to run at the specified target [frequency][freq].
-     */
-    public fun setTarget(freq: Double)
+        override fun toString(): String = "SimplePowerDriver.Logic"
+    }
 }

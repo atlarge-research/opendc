@@ -23,18 +23,18 @@
 package org.opendc.simulator.compute
 
 import org.opendc.simulator.compute.model.MemoryUnit
-import java.time.Clock
+import org.opendc.simulator.resources.SimResourceInterpreter
 
 /**
  * A simulated execution context in which a bootable image runs. This interface represents the
  * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
  * which the image runs.
  */
-public interface SimMachineContext {
+public interface SimMachineContext : AutoCloseable {
     /**
-     * The virtual clock tracking simulation time.
+     * The resource interpreter that simulates the machine.
      */
-    public val clock: Clock
+    public val interpreter: SimResourceInterpreter
 
     /**
      * The metadata associated with the context.
@@ -50,4 +50,9 @@ public interface SimMachineContext {
      * The memory available on the machine
      */
     public val memory: List<MemoryUnit>
+
+    /**
+     * Stop the workload.
+     */
+    public override fun close()
 }

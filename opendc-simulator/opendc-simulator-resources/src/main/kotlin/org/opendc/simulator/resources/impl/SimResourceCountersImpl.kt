@@ -20,30 +20,23 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.resources.impl
 
-import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimProcessingUnit
-import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.resources.SimResourceCounters
 
 /**
- * A [ScalingDriver] that ignores the instructions of the [ScalingGovernor] and directly computes the power consumption
- * based on the specified [power model][model].
+ * Mutable implementation of the [SimResourceCounters] interface.
  */
-public class SimpleScalingDriver(private val model: PowerModel) : ScalingDriver {
-    override fun createLogic(machine: SimMachine): ScalingDriver.Logic = object : ScalingDriver.Logic {
-        override fun createContext(cpu: SimProcessingUnit): ScalingContext {
-            return object : ScalingContext {
-                override val machine: SimMachine = machine
+internal class SimResourceCountersImpl : SimResourceCounters {
+    override var demand: Double = 0.0
+    override var actual: Double = 0.0
+    override var overcommit: Double = 0.0
 
-                override val cpu: SimProcessingUnit = cpu
-
-                override fun setTarget(freq: Double) {}
-            }
-        }
-
-        override fun computePower(): Double = model.computePower(machine.usage.value)
-
-        override fun toString(): String = "SimpleScalingDriver.Logic"
+    override fun reset() {
+        demand = 0.0
+        actual = 0.0
+        overcommit = 0.0
     }
+
+    override fun toString(): String = "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
 }

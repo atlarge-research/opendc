@@ -22,13 +22,15 @@
 
 package org.opendc.simulator.compute.cpufreq
 
+import org.opendc.simulator.compute.SimProcessingUnit
+
 /**
  * A CPUFreq [ScalingGovernor] that causes the highest possible frequency to be requested from the resource.
  */
 public class PerformanceScalingGovernor : ScalingGovernor {
-    override fun createLogic(ctx: ScalingContext): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
-        override fun onLimit() {
-            ctx.setTarget(ctx.cpu.model.frequency)
+    override fun createLogic(cpu: SimProcessingUnit): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
+        override fun onStart() {
+            cpu.capacity = cpu.model.frequency
         }
 
         override fun toString(): String = "PerformanceScalingGovernor.Logic"

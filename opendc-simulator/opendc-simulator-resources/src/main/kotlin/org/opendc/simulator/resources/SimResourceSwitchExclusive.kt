@@ -44,11 +44,28 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
     override val inputs: Set<SimResourceProvider>
         get() = _inputs
 
-    override fun addOutput(capacity: Double): SimResourceProvider {
+    override val counters: SimResourceCounters = object : SimResourceCounters {
+        override val demand: Double
+            get() = _inputs.sumOf { it.counters.demand }
+        override val actual: Double
+            get() = _inputs.sumOf { it.counters.actual }
+        override val overcommit: Double
+            get() = _inputs.sumOf { it.counters.overcommit }
+
+        override fun reset() {
+            for (input in _inputs) {
+                input.counters.reset()
+            }
+        }
+
+        override fun toString(): String = "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
+    }
+
+    override fun newOutput(): SimResourceProvider {
         check(!isClosed) { "Switch has been closed" }
         check(availableResources.isNotEmpty()) { "No capacity to serve request" }
         val forwarder = availableResources.poll()
-        val output = Provider(capacity, forwarder)
+        val output = Provider(forwarder)
         _outputs += output
         return output
     }
@@ -84,13 +101,9 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
         _inputs.forEach(SimResourceProvider::cancel)
     }
 
-    private inner class Provider(
-        private val capacity: Double,
-        private val forwarder: SimResourceTransformer
-    ) : SimResourceProvider by forwarder {
+    private inner class Provider(private val forwarder: SimResourceTransformer) : SimResourceProvider by forwarder {
         override fun close() {
             // We explicitly do not close the forwarder here in order to re-use it across output resources.
-
             _outputs -= this
             availableResources += forwarder
         }

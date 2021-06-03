@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
  * A test suite for the [SimResourceTransformer] class.
@@ -41,7 +42,7 @@ internal class SimResourceTransformerTest {
     @Test
     fun testExitImmediately() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(2000.0, scheduler)
 
         launch {
@@ -61,7 +62,7 @@ internal class SimResourceTransformerTest {
     @Test
     fun testExit() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(2000.0, scheduler)
 
         launch {
@@ -122,7 +123,7 @@ internal class SimResourceTransformerTest {
     @Test
     fun testCancelStartedDelegate() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
@@ -141,7 +142,7 @@ internal class SimResourceTransformerTest {
     @Test
     fun testCancelPropagation() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
@@ -160,7 +161,7 @@ internal class SimResourceTransformerTest {
     @Test
     fun testExitPropagation() = runBlockingSimulation {
         val forwarder = SimResourceForwarder(isCoupled = true)
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
@@ -176,7 +177,7 @@ internal class SimResourceTransformerTest {
     @Test
     fun testAdjustCapacity() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(1.0, scheduler)
 
         val consumer = spyk(SimWorkConsumer(2.0, 1.0))
@@ -195,7 +196,7 @@ internal class SimResourceTransformerTest {
     @Test
     fun testTransformExit() = runBlockingSimulation {
         val forwarder = SimResourceTransformer { _, _ -> SimResourceCommand.Exit }
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(1.0, scheduler)
 
         val consumer = spyk(SimWorkConsumer(2.0, 1.0))
@@ -204,5 +205,22 @@ internal class SimResourceTransformerTest {
 
         assertEquals(0, clock.millis())
         verify(exactly = 1) { consumer.onNext(any()) }
+    }
+
+    @Test
+    fun testCounters() = runBlockingSimulation {
+        val forwarder = SimResourceForwarder()
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
+        val source = SimResourceSource(1.0, scheduler)
+
+        val consumer = SimWorkConsumer(2.0, 1.0)
+        source.startConsumer(forwarder)
+
+        forwarder.consume(consumer)
+
+        assertEquals(source.counters.actual, forwarder.counters.actual) { "Actual work" }
+        assertEquals(source.counters.demand, forwarder.counters.demand) { "Work demand" }
+        assertEquals(source.counters.overcommit, forwarder.counters.overcommit) { "Overcommitted work" }
+        assertEquals(2000, clock.millis())
     }
 }

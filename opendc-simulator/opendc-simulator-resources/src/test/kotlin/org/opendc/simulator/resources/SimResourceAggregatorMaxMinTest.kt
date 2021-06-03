@@ -33,6 +33,7 @@ import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
  * Test suite for the [SimResourceAggregatorMaxMin] class.
@@ -41,7 +42,7 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 internal class SimResourceAggregatorMaxMinTest {
     @Test
     fun testSingleCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val forwarder = SimResourceForwarder()
@@ -58,7 +59,7 @@ internal class SimResourceAggregatorMaxMinTest {
         source.startConsumer(adapter)
 
         try {
-            aggregator.output.consume(consumer)
+            aggregator.consume(consumer)
             yield()
 
             assertAll(
@@ -66,13 +67,13 @@ internal class SimResourceAggregatorMaxMinTest {
                 { assertEquals(listOf(0.0, 0.5, 0.0), usage) }
             )
         } finally {
-            aggregator.output.close()
+            aggregator.close()
         }
     }
 
     @Test
     fun testDoubleCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -86,20 +87,20 @@ internal class SimResourceAggregatorMaxMinTest {
         val adapter = SimSpeedConsumerAdapter(consumer, usage::add)
 
         try {
-            aggregator.output.consume(adapter)
+            aggregator.consume(adapter)
             yield()
             assertAll(
                 { assertEquals(1000, clock.millis()) },
                 { assertEquals(listOf(0.0, 2.0, 0.0), usage) }
             )
         } finally {
-            aggregator.output.close()
+            aggregator.close()
         }
     }
 
     @Test
     fun testOvercommit() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -114,19 +115,19 @@ internal class SimResourceAggregatorMaxMinTest {
             .andThen(SimResourceCommand.Exit)
 
         try {
-            aggregator.output.consume(consumer)
+            aggregator.consume(consumer)
             yield()
             assertEquals(1000, clock.millis())
 
             verify(exactly = 2) { consumer.onNext(any()) }
         } finally {
-            aggregator.output.close()
+            aggregator.close()
         }
     }
 
     @Test
     fun testException() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -141,17 +142,17 @@ internal class SimResourceAggregatorMaxMinTest {
             .andThenThrows(IllegalStateException("Test Exception"))
 
         try {
-            assertThrows<IllegalStateException> { aggregator.output.consume(consumer) }
+            assertThrows<IllegalStateException> { aggregator.consume(consumer) }
             yield()
             assertEquals(SimResourceState.Pending, sources[0].state)
         } finally {
-            aggregator.output.close()
+            aggregator.close()
         }
     }
 
     @Test
     fun testAdjustCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -163,20 +164,20 @@ internal class SimResourceAggregatorMaxMinTest {
         val consumer = SimWorkConsumer(4.0, 1.0)
         try {
             coroutineScope {
-                launch { aggregator.output.consume(consumer) }
+                launch { aggregator.consume(consumer) }
                 delay(1000)
                 sources[0].capacity = 0.5
             }
             yield()
             assertEquals(2334, clock.millis())
         } finally {
-            aggregator.output.close()
+            aggregator.close()
         }
     }
 
     @Test
     fun testFailOverCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val aggregator = SimResourceAggregatorMaxMin(scheduler)
         val sources = listOf(
@@ -188,14 +189,40 @@ internal class SimResourceAggregatorMaxMinTest {
         val consumer = SimWorkConsumer(1.0, 0.5)
         try {
             coroutineScope {
-                launch { aggregator.output.consume(consumer) }
+                launch { aggregator.consume(consumer) }
                 delay(500)
                 sources[0].capacity = 0.5
             }
             yield()
             assertEquals(1000, clock.millis())
         } finally {
-            aggregator.output.close()
+            aggregator.close()
+        }
+    }
+
+    @Test
+    fun testCounters() = runBlockingSimulation {
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
+
+        val aggregator = SimResourceAggregatorMaxMin(scheduler)
+        val sources = listOf(
+            SimResourceSource(1.0, scheduler),
+            SimResourceSource(1.0, scheduler)
+        )
+        sources.forEach(aggregator::addInput)
+
+        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
+        every { consumer.onNext(any()) }
+            .returns(SimResourceCommand.Consume(4.0, 4.0, 1000))
+            .andThen(SimResourceCommand.Exit)
+
+        try {
+            aggregator.consume(consumer)
+            yield()
+            assertEquals(1000, clock.millis())
+            assertEquals(2.0, aggregator.counters.actual) { "Actual work mismatch" }
+        } finally {
+            aggregator.close()
         }
     }
 }

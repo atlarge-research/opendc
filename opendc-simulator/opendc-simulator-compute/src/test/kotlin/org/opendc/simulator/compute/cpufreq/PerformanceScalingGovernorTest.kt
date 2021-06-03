@@ -22,15 +22,28 @@
 
 package org.opendc.simulator.compute.cpufreq
 
-/**
- * A CPUFreq [ScalingGovernor] that requests the frequency based on the utilization of the machine.
- */
-public class DemandScalingGovernor : ScalingGovernor {
-    override fun createLogic(ctx: ScalingContext): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
-        override fun onLimit() {
-            ctx.setTarget(ctx.cpu.speed)
-        }
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.jupiter.api.Test
+import org.opendc.simulator.compute.SimProcessingUnit
 
-        override fun toString(): String = "DemandScalingGovernor.Logic"
+/**
+ * Test suite for the [PerformanceScalingGovernor]
+ */
+internal class PerformanceScalingGovernorTest {
+    @Test
+    fun testSetStartLimit() {
+        val cpu = mockk<SimProcessingUnit>(relaxUnitFun = true)
+
+        every { cpu.model.frequency } returns 4100.0
+        every { cpu.speed } returns 2100.0
+
+        val logic = PerformanceScalingGovernor().createLogic(cpu)
+
+        logic.onStart()
+        logic.onLimit(1.0)
+
+        verify(exactly = 1) { cpu.capacity = 4100.0 }
     }
 }

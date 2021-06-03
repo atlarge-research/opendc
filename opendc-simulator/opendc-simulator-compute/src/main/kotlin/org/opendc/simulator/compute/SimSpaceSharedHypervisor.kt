@@ -22,12 +22,14 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.resources.*
+import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSwitch
+import org.opendc.simulator.resources.SimResourceSwitchExclusive
 
 /**
  * A [SimHypervisor] that allocates its sub-resources exclusively for the virtual machine that it hosts.
  */
-public class SimSpaceSharedHypervisor : SimAbstractHypervisor() {
+public class SimSpaceSharedHypervisor(interpreter: SimResourceInterpreter) : SimAbstractHypervisor(interpreter, null) {
     override fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean {
         return switch.inputs.size - switch.outputs.size >= model.cpus.size
     }

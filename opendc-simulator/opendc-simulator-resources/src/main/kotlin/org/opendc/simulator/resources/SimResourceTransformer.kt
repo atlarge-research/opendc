@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.resources
 
+import org.opendc.simulator.resources.impl.SimResourceCountersImpl
+
 /**
  * A [SimResourceFlow] that transforms the resource commands emitted by the resource commands to the resource provider.
  *
@@ -52,6 +54,19 @@ public class SimResourceTransformer(
      */
     override var state: SimResourceState = SimResourceState.Pending
         private set
+
+    override val capacity: Double
+        get() = ctx?.capacity ?: 0.0
+
+    override val speed: Double
+        get() = ctx?.speed ?: 0.0
+
+    override val demand: Double
+        get() = ctx?.demand ?: 0.0
+
+    override val counters: SimResourceCounters
+        get() = _counters
+    private val _counters = SimResourceCountersImpl()
 
     override fun startConsumer(consumer: SimResourceConsumer) {
         check(state == SimResourceState.Pending) { "Resource is in invalid state" }
@@ -97,10 +112,15 @@ public class SimResourceTransformer(
             start()
         }
 
+        updateCounters(ctx)
+
         return if (state == SimResourceState.Stopped) {
             SimResourceCommand.Exit
         } else if (delegate != null) {
             val command = transform(ctx, delegate.onNext(ctx))
+
+            _work = if (command is SimResourceCommand.Consume) command.work else 0.0
+
             if (command == SimResourceCommand.Exit) {
                 // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
                 // reset beforehand the existing state and check whether it has been updated afterwards
@@ -168,6 +188,22 @@ public class SimResourceTransformer(
         if (state != SimResourceState.Stopped) {
             state = SimResourceState.Pending
         }
+    }
+
+    /**
+     * Counter to track the current submitted work.
+     */
+    private var _work = 0.0
+
+    /**
+     * Update the resource counters for the transformer.
+     */
+    private fun updateCounters(ctx: SimResourceContext) {
+        val counters = _counters
+        val remainingWork = ctx.remainingWork
+        counters.demand += _work
+        counters.actual += _work - remainingWork
+        counters.overcommit += remainingWork
     }
 }
 

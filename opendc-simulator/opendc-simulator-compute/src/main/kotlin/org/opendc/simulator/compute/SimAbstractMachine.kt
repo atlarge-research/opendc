@@ -27,17 +27,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.consume
-import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
-import java.time.Clock
-import kotlin.coroutines.CoroutineContext
+import org.opendc.simulator.resources.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
 
 /**
  * Abstract implementation of the [SimMachine] interface.
+ *
+ * @param interpreter The interpreter to manage the machine's resources.
+ * @param parent The parent simulation system.
+ * @param model The model of the machine.
  */
-public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine {
+public abstract class SimAbstractMachine(
+    protected val interpreter: SimResourceInterpreter,
+    final override val parent: SimResourceSystem?,
+    final override val model: SimMachineModel
+) : SimMachine, SimResourceSystem {
+    /**
+     * A [StateFlow] representing the CPU usage of the simulated machine.
+     */
     private val _usage = MutableStateFlow(0.0)
-    override val usage: StateFlow<Double>
+    public final override val usage: StateFlow<Double>
         get() = _usage
 
     /**
@@ -48,67 +58,76 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
     private var _speed = doubleArrayOf()
 
     /**
-     * A flag to indicate that the machine is terminated.
-     */
-    private var isTerminated = false
-
-    /**
-     * The [CoroutineContext] to run in.
-     */
-    protected abstract val context: CoroutineContext
-
-    /**
      * The resources allocated for this machine.
      */
     protected abstract val cpus: List<SimProcessingUnit>
 
     /**
-     * The execution context in which the workload runs.
+     * A flag to indicate that the machine is terminated.
      */
-    private inner class Context(override val meta: Map<String, Any>) : SimMachineContext {
-        override val clock: Clock
-            get() = this@SimAbstractMachine.clock
+    private var isTerminated = false
 
-        override val cpus: List<SimProcessingUnit> = this@SimAbstractMachine.cpus
-
-        override val memory: List<MemoryUnit> = model.memory
-    }
+    /**
+     * The continuation to resume when the virtual machine workload has finished.
+     */
+    private var cont: Continuation<Unit>? = null
 
     /**
      * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
      */
-    override suspend fun run(workload: SimWorkload, meta: Map<String, Any>): Unit = withContext(context) {
-        require(!isTerminated) { "Machine is terminated" }
-        val ctx = Context(meta)
-        val totalCapacity = model.cpus.sumOf { it.frequency }
+    override suspend fun run(workload: SimWorkload, meta: Map<String, Any>) {
+        check(!isTerminated) { "Machine is terminated" }
+        check(cont == null) { "A machine cannot run concurrently" }
 
-        _speed = DoubleArray(model.cpus.size) { 0.0 }
-        var totalSpeed = 0.0
+        val ctx = Context(meta)
 
         // Before the workload starts, initialize the initial power draw
+        _speed = DoubleArray(model.cpus.size) { 0.0 }
         updateUsage(0.0)
 
-        workload.onStart(ctx)
+        return suspendCancellableCoroutine { cont ->
+            this.cont = cont
 
-        for (cpu in cpus) {
-            val model = cpu.model
-            val consumer = workload.getConsumer(ctx, model)
-            val adapter = SimSpeedConsumerAdapter(consumer) { newSpeed ->
-                val _speed = _speed
-                val _usage = _usage
+            // Cancel all cpus on cancellation
+            cont.invokeOnCancellation {
+                this.cont = null
 
-                val oldSpeed = _speed[model.id]
-                _speed[model.id] = newSpeed
-                totalSpeed = totalSpeed - oldSpeed + newSpeed
-
-                val newUsage = totalSpeed / totalCapacity
-                if (_usage.value != newUsage) {
-                    updateUsage(totalSpeed / totalCapacity)
+                interpreter.batch {
+                    for (cpu in cpus) {
+                        cpu.cancel()
+                    }
                 }
             }
 
-            launch { cpu.consume(adapter) }
+            interpreter.batch { workload.onStart(ctx) }
         }
+    }
+
+    override fun close() {
+        if (isTerminated) {
+            return
+        }
+
+        isTerminated = true
+        cancel()
+        interpreter.batch {
+            for (cpu in cpus) {
+                cpu.close()
+            }
+        }
+    }
+
+    /* SimResourceSystem */
+    override fun onConverge(timestamp: Long) {
+        val totalCapacity = model.cpus.sumOf { it.frequency }
+        val cpus = cpus
+        var totalSpeed = 0.0
+        for (cpu in cpus) {
+            _speed[cpu.model.id] = cpu.speed
+            totalSpeed += cpu.speed
+        }
+
+        updateUsage(totalSpeed / totalCapacity)
     }
 
     /**
@@ -118,10 +137,34 @@ public abstract class SimAbstractMachine(private val clock: Clock) : SimMachine 
         _usage.value = usage
     }
 
-    override fun close() {
-        if (!isTerminated) {
-            isTerminated = true
-            cpus.forEach(SimProcessingUnit::close)
+    /**
+     * Cancel the workload that is currently running on the machine.
+     */
+    private fun cancel() {
+        interpreter.batch {
+            for (cpu in cpus) {
+                cpu.cancel()
+            }
         }
+
+        val cont = cont
+        if (cont != null) {
+            this.cont = null
+            cont.resume(Unit)
+        }
+    }
+
+    /**
+     * The execution context in which the workload runs.
+     */
+    private inner class Context(override val meta: Map<String, Any>) : SimMachineContext {
+        override val interpreter: SimResourceInterpreter
+            get() = this@SimAbstractMachine.interpreter
+
+        override val cpus: List<SimProcessingUnit> = this@SimAbstractMachine.cpus
+
+        override val memory: List<MemoryUnit> = model.memory
+
+        override fun close() = cancel()
     }
 }

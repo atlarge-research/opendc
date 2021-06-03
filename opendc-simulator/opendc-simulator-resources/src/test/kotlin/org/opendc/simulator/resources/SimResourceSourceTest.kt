@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
  * A test suite for the [SimResourceSource] class.
@@ -40,7 +41,7 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 class SimResourceSourceTest {
     @Test
     fun testSpeed() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -63,7 +64,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testAdjustCapacity() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val provider = SimResourceSource(1.0, scheduler)
 
         val consumer = spyk(SimWorkConsumer(2.0, 1.0))
@@ -83,7 +84,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testSpeedLimit() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -110,7 +111,7 @@ class SimResourceSourceTest {
      */
     @Test
     fun testIntermediateInterrupt() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -133,7 +134,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testInterrupt() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
         lateinit var resCtx: SimResourceContext
@@ -174,7 +175,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testFailure() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -193,7 +194,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testExceptionPropagationOnNext() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -213,7 +214,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testConcurrentConsumption() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -236,7 +237,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testClosedConsumption() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -257,7 +258,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testCloseDuringConsumption() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -279,7 +280,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testIdle() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
@@ -301,7 +302,7 @@ class SimResourceSourceTest {
     fun testInfiniteSleep() {
         assertThrows<IllegalStateException> {
             runBlockingSimulation {
-                val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+                val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
                 val capacity = 4200.0
                 val provider = SimResourceSource(capacity, scheduler)
 
@@ -321,7 +322,7 @@ class SimResourceSourceTest {
 
     @Test
     fun testIncorrectDeadline() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 

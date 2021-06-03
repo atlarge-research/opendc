@@ -25,19 +25,14 @@ package org.opendc.simulator.resources
 /**
  * A [SimResourceDistributor] distributes the capacity of some resource over multiple resource consumers.
  */
-public interface SimResourceDistributor : AutoCloseable {
+public interface SimResourceDistributor : SimResourceConsumer {
     /**
      * The output resource providers to which resource consumers can be attached.
      */
     public val outputs: Set<SimResourceProvider>
 
     /**
-     * The input resource that will be distributed over the consumers.
+     * Create a new output for the distributor.
      */
-    public val input: SimResourceProvider
-
-    /**
-     * Add an output to the switch with the specified [capacity].
-     */
-    public fun addOutput(capacity: Double): SimResourceProvider
+    public fun newOutput(): SimResourceProvider
 }

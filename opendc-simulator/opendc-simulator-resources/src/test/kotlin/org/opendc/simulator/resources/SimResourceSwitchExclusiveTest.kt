@@ -33,6 +33,7 @@ import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
+import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
  * Test suite for the [SimResourceSwitchExclusive] class.
@@ -44,7 +45,7 @@ internal class SimResourceSwitchExclusiveTest {
      */
     @Test
     fun testTrace() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val speed = mutableListOf<Double>()
 
@@ -66,7 +67,7 @@ internal class SimResourceSwitchExclusiveTest {
         source.startConsumer(adapter)
         switch.addInput(forwarder)
 
-        val provider = switch.addOutput(3200.0)
+        val provider = switch.newOutput()
 
         try {
             provider.consume(workload)
@@ -86,7 +87,7 @@ internal class SimResourceSwitchExclusiveTest {
      */
     @Test
     fun testRuntimeWorkload() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
         val workload = mockk<SimResourceConsumer>(relaxUnitFun = true)
@@ -97,7 +98,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         switch.addInput(source)
 
-        val provider = switch.addOutput(3200.0)
+        val provider = switch.newOutput()
 
         try {
             provider.consume(workload)
@@ -113,7 +114,7 @@ internal class SimResourceSwitchExclusiveTest {
      */
     @Test
     fun testTwoWorkloads() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
         val workload = object : SimResourceConsumer {
@@ -141,7 +142,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         switch.addInput(source)
 
-        val provider = switch.addOutput(3200.0)
+        val provider = switch.newOutput()
 
         try {
             provider.consume(workload)
@@ -158,7 +159,7 @@ internal class SimResourceSwitchExclusiveTest {
      */
     @Test
     fun testConcurrentWorkloadFails() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
         val duration = 5 * 60L * 1000
         val workload = mockk<SimResourceConsumer>(relaxUnitFun = true)
@@ -169,7 +170,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         switch.addInput(source)
 
-        switch.addOutput(3200.0)
-        assertThrows<IllegalStateException> { switch.addOutput(3200.0) }
+        switch.newOutput()
+        assertThrows<IllegalStateException> { switch.newOutput() }
     }
 }

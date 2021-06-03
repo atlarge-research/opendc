@@ -22,62 +22,36 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.*
-import org.opendc.simulator.compute.cpufreq.ScalingDriver
-import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.resources.*
-import org.opendc.utils.TimerScheduler
-import java.time.Clock
-import kotlin.coroutines.*
+import org.opendc.simulator.resources.SimResourceInterpreter
 
 /**
  * A simulated bare-metal machine that is able to run a single workload.
  *
  * A [SimBareMetalMachine] is a stateful object and you should be careful when operating this object concurrently. For
- * example. the class expects only a single concurrent call to [run].
+ * example. The class expects only a single concurrent call to [run].
  *
- * @param context The [CoroutineContext] to run the simulated workload in.
- * @param clock The virtual clock to track the simulation time.
+ * @param interpreter The [SimResourceInterpreter] to drive the simulation.
  * @param model The machine model to simulate.
+ * @param powerDriver The power driver to use.
+ * @param parent The parent simulation system.
  */
-@OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
 public class SimBareMetalMachine(
-    context: CoroutineContext,
-    private val clock: Clock,
-    override val model: SimMachineModel,
-    scalingGovernor: ScalingGovernor,
-    scalingDriver: ScalingDriver
-) : SimAbstractMachine(clock) {
-    /**
-     * The [Job] associated with this machine.
-     */
-    private val scope = CoroutineScope(context + Job())
-
-    override val context: CoroutineContext = scope.coroutineContext
-
-    /**
-     * The [TimerScheduler] to use for scheduling the interrupts.
-     */
-    private val scheduler = SimResourceSchedulerTrampoline(this.context, clock)
-
-    override val cpus: List<SimProcessingUnit> = model.cpus.map { ProcessingUnitImpl(it) }
-
-    /**
-     * Construct the [ScalingDriver.Logic] for this machine.
-     */
-    private val scalingDriver = scalingDriver.createLogic(this)
-
-    /**
-     * The scaling contexts associated with each CPU.
-     */
-    private val scalingGovernors = cpus.map { cpu ->
-        scalingGovernor.createLogic(this.scalingDriver.createContext(cpu))
+    interpreter: SimResourceInterpreter,
+    model: SimMachineModel,
+    powerDriver: PowerDriver,
+    parent: SimResourceSystem? = null,
+) : SimAbstractMachine(interpreter, parent, model) {
+    override val cpus: List<SimProcessingUnit> = model.cpus.map { cpu ->
+        Cpu(SimResourceSource(cpu.frequency, interpreter, this@SimBareMetalMachine), cpu)
     }
 
-    init {
-        scalingGovernors.forEach { it.onStart() }
-    }
+    /**
+     * Construct the [PowerDriver.Logic] for this machine.
+     */
+    private val powerDriver = powerDriver.createLogic(this, cpus)
 
     /**
      * The power draw of the machine.
@@ -88,45 +62,25 @@ public class SimBareMetalMachine(
     override fun updateUsage(usage: Double) {
         super.updateUsage(usage)
 
-        scalingGovernors.forEach { it.onLimit() }
-        powerDraw = scalingDriver.computePower()
-    }
-
-    override fun close() {
-        super.close()
-
-        scope.cancel()
+        powerDraw = powerDriver.computePower()
     }
 
     /**
-     * The [SimProcessingUnit] of this machine.
+     * A [SimProcessingUnit] of a bare-metal machine.
      */
-    public inner class ProcessingUnitImpl(override val model: ProcessingUnit) : SimProcessingUnit {
-        /**
-         * The actual resource supporting the processing unit.
-         */
-        private val source = SimResourceSource(model.frequency, scheduler)
+    private class Cpu(
+        private val source: SimResourceSource,
+        override val model: ProcessingUnit
+    ) : SimProcessingUnit, SimResourceProvider by source {
+        override var capacity: Double
+            get() = source.capacity
+            set(value) {
+                // Clamp the capacity of the CPU between [0.0, maxFreq]
+                if (value >= 0.0 && value <= model.frequency) {
+                    source.capacity = value
+                }
+            }
 
-        override val speed: Double
-            get() = source.speed
-
-        override val state: SimResourceState
-            get() = source.state
-
-        override fun startConsumer(consumer: SimResourceConsumer) {
-            source.startConsumer(consumer)
-        }
-
-        override fun interrupt() {
-            source.interrupt()
-        }
-
-        override fun cancel() {
-            source.cancel()
-        }
-
-        override fun close() {
-            source.interrupt()
-        }
+        override fun toString(): String = "SimBareMetalMachine.Cpu[model=$model]"
     }
 }

@@ -22,21 +22,22 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
-import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
-import java.time.Clock
+import org.opendc.simulator.resources.SimResourceSwitch
 
 /**
  * Abstract implementation of the [SimHypervisor] interface.
+ *
+ * @param interpreter The resource interpreter to use.
+ * @param scalingGovernor The scaling governor to use for scaling the CPU frequency of the underlying hardware.
  */
-public abstract class SimAbstractHypervisor : SimHypervisor {
+public abstract class SimAbstractHypervisor(
+    private val interpreter: SimResourceInterpreter,
+    private val scalingGovernor: ScalingGovernor?
+) : SimHypervisor {
     /**
      * The machine on which the hypervisor runs.
      */
@@ -55,6 +56,11 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
         get() = _vms
 
     /**
+     * The scaling governors attached to the physical CPUs backing this hypervisor.
+     */
+    private val governors = mutableListOf<ScalingGovernor.Logic>()
+
+    /**
      * Construct the [SimResourceSwitch] implementation that performs the actual scheduling of the CPUs.
      */
     public abstract fun createSwitch(ctx: SimMachineContext): SimResourceSwitch
@@ -64,6 +70,16 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
      */
     public abstract fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean
 
+    /**
+     * Trigger the governors to recompute the scaling limits.
+     */
+    protected fun triggerGovernors(load: Double) {
+        for (governor in governors) {
+            governor.onLimit(load)
+        }
+    }
+
+    /* SimHypervisor */
     override fun canFit(model: SimMachineModel): Boolean {
         return canFit(model, switch)
     }
@@ -78,6 +94,21 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
         return vm
     }
 
+    /* SimWorkload */
+    override fun onStart(ctx: SimMachineContext) {
+        context = ctx
+        switch = createSwitch(ctx)
+
+        for (cpu in ctx.cpus) {
+            val governor = scalingGovernor?.createLogic(cpu)
+            if (governor != null) {
+                governors.add(governor)
+                governor.onStart()
+            }
+            switch.addInput(cpu)
+        }
+    }
+
     /**
      * A virtual machine running on the hypervisor.
      *
@@ -85,105 +116,34 @@ public abstract class SimAbstractHypervisor : SimHypervisor {
      * @property performanceInterferenceModel The performance interference model to utilize.
      */
     private inner class VirtualMachine(
-        override val model: SimMachineModel,
+        model: SimMachineModel,
         val performanceInterferenceModel: PerformanceInterferenceModel? = null,
-    ) : SimMachine {
-        /**
-         * A [StateFlow] representing the CPU usage of the simulated machine.
-         */
-        override val usage: MutableStateFlow<Double> = MutableStateFlow(0.0)
-
-        /**
-         *  A flag to indicate that the machine is terminated.
-         */
-        private var isTerminated = false
-
+    ) : SimAbstractMachine(interpreter, parent = null, model) {
         /**
          * The vCPUs of the machine.
          */
-        private val cpus = model.cpus.map { ProcessingUnitImpl(it, switch) }
+        override val cpus = model.cpus.map { VCpu(switch.newOutput(), it) }
 
-        /**
-         * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
-         */
-        override suspend fun run(workload: SimWorkload, meta: Map<String, Any>) {
-            coroutineScope {
-                require(!isTerminated) { "Machine is terminated" }
-
-                val ctx = object : SimMachineContext {
-                    override val cpus: List<SimProcessingUnit> = this@VirtualMachine.cpus
-
-                    override val memory: List<MemoryUnit>
-                        get() = model.memory
-
-                    override val clock: Clock
-                        get() = this@SimAbstractHypervisor.context.clock
-
-                    override val meta: Map<String, Any> = meta
-                }
-
-                workload.onStart(ctx)
-
-                for (cpu in cpus) {
-                    launch {
-                        cpu.consume(workload.getConsumer(ctx, cpu.model))
-                    }
-                }
-            }
-        }
-
-        /**
-         * Terminate this VM instance.
-         */
         override fun close() {
-            if (!isTerminated) {
-                isTerminated = true
+            super.close()
 
-                cpus.forEach(SimProcessingUnit::close)
-                _vms.remove(this)
-            }
+            _vms.remove(this)
         }
-    }
-
-    override fun onStart(ctx: SimMachineContext) {
-        context = ctx
-        switch = createSwitch(ctx)
-    }
-
-    override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer {
-        val forwarder = SimResourceForwarder()
-        switch.addInput(forwarder)
-        return forwarder
     }
 
     /**
-     * The [SimProcessingUnit] of this machine.
+     * A [SimProcessingUnit] of a virtual machine.
      */
-    public inner class ProcessingUnitImpl(override val model: ProcessingUnit, switch: SimResourceSwitch) : SimProcessingUnit {
-        /**
-         * The actual resource supporting the processing unit.
-         */
-        private val source = switch.addOutput(model.frequency)
+    private class VCpu(
+        private val source: SimResourceProvider,
+        override val model: ProcessingUnit
+    ) : SimProcessingUnit, SimResourceProvider by source {
+        override var capacity: Double
+            get() = source.capacity
+            set(_) {
+                // Ignore capacity changes
+            }
 
-        override val speed: Double = 0.0 /* TODO Implement */
-
-        override val state: SimResourceState
-            get() = source.state
-
-        override fun startConsumer(consumer: SimResourceConsumer) {
-            source.startConsumer(consumer)
-        }
-
-        override fun interrupt() {
-            source.interrupt()
-        }
-
-        override fun cancel() {
-            source.cancel()
-        }
-
-        override fun close() {
-            source.close()
-        }
+        override fun toString(): String = "SimAbstractHypervisor.VCpu[model=$model]"
     }
 }

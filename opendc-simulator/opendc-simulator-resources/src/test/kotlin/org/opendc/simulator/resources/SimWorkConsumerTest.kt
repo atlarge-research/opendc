@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
  * A test suite for the [SimWorkConsumer] class.
@@ -35,7 +36,7 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 internal class SimWorkConsumerTest {
     @Test
     fun testSmoke() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val provider = SimResourceSource(1.0, scheduler)
 
         val consumer = SimWorkConsumer(1.0, 1.0)
@@ -50,7 +51,7 @@ internal class SimWorkConsumerTest {
 
     @Test
     fun testUtilization() = runBlockingSimulation {
-        val scheduler = SimResourceSchedulerTrampoline(coroutineContext, clock)
+        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val provider = SimResourceSource(1.0, scheduler)
 
         val consumer = SimWorkConsumer(1.0, 0.5)
