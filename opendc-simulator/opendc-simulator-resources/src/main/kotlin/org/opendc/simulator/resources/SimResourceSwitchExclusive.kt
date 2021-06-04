@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.resources
 
+import org.opendc.simulator.resources.interference.InterferenceKey
 import java.util.ArrayDeque
 
 /**
@@ -61,7 +62,10 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
         override fun toString(): String = "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
     }
 
-    override fun newOutput(): SimResourceCloseableProvider {
+    /**
+     * Add an output to the switch.
+     */
+    override fun newOutput(key: InterferenceKey?): SimResourceCloseableProvider {
         check(!isClosed) { "Switch has been closed" }
         check(availableResources.isNotEmpty()) { "No capacity to serve request" }
         val forwarder = availableResources.poll()

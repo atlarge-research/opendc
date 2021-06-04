@@ -22,8 +22,6 @@
 
 package org.opendc.simulator.resources
 
-import kotlin.math.max
-
 /**
  * The logic of a resource provider.
  */
@@ -63,19 +61,18 @@ public interface SimResourceProviderLogic {
     public fun onFinish(ctx: SimResourceControllableContext)
 
     /**
-     * Get the remaining work to process after a resource consumption.
+     * Compute the amount of work that was consumed over the specified [duration].
      *
-     * @param work The size of the resource consumption.
-     * @param speed The speed of consumption.
+     * @param work The total size of the resource consumption.
+     * @param speed The speed of the resource provider.
      * @param duration The duration from the start of the consumption until now.
-     * @return The amount of work remaining.
+     * @return The amount of work that was consumed by the resource provider.
      */
-    public fun getRemainingWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
+    public fun getConsumedWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
         return if (duration > 0L) {
-            val processed = duration / 1000.0 * speed
-            max(0.0, work - processed)
+            return (duration / 1000.0) * speed
         } else {
-            0.0
+            work
         }
     }
 }

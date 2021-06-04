@@ -22,13 +22,21 @@
 
 package org.opendc.simulator.resources
 
+import org.opendc.simulator.resources.interference.InterferenceDomain
+import org.opendc.simulator.resources.interference.InterferenceKey
+
 /**
  * A [SimResourceSwitch] implementation that switches resource consumptions over the available resources using max-min
  * fair sharing.
+ *
+ * @param interpreter The interpreter for managing the resource contexts.
+ * @param parent The parent resource system of the switch.
+ * @param interferenceDomain The interference domain of the switch.
  */
 public class SimResourceSwitchMaxMin(
     interpreter: SimResourceInterpreter,
-    parent: SimResourceSystem? = null
+    parent: SimResourceSystem? = null,
+    interferenceDomain: InterferenceDomain? = null
 ) : SimResourceSwitch {
     /**
      * The output resource providers to which resource consumers can be attached.
@@ -61,7 +69,7 @@ public class SimResourceSwitchMaxMin(
     /**
      * The distributor to distribute the aggregated resources.
      */
-    private val distributor = SimResourceDistributorMaxMin(interpreter, parent)
+    private val distributor = SimResourceDistributorMaxMin(interpreter, parent, interferenceDomain)
 
     init {
         aggregator.startConsumer(distributor)
@@ -70,10 +78,10 @@ public class SimResourceSwitchMaxMin(
     /**
      * Add an output to the switch.
      */
-    override fun newOutput(): SimResourceCloseableProvider {
+    override fun newOutput(key: InterferenceKey?): SimResourceCloseableProvider {
         check(!isClosed) { "Switch has been closed" }
 
-        return distributor.newOutput()
+        return distributor.newOutput(key)
     }
 
     /**
