@@ -49,6 +49,10 @@
         "svgsaver": "~0.9.0",
         "uuidv4": "~6.1.1"
     },
+    "devDependencies": {
+        "eslint": "^7.27.0",
+        "eslint-config-next": "^10.2.3"
+    },
     "lint-staged": {
         "src/**/*.{js,jsx,json}": [
             "prettier --write",

@@ -22,4 +22,7 @@
 
 module.exports = {
     reactStrictMode: true,
+    experimental: {
+        eslint: true,
+    },
 }
