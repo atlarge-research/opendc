@@ -44,6 +44,6 @@ dependencies {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }
-    
+
     testRuntimeOnly(libs.slf4j.simple)
 }
