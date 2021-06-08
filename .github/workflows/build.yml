@@ -12,6 +12,9 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         java: [8, 16]
+        include:
+          - os: windows-latest
+            java: 16
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
