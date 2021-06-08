@@ -5,6 +5,7 @@ slf4j = "1.7.30"
 log4j = "2.14.1"
 opentelemetry-main = "1.2.0"
 opentelemetry-metrics = "1.2.0-alpha"
+hadoop = "3.3.0"
 
 [libraries]
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.5.0" }
@@ -45,4 +46,6 @@ kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchm
 # Other
 mongodb = { module = "org.mongodb:mongodb-driver-sync", version = "4.2.3" }
 classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.105" }
-hadoop-client = { module = "org.apache.hadoop:hadoop-client", version = "3.3.0" }
+hadoop-client = { module = "org.apache.hadoop:hadoop-client", version.ref = "hadoop" }
+hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
+hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }

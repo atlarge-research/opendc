@@ -39,8 +39,15 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
     }
     implementation(kotlin("reflect"))
-    implementation(libs.parquet)
-    implementation(libs.hadoop.client) {
+
+    implementation(libs.parquet) {
+        exclude(group = "org.apache.hadoop")
+    }
+    implementation(libs.hadoop.common) {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "log4j")
+    }
+    implementation(libs.hadoop.mapreduce.client.core) {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
     }

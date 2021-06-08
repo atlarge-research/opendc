@@ -24,6 +24,7 @@ package org.opendc.format.trace.wtf
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * Test suite for the [WtfTraceReader] class.
@@ -34,7 +35,7 @@ class WtfTraceReaderTest {
      */
     @Test
     fun testParseWtf() {
-        val reader = WtfTraceReader("src/test/resources/wtf-trace")
+        val reader = WtfTraceReader(File("src/test/resources/wtf-trace"))
         var entry = reader.next()
         assertEquals(0, entry.start)
         assertEquals(23, entry.workload.tasks.size)
