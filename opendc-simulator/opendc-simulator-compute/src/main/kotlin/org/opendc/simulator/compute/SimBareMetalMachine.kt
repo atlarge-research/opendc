@@ -76,9 +76,7 @@ public class SimBareMetalMachine(
             get() = source.capacity
             set(value) {
                 // Clamp the capacity of the CPU between [0.0, maxFreq]
-                if (value >= 0.0 && value <= model.frequency) {
-                    source.capacity = value
-                }
+                source.capacity = value.coerceIn(0.0, model.frequency)
             }
 
         override fun toString(): String = "SimBareMetalMachine.Cpu[model=$model]"

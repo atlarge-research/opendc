@@ -24,6 +24,7 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.toList
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -33,10 +34,14 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.util.SimWorkloadLifecycle
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
+import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.consumer.SimWorkConsumer
 
 /**
  * Test suite for the [SimBareMetalMachine] class.
@@ -112,6 +117,155 @@ class SimMachineTest {
             yield()
             job.cancel()
             assertEquals(listOf(0.0, 1.0, 0.0), res) { "Machine is fully utilized" }
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
+    fun testSpeed() = runBlockingSimulation {
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        try {
+            coroutineScope {
+                launch { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
+                assertArrayEquals(doubleArrayOf(1000.0, 1000.0), machine.speed)
+            }
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
+    fun testPower() = runBlockingSimulation {
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(LinearPowerModel(100.0, 50.0))
+        )
+
+        try {
+            coroutineScope {
+                launch { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
+                assertEquals(100.0, machine.powerDraw)
+            }
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
+    fun testCapacityClamp() = runBlockingSimulation {
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        try {
+            machine.run(object : SimWorkload {
+                override fun onStart(ctx: SimMachineContext) {
+                    val cpu = ctx.cpus[0]
+
+                    cpu.capacity = cpu.model.frequency + 1000.0
+                    assertEquals(cpu.model.frequency, cpu.capacity)
+                    cpu.capacity = -1.0
+                    assertEquals(0.0, cpu.capacity)
+
+                    ctx.close()
+                }
+            })
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
+    fun testMemory() = runBlockingSimulation {
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        try {
+            machine.run(object : SimWorkload {
+                override fun onStart(ctx: SimMachineContext) {
+                    assertEquals(32_000 * 4.0, ctx.memory.capacity)
+                    ctx.close()
+                }
+            })
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
+    fun testMemoryUsage() = runBlockingSimulation {
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        try {
+            machine.run(object : SimWorkload {
+                override fun onStart(ctx: SimMachineContext) {
+                    val lifecycle = SimWorkloadLifecycle(ctx)
+                    ctx.memory.startConsumer(lifecycle.waitFor(SimWorkConsumer(ctx.memory.capacity, utilization = 0.8)))
+                }
+            })
+
+            assertEquals(1250, clock.millis())
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
+    fun testCancellation() = runBlockingSimulation {
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        try {
+            coroutineScope {
+                launch { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
+                cancel()
+            }
+        } catch (_: CancellationException) {
+            // Ignore
+        } finally {
+            machine.close()
+        }
+
+        assertEquals(0, clock.millis())
+    }
+
+    @Test
+    fun testConcurrentRuns() = runBlockingSimulation {
+        val machine = SimBareMetalMachine(
+            SimResourceInterpreter(coroutineContext, clock),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        try {
+            coroutineScope {
+                launch {
+                    machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
+                }
+
+                assertThrows<IllegalStateException> {
+                    machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
+                }
+            }
         } finally {
             machine.close()
         }

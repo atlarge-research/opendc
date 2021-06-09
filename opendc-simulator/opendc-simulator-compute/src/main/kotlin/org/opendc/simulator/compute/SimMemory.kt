@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,36 +22,15 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.resources.SimResourceProvider
 
 /**
- * A simulated execution context in which a bootable image runs. This interface represents the
- * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
- * which the image runs.
+ * An interface to control the memory usage of simulated workloads.
  */
-public interface SimMachineContext : AutoCloseable {
+public interface SimMemory : SimResourceProvider {
     /**
-     * The resource interpreter that simulates the machine.
+     * The models representing the static information of the memory units supporting this interface.
      */
-    public val interpreter: SimResourceInterpreter
-
-    /**
-     * The metadata associated with the context.
-     */
-    public val meta: Map<String, Any>
-
-    /**
-     * The CPUs available on the machine.
-     */
-    public val cpus: List<SimProcessingUnit>
-
-    /**
-     * The memory interface of the machine.
-     */
-    public val memory: SimMemory
-
-    /**
-     * Stop the workload.
-     */
-    public override fun close()
+    public val models: List<MemoryUnit>
 }

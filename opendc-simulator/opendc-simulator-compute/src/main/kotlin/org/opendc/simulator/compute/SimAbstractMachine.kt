@@ -63,6 +63,11 @@ public abstract class SimAbstractMachine(
     protected abstract val cpus: List<SimProcessingUnit>
 
     /**
+     * The memory interface of the machine.
+     */
+    protected val memory: SimMemory = Memory(SimResourceSource(model.memory.sumOf { it.size }.toDouble(), interpreter), model.memory)
+
+    /**
      * A flag to indicate that the machine is terminated.
      */
     private var isTerminated = false
@@ -163,8 +168,15 @@ public abstract class SimAbstractMachine(
 
         override val cpus: List<SimProcessingUnit> = this@SimAbstractMachine.cpus
 
-        override val memory: List<MemoryUnit> = model.memory
+        override val memory: SimMemory = this@SimAbstractMachine.memory
 
         override fun close() = cancel()
+    }
+
+    /**
+     * The [SimMemory] implementation for a machine.
+     */
+    private class Memory(source: SimResourceSource, override val models: List<MemoryUnit>) : SimMemory, SimResourceProvider by source {
+        override fun toString(): String = "SimAbstractMachine.Memory"
     }
 }
