@@ -25,10 +25,10 @@ package org.opendc.experiments.capelin.telemetry.parquet
 import mu.KotlinLogging
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
-import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.experiments.capelin.telemetry.Event
+import org.opendc.format.util.LocalOutputFile
 import java.io.Closeable
 import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
@@ -52,8 +52,7 @@ public open class ParquetEventWriter<in T : Event>(
     /**
      * The writer to write the Parquet file.
      */
-    @Suppress("DEPRECATION")
-    private val writer = AvroParquetWriter.builder<GenericData.Record>(Path(path.absolutePath))
+    private val writer = AvroParquetWriter.builder<GenericData.Record>(LocalOutputFile(path))
         .withSchema(schema)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .withPageSize(4 * 1024 * 1024) // For compression

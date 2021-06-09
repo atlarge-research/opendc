@@ -44,10 +44,5 @@ dependencies {
     implementation(libs.clikt)
 
     implementation(libs.parquet)
-    implementation(libs.hadoop.client) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
-
     testImplementation(libs.log4j.slf4j)
 }

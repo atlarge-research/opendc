@@ -38,9 +38,4 @@ dependencies {
     implementation(projects.opendcUtils)
 
     implementation(libs.kotlin.logging)
-    implementation(libs.parquet)
-    implementation(libs.hadoop.client) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
 }

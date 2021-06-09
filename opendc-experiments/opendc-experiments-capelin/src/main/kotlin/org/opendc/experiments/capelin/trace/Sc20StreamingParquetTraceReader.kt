@@ -24,7 +24,6 @@ package org.opendc.experiments.capelin.trace
 
 import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
-import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
 import org.apache.parquet.filter2.compat.FilterCompat
 import org.apache.parquet.filter2.predicate.FilterApi
@@ -33,6 +32,7 @@ import org.apache.parquet.filter2.predicate.UserDefinedPredicate
 import org.apache.parquet.io.api.Binary
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.format.util.LocalInputFile
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
@@ -54,7 +54,6 @@ private val logger = KotlinLogging.logger {}
  * @param traceFile The directory of the traces.
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public class Sc20StreamingParquetTraceReader(
     traceFile: File,
     performanceInterferenceModel: PerformanceInterferenceModel? = null,
@@ -96,10 +95,10 @@ public class Sc20StreamingParquetTraceReader(
      * The thread to read the records in.
      */
     private val readerThread = thread(start = true, name = "sc20-reader") {
-        @Suppress("DEPRECATION")
-        val reader = AvroParquetReader.builder<GenericData.Record>(Path(traceFile.absolutePath, "trace.parquet"))
+        val reader = AvroParquetReader
+            .builder<GenericData.Record>(LocalInputFile(File(traceFile, "trace.parquet")))
             .disableCompatibility()
-            .run { if (filter != null) withFilter(filter) else this }
+            .withFilter(filter)
             .build()
 
         try {
@@ -164,10 +163,10 @@ public class Sc20StreamingParquetTraceReader(
         val entries = mutableMapOf<String, GenericData.Record>()
         val buffers = mutableMapOf<String, MutableList<MutableList<SimTraceWorkload.Fragment>>>()
 
-        @Suppress("DEPRECATION")
-        val metaReader = AvroParquetReader.builder<GenericData.Record>(Path(traceFile.absolutePath, "meta.parquet"))
+        val metaReader = AvroParquetReader
+            .builder<GenericData.Record>(LocalInputFile(File(traceFile, "meta.parquet")))
             .disableCompatibility()
-            .run { if (filter != null) withFilter(filter) else this }
+            .withFilter(filter)
             .build()
 
         while (true) {
@@ -178,7 +177,7 @@ public class Sc20StreamingParquetTraceReader(
 
         metaReader.close()
 
-        val selection = if (selectedVms.isEmpty()) entries.keys else selectedVms
+        val selection = selectedVms.ifEmpty { entries.keys }
 
         // Create the entry iterator
         iterator = selection.asSequence()
