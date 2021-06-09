@@ -38,11 +38,11 @@ import me.tongfei.progressbar.ProgressBar
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
-import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.format.trace.sc20.Sc20VmPlacementReader
+import org.opendc.format.util.LocalOutputFile
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -109,16 +109,14 @@ public class TraceConverterCli : CliktCommand(name = "trace-converter") {
             traceParquet.delete()
         }
 
-        @Suppress("DEPRECATION")
-        val metaWriter = AvroParquetWriter.builder<GenericData.Record>(Path(metaParquet.toURI()))
+        val metaWriter = AvroParquetWriter.builder<GenericData.Record>(LocalOutputFile(metaParquet))
             .withSchema(metaSchema)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
             .withPageSize(4 * 1024 * 1024) // For compression
             .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
             .build()
 
-        @Suppress("DEPRECATION")
-        val writer = AvroParquetWriter.builder<GenericData.Record>(Path(traceParquet.toURI()))
+        val writer = AvroParquetWriter.builder<GenericData.Record>(LocalOutputFile(traceParquet))
             .withSchema(schema)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
             .withPageSize(4 * 1024 * 1024) // For compression
