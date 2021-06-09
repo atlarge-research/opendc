@@ -38,7 +38,6 @@ import java.util.TreeSet
  * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  * @param run The run to which this reader belongs.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public class Sc20ParquetTraceReader(
     rawReaders: List<Sc20RawParquetTraceReader>,
     performanceInterferenceModel: Map<String, PerformanceInterferenceModel>,

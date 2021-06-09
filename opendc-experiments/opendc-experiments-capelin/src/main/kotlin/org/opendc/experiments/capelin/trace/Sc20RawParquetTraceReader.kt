@@ -24,10 +24,9 @@ package org.opendc.experiments.capelin.trace
 
 import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
-import org.apache.hadoop.fs.Path
-import org.apache.parquet.avro.AvroParquetReader
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
+import org.opendc.format.util.LocalParquetReader
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.io.File
@@ -40,16 +39,12 @@ private val logger = KotlinLogging.logger {}
  *
  * @param path The directory of the traces.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * Read the fragments into memory.
      */
     private fun parseFragments(path: File): Map<String, List<SimTraceWorkload.Fragment>> {
-        @Suppress("DEPRECATION")
-        val reader = AvroParquetReader.builder<GenericData.Record>(Path(path.absolutePath, "trace.parquet"))
-            .disableCompatibility()
-            .build()
+        val reader = LocalParquetReader<GenericData.Record>(File(path, "trace.parquet"))
 
         val fragments = mutableMapOf<String, MutableList<SimTraceWorkload.Fragment>>()
 
@@ -81,10 +76,7 @@ public class Sc20RawParquetTraceReader(private val path: File) {
      * Read the metadata into a workload.
      */
     private fun parseMeta(path: File, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<TraceEntry<SimWorkload>> {
-        @Suppress("DEPRECATION")
-        val metaReader = AvroParquetReader.builder<GenericData.Record>(Path(path.absolutePath, "meta.parquet"))
-            .disableCompatibility()
-            .build()
+        val metaReader = LocalParquetReader<GenericData.Record>(File(path, "meta.parquet"))
 
         var counter = 0
         val entries = mutableListOf<TraceEntry<SimWorkload>>()

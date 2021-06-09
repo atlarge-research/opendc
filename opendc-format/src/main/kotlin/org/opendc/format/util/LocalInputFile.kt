@@ -25,6 +25,7 @@ package org.opendc.format.util
 import org.apache.parquet.io.InputFile
 import org.apache.parquet.io.SeekableInputStream
 import java.io.EOFException
+import java.io.File
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Path
@@ -38,6 +39,11 @@ public class LocalInputFile(private val path: Path) : InputFile {
      * The [FileChannel] used for accessing the input path.
      */
     private val channel = FileChannel.open(path, StandardOpenOption.READ)
+
+    /**
+     * Construct a [LocalInputFile] for the specified [file].
+     */
+    public constructor(file: File) : this(file.toPath())
 
     override fun getLength(): Long = channel.size()
 
