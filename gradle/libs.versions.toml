@@ -46,6 +46,5 @@ kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchm
 # Other
 mongodb = { module = "org.mongodb:mongodb-driver-sync", version = "4.2.3" }
 classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.105" }
-hadoop-client = { module = "org.apache.hadoop:hadoop-client", version.ref = "hadoop" }
 hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
 hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }
