@@ -31,7 +31,7 @@ import org.opendc.simulator.resources.SimResourceInterpreter
  * A simulated bare-metal machine that is able to run a single workload.
  *
  * A [SimBareMetalMachine] is a stateful object and you should be careful when operating this object concurrently. For
- * example. The class expects only a single concurrent call to [run].
+ * example, the class expects only a single concurrent call to [run].
  *
  * @param interpreter The [SimResourceInterpreter] to drive the simulation.
  * @param model The machine model to simulate.
@@ -44,25 +44,28 @@ public class SimBareMetalMachine(
     powerDriver: PowerDriver,
     parent: SimResourceSystem? = null,
 ) : SimAbstractMachine(interpreter, parent, model) {
+    /**
+     * The processing units of the machine.
+     */
     override val cpus: List<SimProcessingUnit> = model.cpus.map { cpu ->
         Cpu(SimResourceSource(cpu.frequency, interpreter, this@SimBareMetalMachine), cpu)
     }
 
     /**
-     * Construct the [PowerDriver.Logic] for this machine.
+     * The power supply of this bare-metal machine.
      */
-    private val powerDriver = powerDriver.createLogic(this, cpus)
+    public val psu: SimPsu = object : SimPsu() {
+        /**
+         * The logic for the CPU power driver.
+         */
+        private val cpuLogic = powerDriver.createLogic(this@SimBareMetalMachine, cpus)
 
-    /**
-     * The power draw of the machine.
-     */
-    public var powerDraw: Double = 0.0
-        private set
+        override fun computePower(): Double = cpuLogic.computePower()
+    }
 
     override fun updateUsage(usage: Double) {
         super.updateUsage(usage)
-
-        powerDraw = powerDriver.computePower()
+        psu.update()
     }
 
     /**
