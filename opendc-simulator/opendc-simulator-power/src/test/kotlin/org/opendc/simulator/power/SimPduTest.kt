@@ -54,6 +54,7 @@ internal class SimPduTest {
         val pdu = SimPdu(interpreter)
         source.connect(pdu)
         pdu.newOutlet().connect(SimpleInlet())
+
         assertEquals(50.0, source.powerDraw)
     }
 
@@ -86,6 +87,17 @@ internal class SimPduTest {
         outlet.disconnect()
 
         verify { consumer.onEvent(any(), SimResourceEvent.Exit) }
+    }
+
+    @Test
+    fun testLoss() = runBlockingSimulation {
+        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val source = SimPowerSource(interpreter, capacity = 100.0)
+        // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
+        val pdu = SimPdu(interpreter, idlePower = 0.015, lossCoefficient = 0.015)
+        source.connect(pdu)
+        pdu.newOutlet().connect(SimpleInlet())
+        assertEquals(87.515, source.powerDraw, 0.01)
     }
 
     @Test

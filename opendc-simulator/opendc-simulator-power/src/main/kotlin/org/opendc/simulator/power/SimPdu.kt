@@ -28,8 +28,14 @@ import org.opendc.simulator.resources.*
  * A model of a Power Distribution Unit (PDU).
  *
  * @param interpreter The underlying [SimResourceInterpreter] to drive the simulation under the hood.
+ * @param idlePower The idle power consumption of the PDU independent of the load on the PDU.
+ * @param lossCoefficient The coefficient for the power loss of the PDU proportional to the square load.
  */
-public class SimPdu(interpreter: SimResourceInterpreter) : SimPowerInlet() {
+public class SimPdu(
+    interpreter: SimResourceInterpreter,
+    public val idlePower: Double = 0.0,
+    public val lossCoefficient: Double = 0.0,
+) : SimPowerInlet() {
     /**
      * The [SimResourceDistributor] that distributes the electricity over the PDU outlets.
      */
@@ -40,9 +46,39 @@ public class SimPdu(interpreter: SimResourceInterpreter) : SimPowerInlet() {
      */
     public fun newOutlet(): Outlet = Outlet(distributor.newOutput())
 
-    override fun createConsumer(): SimResourceConsumer = distributor
+    override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer by distributor {
+        override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+            return when (val cmd = distributor.onNext(ctx)) {
+                is SimResourceCommand.Consume -> {
+                    val duration = cmd.work / cmd.limit
+                    val loss = computePowerLoss(cmd.limit)
+                    val newLimit = cmd.limit + loss
+
+                    SimResourceCommand.Consume(duration * newLimit, newLimit, cmd.deadline)
+                }
+                is SimResourceCommand.Idle -> {
+                    val loss = computePowerLoss(0.0)
+                    if (loss > 0.0)
+                        SimResourceCommand.Consume(Double.POSITIVE_INFINITY, loss, cmd.deadline)
+                    else
+                        cmd
+                }
+                else -> cmd
+            }
+        }
+
+        override fun toString(): String = "SimPdu.Consumer"
+    }
 
     override fun toString(): String = "SimPdu"
+
+    /**
+     * Compute the power loss that occurs in the PDU.
+     */
+    private fun computePowerLoss(load: Double): Double {
+        // See https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
+        return idlePower + lossCoefficient * (load * load)
+    }
 
     /**
      * A PDU outlet.
