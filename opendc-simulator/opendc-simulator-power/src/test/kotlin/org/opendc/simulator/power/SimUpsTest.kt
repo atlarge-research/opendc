@@ -24,9 +24,9 @@ package org.opendc.simulator.power
 
 import io.mockk.spyk
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceEvent
@@ -34,59 +34,35 @@ import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 
 /**
- * Test suite for the [SimPdu] class.
+ * Test suite for the [SimUps] class.
  */
-internal class SimPduTest {
+internal class SimUpsTest {
     @Test
-    fun testZeroOutlets() = runBlockingSimulation {
+    fun testSingleInlet() = runBlockingSimulation {
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
-        source.connect(pdu)
-
-        assertEquals(0.0, source.powerDraw)
-    }
-
-    @Test
-    fun testSingleOutlet() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
-        source.connect(pdu)
-        pdu.newOutlet().connect(SimpleInlet())
+        val ups = SimUps(interpreter)
+        source.connect(ups.newInlet())
+        ups.connect(SimpleInlet())
 
         assertEquals(50.0, source.powerDraw)
     }
 
     @Test
-    fun testDoubleOutlet() = runBlockingSimulation {
+    fun testDoubleInlet() = runBlockingSimulation {
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
-        source.connect(pdu)
+        val source1 = SimPowerSource(interpreter, capacity = 100.0)
+        val source2 = SimPowerSource(interpreter, capacity = 100.0)
+        val ups = SimUps(interpreter)
+        source1.connect(ups.newInlet())
+        source2.connect(ups.newInlet())
 
-        pdu.newOutlet().connect(SimpleInlet())
-        pdu.newOutlet().connect(SimpleInlet())
+        ups.connect(SimpleInlet())
 
-        assertEquals(100.0, source.powerDraw)
-    }
-
-    @Test
-    fun testDisconnect() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
-        source.connect(pdu)
-        val consumer = spyk(SimWorkConsumer(100.0, utilization = 1.0))
-        val inlet = object : SimPowerInlet() {
-            override fun createConsumer(): SimResourceConsumer = consumer
-        }
-
-        val outlet = pdu.newOutlet()
-        outlet.connect(inlet)
-        outlet.disconnect()
-
-        verify { consumer.onEvent(any(), SimResourceEvent.Exit) }
+        assertAll(
+            { assertEquals(50.0, source1.powerDraw) },
+            { assertEquals(50.0, source2.powerDraw) }
+        )
     }
 
     @Test
@@ -94,24 +70,30 @@ internal class SimPduTest {
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val source = SimPowerSource(interpreter, capacity = 100.0)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
-        val pdu = SimPdu(interpreter, idlePower = 1.5, lossCoefficient = 0.015)
-        source.connect(pdu)
-        pdu.newOutlet().connect(SimpleInlet())
-        assertEquals(89.0, source.powerDraw, 0.01)
+        val ups = SimUps(interpreter, idlePower = 4.0, lossCoefficient = 0.05)
+        source.connect(ups.newInlet())
+        ups.connect(SimpleInlet())
+
+        assertEquals(56.5, source.powerDraw)
     }
 
     @Test
-    fun testOutletClose() = runBlockingSimulation {
+    fun testDisconnect() = runBlockingSimulation {
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
-        source.connect(pdu)
-        val outlet = pdu.newOutlet()
-        outlet.close()
-
-        assertThrows<IllegalStateException> {
-            outlet.connect(SimpleInlet())
+        val source1 = SimPowerSource(interpreter, capacity = 100.0)
+        val source2 = SimPowerSource(interpreter, capacity = 100.0)
+        val ups = SimUps(interpreter)
+        source1.connect(ups.newInlet())
+        source2.connect(ups.newInlet())
+        val consumer = spyk(SimWorkConsumer(100.0, utilization = 1.0))
+        val inlet = object : SimPowerInlet() {
+            override fun createConsumer(): SimResourceConsumer = consumer
         }
+
+        ups.connect(inlet)
+        ups.disconnect()
+
+        verify { consumer.onEvent(any(), SimResourceEvent.Exit) }
     }
 
     class SimpleInlet : SimPowerInlet() {

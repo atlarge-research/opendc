@@ -33,8 +33,8 @@ import org.opendc.simulator.resources.*
  */
 public class SimPdu(
     interpreter: SimResourceInterpreter,
-    public val idlePower: Double = 0.0,
-    public val lossCoefficient: Double = 0.0,
+    private val idlePower: Double = 0.0,
+    private val lossCoefficient: Double = 0.0,
 ) : SimPowerInlet() {
     /**
      * The [SimResourceDistributor] that distributes the electricity over the PDU outlets.
