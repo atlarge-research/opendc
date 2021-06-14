@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute
 
 import org.opendc.simulator.compute.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.cpufreq.ScalingPolicy
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.*
@@ -100,11 +101,12 @@ public abstract class SimAbstractHypervisor(
         switch = createSwitch(ctx)
 
         for (cpu in ctx.cpus) {
-            val governor = scalingGovernor?.createLogic(cpu)
+            val governor = scalingGovernor?.createLogic(ScalingPolicyImpl(cpu))
             if (governor != null) {
                 governors.add(governor)
                 governor.onStart()
             }
+
             switch.addInput(cpu)
         }
     }
@@ -145,5 +147,20 @@ public abstract class SimAbstractHypervisor(
             }
 
         override fun toString(): String = "SimAbstractHypervisor.VCpu[model=$model]"
+    }
+
+    /**
+     * A [ScalingPolicy] for a physical CPU of the hypervisor.
+     */
+    private class ScalingPolicyImpl(override val cpu: SimProcessingUnit) : ScalingPolicy {
+        override var target: Double
+            get() = cpu.capacity
+            set(value) {
+                cpu.capacity = value
+            }
+
+        override val max: Double = cpu.model.frequency
+
+        override val min: Double = 0.0
     }
 }

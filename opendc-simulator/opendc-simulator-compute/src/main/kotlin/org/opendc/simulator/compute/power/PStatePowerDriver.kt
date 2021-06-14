@@ -37,7 +37,7 @@ public class PStatePowerDriver(states: Map<Double, PowerModel>) : PowerDriver {
     /**
      * The P-States defined by the user and ordered by key.
      */
-    private val states = TreeMap(states)
+    private val states: TreeMap<Double, PowerModel> = TreeMap(states)
 
     override fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): PowerDriver.Logic = object : PowerDriver.Logic {
         override fun computePower(): Double {
@@ -54,7 +54,7 @@ public class PStatePowerDriver(states: Map<Double, PowerModel>) : PowerDriver {
             val utilization = totalSpeed / (actualFreq * cpus.size)
             return model.computePower(utilization)
         }
-
-        override fun toString(): String = "PStatePowerDriver.Logic"
     }
+
+    override fun toString(): String = "PStatePowerDriver[states=$states]"
 }

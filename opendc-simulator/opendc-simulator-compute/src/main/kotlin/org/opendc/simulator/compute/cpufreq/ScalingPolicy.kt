@@ -22,35 +22,30 @@
 
 package org.opendc.simulator.compute.cpufreq
 
+import org.opendc.simulator.compute.SimProcessingUnit
+
 /**
- * A [ScalingGovernor] in the CPUFreq subsystem of OpenDC is responsible for scaling the frequency of simulated CPUs
- * independent of the particular implementation of the CPU.
- *
- * Each of the scaling governors implements a single, possibly parametrized, performance scaling algorithm.
- *
- * For more information, see the documentation of the Linux CPUFreq subsystem:
- * https://www.kernel.org/doc/html/latest/admin-guide/pm/cpufreq.html
+ * An interface that holds the state managed by a [ScalingGovernor] and used by the underlying machine to control the
+ * CPU frequencies.
  */
-public interface ScalingGovernor {
+public interface ScalingPolicy {
     /**
-     * Create the scaling logic for the specified [policy]
+     * The processing unit that is associated with this policy.
      */
-    public fun createLogic(policy: ScalingPolicy): Logic
+    public val cpu: SimProcessingUnit
 
     /**
-     * The logic of the scaling governor.
+     * The target frequency which the CPU should attempt to attain.
      */
-    public interface Logic {
-        /**
-         * This method is invoked when the governor is started.
-         */
-        public fun onStart() {}
+    public var target: Double
 
-        /**
-         * This method is invoked when the governor should re-decide the frequency limits.
-         *
-         * @param load The load of the system.
-         */
-        public fun onLimit(load: Double) {}
-    }
+    /**
+     * The minimum frequency to which the CPU may scale.
+     */
+    public val min: Double
+
+    /**
+     * The maximum frequency to which the CPU may scale.
+     */
+    public val max: Double
 }

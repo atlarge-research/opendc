@@ -52,7 +52,7 @@ internal class PStatePowerDriverTest {
     @Test
     fun testPowerWithSingleCpu() {
         val machine = mockk<SimBareMetalMachine>()
-        val cpu = mockk<SimProcessingUnit>()
+        val cpu = mockk<SimProcessingUnit>(relaxUnitFun = true)
 
         every { cpu.capacity } returns 3200.0
         every { cpu.speed } returns 1200.0
@@ -73,10 +73,8 @@ internal class PStatePowerDriverTest {
     @Test
     fun testPowerWithMultipleCpus() {
         val machine = mockk<SimBareMetalMachine>()
-        val cpus = listOf(
-            mockk<SimProcessingUnit>(),
-            mockk()
-        )
+        val cpu = mockk<SimProcessingUnit>(relaxUnitFun = true)
+        val cpus = listOf(cpu, cpu)
 
         every { cpus[0].capacity } returns 1000.0
         every { cpus[0].speed } returns 1200.0
@@ -100,7 +98,7 @@ internal class PStatePowerDriverTest {
     @Test
     fun testPowerBasedOnUtilization() {
         val machine = mockk<SimBareMetalMachine>()
-        val cpu = mockk<SimProcessingUnit>()
+        val cpu = mockk<SimProcessingUnit>(relaxUnitFun = true)
 
         every { cpu.model.frequency } returns 4200.0
 
