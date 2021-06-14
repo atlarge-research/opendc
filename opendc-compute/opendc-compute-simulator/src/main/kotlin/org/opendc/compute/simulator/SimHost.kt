@@ -129,7 +129,7 @@ public class SimHost(
                 _batch.put(_cpuWorkInterference, interferedWork.toDouble())
                 _batch.put(_cpuUsage, cpuUsage)
                 _batch.put(_cpuDemand, cpuDemand)
-                _batch.put(_cpuPower, machine.powerDraw)
+                _batch.put(_cpuPower, machine.psu.powerDraw)
                 _batch.record()
             }
         }

@@ -20,29 +20,35 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power
+package org.opendc.simulator.power
 
-import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimProcessingUnit
+import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSource
 
 /**
- * A [PowerDriver] is responsible for tracking the power usage for a component of the machine.
+ * A [SimPowerOutlet] that represents a source of electricity.
+ *
+ * @param interpreter The underlying [SimResourceInterpreter] to drive the simulation under the hood.
  */
-public interface PowerDriver {
+public class SimPowerSource(interpreter: SimResourceInterpreter, public val capacity: Double) : SimPowerOutlet() {
     /**
-     * Create the driver logic for the specified [machine].
+     * The resource source that drives this power source.
      */
-    public fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): Logic
+    private val source = SimResourceSource(capacity, interpreter)
 
     /**
-     * The logic of the power driver.
+     * The power draw at this instant.
      */
-    public interface Logic {
-        /**
-         * Compute the power consumption of the component.
-         *
-         * @return The power consumption of the component in W.
-         */
-        public fun computePower(): Double
+    public val powerDraw: Double
+        get() = source.speed
+
+    override fun onConnect(inlet: SimPowerInlet) {
+        source.startConsumer(inlet.createConsumer())
     }
+
+    override fun onDisconnect(inlet: SimPowerInlet) {
+        source.cancel()
+    }
+
+    override fun toString(): String = "SimPowerSource"
 }

@@ -20,29 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power
+package org.opendc.simulator.power
 
-import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimProcessingUnit
+import org.opendc.simulator.resources.SimResourceConsumer
 
 /**
- * A [PowerDriver] is responsible for tracking the power usage for a component of the machine.
+ * An abstract inlet that consumes electricity from a power outlet.
  */
-public interface PowerDriver {
+public abstract class SimPowerInlet {
     /**
-     * Create the driver logic for the specified [machine].
+     * A flag to indicate that the inlet is currently connected to an outlet.
      */
-    public fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): Logic
+    public val isConnected: Boolean
+        get() = _outlet != null
 
     /**
-     * The logic of the power driver.
+     * The [SimPowerOutlet] to which the inlet is connected.
      */
-    public interface Logic {
-        /**
-         * Compute the power consumption of the component.
-         *
-         * @return The power consumption of the component in W.
-         */
-        public fun computePower(): Double
-    }
+    public val outlet: SimPowerOutlet?
+        get() = _outlet
+    internal var _outlet: SimPowerOutlet? = null
+
+    /**
+     * Create a [SimResourceConsumer] which represents the consumption of electricity from the power outlet.
+     */
+    public abstract fun createConsumer(): SimResourceConsumer
 }

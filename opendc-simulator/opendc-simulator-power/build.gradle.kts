@@ -20,29 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power
+description = "Library for simulating datacenter power components"
 
-import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimProcessingUnit
+plugins {
+    `kotlin-library-conventions`
+    `testing-conventions`
+    `jacoco-conventions`
+}
 
-/**
- * A [PowerDriver] is responsible for tracking the power usage for a component of the machine.
- */
-public interface PowerDriver {
-    /**
-     * Create the driver logic for the specified [machine].
-     */
-    public fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): Logic
-
-    /**
-     * The logic of the power driver.
-     */
-    public interface Logic {
-        /**
-         * Compute the power consumption of the component.
-         *
-         * @return The power consumption of the component in W.
-         */
-        public fun computePower(): Double
-    }
+dependencies {
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcSimulator.opendcSimulatorResources)
+    implementation(projects.opendcSimulator.opendcSimulatorCore)
 }

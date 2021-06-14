@@ -44,7 +44,11 @@ public class SimResourceSource(
             }
 
             override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
-                return min(deadline, ctx.clock.millis() + getDuration(work, speed))
+                return if (work.isInfinite()) {
+                    Long.MAX_VALUE
+                } else {
+                    min(deadline, ctx.clock.millis() + getDuration(work, speed))
+                }
             }
 
             override fun onUpdate(ctx: SimResourceControllableContext, work: Double) {

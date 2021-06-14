@@ -40,6 +40,7 @@ import org.opendc.simulator.compute.util.SimWorkloadLifecycle
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.power.SimPowerSource
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 
@@ -142,16 +143,20 @@ class SimMachineTest {
 
     @Test
     fun testPower() = runBlockingSimulation {
+        val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            interpreter,
             machineModel,
             SimplePowerDriver(LinearPowerModel(100.0, 50.0))
         )
+        val source = SimPowerSource(interpreter, capacity = 1000.0)
+        source.connect(machine.psu)
 
         try {
             coroutineScope {
                 launch { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
-                assertEquals(100.0, machine.powerDraw)
+                assertEquals(100.0, machine.psu.powerDraw)
+                assertEquals(100.0, source.powerDraw)
             }
         } finally {
             machine.close()
