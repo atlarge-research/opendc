@@ -20,22 +20,35 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power
+package org.opendc.simulator.power
 
-import kotlin.math.sqrt
+import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSource
 
 /**
- * The square root power model partially adapted from CloudSim.
+ * A [SimPowerOutlet] that represents a source of electricity.
  *
- * @param maxPower The maximum power draw of the server in W.
- * @param idlePower The power draw of the server at its lowest utilization level in W.
+ * @param interpreter The underlying [SimResourceInterpreter] to drive the simulation under the hood.
  */
-public class SqrtPowerModel(private val maxPower: Double, private val idlePower: Double) : PowerModel {
-    private val factor: Double = (maxPower - idlePower) / sqrt(100.0)
+public class SimPowerSource(interpreter: SimResourceInterpreter, public val capacity: Double) : SimPowerOutlet() {
+    /**
+     * The resource source that drives this power source.
+     */
+    private val source = SimResourceSource(capacity, interpreter)
 
-    override fun computePower(utilization: Double): Double {
-        return idlePower + factor * sqrt(utilization * 100)
+    /**
+     * The power draw at this instant.
+     */
+    public val powerDraw: Double
+        get() = source.speed
+
+    override fun onConnect(inlet: SimPowerInlet) {
+        source.startConsumer(inlet.createConsumer())
     }
 
-    override fun toString(): String = "SqrtPowerModel[max=$maxPower,idle=$idlePower]"
+    override fun onDisconnect(inlet: SimPowerInlet) {
+        source.cancel()
+    }
+
+    override fun toString(): String = "SimPowerSource"
 }

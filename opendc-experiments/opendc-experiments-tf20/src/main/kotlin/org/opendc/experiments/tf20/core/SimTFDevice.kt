@@ -153,7 +153,7 @@ public class SimTFDevice(
                 }
                 SimResourceEvent.Run -> {
                     _usage.record(ctx.speed)
-                    _power.record(machine.powerDraw)
+                    _power.record(machine.psu.powerDraw)
                 }
                 else -> {}
             }

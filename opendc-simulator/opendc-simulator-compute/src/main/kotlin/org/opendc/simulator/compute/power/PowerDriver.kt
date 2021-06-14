@@ -26,22 +26,22 @@ import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimProcessingUnit
 
 /**
- * A [PowerDriver] is responsible for switching the processor to the correct frequency.
+ * A [PowerDriver] is responsible for tracking the power usage for a component of the machine.
  */
 public interface PowerDriver {
     /**
-     * Create the scaling logic for the specified [machine]
+     * Create the driver logic for the specified [machine].
      */
     public fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): Logic
 
     /**
-     * The logic of the scaling driver.
+     * The logic of the power driver.
      */
     public interface Logic {
         /**
-         * Compute the power consumption of the processor.
+         * Compute the power consumption of the component.
          *
-         * @return The power consumption of the processor in W.
+         * @return The power consumption of the component in W.
          */
         public fun computePower(): Double
     }

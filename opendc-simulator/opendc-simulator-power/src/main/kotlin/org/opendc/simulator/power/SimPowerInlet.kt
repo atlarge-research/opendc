@@ -20,22 +20,29 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.power
+package org.opendc.simulator.power
 
-import kotlin.math.sqrt
+import org.opendc.simulator.resources.SimResourceConsumer
 
 /**
- * The square root power model partially adapted from CloudSim.
- *
- * @param maxPower The maximum power draw of the server in W.
- * @param idlePower The power draw of the server at its lowest utilization level in W.
+ * An abstract inlet that consumes electricity from a power outlet.
  */
-public class SqrtPowerModel(private val maxPower: Double, private val idlePower: Double) : PowerModel {
-    private val factor: Double = (maxPower - idlePower) / sqrt(100.0)
+public abstract class SimPowerInlet {
+    /**
+     * A flag to indicate that the inlet is currently connected to an outlet.
+     */
+    public val isConnected: Boolean
+        get() = _outlet != null
 
-    override fun computePower(utilization: Double): Double {
-        return idlePower + factor * sqrt(utilization * 100)
-    }
+    /**
+     * The [SimPowerOutlet] to which the inlet is connected.
+     */
+    public val outlet: SimPowerOutlet?
+        get() = _outlet
+    internal var _outlet: SimPowerOutlet? = null
 
-    override fun toString(): String = "SqrtPowerModel[max=$maxPower,idle=$idlePower]"
+    /**
+     * Create a [SimResourceConsumer] which represents the consumption of electricity from the power outlet.
+     */
+    public abstract fun createConsumer(): SimResourceConsumer
 }
