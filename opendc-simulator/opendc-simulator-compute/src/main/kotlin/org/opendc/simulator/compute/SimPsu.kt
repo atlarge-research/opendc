@@ -22,16 +22,24 @@
 
 package org.opendc.simulator.compute
 
+import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.power.SimPowerInlet
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
 import org.opendc.simulator.resources.SimResourceEvent
+import java.util.*
 
 /**
  * A power supply of a [SimBareMetalMachine].
+ *
+ * @param ratedOutputPower The rated output power of the PSU.
+ * @param energyEfficiency The energy efficiency of the PSU for various power draws.
  */
-public abstract class SimPsu : SimPowerInlet() {
+public class SimPsu(
+    private val ratedOutputPower: Double,
+    energyEfficiency: Map<Double, Double>,
+) : SimPowerInlet() {
     /**
      * The power draw of the machine at this instant.
      */
@@ -40,13 +48,44 @@ public abstract class SimPsu : SimPowerInlet() {
     private var _powerDraw = 0.0
 
     /**
+     * The energy efficiency of the PSU at various power draws.
+     */
+    private val energyEfficiency = TreeMap(energyEfficiency)
+
+    /**
      * The consumer context.
      */
     private var _ctx: SimResourceContext? = null
 
+    /**
+     * The driver that is connected to the PSU.
+     */
+    private var _driver: PowerDriver.Logic? = null
+
+    init {
+        require(energyEfficiency.isNotEmpty()) { "Must specify at least one entry for energy efficiency of PSU" }
+    }
+
+    /**
+     * Update the power draw of the PSU.
+     */
+    public fun update() {
+        _ctx?.interrupt()
+    }
+
+    /**
+     * Connect the specified [PowerDriver.Logic] to this PSU.
+     */
+    public fun connect(driver: PowerDriver.Logic) {
+        check(_driver == null) { "PSU already connected" }
+        _driver = driver
+        update()
+    }
+
     override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer {
         override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-            val powerDraw = _powerDraw
+            val powerDraw = computePowerDraw(_driver?.computePower() ?: 0.0)
+
             return if (powerDraw > 0.0)
                 SimResourceCommand.Consume(Double.POSITIVE_INFINITY, powerDraw, Long.MAX_VALUE)
             else
@@ -56,6 +95,7 @@ public abstract class SimPsu : SimPowerInlet() {
         override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
             when (event) {
                 SimResourceEvent.Start -> _ctx = ctx
+                SimResourceEvent.Run -> _powerDraw = ctx.speed
                 SimResourceEvent.Exit -> _ctx = null
                 else -> {}
             }
@@ -63,17 +103,13 @@ public abstract class SimPsu : SimPowerInlet() {
     }
 
     /**
-     * Update the power draw of the PSU.
+     * Compute the power draw of the PSU including the power loss.
      */
-    public fun update() {
-        _powerDraw = computePower()
-        _ctx?.interrupt()
+    private fun computePowerDraw(load: Double): Double {
+        val loadPercentage = (load / ratedOutputPower).coerceIn(0.0, 1.0)
+        val efficiency = energyEfficiency.ceilingEntry(loadPercentage)?.value ?: 1.0
+        return load / efficiency
     }
-
-    /**
-     * Compute the power draw of the PSU.
-     */
-    protected abstract fun computePower(): Double
 
     override fun toString(): String = "SimPsu[draw=$_powerDraw]"
 }

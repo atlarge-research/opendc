@@ -36,12 +36,14 @@ import org.opendc.simulator.resources.SimResourceInterpreter
  * @param interpreter The [SimResourceInterpreter] to drive the simulation.
  * @param model The machine model to simulate.
  * @param powerDriver The power driver to use.
+ * @param psu The power supply of the machine.
  * @param parent The parent simulation system.
  */
 public class SimBareMetalMachine(
     interpreter: SimResourceInterpreter,
     model: SimMachineModel,
     powerDriver: PowerDriver,
+    public val psu: SimPsu = SimPsu(500.0, mapOf(1.0 to 1.0)),
     parent: SimResourceSystem? = null,
 ) : SimAbstractMachine(interpreter, parent, model) {
     /**
@@ -51,21 +53,13 @@ public class SimBareMetalMachine(
         Cpu(SimResourceSource(cpu.frequency, interpreter, this@SimBareMetalMachine), cpu)
     }
 
-    /**
-     * The power supply of this bare-metal machine.
-     */
-    public val psu: SimPsu = object : SimPsu() {
-        /**
-         * The logic for the CPU power driver.
-         */
-        private val cpuLogic = powerDriver.createLogic(this@SimBareMetalMachine, cpus)
-
-        override fun computePower(): Double = cpuLogic.computePower()
-    }
-
     override fun updateUsage(usage: Double) {
         super.updateUsage(usage)
         psu.update()
+    }
+
+    init {
+        psu.connect(powerDriver.createLogic(this, cpus))
     }
 
     /**
