@@ -43,11 +43,11 @@ private val logger = KotlinLogging.logger {}
  */
 public class ParquetExperimentMonitor(base: File, partition: String, bufferSize: Int) : ExperimentMonitor {
     private val hostWriter = ParquetHostEventWriter(
-        File(base, "host-metrics/$partition/data.parquet"),
+        File(base, "host-metrics/$partition/data.parquet").also { it.parentFile.mkdirs() },
         bufferSize
     )
     private val provisionerWriter = ParquetProvisionerEventWriter(
-        File(base, "provisioner-metrics/$partition/data.parquet"),
+        File(base, "provisioner-metrics/$partition/data.parquet").also { it.parentFile.mkdirs() },
         bufferSize
     )
 
