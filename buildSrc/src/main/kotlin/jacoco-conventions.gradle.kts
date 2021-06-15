@@ -25,11 +25,6 @@ plugins {
     jacoco
 }
 
-jacoco {
-    // Necessary for Kotlin 1.5.0. See https://github.com/jacoco/jacoco/issues/1155
-    toolVersion = "0.8.7"
-}
-
 tasks.jacocoTestReport {
     reports {
         html.isEnabled = true

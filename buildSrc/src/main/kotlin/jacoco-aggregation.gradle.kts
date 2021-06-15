@@ -1,9 +1,5 @@
-import gradle.kotlin.dsl.accessors._a850a9ab866951e91ee43960bbc39582.jacoco
-
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +28,6 @@ plugins {
 repositories {
     mavenLocal()
     mavenCentral()
-}
-
-jacoco {
-    // Necessary for Kotlin 1.5.0. See https://github.com/jacoco/jacoco/issues/1155
-    toolVersion = "0.8.7"
 }
 
 tasks.register<JacocoReport>("codeCoverageReport") {
