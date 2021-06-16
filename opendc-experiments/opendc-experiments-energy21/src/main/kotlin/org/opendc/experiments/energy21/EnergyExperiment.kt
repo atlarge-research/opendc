@@ -87,11 +87,7 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
             weighers = listOf(RandomWeigher(Random(0)) to 1.0)
         )
 
-        val meterProvider: MeterProvider = SdkMeterProvider
-            .builder()
-            .setClock(clock.toOtelClock())
-            .build()
-
+        val meterProvider: MeterProvider = createMeterProvider(clock)
         val monitor = ParquetExperimentMonitor(File(config.getString("output-path")), "power_model=$powerModel/run_id=$repeat", 4096)
         val trace = Sc20StreamingParquetTraceReader(File(config.getString("trace-path"), trace), random = Random(1).asKotlinRandom())
 
