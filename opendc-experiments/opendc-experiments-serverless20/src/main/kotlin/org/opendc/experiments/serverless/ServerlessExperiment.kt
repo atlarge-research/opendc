@@ -31,14 +31,14 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.experiments.serverless.trace.FunctionTraceWorkload
 import org.opendc.experiments.serverless.trace.ServerlessTraceReader
+import org.opendc.faas.service.FaaSService
+import org.opendc.faas.service.autoscaler.FunctionTerminationPolicyFixed
+import org.opendc.faas.service.router.RandomRoutingPolicy
+import org.opendc.faas.simulator.SimFunctionDeployer
+import org.opendc.faas.simulator.delay.ColdStartModel
+import org.opendc.faas.simulator.delay.StochasticDelayInjector
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
-import org.opendc.serverless.service.ServerlessService
-import org.opendc.serverless.service.autoscaler.FunctionTerminationPolicyFixed
-import org.opendc.serverless.service.router.RandomRoutingPolicy
-import org.opendc.serverless.simulator.SimFunctionDeployer
-import org.opendc.serverless.simulator.delay.ColdStartModel
-import org.opendc.serverless.simulator.delay.StochasticDelayInjector
 import org.opendc.simulator.compute.SimMachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -85,7 +85,7 @@ public class ServerlessExperiment : Experiment("Serverless") {
         val delayInjector = StochasticDelayInjector(coldStartModel, Random())
         val deployer = SimFunctionDeployer(clock, this, createMachineModel(), delayInjector) { FunctionTraceWorkload(traceById.getValue(it.name)) }
         val service =
-            ServerlessService(coroutineContext, clock, meterProvider.get("opendc-serverless"), deployer, routingPolicy, FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = 10 * 60 * 1000))
+            FaaSService(coroutineContext, clock, meterProvider.get("opendc-serverless"), deployer, routingPolicy, FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = 10 * 60 * 1000))
         val client = service.newClient()
 
         coroutineScope {

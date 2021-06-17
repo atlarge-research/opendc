@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,18 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.faas.simulator.delay
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.faas.service.deployer.FunctionInstance
+import java.util.*
+import kotlin.math.abs
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcFaas.opendcFaasService)
-    implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+/*
+ * Interface for instance deployment delay estimation.
+ */
+public class StochasticDelayInjector(private val model: ColdStartModel, private val random: Random) : DelayInjector {
+    override fun getColdStartDelay(instance: FunctionInstance): Long {
+        val (mean, sd) = model.coldStartParam(instance.function.memorySize.toInt())
+        return abs(random.nextGaussian() * sd + mean).toLong()
+    }
 }

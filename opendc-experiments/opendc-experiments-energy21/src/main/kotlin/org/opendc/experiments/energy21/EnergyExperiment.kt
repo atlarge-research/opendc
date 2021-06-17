@@ -24,7 +24,6 @@ package org.opendc.experiments.energy21
 
 import com.typesafe.config.ConfigFactory
 import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -50,7 +49,6 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.*
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import java.time.Clock
 import java.util.*

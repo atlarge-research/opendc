@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,24 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.faas.service.deployer
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.faas.service.FunctionObject
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcFaas.opendcFaasService)
-    implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+/**
+ * A [FunctionDeployer] is responsible for ensuring that an instance of an arbitrary function, a [FunctionInstance],
+ * is deployed.
+ *
+ * The function deployer should combines the configuration stored in the function registry, the parameters supplied by
+ * the requester, and other factors into a decision of how the function should be deployed, including how many and
+ * what kind of resources it should receive.
+ *
+ * Though it decides how the function instance should be deployed, the deployment of the function instance itself is
+ * delegated to the Resource Orchestration Layer.
+ */
+public interface FunctionDeployer {
+    /**
+     * Deploy the specified [function].
+     */
+    public fun deploy(function: FunctionObject, listener: FunctionInstanceListener): FunctionInstance
 }

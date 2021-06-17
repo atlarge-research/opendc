@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,29 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.faas.service.deployer
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+/**
+ * This enumeration describes the states of a [FunctionInstance].
+ */
+public enum class FunctionInstanceState {
+    /**
+     * The function instance is currently being provisioned.
+     */
+    Provisioning,
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcFaas.opendcFaasService)
-    implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+    /**
+     * The function instance is idle and ready to execute.
+     */
+    Idle,
+
+    /**
+     * The function instance is executing.
+     */
+    Active,
+
+    /**
+     * The function instance is released and cannot be used anymore.
+     */
+    Deleted
 }

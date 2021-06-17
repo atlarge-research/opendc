@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,17 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.faas.service.router
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.faas.service.FunctionObject
+import org.opendc.faas.service.deployer.FunctionInstance
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcFaas.opendcFaasService)
-    implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+/**
+ * A [RoutingPolicy] decides to which [FunctionInstance] a function invocation should be routed.
+ */
+public interface RoutingPolicy {
+    /**
+     * Select the instance to which the request should be routed to.
+     */
+    public fun select(instances: List<FunctionInstance>, function: FunctionObject): FunctionInstance?
 }

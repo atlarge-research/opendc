@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,18 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.faas.simulator.workload
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.faas.api.FaaSFunction
+import org.opendc.faas.service.FunctionObject
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcFaas.opendcFaasService)
-    implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+/**
+ * A [SimFaaSWorkloadMapper] is responsible for mapping a [FaaSFunction] to a [SimFaaSWorkload] that
+ * can be simulated.
+ */
+public fun interface SimFaaSWorkloadMapper {
+    /**
+     * Map the specified [function] to a [SimFaaSWorkload] that can be simulated.
+     */
+    public fun createWorkload(function: FunctionObject): SimFaaSWorkload
 }

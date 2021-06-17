@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,36 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.faas.service.deployer
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.faas.service.FunctionObject
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcFaas.opendcFaasService)
-    implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+/**
+ * A [FunctionInstance] is a a self-contained worker—typically a container—capable of handling function executions.
+ *
+ * Multiple, concurrent function instances can exists for a single function, for scalability purposes.
+ */
+public interface FunctionInstance : AutoCloseable {
+    /**
+     * The state of the instance.
+     */
+    public val state: FunctionInstanceState
+
+    /**
+     * The [FunctionObject] that is represented by this instance.
+     */
+    public val function: FunctionObject
+
+    /**
+     * Invoke the function instance.
+     *
+     * This method will suspend execution util the function instance has returned.
+     */
+    public suspend fun invoke()
+
+    /**
+     * Indicate to the resource manager that the instance is not needed anymore and may be cleaned up by the resource
+     * manager.
+     */
+    public override fun close()
 }

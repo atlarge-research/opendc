@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,51 @@
  * SOFTWARE.
  */
 
-description = "Experiments for OpenDC Serverless"
+package org.opendc.faas.api
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import java.util.UUID
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcFaas.opendcFaasService)
-    implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+/**
+ * A serverless function instance.
+ */
+public interface FaaSFunction {
+    /**
+     * The unique identifier of the function.
+     */
+    public val uid: UUID
+
+    /**
+     * The name of the function.
+     */
+    public val name: String
+
+    /**
+     * The amount of memory allocated for this function in MB.
+     */
+    public val memorySize: Long
+
+    /**
+     * The identifying labels attached to the resource.
+     */
+    public val labels: Map<String, String>
+
+    /**
+     * The non-identifying metadata attached to the resource.
+     */
+    public val meta: Map<String, Any>
+
+    /**
+     * Invoke the serverless function.
+     */
+    public suspend operator fun invoke()
+
+    /**
+     * Request the function to be deleted.
+     */
+    public suspend fun delete()
+
+    /**
+     * Refresh the local state of this object.
+     */
+    public suspend fun refresh()
 }
