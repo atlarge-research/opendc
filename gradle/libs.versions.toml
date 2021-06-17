@@ -11,7 +11,7 @@ hadoop = "3.3.0"
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.5.0" }
 
 # Logging
-kotlin-logging = { module = "io.github.microutils:kotlin-logging", version = "2.0.6" }
+kotlin-logging = { module = "io.github.microutils:kotlin-logging", version = "2.0.8" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
 sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version = "4.3.0" }
@@ -35,16 +35,16 @@ clikt = { module = "com.github.ajalt.clikt:clikt", version = "3.2.0" }
 progressbar = { module = "me.tongfei:progressbar", version = "0.9.0" }
 
 # Format
-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version = "2.12.0" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version = "2.12.3" }
 parquet = { module = "org.apache.parquet:parquet-avro", version = "1.12.0" }
 yaml = { module = "org.yaml:snakeyaml", version = "1.28" }
 config = { module = "com.typesafe:config", version = "1.4.1" }
 
 # Benchmark
-kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm", version = "0.3.0" }
+kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm", version = "0.3.1" }
 
 # Other
 mongodb = { module = "org.mongodb:mongodb-driver-sync", version = "4.2.3" }
-classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.105" }
+classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.108" }
 hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
 hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }

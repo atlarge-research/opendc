@@ -27,6 +27,6 @@ plugins {
 
 tasks.jacocoTestReport {
     reports {
-        html.isEnabled = true
+        html.required.set(true)
     }
 }

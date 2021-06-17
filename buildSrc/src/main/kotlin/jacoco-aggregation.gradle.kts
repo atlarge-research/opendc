@@ -35,10 +35,10 @@ tasks.register<JacocoReport>("codeCoverageReport") {
     description = "Generates an aggregate report based on all subprojects"
 
     reports {
-        xml.isEnabled = true
-        xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+        xml.required.set(true)
+        xml.outputLocation.set(file("${buildDir}/reports/jacoco/report.xml"))
 
-        html.isEnabled = true
+        html.required.set(true)
     }
 
     subprojects {
