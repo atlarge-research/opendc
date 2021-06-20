@@ -56,8 +56,6 @@ public abstract class SimAbstractResourceAggregator(
 
     /* SimResourceAggregator */
     override fun addInput(input: SimResourceProvider) {
-        check(state != SimResourceState.Stopped) { "Aggregator has been stopped" }
-
         val consumer = Consumer()
         _inputs.add(input)
         _inputConsumers.add(consumer)
@@ -70,8 +68,8 @@ public abstract class SimAbstractResourceAggregator(
     private val _inputConsumers = mutableListOf<Consumer>()
 
     /* SimResourceProvider */
-    override val state: SimResourceState
-        get() = _output.state
+    override val isActive: Boolean
+        get() = _output.isActive
 
     override val capacity: Double
         get() = _output.capacity
@@ -95,10 +93,6 @@ public abstract class SimAbstractResourceAggregator(
 
     override fun interrupt() {
         _output.interrupt()
-    }
-
-    override fun close() {
-        _output.close()
     }
 
     private val _output = object : SimAbstractResourceProvider(interpreter, parent, initialCapacity = 0.0) {

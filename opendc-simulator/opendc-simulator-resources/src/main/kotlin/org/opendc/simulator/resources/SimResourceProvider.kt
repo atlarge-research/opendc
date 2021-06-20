@@ -29,11 +29,11 @@ import kotlin.coroutines.resumeWithException
 /**
  * A [SimResourceProvider] provides a resource that can be consumed by a [SimResourceConsumer].
  */
-public interface SimResourceProvider : AutoCloseable {
+public interface SimResourceProvider {
     /**
-     * The state of the resource.
+     * A flag to indicate that the resource provider is currently being consumed by a [SimResourceConsumer].
      */
-    public val state: SimResourceState
+    public val isActive: Boolean
 
     /**
      * The resource capacity available at this instant.
@@ -71,13 +71,6 @@ public interface SimResourceProvider : AutoCloseable {
      * Cancel the current resource consumer. If there is no consumer active, this operation will be a no-op.
      */
     public fun cancel()
-
-    /**
-     * End the lifetime of the resource.
-     *
-     * This operation terminates the existing resource consumer.
-     */
-    public override fun close()
 }
 
 /**

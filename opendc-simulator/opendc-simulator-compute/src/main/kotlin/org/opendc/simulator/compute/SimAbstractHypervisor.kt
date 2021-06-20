@@ -129,6 +129,10 @@ public abstract class SimAbstractHypervisor(
         override fun close() {
             super.close()
 
+            for (cpu in cpus) {
+                cpu.close()
+            }
+
             _vms.remove(this)
         }
     }
@@ -137,9 +141,9 @@ public abstract class SimAbstractHypervisor(
      * A [SimProcessingUnit] of a virtual machine.
      */
     private class VCpu(
-        private val source: SimResourceProvider,
+        private val source: SimResourceCloseableProvider,
         override val model: ProcessingUnit
-    ) : SimProcessingUnit, SimResourceProvider by source {
+    ) : SimProcessingUnit, SimResourceCloseableProvider by source {
         override var capacity: Double
             get() = source.capacity
             set(_) {

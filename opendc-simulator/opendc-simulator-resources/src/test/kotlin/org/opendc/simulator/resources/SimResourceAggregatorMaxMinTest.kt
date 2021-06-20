@@ -26,7 +26,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.*
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
@@ -58,17 +58,13 @@ internal class SimResourceAggregatorMaxMinTest {
         val adapter = SimSpeedConsumerAdapter(forwarder, usage::add)
         source.startConsumer(adapter)
 
-        try {
-            aggregator.consume(consumer)
-            yield()
+        aggregator.consume(consumer)
+        yield()
 
-            assertAll(
-                { assertEquals(1000, clock.millis()) },
-                { assertEquals(listOf(0.0, 0.5, 0.0), usage) }
-            )
-        } finally {
-            aggregator.close()
-        }
+        assertAll(
+            { assertEquals(1000, clock.millis()) },
+            { assertEquals(listOf(0.0, 0.5, 0.0), usage) }
+        )
     }
 
     @Test
@@ -86,16 +82,12 @@ internal class SimResourceAggregatorMaxMinTest {
         val usage = mutableListOf<Double>()
         val adapter = SimSpeedConsumerAdapter(consumer, usage::add)
 
-        try {
-            aggregator.consume(adapter)
-            yield()
-            assertAll(
-                { assertEquals(1000, clock.millis()) },
-                { assertEquals(listOf(0.0, 2.0, 0.0), usage) }
-            )
-        } finally {
-            aggregator.close()
-        }
+        aggregator.consume(adapter)
+        yield()
+        assertAll(
+            { assertEquals(1000, clock.millis()) },
+            { assertEquals(listOf(0.0, 2.0, 0.0), usage) }
+        )
     }
 
     @Test
@@ -114,15 +106,11 @@ internal class SimResourceAggregatorMaxMinTest {
             .returns(SimResourceCommand.Consume(4.0, 4.0, 1000))
             .andThen(SimResourceCommand.Exit)
 
-        try {
-            aggregator.consume(consumer)
-            yield()
-            assertEquals(1000, clock.millis())
+        aggregator.consume(consumer)
+        yield()
+        assertEquals(1000, clock.millis())
 
-            verify(exactly = 2) { consumer.onNext(any()) }
-        } finally {
-            aggregator.close()
-        }
+        verify(exactly = 2) { consumer.onNext(any()) }
     }
 
     @Test
@@ -141,13 +129,9 @@ internal class SimResourceAggregatorMaxMinTest {
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException("Test Exception"))
 
-        try {
-            assertThrows<IllegalStateException> { aggregator.consume(consumer) }
-            yield()
-            assertEquals(SimResourceState.Pending, sources[0].state)
-        } finally {
-            aggregator.close()
-        }
+        assertThrows<IllegalStateException> { aggregator.consume(consumer) }
+        yield()
+        assertFalse(sources[0].isActive)
     }
 
     @Test
@@ -162,17 +146,13 @@ internal class SimResourceAggregatorMaxMinTest {
         sources.forEach(aggregator::addInput)
 
         val consumer = SimWorkConsumer(4.0, 1.0)
-        try {
-            coroutineScope {
-                launch { aggregator.consume(consumer) }
-                delay(1000)
-                sources[0].capacity = 0.5
-            }
-            yield()
-            assertEquals(2334, clock.millis())
-        } finally {
-            aggregator.close()
+        coroutineScope {
+            launch { aggregator.consume(consumer) }
+            delay(1000)
+            sources[0].capacity = 0.5
         }
+        yield()
+        assertEquals(2334, clock.millis())
     }
 
     @Test
@@ -187,17 +167,13 @@ internal class SimResourceAggregatorMaxMinTest {
         sources.forEach(aggregator::addInput)
 
         val consumer = SimWorkConsumer(1.0, 0.5)
-        try {
-            coroutineScope {
-                launch { aggregator.consume(consumer) }
-                delay(500)
-                sources[0].capacity = 0.5
-            }
-            yield()
-            assertEquals(1000, clock.millis())
-        } finally {
-            aggregator.close()
+        coroutineScope {
+            launch { aggregator.consume(consumer) }
+            delay(500)
+            sources[0].capacity = 0.5
         }
+        yield()
+        assertEquals(1000, clock.millis())
     }
 
     @Test
@@ -216,13 +192,9 @@ internal class SimResourceAggregatorMaxMinTest {
             .returns(SimResourceCommand.Consume(4.0, 4.0, 1000))
             .andThen(SimResourceCommand.Exit)
 
-        try {
-            aggregator.consume(consumer)
-            yield()
-            assertEquals(1000, clock.millis())
-            assertEquals(2.0, aggregator.counters.actual) { "Actual work mismatch" }
-        } finally {
-            aggregator.close()
-        }
+        aggregator.consume(consumer)
+        yield()
+        assertEquals(1000, clock.millis())
+        assertEquals(2.0, aggregator.counters.actual) { "Actual work mismatch" }
     }
 }

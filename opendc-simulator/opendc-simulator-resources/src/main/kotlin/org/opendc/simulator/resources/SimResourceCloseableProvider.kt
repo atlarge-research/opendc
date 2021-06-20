@@ -22,37 +22,16 @@
 
 package org.opendc.simulator.resources
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
-import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
-
 /**
- * A test suite for the [SimWorkConsumer] class.
+ * A [SimResourceProvider] that has a controllable and limited lifetime.
+ *
+ * This interface is used to signal that the resource provider may be closed and not reused after that point.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
-internal class SimWorkConsumerTest {
-    @Test
-    fun testSmoke() = runBlockingSimulation {
-        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
-        val provider = SimResourceSource(1.0, scheduler)
-
-        val consumer = SimWorkConsumer(1.0, 1.0)
-
-        provider.consume(consumer)
-        assertEquals(1000, clock.millis())
-    }
-
-    @Test
-    fun testUtilization() = runBlockingSimulation {
-        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
-        val provider = SimResourceSource(1.0, scheduler)
-
-        val consumer = SimWorkConsumer(1.0, 0.5)
-
-        provider.consume(consumer)
-        assertEquals(2000, clock.millis())
-    }
+public interface SimResourceCloseableProvider : SimResourceProvider, AutoCloseable {
+    /**
+     * End the lifetime of the resource provider.
+     *
+     * This operation cancels the existing resource consumer and prevents the resource provider from being reused.
+     */
+    public override fun close()
 }

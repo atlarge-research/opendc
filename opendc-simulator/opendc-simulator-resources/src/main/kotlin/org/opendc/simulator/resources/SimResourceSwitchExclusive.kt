@@ -35,7 +35,7 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
     private var isClosed: Boolean = false
 
     private val _outputs = mutableSetOf<Provider>()
-    override val outputs: Set<SimResourceProvider>
+    override val outputs: Set<SimResourceCloseableProvider>
         get() = _outputs
 
     private val availableResources = ArrayDeque<SimResourceTransformer>()
@@ -61,7 +61,7 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
         override fun toString(): String = "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
     }
 
-    override fun newOutput(): SimResourceProvider {
+    override fun newOutput(): SimResourceCloseableProvider {
         check(!isClosed) { "Switch has been closed" }
         check(availableResources.isNotEmpty()) { "No capacity to serve request" }
         val forwarder = availableResources.poll()
@@ -101,7 +101,7 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
         _inputs.forEach(SimResourceProvider::cancel)
     }
 
-    private inner class Provider(private val forwarder: SimResourceTransformer) : SimResourceProvider by forwarder {
+    private inner class Provider(private val forwarder: SimResourceTransformer) : SimResourceCloseableProvider, SimResourceProvider by forwarder {
         override fun close() {
             // We explicitly do not close the forwarder here in order to re-use it across output resources.
             _outputs -= this

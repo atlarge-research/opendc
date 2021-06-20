@@ -32,7 +32,7 @@ public class SimResourceDistributorMaxMin(
     private val interpreter: SimResourceInterpreter,
     private val parent: SimResourceSystem? = null
 ) : SimResourceDistributor {
-    override val outputs: Set<SimResourceProvider>
+    override val outputs: Set<SimResourceCloseableProvider>
         get() = _outputs
     private val _outputs = mutableSetOf<Output>()
 
@@ -57,7 +57,7 @@ public class SimResourceDistributorMaxMin(
     private var totalAllocatedSpeed = 0.0
 
     /* SimResourceDistributor */
-    override fun newOutput(): SimResourceProvider {
+    override fun newOutput(): SimResourceCloseableProvider {
         val provider = Output(ctx?.capacity ?: 0.0)
         _outputs.add(provider)
         return provider
@@ -178,7 +178,16 @@ public class SimResourceDistributorMaxMin(
     /**
      * An internal [SimResourceProvider] implementation for switch outputs.
      */
-    private inner class Output(capacity: Double) : SimAbstractResourceProvider(interpreter, parent, capacity), SimResourceProviderLogic, Comparable<Output> {
+    private inner class Output(capacity: Double) :
+        SimAbstractResourceProvider(interpreter, parent, capacity),
+        SimResourceCloseableProvider,
+        SimResourceProviderLogic,
+        Comparable<Output> {
+        /**
+         * A flag to indicate that the output is closed.
+         */
+        private var isClosed: Boolean = false
+
         /**
          * The current command that is processed by the resource.
          */
@@ -209,6 +218,8 @@ public class SimResourceDistributorMaxMin(
         override fun createLogic(): SimResourceProviderLogic = this
 
         override fun start(ctx: SimResourceControllableContext) {
+            check(!isClosed) { "Cannot re-use closed output" }
+
             activeOutputs += this
 
             interpreter.batch {
@@ -219,13 +230,9 @@ public class SimResourceDistributorMaxMin(
         }
 
         override fun close() {
-            val state = state
-
-            super.close()
-
-            if (state != SimResourceState.Stopped) {
-                _outputs.remove(this)
-            }
+            isClosed = true
+            cancel()
+            _outputs.remove(this)
         }
 
         /* SimResourceProviderLogic */

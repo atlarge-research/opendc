@@ -42,7 +42,6 @@ import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.simulator.resources.SimResourceInterpreter
-import java.time.Clock
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume

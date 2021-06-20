@@ -29,7 +29,7 @@ public interface SimResourceSwitch : AutoCloseable {
     /**
      * The output resource providers to which resource consumers can be attached.
      */
-    public val outputs: Set<SimResourceProvider>
+    public val outputs: Set<SimResourceCloseableProvider>
 
     /**
      * The input resources that will be switched between the output providers.
@@ -44,7 +44,7 @@ public interface SimResourceSwitch : AutoCloseable {
     /**
      * Create a new output on the switch.
      */
-    public fun newOutput(): SimResourceProvider
+    public fun newOutput(): SimResourceCloseableProvider
 
     /**
      * Add the specified [input] to the switch.
