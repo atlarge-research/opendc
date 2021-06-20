@@ -43,6 +43,7 @@ import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
 import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
@@ -68,6 +69,7 @@ internal class WorkflowServiceIntegrationTest {
             .setClock(clock.toOtelClock())
             .build()
 
+        val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val hosts = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
             .use { it.read() }
             .map { def ->
@@ -77,7 +79,7 @@ internal class WorkflowServiceIntegrationTest {
                     def.model,
                     def.meta,
                     coroutineContext,
-                    clock,
+                    interpreter,
                     MeterProvider.noop().get("opendc-compute-simulator"),
                     SimSpaceSharedHypervisorProvider()
                 )

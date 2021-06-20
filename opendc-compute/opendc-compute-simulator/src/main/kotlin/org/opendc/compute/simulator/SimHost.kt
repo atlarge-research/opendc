@@ -56,7 +56,7 @@ public class SimHost(
     model: SimMachineModel,
     override val meta: Map<String, Any>,
     context: CoroutineContext,
-    clock: Clock,
+    interpreter: SimResourceInterpreter,
     meter: Meter,
     hypervisor: SimHypervisorProvider,
     scalingGovernor: ScalingGovernor,
@@ -70,12 +70,12 @@ public class SimHost(
         model: SimMachineModel,
         meta: Map<String, Any>,
         context: CoroutineContext,
-        clock: Clock,
+        interpreter: SimResourceInterpreter,
         meter: Meter,
         hypervisor: SimHypervisorProvider,
         powerModel: PowerModel = ConstantPowerModel(0.0),
         mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    ) : this(uid, name, model, meta, context, clock, meter, hypervisor, PerformanceScalingGovernor(), SimplePowerDriver(powerModel), mapper)
+    ) : this(uid, name, model, meta, context, interpreter, meter, hypervisor, PerformanceScalingGovernor(), SimplePowerDriver(powerModel), mapper)
 
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
@@ -96,11 +96,6 @@ public class SimHost(
      * Current total memory use of the images on this hypervisor.
      */
     private var availableMemory: Long = model.memory.sumOf { it.size }
-
-    /**
-     * The resource interpreter to schedule the resource interactions.
-     */
-    private val interpreter = SimResourceInterpreter(context, clock)
 
     /**
      * The machine to run on.
