@@ -23,34 +23,28 @@
 package org.opendc.simulator.compute.cpufreq
 
 /**
- * A [ScalingGovernor] in the CPUFreq subsystem of OpenDC is responsible for scaling the frequency of simulated CPUs
- * independent of the particular implementation of the CPU.
- *
- * Each of the scaling governors implements a single, possibly parametrized, performance scaling algorithm.
- *
- * For more information, see the documentation of the Linux CPUFreq subsystem:
- * https://www.kernel.org/doc/html/latest/admin-guide/pm/cpufreq.html
+ * A CPUFreq [ScalingGovernor] that models the on-demand scaling governor in the Linux kernel.
  */
-public interface ScalingGovernor {
-    /**
-     * Create the scaling logic for the specified [policy]
-     */
-    public fun createLogic(policy: ScalingPolicy): Logic
-
-    /**
-     * The logic of the scaling governor.
-     */
-    public interface Logic {
+public class OnDemandScalingGovernor(public val threshold: Double = 0.8) : ScalingGovernor {
+    override fun createLogic(policy: ScalingPolicy): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
         /**
-         * This method is invoked when the governor is started.
+         * The multiplier used for the linear frequency scaling.
          */
-        public fun onStart() {}
+        private val multiplier = (policy.max - policy.min) / 100
 
-        /**
-         * This method is invoked when the governor should re-decide the frequency limits.
-         *
-         * @param load The load of the system.
-         */
-        public fun onLimit(load: Double) {}
+        override fun onStart() {
+            policy.target = policy.min
+        }
+
+        override fun onLimit(load: Double) {
+            policy.target = if (load < threshold) {
+                /* Proportional scaling (see: https://github.com/torvalds/linux/blob/master/drivers/cpufreq/cpufreq_ondemand.c#L151). */
+                policy.min + load * multiplier
+            } else {
+                policy.max
+            }
+        }
     }
+
+    override fun toString(): String = "OnDemandScalingGovernor[threshold=$threshold]"
 }

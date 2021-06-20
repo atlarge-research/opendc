@@ -33,7 +33,7 @@ public class SimplePowerDriver(private val model: PowerModel) : PowerDriver {
         override fun computePower(): Double {
             return model.computePower(machine.usage.value)
         }
-
-        override fun toString(): String = "SimplePowerDriver.Logic"
     }
+
+    override fun toString(): String = "SimplePowerDriver[model=$model]"
 }
