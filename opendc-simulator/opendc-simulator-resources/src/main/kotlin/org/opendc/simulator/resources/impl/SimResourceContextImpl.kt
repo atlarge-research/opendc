@@ -39,7 +39,8 @@ internal class SimResourceContextImpl(
      * The clock of the context.
      */
     override val clock: Clock
-        get() = interpreter.clock
+        get() = _clock
+    private val _clock = interpreter.clock
 
     /**
      * The capacity of the resource.
@@ -59,18 +60,7 @@ internal class SimResourceContextImpl(
      * The amount of work still remaining at this instant.
      */
     override val remainingWork: Double
-        get() {
-            val now = clock.millis()
-
-            return if (_remainingWorkFlush < now) {
-                _remainingWorkFlush = now
-                computeRemainingWork(now).also { _remainingWork = it }
-            } else {
-                _remainingWork
-            }
-        }
-    private var _remainingWork: Double = 0.0
-    private var _remainingWorkFlush: Long = Long.MIN_VALUE
+        get() = getRemainingWork(_clock.millis())
 
     /**
      * A flag to indicate the state of the context.
@@ -91,20 +81,6 @@ internal class SimResourceContextImpl(
      */
     override val demand: Double
         get() = _limit
-
-    private val counters = object : SimResourceCounters {
-        override var demand: Double = 0.0
-        override var actual: Double = 0.0
-        override var overcommit: Double = 0.0
-
-        override fun reset() {
-            demand = 0.0
-            actual = 0.0
-            overcommit = 0.0
-        }
-
-        override fun toString(): String = "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
-    }
 
     /**
      * The current state of the resource context.
@@ -223,7 +199,7 @@ internal class SimResourceContextImpl(
             SimResourceState.Pending, SimResourceState.Stopped -> state
             SimResourceState.Active -> {
                 val isInterrupted = _flag == Flag.Interrupt
-                val remainingWork = remainingWork
+                val remainingWork = getRemainingWork(timestamp)
                 val isConsume = _limit > 0.0
 
                 // Update the resource counters only if there is some progress
@@ -324,6 +300,21 @@ internal class SimResourceContextImpl(
      * Request the workload for more work.
      */
     private fun next(now: Long): SimResourceState = interpret(consumer.onNext(this), now)
+
+    private var _remainingWork: Double = 0.0
+    private var _remainingWorkFlush: Long = Long.MIN_VALUE
+
+    /**
+     * Obtain the remaining work at the given timestamp.
+     */
+    private fun getRemainingWork(now: Long): Double {
+        return if (_remainingWorkFlush < now) {
+            _remainingWorkFlush = now
+            computeRemainingWork(now).also { _remainingWork = it }
+        } else {
+            _remainingWork
+        }
+    }
 
     /**
      * Compute the remaining work based on the current state.
