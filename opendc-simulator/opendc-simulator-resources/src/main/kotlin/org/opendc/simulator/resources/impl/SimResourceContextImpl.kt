@@ -93,7 +93,7 @@ internal class SimResourceContextImpl(
     /**
      * The update flag indicating why the update was triggered.
      */
-    private var _flag: Flag = Flag.None
+    private var _flag: Int = 0
 
     /**
      * The current pending update.
@@ -123,7 +123,7 @@ internal class SimResourceContextImpl(
             return
         }
 
-        enableFlag(Flag.Interrupt)
+        _flag = _flag or FLAG_INTERRUPT
         scheduleUpdate()
     }
 
@@ -132,7 +132,7 @@ internal class SimResourceContextImpl(
             return
         }
 
-        enableFlag(Flag.Invalidate)
+        _flag = _flag or FLAG_INVALIDATE
         scheduleUpdate()
     }
 
@@ -149,7 +149,7 @@ internal class SimResourceContextImpl(
      */
     fun requiresUpdate(timestamp: Long): Boolean {
         // Either the resource context is flagged or there is a pending update at this timestamp
-        return _flag != Flag.None || _pendingUpdate?.timestamp == timestamp
+        return _flag != 0 || _pendingUpdate?.timestamp == timestamp
     }
 
     /**
@@ -161,7 +161,7 @@ internal class SimResourceContextImpl(
             val newState = doUpdate(timestamp, oldState)
 
             _state = newState
-            _flag = Flag.None
+            _flag = 0
 
             when (newState) {
                 SimResourceState.Pending ->
@@ -198,7 +198,7 @@ internal class SimResourceContextImpl(
             // Resource context is not active, so its state will not update
             SimResourceState.Pending, SimResourceState.Stopped -> state
             SimResourceState.Active -> {
-                val isInterrupted = _flag == Flag.Interrupt
+                val isInterrupted = _flag and FLAG_INTERRUPT != 0
                 val remainingWork = getRemainingWork(timestamp)
                 val isConsume = _limit > 0.0
 
@@ -348,25 +348,6 @@ internal class SimResourceContextImpl(
     }
 
     /**
-     * Enable the specified [flag] taking into account precedence.
-     */
-    private fun enableFlag(flag: Flag) {
-        _flag = when (_flag) {
-            Flag.None -> flag
-            Flag.Invalidate ->
-                when (flag) {
-                    Flag.None -> flag
-                    else -> flag
-                }
-            Flag.Interrupt ->
-                when (flag) {
-                    Flag.None, Flag.Invalidate -> flag
-                    else -> flag
-                }
-        }
-    }
-
-    /**
      * Schedule an update for this resource context.
      */
     private fun scheduleUpdate() {
@@ -402,12 +383,12 @@ internal class SimResourceContextImpl(
     }
 
     /**
-     * An enumeration of flags that can be assigned to a resource context to indicate whether they are invalidated or
-     * interrupted.
+     * A flag to indicate that the context should be invalidated.
      */
-    enum class Flag {
-        None,
-        Interrupt,
-        Invalidate
-    }
+    private val FLAG_INVALIDATE = 0b01
+
+    /**
+     * A flag to indicate that the context should be interrupted.
+     */
+    private val FLAG_INTERRUPT = 0b10
 }
