@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.kernel
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
@@ -32,7 +32,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.SimBareMetalMachine
+import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -47,12 +49,12 @@ import org.opendc.simulator.resources.SimResourceInterpreter
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimHypervisorTest {
-    private lateinit var model: SimMachineModel
+    private lateinit var model: MachineModel
 
     @BeforeEach
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 1)
-        model = SimMachineModel(
+        model = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
@@ -202,7 +204,7 @@ internal class SimHypervisorTest {
     @Test
     fun testMultipleCPUs() = runBlockingSimulation {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
-        val model = SimMachineModel(
+        val model = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )

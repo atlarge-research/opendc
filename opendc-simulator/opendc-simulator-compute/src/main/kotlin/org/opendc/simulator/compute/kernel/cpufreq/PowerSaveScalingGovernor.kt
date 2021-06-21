@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.kernel.cpufreq
 
 /**
  * A CPUFreq [ScalingGovernor] that causes the lowest possible frequency to be requested from the resource.

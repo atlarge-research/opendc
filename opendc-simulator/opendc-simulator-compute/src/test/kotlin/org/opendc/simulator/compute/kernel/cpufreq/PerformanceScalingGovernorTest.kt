@@ -20,53 +20,31 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.kernel.cpufreq
 
 import io.mockk.every
-import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 
 /**
- * Test suite for the [PowerSaveScalingGovernor]
+ * Test suite for the [PerformanceScalingGovernor]
  */
-internal class PowerSaveScalingGovernorTest {
+internal class PerformanceScalingGovernorTest {
     @Test
-    fun testSetStartLimitWithoutPStates() {
-        val cpuCapacity = 4100.0
-        val minSpeed = cpuCapacity / 2
-        val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
-        val logic = PowerSaveScalingGovernor().createLogic(policy)
+    fun testSetStartLimit() {
+        val policy = spyk<ScalingPolicy>()
+        val logic = PerformanceScalingGovernor().createLogic(policy)
 
-        every { policy.max } returns cpuCapacity
-        every { policy.min } returns minSpeed
+        every { policy.max } returns 4100.0
 
         logic.onStart()
+        verify(exactly = 1) { policy.target = 4100.0 }
 
         logic.onLimit(0.0)
-        verify(exactly = 1) { policy.target = minSpeed }
+        verify(exactly = 1) { policy.target = 4100.0 }
 
         logic.onLimit(1.0)
-        verify(exactly = 1) { policy.target = minSpeed }
-    }
-
-    @Test
-    fun testSetStartLimitWithPStates() {
-        val cpuCapacity = 4100.0
-        val firstPState = 1000.0
-        val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
-        val logic = PowerSaveScalingGovernor().createLogic(policy)
-
-        every { policy.max } returns cpuCapacity
-        every { policy.min } returns firstPState
-
-        logic.onStart()
-        verify(exactly = 1) { policy.target = firstPState }
-
-        logic.onLimit(0.0)
-        verify(exactly = 1) { policy.target = firstPState }
-
-        logic.onLimit(1.0)
-        verify(exactly = 1) { policy.target = firstPState }
+        verify(exactly = 1) { policy.target = 4100.0 }
     }
 }

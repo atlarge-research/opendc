@@ -44,8 +44,8 @@ import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
-import org.opendc.simulator.compute.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector

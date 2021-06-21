@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.device
 
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.power.SimPowerInlet

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.device
 
 import io.mockk.every
 import io.mockk.mockk

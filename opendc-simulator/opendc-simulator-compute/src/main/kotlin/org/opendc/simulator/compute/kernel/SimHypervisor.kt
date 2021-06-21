@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.kernel
 
+import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
@@ -38,7 +40,7 @@ public interface SimHypervisor : SimWorkload {
     /**
      * Determine whether the specified machine characterized by [model] can fit on this hypervisor at this moment.
      */
-    public fun canFit(model: SimMachineModel): Boolean
+    public fun canFit(model: MachineModel): Boolean
 
     /**
      * Create a [SimMachine] instance on which users may run a [SimWorkload].
@@ -47,7 +49,7 @@ public interface SimHypervisor : SimWorkload {
      * @param performanceInterferenceModel The performance interference model to use.
      */
     public fun createMachine(
-        model: SimMachineModel,
+        model: MachineModel,
         performanceInterferenceModel: PerformanceInterferenceModel? = null
     ): SimMachine
 

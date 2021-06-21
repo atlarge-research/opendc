@@ -20,20 +20,37 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
-
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSystem
+package org.opendc.simulator.compute.kernel.cpufreq
 
 /**
- * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
+ * A [ScalingGovernor] in the CPUFreq subsystem of OpenDC is responsible for scaling the frequency of simulated CPUs
+ * independent of the particular implementation of the CPU.
+ *
+ * Each of the scaling governors implements a single, possibly parametrized, performance scaling algorithm.
+ *
+ * For more information, see the documentation of the Linux CPUFreq subsystem:
+ * https://www.kernel.org/doc/html/latest/admin-guide/pm/cpufreq.html
  */
-public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
-    override val id: String = "space-shared"
+public interface ScalingGovernor {
+    /**
+     * Create the scaling logic for the specified [policy]
+     */
+    public fun createLogic(policy: ScalingPolicy): Logic
 
-    override fun create(
-        interpreter: SimResourceInterpreter,
-        parent: SimResourceSystem?,
-        listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimSpaceSharedHypervisor(interpreter)
+    /**
+     * The logic of the scaling governor.
+     */
+    public interface Logic {
+        /**
+         * This method is invoked when the governor is started.
+         */
+        public fun onStart() {}
+
+        /**
+         * This method is invoked when the governor should re-decide the frequency limits.
+         *
+         * @param load The load of the system.
+         */
+        public fun onLimit(load: Double) {}
+    }
 }

@@ -20,17 +20,20 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.kernel
+
+import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSystem
 
 /**
- * A CPUFreq [ScalingGovernor] that causes the highest possible frequency to be requested from the resource.
+ * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
  */
-public class PerformanceScalingGovernor : ScalingGovernor {
-    override fun createLogic(policy: ScalingPolicy): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
-        override fun onStart() {
-            policy.target = policy.max
-        }
-    }
+public class SimFairShareHypervisorProvider : SimHypervisorProvider {
+    override val id: String = "fair-share"
 
-    override fun toString(): String = "PerformanceScalingGovernor"
+    override fun create(
+        interpreter: SimResourceInterpreter,
+        parent: SimResourceSystem?,
+        listener: SimHypervisor.Listener?
+    ): SimHypervisor = SimFairShareHypervisor(interpreter, parent, listener = listener)
 }

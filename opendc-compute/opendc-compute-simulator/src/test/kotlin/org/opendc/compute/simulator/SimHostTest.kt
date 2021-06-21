@@ -40,8 +40,8 @@ import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
-import org.opendc.simulator.compute.SimFairShareHypervisorProvider
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -58,13 +58,13 @@ import kotlin.coroutines.resume
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimHostTest {
-    private lateinit var machineModel: SimMachineModel
+    private lateinit var machineModel: MachineModel
 
     @BeforeEach
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        machineModel = SimMachineModel(
+        machineModel = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )

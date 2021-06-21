@@ -25,6 +25,9 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import org.opendc.simulator.compute.kernel.SimFairShareHypervisor
+import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisor
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -45,7 +48,7 @@ import java.util.concurrent.TimeUnit
 class SimMachineBenchmarks {
     private lateinit var scope: SimulationCoroutineScope
     private lateinit var interpreter: SimResourceInterpreter
-    private lateinit var machineModel: SimMachineModel
+    private lateinit var machineModel: MachineModel
 
     @Setup
     fun setUp() {
@@ -54,7 +57,7 @@ class SimMachineBenchmarks {
 
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        machineModel = SimMachineModel(
+        machineModel = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )

@@ -20,9 +20,11 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.kernel
 
-import org.opendc.simulator.compute.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.simulator.resources.SimResourceSwitch
@@ -45,7 +47,7 @@ public class SimFairShareHypervisor(
     private val listener: SimHypervisor.Listener? = null
 ) : SimAbstractHypervisor(interpreter, scalingGovernor) {
 
-    override fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean = true
+    override fun canFit(model: MachineModel, switch: SimResourceSwitch): Boolean = true
 
     override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch {
         return SwitchSystem(ctx).switch

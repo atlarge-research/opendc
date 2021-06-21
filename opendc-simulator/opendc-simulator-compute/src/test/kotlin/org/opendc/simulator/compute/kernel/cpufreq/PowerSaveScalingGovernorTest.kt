@@ -20,79 +20,53 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.kernel.cpufreq
 
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
- * Test suite for the [ConservativeScalingGovernor]
+ * Test suite for the [PowerSaveScalingGovernor]
  */
-internal class ConservativeScalingGovernorTest {
+internal class PowerSaveScalingGovernorTest {
     @Test
     fun testSetStartLimitWithoutPStates() {
         val cpuCapacity = 4100.0
         val minSpeed = cpuCapacity / 2
-        val defaultThreshold = 0.8
-        val defaultStepSize = 0.05 * cpuCapacity
-        val governor = ConservativeScalingGovernor()
-
         val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
+        val logic = PowerSaveScalingGovernor().createLogic(policy)
+
         every { policy.max } returns cpuCapacity
         every { policy.min } returns minSpeed
 
-        var target = 0.0
-        every { policy.target } answers { target }
-        every { policy.target = any() } propertyType Double::class answers { target = value }
-
-        val logic = governor.createLogic(policy)
         logic.onStart()
-        assertEquals(defaultThreshold, governor.threshold)
 
-        logic.onLimit(0.5)
+        logic.onLimit(0.0)
+        verify(exactly = 1) { policy.target = minSpeed }
 
-        /* Upwards scaling */
-        logic.onLimit(defaultThreshold + 0.2)
-
-        /* Downwards scaling */
-        logic.onLimit(defaultThreshold + 0.1)
-
-        verify(exactly = 2) { policy.target = minSpeed }
-        verify(exactly = 1) { policy.target = minSpeed + defaultStepSize }
+        logic.onLimit(1.0)
+        verify(exactly = 1) { policy.target = minSpeed }
     }
 
     @Test
-    fun testSetStartLimitWithPStatesAndParams() {
-        val firstPState = 1000.0
+    fun testSetStartLimitWithPStates() {
         val cpuCapacity = 4100.0
-        val minSpeed = firstPState
-        val threshold = 0.5
-        val stepSize = 0.02 * cpuCapacity
-        val governor = ConservativeScalingGovernor(threshold, stepSize)
-
+        val firstPState = 1000.0
         val policy = mockk<ScalingPolicy>(relaxUnitFun = true)
+        val logic = PowerSaveScalingGovernor().createLogic(policy)
+
         every { policy.max } returns cpuCapacity
         every { policy.min } returns firstPState
 
-        var target = 0.0
-        every { policy.target } answers { target }
-        every { policy.target = any() } propertyType Double::class answers { target = value }
-
-        val logic = governor.createLogic(policy)
         logic.onStart()
-        assertEquals(threshold, governor.threshold)
-        logic.onLimit(0.5)
+        verify(exactly = 1) { policy.target = firstPState }
 
-        /* Upwards scaling */
-        logic.onLimit(threshold + 0.2)
+        logic.onLimit(0.0)
+        verify(exactly = 1) { policy.target = firstPState }
 
-        /* Downwards scaling */
-        logic.onLimit(threshold + 0.1)
-
-        verify(exactly = 2) { policy.target = minSpeed }
-        verify(exactly = 1) { policy.target = minSpeed + stepSize }
+        logic.onLimit(1.0)
+        verify(exactly = 1) { policy.target = firstPState }
     }
 }

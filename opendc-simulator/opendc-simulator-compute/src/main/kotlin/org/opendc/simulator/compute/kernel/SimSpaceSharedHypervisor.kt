@@ -20,15 +20,23 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.kernel
 
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.model.MachineModel
+import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSwitch
+import org.opendc.simulator.resources.SimResourceSwitchExclusive
 
 /**
- * A description of the physical or virtual machine on which a bootable image runs.
- *
- * @property cpus The list of processing units available to the image.
- * @property memory The list of memory units available to the image.
+ * A [SimHypervisor] that allocates its sub-resources exclusively for the virtual machine that it hosts.
  */
-public data class SimMachineModel(public val cpus: List<ProcessingUnit>, public val memory: List<MemoryUnit>)
+public class SimSpaceSharedHypervisor(interpreter: SimResourceInterpreter) : SimAbstractHypervisor(interpreter, null) {
+    override fun canFit(model: MachineModel, switch: SimResourceSwitch): Boolean {
+        return switch.inputs.size - switch.outputs.size >= model.cpus.size
+    }
+
+    override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch {
+        return SimResourceSwitchExclusive()
+    }
+}

@@ -24,7 +24,7 @@ package org.opendc.format.environment.sc20
 
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -97,7 +97,7 @@ public class Sc20ClusterEnvironmentReader(
                                 UUID(random.nextLong(), random.nextLong()),
                                 "node-$clusterId-$it",
                                 mapOf("cluster" to clusterId),
-                                SimMachineModel(
+                                MachineModel(
                                     List(coresPerHost) { coreId ->
                                         ProcessingUnit(unknownProcessingNode, coreId, speed)
                                     },

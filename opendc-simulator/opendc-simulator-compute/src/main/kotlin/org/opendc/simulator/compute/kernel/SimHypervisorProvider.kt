@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.simulator.resources.SimResourceSystem

@@ -31,10 +31,13 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
 import org.opendc.simulator.compute.*
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.kernel.SimHypervisor
+import org.opendc.simulator.compute.kernel.SimHypervisorProvider
+import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.PowerDriver
@@ -52,7 +55,7 @@ import kotlin.coroutines.resume
 public class SimHost(
     override val uid: UUID,
     override val name: String,
-    model: SimMachineModel,
+    model: MachineModel,
     override val meta: Map<String, Any>,
     context: CoroutineContext,
     interpreter: SimResourceInterpreter,
@@ -66,7 +69,7 @@ public class SimHost(
     public constructor(
         uid: UUID,
         name: String,
-        model: SimMachineModel,
+        model: MachineModel,
         meta: Map<String, Any>,
         context: CoroutineContext,
         interpreter: SimResourceInterpreter,
@@ -304,13 +307,13 @@ public class SimHost(
     /**
      * Convert flavor to machine model.
      */
-    private fun Flavor.toMachineModel(): SimMachineModel {
+    private fun Flavor.toMachineModel(): MachineModel {
         val originalCpu = machine.model.cpus[0]
         val processingNode = originalCpu.node.copy(coreCount = cpuCount)
         val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
-        return SimMachineModel(processingUnits, memoryUnits)
+        return MachineModel(processingUnits, memoryUnits)
     }
 
     private fun onGuestStart(vm: Guest) {

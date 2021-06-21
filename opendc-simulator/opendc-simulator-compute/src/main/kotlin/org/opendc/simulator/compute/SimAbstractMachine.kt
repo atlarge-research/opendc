@@ -25,6 +25,7 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
@@ -41,7 +42,7 @@ import kotlin.coroutines.resume
 public abstract class SimAbstractMachine(
     protected val interpreter: SimResourceInterpreter,
     final override val parent: SimResourceSystem?,
-    final override val model: SimMachineModel
+    final override val model: MachineModel
 ) : SimMachine, SimResourceSystem {
     /**
      * A [StateFlow] representing the CPU usage of the simulated machine.

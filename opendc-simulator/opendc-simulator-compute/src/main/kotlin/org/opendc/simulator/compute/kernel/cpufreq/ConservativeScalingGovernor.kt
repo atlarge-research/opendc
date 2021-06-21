@@ -20,31 +20,47 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.kernel.cpufreq
 
 /**
- * A CPUFreq [ScalingGovernor] that models the on-demand scaling governor in the Linux kernel.
+ * A CPUFreq [ScalingGovernor] that models the conservative scaling governor in the Linux kernel.
  */
-public class OnDemandScalingGovernor(public val threshold: Double = 0.8) : ScalingGovernor {
+public class ConservativeScalingGovernor(public val threshold: Double = 0.8, private val stepSize: Double = -1.0) :
+    ScalingGovernor {
     override fun createLogic(policy: ScalingPolicy): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
         /**
-         * The multiplier used for the linear frequency scaling.
+         * The step size to use.
          */
-        private val multiplier = (policy.max - policy.min) / 100
+        private val stepSize = if (this@ConservativeScalingGovernor.stepSize < 0) {
+            // https://github.com/torvalds/linux/blob/master/drivers/cpufreq/cpufreq_conservative.c#L33
+            policy.max * 0.05
+        } else {
+            this@ConservativeScalingGovernor.stepSize.coerceAtMost(policy.max)
+        }
+
+        /**
+         * The previous load of the CPU.
+         */
+        private var previousLoad = threshold
 
         override fun onStart() {
             policy.target = policy.min
         }
 
         override fun onLimit(load: Double) {
-            policy.target = if (load < threshold) {
-                /* Proportional scaling (see: https://github.com/torvalds/linux/blob/master/drivers/cpufreq/cpufreq_ondemand.c#L151). */
-                policy.min + load * multiplier
-            } else {
-                policy.max
+            val currentTarget = policy.target
+            if (load > threshold) {
+                // Check for load increase (see: https://github.com/torvalds/linux/blob/master/drivers/cpufreq/cpufreq_conservative.c#L102)
+                val step = when {
+                    load > previousLoad -> stepSize
+                    load < previousLoad -> -stepSize
+                    else -> 0.0
+                }
+                policy.target = (currentTarget + step).coerceIn(policy.min, policy.max)
             }
+            previousLoad = load
         }
     }
 
-    override fun toString(): String = "OnDemandScalingGovernor[threshold=$threshold]"
+    override fun toString(): String = "ConservativeScalingGovernor[threshold=$threshold,stepSize=$stepSize]"
 }

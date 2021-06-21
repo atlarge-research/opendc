@@ -30,15 +30,16 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.compute.util.SimWorkloadLifecycle
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.compute.workload.SimWorkloadLifecycle
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.power.SimPowerSource
 import org.opendc.simulator.resources.SimResourceInterpreter
@@ -49,13 +50,13 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineTest {
-    private lateinit var machineModel: SimMachineModel
+    private lateinit var machineModel: MachineModel
 
     @BeforeEach
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        machineModel = SimMachineModel(
+        machineModel = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
@@ -82,7 +83,7 @@ class SimMachineTest {
     @Test
     fun testDualSocketMachine() = runBlockingSimulation {
         val cpuNode = machineModel.cpus[0].node
-        val machineModel = SimMachineModel(
+        val machineModel = MachineModel(
             cpus = List(cpuNode.coreCount * 2) { ProcessingUnit(cpuNode, it % 2, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )

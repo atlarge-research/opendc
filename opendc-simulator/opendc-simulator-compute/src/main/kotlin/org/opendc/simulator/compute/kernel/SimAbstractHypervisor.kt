@@ -20,11 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.kernel
 
-import org.opendc.simulator.compute.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.cpufreq.ScalingPolicy
+import org.opendc.simulator.compute.*
 import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.kernel.cpufreq.ScalingPolicy
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.*
 import org.opendc.simulator.resources.SimResourceSwitch
@@ -69,7 +71,7 @@ public abstract class SimAbstractHypervisor(
     /**
      * Check whether the specified machine model fits on this hypervisor.
      */
-    public abstract fun canFit(model: SimMachineModel, switch: SimResourceSwitch): Boolean
+    public abstract fun canFit(model: MachineModel, switch: SimResourceSwitch): Boolean
 
     /**
      * Trigger the governors to recompute the scaling limits.
@@ -81,12 +83,12 @@ public abstract class SimAbstractHypervisor(
     }
 
     /* SimHypervisor */
-    override fun canFit(model: SimMachineModel): Boolean {
+    override fun canFit(model: MachineModel): Boolean {
         return canFit(model, switch)
     }
 
     override fun createMachine(
-        model: SimMachineModel,
+        model: MachineModel,
         performanceInterferenceModel: PerformanceInterferenceModel?
     ): SimMachine {
         require(canFit(model)) { "Machine does not fit" }
@@ -118,7 +120,7 @@ public abstract class SimAbstractHypervisor(
      * @property performanceInterferenceModel The performance interference model to utilize.
      */
     private inner class VirtualMachine(
-        model: SimMachineModel,
+        model: MachineModel,
         val performanceInterferenceModel: PerformanceInterferenceModel? = null,
     ) : SimAbstractMachine(interpreter, parent = null, model) {
         /**

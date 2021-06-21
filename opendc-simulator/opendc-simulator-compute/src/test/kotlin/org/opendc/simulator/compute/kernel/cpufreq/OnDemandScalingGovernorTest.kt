@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.kernel.cpufreq
 
 import io.mockk.every
 import io.mockk.mockk

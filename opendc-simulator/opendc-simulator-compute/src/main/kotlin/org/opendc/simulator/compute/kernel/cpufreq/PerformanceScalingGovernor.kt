@@ -20,32 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
-
-import org.opendc.simulator.compute.SimProcessingUnit
+package org.opendc.simulator.compute.kernel.cpufreq
 
 /**
- * An interface that holds the state managed by a [ScalingGovernor] and used by the underlying machine to control the
- * CPU frequencies.
+ * A CPUFreq [ScalingGovernor] that causes the highest possible frequency to be requested from the resource.
  */
-public interface ScalingPolicy {
-    /**
-     * The processing unit that is associated with this policy.
-     */
-    public val cpu: SimProcessingUnit
+public class PerformanceScalingGovernor : ScalingGovernor {
+    override fun createLogic(policy: ScalingPolicy): ScalingGovernor.Logic = object : ScalingGovernor.Logic {
+        override fun onStart() {
+            policy.target = policy.max
+        }
+    }
 
-    /**
-     * The target frequency which the CPU should attempt to attain.
-     */
-    public var target: Double
-
-    /**
-     * The minimum frequency to which the CPU may scale.
-     */
-    public val min: Double
-
-    /**
-     * The maximum frequency to which the CPU may scale.
-     */
-    public val max: Double
+    override fun toString(): String = "PerformanceScalingGovernor"
 }

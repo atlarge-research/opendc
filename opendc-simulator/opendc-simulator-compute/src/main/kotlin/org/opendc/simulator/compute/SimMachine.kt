@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.flow.StateFlow
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
@@ -32,7 +33,7 @@ public interface SimMachine : AutoCloseable {
     /**
      * The model of the machine containing its specifications.
      */
-    public val model: SimMachineModel
+    public val model: MachineModel
 
     /**
      * A [StateFlow] representing the CPU usage of the simulated machine.

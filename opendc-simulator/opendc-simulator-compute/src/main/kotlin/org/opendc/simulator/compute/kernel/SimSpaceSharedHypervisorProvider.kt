@@ -20,31 +20,20 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.cpufreq
+package org.opendc.simulator.compute.kernel
 
-import io.mockk.every
-import io.mockk.spyk
-import io.mockk.verify
-import org.junit.jupiter.api.Test
+import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceSystem
 
 /**
- * Test suite for the [PerformanceScalingGovernor]
+ * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
  */
-internal class PerformanceScalingGovernorTest {
-    @Test
-    fun testSetStartLimit() {
-        val policy = spyk<ScalingPolicy>()
-        val logic = PerformanceScalingGovernor().createLogic(policy)
+public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
+    override val id: String = "space-shared"
 
-        every { policy.max } returns 4100.0
-
-        logic.onStart()
-        verify(exactly = 1) { policy.target = 4100.0 }
-
-        logic.onLimit(0.0)
-        verify(exactly = 1) { policy.target = 4100.0 }
-
-        logic.onLimit(1.0)
-        verify(exactly = 1) { policy.target = 4100.0 }
-    }
+    override fun create(
+        interpreter: SimResourceInterpreter,
+        parent: SimResourceSystem?,
+        listener: SimHypervisor.Listener?
+    ): SimHypervisor = SimSpaceSharedHypervisor(interpreter)
 }

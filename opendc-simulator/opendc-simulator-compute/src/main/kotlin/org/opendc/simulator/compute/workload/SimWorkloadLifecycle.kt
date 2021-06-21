@@ -20,10 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.util
+package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
 import org.opendc.simulator.resources.SimResourceEvent

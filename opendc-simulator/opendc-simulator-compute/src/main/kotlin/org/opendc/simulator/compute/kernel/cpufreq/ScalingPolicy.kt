@@ -20,20 +20,32 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
+package org.opendc.simulator.compute.kernel.cpufreq
 
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSystem
+import org.opendc.simulator.compute.SimProcessingUnit
 
 /**
- * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
+ * An interface that holds the state managed by a [ScalingGovernor] and used by the underlying machine to control the
+ * CPU frequencies.
  */
-public class SimFairShareHypervisorProvider : SimHypervisorProvider {
-    override val id: String = "fair-share"
+public interface ScalingPolicy {
+    /**
+     * The processing unit that is associated with this policy.
+     */
+    public val cpu: SimProcessingUnit
 
-    override fun create(
-        interpreter: SimResourceInterpreter,
-        parent: SimResourceSystem?,
-        listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimFairShareHypervisor(interpreter, parent, listener = listener)
+    /**
+     * The target frequency which the CPU should attempt to attain.
+     */
+    public var target: Double
+
+    /**
+     * The minimum frequency to which the CPU may scale.
+     */
+    public val min: Double
+
+    /**
+     * The maximum frequency to which the CPU may scale.
+     */
+    public val max: Double
 }
