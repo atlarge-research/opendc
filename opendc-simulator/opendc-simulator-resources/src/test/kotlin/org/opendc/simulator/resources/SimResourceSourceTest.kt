@@ -50,16 +50,12 @@ class SimResourceSourceTest {
             .returns(SimResourceCommand.Consume(1000 * capacity, capacity))
             .andThen(SimResourceCommand.Exit)
 
-        try {
-            val res = mutableListOf<Double>()
-            val adapter = SimSpeedConsumerAdapter(consumer, res::add)
+        val res = mutableListOf<Double>()
+        val adapter = SimSpeedConsumerAdapter(consumer, res::add)
 
-            provider.consume(adapter)
+        provider.consume(adapter)
 
-            assertEquals(listOf(0.0, capacity, 0.0), res) { "Speed is reported correctly" }
-        } finally {
-            provider.close()
-        }
+        assertEquals(listOf(0.0, capacity, 0.0), res) { "Speed is reported correctly" }
     }
 
     @Test
@@ -69,17 +65,13 @@ class SimResourceSourceTest {
 
         val consumer = spyk(SimWorkConsumer(2.0, 1.0))
 
-        try {
-            coroutineScope {
-                launch { provider.consume(consumer) }
-                delay(1000)
-                provider.capacity = 0.5
-            }
-            assertEquals(3000, clock.millis())
-            verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Capacity) }
-        } finally {
-            provider.close()
+        coroutineScope {
+            launch { provider.consume(consumer) }
+            delay(1000)
+            provider.capacity = 0.5
         }
+        assertEquals(3000, clock.millis())
+        verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Capacity) }
     }
 
     @Test
@@ -93,16 +85,12 @@ class SimResourceSourceTest {
             .returns(SimResourceCommand.Consume(1000 * capacity, 2 * capacity))
             .andThen(SimResourceCommand.Exit)
 
-        try {
-            val res = mutableListOf<Double>()
-            val adapter = SimSpeedConsumerAdapter(consumer, res::add)
+        val res = mutableListOf<Double>()
+        val adapter = SimSpeedConsumerAdapter(consumer, res::add)
 
-            provider.consume(adapter)
+        provider.consume(adapter)
 
-            assertEquals(listOf(0.0, capacity, 0.0), res) { "Speed is reported correctly" }
-        } finally {
-            provider.close()
-        }
+        assertEquals(listOf(0.0, capacity, 0.0), res) { "Speed is reported correctly" }
     }
 
     /**
@@ -125,11 +113,7 @@ class SimResourceSourceTest {
             }
         }
 
-        try {
-            provider.consume(consumer)
-        } finally {
-            provider.close()
-        }
+        provider.consume(consumer)
     }
 
     @Test
@@ -160,17 +144,13 @@ class SimResourceSourceTest {
             }
         }
 
-        try {
-            launch {
-                yield()
-                resCtx.interrupt()
-            }
-            provider.consume(consumer)
-
-            assertEquals(0, clock.millis())
-        } finally {
-            provider.close()
+        launch {
+            yield()
+            resCtx.interrupt()
         }
+        provider.consume(consumer)
+
+        assertEquals(0, clock.millis())
     }
 
     @Test
@@ -183,12 +163,8 @@ class SimResourceSourceTest {
         every { consumer.onEvent(any(), eq(SimResourceEvent.Start)) }
             .throws(IllegalStateException())
 
-        try {
-            assertThrows<IllegalStateException> {
-                provider.consume(consumer)
-            }
-        } finally {
-            provider.close()
+        assertThrows<IllegalStateException> {
+            provider.consume(consumer)
         }
     }
 
@@ -203,12 +179,8 @@ class SimResourceSourceTest {
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
 
-        try {
-            assertThrows<IllegalStateException> {
-                provider.consume(consumer)
-            }
-        } finally {
-            provider.close()
+        assertThrows<IllegalStateException> {
+            provider.consume(consumer)
         }
     }
 
@@ -223,41 +195,16 @@ class SimResourceSourceTest {
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
 
-        try {
-            assertThrows<IllegalStateException> {
-                coroutineScope {
-                    launch { provider.consume(consumer) }
-                    provider.consume(consumer)
-                }
-            }
-        } finally {
-            provider.close()
-        }
-    }
-
-    @Test
-    fun testClosedConsumption() = runBlockingSimulation {
-        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
-        val capacity = 4200.0
-        val provider = SimResourceSource(capacity, scheduler)
-
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) }
-            .returns(SimResourceCommand.Consume(1.0, 1.0))
-            .andThenThrows(IllegalStateException())
-
-        try {
-            assertThrows<IllegalStateException> {
-                provider.close()
+        assertThrows<IllegalStateException> {
+            coroutineScope {
+                launch { provider.consume(consumer) }
                 provider.consume(consumer)
             }
-        } finally {
-            provider.close()
         }
     }
 
     @Test
-    fun testCloseDuringConsumption() = runBlockingSimulation {
+    fun testCancelDuringConsumption() = runBlockingSimulation {
         val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
@@ -267,15 +214,11 @@ class SimResourceSourceTest {
             .returns(SimResourceCommand.Consume(1.0, 1.0))
             .andThenThrows(IllegalStateException())
 
-        try {
-            launch { provider.consume(consumer) }
-            delay(500)
-            provider.close()
+        launch { provider.consume(consumer) }
+        delay(500)
+        provider.cancel()
 
-            assertEquals(500, clock.millis())
-        } finally {
-            provider.close()
-        }
+        assertEquals(500, clock.millis())
     }
 
     @Test
@@ -289,13 +232,9 @@ class SimResourceSourceTest {
             .returns(SimResourceCommand.Idle(clock.millis() + 500))
             .andThen(SimResourceCommand.Exit)
 
-        try {
-            provider.consume(consumer)
+        provider.consume(consumer)
 
-            assertEquals(500, clock.millis())
-        } finally {
-            provider.close()
-        }
+        assertEquals(500, clock.millis())
     }
 
     @Test
@@ -311,11 +250,7 @@ class SimResourceSourceTest {
                     .returns(SimResourceCommand.Idle())
                     .andThenThrows(IllegalStateException())
 
-                try {
-                    provider.consume(consumer)
-                } finally {
-                    provider.close()
-                }
+                provider.consume(consumer)
             }
         }
     }
@@ -331,12 +266,8 @@ class SimResourceSourceTest {
             .returns(SimResourceCommand.Idle(2))
             .andThen(SimResourceCommand.Exit)
 
-        try {
-            delay(10)
+        delay(10)
 
-            assertThrows<IllegalArgumentException> { provider.consume(consumer) }
-        } finally {
-            provider.close()
-        }
+        assertThrows<IllegalArgumentException> { provider.consume(consumer) }
     }
 }

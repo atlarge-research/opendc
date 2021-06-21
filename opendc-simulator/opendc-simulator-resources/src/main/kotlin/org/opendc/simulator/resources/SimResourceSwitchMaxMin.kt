@@ -33,7 +33,7 @@ public class SimResourceSwitchMaxMin(
     /**
      * The output resource providers to which resource consumers can be attached.
      */
-    override val outputs: Set<SimResourceProvider>
+    override val outputs: Set<SimResourceCloseableProvider>
         get() = distributor.outputs
 
     /**
@@ -70,7 +70,7 @@ public class SimResourceSwitchMaxMin(
     /**
      * Add an output to the switch.
      */
-    override fun newOutput(): SimResourceProvider {
+    override fun newOutput(): SimResourceCloseableProvider {
         check(!isClosed) { "Switch has been closed" }
 
         return distributor.newOutput()
@@ -88,7 +88,7 @@ public class SimResourceSwitchMaxMin(
     override fun close() {
         if (!isClosed) {
             isClosed = true
-            aggregator.close()
+            aggregator.cancel()
         }
     }
 }

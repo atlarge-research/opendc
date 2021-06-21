@@ -32,7 +32,7 @@ public class SimResourceDistributorMaxMin(
     private val interpreter: SimResourceInterpreter,
     private val parent: SimResourceSystem? = null
 ) : SimResourceDistributor {
-    override val outputs: Set<SimResourceProvider>
+    override val outputs: Set<SimResourceCloseableProvider>
         get() = _outputs
     private val _outputs = mutableSetOf<Output>()
 
@@ -57,7 +57,7 @@ public class SimResourceDistributorMaxMin(
     private var totalAllocatedSpeed = 0.0
 
     /* SimResourceDistributor */
-    override fun newOutput(): SimResourceProvider {
+    override fun newOutput(): SimResourceCloseableProvider {
         val provider = Output(ctx?.capacity ?: 0.0)
         _outputs.add(provider)
         return provider
@@ -65,7 +65,7 @@ public class SimResourceDistributorMaxMin(
 
     /* SimResourceConsumer */
     override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-        return doNext(ctx.capacity)
+        return doNext(ctx)
     }
 
     override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
@@ -94,12 +94,13 @@ public class SimResourceDistributorMaxMin(
     /**
      * Schedule the work of the outputs.
      */
-    private fun doNext(capacity: Double): SimResourceCommand {
+    private fun doNext(ctx: SimResourceContext): SimResourceCommand {
         // If there is no work yet, mark the input as idle.
         if (activeOutputs.isEmpty()) {
             return SimResourceCommand.Idle()
         }
 
+        val capacity = ctx.capacity
         var duration: Double = Double.MAX_VALUE
         var deadline: Long = Long.MAX_VALUE
         var availableSpeed = capacity
@@ -112,7 +113,7 @@ public class SimResourceDistributorMaxMin(
             output.pull()
 
             // Remove outputs that have finished
-            if (output.isFinished) {
+            if (!output.isActive) {
                 outputIterator.remove()
             }
         }
@@ -125,33 +126,23 @@ public class SimResourceDistributorMaxMin(
         var remaining = activeOutputs.size
         for (output in activeOutputs) {
             val availableShare = availableSpeed / remaining--
+            val grantedSpeed = min(output.allowedSpeed, availableShare)
+            deadline = min(deadline, output.deadline)
 
-            when (val command = output.activeCommand) {
-                is SimResourceCommand.Idle -> {
-                    deadline = min(deadline, command.deadline)
-                    output.actualSpeed = 0.0
-                }
-                is SimResourceCommand.Consume -> {
-                    val grantedSpeed = min(output.allowedSpeed, availableShare)
-                    deadline = min(deadline, command.deadline)
-
-                    // Ignore idle computation
-                    if (grantedSpeed <= 0.0 || command.work <= 0.0) {
-                        output.actualSpeed = 0.0
-                        continue
-                    }
-
-                    totalRequestedSpeed += command.limit
-                    totalRequestedWork += command.work
-
-                    output.actualSpeed = grantedSpeed
-                    availableSpeed -= grantedSpeed
-
-                    // The duration that we want to run is that of the shortest request of an output
-                    duration = min(duration, command.work / grantedSpeed)
-                }
-                SimResourceCommand.Exit -> assert(false) { "Did not expect output to be stopped" }
+            // Ignore idle computation
+            if (grantedSpeed <= 0.0 || output.work <= 0.0) {
+                output.actualSpeed = 0.0
+                continue
             }
+
+            totalRequestedSpeed += output.limit
+            totalRequestedWork += output.work
+
+            output.actualSpeed = grantedSpeed
+            availableSpeed -= grantedSpeed
+
+            // The duration that we want to run is that of the shortest request of an output
+            duration = min(duration, output.work / grantedSpeed)
         }
 
         assert(deadline >= interpreter.clock.millis()) { "Deadline already passed" }
@@ -178,11 +169,30 @@ public class SimResourceDistributorMaxMin(
     /**
      * An internal [SimResourceProvider] implementation for switch outputs.
      */
-    private inner class Output(capacity: Double) : SimAbstractResourceProvider(interpreter, parent, capacity), SimResourceProviderLogic, Comparable<Output> {
+    private inner class Output(capacity: Double) :
+        SimAbstractResourceProvider(interpreter, parent, capacity),
+        SimResourceCloseableProvider,
+        SimResourceProviderLogic,
+        Comparable<Output> {
         /**
-         * The current command that is processed by the resource.
+         * A flag to indicate that the output is closed.
          */
-        var activeCommand: SimResourceCommand = SimResourceCommand.Idle()
+        private var isClosed: Boolean = false
+
+        /**
+         * The current requested work.
+         */
+        var work: Double = 0.0
+
+        /**
+         * The requested limit.
+         */
+        var limit: Double = 0.0
+
+        /**
+         * The current deadline.
+         */
+        var deadline: Long = Long.MAX_VALUE
 
         /**
          * The processing speed that is allowed by the model constraints.
@@ -195,12 +205,6 @@ public class SimResourceDistributorMaxMin(
         var actualSpeed: Double = 0.0
 
         /**
-         * A flag to indicate that the output is finished.
-         */
-        val isFinished
-            get() = activeCommand is SimResourceCommand.Exit
-
-        /**
          * The timestamp at which we received the last command.
          */
         private var lastCommandTimestamp: Long = Long.MIN_VALUE
@@ -209,6 +213,8 @@ public class SimResourceDistributorMaxMin(
         override fun createLogic(): SimResourceProviderLogic = this
 
         override fun start(ctx: SimResourceControllableContext) {
+            check(!isClosed) { "Cannot re-use closed output" }
+
             activeOutputs += this
 
             interpreter.batch {
@@ -219,27 +225,27 @@ public class SimResourceDistributorMaxMin(
         }
 
         override fun close() {
-            val state = state
-
-            super.close()
-
-            if (state != SimResourceState.Stopped) {
-                _outputs.remove(this)
-            }
+            isClosed = true
+            cancel()
+            _outputs.remove(this)
         }
 
         /* SimResourceProviderLogic */
         override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
             allowedSpeed = 0.0
-            activeCommand = SimResourceCommand.Idle(deadline)
+            this.deadline = deadline
+            work = 0.0
+            limit = 0.0
             lastCommandTimestamp = ctx.clock.millis()
 
             return Long.MAX_VALUE
         }
 
         override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
-            allowedSpeed = ctx.speed
-            activeCommand = SimResourceCommand.Consume(work, limit, deadline)
+            allowedSpeed = min(ctx.capacity, limit)
+            this.work = work
+            this.limit = limit
+            this.deadline = deadline
             lastCommandTimestamp = ctx.clock.millis()
 
             return Long.MAX_VALUE
@@ -250,7 +256,9 @@ public class SimResourceDistributorMaxMin(
         }
 
         override fun onFinish(ctx: SimResourceControllableContext) {
-            activeCommand = SimResourceCommand.Exit
+            work = 0.0
+            limit = 0.0
+            deadline = Long.MAX_VALUE
             lastCommandTimestamp = ctx.clock.millis()
         }
 

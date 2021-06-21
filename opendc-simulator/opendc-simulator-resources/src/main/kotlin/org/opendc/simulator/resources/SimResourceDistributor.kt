@@ -29,10 +29,10 @@ public interface SimResourceDistributor : SimResourceConsumer {
     /**
      * The output resource providers to which resource consumers can be attached.
      */
-    public val outputs: Set<SimResourceProvider>
+    public val outputs: Set<SimResourceCloseableProvider>
 
     /**
      * Create a new output for the distributor.
      */
-    public fun newOutput(): SimResourceProvider
+    public fun newOutput(): SimResourceCloseableProvider
 }

@@ -40,15 +40,12 @@ import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceTransformerTest {
     @Test
-    fun testExitImmediately() = runBlockingSimulation {
+    fun testCancelImmediately() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
         val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(2000.0, scheduler)
 
-        launch {
-            source.consume(forwarder)
-            source.close()
-        }
+        launch { source.consume(forwarder) }
 
         forwarder.consume(object : SimResourceConsumer {
             override fun onNext(ctx: SimResourceContext): SimResourceCommand {
@@ -57,18 +54,16 @@ internal class SimResourceTransformerTest {
         })
 
         forwarder.close()
+        source.cancel()
     }
 
     @Test
-    fun testExit() = runBlockingSimulation {
+    fun testCancel() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
         val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
         val source = SimResourceSource(2000.0, scheduler)
 
-        launch {
-            source.consume(forwarder)
-            source.close()
-        }
+        launch { source.consume(forwarder) }
 
         forwarder.consume(object : SimResourceConsumer {
             var isFirst = true
@@ -84,6 +79,7 @@ internal class SimResourceTransformerTest {
         })
 
         forwarder.close()
+        source.cancel()
     }
 
     @Test
@@ -93,18 +89,18 @@ internal class SimResourceTransformerTest {
             override fun onNext(ctx: SimResourceContext): SimResourceCommand = SimResourceCommand.Exit
         }
 
-        assertEquals(SimResourceState.Pending, forwarder.state)
+        assertFalse(forwarder.isActive)
 
         forwarder.startConsumer(consumer)
-        assertEquals(SimResourceState.Active, forwarder.state)
+        assertTrue(forwarder.isActive)
 
         assertThrows<IllegalStateException> { forwarder.startConsumer(consumer) }
 
         forwarder.cancel()
-        assertEquals(SimResourceState.Pending, forwarder.state)
+        assertFalse(forwarder.isActive)
 
         forwarder.close()
-        assertEquals(SimResourceState.Stopped, forwarder.state)
+        assertFalse(forwarder.isActive)
     }
 
     @Test
@@ -171,7 +167,7 @@ internal class SimResourceTransformerTest {
         forwarder.consume(consumer)
         yield()
 
-        assertEquals(SimResourceState.Pending, source.state)
+        assertFalse(forwarder.isActive)
     }
 
     @Test

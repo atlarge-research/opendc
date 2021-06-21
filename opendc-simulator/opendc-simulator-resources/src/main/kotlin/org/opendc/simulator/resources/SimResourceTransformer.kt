@@ -33,7 +33,7 @@ import org.opendc.simulator.resources.impl.SimResourceCountersImpl
 public class SimResourceTransformer(
     private val isCoupled: Boolean = false,
     private val transform: (SimResourceContext, SimResourceCommand) -> SimResourceCommand
-) : SimResourceFlow {
+) : SimResourceFlow, AutoCloseable {
     /**
      * The [SimResourceContext] in which the forwarder runs.
      */
@@ -49,11 +49,8 @@ public class SimResourceTransformer(
      */
     private var hasDelegateStarted: Boolean = false
 
-    /**
-     * The state of the forwarder.
-     */
-    override var state: SimResourceState = SimResourceState.Pending
-        private set
+    override val isActive: Boolean
+        get() = delegate != null
 
     override val capacity: Double
         get() = ctx?.capacity ?: 0.0
@@ -69,9 +66,8 @@ public class SimResourceTransformer(
     private val _counters = SimResourceCountersImpl()
 
     override fun startConsumer(consumer: SimResourceConsumer) {
-        check(state == SimResourceState.Pending) { "Resource is in invalid state" }
+        check(delegate == null) { "Resource transformer already active" }
 
-        state = SimResourceState.Active
         delegate = consumer
 
         // Interrupt the provider to replace the consumer
@@ -86,18 +82,17 @@ public class SimResourceTransformer(
         val delegate = delegate
         val ctx = ctx
 
-        state = SimResourceState.Pending
-
-        if (delegate != null && ctx != null) {
+        if (delegate != null) {
             this.delegate = null
-            delegate.onEvent(ctx, SimResourceEvent.Exit)
+
+            if (ctx != null) {
+                delegate.onEvent(ctx, SimResourceEvent.Exit)
+            }
         }
     }
 
     override fun close() {
         val ctx = ctx
-
-        state = SimResourceState.Stopped
 
         if (ctx != null) {
             this.ctx = null
@@ -114,9 +109,7 @@ public class SimResourceTransformer(
 
         updateCounters(ctx)
 
-        return if (state == SimResourceState.Stopped) {
-            SimResourceCommand.Exit
-        } else if (delegate != null) {
+        return if (delegate != null) {
             val command = transform(ctx, delegate.onNext(ctx))
 
             _work = if (command is SimResourceCommand.Consume) command.work else 0.0
@@ -128,7 +121,7 @@ public class SimResourceTransformer(
 
                 delegate.onEvent(ctx, SimResourceEvent.Exit)
 
-                if (isCoupled || state == SimResourceState.Stopped)
+                if (isCoupled)
                     SimResourceCommand.Exit
                 else
                     onNext(ctx)
@@ -184,10 +177,6 @@ public class SimResourceTransformer(
     private fun reset() {
         delegate = null
         hasDelegateStarted = false
-
-        if (state != SimResourceState.Stopped) {
-            state = SimResourceState.Pending
-        }
     }
 
     /**

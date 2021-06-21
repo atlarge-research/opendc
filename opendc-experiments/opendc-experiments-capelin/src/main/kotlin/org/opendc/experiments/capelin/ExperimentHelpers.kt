@@ -50,6 +50,7 @@ import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector
 import org.opendc.simulator.failures.FaultInjector
+import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
@@ -144,6 +145,7 @@ public suspend fun withComputeService(
     scheduler: ComputeScheduler,
     block: suspend CoroutineScope.(ComputeService) -> Unit
 ): Unit = coroutineScope {
+    val interpreter = SimResourceInterpreter(coroutineContext, clock)
     val hosts = environmentReader
         .use { it.read() }
         .map { def ->
@@ -153,7 +155,7 @@ public suspend fun withComputeService(
                 def.model,
                 def.meta,
                 coroutineContext,
-                clock,
+                interpreter,
                 meterProvider.get("opendc-compute-simulator"),
                 SimFairShareHypervisorProvider(),
                 def.powerModel

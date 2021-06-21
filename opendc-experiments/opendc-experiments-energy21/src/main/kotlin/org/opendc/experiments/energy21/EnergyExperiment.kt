@@ -49,6 +49,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.*
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.resources.SimResourceInterpreter
 import java.io.File
 import java.time.Clock
 import java.util.*
@@ -120,6 +121,7 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
         block: suspend CoroutineScope.(ComputeService) -> Unit
     ): Unit = coroutineScope {
         val model = createMachineModel()
+        val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val hosts = List(64) { id ->
             SimHost(
                 UUID(0, id.toLong()),
@@ -127,7 +129,7 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
                 model,
                 emptyMap(),
                 coroutineContext,
-                clock,
+                interpreter,
                 meterProvider.get("opendc-compute-simulator"),
                 SimFairShareHypervisorProvider(),
                 PerformanceScalingGovernor(),

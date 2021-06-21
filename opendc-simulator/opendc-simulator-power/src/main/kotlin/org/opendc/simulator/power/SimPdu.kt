@@ -83,7 +83,7 @@ public class SimPdu(
     /**
      * A PDU outlet.
      */
-    public class Outlet(private val provider: SimResourceProvider) : SimPowerOutlet(), AutoCloseable {
+    public class Outlet(private val provider: SimResourceCloseableProvider) : SimPowerOutlet(), AutoCloseable {
         override fun onConnect(inlet: SimPowerInlet) {
             provider.startConsumer(inlet.createConsumer())
         }

@@ -33,6 +33,12 @@ public abstract class SimAbstractResourceProvider(
     initialCapacity: Double
 ) : SimResourceProvider {
     /**
+     * A flag to indicate that the resource provider is active.
+     */
+    public override val isActive: Boolean
+        get() = ctx != null
+
+    /**
      * The capacity of the resource.
      */
     public override var capacity: Double = initialCapacity
@@ -67,12 +73,6 @@ public abstract class SimAbstractResourceProvider(
         private set
 
     /**
-     * The state of the resource provider.
-     */
-    final override var state: SimResourceState = SimResourceState.Pending
-        private set
-
-    /**
      * Construct the [SimResourceProviderLogic] instance for a new consumer.
      */
     protected abstract fun createLogic(): SimResourceProviderLogic
@@ -96,19 +96,13 @@ public abstract class SimAbstractResourceProvider(
     }
 
     final override fun startConsumer(consumer: SimResourceConsumer) {
-        check(state == SimResourceState.Pending) { "Resource is in invalid state" }
+        check(ctx == null) { "Resource is in invalid state" }
         val ctx = interpreter.newContext(consumer, createLogic(), parent)
 
         ctx.capacity = capacity
         this.ctx = ctx
-        this.state = SimResourceState.Active
 
         start(ctx)
-    }
-
-    override fun close() {
-        cancel()
-        state = SimResourceState.Stopped
     }
 
     final override fun interrupt() {
@@ -120,10 +114,6 @@ public abstract class SimAbstractResourceProvider(
         if (ctx != null) {
             this.ctx = null
             ctx.close()
-        }
-
-        if (state != SimResourceState.Stopped) {
-            state = SimResourceState.Pending
         }
     }
 

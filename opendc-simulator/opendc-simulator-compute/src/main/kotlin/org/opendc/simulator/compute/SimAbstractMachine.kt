@@ -115,11 +115,6 @@ public abstract class SimAbstractMachine(
 
         isTerminated = true
         cancel()
-        interpreter.batch {
-            for (cpu in cpus) {
-                cpu.close()
-            }
-        }
     }
 
     /* SimResourceSystem */
