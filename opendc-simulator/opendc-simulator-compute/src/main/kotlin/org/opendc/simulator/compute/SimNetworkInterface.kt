@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,37 +22,30 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.flow.StateFlow
-import org.opendc.simulator.compute.device.SimPeripheral
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.resources.SimResourceConsumer
+import org.opendc.simulator.resources.SimResourceProvider
 
 /**
- * A generic machine that is able to run a [SimWorkload].
+ * A firmware interface to a network adapter.
  */
-public interface SimMachine : AutoCloseable {
+public interface SimNetworkInterface {
     /**
-     * The model of the machine containing its specifications.
+     * The name of the network interface.
      */
-    public val model: MachineModel
+    public val name: String
 
     /**
-     * The peripherals attached to the machine.
+     * The unidirectional bandwidth of the network interface in Mbps.
      */
-    public val peripherals: List<SimPeripheral>
+    public val bandwidth: Double
 
     /**
-     * A [StateFlow] representing the CPU usage of the simulated machine.
+     * The resource provider for the transmit channel of the network interface.
      */
-    public val usage: StateFlow<Double>
+    public val tx: SimResourceProvider
 
     /**
-     * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
+     * The resource consumer for the receive channel of the network interface.
      */
-    public suspend fun run(workload: SimWorkload, meta: Map<String, Any> = emptyMap())
-
-    /**
-     * Terminate this machine.
-     */
-    public override fun close()
+    public val rx: SimResourceConsumer
 }

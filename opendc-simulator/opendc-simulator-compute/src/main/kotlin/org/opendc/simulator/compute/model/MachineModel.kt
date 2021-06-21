@@ -27,5 +27,10 @@ package org.opendc.simulator.compute.model
  *
  * @property cpus The list of processing units available to the image.
  * @property memory The list of memory units available to the image.
+ * @property net A list of network adapters available for the machine.
  */
-public data class MachineModel(public val cpus: List<ProcessingUnit>, public val memory: List<MemoryUnit>)
+public data class MachineModel(
+    public val cpus: List<ProcessingUnit>,
+    public val memory: List<MemoryUnit>,
+    public val net: List<NetworkAdapter> = emptyList()
+)

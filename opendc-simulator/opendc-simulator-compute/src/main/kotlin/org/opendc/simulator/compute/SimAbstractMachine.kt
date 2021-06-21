@@ -25,8 +25,11 @@ package org.opendc.simulator.compute
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.opendc.simulator.compute.device.SimNetworkAdapter
+import org.opendc.simulator.compute.device.SimPeripheral
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.NetworkAdapter
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
 import kotlin.coroutines.Continuation
@@ -67,6 +70,16 @@ public abstract class SimAbstractMachine(
      * The memory interface of the machine.
      */
     protected val memory: SimMemory = Memory(SimResourceSource(model.memory.sumOf { it.size }.toDouble(), interpreter), model.memory)
+
+    /**
+     * The network interfaces available to the machine.
+     */
+    protected val net: List<SimNetworkInterface> = model.net.mapIndexed { i, adapter -> NetworkAdapterImpl(adapter, i) }
+
+    /**
+     * The peripherals of the machine.
+     */
+    public override val peripherals: List<SimPeripheral> = net.map { it as SimNetworkAdapter }
 
     /**
      * A flag to indicate that the machine is terminated.
@@ -166,6 +179,8 @@ public abstract class SimAbstractMachine(
 
         override val memory: SimMemory = this@SimAbstractMachine.memory
 
+        override val net: List<SimNetworkInterface> = this@SimAbstractMachine.net
+
         override fun close() = cancel()
     }
 
@@ -174,5 +189,32 @@ public abstract class SimAbstractMachine(
      */
     private class Memory(source: SimResourceSource, override val models: List<MemoryUnit>) : SimMemory, SimResourceProvider by source {
         override fun toString(): String = "SimAbstractMachine.Memory"
+    }
+
+    /**
+     * The [SimNetworkAdapter] implementation for a machine.
+     */
+    private class NetworkAdapterImpl(
+        model: NetworkAdapter,
+        index: Int
+    ) : SimNetworkAdapter(), SimNetworkInterface {
+        override val name: String = "eth$index"
+
+        override val bandwidth: Double = model.bandwidth
+
+        override val provider: SimResourceProvider
+            get() = _rx
+
+        override fun createConsumer(): SimResourceConsumer = _tx
+
+        override val tx: SimResourceProvider
+            get() = _tx
+        private val _tx = SimResourceForwarder()
+
+        override val rx: SimResourceConsumer
+            get() = _rx
+        private val _rx = SimResourceForwarder()
+
+        override fun toString(): String = "SimAbstractMachine.NetworkAdapterImpl[name=$name,bandwidth=$bandwidth]"
     }
 }

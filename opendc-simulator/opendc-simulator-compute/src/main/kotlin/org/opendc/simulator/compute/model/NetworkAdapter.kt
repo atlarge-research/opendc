@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,39 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute
-
-import kotlinx.coroutines.flow.StateFlow
-import org.opendc.simulator.compute.device.SimPeripheral
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.workload.SimWorkload
+package org.opendc.simulator.compute.model
 
 /**
- * A generic machine that is able to run a [SimWorkload].
+ * A description of a network adapter that is
+ *
+ * @property vendor The vendor of the network adapter.
+ * @property modelName The model name of the network adapter.
+ * @property bandwidth The bandwidth of the network adapter in Mbps.
  */
-public interface SimMachine : AutoCloseable {
-    /**
-     * The model of the machine containing its specifications.
-     */
-    public val model: MachineModel
-
-    /**
-     * The peripherals attached to the machine.
-     */
-    public val peripherals: List<SimPeripheral>
-
-    /**
-     * A [StateFlow] representing the CPU usage of the simulated machine.
-     */
-    public val usage: StateFlow<Double>
-
-    /**
-     * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
-     */
-    public suspend fun run(workload: SimWorkload, meta: Map<String, Any> = emptyMap())
-
-    /**
-     * Terminate this machine.
-     */
-    public override fun close()
-}
+public data class NetworkAdapter(
+    public val vendor: String,
+    public val modelName: String,
+    public val bandwidth: Double
+)

@@ -30,10 +30,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.compute.model.ProcessingNode
-import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.device.SimNetworkAdapter
+import org.opendc.simulator.compute.model.*
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
@@ -41,6 +39,7 @@ import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.SimWorkloadLifecycle
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.network.SimNetworkSink
 import org.opendc.simulator.power.SimPowerSource
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
@@ -58,7 +57,8 @@ class SimMachineTest {
 
         machineModel = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
-            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
+            net = listOf(NetworkAdapter("Mellanox", "ConnectX-5", 25000.0))
         )
     }
 
@@ -223,6 +223,33 @@ class SimMachineTest {
                 override fun onStart(ctx: SimMachineContext) {
                     val lifecycle = SimWorkloadLifecycle(ctx)
                     ctx.memory.startConsumer(lifecycle.waitFor(SimWorkConsumer(ctx.memory.capacity, utilization = 0.8)))
+                }
+            })
+
+            assertEquals(1250, clock.millis())
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
+    fun testNetUsage() = runBlockingSimulation {
+        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val machine = SimBareMetalMachine(
+            interpreter,
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        val adapter = (machine.peripherals[0] as SimNetworkAdapter)
+        adapter.connect(SimNetworkSink(interpreter, adapter.bandwidth))
+
+        try {
+            machine.run(object : SimWorkload {
+                override fun onStart(ctx: SimMachineContext) {
+                    val lifecycle = SimWorkloadLifecycle(ctx)
+                    val iface = ctx.net[0]
+                    iface.tx.startConsumer(lifecycle.waitFor(SimWorkConsumer(iface.bandwidth, utilization = 0.8)))
                 }
             })
 

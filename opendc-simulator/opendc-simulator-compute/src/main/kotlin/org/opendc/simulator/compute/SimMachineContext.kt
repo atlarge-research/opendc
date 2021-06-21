@@ -51,6 +51,11 @@ public interface SimMachineContext : AutoCloseable {
     public val memory: SimMemory
 
     /**
+     * The network interfaces available to the workload.
+     */
+    public val net: List<SimNetworkInterface>
+
+    /**
      * Stop the workload.
      */
     public override fun close()
