@@ -212,11 +212,15 @@ internal class SimResourceContextImpl(
                 // 2. The resource capacity cannot satisfy the demand.
                 // 3. The resource consumer should be interrupted (e.g., someone called .interrupt())
                 if ((isConsume && remainingWork == 0.0) || _deadline <= timestamp || isInterrupted) {
-                    next(timestamp)
+                    when (val command = consumer.onNext(this)) {
+                        is SimResourceCommand.Idle -> interpretIdle(timestamp, command.deadline)
+                        is SimResourceCommand.Consume -> interpretConsume(timestamp, command.work, command.limit, command.deadline)
+                        is SimResourceCommand.Exit -> interpretExit()
+                    }
                 } else if (isConsume) {
-                    interpret(SimResourceCommand.Consume(remainingWork, _limit, _deadline), timestamp)
+                    interpretConsume(timestamp, remainingWork, _limit, _deadline)
                 } else {
-                    interpret(SimResourceCommand.Idle(_deadline), timestamp)
+                    interpretIdle(timestamp, _deadline)
                 }
             }
         }
@@ -249,57 +253,50 @@ internal class SimResourceContextImpl(
     }
 
     /**
-     * Interpret the specified [SimResourceCommand] that was submitted by the resource consumer.
+     * Interpret the [SimResourceCommand.Consume] command.
      */
-    private fun interpret(command: SimResourceCommand, now: Long): SimResourceState {
-        return when (command) {
-            is SimResourceCommand.Idle -> {
-                val deadline = command.deadline
+    private fun interpretConsume(now: Long, work: Double, limit: Double, deadline: Long): SimResourceState {
+        require(deadline >= now) { "Deadline already passed" }
 
-                require(deadline >= now) { "Deadline already passed" }
+        _speed = min(capacity, limit)
+        _work = work
+        _limit = limit
+        _deadline = deadline
 
-                _speed = 0.0
-                _work = 0.0
-                _limit = 0.0
-                _deadline = deadline
+        val timestamp = logic.onConsume(this, work, limit, deadline)
+        scheduleUpdate(timestamp)
 
-                val timestamp = logic.onIdle(this, deadline)
-                scheduleUpdate(timestamp)
-
-                SimResourceState.Active
-            }
-            is SimResourceCommand.Consume -> {
-                val work = command.work
-                val limit = command.limit
-                val deadline = command.deadline
-
-                require(deadline >= now) { "Deadline already passed" }
-
-                _speed = min(capacity, limit)
-                _work = work
-                _limit = limit
-                _deadline = deadline
-
-                val timestamp = logic.onConsume(this, work, limit, deadline)
-                scheduleUpdate(timestamp)
-
-                SimResourceState.Active
-            }
-            is SimResourceCommand.Exit -> {
-                _speed = 0.0
-                _work = 0.0
-                _limit = 0.0
-                _deadline = Long.MAX_VALUE
-
-                SimResourceState.Stopped
-            }
-        }
+        return SimResourceState.Active
     }
 
     /**
-     * Request the workload for more work.
+     * Interpret the [SimResourceCommand.Idle] command.
      */
-    private fun next(now: Long): SimResourceState = interpret(consumer.onNext(this), now)
+    private fun interpretIdle(now: Long, deadline: Long): SimResourceState {
+        require(deadline >= now) { "Deadline already passed" }
+
+        _speed = 0.0
+        _work = 0.0
+        _limit = 0.0
+        _deadline = deadline
+
+        val timestamp = logic.onIdle(this, deadline)
+        scheduleUpdate(timestamp)
+
+        return SimResourceState.Active
+    }
+
+    /**
+     * Interpret the [SimResourceCommand.Exit] command.
+     */
+    private fun interpretExit(): SimResourceState {
+        _speed = 0.0
+        _work = 0.0
+        _limit = 0.0
+        _deadline = Long.MAX_VALUE
+
+        return SimResourceState.Stopped
+    }
 
     private var _remainingWork: Double = 0.0
     private var _remainingWorkFlush: Long = Long.MIN_VALUE

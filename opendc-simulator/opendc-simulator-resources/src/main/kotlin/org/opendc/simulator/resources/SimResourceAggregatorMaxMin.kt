@@ -45,7 +45,7 @@ public class SimResourceAggregatorMaxMin(
             val command = if (grantedWork > 0.0 && grantedSpeed > 0.0)
                 SimResourceCommand.Consume(grantedWork, grantedSpeed, deadline)
             else
-                SimResourceCommand.Idle(deadline)
+                SimResourceCommand.Idle()
             input.push(command)
         }
     }
