@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,46 +22,29 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.resources.SimResourceProvider
 
 /**
- * A simulated execution context in which a bootable image runs. This interface represents the
- * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
- * which the image runs.
+ * A firmware interface to a storage device.
  */
-public interface SimMachineContext : AutoCloseable {
+public interface SimStorageInterface {
     /**
-     * The resource interpreter that simulates the machine.
+     * The name of the storage device.
      */
-    public val interpreter: SimResourceInterpreter
+    public val name: String
 
     /**
-     * The metadata associated with the context.
+     * The capacity of the storage device in MBs.
      */
-    public val meta: Map<String, Any>
+    public val capacity: Double
 
     /**
-     * The CPUs available on the machine.
+     * The resource provider for the read operations of the storage device.
      */
-    public val cpus: List<SimProcessingUnit>
+    public val read: SimResourceProvider
 
     /**
-     * The memory interface of the machine.
+     * The resource consumer for the write operation of the storage device.
      */
-    public val memory: SimMemory
-
-    /**
-     * The network interfaces available to the workload.
-     */
-    public val net: List<SimNetworkInterface>
-
-    /**
-     * The storage devices available to the workload.
-     */
-    public val storage: List<SimStorageInterface>
-
-    /**
-     * Stop the workload.
-     */
-    public override fun close()
+    public val write: SimResourceProvider
 }

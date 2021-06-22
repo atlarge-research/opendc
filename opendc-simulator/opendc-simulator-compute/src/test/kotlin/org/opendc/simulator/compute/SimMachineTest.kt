@@ -58,7 +58,8 @@ class SimMachineTest {
         machineModel = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) },
-            net = listOf(NetworkAdapter("Mellanox", "ConnectX-5", 25000.0))
+            net = listOf(NetworkAdapter("Mellanox", "ConnectX-5", 25000.0)),
+            storage = listOf(StorageDevice("Samsung", "EVO", 1000.0, 250.0, 250.0))
         )
     }
 
@@ -250,6 +251,53 @@ class SimMachineTest {
                     val lifecycle = SimWorkloadLifecycle(ctx)
                     val iface = ctx.net[0]
                     iface.tx.startConsumer(lifecycle.waitFor(SimWorkConsumer(iface.bandwidth, utilization = 0.8)))
+                }
+            })
+
+            assertEquals(1250, clock.millis())
+        } finally {
+            machine.close()
+        }
+    }
+
+    @Test
+    fun testDiskReadUsage() = runBlockingSimulation {
+        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val machine = SimBareMetalMachine(
+            interpreter,
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        try {
+            machine.run(object : SimWorkload {
+                override fun onStart(ctx: SimMachineContext) {
+                    val lifecycle = SimWorkloadLifecycle(ctx)
+                    val disk = ctx.storage[0]
+                    disk.read.startConsumer(lifecycle.waitFor(SimWorkConsumer(disk.read.capacity, utilization = 0.8)))
+                }
+            })
+
+            assertEquals(1250, clock.millis())
+        } finally {
+            machine.close()
+        }
+    }
+
+    fun testDiskWriteUsage() = runBlockingSimulation {
+        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val machine = SimBareMetalMachine(
+            interpreter,
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+
+        try {
+            machine.run(object : SimWorkload {
+                override fun onStart(ctx: SimMachineContext) {
+                    val lifecycle = SimWorkloadLifecycle(ctx)
+                    val disk = ctx.storage[0]
+                    disk.write.startConsumer(lifecycle.waitFor(SimWorkConsumer(disk.write.capacity, utilization = 0.8)))
                 }
             })
 

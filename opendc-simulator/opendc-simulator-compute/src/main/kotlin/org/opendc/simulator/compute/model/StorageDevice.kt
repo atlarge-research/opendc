@@ -23,16 +23,18 @@
 package org.opendc.simulator.compute.model
 
 /**
- * A description of the physical or virtual machine on which a bootable image runs.
+ * Model for a physical storage device attached to a machine.
  *
- * @property cpus The list of processing units available to the image.
- * @property memory The list of memory units available to the image.
- * @property net A list of network adapters available to the machine.
- * @property storage A list of storage devices available to the machine.
+ * @property vendor The vendor of the storage device.
+ * @property modelName The model name of the device.
+ * @property capacity The capacity of the device.
+ * @property readBandwidth The read bandwidth of the device in MBps.
+ * @property writeBandwidth The write bandwidth of the device in MBps.
  */
-public data class MachineModel(
-    public val cpus: List<ProcessingUnit>,
-    public val memory: List<MemoryUnit>,
-    public val net: List<NetworkAdapter> = emptyList(),
-    public val storage: List<StorageDevice> = emptyList()
+public data class StorageDevice(
+    public val vendor: String,
+    public val modelName: String,
+    public val capacity: Double,
+    public val readBandwidth: Double,
+    public val writeBandwidth: Double
 )

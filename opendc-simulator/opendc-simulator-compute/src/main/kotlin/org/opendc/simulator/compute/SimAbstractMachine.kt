@@ -30,6 +30,7 @@ import org.opendc.simulator.compute.device.SimPeripheral
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.NetworkAdapter
+import org.opendc.simulator.compute.model.StorageDevice
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.*
 import kotlin.coroutines.Continuation
@@ -75,6 +76,11 @@ public abstract class SimAbstractMachine(
      * The network interfaces available to the machine.
      */
     protected val net: List<SimNetworkInterface> = model.net.mapIndexed { i, adapter -> NetworkAdapterImpl(adapter, i) }
+
+    /**
+     * The network interfaces available to the machine.
+     */
+    protected val storage: List<SimStorageInterface> = model.storage.mapIndexed { i, device -> StorageDeviceImpl(interpreter, device, i) }
 
     /**
      * The peripherals of the machine.
@@ -181,6 +187,8 @@ public abstract class SimAbstractMachine(
 
         override val net: List<SimNetworkInterface> = this@SimAbstractMachine.net
 
+        override val storage: List<SimStorageInterface> = this@SimAbstractMachine.storage
+
         override fun close() = cancel()
     }
 
@@ -216,5 +224,24 @@ public abstract class SimAbstractMachine(
         private val _rx = SimResourceForwarder()
 
         override fun toString(): String = "SimAbstractMachine.NetworkAdapterImpl[name=$name,bandwidth=$bandwidth]"
+    }
+
+    /**
+     * The [SimStorageInterface] implementation for a machine.
+     */
+    private class StorageDeviceImpl(
+        interpreter: SimResourceInterpreter,
+        model: StorageDevice,
+        index: Int
+    ) : SimStorageInterface {
+        override val name: String = "disk$index"
+
+        override val capacity: Double = model.capacity
+
+        override val read: SimResourceProvider = SimResourceSource(model.readBandwidth, interpreter)
+
+        override val write: SimResourceProvider = SimResourceSource(model.writeBandwidth, interpreter)
+
+        override fun toString(): String = "SimAbstractMachine.StorageDeviceImpl[name=$name,capacity=$capacity]"
     }
 }
