@@ -55,8 +55,13 @@ public abstract class SimNetworkPort {
         port._link = link
 
         // Start bi-directional flow channel between the two ports
-        provider.startConsumer(port.createConsumer())
-        port.provider.startConsumer(createConsumer())
+        try {
+            provider.startConsumer(port.createConsumer())
+            port.provider.startConsumer(createConsumer())
+        } catch (e: Throwable) {
+            disconnect()
+            throw e
+        }
     }
 
     /**
