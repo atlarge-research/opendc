@@ -23,7 +23,6 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.util.SimWorkloadLifecycle
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
 
 /**

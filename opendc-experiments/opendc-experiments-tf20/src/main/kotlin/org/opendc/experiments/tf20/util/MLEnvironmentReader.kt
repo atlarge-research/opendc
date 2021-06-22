@@ -27,7 +27,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -100,7 +100,7 @@ public class MLEnvironmentReader(input: InputStream, mapper: ObjectMapper = jack
                                 UUID(0, counter.toLong()),
                                 "node-${counter++}",
                                 mapOf("gpu" to isGpuFlag),
-                                SimMachineModel(cores, memories),
+                                MachineModel(cores, memories),
                                 LinearPowerModel(maxPower, minPower)
                             )
                         }

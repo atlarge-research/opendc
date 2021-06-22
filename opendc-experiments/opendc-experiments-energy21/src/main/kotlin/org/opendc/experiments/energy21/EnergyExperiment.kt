@@ -41,9 +41,9 @@ import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
 import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
-import org.opendc.simulator.compute.SimFairShareHypervisorProvider
-import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.cpufreq.*
+import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
+import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -156,12 +156,12 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
     /**
      * The machine model based on: https://www.spec.org/power_ssj2008/results/res2020q1/power_ssj2008-20191125-01012.html
      */
-    private fun createMachineModel(): SimMachineModel {
+    private fun createMachineModel(): MachineModel {
         val node = ProcessingNode("AMD", "am64", "EPYC 7742", 64)
         val cpus = List(node.coreCount) { id -> ProcessingUnit(node, id, 3400.0) }
         val memory = List(8) { MemoryUnit("Samsung", "Unknown", 2933.0, 16_000) }
 
-        return SimMachineModel(cpus, memory)
+        return MachineModel(cpus, memory)
     }
 
     /**

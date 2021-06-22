@@ -27,7 +27,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -80,7 +80,7 @@ public class Sc20EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
                                 UUID(0L, counter++.toLong()),
                                 "node-$counter",
                                 emptyMap(),
-                                SimMachineModel(cores, memories),
+                                MachineModel(cores, memories),
                                 // For now we assume a simple linear load model with an idle draw of ~200W and a maximum
                                 // power draw of 350W.
                                 // Source: https://stackoverflow.com/questions/6128960

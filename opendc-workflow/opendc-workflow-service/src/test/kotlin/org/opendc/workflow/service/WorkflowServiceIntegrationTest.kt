@@ -41,7 +41,7 @@ import org.opendc.compute.service.scheduler.weights.ProvisionedCoresWeigher
 import org.opendc.compute.simulator.SimHost
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
-import org.opendc.simulator.compute.SimSpaceSharedHypervisorProvider
+import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.sdk.toOtelClock

@@ -32,7 +32,7 @@ import org.bson.Document
 import org.bson.types.ObjectId
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -80,7 +80,7 @@ public class TopologyParser(private val collection: MongoCollection<Document>) {
                     UUID(random.nextLong(), random.nextLong()),
                     "node-$clusterId-$position",
                     mapOf("cluster" to clusterId),
-                    SimMachineModel(processors, memoryUnits),
+                    MachineModel(processors, memoryUnits),
                     LinearPowerModel(2 * energyConsumptionW, energyConsumptionW * 0.5)
                 )
             )

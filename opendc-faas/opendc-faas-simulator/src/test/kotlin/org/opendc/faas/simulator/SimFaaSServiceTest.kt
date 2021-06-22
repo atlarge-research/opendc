@@ -36,7 +36,7 @@ import org.opendc.faas.service.autoscaler.FunctionTerminationPolicyFixed
 import org.opendc.faas.service.router.RandomRoutingPolicy
 import org.opendc.faas.simulator.delay.ZeroDelayInjector
 import org.opendc.faas.simulator.workload.SimFaaSWorkload
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -50,13 +50,13 @@ import org.opendc.simulator.core.runBlockingSimulation
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SimFaaSServiceTest {
 
-    private lateinit var machineModel: SimMachineModel
+    private lateinit var machineModel: MachineModel
 
     @BeforeEach
     fun setUp() {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        machineModel = SimMachineModel(
+        machineModel = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )

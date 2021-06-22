@@ -33,7 +33,7 @@ import org.opendc.faas.simulator.delay.DelayInjector
 import org.opendc.faas.simulator.workload.SimFaaSWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.resources.SimResourceInterpreter
@@ -49,7 +49,7 @@ import kotlin.coroutines.resumeWithException
 public class SimFunctionDeployer(
     private val clock: Clock,
     private val scope: CoroutineScope,
-    private val model: SimMachineModel,
+    private val model: MachineModel,
     private val delayInjector: DelayInjector,
     private val mapper: SimFaaSWorkloadMapper
 ) : FunctionDeployer {

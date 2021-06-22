@@ -28,7 +28,7 @@ import kotlinx.coroutines.*
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
@@ -63,7 +63,7 @@ public class SimTFDevice(
      * The [SimMachine] representing the device.
      */
     private val machine = SimBareMetalMachine(
-        SimResourceInterpreter(scope.coroutineContext, clock), SimMachineModel(listOf(pu), listOf(memory)),
+        SimResourceInterpreter(scope.coroutineContext, clock), MachineModel(listOf(pu), listOf(memory)),
         SimplePowerDriver(powerModel)
     )
 

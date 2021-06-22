@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.util.SimWorkloadLifecycle
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext

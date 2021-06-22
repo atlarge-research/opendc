@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute
 
+import org.opendc.simulator.compute.device.SimPsu
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.resources.*
@@ -41,7 +43,7 @@ import org.opendc.simulator.resources.SimResourceInterpreter
  */
 public class SimBareMetalMachine(
     interpreter: SimResourceInterpreter,
-    model: SimMachineModel,
+    model: MachineModel,
     powerDriver: PowerDriver,
     public val psu: SimPsu = SimPsu(500.0, mapOf(1.0 to 1.0)),
     parent: SimResourceSystem? = null,

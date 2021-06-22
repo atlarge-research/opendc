@@ -27,7 +27,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -75,7 +75,7 @@ public class Sc18EnvironmentReader(input: InputStream, mapper: ObjectMapper = ja
                                 UUID(0L, counter++.toLong()),
                                 "node-$counter",
                                 emptyMap(),
-                                SimMachineModel(cores, listOf(MemoryUnit("", "", 2300.0, 16000))),
+                                MachineModel(cores, listOf(MemoryUnit("", "", 2300.0, 16000))),
                                 ConstantPowerModel(0.0)
                             )
                         }
