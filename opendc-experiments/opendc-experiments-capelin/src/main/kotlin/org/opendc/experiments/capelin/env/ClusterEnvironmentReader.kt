@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.environment.sc20
+package org.opendc.experiments.capelin.env
 
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.environment.MachineDef
@@ -37,22 +37,22 @@ import java.util.*
 /**
  * A [EnvironmentReader] for the internal environment format.
  *
- * @param environmentFile The file describing the physical cluster.
+ * @param input The input stream describing the physical cluster.
  */
-public class Sc20ClusterEnvironmentReader(
-    private val input: InputStream
-) : EnvironmentReader {
+class ClusterEnvironmentReader(private val input: InputStream) : EnvironmentReader {
+    /**
+     * Construct a [ClusterEnvironmentReader] for the specified [file].
+     */
+    constructor(file: File) : this(FileInputStream(file))
 
-    public constructor(file: File) : this(FileInputStream(file))
-
-    public override fun read(): List<MachineDef> {
+    override fun read(): List<MachineDef> {
         var clusterIdCol = 0
         var speedCol = 0
         var numberOfHostsCol = 0
         var memoryPerHostCol = 0
         var coresPerHostCol = 0
 
-        var clusterIdx: Int = 0
+        var clusterIdx = 0
         var clusterId: String
         var speed: Double
         var numberOfHosts: Int
@@ -116,5 +116,7 @@ public class Sc20ClusterEnvironmentReader(
         return nodes
     }
 
-    override fun close() {}
+    override fun close() {
+        input.close()
+    }
 }

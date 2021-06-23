@@ -33,8 +33,6 @@ import org.apache.parquet.io.api.Binary
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.format.util.LocalInputFile
-import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.io.File
@@ -44,7 +42,6 @@ import java.util.TreeSet
 import java.util.UUID
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.thread
-import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
@@ -52,14 +49,9 @@ private val logger = KotlinLogging.logger {}
  * A [TraceReader] for the internal VM workload trace format that streams workloads on the fly.
  *
  * @param traceFile The directory of the traces.
- * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
+ * @param selectedVms The list of VMs to read from the trace.
  */
-public class Sc20StreamingParquetTraceReader(
-    traceFile: File,
-    performanceInterferenceModel: PerformanceInterferenceModel? = null,
-    selectedVms: List<String> = emptyList(),
-    random: Random
-) : TraceReader<SimWorkload> {
+class StreamingParquetTraceReader(traceFile: File, selectedVms: List<String> = emptyList()) : TraceReader<SimWorkload> {
     /**
      * The internal iterator to use for this reader.
      */
@@ -227,14 +219,6 @@ public class Sc20StreamingParquetTraceReader(
 
                     buffers.remove(id)
                 }
-                val relevantPerformanceInterferenceModelItems =
-                    if (performanceInterferenceModel != null)
-                        PerformanceInterferenceModel(
-                            performanceInterferenceModel.items.filter { it.workloadNames.contains(id) }.toSortedSet(),
-                            Random(random.nextInt())
-                        )
-                    else
-                        null
                 val workload = SimTraceWorkload(fragments)
                 val meta = mapOf(
                     "cores" to maxCores,
@@ -242,13 +226,7 @@ public class Sc20StreamingParquetTraceReader(
                     "workload" to workload
                 )
 
-                TraceEntry(
-                    uid, id, submissionTime, workload,
-                    if (performanceInterferenceModel != null)
-                        meta + mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems as Any)
-                    else
-                        meta
-                )
+                TraceEntry(uid, id, submissionTime, workload, meta)
             }
             .sortedBy { it.start }
             .toList()

@@ -32,29 +32,27 @@ import org.opendc.compute.service.scheduler.*
 import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.weights.*
+import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
-import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
-import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
-import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
-import org.opendc.format.trace.PerformanceInterferenceModelReader
+import org.opendc.experiments.capelin.trace.ParquetTraceReader
+import org.opendc.experiments.capelin.trace.RawParquetTraceReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.core.runBlockingSimulation
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.random.asKotlinRandom
 
 /**
  * A portfolio represents a collection of scenarios are tested for the work.
  *
  * @param name The name of the portfolio.
  */
-public abstract class Portfolio(name: String) : Experiment(name) {
+abstract class Portfolio(name: String) : Experiment(name) {
     /**
      * The logger for this portfolio instance.
      */
@@ -71,34 +69,29 @@ public abstract class Portfolio(name: String) : Experiment(name) {
     private val vmPlacements by anyOf(emptyMap<String, String>())
 
     /**
-     * The path to the performance interference model.
-     */
-    private val performanceInterferenceModel by anyOf<PerformanceInterferenceModelReader?>(null)
-
-    /**
      * The topology to test.
      */
-    public abstract val topology: Topology
+    abstract val topology: Topology
 
     /**
      * The workload to test.
      */
-    public abstract val workload: Workload
+    abstract val workload: Workload
 
     /**
      * The operational phenomenas to consider.
      */
-    public abstract val operationalPhenomena: OperationalPhenomena
+    abstract val operationalPhenomena: OperationalPhenomena
 
     /**
      * The allocation policies to consider.
      */
-    public abstract val allocationPolicy: String
+    abstract val allocationPolicy: String
 
     /**
      * A map of trace readers.
      */
-    private val traceReaders = ConcurrentHashMap<String, Sc20RawParquetTraceReader>()
+    private val traceReaders = ConcurrentHashMap<String, RawParquetTraceReader>()
 
     /**
      * Perform a single trial for this portfolio.
@@ -106,7 +99,7 @@ public abstract class Portfolio(name: String) : Experiment(name) {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val seeder = Random(repeat.toLong())
-        val environment = Sc20ClusterEnvironmentReader(File(config.getString("env-path"), "${topology.name}.txt"))
+        val environment = ClusterEnvironmentReader(File(config.getString("env-path"), "${topology.name}.txt"))
 
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = createComputeScheduler(seeder)
@@ -122,14 +115,11 @@ public abstract class Portfolio(name: String) : Experiment(name) {
         val rawReaders = workloadNames.map { workloadName ->
             traceReaders.computeIfAbsent(workloadName) {
                 logger.info { "Loading trace $workloadName" }
-                Sc20RawParquetTraceReader(File(config.getString("trace-path"), workloadName))
+                RawParquetTraceReader(File(config.getString("trace-path"), workloadName))
             }
         }
 
-        val performanceInterferenceModel = performanceInterferenceModel
-            ?.takeIf { operationalPhenomena.hasInterference }
-            ?.construct(seeder.asKotlinRandom()) ?: emptyMap()
-        val trace = Sc20ParquetTraceReader(rawReaders, performanceInterferenceModel, workload, seeder.nextInt())
+        val trace = ParquetTraceReader(rawReaders, workload, seeder.nextInt())
 
         val monitor = ParquetExperimentMonitor(
             File(config.getString("output-path")),

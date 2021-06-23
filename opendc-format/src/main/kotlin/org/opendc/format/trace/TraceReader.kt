@@ -22,8 +22,6 @@
 
 package org.opendc.format.trace
 
-import java.io.Closeable
-
 /**
  * An interface for reading workloads into memory.
  *
@@ -31,4 +29,4 @@ import java.io.Closeable
  *
  * @param T The shape of the workloads supported by this reader.
  */
-public interface TraceReader<T> : Iterator<TraceEntry<T>>, Closeable
+public interface TraceReader<T> : Iterator<TraceEntry<T>>, AutoCloseable

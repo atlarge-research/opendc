@@ -26,21 +26,17 @@ import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
-import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
-import java.util.TreeSet
 
 /**
  * A [TraceReader] for the internal VM workload trace format.
  *
- * @param reader The internal trace reader to use.
- * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
- * @param run The run to which this reader belongs.
+ * @param rawReaders The raw trace readers to use..
+ * @param workload The workload to use.
+ * @param seed The seed to use for workload sampling.
  */
-public class Sc20ParquetTraceReader(
-    rawReaders: List<Sc20RawParquetTraceReader>,
-    performanceInterferenceModel: Map<String, PerformanceInterferenceModel>,
+class ParquetTraceReader(
+    rawReaders: List<RawParquetTraceReader>,
     workload: Workload,
     seed: Int
 ) : TraceReader<SimWorkload> {
@@ -59,20 +55,6 @@ public class Sc20ParquetTraceReader(
             }
             .map { sampleWorkload(it.first, workload, it.second, seed) }
             .flatten()
-            .run {
-                // Apply performance interference model
-                if (performanceInterferenceModel.isEmpty())
-                    this
-                else {
-                    map { entry ->
-                        val id = entry.name
-                        val relevantPerformanceInterferenceModelItems =
-                            performanceInterferenceModel[id] ?: PerformanceInterferenceModel(TreeSet())
-
-                        entry.copy(meta = entry.meta + mapOf(IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems))
-                    }
-                }
-            }
             .iterator()
 
     override fun hasNext(): Boolean = iterator.hasNext()

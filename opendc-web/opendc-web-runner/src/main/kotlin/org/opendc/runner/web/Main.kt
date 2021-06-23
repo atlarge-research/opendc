@@ -47,10 +47,9 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.weights.*
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
-import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
+import org.opendc.experiments.capelin.trace.ParquetTraceReader
+import org.opendc.experiments.capelin.trace.RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
-import org.opendc.format.trace.sc20.Sc20PerformanceInterferenceReader
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
@@ -167,19 +166,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
             tracePath,
             scenario.getEmbedded(listOf("trace", "traceId"), String::class.java)
         )
-        val traceReader = Sc20RawParquetTraceReader(traceDir)
-        val performanceInterferenceReader = let {
-            val path = File(traceDir, "performance-interference-model.json")
-            val operational = scenario.get("operational", Document::class.java)
-            val enabled = operational.getBoolean("performanceInterferenceEnabled")
-
-            if (!enabled || !path.exists()) {
-                return@let null
-            }
-
-            path.inputStream().use { Sc20PerformanceInterferenceReader(it) }
-        }
-
+        val traceReader = RawParquetTraceReader(traceDir)
         val targets = portfolio.get("targets", Document::class.java)
         val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), ObjectId::class.java)
         val environment = topologyParser.read(topologyId)
@@ -187,7 +174,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
         val results = (0 until targets.getInteger("repeatsPerScenario")).map {
             logger.info { "Starting repeat $it" }
             withTimeout(runTimeout * 1000) {
-                runRepeat(scenario, it, environment, traceReader, performanceInterferenceReader)
+                runRepeat(scenario, it, environment, traceReader)
             }
         }
 
@@ -203,8 +190,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
         scenario: Document,
         repeat: Int,
         environment: EnvironmentReader,
-        traceReader: Sc20RawParquetTraceReader,
-        performanceInterferenceReader: Sc20PerformanceInterferenceReader?
+        traceReader: RawParquetTraceReader,
     ): WebExperimentMonitor.Result {
         val monitor = WebExperimentMonitor()
 
@@ -267,10 +253,8 @@ public class RunnerCli : CliktCommand(name = "runner") {
                         else -> throw IllegalArgumentException("Unknown policy $policyName")
                     }
 
-                val performanceInterferenceModel = performanceInterferenceReader?.construct(seeder) ?: emptyMap()
-                val trace = Sc20ParquetTraceReader(
+                val trace = ParquetTraceReader(
                     listOf(traceReader),
-                    performanceInterferenceModel,
                     Workload(workloadName, workloadFraction),
                     seed
                 )

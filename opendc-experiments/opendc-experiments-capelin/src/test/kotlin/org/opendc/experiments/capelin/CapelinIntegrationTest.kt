@@ -34,12 +34,12 @@ import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.weights.CoreMemoryWeigher
+import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
-import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
-import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
+import org.opendc.experiments.capelin.trace.ParquetTraceReader
+import org.opendc.experiments.capelin.trace.RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
-import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
@@ -161,9 +161,8 @@ class CapelinIntegrationTest {
      * Obtain the trace reader for the test.
      */
     private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<SimWorkload> {
-        return Sc20ParquetTraceReader(
-            listOf(Sc20RawParquetTraceReader(File("src/test/resources/trace"))),
-            emptyMap(),
+        return ParquetTraceReader(
+            listOf(RawParquetTraceReader(File("src/test/resources/trace"))),
             Workload("test", fraction),
             seed
         )
@@ -174,7 +173,7 @@ class CapelinIntegrationTest {
      */
     private fun createTestEnvironmentReader(name: String = "topology"): EnvironmentReader {
         val stream = object {}.javaClass.getResourceAsStream("/env/$name.txt")
-        return Sc20ClusterEnvironmentReader(stream)
+        return ClusterEnvironmentReader(stream)
     }
 
     class TestExperimentReporter : ExperimentMonitor {
