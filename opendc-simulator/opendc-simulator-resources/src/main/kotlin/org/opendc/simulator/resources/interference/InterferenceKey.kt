@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace
-
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
-import java.io.Closeable
-import kotlin.random.Random
+package org.opendc.simulator.resources.interference
 
 /**
- * An interface for reading descriptions of performance interference models into memory.
+ * A key that uniquely identifies a participant of an interference domain.
  */
-public interface PerformanceInterferenceModelReader : Closeable {
-    /**
-     * Construct a [PerformanceInterferenceModel].
-     */
-    public fun construct(random: Random): Map<String, PerformanceInterferenceModel>
-}
+public interface InterferenceKey

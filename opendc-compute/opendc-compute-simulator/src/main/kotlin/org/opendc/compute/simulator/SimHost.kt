@@ -31,17 +31,15 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
 import org.opendc.simulator.compute.*
-import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.kernel.SimHypervisorProvider
 import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.PowerDriver
-import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.failures.FailureDomain
 import org.opendc.simulator.resources.SimResourceInterpreter
@@ -61,24 +59,11 @@ public class SimHost(
     interpreter: SimResourceInterpreter,
     meter: Meter,
     hypervisor: SimHypervisorProvider,
-    scalingGovernor: ScalingGovernor,
-    scalingDriver: PowerDriver,
+    scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
+    powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
+    interferenceDomain: VmInterferenceDomain? = null
 ) : Host, FailureDomain, AutoCloseable {
-
-    public constructor(
-        uid: UUID,
-        name: String,
-        model: MachineModel,
-        meta: Map<String, Any>,
-        context: CoroutineContext,
-        interpreter: SimResourceInterpreter,
-        meter: Meter,
-        hypervisor: SimHypervisorProvider,
-        powerModel: PowerModel = ConstantPowerModel(0.0),
-        mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    ) : this(uid, name, model, meta, context, interpreter, meter, hypervisor, PerformanceScalingGovernor(), SimplePowerDriver(powerModel), mapper)
-
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
      */
@@ -102,13 +87,15 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model, scalingDriver)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model, powerDriver)
 
     /**
      * The hypervisor to run multiple workloads.
      */
     public val hypervisor: SimHypervisor = hypervisor.create(
         interpreter,
+        scalingGovernor = scalingGovernor,
+        interferenceDomain = interferenceDomain,
         listener = object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
@@ -260,7 +247,7 @@ public class SimHost(
         }
 
         require(canFit(server)) { "Server does not fit" }
-        val guest = Guest(server, hypervisor.createMachine(server.flavor.toMachineModel()))
+        val guest = Guest(server, hypervisor.createMachine(server.flavor.toMachineModel(), server.name))
         guests[server] = guest
         _guests.add(1)
 
@@ -317,23 +304,11 @@ public class SimHost(
     }
 
     private fun onGuestStart(vm: Guest) {
-        guests.forEach { (_, guest) ->
-            if (guest.state == ServerState.RUNNING) {
-                vm.performanceInterferenceModel?.onStart(vm.server.image.name)
-            }
-        }
-
         _activeGuests.add(1)
         listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
     }
 
     private fun onGuestStop(vm: Guest) {
-        guests.forEach { (_, guest) ->
-            if (guest.state == ServerState.RUNNING) {
-                vm.performanceInterferenceModel?.onStop(vm.server.image.name)
-            }
-        }
-
         _activeGuests.add(-1)
         listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
     }
@@ -350,8 +325,6 @@ public class SimHost(
      * A virtual machine instance that the driver manages.
      */
     private inner class Guest(val server: Server, val machine: SimMachine) {
-        val performanceInterferenceModel: PerformanceInterferenceModel? = server.meta[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
-
         var state: ServerState = ServerState.TERMINATED
 
         suspend fun start() {

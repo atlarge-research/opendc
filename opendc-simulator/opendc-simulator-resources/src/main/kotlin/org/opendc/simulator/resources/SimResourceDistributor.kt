@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.resources
 
+import org.opendc.simulator.resources.interference.InterferenceKey
+
 /**
  * A [SimResourceDistributor] distributes the capacity of some resource over multiple resource consumers.
  */
@@ -33,6 +35,8 @@ public interface SimResourceDistributor : SimResourceConsumer {
 
     /**
      * Create a new output for the distributor.
+     *
+     * @param key The key of the interference member to which the output belongs.
      */
-    public fun newOutput(): SimResourceCloseableProvider
+    public fun newOutput(key: InterferenceKey? = null): SimResourceCloseableProvider
 }

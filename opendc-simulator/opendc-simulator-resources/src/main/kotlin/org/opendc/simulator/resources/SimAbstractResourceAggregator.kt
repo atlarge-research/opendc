@@ -116,8 +116,8 @@ public abstract class SimAbstractResourceAggregator(
                     updateCounters(ctx, work)
                 }
 
-                override fun getRemainingWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
-                    return _inputConsumers.sumOf { it.remainingWork }
+                override fun getConsumedWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
+                    return work - _inputConsumers.sumOf { it.remainingWork }
                 }
             }
         }

@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.compute.kernel
 
+import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.simulator.resources.SimResourceSystem
 
@@ -34,6 +36,14 @@ public class SimFairShareHypervisorProvider : SimHypervisorProvider {
     override fun create(
         interpreter: SimResourceInterpreter,
         parent: SimResourceSystem?,
+        scalingGovernor: ScalingGovernor?,
+        interferenceDomain: VmInterferenceDomain?,
         listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimFairShareHypervisor(interpreter, parent, listener = listener)
+    ): SimHypervisor = SimFairShareHypervisor(
+        interpreter,
+        parent,
+        scalingGovernor = scalingGovernor,
+        interferenceDomain = interferenceDomain,
+        listener = listener
+    )
 }

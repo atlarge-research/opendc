@@ -22,8 +22,10 @@
 
 package org.opendc.simulator.compute.kernel
 
+import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.SimResourceInterpreter
@@ -32,20 +34,22 @@ import org.opendc.simulator.resources.SimResourceSwitchMaxMin
 import org.opendc.simulator.resources.SimResourceSystem
 
 /**
- * A [SimHypervisor] that distributes the computing requirements of multiple [SimWorkload] on a single
- * [SimBareMetalMachine] concurrently using weighted fair sharing.
+ * A [SimHypervisor] that distributes the computing requirements of multiple [SimWorkload]s on a single [SimMachine]
+ * concurrently using weighted fair sharing.
  *
  * @param interpreter The interpreter to manage the machine's resources.
  * @param parent The parent simulation system.
  * @param scalingGovernor The CPU frequency scaling governor to use for the hypervisor.
+ * @param interferenceDomain The resource interference domain to which the hypervisor belongs.
  * @param listener The hypervisor listener to use.
  */
 public class SimFairShareHypervisor(
     private val interpreter: SimResourceInterpreter,
     private val parent: SimResourceSystem? = null,
     scalingGovernor: ScalingGovernor? = null,
+    interferenceDomain: VmInterferenceDomain? = null,
     private val listener: SimHypervisor.Listener? = null
-) : SimAbstractHypervisor(interpreter, scalingGovernor) {
+) : SimAbstractHypervisor(interpreter, scalingGovernor, interferenceDomain) {
 
     override fun canFit(model: MachineModel, switch: SimResourceSwitch): Boolean = true
 
@@ -54,7 +58,7 @@ public class SimFairShareHypervisor(
     }
 
     private inner class SwitchSystem(private val ctx: SimMachineContext) : SimResourceSystem {
-        val switch = SimResourceSwitchMaxMin(interpreter, this)
+        val switch = SimResourceSwitchMaxMin(interpreter, this, interferenceDomain)
 
         override val parent: SimResourceSystem? = this@SimFairShareHypervisor.parent
 

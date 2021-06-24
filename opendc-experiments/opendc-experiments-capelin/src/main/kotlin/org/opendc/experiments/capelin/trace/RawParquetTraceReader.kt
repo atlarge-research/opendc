@@ -22,7 +22,6 @@
 
 package org.opendc.experiments.capelin.trace
 
-import mu.KotlinLogging
 import org.apache.avro.generic.GenericData
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
@@ -32,14 +31,12 @@ import org.opendc.simulator.compute.workload.SimWorkload
 import java.io.File
 import java.util.UUID
 
-private val logger = KotlinLogging.logger {}
-
 /**
  * A [TraceReader] for the internal VM workload trace format.
  *
  * @param path The directory of the traces.
  */
-public class Sc20RawParquetTraceReader(private val path: File) {
+class RawParquetTraceReader(private val path: File) {
     /**
      * Read the fragments into memory.
      */
@@ -136,14 +133,5 @@ public class Sc20RawParquetTraceReader(private val path: File) {
     /**
      * Read the entries in the trace.
      */
-    public fun read(): List<TraceEntry<SimWorkload>> = entries
-
-    /**
-     * Create a [TraceReader] instance.
-     */
-    public fun createReader(): TraceReader<SimWorkload> {
-        return object : TraceReader<SimWorkload>, Iterator<TraceEntry<SimWorkload>> by entries.iterator() {
-            override fun close() {}
-        }
-    }
+    fun read(): List<TraceEntry<SimWorkload>> = entries
 }

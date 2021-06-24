@@ -24,6 +24,7 @@ package org.opendc.simulator.resources.impl
 
 import org.opendc.simulator.resources.*
 import java.time.Clock
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -318,7 +319,7 @@ internal class SimResourceContextImpl(
      */
     private fun computeRemainingWork(now: Long): Double {
         return if (_work > 0.0)
-            logic.getRemainingWork(this, _work, speed, now - _timestamp)
+            max(0.0, _work - logic.getConsumedWork(this, _work, speed, now - _timestamp))
         else 0.0
     }
 

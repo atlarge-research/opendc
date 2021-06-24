@@ -41,11 +41,11 @@ import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.monitor.ExperimentMetricExporter
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
-import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector
@@ -53,7 +53,6 @@ import org.opendc.simulator.failures.FaultInjector
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.telemetry.sdk.toOtelClock
-import java.io.File
 import java.time.Clock
 import kotlin.coroutines.resume
 import kotlin.math.ln
@@ -68,7 +67,7 @@ private val logger = KotlinLogging.logger {}
 /**
  * Construct the failure domain for the experiments.
  */
-public fun createFailureDomain(
+fun createFailureDomain(
     coroutineScope: CoroutineScope,
     clock: Clock,
     seed: Int,
@@ -100,7 +99,7 @@ public fun createFailureDomain(
 /**
  * Obtain the [FaultInjector] to use for the experiments.
  */
-public fun createFaultInjector(
+fun createFaultInjector(
     coroutineScope: CoroutineScope,
     clock: Clock,
     random: Random,
@@ -119,30 +118,14 @@ public fun createFaultInjector(
 }
 
 /**
- * Create the trace reader from which the VM workloads are read.
- */
-public fun createTraceReader(
-    path: File,
-    performanceInterferenceModel: PerformanceInterferenceModel,
-    vms: List<String>,
-    seed: Int
-): Sc20StreamingParquetTraceReader {
-    return Sc20StreamingParquetTraceReader(
-        path,
-        performanceInterferenceModel,
-        vms,
-        Random(seed)
-    )
-}
-
-/**
  * Construct the environment for a simulated compute service..
  */
-public suspend fun withComputeService(
+suspend fun withComputeService(
     clock: Clock,
     meterProvider: MeterProvider,
     environmentReader: EnvironmentReader,
     scheduler: ComputeScheduler,
+    interferenceModel: VmInterferenceModel? = null,
     block: suspend CoroutineScope.(ComputeService) -> Unit
 ): Unit = coroutineScope {
     val interpreter = SimResourceInterpreter(coroutineContext, clock)
@@ -158,7 +141,8 @@ public suspend fun withComputeService(
                 interpreter,
                 meterProvider.get("opendc-compute-simulator"),
                 SimFairShareHypervisorProvider(),
-                def.powerModel
+                powerDriver = SimplePowerDriver(def.powerModel),
+                interferenceDomain = interferenceModel?.newDomain()
             )
         }
 
@@ -181,16 +165,13 @@ public suspend fun withComputeService(
 /**
  * Attach the specified monitor to the VM provisioner.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
-public suspend fun withMonitor(
+suspend fun withMonitor(
     monitor: ExperimentMonitor,
     clock: Clock,
     metricProducer: MetricProducer,
     scheduler: ComputeService,
     block: suspend CoroutineScope.() -> Unit
 ): Unit = coroutineScope {
-    val monitorJobs = mutableSetOf<Job>()
-
     // Monitor host events
     for (host in scheduler.hosts) {
         monitor.reportHostStateChange(clock.millis(), host, HostState.UP)
@@ -211,24 +192,23 @@ public suspend fun withMonitor(
     try {
         block(this)
     } finally {
-        monitorJobs.forEach(Job::cancel)
         reader.close()
         monitor.close()
     }
 }
 
-public class ComputeMetrics {
-    public var submittedVms: Int = 0
-    public var queuedVms: Int = 0
-    public var runningVms: Int = 0
-    public var unscheduledVms: Int = 0
-    public var finishedVms: Int = 0
+class ComputeMetrics {
+    var submittedVms: Int = 0
+    var queuedVms: Int = 0
+    var runningVms: Int = 0
+    var unscheduledVms: Int = 0
+    var finishedVms: Int = 0
 }
 
 /**
  * Collect the metrics of the compute service.
  */
-public fun collectMetrics(metricProducer: MetricProducer): ComputeMetrics {
+fun collectMetrics(metricProducer: MetricProducer): ComputeMetrics {
     val metrics = metricProducer.collectAllMetrics().associateBy { it.name }
     val res = ComputeMetrics()
     try {
@@ -247,7 +227,7 @@ public fun collectMetrics(metricProducer: MetricProducer): ComputeMetrics {
 /**
  * Process the trace.
  */
-public suspend fun processTrace(
+suspend fun processTrace(
     clock: Clock,
     reader: TraceReader<SimWorkload>,
     scheduler: ComputeService,
@@ -306,7 +286,7 @@ public suspend fun processTrace(
 /**
  * Create a [MeterProvider] instance for the experiment.
  */
-public fun createMeterProvider(clock: Clock): MeterProvider {
+fun createMeterProvider(clock: Clock): MeterProvider {
     val powerSelector = InstrumentSelector.builder()
         .setInstrumentNameRegex("power\\.usage")
         .setInstrumentType(InstrumentType.VALUE_RECORDER)

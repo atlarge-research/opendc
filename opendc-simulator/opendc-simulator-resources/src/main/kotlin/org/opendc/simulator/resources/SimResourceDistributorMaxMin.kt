@@ -22,15 +22,21 @@
 
 package org.opendc.simulator.resources
 
-import kotlin.math.max
+import org.opendc.simulator.resources.interference.InterferenceDomain
+import org.opendc.simulator.resources.interference.InterferenceKey
 import kotlin.math.min
 
 /**
  * A [SimResourceDistributor] that distributes the capacity of a resource over consumers using max-min fair sharing.
+ *
+ * @param interpreter The interpreter for managing the resource contexts.
+ * @param parent The parent resource system of the distributor.
+ * @param interferenceDomain The interference domain of the distributor.
  */
 public class SimResourceDistributorMaxMin(
     private val interpreter: SimResourceInterpreter,
-    private val parent: SimResourceSystem? = null
+    private val parent: SimResourceSystem? = null,
+    private val interferenceDomain: InterferenceDomain? = null
 ) : SimResourceDistributor {
     override val outputs: Set<SimResourceCloseableProvider>
         get() = _outputs
@@ -56,9 +62,14 @@ public class SimResourceDistributorMaxMin(
      */
     private var totalAllocatedSpeed = 0.0
 
+    /**
+     * The total requested speed for the output resources.
+     */
+    private var totalRequestedSpeed = 0.0
+
     /* SimResourceDistributor */
-    override fun newOutput(): SimResourceCloseableProvider {
-        val provider = Output(ctx?.capacity ?: 0.0)
+    override fun newOutput(key: InterferenceKey?): SimResourceCloseableProvider {
+        val provider = Output(ctx?.capacity ?: 0.0, key)
         _outputs.add(provider)
         return provider
     }
@@ -148,6 +159,7 @@ public class SimResourceDistributorMaxMin(
         assert(deadline >= interpreter.clock.millis()) { "Deadline already passed" }
 
         this.totalRequestedWork = totalRequestedWork
+        this.totalRequestedSpeed = totalRequestedSpeed
         this.totalAllocatedSpeed = capacity - availableSpeed
         val totalAllocatedWork = min(
             totalRequestedWork,
@@ -169,7 +181,7 @@ public class SimResourceDistributorMaxMin(
     /**
      * An internal [SimResourceProvider] implementation for switch outputs.
      */
-    private inner class Output(capacity: Double) :
+    private inner class Output(capacity: Double, private val key: InterferenceKey?) :
         SimAbstractResourceProvider(interpreter, parent, capacity),
         SimResourceCloseableProvider,
         SimResourceProviderLogic,
@@ -216,7 +228,6 @@ public class SimResourceDistributorMaxMin(
             check(!isClosed) { "Cannot re-use closed output" }
 
             activeOutputs += this
-
             interpreter.batch {
                 ctx.start()
                 // Interrupt the input to re-schedule the resources
@@ -262,19 +273,22 @@ public class SimResourceDistributorMaxMin(
             lastCommandTimestamp = ctx.clock.millis()
         }
 
-        override fun getRemainingWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
+        override fun getConsumedWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
             val totalRemainingWork = this@SimResourceDistributorMaxMin.ctx?.remainingWork ?: 0.0
 
-            return if (work > 0.0) {
-                // Compute the fraction of compute time allocated to the output
-                val fraction = actualSpeed / totalAllocatedSpeed
+            // Compute the fraction of compute time allocated to the output
+            val fraction = actualSpeed / totalAllocatedSpeed
 
-                // Compute the work that was actually granted to the output.
-                val processingAvailable = max(0.0, totalRequestedWork - totalRemainingWork) * fraction
-                max(0.0, work - processingAvailable)
+            // Compute the performance penalty due to resource interference
+            val perfScore = if (interferenceDomain != null) {
+                val load = totalAllocatedSpeed / requireNotNull(this@SimResourceDistributorMaxMin.ctx).capacity
+                interferenceDomain.apply(key, load)
             } else {
-                0.0
+                1.0
             }
+
+            // Compute the work that was actually granted to the output.
+            return (totalRequestedWork - totalRemainingWork) * fraction * perfScore
         }
 
         /* Comparable */

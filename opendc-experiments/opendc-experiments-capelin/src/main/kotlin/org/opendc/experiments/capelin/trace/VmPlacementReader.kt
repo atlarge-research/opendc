@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,46 +20,33 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace.sc20
+package org.opendc.experiments.capelin.trace
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.opendc.format.trace.PerformanceInterferenceModelReader
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import java.io.InputStream
-import java.util.*
-import kotlin.random.Random
 
 /**
- * A parser for the JSON performance interference setup files used for the SC20 paper.
+ * A parser for the JSON VM placement data files used for the TPDS article on Capelin.
  *
  * @param input The input stream to read from.
  * @param mapper The Jackson object mapper to use.
  */
-public class Sc20PerformanceInterferenceReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) :
-    PerformanceInterferenceModelReader {
+public class VmPlacementReader(
+    private val input: InputStream,
+    private val mapper: ObjectMapper = jacksonObjectMapper()
+) : AutoCloseable {
     /**
-     * The computed value from the file.
+     * Read the VM placements from the input.
      */
-    private val items: Map<String, TreeSet<PerformanceInterferenceModel.Item>>
-
-    init {
-        val entries: List<PerformanceInterferenceEntry> = mapper.readValue(input)
-        val res = mutableMapOf<String, TreeSet<PerformanceInterferenceModel.Item>>()
-        for (entry in entries) {
-            val item = PerformanceInterferenceModel.Item(TreeSet(entry.vms), entry.minServerLoad, entry.performanceScore)
-            for (workload in entry.vms) {
-                res.computeIfAbsent(workload) { TreeSet() }.add(item)
-            }
-        }
-
-        items = res
+    public fun read(): Map<String, String> {
+        return mapper.readValue<Map<String, String>>(input)
+            .mapKeys { "vm__workload__${it.key}.txt" }
+            .mapValues { it.value.split("/")[1] } // Clusters have format XX0 / X00
     }
 
-    override fun construct(random: Random): Map<String, PerformanceInterferenceModel> {
-        return items.mapValues { PerformanceInterferenceModel(it.value, Random(random.nextInt())) }
+    override fun close() {
+        input.close()
     }
-
-    override fun close() {}
 }

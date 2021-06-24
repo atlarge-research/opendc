@@ -23,9 +23,9 @@
 package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.*
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingPolicy
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.*
@@ -39,7 +39,8 @@ import org.opendc.simulator.resources.SimResourceSwitch
  */
 public abstract class SimAbstractHypervisor(
     private val interpreter: SimResourceInterpreter,
-    private val scalingGovernor: ScalingGovernor?
+    private val scalingGovernor: ScalingGovernor? = null,
+    protected val interferenceDomain: VmInterferenceDomain? = null
 ) : SimHypervisor {
     /**
      * The machine on which the hypervisor runs.
@@ -87,12 +88,9 @@ public abstract class SimAbstractHypervisor(
         return canFit(model, switch)
     }
 
-    override fun createMachine(
-        model: MachineModel,
-        performanceInterferenceModel: PerformanceInterferenceModel?
-    ): SimMachine {
+    override fun createMachine(model: MachineModel, interferenceId: String?): SimMachine {
         require(canFit(model)) { "Machine does not fit" }
-        val vm = VirtualMachine(model, performanceInterferenceModel)
+        val vm = VirtualMachine(model, interferenceId)
         _vms.add(vm)
         return vm
     }
@@ -116,17 +114,18 @@ public abstract class SimAbstractHypervisor(
     /**
      * A virtual machine running on the hypervisor.
      *
-     * @property model The machine model of the virtual machine.
-     * @property performanceInterferenceModel The performance interference model to utilize.
+     * @param model The machine model of the virtual machine.
      */
-    private inner class VirtualMachine(
-        model: MachineModel,
-        val performanceInterferenceModel: PerformanceInterferenceModel? = null,
-    ) : SimAbstractMachine(interpreter, parent = null, model) {
+    private inner class VirtualMachine(model: MachineModel, interferenceId: String? = null) : SimAbstractMachine(interpreter, parent = null, model) {
+        /**
+         * The interference key of this virtual machine.
+         */
+        private val interferenceKey = interferenceId?.let { interferenceDomain?.join(interferenceId) }
+
         /**
          * The vCPUs of the machine.
          */
-        override val cpus = model.cpus.map { VCpu(switch.newOutput(), it) }
+        override val cpus = model.cpus.map { VCpu(switch.newOutput(interferenceKey), it) }
 
         override fun close() {
             super.close()
@@ -136,6 +135,9 @@ public abstract class SimAbstractHypervisor(
             }
 
             _vms.remove(this)
+            if (interferenceKey != null) {
+                interferenceDomain?.leave(interferenceKey)
+            }
         }
     }
 

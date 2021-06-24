@@ -38,7 +38,7 @@ import org.opendc.compute.service.scheduler.weights.RandomWeigher
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
-import org.opendc.experiments.capelin.trace.Sc20StreamingParquetTraceReader
+import org.opendc.experiments.capelin.trace.StreamingParquetTraceReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
@@ -53,7 +53,6 @@ import org.opendc.simulator.resources.SimResourceInterpreter
 import java.io.File
 import java.time.Clock
 import java.util.*
-import kotlin.random.asKotlinRandom
 
 /**
  * Experiments for the OpenDC project on Energy modeling.
@@ -88,7 +87,7 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
 
         val meterProvider: MeterProvider = createMeterProvider(clock)
         val monitor = ParquetExperimentMonitor(File(config.getString("output-path")), "power_model=$powerModel/run_id=$repeat", 4096)
-        val trace = Sc20StreamingParquetTraceReader(File(config.getString("trace-path"), trace), random = Random(1).asKotlinRandom())
+        val trace = StreamingParquetTraceReader(File(config.getString("trace-path"), trace))
 
         withComputeService(clock, meterProvider, allocationPolicy) { scheduler ->
             withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {

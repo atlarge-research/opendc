@@ -41,7 +41,6 @@ import org.apache.avro.generic.GenericData
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.opendc.format.trace.sc20.Sc20VmPlacementReader
 import org.opendc.format.util.LocalOutputFile
 import java.io.BufferedReader
 import java.io.File
@@ -53,7 +52,7 @@ import kotlin.math.min
 /**
  * Represents the command for converting traces
  */
-public class TraceConverterCli : CliktCommand(name = "trace-converter") {
+class TraceConverterCli : CliktCommand(name = "trace-converter") {
     /**
      * The directory where the trace should be stored.
      */
@@ -149,24 +148,24 @@ public class TraceConverterCli : CliktCommand(name = "trace-converter") {
 /**
  * The supported trace conversions.
  */
-public sealed class TraceConversion(name: String) : OptionGroup(name) {
+sealed class TraceConversion(name: String) : OptionGroup(name) {
     /**
      * Read the fragments of the trace.
      */
-    public abstract fun read(
+    abstract fun read(
         traceDirectory: File,
         metaSchema: Schema,
         metaWriter: ParquetWriter<GenericData.Record>
     ): MutableList<Fragment>
 }
 
-public class SolvinityConversion : TraceConversion("Solvinity") {
+class SolvinityConversion : TraceConversion("Solvinity") {
     private val clusters by option()
         .split(",")
 
     private val vmPlacements by option("--vm-placements", help = "file containing the VM placements")
         .file(canBeDir = false)
-        .convert { it.inputStream().buffered().use { Sc20VmPlacementReader(it).construct() } }
+        .convert { VmPlacementReader(it.inputStream()).use { reader -> reader.read() } }
         .required()
 
     override fun read(
@@ -335,7 +334,7 @@ public class SolvinityConversion : TraceConversion("Solvinity") {
 /**
  * Conversion of the Bitbrains public trace.
  */
-public class BitbrainsConversion : TraceConversion("Bitbrains") {
+class BitbrainsConversion : TraceConversion("Bitbrains") {
     override fun read(
         traceDirectory: File,
         metaSchema: Schema,
@@ -447,7 +446,7 @@ public class BitbrainsConversion : TraceConversion("Bitbrains") {
 /**
  * Conversion of the Azure public VM trace.
  */
-public class AzureConversion : TraceConversion("Azure") {
+class AzureConversion : TraceConversion("Azure") {
     private val seed by option(help = "seed for trace sampling")
         .long()
         .default(0)
@@ -604,18 +603,18 @@ public class AzureConversion : TraceConversion("Azure") {
     }
 }
 
-public data class Fragment(
-    public val id: String,
-    public val tick: Long,
-    public val flops: Long,
-    public val duration: Long,
-    public val usage: Double,
-    public val cores: Int
+data class Fragment(
+    val id: String,
+    val tick: Long,
+    val flops: Long,
+    val duration: Long,
+    val usage: Double,
+    val cores: Int
 )
 
-public class VmInfo(public val cores: Int, public val requiredMemory: Long, public var minTime: Long, public var maxTime: Long)
+class VmInfo(val cores: Int, val requiredMemory: Long, var minTime: Long, var maxTime: Long)
 
 /**
  * A script to convert a trace in text format into a Parquet trace.
  */
-public fun main(args: Array<String>): Unit = TraceConverterCli().main(args)
+fun main(args: Array<String>): Unit = TraceConverterCli().main(args)

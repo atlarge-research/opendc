@@ -33,11 +33,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.api.Flavor
-import org.opendc.compute.api.Image
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
-import org.opendc.compute.api.ServerWatcher
+import org.opendc.compute.api.*
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
@@ -50,7 +46,7 @@ import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.telemetry.sdk.toOtelClock
-import java.util.UUID
+import java.util.*
 import kotlin.coroutines.resume
 
 /**
@@ -85,7 +81,16 @@ internal class SimHostTest {
             .build()
 
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val virtDriver = SimHost(UUID.randomUUID(), "test", machineModel, emptyMap(), coroutineContext, interpreter, meterProvider.get("opendc-compute-simulator"), SimFairShareHypervisorProvider())
+        val virtDriver = SimHost(
+            uid = UUID.randomUUID(),
+            name = "test",
+            model = machineModel,
+            meta = emptyMap(),
+            coroutineContext,
+            interpreter,
+            meterProvider.get("opendc-compute-simulator"),
+            SimFairShareHypervisorProvider()
+        )
         val duration = 5 * 60L
         val vmImageA = MockImage(
             UUID.randomUUID(),

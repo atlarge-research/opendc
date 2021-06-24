@@ -20,24 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.kernel
+package org.opendc.experiments.capelin.trace
 
-import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSystem
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 
 /**
- * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
+ * Test suite for the [PerformanceInterferenceReader] class.
  */
-public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
-    override val id: String = "space-shared"
+class PerformanceInterferenceReaderTest {
+    @Test
+    fun testSmoke() {
+        val input = checkNotNull(PerformanceInterferenceReader::class.java.getResourceAsStream("/perf-interference.json"))
+        val reader = PerformanceInterferenceReader(input)
 
-    override fun create(
-        interpreter: SimResourceInterpreter,
-        parent: SimResourceSystem?,
-        scalingGovernor: ScalingGovernor?,
-        interferenceDomain: VmInterferenceDomain?,
-        listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimSpaceSharedHypervisor(interpreter)
+        val result = reader.use { reader.read() }
+
+        assertAll(
+            { assertEquals(2, result.size) },
+            { assertEquals(setOf("vm_a", "vm_c", "vm_x", "vm_y"), result[0].members) },
+            { assertEquals(0.0, result[0].targetLoad, 0.001) },
+            { assertEquals(0.8830158730158756, result[0].score, 0.001) }
+        )
+    }
 }

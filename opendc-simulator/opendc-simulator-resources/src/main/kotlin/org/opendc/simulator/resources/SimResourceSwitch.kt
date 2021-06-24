@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.resources
 
+import org.opendc.simulator.resources.interference.InterferenceKey
+
 /**
  * A [SimResourceSwitch] enables switching of capacity of multiple resources between multiple consumers.
  */
@@ -43,8 +45,10 @@ public interface SimResourceSwitch : AutoCloseable {
 
     /**
      * Create a new output on the switch.
+     *
+     * @param key The key of the interference member to which the output belongs.
      */
-    public fun newOutput(): SimResourceCloseableProvider
+    public fun newOutput(key: InterferenceKey? = null): SimResourceCloseableProvider
 
     /**
      * Add the specified [input] to the switch.

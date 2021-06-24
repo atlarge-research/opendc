@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace
-
-import java.io.Closeable
+package org.opendc.simulator.compute.kernel.interference
 
 /**
- * An interface for reading VM placement data into memory.
+ * A group of virtual machines that together can interfere when operating on the same resources, causing performance
+ * variability.
  */
-public interface VmPlacementReader : Closeable {
+public data class VmInterferenceGroup(
     /**
-     * Construct a map of VMs to clusters.
+     * The minimum load of the host before the interference occurs.
      */
-    public fun construct(): Map<String, String>
-}
+    public val targetLoad: Double,
+
+    /**
+     * A score in [0, 1] representing the performance variability as a result of resource interference.
+     */
+    public val score: Double,
+
+    /**
+     * The members of this interference group.
+     */
+    public val members: Set<String>
+)

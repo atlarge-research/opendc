@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace.sc20
+package org.opendc.simulator.compute.kernel.interference
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import org.opendc.format.trace.VmPlacementReader
-import java.io.InputStream
+import org.opendc.simulator.resources.interference.InterferenceDomain
+import org.opendc.simulator.resources.interference.InterferenceKey
 
 /**
- * A parser for the JSON VM placement data files used for the SC20 paper.
- *
- * @param input The input stream to read from.
- * @param mapper The Jackson object mapper to use.
+ * The interference domain of a hypervisor.
  */
-public class Sc20VmPlacementReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) :
-    VmPlacementReader {
+public interface VmInterferenceDomain : InterferenceDomain {
     /**
-     * The environment that was read from the file.
+     * Join this interference domain.
+     *
+     * @param id The identifier of the virtual machine.
      */
-    private val placements = mapper.readValue<Map<String, String>>(input)
+    public fun join(id: String): InterferenceKey
 
-    override fun construct(): Map<String, String> {
-        return placements
-            .mapKeys { "vm__workload__${it.key}.txt" }
-            .mapValues { it.value.split("/")[1] } // Clusters have format XX0 / X00
-    }
-
-    override fun close() {}
+    /**
+     * Leave this interference domain.
+     */
+    public fun leave(key: InterferenceKey)
 }
