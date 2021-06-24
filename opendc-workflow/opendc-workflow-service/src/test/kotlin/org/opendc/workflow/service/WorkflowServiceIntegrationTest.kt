@@ -25,7 +25,6 @@ package org.opendc.workflow.service
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -57,7 +56,6 @@ import kotlin.math.max
  * Integration test suite for the [WorkflowServiceImpl].
  */
 @DisplayName("WorkflowServiceImpl")
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class WorkflowServiceIntegrationTest {
     /**
      * A large integration test where we check whether all tasks in some trace are executed correctly.
@@ -70,7 +68,7 @@ internal class WorkflowServiceIntegrationTest {
             .build()
 
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val hosts = Sc18EnvironmentReader(object {}.javaClass.getResourceAsStream("/environment.json"))
+        val hosts = Sc18EnvironmentReader(checkNotNull(object {}.javaClass.getResourceAsStream("/environment.json")))
             .use { it.read() }
             .map { def ->
                 SimHost(
@@ -106,7 +104,7 @@ internal class WorkflowServiceIntegrationTest {
             taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
         )
 
-        val reader = GwfTraceReader(object {}.javaClass.getResourceAsStream("/trace.gwf"))
+        val reader = GwfTraceReader(checkNotNull(object {}.javaClass.getResourceAsStream("/trace.gwf")))
         var offset = Long.MIN_VALUE
 
         coroutineScope {

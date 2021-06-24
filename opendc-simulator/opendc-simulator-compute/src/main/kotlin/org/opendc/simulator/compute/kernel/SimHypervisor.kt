@@ -23,13 +23,12 @@
 package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
  * A SimHypervisor facilitates the execution of multiple concurrent [SimWorkload]s, while acting as a single workload
- * to a [SimBareMetalMachine].
+ * to another [SimMachine].
  */
 public interface SimHypervisor : SimWorkload {
     /**
@@ -46,12 +45,9 @@ public interface SimHypervisor : SimWorkload {
      * Create a [SimMachine] instance on which users may run a [SimWorkload].
      *
      * @param model The machine to create.
-     * @param performanceInterferenceModel The performance interference model to use.
+     * @param interferenceId An identifier for the interference model.
      */
-    public fun createMachine(
-        model: MachineModel,
-        performanceInterferenceModel: PerformanceInterferenceModel? = null
-    ): SimMachine
+    public fun createMachine(model: MachineModel, interferenceId: String? = null): SimMachine
 
     /**
      * Event listener for hypervisor events.

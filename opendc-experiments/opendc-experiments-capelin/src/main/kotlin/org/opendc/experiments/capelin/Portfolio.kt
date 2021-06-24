@@ -39,11 +39,14 @@ import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
+import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.core.runBlockingSimulation
 import java.io.File
+import java.io.FileInputStream
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -119,6 +122,12 @@ abstract class Portfolio(name: String) : Experiment(name) {
             }
         }
 
+        val performanceInterferenceModel = if (operationalPhenomena.hasInterference)
+            PerformanceInterferenceReader(FileInputStream(config.getString("interference-model")))
+                .use { VmInterferenceModel(it.read(), Random(seeder.nextLong())) }
+        else
+            null
+
         val trace = ParquetTraceReader(rawReaders, workload, seeder.nextInt())
 
         val monitor = ParquetExperimentMonitor(
@@ -127,7 +136,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
             4096
         )
 
-        withComputeService(clock, meterProvider, environment, allocationPolicy) { scheduler ->
+        withComputeService(clock, meterProvider, environment, allocationPolicy, performanceInterferenceModel) { scheduler ->
             val failureDomain = if (operationalPhenomena.failureFrequency > 0) {
                 logger.debug("ENABLING failures")
                 createFailureDomain(

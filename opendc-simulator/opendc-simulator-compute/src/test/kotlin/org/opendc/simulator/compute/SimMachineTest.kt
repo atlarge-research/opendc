@@ -24,12 +24,9 @@ package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.toList
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.device.SimNetworkAdapter
 import org.opendc.simulator.compute.model.*
 import org.opendc.simulator.compute.power.ConstantPowerModel
@@ -157,8 +154,10 @@ class SimMachineTest {
         try {
             coroutineScope {
                 launch { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
-                assertEquals(100.0, machine.psu.powerDraw)
-                assertEquals(100.0, source.powerDraw)
+                assertAll(
+                    { assertEquals(100.0, machine.psu.powerDraw) },
+                    { assertEquals(100.0, source.powerDraw) }
+                )
             }
         } finally {
             machine.close()
@@ -284,6 +283,7 @@ class SimMachineTest {
         }
     }
 
+    @Test
     fun testDiskWriteUsage() = runBlockingSimulation {
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val machine = SimBareMetalMachine(

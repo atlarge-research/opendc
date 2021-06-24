@@ -22,31 +22,44 @@
 
 package org.opendc.experiments.capelin.trace
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceGroup
 import java.io.InputStream
 
 /**
- * A parser for the JSON VM placement data files used for the TPDS article on Capelin.
+ * A parser for the JSON performance interference setup files used for the TPDS article on Capelin.
  *
  * @param input The input stream to read from.
  * @param mapper The Jackson object mapper to use.
  */
-public class VmPlacementReader(
+class PerformanceInterferenceReader(
     private val input: InputStream,
     private val mapper: ObjectMapper = jacksonObjectMapper()
 ) : AutoCloseable {
+    init {
+        mapper.addMixIn(VmInterferenceGroup::class.java, GroupMixin::class.java)
+    }
+
     /**
-     * Read the VM placements from the input.
+     * Read the performance interface model from the input.
      */
-    public fun read(): Map<String, String> {
-        return mapper.readValue<Map<String, String>>(input)
-            .mapKeys { "vm__workload__${it.key}.txt" }
-            .mapValues { it.value.split("/")[1] } // Clusters have format XX0 / X00
+    fun read(): List<VmInterferenceGroup> {
+        return mapper.readValue(input)
     }
 
     override fun close() {
         input.close()
     }
+
+    private data class GroupMixin(
+        @JsonProperty("minServerLoad")
+        val targetLoad: Double,
+        @JsonProperty("performanceScore")
+        val score: Double,
+        @JsonProperty("vms")
+        val members: Set<String>,
+    )
 }

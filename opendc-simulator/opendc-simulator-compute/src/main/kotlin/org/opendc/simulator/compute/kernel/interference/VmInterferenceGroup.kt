@@ -20,24 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.kernel
-
-import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSystem
+package org.opendc.simulator.compute.kernel.interference
 
 /**
- * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
+ * A group of virtual machines that together can interfere when operating on the same resources, causing performance
+ * variability.
  */
-public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
-    override val id: String = "space-shared"
+public data class VmInterferenceGroup(
+    /**
+     * The minimum load of the host before the interference occurs.
+     */
+    public val targetLoad: Double,
 
-    override fun create(
-        interpreter: SimResourceInterpreter,
-        parent: SimResourceSystem?,
-        scalingGovernor: ScalingGovernor?,
-        interferenceDomain: VmInterferenceDomain?,
-        listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimSpaceSharedHypervisor(interpreter)
-}
+    /**
+     * A score in [0, 1] representing the performance variability as a result of resource interference.
+     */
+    public val score: Double,
+
+    /**
+     * The members of this interference group.
+     */
+    public val members: Set<String>
+)

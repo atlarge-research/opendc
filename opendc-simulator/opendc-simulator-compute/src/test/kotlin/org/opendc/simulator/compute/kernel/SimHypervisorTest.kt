@@ -34,6 +34,8 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceGroup
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -219,6 +221,65 @@ internal class SimHypervisorTest {
             launch {
                 machine.run(hypervisor)
             }
+        }
+
+        machine.close()
+    }
+
+    @Test
+    fun testInterference() = runBlockingSimulation {
+        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
+        val model = MachineModel(
+            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 3200.0) },
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+        )
+
+        val groups = listOf(
+            VmInterferenceGroup(targetLoad = 0.0, score = 0.9, members = setOf("a", "b")),
+            VmInterferenceGroup(targetLoad = 0.0, score = 0.6, members = setOf("a", "c")),
+            VmInterferenceGroup(targetLoad = 0.1, score = 0.8, members = setOf("a", "n"))
+        )
+        val interferenceModel = VmInterferenceModel(groups)
+
+        val platform = SimResourceInterpreter(coroutineContext, clock)
+        val machine = SimBareMetalMachine(
+            platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
+        )
+        val hypervisor = SimFairShareHypervisor(platform, interferenceDomain = interferenceModel.newDomain())
+
+        val duration = 5 * 60L
+        val workloadA =
+            SimTraceWorkload(
+                sequenceOf(
+                    SimTraceWorkload.Fragment(duration * 1000, 0.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 28.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 3500.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 183.0, 1)
+                ),
+            )
+        val workloadB =
+            SimTraceWorkload(
+                sequenceOf(
+                    SimTraceWorkload.Fragment(duration * 1000, 0.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 28.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 3100.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, 73.0, 1)
+                )
+            )
+
+        launch {
+            machine.run(hypervisor)
+        }
+
+        coroutineScope {
+            launch {
+                val vm = hypervisor.createMachine(model, "a")
+                vm.run(workloadA)
+                vm.close()
+            }
+            val vm = hypervisor.createMachine(model, "b")
+            vm.run(workloadB)
+            vm.close()
         }
 
         machine.close()

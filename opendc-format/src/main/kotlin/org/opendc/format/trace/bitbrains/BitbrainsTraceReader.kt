@@ -24,8 +24,6 @@ package org.opendc.format.trace.bitbrains
 
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
-import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.io.BufferedReader
@@ -38,12 +36,8 @@ import kotlin.math.min
  * A [TraceReader] for the public VM workload trace format.
  *
  * @param traceDirectory The directory of the traces.
- * @param performanceInterferenceModel The performance model covering the workload in the VM trace.
  */
-public class BitbrainsTraceReader(
-    traceDirectory: File,
-    performanceInterferenceModel: PerformanceInterferenceModel
-) : TraceReader<SimWorkload> {
+public class BitbrainsTraceReader(traceDirectory: File) : TraceReader<SimWorkload> {
     /**
      * The internal iterator to use for this reader.
      */
@@ -123,12 +117,6 @@ public class BitbrainsTraceReader(
 
                 val uuid = UUID(0L, vmId)
 
-                val relevantPerformanceInterferenceModelItems =
-                    PerformanceInterferenceModel(
-                        performanceInterferenceModel.items.filter { it.workloadNames.contains(vmId.toString()) }
-                            .toSortedSet()
-                    )
-
                 val workload = SimTraceWorkload(flopsHistory.asSequence())
                 entries[vmId] = TraceEntry(
                     uuid,
@@ -136,7 +124,6 @@ public class BitbrainsTraceReader(
                     startTime,
                     workload,
                     mapOf(
-                        IMAGE_PERF_INTERFERENCE_MODEL to relevantPerformanceInterferenceModelItems,
                         "cores" to cores,
                         "required-memory" to requiredMemory,
                         "workload" to workload

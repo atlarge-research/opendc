@@ -44,6 +44,8 @@ import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector
@@ -123,6 +125,7 @@ suspend fun withComputeService(
     meterProvider: MeterProvider,
     environmentReader: EnvironmentReader,
     scheduler: ComputeScheduler,
+    interferenceModel: VmInterferenceModel? = null,
     block: suspend CoroutineScope.(ComputeService) -> Unit
 ): Unit = coroutineScope {
     val interpreter = SimResourceInterpreter(coroutineContext, clock)
@@ -138,7 +141,8 @@ suspend fun withComputeService(
                 interpreter,
                 meterProvider.get("opendc-compute-simulator"),
                 SimFairShareHypervisorProvider(),
-                def.powerModel
+                powerDriver = SimplePowerDriver(def.powerModel),
+                interferenceDomain = interferenceModel?.newDomain()
             )
         }
 
@@ -161,7 +165,6 @@ suspend fun withComputeService(
 /**
  * Attach the specified monitor to the VM provisioner.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 suspend fun withMonitor(
     monitor: ExperimentMonitor,
     clock: Clock,

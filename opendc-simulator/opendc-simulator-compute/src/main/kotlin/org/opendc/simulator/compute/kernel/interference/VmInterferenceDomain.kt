@@ -20,24 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.kernel
+package org.opendc.simulator.compute.kernel.interference
 
-import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSystem
+import org.opendc.simulator.resources.interference.InterferenceDomain
+import org.opendc.simulator.resources.interference.InterferenceKey
 
 /**
- * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
+ * The interference domain of a hypervisor.
  */
-public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
-    override val id: String = "space-shared"
+public interface VmInterferenceDomain : InterferenceDomain {
+    /**
+     * Join this interference domain.
+     *
+     * @param id The identifier of the virtual machine.
+     */
+    public fun join(id: String): InterferenceKey
 
-    override fun create(
-        interpreter: SimResourceInterpreter,
-        parent: SimResourceSystem?,
-        scalingGovernor: ScalingGovernor?,
-        interferenceDomain: VmInterferenceDomain?,
-        listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimSpaceSharedHypervisor(interpreter)
+    /**
+     * Leave this interference domain.
+     */
+    public fun leave(key: InterferenceKey)
 }

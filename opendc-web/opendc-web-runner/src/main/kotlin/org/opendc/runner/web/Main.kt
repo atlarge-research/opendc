@@ -48,12 +48,15 @@ import org.opendc.compute.service.scheduler.weights.*
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
+import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import kotlin.random.Random
+import kotlin.random.asJavaRandom
 
 private val logger = KotlinLogging.logger {}
 
@@ -61,7 +64,7 @@ private val logger = KotlinLogging.logger {}
  * Represents the CLI command for starting the OpenDC web runner.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-public class RunnerCli : CliktCommand(name = "runner") {
+class RunnerCli : CliktCommand(name = "runner") {
     /**
      * The name of the database to use.
      */
@@ -167,14 +170,27 @@ public class RunnerCli : CliktCommand(name = "runner") {
             scenario.getEmbedded(listOf("trace", "traceId"), String::class.java)
         )
         val traceReader = RawParquetTraceReader(traceDir)
+        val interferenceGroups = let {
+            val path = File(traceDir, "performance-interference-model.json")
+            val operational = scenario.get("operational", Document::class.java)
+            val enabled = operational.getBoolean("performanceInterferenceEnabled")
+
+            if (!enabled || !path.exists()) {
+                return@let null
+            }
+
+            PerformanceInterferenceReader(path.inputStream()).use { reader -> reader.read() }
+        }
+
         val targets = portfolio.get("targets", Document::class.java)
         val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), ObjectId::class.java)
         val environment = topologyParser.read(topologyId)
 
-        val results = (0 until targets.getInteger("repeatsPerScenario")).map {
-            logger.info { "Starting repeat $it" }
+        val results = (0 until targets.getInteger("repeatsPerScenario")).map { repeat ->
+            logger.info { "Starting repeat $repeat" }
             withTimeout(runTimeout * 1000) {
-                runRepeat(scenario, it, environment, traceReader)
+                val interferenceModel = interferenceGroups?.let { VmInterferenceModel(it, Random(repeat.toLong()).asJavaRandom()) }
+                runRepeat(scenario, repeat, environment, traceReader, interferenceModel)
             }
         }
 
@@ -191,6 +207,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
         repeat: Int,
         environment: EnvironmentReader,
         traceReader: RawParquetTraceReader,
+        interferenceModel: VmInterferenceModel?
     ): WebExperimentMonitor.Result {
         val monitor = WebExperimentMonitor()
 
@@ -260,7 +277,7 @@ public class RunnerCli : CliktCommand(name = "runner") {
                 )
                 val failureFrequency = if (operational.getBoolean("failuresEnabled", false)) 24.0 * 7 else 0.0
 
-                withComputeService(clock, meterProvider, environment, allocationPolicy) { scheduler ->
+                withComputeService(clock, meterProvider, environment, allocationPolicy, interferenceModel) { scheduler ->
                     val failureDomain = if (failureFrequency > 0) {
                         logger.debug { "ENABLING failures" }
                         createFailureDomain(
@@ -361,4 +378,4 @@ public class RunnerCli : CliktCommand(name = "runner") {
 /**
  * Main entry point of the runner.
  */
-public fun main(args: Array<String>): Unit = RunnerCli().main(args)
+fun main(args: Array<String>): Unit = RunnerCli().main(args)

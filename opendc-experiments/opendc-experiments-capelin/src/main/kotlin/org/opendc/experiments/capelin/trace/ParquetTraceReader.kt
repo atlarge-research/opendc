@@ -31,11 +31,11 @@ import org.opendc.simulator.compute.workload.SimWorkload
 /**
  * A [TraceReader] for the internal VM workload trace format.
  *
- * @param rawReaders The raw trace readers to use..
- * @param workload The workload to use.
- * @param seed The seed to use for workload sampling.
+ * @param rawReaders The internal raw trace readers to use.
+ * @param workload The workload to read.
+ * @param seed The seed to use for sampling.
  */
-class ParquetTraceReader(
+public class ParquetTraceReader(
     rawReaders: List<RawParquetTraceReader>,
     workload: Workload,
     seed: Int

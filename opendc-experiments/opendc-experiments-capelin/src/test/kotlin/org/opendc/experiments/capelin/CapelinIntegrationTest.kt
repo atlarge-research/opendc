@@ -172,7 +172,7 @@ class CapelinIntegrationTest {
      * Obtain the environment reader for the test.
      */
     private fun createTestEnvironmentReader(name: String = "topology"): EnvironmentReader {
-        val stream = object {}.javaClass.getResourceAsStream("/env/$name.txt")
+        val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/env/$name.txt"))
         return ClusterEnvironmentReader(stream)
     }
 
