@@ -89,6 +89,7 @@ def setup_swagger(app):
         },
         oauth_config={
             'clientId': os.environ.get("AUTH0_DOCS_CLIENT_ID", ""),
+            'additionalQueryStringParams': {'audience': os.environ.get("AUTH0_AUDIENCE", "https://api.opendc.org/v2/")},
         }
     )
     app.register_blueprint(swaggerui_blueprint)
