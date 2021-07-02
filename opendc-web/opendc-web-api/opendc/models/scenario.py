@@ -1,13 +1,10 @@
+from datetime import datetime
+
 from marshmallow import Schema, fields
+
+from opendc.exts import db
 from opendc.models.model import Model
 from opendc.models.portfolio import Portfolio
-
-
-class SimulationSchema(Schema):
-    """
-    Simulation details.
-    """
-    state = fields.String()
 
 
 class TraceSchema(Schema):
@@ -34,27 +31,6 @@ class OperationalSchema(Schema):
     schedulerName = fields.String()
 
 
-class ResultSchema(Schema):
-    """
-    Schema representing the simulation results.
-    """
-    max_num_deployed_images = fields.List(fields.Number())
-    max_cpu_demand = fields.List(fields.Number())
-    max_cpu_usage = fields.List(fields.Number())
-    mean_num_deployed_images = fields.List(fields.Number())
-    total_failure_slices = fields.List(fields.Number())
-    total_failure_vm_slices = fields.List(fields.Number())
-    total_granted_burst = fields.List(fields.Number())
-    total_interfered_burst = fields.List(fields.Number())
-    total_overcommitted_burst = fields.List(fields.Number())
-    total_power_draw = fields.List(fields.Number())
-    total_requested_burst = fields.List(fields.Number())
-    total_vms_failed = fields.List(fields.Number())
-    total_vms_finished = fields.List(fields.Number())
-    total_vms_queued = fields.List(fields.Number())
-    total_vms_submitted = fields.List(fields.Number())
-
-
 class ScenarioSchema(Schema):
     """
     Schema representing a scenario.
@@ -62,11 +38,9 @@ class ScenarioSchema(Schema):
     _id = fields.String(dump_only=True)
     portfolioId = fields.String()
     name = fields.String(required=True)
-    simulation = fields.Nested(SimulationSchema)
     trace = fields.Nested(TraceSchema)
     topology = fields.Nested(TopologySchema)
     operational = fields.Nested(OperationalSchema)
-    results = fields.Nested(ResultSchema, dump_only=True)
 
 
 class Scenario(Model):
@@ -84,3 +58,21 @@ class Scenario(Model):
         """
         portfolio = Portfolio.from_id(self.obj['portfolioId'])
         portfolio.check_user_access(user_id, edit_access)
+
+    @classmethod
+    def get_jobs(cls):
+        """Obtain the scenarios that have been queued.
+        """
+        return cls(db.fetch_all({'simulation.state': 'QUEUED'}, cls.collection_name))
+
+    def update_state(self, new_state, results=None):
+        """Atomically update the state of the Scenario.
+        """
+        update = {'$set': {'simulation.state': new_state, 'simulation.heartbeat': datetime.now()}}
+        if results:
+            update['$set']['results'] = results
+        return db.fetch_and_update(
+            query={'_id': self.obj['_id'], 'simulation.state': self.obj['simulation']['state']},
+            update=update,
+            collection=self.collection_name
+        )

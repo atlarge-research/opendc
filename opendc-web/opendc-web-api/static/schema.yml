@@ -965,7 +965,7 @@ paths:
           application/json:
             schema:
               properties:
-                project:
+                prefab:
                   $ref: "#/components/schemas/Prefab"
         description: Prefab's new properties.
         required: true
@@ -1040,6 +1040,135 @@ paths:
             "application/json":
               schema:
                 $ref: "#/components/schemas/NotFound"
+  /jobs:
+    get:
+      tags:
+        - jobs
+      description: Get all available jobs to run.
+      responses:
+        "200":
+          description: Successfully retrieved available jobs.
+          content:
+            "application/json":
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Job"
+        "401":
+          description: Unauthorized.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+  "/jobs/{jobId}":
+    get:
+      tags:
+        - jobs
+      description: Get this Job.
+      parameters:
+        - name: jobId
+          in: path
+          description: Job's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved Job.
+          content:
+            "application/json":
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Job"
+        "401":
+          description: Unauthorized.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
+          description: Forbidden from retrieving Job.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Forbidden"
+        "404":
+          description: Job not found.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/NotFound"
+    post:
+      tags:
+        - jobs
+      description: Update this Job.
+      parameters:
+        - name: jobId
+          in: path
+          description: Job's ID.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                job:
+                  $ref: "#/components/schemas/Job"
+        description: Job's new properties.
+        required: true
+      responses:
+        "200":
+          description: Successfully updated Job.
+          content:
+            "application/json":
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Job"
+        "400":
+          description: Missing or incorrectly typed parameter.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Invalid"
+        "401":
+          description: Unauthorized.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
+          description: Forbidden from retrieving Job.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Forbidden"
+        "404":
+          description: Job not found.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/NotFound"
+        "409":
+          description: State conflict.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Invalid"
 components:
   securitySchemes:
     auth0:
@@ -1261,13 +1390,6 @@ components:
           type: string
         name:
           type: string
-        simulation:
-          type: object
-          properties:
-            state:
-              type: string
-        results:
-          type: object
         trace:
           type: object
           properties:
@@ -1289,6 +1411,19 @@ components:
               type: boolean
             schedulerName:
               type: string
+    Job:
+      type: object
+      properties:
+        _id:
+          type: string
+        scenarioId:
+          type: string
+        state:
+          type: string
+        heartbeat:
+          type: string
+        results:
+          type: object
     Trace:
       type: object
       properties:

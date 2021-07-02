@@ -10,6 +10,7 @@ from flask_restful import Api
 from flask_swagger_ui import get_swaggerui_blueprint
 from marshmallow import ValidationError
 
+from opendc.api.jobs import JobList, Job
 from opendc.api.portfolios import Portfolio, PortfolioScenarios
 from opendc.api.prefabs import Prefab, PrefabList
 from opendc.api.projects import ProjectList, Project, ProjectTopologies, ProjectPortfolios
@@ -60,6 +61,8 @@ def setup_api(app):
     api.add_resource(TraceList, '/traces/')
     api.add_resource(Trace, '/traces/<string:trace_id>')
     api.add_resource(SchedulerList, '/schedulers/')
+    api.add_resource(JobList, '/jobs/')
+    api.add_resource(Job, '/jobs/<string:job_id>')
 
     @app.errorhandler(AuthError)
     def handle_auth_error(ex):

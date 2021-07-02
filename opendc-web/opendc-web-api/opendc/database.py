@@ -20,7 +20,7 @@
 
 import urllib.parse
 
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 
 DATETIME_STRING_FORMAT = '%Y-%m-%dT%H:%M:%S'
 CONNECTION_POOL = None
@@ -75,6 +75,12 @@ class Database:
     def update(self, _id, obj, collection):
         """Updates an existing object."""
         return getattr(self.opendc_db, collection).update({'_id': _id}, obj)
+
+    def fetch_and_update(self, query, update, collection):
+        """Updates an existing object."""
+        return getattr(self.opendc_db, collection).find_one_and_update(query,
+                                                                       update,
+                                                                       return_document=ReturnDocument.AFTER)
 
     def delete_one(self, query, collection):
         """Deletes one object matching the given query.
