@@ -24,7 +24,6 @@ from flask import request
 from flask_restful import Resource
 from marshmallow import Schema, fields
 
-from opendc.database import Database
 from opendc.models.project import Project
 from opendc.models.topology import Topology as TopologyModel, TopologySchema
 from opendc.exts import current_user, requires_auth
@@ -43,7 +42,7 @@ class Topology(Resource):
         topology = TopologyModel.from_id(topology_id)
         topology.check_exists()
         topology.check_user_access(current_user['sub'], False)
-        data = topology.obj
+        data = TopologySchema().dump(topology.obj)
         return {'data': data}
 
     def put(self, topology_id):
@@ -60,10 +59,10 @@ class Topology(Resource):
 
         topology.set_property('name', result['topology']['name'])
         topology.set_property('rooms', result['topology']['rooms'])
-        topology.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
+        topology.set_property('datetimeLastEdited', datetime.now())
 
         topology.update()
-        data = topology.obj
+        data = TopologySchema().dump(topology.obj)
         return {'data': data}
 
     def delete(self, topology_id):
@@ -84,7 +83,8 @@ class Topology(Resource):
         project.update()
 
         old_object = topology.delete()
-        return {'data': old_object}
+        data = TopologySchema().dump(old_object)
+        return {'data': data}
 
     class PutSchema(Schema):
         """

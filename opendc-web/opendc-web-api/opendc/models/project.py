@@ -1,20 +1,29 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 from werkzeug.exceptions import Forbidden
 
 from opendc.models.model import Model
 from opendc.exts import db
 
 
+class ProjectAuthorizations(Schema):
+    """
+    Schema representing a project authorization.
+    """
+    userId = fields.String(required=True)
+    level = fields.String(required=True, validate=validate.OneOf(["VIEW", "EDIT", "OWN"]))
+
+
 class ProjectSchema(Schema):
     """
     Schema representing a Project.
     """
-    _id = fields.String()
+    _id = fields.String(dump_only=True)
     name = fields.String(required=True)
     datetimeCreated = fields.DateTime()
     datetimeLastEdited = fields.DateTime()
     topologyIds = fields.List(fields.String())
     portfolioIds = fields.List(fields.String())
+    authorizations = fields.List(fields.Nested(ProjectAuthorizations))
 
 
 class Project(Model):

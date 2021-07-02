@@ -38,7 +38,7 @@ class Scenario(Resource):
         scenario = ScenarioModel.from_id(scenario_id)
         scenario.check_exists()
         scenario.check_user_access(current_user['sub'], False)
-        data = scenario.obj
+        data = ScenarioSchema().dump(scenario.obj)
         return {'data': data}
 
     def put(self, scenario_id):
@@ -54,7 +54,7 @@ class Scenario(Resource):
         scenario.set_property('name', result['scenario']['name'])
 
         scenario.update()
-        data = scenario.obj
+        data = ScenarioSchema().dump(scenario.obj)
         return {'data': data}
 
     def delete(self, scenario_id):
@@ -72,7 +72,8 @@ class Scenario(Resource):
         portfolio.update()
 
         old_object = scenario.delete()
-        return {'data': old_object}
+        data = ScenarioSchema().dump(old_object)
+        return {'data': data}
 
     class PutSchema(Schema):
         """

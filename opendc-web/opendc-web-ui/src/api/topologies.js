@@ -31,7 +31,8 @@ export function getTopology(auth, topologyId) {
 }
 
 export function updateTopology(auth, topology) {
-    return request(auth, `topologies/${topology._id}`, 'PUT', { topology })
+    const { _id, ...data } = topology;
+    return request(auth, `topologies/${topology._id}`, 'PUT', { topology: data })
 }
 
 export function deleteTopology(auth, topologyId) {

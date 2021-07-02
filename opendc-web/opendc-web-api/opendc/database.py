@@ -19,7 +19,6 @@
 #  SOFTWARE.
 
 import urllib.parse
-from datetime import datetime
 
 from pymongo import MongoClient
 
@@ -90,13 +89,3 @@ class Database:
         The query needs to be in json format, i.e.: `{'name': prefab_name}`.
         """
         getattr(self.opendc_db, collection).delete_many(query)
-
-    @staticmethod
-    def datetime_to_string(datetime_to_convert):
-        """Return a database-compatible string representation of the given datetime object."""
-        return datetime_to_convert.strftime(DATETIME_STRING_FORMAT)
-
-    @staticmethod
-    def string_to_datetime(string_to_convert):
-        """Return a datetime corresponding to the given string representation."""
-        return datetime.strptime(string_to_convert, DATETIME_STRING_FORMAT)

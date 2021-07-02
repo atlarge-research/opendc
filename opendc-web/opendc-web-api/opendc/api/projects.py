@@ -27,7 +27,6 @@ from opendc.models.portfolio import Portfolio, PortfolioSchema
 from opendc.models.topology import Topology, TopologySchema
 from opendc.models.project import Project as ProjectModel, ProjectSchema
 from opendc.exts import current_user, requires_auth
-from opendc.database import Database
 
 
 class ProjectList(Resource):
@@ -40,7 +39,8 @@ class ProjectList(Resource):
         """Get the authorized projects of the user"""
         user_id = current_user['sub']
         projects = ProjectModel.get_for_user(user_id)
-        return {'data': projects}
+        data = ProjectSchema().dump(projects, many=True)
+        return {'data': data}
 
     def post(self):
         """Create a new project, and return that new project."""
@@ -53,8 +53,8 @@ class ProjectList(Resource):
         topology.insert()
 
         project = ProjectModel(result['project'])
-        project.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
-        project.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
+        project.set_property('datetimeCreated', datetime.now())
+        project.set_property('datetimeLastEdited', datetime.now())
         project.set_property('topologyIds', [topology.get_id()])
         project.set_property('portfolioIds', [])
         project.set_property('authorizations', [{'userId': user_id, 'level': 'OWN'}])
@@ -63,7 +63,8 @@ class ProjectList(Resource):
         topology.set_property('projectId', project.get_id())
         topology.update()
 
-        return {'data': project.obj}
+        data = ProjectSchema().dump(project.obj)
+        return {'data': data}
 
 
 class Project(Resource):
@@ -79,7 +80,8 @@ class Project(Resource):
         project.check_exists()
         project.check_user_access(current_user['sub'], False)
 
-        return {'data': project.obj}
+        data = ProjectSchema().dump(project.obj)
+        return {'data': data}
 
     def put(self, project_id):
         """Update a project's name."""
@@ -92,10 +94,11 @@ class Project(Resource):
         project.check_user_access(current_user['sub'], True)
 
         project.set_property('name', result['project']['name'])
-        project.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
+        project.set_property('datetimeLastEdited', datetime.now())
         project.update()
 
-        return {'data': project.obj}
+        data = ProjectSchema().dump(project.obj)
+        return {'data': data}
 
     def delete(self, project_id):
         """Delete this Project."""
@@ -113,8 +116,8 @@ class Project(Resource):
             portfolio.delete()
 
         old_object = project.delete()
-
-        return {'data': old_object}
+        data = ProjectSchema().dump(old_object)
+        return {'data': data}
 
     class PutSchema(Schema):
         """
@@ -148,10 +151,11 @@ class ProjectTopologies(Resource):
         topology.insert()
 
         project.obj['topologyIds'].append(topology.get_id())
-        project.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
+        project.set_property('datetimeLastEdited', datetime.now())
         project.update()
 
-        return {'data': topology.obj}
+        data = TopologySchema().dump(topology.obj)
+        return {'data': data}
 
     class PutSchema(Schema):
         """

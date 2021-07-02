@@ -44,7 +44,7 @@ class Portfolio(Resource):
         portfolio.check_exists()
         portfolio.check_user_access(current_user['sub'], False)
 
-        data = portfolio.obj
+        data = PortfolioSchema().dump(portfolio.obj)
         return {'data': data}
 
     def put(self, portfolio_id):
@@ -63,7 +63,7 @@ class Portfolio(Resource):
         portfolio.set_property('targets.repeatsPerScenario', result['portfolio']['targets']['repeatsPerScenario'])
 
         portfolio.update()
-        data = portfolio.obj
+        data = PortfolioSchema().dump(portfolio.obj)
         return {'data': data}
 
     def delete(self, portfolio_id):
@@ -84,7 +84,8 @@ class Portfolio(Resource):
         project.update()
 
         old_object = portfolio.delete()
-        return {'data': old_object}
+        data = PortfolioSchema().dump(old_object)
+        return {'data': data}
 
     class PutSchema(Schema):
         """
@@ -125,7 +126,7 @@ class PortfolioScenarios(Resource):
 
         portfolio.obj['scenarioIds'].append(scenario.get_id())
         portfolio.update()
-        data = scenario.obj
+        data = ScenarioSchema().dump(scenario.obj)
         return {'data': data}
 
     class PostSchema(Schema):

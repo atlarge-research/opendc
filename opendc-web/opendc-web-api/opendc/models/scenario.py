@@ -34,17 +34,39 @@ class OperationalSchema(Schema):
     schedulerName = fields.String()
 
 
+class ResultSchema(Schema):
+    """
+    Schema representing the simulation results.
+    """
+    max_num_deployed_images = fields.List(fields.Number())
+    max_cpu_demand = fields.List(fields.Number())
+    max_cpu_usage = fields.List(fields.Number())
+    mean_num_deployed_images = fields.List(fields.Number())
+    total_failure_slices = fields.List(fields.Number())
+    total_failure_vm_slices = fields.List(fields.Number())
+    total_granted_burst = fields.List(fields.Number())
+    total_interfered_burst = fields.List(fields.Number())
+    total_overcommitted_burst = fields.List(fields.Number())
+    total_power_draw = fields.List(fields.Number())
+    total_requested_burst = fields.List(fields.Number())
+    total_vms_failed = fields.List(fields.Number())
+    total_vms_finished = fields.List(fields.Number())
+    total_vms_queued = fields.List(fields.Number())
+    total_vms_submitted = fields.List(fields.Number())
+
+
 class ScenarioSchema(Schema):
     """
     Schema representing a scenario.
     """
-    _id = fields.String()
+    _id = fields.String(dump_only=True)
     portfolioId = fields.String()
     name = fields.String(required=True)
     simulation = fields.Nested(SimulationSchema)
     trace = fields.Nested(TraceSchema)
     topology = fields.Nested(TopologySchema)
     operational = fields.Nested(OperationalSchema)
+    results = fields.Nested(ResultSchema, dump_only=True)
 
 
 class Scenario(Model):
