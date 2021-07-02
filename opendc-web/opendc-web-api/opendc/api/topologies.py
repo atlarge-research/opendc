@@ -26,7 +26,7 @@ from marshmallow import Schema, fields
 
 from opendc.models.project import Project
 from opendc.models.topology import Topology as TopologyModel, TopologySchema
-from opendc.exts import current_user, requires_auth
+from opendc.exts import current_user, requires_auth, has_scope
 
 
 class Topology(Resource):
@@ -41,7 +41,11 @@ class Topology(Resource):
         """
         topology = TopologyModel.from_id(topology_id)
         topology.check_exists()
-        topology.check_user_access(current_user['sub'], False)
+
+        # Users with scope runner can access all topologies
+        if not has_scope('runner'):
+            topology.check_user_access(current_user['sub'], False)
+
         data = TopologySchema().dump(topology.obj)
         return {'data': data}
 

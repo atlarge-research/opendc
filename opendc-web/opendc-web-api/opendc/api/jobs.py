@@ -22,7 +22,7 @@ from flask_restful import Resource
 from marshmallow import fields, Schema, validate
 from werkzeug.exceptions import BadRequest, Conflict
 
-from opendc.exts import requires_auth
+from opendc.exts import requires_auth, requires_scope
 from opendc.models.scenario import Scenario
 
 
@@ -54,7 +54,7 @@ class JobList(Resource):
     """
     Resource representing the list of available jobs.
     """
-    method_decorators = [requires_auth]
+    method_decorators = [requires_auth, requires_scope('runner')]
 
     def get(self):
         """Get all available jobs."""
@@ -67,7 +67,7 @@ class Job(Resource):
     """
     Resource representing a single job.
     """
-    method_decorators = [requires_auth]
+    method_decorators = [requires_auth, requires_scope('runner')]
 
     def get(self, job_id):
         """Get the details of a single job."""

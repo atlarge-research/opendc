@@ -1180,6 +1180,7 @@ components:
           tokenUrl: https://opendc.eu.auth0.com/oauth/token
           scopes:
             openid: Grants access to user_id
+            runner: Grants access to runner jobs
   schemas:
     Unauthorized:
       type: object

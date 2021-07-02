@@ -2,10 +2,11 @@ import os
 from functools import wraps
 
 from flask import g, _request_ctx_stack
+from jose import jwt
 from werkzeug.local import LocalProxy
 
 from opendc.database import Database
-from opendc.auth import AuthContext, AsymmetricJwtAlgorithm, get_token
+from opendc.auth import AuthContext, AsymmetricJwtAlgorithm, get_token, AuthError
 
 
 def get_db():
@@ -56,3 +57,36 @@ def requires_auth(f):
 
 
 current_user = LocalProxy(lambda: getattr(_request_ctx_stack.top, 'current_user', None))
+
+
+def has_scope(required_scope):
+    """Determines if the required scope is present in the Access Token
+    Args:
+        required_scope (str): The scope required to access the resource
+    """
+    token = get_token()
+    unverified_claims = jwt.get_unverified_claims(token)
+    if unverified_claims.get("scope"):
+        token_scopes = unverified_claims["scope"].split()
+        for token_scope in token_scopes:
+            if token_scope == required_scope:
+                return True
+    return False
+
+
+def requires_scope(required_scope):
+    """Determines if the required scope is present in the Access Token
+    Args:
+        required_scope (str): The scope required to access the resource
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if not has_scope(required_scope):
+                raise AuthError({
+                    "code": "Unauthorized",
+                    "description": "You don't have access to this resource"
+                }, 403)
+            return f(*args, **kwargs)
+        return decorated
+    return decorator

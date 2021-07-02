@@ -24,7 +24,7 @@ from marshmallow import Schema, fields
 
 from opendc.models.scenario import Scenario as ScenarioModel, ScenarioSchema
 from opendc.models.portfolio import Portfolio
-from opendc.exts import current_user, requires_auth
+from opendc.exts import current_user, requires_auth, has_scope
 
 
 class Scenario(Resource):
@@ -37,7 +37,11 @@ class Scenario(Resource):
         """Get scenario by identifier."""
         scenario = ScenarioModel.from_id(scenario_id)
         scenario.check_exists()
-        scenario.check_user_access(current_user['sub'], False)
+
+        # Users with scope runner can access all scenarios
+        if not has_scope('runner'):
+            scenario.check_user_access(current_user['sub'], False)
+
         data = ScenarioSchema().dump(scenario.obj)
         return {'data': data}
 

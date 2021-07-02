@@ -22,7 +22,7 @@ from flask import request
 from flask_restful import Resource
 from marshmallow import Schema, fields
 
-from opendc.exts import requires_auth, current_user
+from opendc.exts import requires_auth, current_user, has_scope
 from opendc.models.portfolio import Portfolio as PortfolioModel, PortfolioSchema
 from opendc.models.project import Project
 from opendc.models.scenario import ScenarioSchema, Scenario
@@ -42,7 +42,10 @@ class Portfolio(Resource):
         portfolio = PortfolioModel.from_id(portfolio_id)
 
         portfolio.check_exists()
-        portfolio.check_user_access(current_user['sub'], False)
+
+        # Users with scope runner can access all portfolios
+        if not has_scope('runner'):
+            portfolio.check_user_access(current_user['sub'], False)
 
         data = PortfolioSchema().dump(portfolio.obj)
         return {'data': data}
