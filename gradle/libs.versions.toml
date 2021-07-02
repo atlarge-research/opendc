@@ -6,6 +6,8 @@ log4j = "2.14.1"
 opentelemetry-main = "1.2.0"
 opentelemetry-metrics = "1.2.0-alpha"
 hadoop = "3.3.0"
+ktor = "1.6.1"
+jackson = "2.12.3"
 
 [libraries]
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.5.0" }
@@ -35,7 +37,8 @@ clikt = { module = "com.github.ajalt.clikt:clikt", version = "3.2.0" }
 progressbar = { module = "me.tongfei:progressbar", version = "0.9.0" }
 
 # Format
-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version = "2.12.3" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 parquet = { module = "org.apache.parquet:parquet-avro", version = "1.12.0" }
 yaml = { module = "org.yaml:snakeyaml", version = "1.28" }
 config = { module = "com.typesafe:config", version = "1.4.1" }
@@ -44,7 +47,10 @@ config = { module = "com.typesafe:config", version = "1.4.1" }
 kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm", version = "0.3.1" }
 
 # Other
-mongodb = { module = "org.mongodb:mongodb-driver-sync", version = "4.2.3" }
 classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.108" }
 hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
 hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
+ktor-client-jackson = { module = "io.ktor:ktor-client-jackson", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }

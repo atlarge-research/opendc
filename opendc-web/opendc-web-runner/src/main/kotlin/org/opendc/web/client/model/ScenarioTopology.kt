@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,36 +20,9 @@
  * SOFTWARE.
  */
 
-description = "Experiment runner for OpenDC"
+package org.opendc.web.client.model
 
-/* Build configuration */
-plugins {
-    `kotlin-conventions`
-    `testing-conventions`
-    application
-}
-
-application {
-    mainClass.set("org.opendc.web.runner.MainKt")
-}
-
-dependencies {
-    api(platform(projects.opendcPlatform))
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcExperiments.opendcExperimentsCapelin)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-
-    implementation(libs.kotlin.logging)
-    implementation(libs.clikt)
-    implementation(libs.sentry.log4j2)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.auth)
-    implementation(libs.ktor.client.jackson)
-    implementation(libs.jackson.datatype.jsr310)
-
-    runtimeOnly(libs.log4j.slf4j)
-
-    testImplementation(libs.ktor.client.mock)
-}
+/**
+ * The topology details for a scenario.
+ */
+public data class ScenarioTopology(val topologyId: String)
