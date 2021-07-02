@@ -1153,6 +1153,10 @@ components:
                     object:
                       type: object
                       properties:
+                        _id:
+                          type: string
+                        name:
+                          type: string
                         capacity:
                           type: integer
                         powerCapacityW:
@@ -1162,51 +1166,69 @@ components:
                           items:
                             type: object
                             properties:
+                              _id:
+                                type: string
                               position:
                                 type: integer
-                              cpuItems:
+                              cpus:
                                 type: array
                                 items:
                                   type: object
                                   properties:
+                                    _id:
+                                      type: string
                                     name:
                                       type: string
                                     clockRateMhz:
                                       type: integer
                                     numberOfCores:
                                       type: integer
-                              gpuItems:
+                                    energyConsumptionW:
+                                      type: integer
+                              gpus:
                                 type: array
                                 items:
                                   type: object
                                   properties:
+                                    _id:
+                                      type: string
                                     name:
                                       type: string
                                     clockRateMhz:
                                       type: integer
                                     numberOfCores:
                                       type: integer
-                              memoryItems:
+                                    energyConsumptionW:
+                                      type: integer
+                              memories:
                                 type: array
                                 items:
                                   type: object
                                   properties:
+                                    _id:
+                                      type: string
                                     name:
                                       type: string
                                     speedMbPerS:
                                       type: integer
                                     sizeMb:
                                       type: integer
-                              storageItems:
+                                    energyConsumptionW:
+                                      type: integer
+                              storages:
                                 type: array
                                 items:
-                                  type: integer
+                                  type: object
                                   properties:
+                                    _id:
+                                      type: string
                                     name:
                                       type: string
                                     speedMbPerS:
                                       type: integer
                                     sizeMb:
+                                      type: integer
+                                    energyConsumptionW:
                                       type: integer
     Portfolio:
       type: object
