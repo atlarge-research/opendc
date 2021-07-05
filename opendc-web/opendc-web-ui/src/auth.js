@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+import PropTypes from 'prop-types'
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react'
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
@@ -43,7 +44,7 @@ export function useRequireAuth() {
         if (!isLoading && !isAuthenticated) {
             router.replace('/')
         }
-    }, [isLoading, isAuthenticated])
+    }, [router, isLoading, isAuthenticated])
 
     return auth
 }
@@ -62,4 +63,8 @@ export function AuthProvider({ children }) {
             {children}
         </Auth0Provider>
     )
+}
+
+AuthProvider.propTypes = {
+    children: PropTypes.node,
 }

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { Group, Layer } from 'react-konva'
 import TopologyContainer from '../../../../containers/app/map/TopologyContainer'
@@ -13,5 +14,13 @@ const MapLayerComponent = ({ mapPosition, mapScale }) => (
         </Group>
     </Layer>
 )
+
+MapLayerComponent.propTypes = {
+    mapPosition: PropTypes.shape({
+        x: PropTypes.number,
+        y: PropTypes.number,
+    }),
+    mapScale: PropTypes.number,
+}
 
 export default MapLayerComponent

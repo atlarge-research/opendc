@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
@@ -24,6 +25,13 @@ const NewRoomConstructionComponent = ({ onStart, onFinish, onCancel, currentRoom
             </Button>
         </div>
     )
+}
+
+NewRoomConstructionComponent.propTypes = {
+    onStart: PropTypes.func,
+    onFinish: PropTypes.func,
+    onCancel: PropTypes.func,
+    currentRoomInConstruction: PropTypes.string,
 }
 
 export default NewRoomConstructionComponent

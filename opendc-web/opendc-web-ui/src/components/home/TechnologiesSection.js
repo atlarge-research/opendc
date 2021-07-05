@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { ListGroup, ListGroupItem } from 'reactstrap'
 import ContentSection from './ContentSection'
@@ -38,5 +39,9 @@ const TechnologiesSection = ({ className }) => (
         </ListGroup>
     </ContentSection>
 )
+
+TechnologiesSection.propTypes = {
+    className: PropTypes.string,
+}
 
 export default TechnologiesSection

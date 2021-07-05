@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -45,6 +46,11 @@ export const NavItem = ({ route, children }) => {
     )
 }
 
+NavItem.propTypes = {
+    route: PropTypes.string.isRequired,
+    children: PropTypes.node,
+}
+
 export const LoggedInSection = () => {
     const router = useRouter()
     const { isAuthenticated } = useAuth()
@@ -54,18 +60,18 @@ export const LoggedInSection = () => {
                 [
                     router.asPath === '/' ? (
                         <NavItem route="/projects" key="projects">
-                            <Link href="/projects">
+                            <Link href="/projects" passHref>
                                 <NavLink title="My Projects" to="/projects">
                                     My Projects
                                 </NavLink>
                             </Link>
                         </NavItem>
                     ) : (
-                        <NavItem key="profile">
+                        <RNavItem key="profile">
                             <NavLink title="My Profile">
                                 <ProfileName />
                             </NavLink>
-                        </NavItem>
+                        </RNavItem>
                     ),
                     <NavItem route="logout" key="logout">
                         <Logout />
@@ -104,6 +110,11 @@ const Navbar = ({ fullWidth, children }) => {
             </Container>
         </RNavbar>
     )
+}
+
+Navbar.propTypes = {
+    fullWidth: PropTypes.bool,
+    children: PropTypes.node,
 }
 
 export default Navbar

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import Sidebar from '../Sidebar'
 import TopologyListContainer from '../../../../containers/app/sidebars/project/TopologyListContainer'
@@ -12,5 +13,9 @@ const ProjectSidebarComponent = ({ collapsible }) => (
         </Container>
     </Sidebar>
 )
+
+ProjectSidebarComponent.propTypes = {
+    collapsible: PropTypes.bool,
+}
 
 export default ProjectSidebarComponent

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { Row, Col } from 'reactstrap'
 import ContentSection from './ContentSection'
@@ -21,6 +22,12 @@ const Stakeholder = ({ name, title, subtitle }) => (
     </Col>
 )
 
+Stakeholder.propTypes = {
+    name: PropTypes.string,
+    title: PropTypes.string,
+    subtitle: PropTypes.string,
+}
+
 const StakeholderSection = ({ className }) => (
     <ContentSection name="stakeholders" title="Stakeholders" className={className}>
         <Row className="justify-content-center">
@@ -32,5 +39,9 @@ const StakeholderSection = ({ className }) => (
         </Row>
     </ContentSection>
 )
+
+StakeholderSection.propTypes = {
+    className: PropTypes.string,
+}
 
 export default StakeholderSection

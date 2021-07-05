@@ -1,22 +1,15 @@
 import React from 'react'
 import { NavItem, NavLink } from 'reactstrap'
 import Navbar from './Navbar'
-import {} from './Navbar.module.scss'
-
-const ScrollNavItem = ({ id, name }) => (
-    <NavItem>
-        <NavLink href={id}>{name}</NavLink>
-    </NavItem>
-)
 
 const HomeNavbar = () => (
     <Navbar fullWidth={false}>
-        <ScrollNavItem id="#stakeholders" name="Stakeholders" />
-        <ScrollNavItem id="#modeling" name="Modeling" />
-        <ScrollNavItem id="#project" name="Project" />
-        <ScrollNavItem id="#technologies" name="Technologies" />
-        <ScrollNavItem id="#team" name="Team" />
-        <ScrollNavItem id="#contact" name="Contact" />
+        <NavLink href="#stakeholders">Stakeholders</NavLink>
+        <NavLink href="#modeling">Modeling</NavLink>
+        <NavLink href="#project">Project</NavLink>
+        <NavLink href="#technologies">Technologies</NavLink>
+        <NavLink href="#team">Team</NavLink>
+        <NavLink href="#contact">Contact</NavLink>
     </Navbar>
 )
 

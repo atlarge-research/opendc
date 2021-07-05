@@ -30,6 +30,7 @@ function ScenarioListComponent({
                     </Col>
                     <Col xs="5" className="text-right">
                         <Link
+                            passHref
                             href={`/projects/${currentProjectId}/portfolios/${scenario.portfolioId}/scenarios/${scenario._id}`}
                         >
                             <Button

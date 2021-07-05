@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import Image from 'next/image'
 import { Row, Col } from 'reactstrap'
@@ -23,6 +24,12 @@ const TeamLead = ({ photoId, name, description }) => (
     </Col>
 )
 
+TeamLead.propTypes = {
+    photoId: PropTypes.string,
+    name: PropTypes.string,
+    description: PropTypes.string,
+}
+
 const TeamMember = ({ photoId, name }) => (
     <Col xl="2" lg="2" md="3" sm="4" className="justify-content-center">
         <Row>
@@ -41,6 +48,11 @@ const TeamMember = ({ photoId, name }) => (
         </Row>
     </Col>
 )
+
+TeamMember.propTypes = {
+    photoId: PropTypes.string,
+    name: PropTypes.string,
+}
 
 const TeamSection = ({ className }) => (
     <ContentSection name="team" title="OpenDC Team" className={className}>
@@ -62,5 +74,9 @@ const TeamSection = ({ className }) => (
         </Row>
     </ContentSection>
 )
+
+TeamSection.propTypes = {
+    className: PropTypes.string,
+}
 
 export default TeamSection

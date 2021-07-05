@@ -1,7 +1,7 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import classNames from 'classnames'
 import { Container } from 'reactstrap'
-import PropTypes from 'prop-types'
 import { contentSection } from './ContentSection.module.scss'
 
 const ContentSection = ({ name, title, children, className }) => (
@@ -15,6 +15,9 @@ const ContentSection = ({ name, title, children, className }) => (
 
 ContentSection.propTypes = {
     name: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    children: PropTypes.node,
+    className: PropTypes.string,
 }
 
 export default ContentSection

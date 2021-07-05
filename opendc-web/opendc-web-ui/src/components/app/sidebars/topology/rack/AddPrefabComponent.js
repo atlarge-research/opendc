@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave } from '@fortawesome/free-solid-svg-icons'
@@ -9,5 +10,9 @@ const AddPrefabComponent = ({ onClick }) => (
         Save this rack to a prefab
     </Button>
 )
+
+AddPrefabComponent.propTypes = {
+    onClick: PropTypes.func,
+}
 
 export default AddPrefabComponent

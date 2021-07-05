@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { Rect } from 'react-konva'
 import { Tile } from '../../../../shapes'
@@ -15,6 +16,7 @@ const RoomTile = ({ tile, color }) => (
 
 RoomTile.propTypes = {
     tile: Tile,
+    color: PropTypes.string,
 }
 
 export default RoomTile

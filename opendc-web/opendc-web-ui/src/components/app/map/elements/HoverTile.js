@@ -21,6 +21,7 @@ HoverTile.propTypes = {
     pixelX: PropTypes.number.isRequired,
     pixelY: PropTypes.number.isRequired,
     isValid: PropTypes.bool.isRequired,
+    scale: PropTypes.number.isRequired,
     onClick: PropTypes.func.isRequired,
 }
 

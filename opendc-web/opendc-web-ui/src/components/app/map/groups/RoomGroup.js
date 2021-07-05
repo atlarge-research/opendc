@@ -1,9 +1,10 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { Group } from 'react-konva'
 import GrayContainer from '../../../../containers/app/map/GrayContainer'
 import TileContainer from '../../../../containers/app/map/TileContainer'
 import WallContainer from '../../../../containers/app/map/WallContainer'
-import { Room } from '../../../../shapes'
+import { InteractionLevel, Room } from '../../../../shapes'
 
 const RoomGroup = ({ room, interactionLevel, currentRoomInConstruction, onClick }) => {
     if (currentRoomInConstruction === room._id) {
@@ -43,6 +44,9 @@ const RoomGroup = ({ room, interactionLevel, currentRoomInConstruction, onClick 
 
 RoomGroup.propTypes = {
     room: Room,
+    interactionLevel: InteractionLevel,
+    currentRoomInConstruction: PropTypes.string,
+    onClick: PropTypes.func,
 }
 
 export default RoomGroup

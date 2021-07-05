@@ -42,6 +42,7 @@ Modal.propTypes = {
     onCancel: PropTypes.func.isRequired,
     submitButtonType: PropTypes.string,
     submitButtonText: PropTypes.string,
+    children: PropTypes.node,
 }
 
 Modal.defaultProps = {

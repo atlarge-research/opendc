@@ -11,7 +11,7 @@ const ProjectList = ({ projects }) => {
             {projects.length === 0 ? (
                 <div className="alert alert-info">
                     <FontAwesomeIcon icon={faQuestionCircle} className="info-icon mr-2" />
-                    <strong>No projects here yet...</strong> Add some with the 'New Project' button!
+                    <strong>No projects here yet...</strong> Add some with the &lsquo;New Project&rsquo; button!
                 </div>
             ) : (
                 <table className="table table-striped">

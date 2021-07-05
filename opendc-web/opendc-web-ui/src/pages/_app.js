@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+import PropTypes from 'prop-types'
 import Head from 'next/head'
 import { Provider } from 'react-redux'
 import { useStore } from '../redux'
@@ -37,6 +38,13 @@ const Inner = ({ Component, pageProps }) => {
             <Component {...pageProps} />
         </Provider>
     )
+}
+
+Inner.propTypes = {
+    Component: PropTypes.func,
+    pageProps: PropTypes.shape({
+        initialReduxState: PropTypes.object,
+    }).isRequired,
 }
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
@@ -59,7 +67,7 @@ export default function App(props) {
                 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
                 <meta name="theme-color" content="#00A6D6" />
             </Head>
-            <Sentry.ErrorBoundary fallback={"An error has occurred"}>
+            <Sentry.ErrorBoundary fallback={'An error has occurred'}>
                 <AuthProvider>
                     <Inner {...props} />
                 </AuthProvider>

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import BackToRackContainer from '../../../../../containers/app/sidebars/topology/machine/BackToRackContainer'
 import DeleteMachineContainer from '../../../../../containers/app/sidebars/topology/machine/DeleteMachineContainer'
@@ -13,6 +14,10 @@ const MachineSidebarComponent = ({ machineId }) => {
             <UnitTabsContainer />
         </div>
     )
+}
+
+MachineSidebarComponent.propTypes = {
+    machineId: PropTypes.string,
 }
 
 export default MachineSidebarComponent

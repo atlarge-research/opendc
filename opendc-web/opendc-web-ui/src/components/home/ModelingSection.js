@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import ScreenshotSection from './ScreenshotSection'
 
@@ -19,5 +20,9 @@ const ModelingSection = ({ className }) => (
         </ul>
     </ScreenshotSection>
 )
+
+ModelingSection.propTypes = {
+    className: PropTypes.string,
+}
 
 export default ModelingSection

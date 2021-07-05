@@ -7,7 +7,7 @@ import { faPlay, faUsers, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 const ProjectActionButtons = ({ projectId, onViewUsers, onDelete }) => (
     <td className="text-right">
-        <Link href={`/projects/${projectId}`}>
+        <Link href={`/projects/${projectId}`} passHref>
             <Button color="primary" outline size="sm" className="mr-2" title="Open this project">
                 <FontAwesomeIcon icon={faPlay} />
             </Button>

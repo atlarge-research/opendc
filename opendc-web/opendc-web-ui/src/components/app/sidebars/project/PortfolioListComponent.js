@@ -37,7 +37,7 @@ function PortfolioListComponent({
                             {portfolio.name}
                         </Col>
                         <Col xs="5" className="text-right">
-                            <Link href={`/projects/${currentProjectId}/portfolios/${portfolio._id}`}>
+                            <Link passHref href={`/projects/${currentProjectId}/portfolios/${portfolio._id}`}>
                                 <Button
                                     color="primary"
                                     outline

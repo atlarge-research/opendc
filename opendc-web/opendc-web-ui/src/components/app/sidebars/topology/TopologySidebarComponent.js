@@ -4,6 +4,7 @@ import MachineSidebarContainer from '../../../../containers/app/sidebars/topolog
 import RackSidebarContainer from '../../../../containers/app/sidebars/topology/rack/RackSidebarContainer'
 import RoomSidebarContainer from '../../../../containers/app/sidebars/topology/room/RoomSidebarContainer'
 import Sidebar from '../Sidebar'
+import { InteractionLevel } from '../../../../shapes'
 
 const TopologySidebarComponent = ({ interactionLevel }) => {
     let sidebarContent
@@ -26,6 +27,10 @@ const TopologySidebarComponent = ({ interactionLevel }) => {
     }
 
     return <Sidebar isRight={true}>{sidebarContent}</Sidebar>
+}
+
+TopologySidebarComponent.propTypes = {
+    interactionLevel: InteractionLevel,
 }
 
 export default TopologySidebarComponent
