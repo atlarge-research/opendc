@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons'
@@ -25,6 +26,13 @@ const RackConstructionComponent = ({ onStart, onStop, inRackConstructionMode, is
             Start rack construction
         </Button>
     )
+}
+
+RackConstructionComponent.propTypes = {
+    onStart: PropTypes.func,
+    onStop: PropTypes.func,
+    inRackConstructionMode: PropTypes.bool,
+    isEditingRoom: PropTypes.bool,
 }
 
 export default RackConstructionComponent

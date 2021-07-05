@@ -15,7 +15,7 @@ function Projects() {
     const dispatch = useDispatch()
     const [filter, setFilter] = useState('SHOW_ALL')
 
-    useEffect(() => dispatch(fetchProjects()), [])
+    useEffect(() => dispatch(fetchProjects()), [dispatch])
 
     return (
         <>

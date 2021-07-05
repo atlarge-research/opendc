@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 import { HotKeys } from 'react-hotkeys'
 import { Stage } from 'react-konva'
@@ -35,10 +36,11 @@ function MapStageComponent({
         const mousePos = stage.current.getStage().getPointerPosition()
         setPos([mousePos.x, mousePos.y])
     }
-    const updateDimensions = () => setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
-    const updateScale = (e) => zoomInOnPosition(e.deltaY < 0, x, y)
 
     useEffect(() => {
+        const updateDimensions = () => setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
+        const updateScale = (e) => zoomInOnPosition(e.deltaY < 0, x, y)
+
         updateDimensions()
 
         window.addEventListener('resize', updateDimensions)
@@ -55,7 +57,7 @@ function MapStageComponent({
             window.removeEventListener('resize', updateDimensions)
             window.removeEventListener('wheel', updateScale)
         }
-    }, [])
+    }, [x, y, setMapDimensions, zoomInOnPosition])
 
     const store = useStore()
 
@@ -75,6 +77,20 @@ function MapStageComponent({
             </Stage>
         </HotKeys>
     )
+}
+
+MapStageComponent.propTypes = {
+    mapDimensions: PropTypes.shape({
+        width: PropTypes.number.isRequired,
+        height: PropTypes.number.isRequired,
+    }).isRequired,
+    mapPosition: PropTypes.shape({
+        x: PropTypes.number.isRequired,
+        y: PropTypes.number.isRequired,
+    }).isRequired,
+    setMapDimensions: PropTypes.func,
+    setMapPositionWithBoundsCheck: PropTypes.func,
+    zoomInOnPosition: PropTypes.func,
 }
 
 export default MapStageComponent

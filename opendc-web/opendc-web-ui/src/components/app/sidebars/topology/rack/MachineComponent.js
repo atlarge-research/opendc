@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import Image from 'next/image'
 import { Machine } from '../../../../../shapes'
@@ -14,6 +15,11 @@ const UnitIcon = ({ id, type }) => (
         />
     </div>
 )
+
+UnitIcon.propTypes = {
+    id: PropTypes.string,
+    type: PropTypes.string,
+}
 
 const MachineComponent = ({ position, machine, onClick }) => {
     const hasNoUnits =
@@ -42,6 +48,8 @@ const MachineComponent = ({ position, machine, onClick }) => {
 
 MachineComponent.propTypes = {
     machine: Machine,
+    position: PropTypes.number,
+    onClick: PropTypes.func,
 }
 
 export default MachineComponent

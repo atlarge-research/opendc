@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import UnitContainer from '../../../../../containers/app/sidebars/topology/machine/UnitContainer'
 
@@ -16,5 +17,10 @@ const UnitListComponent = ({ unitType, unitIds }) => (
         )}
     </ul>
 )
+
+UnitListComponent.propTypes = {
+    unitType: PropTypes.string,
+    unitIds: PropTypes.array,
+}
 
 export default UnitListComponent

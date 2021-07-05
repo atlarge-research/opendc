@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import EmptySlotContainer from '../../../../../containers/app/sidebars/topology/rack/EmptySlotContainer'
 import MachineContainer from '../../../../../containers/app/sidebars/topology/rack/MachineContainer'
@@ -15,6 +16,10 @@ const MachineListComponent = ({ machineIds }) => {
             })}
         </ul>
     )
+}
+
+MachineListComponent.propTypes = {
+    machineIds: PropTypes.array,
 }
 
 export default MachineListComponent

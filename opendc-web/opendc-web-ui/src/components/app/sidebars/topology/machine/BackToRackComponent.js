@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleLeft } from '@fortawesome/free-solid-svg-icons'
@@ -8,5 +9,9 @@ const BackToRackComponent = ({ onClick }) => (
         Back to rack
     </div>
 )
+
+BackToRackComponent.propTypes = {
+    onClick: PropTypes.func,
+}
 
 export default BackToRackComponent

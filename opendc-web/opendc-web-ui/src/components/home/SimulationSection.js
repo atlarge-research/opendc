@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import Image from 'next/image'
 import { Col, Row } from 'reactstrap'
@@ -32,7 +33,7 @@ const SimulationSection = ({ className }) => {
             </Row>
             <Row className="mt-5">
                 <Col xl="5" lg="5" md="5" sm="2" className="text-left my-auto">
-                    <h3>OpenDC's Simulator:</h3>
+                    <h3>OpenDC&apos;s Simulator:</h3>
                     <ul>
                         <li>Includes a detailed operational model of modern datacenters</li>
                         <li>
@@ -51,11 +52,15 @@ const SimulationSection = ({ className }) => {
                         height={232}
                         alt="OpenDC's Architecture"
                     />
-                    <Row className="text-muted justify-content-center">OpenDC's Architecture</Row>
+                    <Row className="text-muted justify-content-center">OpenDC&apos;s Architecture</Row>
                 </Col>
             </Row>
         </ContentSection>
     )
+}
+
+SimulationSection.propTypes = {
+    className: PropTypes.string,
 }
 
 export default SimulationSection

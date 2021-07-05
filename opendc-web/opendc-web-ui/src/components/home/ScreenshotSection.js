@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import Image from 'next/image'
 import { Row, Col } from 'reactstrap'
@@ -24,5 +25,15 @@ const ScreenshotSection = ({ className, name, title, imageUrl, caption, imageIsR
         </Row>
     </ContentSection>
 )
+
+ScreenshotSection.propTypes = {
+    className: PropTypes.string,
+    name: PropTypes.string,
+    title: PropTypes.string,
+    imageUrl: PropTypes.string,
+    caption: PropTypes.string,
+    imageIsRight: PropTypes.bool,
+    children: PropTypes.node,
+}
 
 export default ScreenshotSection

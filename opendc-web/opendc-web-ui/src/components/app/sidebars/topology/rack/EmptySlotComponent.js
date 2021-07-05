@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
@@ -14,5 +15,10 @@ const EmptySlotComponent = ({ position, onAdd }) => (
         </Button>
     </ListGroupItem>
 )
+
+EmptySlotComponent.propTypes = {
+    position: PropTypes.number,
+    onAdd: PropTypes.func,
+}
 
 export default EmptySlotComponent

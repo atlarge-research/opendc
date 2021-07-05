@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import Image from 'next/image'
 import { Container, Row, Col } from 'reactstrap'
@@ -41,5 +42,9 @@ const IntroSection = ({ className }) => (
         </Container>
     </section>
 )
+
+IntroSection.propTypes = {
+    className: PropTypes.string,
+}
 
 export default IntroSection

@@ -1,15 +1,16 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import Link from 'next/link'
-import { NavLink } from 'reactstrap'
+import { NavLink, NavItem as RNavItem } from 'reactstrap'
 import Navbar, { NavItem } from './Navbar'
-import {} from './Navbar.module.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faList } from '@fortawesome/free-solid-svg-icons'
+import { Project } from '../../shapes'
 
 const AppNavbarComponent = ({ project, fullWidth }) => (
     <Navbar fullWidth={fullWidth}>
         <NavItem route="/projects">
-            <Link href="/projects">
+            <Link href="/projects" passHref>
                 <NavLink title="My Projects">
                     <FontAwesomeIcon icon={faList} className="mr-2" />
                     My Projects
@@ -17,15 +18,20 @@ const AppNavbarComponent = ({ project, fullWidth }) => (
             </Link>
         </NavItem>
         {project ? (
-            <NavItem>
-                <Link href={`/projects/${project._id}`}>
+            <RNavItem>
+                <Link href={`/projects/${project._id}`} passHref>
                     <NavLink title="Current Project">
                         <span>{project.name}</span>
                     </NavLink>
                 </Link>
-            </NavItem>
+            </RNavItem>
         ) : undefined}
     </Navbar>
 )
+
+AppNavbarComponent.propTypes = {
+    project: Project,
+    fullWidth: PropTypes.bool,
+}
 
 export default AppNavbarComponent

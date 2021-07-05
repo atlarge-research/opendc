@@ -1,7 +1,9 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { UncontrolledPopover, PopoverHeader, PopoverBody, Button } from 'reactstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { ProcessingUnit, StorageUnit } from '../../../../../shapes'
 
 function UnitComponent({ index, unitType, unit, onDelete }) {
     let unitInfo
@@ -53,6 +55,13 @@ function UnitComponent({ index, unitType, unit, onDelete }) {
             </span>
         </li>
     )
+}
+
+UnitComponent.propTypes = {
+    index: PropTypes.number,
+    unitType: PropTypes.string,
+    unit: PropTypes.oneOf([ProcessingUnit, StorageUnit]),
+    onDelete: PropTypes.func,
 }
 
 export default UnitComponent

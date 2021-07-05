@@ -42,6 +42,7 @@ function Sidebar({ isRight, collapsible = true, children }) {
 Sidebar.propTypes = {
     isRight: PropTypes.bool.isRequired,
     collapsible: PropTypes.bool,
+    children: PropTypes.node,
 }
 
 export default Sidebar

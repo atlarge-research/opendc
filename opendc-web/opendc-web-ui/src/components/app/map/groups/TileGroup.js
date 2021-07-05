@@ -6,7 +6,7 @@ import { Tile } from '../../../../shapes'
 import { ROOM_DEFAULT_COLOR, ROOM_IN_CONSTRUCTION_COLOR } from '../../../../util/colors'
 import RoomTile from '../elements/RoomTile'
 
-const TileGroup = ({ tile, newTile, roomLoad, onClick }) => {
+const TileGroup = ({ tile, newTile, onClick }) => {
     let tileObject
     if (tile.rackId) {
         tileObject = <RackContainer tile={tile} />
@@ -30,6 +30,7 @@ const TileGroup = ({ tile, newTile, roomLoad, onClick }) => {
 TileGroup.propTypes = {
     tile: Tile,
     newTile: PropTypes.bool,
+    onClick: PropTypes.func,
 }
 
 export default TileGroup

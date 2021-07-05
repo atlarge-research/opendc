@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons'
@@ -21,6 +22,10 @@ const ZoomControlComponent = ({ zoomInOnCenter }) => {
             </button>
         </span>
     )
+}
+
+ZoomControlComponent.propTypes = {
+    zoomInOnCenter: PropTypes.func.isRequired,
 }
 
 export default ZoomControlComponent

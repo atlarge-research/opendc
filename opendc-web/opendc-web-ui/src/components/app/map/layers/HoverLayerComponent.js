@@ -21,7 +21,7 @@ function HoverLayerComponent({ mouseX, mouseY, mapPosition, mapScale, isEnabled,
             setPos([positionX, positionY])
             setValid(isValid(positionX, positionY))
         }
-    }, [mouseX, mouseY, mapPosition, mapScale])
+    }, [isEnabled, isValid, x, y, mouseX, mouseY, mapPosition, mapScale])
 
     if (!isEnabled()) {
         return <Layer />
@@ -58,6 +58,7 @@ HoverLayerComponent.propTypes = {
     isEnabled: PropTypes.func.isRequired,
     isValid: PropTypes.func.isRequired,
     onClick: PropTypes.func.isRequired,
+    children: PropTypes.node,
 }
 
 export default HoverLayerComponent
