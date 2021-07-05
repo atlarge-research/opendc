@@ -9,7 +9,8 @@ class PrefabSchema(Schema):
     """
     Schema for a Prefab.
     """
-    _id = fields.String()
+    _id = fields.String(dump_only=True)
+    authorId = fields.String(dump_only=True)
     name = fields.String(required=True)
     datetimeCreated = fields.DateTime()
     datetimeLastEdited = fields.DateTime()

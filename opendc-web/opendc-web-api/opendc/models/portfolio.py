@@ -16,7 +16,7 @@ class PortfolioSchema(Schema):
     """
     Schema representing a portfolio.
     """
-    _id = fields.String()
+    _id = fields.String(dump_only=True)
     projectId = fields.String()
     name = fields.String(required=True)
     scenarioIds = fields.List(fields.String())

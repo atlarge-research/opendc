@@ -22,7 +22,7 @@ from flask import request
 from flask_restful import Resource
 from marshmallow import Schema, fields
 
-from opendc.exts import requires_auth, current_user
+from opendc.exts import requires_auth, current_user, has_scope
 from opendc.models.portfolio import Portfolio as PortfolioModel, PortfolioSchema
 from opendc.models.project import Project
 from opendc.models.scenario import ScenarioSchema, Scenario
@@ -42,9 +42,12 @@ class Portfolio(Resource):
         portfolio = PortfolioModel.from_id(portfolio_id)
 
         portfolio.check_exists()
-        portfolio.check_user_access(current_user['sub'], False)
 
-        data = portfolio.obj
+        # Users with scope runner can access all portfolios
+        if not has_scope('runner'):
+            portfolio.check_user_access(current_user['sub'], False)
+
+        data = PortfolioSchema().dump(portfolio.obj)
         return {'data': data}
 
     def put(self, portfolio_id):
@@ -63,7 +66,7 @@ class Portfolio(Resource):
         portfolio.set_property('targets.repeatsPerScenario', result['portfolio']['targets']['repeatsPerScenario'])
 
         portfolio.update()
-        data = portfolio.obj
+        data = PortfolioSchema().dump(portfolio.obj)
         return {'data': data}
 
     def delete(self, portfolio_id):
@@ -84,7 +87,8 @@ class Portfolio(Resource):
         project.update()
 
         old_object = portfolio.delete()
-        return {'data': old_object}
+        data = PortfolioSchema().dump(old_object)
+        return {'data': data}
 
     class PutSchema(Schema):
         """
@@ -125,7 +129,7 @@ class PortfolioScenarios(Resource):
 
         portfolio.obj['scenarioIds'].append(scenario.get_id())
         portfolio.update()
-        data = scenario.obj
+        data = ScenarioSchema().dump(scenario.obj)
         return {'data': data}
 
     class PostSchema(Schema):

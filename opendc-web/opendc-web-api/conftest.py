@@ -8,12 +8,21 @@ from flask import _request_ctx_stack, g
 from opendc.database import Database
 
 
-def decorator(f):
+def requires_auth_mock(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         _request_ctx_stack.top.current_user = {'sub': 'test'}
         return f(*args, **kwargs)
     return decorated_function
+
+
+def requires_scope_mock(required_scope):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 @pytest.fixture
@@ -22,7 +31,9 @@ def client():
 
     # Disable authorization for test API endpoints
     from opendc import exts
-    exts.requires_auth = decorator
+    exts.requires_auth = requires_auth_mock
+    exts.requires_scope = requires_scope_mock
+    exts.has_scope = lambda x: False
 
     from app import create_app
 

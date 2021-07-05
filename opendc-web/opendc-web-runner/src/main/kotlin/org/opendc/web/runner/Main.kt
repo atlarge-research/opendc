@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.runner.web
+package org.opendc.web.runner
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
-import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
-import com.mongodb.MongoClientSettings
-import com.mongodb.MongoCredential
-import com.mongodb.ServerAddress
-import com.mongodb.client.MongoClients
-import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.Filters
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
-import org.bson.Document
-import org.bson.types.ObjectId
 import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
@@ -51,70 +42,71 @@ import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
+import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
+import org.opendc.simulator.compute.model.MachineModel
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
+import org.opendc.web.client.ApiClient
+import org.opendc.web.client.AuthConfiguration
+import org.opendc.web.client.model.Scenario
+import org.opendc.web.client.model.Topology
 import java.io.File
+import java.net.URI
+import java.util.*
 import kotlin.random.Random
 import kotlin.random.asJavaRandom
+import org.opendc.web.client.model.Portfolio as ClientPortfolio
 
 private val logger = KotlinLogging.logger {}
 
 /**
  * Represents the CLI command for starting the OpenDC web runner.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class RunnerCli : CliktCommand(name = "runner") {
     /**
-     * The name of the database to use.
+     * The URL to the OpenDC API.
      */
-    private val mongoDb by option(
-        "--mongo-db",
-        help = "name of the database to use",
-        envvar = "OPENDC_DB"
+    private val apiUrl by option(
+        "--api-url",
+        help = "url to the OpenDC API",
+        envvar = "OPENDC_API_URL"
     )
-        .default("opendc")
+        .convert { URI(it) }
+        .default(URI("https://api.opendc.org/v2"))
 
     /**
-     * The database host to connect to.
+     * The auth domain to use.
      */
-    private val mongoHost by option(
-        "--mongo-host",
-        help = "database host to connect to",
-        envvar = "OPENDC_DB_HOST"
+    private val authDomain by option(
+        "--auth-domain",
+        help = "auth domain of the OpenDC API",
+        envvar = "AUTH0_DOMAIN"
     )
-        .default("localhost")
+        .required()
 
     /**
-     * The database port to connect to.
+     * The auth client ID to use.
      */
-    private val mongoPort by option(
-        "--mongo-port",
-        help = "database port to connect to",
-        envvar = "OPENDC_DB_PORT"
+    private val authClientId by option(
+        "--auth-id",
+        help = "auth client id of the OpenDC API",
+        envvar = "AUTH0_CLIENT_ID"
     )
-        .int()
-        .default(27017)
+        .required()
 
     /**
-     * The database user to connect with.
+     * The auth client secret to use.
      */
-    private val mongoUser by option(
-        "--mongo-user",
-        help = "database user to connect with",
-        envvar = "OPENDC_DB_USER"
+    private val authClientSecret by option(
+        "--auth-secret",
+        help = "auth client secret of the OpenDC API",
+        envvar = "AUTH0_CLIENT_SECRET"
     )
-        .default("opendc")
-
-    /**
-     * The database password to connect with.
-     */
-    private val mongoPassword by option(
-        "--mongo-password",
-        help = "database password to connect with",
-        envvar = "OPENDC_DB_PASSWORD"
-    )
-        .convert { it.toCharArray() }
         .required()
 
     /**
@@ -137,43 +129,25 @@ class RunnerCli : CliktCommand(name = "runner") {
         envvar = "OPENDC_RUN_TIMEOUT"
     )
         .long()
-        .default(60 * 3) // Experiment may run for a maximum of three minutes
-
-    /**
-     * Connect to the user-specified database.
-     */
-    private fun createDatabase(): MongoDatabase {
-        val credential = MongoCredential.createScramSha1Credential(
-            mongoUser,
-            mongoDb,
-            mongoPassword
-        )
-
-        val settings = MongoClientSettings.builder()
-            .credential(credential)
-            .applyToClusterSettings { it.hosts(listOf(ServerAddress(mongoHost, mongoPort))) }
-            .build()
-        val client = MongoClients.create(settings)
-        return client.getDatabase(mongoDb)
-    }
+        .default(60L * 3) // Experiment may run for a maximum of three minutes
 
     /**
      * Run a single scenario.
      */
-    private suspend fun runScenario(portfolio: Document, scenario: Document, topologyParser: TopologyParser): List<WebExperimentMonitor.Result> {
-        val id = scenario.getObjectId("_id")
+    private suspend fun runScenario(portfolio: ClientPortfolio, scenario: Scenario, environment: EnvironmentReader): List<WebExperimentMonitor.Result> {
+        val id = scenario.id
 
         logger.info { "Constructing performance interference model" }
 
         val traceDir = File(
             tracePath,
-            scenario.getEmbedded(listOf("trace", "traceId"), String::class.java)
+            scenario.trace.traceId
         )
         val traceReader = RawParquetTraceReader(traceDir)
         val interferenceGroups = let {
             val path = File(traceDir, "performance-interference-model.json")
-            val operational = scenario.get("operational", Document::class.java)
-            val enabled = operational.getBoolean("performanceInterferenceEnabled")
+            val operational = scenario.operationalPhenomena
+            val enabled = operational.performanceInterferenceEnabled
 
             if (!enabled || !path.exists()) {
                 return@let null
@@ -182,11 +156,8 @@ class RunnerCli : CliktCommand(name = "runner") {
             PerformanceInterferenceReader(path.inputStream()).use { reader -> reader.read() }
         }
 
-        val targets = portfolio.get("targets", Document::class.java)
-        val topologyId = scenario.getEmbedded(listOf("topology", "topologyId"), ObjectId::class.java)
-        val environment = topologyParser.read(topologyId)
-
-        val results = (0 until targets.getInteger("repeatsPerScenario")).map { repeat ->
+        val targets = portfolio.targets
+        val results = (0 until targets.repeatsPerScenario).map { repeat ->
             logger.info { "Starting repeat $repeat" }
             withTimeout(runTimeout * 1000) {
                 val interferenceModel = interferenceGroups?.let { VmInterferenceModel(it, Random(repeat.toLong()).asJavaRandom()) }
@@ -203,7 +174,7 @@ class RunnerCli : CliktCommand(name = "runner") {
      * Run a single repeat.
      */
     private suspend fun runRepeat(
-        scenario: Document,
+        scenario: Scenario,
         repeat: Int,
         environment: EnvironmentReader,
         traceReader: RawParquetTraceReader,
@@ -214,9 +185,8 @@ class RunnerCli : CliktCommand(name = "runner") {
         try {
             runBlockingSimulation {
                 val seed = repeat
-                val traceDocument = scenario.get("trace", Document::class.java)
-                val workloadName = traceDocument.getString("traceId")
-                val workloadFraction = traceDocument.get("loadSamplingFraction", Number::class.java).toDouble()
+                val workloadName = scenario.trace.traceId
+                val workloadFraction = scenario.trace.loadSamplingFraction
 
                 val seeder = Random(seed)
 
@@ -228,9 +198,9 @@ class RunnerCli : CliktCommand(name = "runner") {
                     .build()
                 val metricProducer = meterProvider as MetricProducer
 
-                val operational = scenario.get("operational", Document::class.java)
+                val operational = scenario.operationalPhenomena
                 val allocationPolicy =
-                    when (val policyName = operational.getString("schedulerName")) {
+                    when (val policyName = operational.schedulerName) {
                         "mem" -> FilterScheduler(
                             filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
                             weighers = listOf(MemoryWeigher() to -1.0)
@@ -275,7 +245,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     Workload(workloadName, workloadFraction),
                     seed
                 )
-                val failureFrequency = if (operational.getBoolean("failuresEnabled", false)) 24.0 * 7 else 0.0
+                val failureFrequency = if (operational.failuresEnabled) 24.0 * 7 else 0.0
 
                 withComputeService(clock, meterProvider, environment, allocationPolicy, interferenceModel) { scheduler ->
                     val failureDomain = if (failureFrequency > 0) {
@@ -315,17 +285,14 @@ class RunnerCli : CliktCommand(name = "runner") {
         return monitor.getResult()
     }
 
-    private val POLL_INTERVAL = 5000L // ms = 5 s
+    private val POLL_INTERVAL = 30000L // ms = 30 s
     private val HEARTBEAT_INTERVAL = 60000L // ms = 1 min
 
     override fun run(): Unit = runBlocking(Dispatchers.Default) {
         logger.info { "Starting OpenDC web runner" }
-        logger.info { "Connecting to MongoDB instance" }
-        val database = createDatabase()
-        val manager = ScenarioManager(database.getCollection("scenarios"))
-        val portfolios = database.getCollection("portfolios")
-        val topologies = database.getCollection("topologies")
-        val topologyParser = TopologyParser(topologies)
+
+        val client = ApiClient(baseUrl = apiUrl, AuthConfiguration(authDomain, authClientId, authClientSecret))
+        val manager = ScenarioManager(client)
 
         logger.info { "Watching for queued scenarios" }
 
@@ -337,7 +304,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                 continue
             }
 
-            val id = scenario.getObjectId("_id")
+            val id = scenario.id
 
             logger.info { "Found queued scenario $id: attempting to claim" }
 
@@ -350,14 +317,16 @@ class RunnerCli : CliktCommand(name = "runner") {
                 // Launch heartbeat process
                 val heartbeat = launch {
                     while (true) {
-                        delay(HEARTBEAT_INTERVAL)
                         manager.heartbeat(id)
+                        delay(HEARTBEAT_INTERVAL)
                     }
                 }
 
                 try {
-                    val portfolio = portfolios.find(Filters.eq("_id", scenario.getObjectId("portfolioId"))).first()!!
-                    val results = runScenario(portfolio, scenario, topologyParser)
+                    val scenarioModel = client.getScenario(id)!!
+                    val portfolio = client.getPortfolio(scenarioModel.portfolioId)!!
+                    val environment = convert(client.getTopology(scenarioModel.topology.topologyId)!!)
+                    val results = runScenario(portfolio, scenarioModel, environment)
 
                     logger.info { "Writing results to database" }
 
@@ -371,6 +340,60 @@ class RunnerCli : CliktCommand(name = "runner") {
                     heartbeat.cancel()
                 }
             }
+        }
+    }
+
+    /**
+     * Convert the specified [topology] into an [EnvironmentReader] understood by Capelin.
+     */
+    private fun convert(topology: Topology): EnvironmentReader {
+        val nodes = mutableListOf<MachineDef>()
+        val random = Random(0)
+
+        val machines = topology.rooms.asSequence()
+            .flatMap { room ->
+                room.tiles.flatMap { tile ->
+                    tile.rack?.machines?.map { machine -> tile.rack to machine } ?: emptyList()
+                }
+            }
+        for ((rack, machine) in machines) {
+            val clusterId = rack.id
+            val position = machine.position
+
+            val processors = machine.cpus.flatMap { cpu ->
+                val cores = cpu.numberOfCores
+                val speed = cpu.clockRateMhz
+                // TODO Remove hard coding of vendor
+                val node = ProcessingNode("Intel", "amd64", cpu.name, cores)
+                List(cores) { coreId ->
+                    ProcessingUnit(node, coreId, speed)
+                }
+            }
+            val memoryUnits = machine.memory.map { memory ->
+                MemoryUnit(
+                    "Samsung",
+                    memory.name,
+                    memory.speedMbPerS,
+                    memory.sizeMb.toLong()
+                )
+            }
+
+            val energyConsumptionW = machine.cpus.sumOf { it.energyConsumptionW }
+
+            nodes.add(
+                MachineDef(
+                    UUID(random.nextLong(), random.nextLong()),
+                    "node-$clusterId-$position",
+                    mapOf("cluster" to clusterId),
+                    MachineModel(processors, memoryUnits),
+                    LinearPowerModel(2 * energyConsumptionW, energyConsumptionW * 0.5)
+                )
+            )
+        }
+
+        return object : EnvironmentReader {
+            override fun read(): List<MachineDef> = nodes
+            override fun close() {}
         }
     }
 }

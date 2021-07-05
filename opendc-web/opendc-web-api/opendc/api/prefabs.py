@@ -24,7 +24,6 @@ from flask_restful import Resource
 from marshmallow import Schema, fields
 
 from opendc.models.prefab import Prefab as PrefabModel, PrefabSchema
-from opendc.database import Database
 from opendc.exts import current_user, requires_auth, db
 
 
@@ -56,14 +55,15 @@ class PrefabList(Resource):
         result = schema.load(request.json)
 
         prefab = PrefabModel(result['prefab'])
-        prefab.set_property('datetimeCreated', Database.datetime_to_string(datetime.now()))
-        prefab.set_property('datetimeLastEdited', Database.datetime_to_string(datetime.now()))
+        prefab.set_property('datetimeCreated', datetime.now())
+        prefab.set_property('datetimeLastEdited', datetime.now())
 
         user_id = current_user['sub']
         prefab.set_property('authorId', user_id)
 
         prefab.insert()
-        return {'data': prefab.obj}
+        data = PrefabSchema().dump(prefab.obj)
+        return {'data': data}
 
     class PostSchema(Schema):
         """
@@ -83,7 +83,8 @@ class Prefab(Resource):
         prefab = PrefabModel.from_id(prefab_id)
         prefab.check_exists()
         prefab.check_user_access(current_user['sub'])
-        return {'data': prefab.obj}
+        data = PrefabSchema().dump(prefab.obj)
+        return {'data': data}
 
     def put(self, prefab_id):
         """Update a prefab's name and/or contents."""
@@ -97,10 +98,11 @@ class Prefab(Resource):
 
         prefab.set_property('name', result['prefab']['name'])
         prefab.set_property('rack', result['prefab']['rack'])
-        prefab.set_property('datetime_last_edited', Database.datetime_to_string(datetime.now()))
+        prefab.set_property('datetimeLastEdited', datetime.now())
         prefab.update()
 
-        return {'data': prefab.obj}
+        data = PrefabSchema().dump(prefab.obj)
+        return {'data': data}
 
     def delete(self, prefab_id):
         """Delete this Prefab."""
@@ -111,7 +113,8 @@ class Prefab(Resource):
 
         old_object = prefab.delete()
 
-        return {'data': old_object}
+        data = PrefabSchema().dump(old_object)
+        return {'data': data}
 
     class PutSchema(Schema):
         """

@@ -1,13 +1,10 @@
+from datetime import datetime
+
 from marshmallow import Schema, fields
+
+from opendc.exts import db
 from opendc.models.model import Model
 from opendc.models.portfolio import Portfolio
-
-
-class SimulationSchema(Schema):
-    """
-    Simulation details.
-    """
-    state = fields.String()
 
 
 class TraceSchema(Schema):
@@ -38,10 +35,9 @@ class ScenarioSchema(Schema):
     """
     Schema representing a scenario.
     """
-    _id = fields.String()
+    _id = fields.String(dump_only=True)
     portfolioId = fields.String()
     name = fields.String(required=True)
-    simulation = fields.Nested(SimulationSchema)
     trace = fields.Nested(TraceSchema)
     topology = fields.Nested(TopologySchema)
     operational = fields.Nested(OperationalSchema)
@@ -62,3 +58,21 @@ class Scenario(Model):
         """
         portfolio = Portfolio.from_id(self.obj['portfolioId'])
         portfolio.check_user_access(user_id, edit_access)
+
+    @classmethod
+    def get_jobs(cls):
+        """Obtain the scenarios that have been queued.
+        """
+        return cls(db.fetch_all({'simulation.state': 'QUEUED'}, cls.collection_name))
+
+    def update_state(self, new_state, results=None):
+        """Atomically update the state of the Scenario.
+        """
+        update = {'$set': {'simulation.state': new_state, 'simulation.heartbeat': datetime.now()}}
+        if results:
+            update['$set']['results'] = results
+        return db.fetch_and_update(
+            query={'_id': self.obj['_id'], 'simulation.state': self.obj['simulation']['state']},
+            update=update,
+            collection=self.collection_name
+        )

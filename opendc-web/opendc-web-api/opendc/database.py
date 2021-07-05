@@ -19,9 +19,8 @@
 #  SOFTWARE.
 
 import urllib.parse
-from datetime import datetime
 
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 
 DATETIME_STRING_FORMAT = '%Y-%m-%dT%H:%M:%S'
 CONNECTION_POOL = None
@@ -77,6 +76,12 @@ class Database:
         """Updates an existing object."""
         return getattr(self.opendc_db, collection).update({'_id': _id}, obj)
 
+    def fetch_and_update(self, query, update, collection):
+        """Updates an existing object."""
+        return getattr(self.opendc_db, collection).find_one_and_update(query,
+                                                                       update,
+                                                                       return_document=ReturnDocument.AFTER)
+
     def delete_one(self, query, collection):
         """Deletes one object matching the given query.
 
@@ -90,13 +95,3 @@ class Database:
         The query needs to be in json format, i.e.: `{'name': prefab_name}`.
         """
         getattr(self.opendc_db, collection).delete_many(query)
-
-    @staticmethod
-    def datetime_to_string(datetime_to_convert):
-        """Return a database-compatible string representation of the given datetime object."""
-        return datetime_to_convert.strftime(DATETIME_STRING_FORMAT)
-
-    @staticmethod
-    def string_to_datetime(string_to_convert):
-        """Return a datetime corresponding to the given string representation."""
-        return datetime.strptime(string_to_convert, DATETIME_STRING_FORMAT)

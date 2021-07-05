@@ -21,7 +21,7 @@
 from flask_restful import Resource
 
 from opendc.exts import requires_auth
-from opendc.models.trace import Trace as TraceModel
+from opendc.models.trace import Trace as TraceModel, TraceSchema
 
 
 class TraceList(Resource):
@@ -33,7 +33,7 @@ class TraceList(Resource):
     def get(self):
         """Get all available Traces."""
         traces = TraceModel.get_all()
-        data = traces.obj
+        data = TraceSchema().dump(traces.obj, many=True)
         return {'data': data}
 
 
@@ -47,5 +47,5 @@ class Trace(Resource):
         """Get trace information by identifier."""
         trace = TraceModel.from_id(trace_id)
         trace.check_exists()
-        data = trace.obj
+        data = TraceSchema().dump(trace.obj)
         return {'data': data}
