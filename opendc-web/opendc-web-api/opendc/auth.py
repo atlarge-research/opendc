@@ -40,10 +40,7 @@ def get_token():
     parts = auth.split()
 
     if parts[0].lower() != "bearer":
-        raise AuthError({
-            "code": "invalid_header",
-            "description": "Authorization header must start with Bearer"
-        }, 401)
+        raise AuthError({"code": "invalid_header", "description": "Authorization header must start with Bearer"}, 401)
     if len(parts) == 1:
         raise AuthError({"code": "invalid_header", "description": "Token not found"}, 401)
     if len(parts) > 2:

@@ -83,10 +83,9 @@ def requires_scope(required_scope):
         @wraps(f)
         def decorated(*args, **kwargs):
             if not has_scope(required_scope):
-                raise AuthError({
-                    "code": "Unauthorized",
-                    "description": "You don't have access to this resource"
-                }, 403)
+                raise AuthError({"code": "Unauthorized", "description": "You don't have access to this resource"}, 403)
             return f(*args, **kwargs)
+
         return decorated
+
     return decorator

@@ -30,6 +30,36 @@ def test_get_user_projects(client, mocker):
     assert '200' in res.status
 
 
+def test_get_user_topologies(client, mocker):
+    mocker.patch.object(db,
+                        'fetch_one',
+                        return_value={
+                            '_id': test_id,
+                            'authorizations': [{
+                                'userId': 'test',
+                                'level': 'EDIT'
+                            }]
+                        })
+    mocker.patch.object(db, 'fetch_all', return_value=[{'_id': test_id}])
+    res = client.get(f'/projects/{test_id}/topologies')
+    assert '200' in res.status
+
+
+def test_get_user_portfolios(client, mocker):
+    mocker.patch.object(db,
+                        'fetch_one',
+                        return_value={
+                            '_id': test_id,
+                            'authorizations': [{
+                                'userId': 'test',
+                                'level': 'EDIT'
+                            }]
+                        })
+    mocker.patch.object(db, 'fetch_all', return_value=[{'_id': test_id}])
+    res = client.get(f'/projects/{test_id}/portfolios')
+    assert '200' in res.status
+
+
 def test_add_project_missing_parameter(client):
     assert '400' in client.post('/projects/').status
 

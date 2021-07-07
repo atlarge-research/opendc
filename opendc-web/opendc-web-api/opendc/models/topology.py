@@ -1,5 +1,7 @@
+from bson import ObjectId
 from marshmallow import Schema, fields
 
+from opendc.exts import db
 from opendc.models.project import Project
 from opendc.models.model import Model
 
@@ -93,3 +95,8 @@ class Topology(Model):
         """
         project = Project.from_id(self.obj['projectId'])
         project.check_user_access(user_id, edit_access)
+
+    @classmethod
+    def get_for_project(cls, project_id):
+        """Get all topologies for the specified project id."""
+        return db.fetch_all({'projectId': ObjectId(project_id)}, cls.collection_name)

@@ -222,6 +222,49 @@ paths:
               schema:
                 $ref: "#/components/schemas/NotFound"
   "/projects/{projectId}/topologies":
+    get:
+      tags:
+        - projects
+      description: Get Project Topologies.
+      parameters:
+        - name: projectId
+          in: path
+          description: Project's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved Project Topologies.
+          content:
+            "application/json":
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Topology"
+        "401":
+          description: Unauthorized.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
+          description: Forbidden from retrieving Project.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Forbidden"
+        "404":
+          description: Project not found.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/NotFound"
     post:
       tags:
         - projects
@@ -273,9 +316,52 @@ paths:
               schema:
                 $ref: "#/components/schemas/NotFound"
   "/projects/{projectId}/portfolios":
+    get:
+      tags:
+        - projects
+      description: Get Project Portfolios.
+      parameters:
+        - name: projectId
+          in: path
+          description: Project's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved Project Portfolios.
+          content:
+            "application/json":
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Portfolio"
+        "401":
+          description: Unauthorized.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
+          description: Forbidden from retrieving Project.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Forbidden"
+        "404":
+          description: Project not found.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/NotFound"
     post:
       tags:
-        - portfolios
+        - projects
       description: Add a Portfolio.
       parameters:
         - name: projectId
@@ -605,6 +691,100 @@ paths:
             "application/json":
               schema:
                 $ref: "#/components/schemas/Forbidden"
+        "404":
+          description: Portfolio not found.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/NotFound"
+  "/portfolios/{portfolioId}/scenarios":
+    get:
+      tags:
+        - portfolios
+      description: Get Portfolio Scenarios.
+      parameters:
+        - name: portfolioId
+          in: path
+          description: Portfolio's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved Portfolio Scenarios.
+          content:
+            "application/json":
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Scenario"
+        "401":
+          description: Unauthorized.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
+          description: Forbidden from retrieving Portfolio.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Forbidden"
+        "404":
+          description: Portfolio not found.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/NotFound"
+    post:
+      tags:
+        - portfolios
+      description: Add a Scenario.
+      parameters:
+        - name: portfolioId
+          in: path
+          description: Portfolio's ID.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                topology:
+                  $ref: "#/components/schemas/Scenario"
+        description: The new Scenario.
+        required: true
+      responses:
+        "200":
+          description: Successfully added Scenario.
+          content:
+            "application/json":
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Scenario"
+        "400":
+          description: Missing or incorrectly typed parameter.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Invalid"
+        "401":
+          description: Unauthorized.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Unauthorized"
         "404":
           description: Portfolio not found.
           content:

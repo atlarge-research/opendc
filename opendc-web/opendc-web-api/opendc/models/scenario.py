@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from bson import ObjectId
 from marshmallow import Schema, fields
 
 from opendc.exts import db
@@ -64,6 +65,11 @@ class Scenario(Model):
         """Obtain the scenarios that have been queued.
         """
         return cls(db.fetch_all({'simulation.state': 'QUEUED'}, cls.collection_name))
+
+    @classmethod
+    def get_for_portfolio(cls, portfolio_id):
+        """Get all scenarios for the specified portfolio id."""
+        return db.fetch_all({'portfolioId': ObjectId(portfolio_id)}, cls.collection_name)
 
     def update_state(self, new_state, results=None):
         """Atomically update the state of the Scenario.

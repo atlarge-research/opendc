@@ -103,6 +103,20 @@ class PortfolioScenarios(Resource):
     """
     method_decorators = [requires_auth]
 
+    def get(self, portfolio_id):
+        """
+        Get all scenarios belonging to a portfolio.
+        """
+        portfolio = PortfolioModel.from_id(portfolio_id)
+
+        portfolio.check_exists()
+        portfolio.check_user_access(current_user['sub'], True)
+
+        scenarios = Scenario.get_for_portfolio(portfolio_id)
+
+        data = ScenarioSchema().dump(scenarios, many=True)
+        return {'data': data}
+
     def post(self, portfolio_id):
         """
         Add a new scenario to this portfolio

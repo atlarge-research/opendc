@@ -132,6 +132,18 @@ class ProjectTopologies(Resource):
     """
     method_decorators = [requires_auth]
 
+    def get(self, project_id):
+        """Get all topologies belonging to the project."""
+        project = ProjectModel.from_id(project_id)
+
+        project.check_exists()
+        project.check_user_access(current_user['sub'], True)
+
+        topologies = Topology.get_for_project(project_id)
+        data = TopologySchema().dump(topologies, many=True)
+
+        return {'data': data}
+
     def post(self, project_id):
         """Add a new Topology to the specified project and return it"""
         schema = ProjectTopologies.PutSchema()
@@ -170,6 +182,18 @@ class ProjectPortfolios(Resource):
     """
     method_decorators = [requires_auth]
 
+    def get(self, project_id):
+        """Get all portfolios belonging to the project."""
+        project = ProjectModel.from_id(project_id)
+
+        project.check_exists()
+        project.check_user_access(current_user['sub'], True)
+
+        portfolios = Portfolio.get_for_project(project_id)
+        data = PortfolioSchema().dump(portfolios, many=True)
+
+        return {'data': data}
+
     def post(self, project_id):
         """Add a new Portfolio for this Project."""
         schema = ProjectPortfolios.PutSchema()
@@ -190,7 +214,8 @@ class ProjectPortfolios(Resource):
         project.obj['portfolioIds'].append(portfolio.get_id())
         project.update()
 
-        return {'data': portfolio.obj}
+        data = PortfolioSchema().dump(portfolio.obj)
+        return {'data': data}
 
     class PutSchema(Schema):
         """
