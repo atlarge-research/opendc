@@ -1,13 +1,11 @@
 import { call, put, select, getContext } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
 import { getAllSchedulers } from '../../api/schedulers'
-import { getProject } from '../../api/projects'
 import { getAllTraces } from '../../api/traces'
 import { getTopology, updateTopology } from '../../api/topologies'
 import { uuid } from 'uuidv4'
 
 export const OBJECT_SELECTORS = {
-    project: (state) => state.objects.project,
     user: (state) => state.objects.user,
     authorization: (state) => state.objects.authorization,
     portfolio: (state) => state.objects.portfolio,
@@ -39,11 +37,6 @@ function* fetchAndStoreObjects(objectType, apiCall) {
         yield put(addToStore(objectType, object))
     }
     return objects
-}
-
-export const fetchAndStoreProject = function* (id) {
-    const auth = yield getContext('auth')
-    return yield fetchAndStoreObject('project', id, call(getProject, auth, id))
 }
 
 export const fetchAndStoreTopology = function* (id) {

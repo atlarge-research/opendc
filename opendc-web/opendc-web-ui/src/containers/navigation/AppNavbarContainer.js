@@ -1,9 +1,10 @@
 import React from 'react'
 import AppNavbarComponent from '../../components/navigation/AppNavbarComponent'
-import { useActiveProject } from '../../data/project'
+import { useActiveProjectId, useProject } from '../../data/project'
 
 const AppNavbarContainer = (props) => {
-    const project = useActiveProject()
+    const projectId = useActiveProjectId()
+    const { data: project } = useProject(projectId)
     return <AppNavbarComponent {...props} project={project} />
 }
 

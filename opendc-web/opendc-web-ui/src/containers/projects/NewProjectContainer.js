@@ -1,20 +1,25 @@
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { addProject } from '../../redux/actions/projects'
 import TextInputModal from '../../components/modals/TextInputModal'
 import { Button } from 'reactstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { useMutation, useQueryClient } from 'react-query'
+import { addProject } from '../../api/projects'
+import { useAuth } from '../../auth'
 
 /**
  * A container for creating a new project.
  */
 const NewProjectContainer = () => {
     const [isVisible, setVisible] = useState(false)
-    const dispatch = useDispatch()
+    const auth = useAuth()
+    const queryClient = useQueryClient()
+    const mutation = useMutation((data) => addProject(auth, data), {
+        onSuccess: (result) => queryClient.setQueryData('projects', (old) => [...(old || []), result]),
+    })
     const callback = (text) => {
         if (text) {
-            dispatch(addProject(text))
+            mutation.mutate({ name: text })
         }
         setVisible(false)
     }

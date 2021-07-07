@@ -1,6 +1,6 @@
 import { call, put, select, getContext } from 'redux-saga/effects'
 import { addPropToStoreObject, addToStore } from '../actions/objects'
-import { getProject } from '../../api/projects'
+import { fetchProject } from '../../api/projects'
 import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
 import { fetchAndStoreAllTopologiesOfProject } from './topology'
 import { addScenario, deleteScenario, updateScenario } from '../../api/scenarios'
@@ -9,7 +9,10 @@ import { fetchPortfolioWithScenarios, watchForPortfolioResults } from './portfol
 export function* onOpenScenarioSucceeded(action) {
     try {
         const auth = yield getContext('auth')
-        const project = yield call(getProject, auth, action.projectId)
+        const queryClient = yield getContext('queryClient')
+        const project = yield call(() =>
+            queryClient.fetchQuery(`projects/${action.projectId}`, () => fetchProject(auth, action.projectId))
+        )
         yield put(addToStore('project', project))
         yield fetchAndStoreAllTopologiesOfProject(project._id)
         yield fetchAndStoreAllSchedulers()

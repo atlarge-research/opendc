@@ -6,11 +6,13 @@ import { useRouter } from 'next/router'
 import { addTopology, deleteTopology } from '../../../../redux/actions/topologies'
 import NewTopologyModalComponent from '../../../../components/modals/custom-components/NewTopologyModalComponent'
 import { useActiveTopology, useProjectTopologies } from '../../../../data/topology'
+import { useProject } from '../../../../data/project'
 
 const TopologyListContainer = () => {
     const dispatch = useDispatch()
     const router = useRouter()
     const { project: currentProjectId } = router.query
+    const { data: currentProject } = useProject(currentProjectId)
     const topologies = useProjectTopologies()
     const currentTopologyId = useActiveTopology()?._id
     const [isVisible, setVisible] = useState(false)
@@ -22,7 +24,7 @@ const TopologyListContainer = () => {
     const onDeleteTopology = async (id) => {
         if (id) {
             dispatch(deleteTopology(id))
-            dispatch(setCurrentTopology(state.objects.project[currentProjectId].topologyIds[0]))
+            dispatch(setCurrentTopology(currentProject.topologyIds[0]))
             await router.push(`/projects/${currentProjectId}`)
         }
     }

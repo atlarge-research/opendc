@@ -25,7 +25,7 @@ function PortfolioListComponent({
                 </Button>
             </h2>
 
-            {portfolios.map((portfolio, idx) => (
+            {portfolios.map((portfolio) => (
                 <div key={portfolio._id}>
                     <Row className="row mb-1">
                         <Col

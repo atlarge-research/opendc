@@ -7,11 +7,8 @@ import NewScenarioModalComponent from '../../../../components/modals/custom-comp
 import { useProjectTopologies } from '../../../../data/topology'
 import { useScenarios } from '../../../../data/project'
 import { useSchedulers, useTraces } from '../../../../data/experiments'
-import { useRouter } from 'next/router'
 
 const ScenarioListContainer = ({ portfolioId }) => {
-    const router = useRouter()
-    const { project: currentProjectId } = router.query
     const scenarios = useScenarios(portfolioId)
     const topologies = useProjectTopologies()
     const traces = useTraces()
@@ -23,7 +20,6 @@ const ScenarioListContainer = ({ portfolioId }) => {
     const onNewScenario = (currentPortfolioId) => {
         setVisible(true)
     }
-    const onChooseScenario = (portfolioId, scenarioId) => {}
     const onDeleteScenario = (id) => {
         if (id) {
             dispatch(deleteScenario(id))
@@ -67,7 +63,7 @@ const ScenarioListContainer = ({ portfolioId }) => {
 }
 
 ScenarioListContainer.propTypes = {
-    portfolioId: PropTypes.string.isRequired,
+    portfolioId: PropTypes.string,
 }
 
 export default ScenarioListContainer

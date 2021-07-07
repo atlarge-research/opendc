@@ -1,13 +1,18 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import { deleteProject } from '../../redux/actions/projects'
 import ProjectActionButtons from '../../components/projects/ProjectActionButtons'
+import { useMutation, useQueryClient } from 'react-query'
+import { useAuth } from '../../auth'
+import { deleteProject } from '../../api/projects'
 
 const ProjectActions = (props) => {
-    const dispatch = useDispatch()
+    const auth = useAuth()
+    const queryClient = useQueryClient()
+    const mutation = useMutation((projectId) => deleteProject(auth, projectId), {
+        onSuccess: () => queryClient.invalidateQueries('projects'),
+    })
     const actions = {
         onViewUsers: (id) => {}, // TODO implement user viewing
-        onDelete: (id) => dispatch(deleteProject(id)),
+        onDelete: (id) => mutation.mutate(id),
     }
     return <ProjectActionButtons {...props} {...actions} />
 }

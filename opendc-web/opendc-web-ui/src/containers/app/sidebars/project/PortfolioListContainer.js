@@ -6,11 +6,12 @@ import { addPortfolio, deletePortfolio } from '../../../../redux/actions/portfol
 import { getState } from '../../../../util/state-utils'
 import { setCurrentTopology } from '../../../../redux/actions/topology/building'
 import NewPortfolioModalComponent from '../../../../components/modals/custom-components/NewPortfolioModalComponent'
-import { usePortfolios } from '../../../../data/project'
+import { useActivePortfolioId, useActiveProjectId, usePortfolios, useProject } from '../../../../data/project'
 
 const PortfolioListContainer = () => {
     const router = useRouter()
     const { project: currentProjectId, portfolio: currentPortfolioId } = router.query
+    const { data: currentProject } = useProject(currentProjectId)
     const portfolios = usePortfolios(currentProjectId)
 
     const dispatch = useDispatch()
@@ -24,7 +25,7 @@ const PortfolioListContainer = () => {
             if (id) {
                 const state = await getState(dispatch)
                 dispatch(deletePortfolio(id))
-                dispatch(setCurrentTopology(state.objects.project[currentProjectId].topologyIds[0]))
+                dispatch(setCurrentTopology(currentProject.topologyIds[0]))
                 await router.push(`/projects/${currentProjectId}`)
             }
         },

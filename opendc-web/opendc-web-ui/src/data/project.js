@@ -21,39 +21,43 @@
  */
 
 import { useSelector } from 'react-redux'
+import { useQuery } from 'react-query'
+import { fetchProject, fetchProjects } from '../api/projects'
+import { useAuth } from '../auth'
 import { useRouter } from 'next/router'
 
 /**
  * Return the available projects.
  */
 export function useProjects() {
-    return useSelector((state) => state.projects)
+    const auth = useAuth()
+    return useQuery('projects', () => fetchProjects(auth))
 }
 
 /**
  * Return the project with the specified identifier.
  */
 export function useProject(projectId) {
-    return useSelector((state) => state.projects[projectId])
+    const auth = useAuth()
+    return useQuery(`projects/${projectId}`, () => fetchProject(auth, projectId), { enabled: !!projectId })
 }
 
 /**
- * Return the current active project.
+ * Return the current active project identifier.
  */
-export function useActiveProject() {
+export function useActiveProjectId() {
     const router = useRouter()
-    const { project: projectId } = router.query
-    return useSelector((state) => state.objects.project[projectId])
+    const { project } = router.query
+    return project
 }
 
 /**
  * Return the portfolios for the specified project id.
  */
 export function usePortfolios(projectId) {
+    const { data: project } = useProject(projectId)
     return useSelector((state) => {
-        let portfolios = state.objects.project[projectId]
-            ? state.objects.project[projectId].portfolioIds.map((t) => state.objects.portfolio[t])
-            : []
+        let portfolios = project?.portfolioIds?.map((t) => state.objects.portfolio[t]) ?? []
         if (portfolios.filter((t) => !t).length > 0) {
             portfolios = []
         }

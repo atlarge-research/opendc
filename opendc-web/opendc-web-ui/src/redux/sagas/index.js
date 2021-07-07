@@ -11,7 +11,7 @@ import { ADD_UNIT, DELETE_MACHINE, DELETE_UNIT } from '../actions/topology/machi
 import { ADD_MACHINE, DELETE_RACK, EDIT_RACK_NAME } from '../actions/topology/rack'
 import { ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME } from '../actions/topology/room'
 import { onAddPortfolio, onDeletePortfolio, onOpenPortfolioSucceeded, onUpdatePortfolio } from './portfolios'
-import { onFetchProjects, onOpenProjectSucceeded, onProjectAdd, onProjectDelete } from './projects'
+import { onOpenProjectSucceeded } from './projects'
 import {
     onAddMachine,
     onAddRackToTile,
@@ -36,10 +36,6 @@ import { onAddPrefab } from './prefabs'
 import { ADD_PREFAB } from '../actions/prefabs'
 
 export default function* rootSaga() {
-    yield takeEvery(FETCH_PROJECTS, onFetchProjects)
-    yield takeEvery(ADD_PROJECT, onProjectAdd)
-    yield takeEvery(DELETE_PROJECT, onProjectDelete)
-
     yield takeEvery(OPEN_PROJECT_SUCCEEDED, onOpenProjectSucceeded)
     yield takeEvery(OPEN_PORTFOLIO_SUCCEEDED, onOpenPortfolioSucceeded)
     yield takeEvery(OPEN_SCENARIO_SUCCEEDED, onOpenScenarioSucceeded)

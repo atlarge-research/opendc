@@ -24,7 +24,6 @@ import { useRouter } from 'next/router'
 import { useProject } from '../../../../data/project'
 import { useDispatch, useSelector } from 'react-redux'
 import React, { useEffect } from 'react'
-import { openProjectSucceeded } from '../../../../redux/actions/projects'
 import { HotKeys } from 'react-hotkeys'
 import { KeymapConfiguration } from '../../../../hotkeys'
 import Head from 'next/head'
@@ -35,6 +34,7 @@ import ScaleIndicatorContainer from '../../../../containers/app/map/controls/Sca
 import ToolPanelComponent from '../../../../components/app/map/controls/ToolPanelComponent'
 import ProjectSidebarContainer from '../../../../containers/app/sidebars/project/ProjectSidebarContainer'
 import TopologySidebarContainer from '../../../../containers/app/sidebars/topology/TopologySidebarContainer'
+import { openProjectSucceeded } from '../../../../redux/actions/projects'
 
 /**
  * Page that displays a datacenter topology.
@@ -43,7 +43,7 @@ function Topology() {
     const router = useRouter()
     const { project: projectId, topology: topologyId } = router.query
 
-    const project = useProject(projectId)
+    const { data: project } = useProject(projectId)
     const title = project?.name ? project?.name + ' - OpenDC' : 'Simulation - OpenDC'
 
     const dispatch = useDispatch()

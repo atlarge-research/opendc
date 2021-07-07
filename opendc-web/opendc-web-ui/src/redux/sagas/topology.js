@@ -19,10 +19,15 @@ import {
 import { fetchAndStoreTopology, getTopologyAsObject, updateTopologyOnServer } from './objects'
 import { uuid } from 'uuidv4'
 import { addTopology, deleteTopology } from '../../api/topologies'
+import { fetchProject } from '../../api/projects'
 
 export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = false) {
     try {
-        const project = yield select((state) => state.objects.project[projectId])
+        const auth = yield getContext('auth')
+        const queryClient = yield getContext('queryClient')
+        const project = yield call(() =>
+            queryClient.fetchQuery(`projects/${projectId}`, () => fetchProject(auth, projectId))
+        )
 
         for (let i in project.topologyIds) {
             yield fetchAndStoreTopology(project.topologyIds[i])
@@ -51,13 +56,6 @@ export function* onAddTopology(action) {
         const auth = yield getContext('auth')
         const topology = yield call(addTopology, auth, { ...topologyToBeCreated, projectId })
         yield fetchAndStoreTopology(topology._id)
-
-        const topologyIds = yield select((state) => state.objects.project[projectId].topologyIds)
-        yield put(
-            addPropToStoreObject('project', projectId, {
-                topologyIds: topologyIds.concat([topology._id]),
-            })
-        )
         yield put(setCurrentTopology(topology._id))
     } catch (error) {
         console.error(error)
@@ -66,21 +64,19 @@ export function* onAddTopology(action) {
 
 export function* onDeleteTopology(action) {
     try {
-        const topology = yield select((state) => state.objects.topologies[action.id])
-        const topologyIds = yield select((state) => state.objects.project[topology.projectId].topologyIds)
+        const auth = yield getContext('auth')
+        const queryClient = yield getContext('queryClient')
+        const project = yield call(() =>
+            queryClient.fetchQuery(`projects/${action.projectId}`, () => fetchProject(auth, action.projectId))
+        )
+        const topologyIds = project?.topologyIds ?? []
+
         const currentTopologyId = yield select((state) => state.currentTopologyId)
         if (currentTopologyId === action.id) {
             yield put(setCurrentTopology(topologyIds.filter((t) => t !== action.id)[0]))
         }
 
-        const auth = yield getContext('auth')
         yield call(deleteTopology, auth, action.id)
-
-        yield put(
-            addPropToStoreObject('project', topology.projectId, {
-                topologyIds: topologyIds.filter((id) => id !== action.id),
-            })
-        )
     } catch (error) {
         console.error(error)
     }

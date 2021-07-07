@@ -1,7 +1,7 @@
 import { call, put, select, delay, getContext } from 'redux-saga/effects'
-import { addPropToStoreObject, addToStore } from '../actions/objects'
+import { addToStore } from '../actions/objects'
 import { addPortfolio, deletePortfolio, getPortfolio, updatePortfolio } from '../../api/portfolios'
-import { getProject } from '../../api/projects'
+import { fetchProject } from '../../api/projects'
 import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
 import { fetchAndStoreAllTopologiesOfProject } from './topology'
 import { getScenario } from '../../api/scenarios'
@@ -9,9 +9,11 @@ import { getScenario } from '../../api/scenarios'
 export function* onOpenPortfolioSucceeded(action) {
     try {
         const auth = yield getContext('auth')
-        const project = yield call(getProject, auth, action.projectId)
-        yield put(addToStore('project', project))
-        yield fetchAndStoreAllTopologiesOfProject(project._id)
+        const queryClient = yield getContext('queryClient')
+        const project = yield call(() =>
+            queryClient.fetchQuery(`projects/${action.projectId}`, () => fetchProject(auth, action.projectId))
+        )
+        yield fetchAndStoreAllTopologiesOfProject(action.projectId)
         yield fetchPortfoliosOfProject(project)
         yield fetchAndStoreAllSchedulers()
         yield fetchAndStoreAllTraces()
@@ -94,13 +96,6 @@ export function* onAddPortfolio(action) {
             })
         )
         yield put(addToStore('portfolio', portfolio))
-
-        const portfolioIds = yield select((state) => state.objects.project[projectId].portfolioIds)
-        yield put(
-            addPropToStoreObject('project', projectId, {
-                portfolioIds: portfolioIds.concat([portfolio._id]),
-            })
-        )
     } catch (error) {
         console.error(error)
     }
@@ -119,17 +114,7 @@ export function* onUpdatePortfolio(action) {
 export function* onDeletePortfolio(action) {
     try {
         const auth = yield getContext('auth')
-        const portfolio = yield select((state) => state.objects.portfolio[action.id])
-
         yield call(deletePortfolio, auth, action.id)
-
-        const portfolioIds = yield select((state) => state.objects.project[portfolio.projectId].portfolioIds)
-
-        yield put(
-            addPropToStoreObject('project', portfolio.projectId, {
-                portfolioIds: portfolioIds.filter((id) => id !== action.id),
-            })
-        )
     } catch (error) {
         console.error(error)
     }

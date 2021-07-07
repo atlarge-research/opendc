@@ -28,15 +28,20 @@ import '../index.scss'
 import { AuthProvider, useAuth } from '../auth'
 import * as Sentry from '@sentry/react'
 import { Integrations } from '@sentry/tracing'
+import { QueryClient, QueryClientProvider } from 'react-query'
+import { useMemo } from 'react'
 
 // This setup is necessary to forward the Auth0 context to the Redux context
 const Inner = ({ Component, pageProps }) => {
     const auth = useAuth()
-    const store = useStore(pageProps.initialReduxState, { auth })
+    const queryClient = useMemo(() => new QueryClient(), [])
+    const store = useStore(pageProps.initialReduxState, { auth, queryClient })
     return (
-        <Provider store={store}>
-            <Component {...pageProps} />
-        </Provider>
+        <QueryClientProvider client={queryClient}>
+            <Provider store={store}>
+                <Component {...pageProps} />
+            </Provider>
+        </QueryClientProvider>
     )
 }
 

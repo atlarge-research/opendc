@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import ProjectList from '../../components/projects/ProjectList'
 import { useAuth } from '../../auth'
 import { useProjects } from '../../data/project'
+import { useQueryClient } from 'react-query'
 
 const getVisibleProjects = (projects, filter, userId) => {
     switch (filter) {
@@ -23,8 +24,8 @@ const getVisibleProjects = (projects, filter, userId) => {
 
 const ProjectListContainer = ({ filter }) => {
     const { user } = useAuth()
-    const projects = useProjects()
-    return <ProjectList projects={getVisibleProjects(projects, filter, user?.sub)} />
+    const { data: projects } = useProjects()
+    return <ProjectList projects={getVisibleProjects(projects ?? [], filter, user?.sub)} />
 }
 
 ProjectListContainer.propTypes = {
