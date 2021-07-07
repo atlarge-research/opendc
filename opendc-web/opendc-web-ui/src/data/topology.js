@@ -21,6 +21,7 @@
  */
 
 import { useSelector } from 'react-redux'
+import { useRouter } from 'next/router'
 
 /**
  * Return the current active topology.
@@ -33,8 +34,10 @@ export function useActiveTopology() {
  * Return the topologies for the active project.
  */
 export function useProjectTopologies() {
-    return useSelector(({ currentProjectId, objects }) => {
-        if (currentProjectId === '-1' || !objects.project[currentProjectId]) {
+    const router = useRouter()
+    const { project: currentProjectId } = router.query
+    return useSelector(({ objects }) => {
+        if (!currentProjectId || !objects.project[currentProjectId]) {
             return []
         }
 

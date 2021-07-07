@@ -61,7 +61,7 @@ function PortfolioListComponent({
 
 PortfolioListComponent.propTypes = {
     portfolios: PropTypes.arrayOf(Portfolio),
-    currentProjectId: PropTypes.string.isRequired,
+    currentProjectId: PropTypes.string,
     currentPortfolioId: PropTypes.string,
     onNewPortfolio: PropTypes.func.isRequired,
     onChoosePortfolio: PropTypes.func.isRequired,

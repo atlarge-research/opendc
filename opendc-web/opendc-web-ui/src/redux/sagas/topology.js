@@ -38,31 +38,23 @@ export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = fa
 
 export function* onAddTopology(action) {
     try {
-        const currentProjectId = yield select((state) => state.currentProjectId)
+        const { projectId, duplicateId, name } = action
 
         let topologyToBeCreated
-        if (action.duplicateId) {
-            topologyToBeCreated = yield getTopologyAsObject(action.duplicateId, false)
-            topologyToBeCreated = Object.assign({}, topologyToBeCreated, {
-                name: action.name,
-            })
+        if (duplicateId) {
+            topologyToBeCreated = yield getTopologyAsObject(duplicateId, false)
+            topologyToBeCreated = { ...topologyToBeCreated, name }
         } else {
             topologyToBeCreated = { name: action.name, rooms: [] }
         }
 
         const auth = yield getContext('auth')
-        const topology = yield call(
-            addTopology,
-            auth,
-            Object.assign({}, topologyToBeCreated, {
-                projectId: currentProjectId,
-            })
-        )
+        const topology = yield call(addTopology, auth, { ...topologyToBeCreated, projectId })
         yield fetchAndStoreTopology(topology._id)
 
-        const topologyIds = yield select((state) => state.objects.project[currentProjectId].topologyIds)
+        const topologyIds = yield select((state) => state.objects.project[projectId].topologyIds)
         yield put(
-            addPropToStoreObject('project', currentProjectId, {
+            addPropToStoreObject('project', projectId, {
                 topologyIds: topologyIds.concat([topology._id]),
             })
         )
@@ -74,8 +66,8 @@ export function* onAddTopology(action) {
 
 export function* onDeleteTopology(action) {
     try {
-        const currentProjectId = yield select((state) => state.currentProjectId)
-        const topologyIds = yield select((state) => state.objects.project[currentProjectId].topologyIds)
+        const topology = yield select((state) => state.objects.topologies[action.id])
+        const topologyIds = yield select((state) => state.objects.project[topology.projectId].topologyIds)
         const currentTopologyId = yield select((state) => state.currentTopologyId)
         if (currentTopologyId === action.id) {
             yield put(setCurrentTopology(topologyIds.filter((t) => t !== action.id)[0]))
@@ -85,7 +77,7 @@ export function* onDeleteTopology(action) {
         yield call(deleteTopology, auth, action.id)
 
         yield put(
-            addPropToStoreObject('project', currentProjectId, {
+            addPropToStoreObject('project', topology.projectId, {
                 topologyIds: topologyIds.filter((id) => id !== action.id),
             })
         )

@@ -34,7 +34,7 @@ export function* onAddScenario(action) {
                 scenarioIds: scenarioIds.concat([scenario._id]),
             })
         )
-        yield watchForPortfolioResults()
+        yield watchForPortfolioResults(action.scenario.portfolioId)
     } catch (error) {
         console.error(error)
     }
@@ -53,13 +53,13 @@ export function* onUpdateScenario(action) {
 export function* onDeleteScenario(action) {
     try {
         const auth = yield getContext('auth')
+        const scenario = yield select((state) => state.objects.scenario[action.id])
         yield call(deleteScenario, auth, action.id)
 
-        const currentPortfolioId = yield select((state) => state.currentPortfolioId)
-        const scenarioIds = yield select((state) => state.objects.portfolio[currentPortfolioId].scenarioIds)
+        const scenarioIds = yield select((state) => state.objects.portfolio[scenario.portfolioId].scenarioIds)
 
         yield put(
-            addPropToStoreObject('scenario', currentPortfolioId, {
+            addPropToStoreObject('scenario', scenario.portfolioId, {
                 scenarioIds: scenarioIds.filter((id) => id !== action.id),
             })
         )

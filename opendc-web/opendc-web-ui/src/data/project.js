@@ -21,6 +21,7 @@
  */
 
 import { useSelector } from 'react-redux'
+import { useRouter } from 'next/router'
 
 /**
  * Return the available projects.
@@ -40,23 +41,9 @@ export function useProject(projectId) {
  * Return the current active project.
  */
 export function useActiveProject() {
-    return useSelector((state) =>
-        state.currentProjectId !== '-1' ? state.objects.project[state.currentProjectId] : undefined
-    )
-}
-
-/**
- * Return the active portfolio.
- */
-export function useActivePortfolio() {
-    return useSelector((state) => state.objects.portfolio[state.currentPortfolioId])
-}
-
-/**
- * Return the active scenario.
- */
-export function useActiveScenario() {
-    return useSelector((state) => state.objects.scenario[state.currentScenarioId])
+    const router = useRouter()
+    const { project: projectId } = router.query
+    return useSelector((state) => state.objects.project[projectId])
 }
 
 /**

@@ -13,7 +13,7 @@ export function* onOpenProjectSucceeded(action) {
         yield put(addToStore('project', project))
 
         yield fetchAndStoreAllTopologiesOfProject(action.id, true)
-        yield fetchPortfoliosOfProject()
+        yield fetchPortfoliosOfProject(project)
         yield fetchAndStoreAllSchedulers()
         yield fetchAndStoreAllTraces()
     } catch (error) {

@@ -1,13 +1,16 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import PortfolioResultsComponent from '../../../components/app/results/PortfolioResultsComponent'
+import { useRouter } from 'next/router'
 
 const PortfolioResultsContainer = (props) => {
+    const router = useRouter()
+    const { portfolio: currentPortfolioId } = router.query
     const { scenarios, portfolio } = useSelector((state) => {
         if (
-            state.currentPortfolioId === '-1' ||
-            !state.objects.portfolio[state.currentPortfolioId] ||
-            state.objects.portfolio[state.currentPortfolioId].scenarioIds
+            !currentPortfolioId ||
+            !state.objects.portfolio[currentPortfolioId] ||
+            state.objects.portfolio[currentPortfolioId].scenarioIds
                 .map((scenarioId) => state.objects.scenario[scenarioId])
                 .some((s) => s === undefined)
         ) {
@@ -18,8 +21,8 @@ const PortfolioResultsContainer = (props) => {
         }
 
         return {
-            portfolio: state.objects.portfolio[state.currentPortfolioId],
-            scenarios: state.objects.portfolio[state.currentPortfolioId].scenarioIds.map(
+            portfolio: state.objects.portfolio[currentPortfolioId],
+            scenarios: state.objects.portfolio[currentPortfolioId].scenarioIds.map(
                 (scenarioId) => state.objects.scenario[scenarioId]
             ),
         }

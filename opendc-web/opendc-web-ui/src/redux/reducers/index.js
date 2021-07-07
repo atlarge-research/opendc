@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
 import { construction } from './construction-mode'
-import { currentPortfolioId, currentProjectId, currentScenarioId, currentTopologyId } from './current-ids'
+import { currentTopologyId } from './current-ids'
 import { interactionLevel } from './interaction-level'
 import { map } from './map'
 import { objects } from './objects'
@@ -11,10 +11,7 @@ const rootReducer = combineReducers({
     projects,
     construction,
     map,
-    currentProjectId,
     currentTopologyId,
-    currentPortfolioId,
-    currentScenarioId,
     interactionLevel,
 })
 

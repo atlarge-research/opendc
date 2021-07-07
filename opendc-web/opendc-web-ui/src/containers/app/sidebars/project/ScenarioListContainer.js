@@ -2,18 +2,16 @@ import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import ScenarioListComponent from '../../../../components/app/sidebars/project/ScenarioListComponent'
-import { addScenario, deleteScenario, setCurrentScenario } from '../../../../redux/actions/scenarios'
-import { setCurrentPortfolio } from '../../../../redux/actions/portfolios'
+import { addScenario, deleteScenario } from '../../../../redux/actions/scenarios'
 import NewScenarioModalComponent from '../../../../components/modals/custom-components/NewScenarioModalComponent'
 import { useProjectTopologies } from '../../../../data/topology'
-import { useActiveScenario, useScenarios } from '../../../../data/project'
+import { useScenarios } from '../../../../data/project'
 import { useSchedulers, useTraces } from '../../../../data/experiments'
 import { useRouter } from 'next/router'
 
 const ScenarioListContainer = ({ portfolioId }) => {
     const router = useRouter()
     const { project: currentProjectId } = router.query
-    const currentScenarioId = useActiveScenario()?._id
     const scenarios = useScenarios(portfolioId)
     const topologies = useProjectTopologies()
     const traces = useTraces()
@@ -23,12 +21,9 @@ const ScenarioListContainer = ({ portfolioId }) => {
     const [isVisible, setVisible] = useState(false)
 
     const onNewScenario = (currentPortfolioId) => {
-        dispatch(setCurrentPortfolio(currentPortfolioId))
         setVisible(true)
     }
-    const onChooseScenario = (portfolioId, scenarioId) => {
-        dispatch(setCurrentScenario(portfolioId, scenarioId))
-    }
+    const onChooseScenario = (portfolioId, scenarioId) => {}
     const onDeleteScenario = (id) => {
         if (id) {
             dispatch(deleteScenario(id))
@@ -54,11 +49,8 @@ const ScenarioListContainer = ({ portfolioId }) => {
         <>
             <ScenarioListComponent
                 portfolioId={portfolioId}
-                currentProjectId={currentProjectId}
-                currentScenarioId={currentScenarioId}
                 scenarios={scenarios}
                 onNewScenario={onNewScenario}
-                onChooseScenario={onChooseScenario}
                 onDeleteScenario={onDeleteScenario}
             />
             <NewScenarioModalComponent

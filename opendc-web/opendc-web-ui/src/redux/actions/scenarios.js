@@ -2,7 +2,6 @@ export const ADD_SCENARIO = 'ADD_SCENARIO'
 export const UPDATE_SCENARIO = 'UPDATE_SCENARIO'
 export const DELETE_SCENARIO = 'DELETE_SCENARIO'
 export const OPEN_SCENARIO_SUCCEEDED = 'OPEN_SCENARIO_SUCCEEDED'
-export const SET_CURRENT_SCENARIO = 'SET_CURRENT_SCENARIO'
 
 export function addScenario(scenario) {
     return {
@@ -29,14 +28,6 @@ export function openScenarioSucceeded(projectId, portfolioId, scenarioId) {
     return {
         type: OPEN_SCENARIO_SUCCEEDED,
         projectId,
-        portfolioId,
-        scenarioId,
-    }
-}
-
-export function setCurrentScenario(portfolioId, scenarioId) {
-    return {
-        type: SET_CURRENT_SCENARIO,
         portfolioId,
         scenarioId,
     }

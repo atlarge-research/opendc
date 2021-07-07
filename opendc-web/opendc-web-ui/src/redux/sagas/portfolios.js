@@ -12,35 +12,37 @@ export function* onOpenPortfolioSucceeded(action) {
         const project = yield call(getProject, auth, action.projectId)
         yield put(addToStore('project', project))
         yield fetchAndStoreAllTopologiesOfProject(project._id)
-        yield fetchPortfoliosOfProject()
+        yield fetchPortfoliosOfProject(project)
         yield fetchAndStoreAllSchedulers()
         yield fetchAndStoreAllTraces()
 
-        yield watchForPortfolioResults()
+        yield watchForPortfolioResults(action.portfolioId)
     } catch (error) {
         console.error(error)
     }
 }
 
-export function* watchForPortfolioResults() {
+export function* watchForPortfolioResults(portfolioId) {
     try {
-        const currentPortfolioId = yield select((state) => state.currentPortfolioId)
-        let unfinishedScenarios = yield getCurrentUnfinishedScenarios()
+        let unfinishedScenarios = yield getCurrentUnfinishedScenarios(portfolioId)
 
         while (unfinishedScenarios.length > 0) {
             yield delay(3000)
-            yield fetchPortfolioWithScenarios(currentPortfolioId)
-            unfinishedScenarios = yield getCurrentUnfinishedScenarios()
+            yield fetchPortfolioWithScenarios(portfolioId)
+            unfinishedScenarios = yield getCurrentUnfinishedScenarios(portfolioId)
         }
     } catch (error) {
         console.error(error)
     }
 }
 
-export function* getCurrentUnfinishedScenarios() {
+export function* getCurrentUnfinishedScenarios(portfolioId) {
     try {
-        const currentPortfolioId = yield select((state) => state.currentPortfolioId)
-        const scenarioIds = yield select((state) => state.objects.portfolio[currentPortfolioId].scenarioIds)
+        if (!portfolioId) {
+            return []
+        }
+
+        const scenarioIds = yield select((state) => state.objects.portfolio[portfolioId].scenarioIds)
         const scenarioObjects = yield select((state) => state.objects.scenario)
         const scenarios = scenarioIds.map((s) => scenarioObjects[s])
         return scenarios.filter((s) => !s || s.simulation.state === 'QUEUED' || s.simulation.state === 'RUNNING')
@@ -49,16 +51,13 @@ export function* getCurrentUnfinishedScenarios() {
     }
 }
 
-export function* fetchPortfoliosOfProject() {
+export function* fetchPortfoliosOfProject(project) {
     try {
-        const currentProjectId = yield select((state) => state.currentProjectId)
-        const currentProject = yield select((state) => state.objects.project[currentProjectId])
-
         yield fetchAndStoreAllSchedulers()
         yield fetchAndStoreAllTraces()
 
-        for (let i in currentProject.portfolioIds) {
-            yield fetchPortfolioWithScenarios(currentProject.portfolioIds[i])
+        for (const i in project.portfolioIds) {
+            yield fetchPortfolioWithScenarios(project.portfolioIds[i])
         }
     } catch (error) {
         console.error(error)
@@ -83,22 +82,22 @@ export function* fetchPortfolioWithScenarios(portfolioId) {
 
 export function* onAddPortfolio(action) {
     try {
-        const currentProjectId = yield select((state) => state.currentProjectId)
+        const { projectId } = action
         const auth = yield getContext('auth')
         const portfolio = yield call(
             addPortfolio,
             auth,
-            currentProjectId,
+            projectId,
             Object.assign({}, action.portfolio, {
-                projectId: currentProjectId,
+                projectId: projectId,
                 scenarioIds: [],
             })
         )
         yield put(addToStore('portfolio', portfolio))
 
-        const portfolioIds = yield select((state) => state.objects.project[currentProjectId].portfolioIds)
+        const portfolioIds = yield select((state) => state.objects.project[projectId].portfolioIds)
         yield put(
-            addPropToStoreObject('project', currentProjectId, {
+            addPropToStoreObject('project', projectId, {
                 portfolioIds: portfolioIds.concat([portfolio._id]),
             })
         )
@@ -120,13 +119,14 @@ export function* onUpdatePortfolio(action) {
 export function* onDeletePortfolio(action) {
     try {
         const auth = yield getContext('auth')
+        const portfolio = yield select((state) => state.objects.portfolio[action.id])
+
         yield call(deletePortfolio, auth, action.id)
 
-        const currentProjectId = yield select((state) => state.currentProjectId)
-        const portfolioIds = yield select((state) => state.objects.project[currentProjectId].portfolioIds)
+        const portfolioIds = yield select((state) => state.objects.project[portfolio.projectId].portfolioIds)
 
         yield put(
-            addPropToStoreObject('project', currentProjectId, {
+            addPropToStoreObject('project', portfolio.projectId, {
                 portfolioIds: portfolioIds.filter((id) => id !== action.id),
             })
         )
