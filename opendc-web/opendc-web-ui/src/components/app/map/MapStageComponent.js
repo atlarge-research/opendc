@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 import { HotKeys } from 'react-hotkeys'
@@ -37,10 +38,12 @@ function MapStageComponent({
         setPos([mousePos.x, mousePos.y])
     }
 
-    useEffect(() => {
-        const updateDimensions = () => setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
-        const updateScale = (e) => zoomInOnPosition(e.deltaY < 0, x, y)
+    const updateDimensions = () => setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
+    const updateScale = (e) => zoomInOnPosition(e.deltaY < 0, x, y)
 
+    // We explicitly do not specify any dependencies to prevent infinitely dispatching updateDimensions commands
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
         updateDimensions()
 
         window.addEventListener('resize', updateDimensions)
@@ -57,7 +60,7 @@ function MapStageComponent({
             window.removeEventListener('resize', updateDimensions)
             window.removeEventListener('wheel', updateScale)
         }
-    }, [x, y, setMapDimensions, zoomInOnPosition])
+    }, [])
 
     const store = useStore()
 

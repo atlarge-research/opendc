@@ -20,18 +20,6 @@
  * SOFTWARE.
  */
 
-import { useRouter } from 'next/router'
-import App from '../../../containers/app/App'
+import Topology from './topologies/[topology]'
 
-function Project() {
-    const router = useRouter()
-    const { project } = router.query
-
-    if (project) {
-        return <App projectId={project} />
-    }
-
-    return <div />
-}
-
-export default Project
+export default Topology

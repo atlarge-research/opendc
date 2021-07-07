@@ -6,16 +6,15 @@ import { addPortfolio, deletePortfolio, setCurrentPortfolio } from '../../../../
 import { getState } from '../../../../util/state-utils'
 import { setCurrentTopology } from '../../../../redux/actions/topology/building'
 import NewPortfolioModalComponent from '../../../../components/modals/custom-components/NewPortfolioModalComponent'
-import { useActivePortfolio, useActiveProject, usePortfolios } from '../../../../data/project'
+import { usePortfolios } from '../../../../data/project'
 
 const PortfolioListContainer = () => {
-    const currentProjectId = useActiveProject()?._id
-    const currentPortfolioId = useActivePortfolio()?._id
+    const router = useRouter()
+    const { project: currentProjectId, portfolio: currentPortfolioId } = router.query
     const portfolios = usePortfolios(currentProjectId)
 
     const dispatch = useDispatch()
     const [isVisible, setVisible] = useState(false)
-    const router = useRouter()
     const actions = {
         onNewPortfolio: () => setVisible(true),
         onChoosePortfolio: (portfolioId) => {

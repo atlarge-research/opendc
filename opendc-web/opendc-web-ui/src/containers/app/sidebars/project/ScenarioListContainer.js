@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import ScenarioListComponent from '../../../../components/app/sidebars/project/ScenarioListComponent'
@@ -5,11 +6,13 @@ import { addScenario, deleteScenario, setCurrentScenario } from '../../../../red
 import { setCurrentPortfolio } from '../../../../redux/actions/portfolios'
 import NewScenarioModalComponent from '../../../../components/modals/custom-components/NewScenarioModalComponent'
 import { useProjectTopologies } from '../../../../data/topology'
-import { useActiveScenario, useActiveProject, useScenarios } from '../../../../data/project'
+import { useActiveScenario, useScenarios } from '../../../../data/project'
 import { useSchedulers, useTraces } from '../../../../data/experiments'
+import { useRouter } from 'next/router'
 
 const ScenarioListContainer = ({ portfolioId }) => {
-    const currentProjectId = useActiveProject()?._id
+    const router = useRouter()
+    const { project: currentProjectId } = router.query
     const currentScenarioId = useActiveScenario()?._id
     const scenarios = useScenarios(portfolioId)
     const topologies = useProjectTopologies()
@@ -69,6 +72,10 @@ const ScenarioListContainer = ({ portfolioId }) => {
             />
         </>
     )
+}
+
+ScenarioListContainer.propTypes = {
+    portfolioId: PropTypes.string.isRequired,
 }
 
 export default ScenarioListContainer

@@ -18,14 +18,14 @@ const TopologyListContainer = () => {
     const onChooseTopology = async (id) => {
         dispatch(setCurrentTopology(id))
         const state = await getState(dispatch)
-        router.push(`/projects/${state.currentProjectId}`)
+        await router.push(`/projects/${state.currentProjectId}/topologies/${id}`)
     }
     const onDeleteTopology = async (id) => {
         if (id) {
             const state = await getState(dispatch)
             dispatch(deleteTopology(id))
             dispatch(setCurrentTopology(state.objects.project[state.currentProjectId].topologyIds[0]))
-            router.push(`/projects/${state.currentProjectId}`)
+            await router.push(`/projects/${state.currentProjectId}`)
         }
     }
     const onCreateTopology = (name) => {

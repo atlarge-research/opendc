@@ -30,6 +30,13 @@ export function useProjects() {
 }
 
 /**
+ * Return the project with the specified identifier.
+ */
+export function useProject(projectId) {
+    return useSelector((state) => state.projects[projectId])
+}
+
+/**
  * Return the current active project.
  */
 export function useActiveProject() {

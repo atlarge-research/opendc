@@ -21,46 +21,61 @@
  */
 
 import { useRouter } from 'next/router'
+import { useProject } from '../../../../data/project'
+import { useDispatch, useSelector } from 'react-redux'
+import React, { useEffect } from 'react'
+import { openProjectSucceeded } from '../../../../redux/actions/projects'
+import { HotKeys } from 'react-hotkeys'
+import { KeymapConfiguration } from '../../../../hotkeys'
 import Head from 'next/head'
 import AppNavbarContainer from '../../../../containers/navigation/AppNavbarContainer'
-import React, { useEffect } from 'react'
-import { useProject } from '../../../../data/project'
+import LoadingScreen from '../../../../components/app/map/LoadingScreen'
+import MapStage from '../../../../containers/app/map/MapStage'
+import ScaleIndicatorContainer from '../../../../containers/app/map/controls/ScaleIndicatorContainer'
+import ToolPanelComponent from '../../../../components/app/map/controls/ToolPanelComponent'
 import ProjectSidebarContainer from '../../../../containers/app/sidebars/project/ProjectSidebarContainer'
-import PortfolioResultsContainer from '../../../../containers/app/results/PortfolioResultsContainer'
-import { useDispatch } from 'react-redux'
-import { openPortfolioSucceeded } from '../../../../redux/actions/portfolios'
+import TopologySidebarContainer from '../../../../containers/app/sidebars/topology/TopologySidebarContainer'
 
 /**
- * Page that displays the results in a portfolio.
+ * Page that displays a datacenter topology.
  */
-function Portfolio() {
+function Topology() {
     const router = useRouter()
-    const { project: projectId, portfolio: portfolioId } = router.query
+    const { project: projectId, topology: topologyId } = router.query
 
     const project = useProject(projectId)
     const title = project?.name ? project?.name + ' - OpenDC' : 'Simulation - OpenDC'
 
     const dispatch = useDispatch()
     useEffect(() => {
-        if (portfolioId) {
-            dispatch(openPortfolioSucceeded(projectId, portfolioId))
+        if (projectId) {
+            dispatch(openProjectSucceeded(projectId))
         }
-    }, [projectId, portfolioId, dispatch])
+    }, [projectId, topologyId, dispatch])
+
+    const topologyIsLoading = useSelector((state) => state.currentTopologyId === '-1')
 
     return (
-        <div className="page-container full-height">
+        <HotKeys keyMap={KeymapConfiguration} allowChanges={true} className="page-container full-height">
             <Head>
                 <title>{title}</title>
             </Head>
             <AppNavbarContainer fullWidth={true} />
-            <div className="full-height app-page-container">
-                <ProjectSidebarContainer />
-                <div className="container-fluid full-height">
-                    <PortfolioResultsContainer />
+            {topologyIsLoading ? (
+                <div className="full-height d-flex align-items-center justify-content-center">
+                    <LoadingScreen />
                 </div>
-            </div>
-        </div>
+            ) : (
+                <div className="full-height">
+                    <MapStage />
+                    <ScaleIndicatorContainer />
+                    <ToolPanelComponent />
+                    <ProjectSidebarContainer />
+                    <TopologySidebarContainer />
+                </div>
+            )}
+        </HotKeys>
     )
 }
 
-export default Portfolio
+export default Topology
