@@ -1,7 +1,5 @@
 import { call, put, select, getContext } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
-import { fetchSchedulers } from '../../api/schedulers'
-import { fetchTraces } from '../../api/traces'
 import { getTopology, updateTopology } from '../../api/topologies'
 import { uuid } from 'uuidv4'
 
@@ -21,24 +19,9 @@ export const OBJECT_SELECTORS = {
     topology: (state) => state.objects.topology,
 }
 
-function* fetchAndStoreObject(objectType, id, apiCall) {
-    const objectStore = yield select(OBJECT_SELECTORS[objectType])
-    let object = objectStore[id]
-    if (!object) {
-        object = yield apiCall
-        yield put(addToStore(objectType, object))
-    }
-    return object
-}
-
-function* fetchAndStoreObjects(objectType, apiCall) {
-    const objects = yield apiCall
-    for (let object of objects) {
-        yield put(addToStore(objectType, object))
-    }
-    return objects
-}
-
+/**
+ * Fetches and normalizes the topology with the specified identifier.
+ */
 export const fetchAndStoreTopology = function* (id) {
     const topologyStore = yield select(OBJECT_SELECTORS['topology'])
     const roomStore = yield select(OBJECT_SELECTORS['room'])
@@ -135,12 +118,15 @@ const generateIdIfNotPresent = (obj) => {
 }
 
 export const updateTopologyOnServer = function* (id) {
-    const topology = yield getTopologyAsObject(id, true)
+    const topology = yield denormalizeTopology(id, true)
     const auth = yield getContext('auth')
     yield call(updateTopology, auth, topology)
 }
 
-export const getTopologyAsObject = function* (id, keepIds) {
+/**
+ * Denormalizes the topology representation in order to be stored on the server.
+ */
+export const denormalizeTopology = function* (id, keepIds) {
     const topologyStore = yield select(OBJECT_SELECTORS['topology'])
     const rooms = yield getAllRooms(topologyStore[id].roomIds, keepIds)
     return {

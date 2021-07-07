@@ -23,12 +23,11 @@
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import AppNavbarContainer from '../../../../containers/navigation/AppNavbarContainer'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useProject } from '../../../../data/project'
 import ProjectSidebarContainer from '../../../../containers/app/sidebars/project/ProjectSidebarContainer'
 import PortfolioResultsContainer from '../../../../containers/app/results/PortfolioResultsContainer'
 import { useDispatch } from 'react-redux'
-import { openPortfolioSucceeded } from '../../../../redux/actions/portfolios'
 
 /**
  * Page that displays the results in a portfolio.
@@ -41,11 +40,6 @@ function Portfolio() {
     const title = project?.name ? project?.name + ' - OpenDC' : 'Simulation - OpenDC'
 
     const dispatch = useDispatch()
-    useEffect(() => {
-        if (portfolioId) {
-            dispatch(openPortfolioSucceeded(projectId, portfolioId))
-        }
-    }, [projectId, portfolioId, dispatch])
 
     return (
         <div className="page-container full-height">

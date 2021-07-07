@@ -20,11 +20,12 @@
  * SOFTWARE.
  */
 
-import { useSelector } from 'react-redux'
-import { useQuery } from 'react-query'
+import { useQueries, useQuery } from 'react-query'
 import { fetchProject, fetchProjects } from '../api/projects'
 import { useAuth } from '../auth'
 import { useRouter } from 'next/router'
+import { fetchPortfolio } from '../api/portfolios'
+import { fetchScenario } from '../api/scenarios'
 
 /**
  * Return the available projects.
@@ -39,7 +40,41 @@ export function useProjects() {
  */
 export function useProject(projectId) {
     const auth = useAuth()
-    return useQuery(`projects/${projectId}`, () => fetchProject(auth, projectId), { enabled: !!projectId })
+    return useQuery(['projects', projectId], () => fetchProject(auth, projectId), { enabled: !!projectId })
+}
+
+/**
+ * Return the portfolio with the specified identifier.
+ */
+export function usePortfolio(portfolioId) {
+    const auth = useAuth()
+    return useQuery(['portfolios', portfolioId], () => fetchPortfolio(auth, portfolioId), { enabled: !!portfolioId })
+}
+
+/**
+ * Return the portfolios for the specified project id.
+ */
+export function usePortfolios(portfolioIds) {
+    const auth = useAuth()
+    return useQueries(
+        portfolioIds.map((portfolioId) => ({
+            queryKey: ['portfolios', portfolioId],
+            queryFn: () => fetchPortfolio(auth, portfolioId),
+        }))
+    )
+}
+
+/**
+ * Return the scenarios with the specified identifiers.
+ */
+export function useScenarios(scenarioIds) {
+    const auth = useAuth()
+    return useQueries(
+        scenarioIds.map((scenarioId) => ({
+            queryKey: ['scenario', scenarioId],
+            queryFn: () => fetchScenario(auth, scenarioId),
+        }))
+    )
 }
 
 /**
@@ -49,35 +84,4 @@ export function useActiveProjectId() {
     const router = useRouter()
     const { project } = router.query
     return project
-}
-
-/**
- * Return the portfolios for the specified project id.
- */
-export function usePortfolios(projectId) {
-    const { data: project } = useProject(projectId)
-    return useSelector((state) => {
-        let portfolios = project?.portfolioIds?.map((t) => state.objects.portfolio[t]) ?? []
-        if (portfolios.filter((t) => !t).length > 0) {
-            portfolios = []
-        }
-
-        return portfolios
-    })
-}
-
-/**
- * Return the scenarios for the specified portfolio id.
- */
-export function useScenarios(portfolioId) {
-    return useSelector((state) => {
-        let scenarios = state.objects.portfolio[portfolioId]
-            ? state.objects.portfolio[portfolioId].scenarioIds.map((t) => state.objects.scenario[t])
-            : []
-        if (scenarios.filter((t) => !t).length > 0) {
-            scenarios = []
-        }
-
-        return scenarios
-    })
 }

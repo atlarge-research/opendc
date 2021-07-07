@@ -22,7 +22,7 @@ export const viewportAdjustmentMiddleware = (store) => (next) => (action) => {
         mapDimensions = { width: action.width, height: action.height }
     }
 
-    if (topologyId !== '-1') {
+    if (topologyId && topologyId !== '-1') {
         const roomIds = state.objects.topology[topologyId].roomIds
         const rooms = roomIds.map((id) => Object.assign({}, state.objects.room[id]))
         rooms.forEach((room) => (room.tiles = room.tileIds.map((tileId) => state.objects.tile[tileId])))

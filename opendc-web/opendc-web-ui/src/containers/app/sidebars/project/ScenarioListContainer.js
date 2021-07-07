@@ -1,20 +1,40 @@
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
 import ScenarioListComponent from '../../../../components/app/sidebars/project/ScenarioListComponent'
-import { addScenario, deleteScenario } from '../../../../redux/actions/scenarios'
 import NewScenarioModalComponent from '../../../../components/modals/custom-components/NewScenarioModalComponent'
 import { useProjectTopologies } from '../../../../data/topology'
-import { useScenarios } from '../../../../data/project'
+import { usePortfolio, useScenarios } from '../../../../data/project'
 import { useSchedulers, useTraces } from '../../../../data/experiments'
+import { useAuth } from '../../../../auth'
+import { useMutation, useQueryClient } from 'react-query'
+import { addScenario, deleteScenario } from '../../../../api/scenarios'
 
 const ScenarioListContainer = ({ portfolioId }) => {
-    const scenarios = useScenarios(portfolioId)
+    const { data: portfolio } = usePortfolio(portfolioId)
+    const scenarios = useScenarios(portfolio?.scenarioIds ?? [])
+        .filter((res) => res.data)
+        .map((res) => res.data)
     const topologies = useProjectTopologies()
     const traces = useTraces().data ?? []
     const schedulers = useSchedulers().data ?? []
 
-    const dispatch = useDispatch()
+    const auth = useAuth()
+    const queryClient = useQueryClient()
+    const addMutation = useMutation((data) => addScenario(auth, data), {
+        onSuccess: async (result) => {
+            await queryClient.invalidateQueries(['portfolios', portfolioId])
+        },
+    })
+    const deleteMutation = useMutation((id) => deleteScenario(auth, id), {
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['portfolios', portfolioId], (old) => ({
+                ...old,
+                scenarioIds: old.scenarioIds.filter((id) => id !== result._id),
+            }))
+            queryClient.removeQueries(['scenarios', result._id])
+        },
+    })
+
     const [isVisible, setVisible] = useState(false)
 
     const onNewScenario = (currentPortfolioId) => {
@@ -22,20 +42,18 @@ const ScenarioListContainer = ({ portfolioId }) => {
     }
     const onDeleteScenario = (id) => {
         if (id) {
-            dispatch(deleteScenario(id))
+            deleteMutation.mutate(id)
         }
     }
     const callback = (name, portfolioId, trace, topology, operational) => {
         if (name) {
-            dispatch(
-                addScenario({
-                    portfolioId,
-                    name,
-                    trace,
-                    topology,
-                    operational,
-                })
-            )
+            addMutation.mutate({
+                portfolioId,
+                name,
+                trace,
+                topology,
+                operational,
+            })
         }
 
         setVisible(false)

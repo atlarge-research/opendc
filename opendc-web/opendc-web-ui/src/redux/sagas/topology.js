@@ -16,7 +16,7 @@ import {
     DEFAULT_RACK_SLOT_CAPACITY,
     MAX_NUM_UNITS_PER_MACHINE,
 } from '../../components/app/map/MapConstants'
-import { fetchAndStoreTopology, getTopologyAsObject, updateTopologyOnServer } from './objects'
+import { fetchAndStoreTopology, denormalizeTopology, updateTopologyOnServer } from './objects'
 import { uuid } from 'uuidv4'
 import { addTopology, deleteTopology } from '../../api/topologies'
 import { fetchProject } from '../../api/projects'
@@ -26,7 +26,7 @@ export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = fa
         const auth = yield getContext('auth')
         const queryClient = yield getContext('queryClient')
         const project = yield call(() =>
-            queryClient.fetchQuery(`projects/${projectId}`, () => fetchProject(auth, projectId))
+            queryClient.fetchQuery(['projects', projectId], () => fetchProject(auth, projectId))
         )
 
         for (let i in project.topologyIds) {
@@ -47,7 +47,7 @@ export function* onAddTopology(action) {
 
         let topologyToBeCreated
         if (duplicateId) {
-            topologyToBeCreated = yield getTopologyAsObject(duplicateId, false)
+            topologyToBeCreated = yield denormalizeTopology(duplicateId, false)
             topologyToBeCreated = { ...topologyToBeCreated, name }
         } else {
             topologyToBeCreated = { name: action.name, rooms: [] }
@@ -67,7 +67,7 @@ export function* onDeleteTopology(action) {
         const auth = yield getContext('auth')
         const queryClient = yield getContext('queryClient')
         const project = yield call(() =>
-            queryClient.fetchQuery(`projects/${action.projectId}`, () => fetchProject(auth, action.projectId))
+            queryClient.fetchQuery(['projects', action.projectId], () => fetchProject(auth, action.projectId))
         )
         const topologyIds = project?.topologyIds ?? []
 
