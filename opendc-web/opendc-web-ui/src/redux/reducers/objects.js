@@ -20,8 +20,6 @@ export const objects = combineReducers({
     tile: object('tile'),
     room: object('room'),
     topology: object('topology'),
-    trace: object('trace'),
-    scheduler: object('scheduler'),
     portfolio: object('portfolio'),
     scenario: object('scenario'),
     prefab: object('prefab'),

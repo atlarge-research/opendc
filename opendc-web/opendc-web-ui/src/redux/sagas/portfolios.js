@@ -2,8 +2,6 @@ import { call, put, select, delay, getContext } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
 import { addPortfolio, deletePortfolio, getPortfolio, updatePortfolio } from '../../api/portfolios'
 import { fetchProject } from '../../api/projects'
-import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
-import { fetchAndStoreAllTopologiesOfProject } from './topology'
 import { getScenario } from '../../api/scenarios'
 
 export function* onOpenPortfolioSucceeded(action) {
@@ -15,8 +13,6 @@ export function* onOpenPortfolioSucceeded(action) {
         )
         yield fetchAndStoreAllTopologiesOfProject(action.projectId)
         yield fetchPortfoliosOfProject(project)
-        yield fetchAndStoreAllSchedulers()
-        yield fetchAndStoreAllTraces()
 
         yield watchForPortfolioResults(action.portfolioId)
     } catch (error) {
@@ -55,9 +51,6 @@ export function* getCurrentUnfinishedScenarios(portfolioId) {
 
 export function* fetchPortfoliosOfProject(project) {
     try {
-        yield fetchAndStoreAllSchedulers()
-        yield fetchAndStoreAllTraces()
-
         for (const i in project.portfolioIds) {
             yield fetchPortfolioWithScenarios(project.portfolioIds[i])
         }

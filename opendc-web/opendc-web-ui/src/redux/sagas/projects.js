@@ -1,6 +1,5 @@
 import { call, getContext } from 'redux-saga/effects'
 import { fetchAndStoreAllTopologiesOfProject } from './topology'
-import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
 import { fetchPortfoliosOfProject } from './portfolios'
 import { fetchProject } from '../../api/projects'
 
@@ -14,8 +13,6 @@ export function* onOpenProjectSucceeded(action) {
 
         yield fetchAndStoreAllTopologiesOfProject(action.id, true)
         yield fetchPortfoliosOfProject(project)
-        yield fetchAndStoreAllSchedulers()
-        yield fetchAndStoreAllTraces()
     } catch (error) {
         console.error(error)
     }

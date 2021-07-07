@@ -11,8 +11,8 @@ import { useSchedulers, useTraces } from '../../../../data/experiments'
 const ScenarioListContainer = ({ portfolioId }) => {
     const scenarios = useScenarios(portfolioId)
     const topologies = useProjectTopologies()
-    const traces = useTraces()
-    const schedulers = useSchedulers()
+    const traces = useTraces().data ?? []
+    const schedulers = useSchedulers().data ?? []
 
     const dispatch = useDispatch()
     const [isVisible, setVisible] = useState(false)

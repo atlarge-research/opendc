@@ -1,7 +1,6 @@
 import { call, put, select, getContext } from 'redux-saga/effects'
 import { addPropToStoreObject, addToStore } from '../actions/objects'
 import { fetchProject } from '../../api/projects'
-import { fetchAndStoreAllSchedulers, fetchAndStoreAllTraces } from './objects'
 import { fetchAndStoreAllTopologiesOfProject } from './topology'
 import { addScenario, deleteScenario, updateScenario } from '../../api/scenarios'
 import { fetchPortfolioWithScenarios, watchForPortfolioResults } from './portfolios'
@@ -15,8 +14,6 @@ export function* onOpenScenarioSucceeded(action) {
         )
         yield put(addToStore('project', project))
         yield fetchAndStoreAllTopologiesOfProject(project._id)
-        yield fetchAndStoreAllSchedulers()
-        yield fetchAndStoreAllTraces()
         yield fetchPortfolioWithScenarios(action.portfolioId)
 
         // TODO Fetch scenario-specific metrics

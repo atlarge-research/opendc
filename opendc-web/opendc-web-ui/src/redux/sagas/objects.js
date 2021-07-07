@@ -1,7 +1,7 @@
 import { call, put, select, getContext } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
-import { getAllSchedulers } from '../../api/schedulers'
-import { getAllTraces } from '../../api/traces'
+import { fetchSchedulers } from '../../api/schedulers'
+import { fetchTraces } from '../../api/traces'
 import { getTopology, updateTopology } from '../../api/topologies'
 import { uuid } from 'uuidv4'
 
@@ -209,19 +209,4 @@ export const getRackById = function* (id, keepIds) {
                 storages: machineStore[machineId].storageIds.map((id) => storageStore[id]),
             })),
     }
-}
-
-export const fetchAndStoreAllTraces = function* () {
-    const auth = yield getContext('auth')
-    return yield fetchAndStoreObjects('trace', call(getAllTraces, auth))
-}
-
-export const fetchAndStoreAllSchedulers = function* () {
-    const auth = yield getContext('auth')
-    const objects = yield call(getAllSchedulers, auth)
-    for (let object of objects) {
-        object._id = object.name
-        yield put(addToStore('scheduler', object))
-    }
-    return objects
 }

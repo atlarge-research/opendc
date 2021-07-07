@@ -20,18 +20,23 @@
  * SOFTWARE.
  */
 
-import { useSelector } from 'react-redux'
+import { useQuery } from 'react-query'
+import { fetchTraces } from '../api/traces'
+import { useAuth } from '../auth'
+import { fetchSchedulers } from '../api/schedulers'
 
 /**
  * Return the available traces to experiment with.
  */
 export function useTraces() {
-    return useSelector((state) => Object.values(state.objects.trace))
+    const auth = useAuth()
+    return useQuery('traces', () => fetchTraces(auth))
 }
 
 /**
  * Return the available schedulers to experiment with.
  */
 export function useSchedulers() {
-    return useSelector((state) => Object.values(state.objects.scheduler))
+    const auth = useAuth()
+    return useQuery('schedulers', () => fetchSchedulers(auth))
 }
