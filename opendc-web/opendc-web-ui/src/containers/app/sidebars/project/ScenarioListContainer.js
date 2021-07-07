@@ -2,52 +2,33 @@ import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import ScenarioListComponent from '../../../../components/app/sidebars/project/ScenarioListComponent'
 import NewScenarioModalComponent from '../../../../components/modals/custom-components/NewScenarioModalComponent'
-import { useProjectTopologies } from '../../../../data/topology'
-import { usePortfolio, useScenarios } from '../../../../data/project'
+import { useTopologies } from '../../../../data/topology'
+import { usePortfolio, useProject, useScenarios } from '../../../../data/project'
 import { useSchedulers, useTraces } from '../../../../data/experiments'
-import { useAuth } from '../../../../auth'
-import { useMutation, useQueryClient } from 'react-query'
-import { addScenario, deleteScenario } from '../../../../api/scenarios'
+import { useMutation } from 'react-query'
 
 const ScenarioListContainer = ({ portfolioId }) => {
     const { data: portfolio } = usePortfolio(portfolioId)
+    const { data: project } = useProject(portfolio?.projectId)
     const scenarios = useScenarios(portfolio?.scenarioIds ?? [])
         .filter((res) => res.data)
         .map((res) => res.data)
-    const topologies = useProjectTopologies()
+    const topologies = useTopologies(project?.topologyIds ?? [])
+        .filter((res) => res.data)
+        .map((res) => res.data)
     const traces = useTraces().data ?? []
     const schedulers = useSchedulers().data ?? []
 
-    const auth = useAuth()
-    const queryClient = useQueryClient()
-    const addMutation = useMutation((data) => addScenario(auth, data), {
-        onSuccess: async (result) => {
-            await queryClient.invalidateQueries(['portfolios', portfolioId])
-        },
-    })
-    const deleteMutation = useMutation((id) => deleteScenario(auth, id), {
-        onSuccess: async (result) => {
-            queryClient.setQueryData(['portfolios', portfolioId], (old) => ({
-                ...old,
-                scenarioIds: old.scenarioIds.filter((id) => id !== result._id),
-            }))
-            queryClient.removeQueries(['scenarios', result._id])
-        },
-    })
+    const { mutate: addScenario } = useMutation('addScenario')
+    const { mutate: deleteScenario } = useMutation('deleteScenario')
 
     const [isVisible, setVisible] = useState(false)
 
-    const onNewScenario = (currentPortfolioId) => {
-        setVisible(true)
-    }
-    const onDeleteScenario = (id) => {
-        if (id) {
-            deleteMutation.mutate(id)
-        }
-    }
+    const onNewScenario = () => setVisible(true)
+    const onDeleteScenario = (id) => id && deleteScenario(id)
     const callback = (name, portfolioId, trace, topology, operational) => {
         if (name) {
-            addMutation.mutate({
+            addScenario({
                 portfolioId,
                 name,
                 trace,

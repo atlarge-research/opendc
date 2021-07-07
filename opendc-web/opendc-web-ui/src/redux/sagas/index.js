@@ -21,13 +21,12 @@ import {
     onDeleteRack,
     onDeleteRoom,
     onDeleteTile,
-    onDeleteTopology,
     onDeleteUnit,
     onEditRackName,
     onEditRoomName,
     onStartNewRoomConstruction,
 } from './topology'
-import { ADD_TOPOLOGY, DELETE_TOPOLOGY } from '../actions/topologies'
+import { ADD_TOPOLOGY } from '../actions/topologies'
 import { onAddPrefab } from './prefabs'
 import { ADD_PREFAB } from '../actions/prefabs'
 
@@ -35,7 +34,6 @@ export default function* rootSaga() {
     yield takeEvery(OPEN_PROJECT_SUCCEEDED, onOpenProjectSucceeded)
 
     yield takeEvery(ADD_TOPOLOGY, onAddTopology)
-    yield takeEvery(DELETE_TOPOLOGY, onDeleteTopology)
     yield takeEvery(START_NEW_ROOM_CONSTRUCTION, onStartNewRoomConstruction)
     yield takeEvery(CANCEL_NEW_ROOM_CONSTRUCTION, onCancelNewRoomConstruction)
     yield takeEvery(ADD_TILE, onAddTile)

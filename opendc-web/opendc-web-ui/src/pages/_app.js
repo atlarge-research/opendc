@@ -30,11 +30,21 @@ import * as Sentry from '@sentry/react'
 import { Integrations } from '@sentry/tracing'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { useMemo } from 'react'
+import { configureProjectClient } from '../data/project'
+import { configureExperimentClient } from '../data/experiments'
+import { configureTopologyClient } from '../data/topology'
 
 // This setup is necessary to forward the Auth0 context to the Redux context
 const Inner = ({ Component, pageProps }) => {
     const auth = useAuth()
-    const queryClient = useMemo(() => new QueryClient(), [])
+
+    const queryClient = useMemo(() => {
+        const client = new QueryClient()
+        configureProjectClient(client, auth)
+        configureExperimentClient(client, auth)
+        configureTopologyClient(client, auth)
+        return client
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
     const store = useStore(pageProps.initialReduxState, { auth, queryClient })
     return (
         <QueryClientProvider client={queryClient}>

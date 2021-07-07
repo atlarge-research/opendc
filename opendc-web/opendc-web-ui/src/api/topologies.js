@@ -22,12 +22,12 @@
 
 import { request } from './index'
 
-export function addTopology(auth, topology) {
-    return request(auth, `projects/${topology.projectId}/topologies`, 'POST', { topology })
+export function fetchTopology(auth, topologyId) {
+    return request(auth, `topologies/${topologyId}`)
 }
 
-export function getTopology(auth, topologyId) {
-    return request(auth, `topologies/${topologyId}`)
+export function addTopology(auth, topology) {
+    return request(auth, `projects/${topology.projectId}/topologies`, 'POST', { topology })
 }
 
 export function updateTopology(auth, topology) {

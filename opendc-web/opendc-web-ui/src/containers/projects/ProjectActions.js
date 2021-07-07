@@ -1,18 +1,12 @@
 import React from 'react'
 import ProjectActionButtons from '../../components/projects/ProjectActionButtons'
-import { useMutation, useQueryClient } from 'react-query'
-import { useAuth } from '../../auth'
-import { deleteProject } from '../../api/projects'
+import { useMutation } from 'react-query'
 
 const ProjectActions = (props) => {
-    const auth = useAuth()
-    const queryClient = useQueryClient()
-    const mutation = useMutation((projectId) => deleteProject(auth, projectId), {
-        onSuccess: () => queryClient.invalidateQueries('projects'),
-    })
+    const { mutate: deleteProject } = useMutation('deleteProject')
     const actions = {
         onViewUsers: (id) => {}, // TODO implement user viewing
-        onDelete: (id) => mutation.mutate(id),
+        onDelete: (id) => deleteProject(id),
     }
     return <ProjectActionButtons {...props} {...actions} />
 }

@@ -18,16 +18,12 @@ import {
 } from '../../components/app/map/MapConstants'
 import { fetchAndStoreTopology, denormalizeTopology, updateTopologyOnServer } from './objects'
 import { uuid } from 'uuidv4'
-import { addTopology, deleteTopology } from '../../api/topologies'
-import { fetchProject } from '../../api/projects'
+import { addTopology } from '../../api/topologies'
 
 export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = false) {
     try {
-        const auth = yield getContext('auth')
         const queryClient = yield getContext('queryClient')
-        const project = yield call(() =>
-            queryClient.fetchQuery(['projects', projectId], () => fetchProject(auth, projectId))
-        )
+        const project = yield call(() => queryClient.fetchQuery(['projects', projectId]))
 
         for (let i in project.topologyIds) {
             yield fetchAndStoreTopology(project.topologyIds[i])
@@ -57,26 +53,6 @@ export function* onAddTopology(action) {
         const topology = yield call(addTopology, auth, { ...topologyToBeCreated, projectId })
         yield fetchAndStoreTopology(topology._id)
         yield put(setCurrentTopology(topology._id))
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export function* onDeleteTopology(action) {
-    try {
-        const auth = yield getContext('auth')
-        const queryClient = yield getContext('queryClient')
-        const project = yield call(() =>
-            queryClient.fetchQuery(['projects', action.projectId], () => fetchProject(auth, action.projectId))
-        )
-        const topologyIds = project?.topologyIds ?? []
-
-        const currentTopologyId = yield select((state) => state.currentTopologyId)
-        if (currentTopologyId === action.id) {
-            yield put(setCurrentTopology(topologyIds.filter((t) => t !== action.id)[0]))
-        }
-
-        yield call(deleteTopology, auth, action.id)
     } catch (error) {
         console.error(error)
     }

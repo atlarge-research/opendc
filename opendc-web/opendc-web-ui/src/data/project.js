@@ -21,45 +21,113 @@
  */
 
 import { useQueries, useQuery } from 'react-query'
-import { fetchProject, fetchProjects } from '../api/projects'
-import { useAuth } from '../auth'
+import { addProject, deleteProject, fetchProject, fetchProjects } from '../api/projects'
 import { useRouter } from 'next/router'
-import { fetchPortfolio } from '../api/portfolios'
-import { fetchScenario } from '../api/scenarios'
+import { addPortfolio, deletePortfolio, fetchPortfolio } from '../api/portfolios'
+import { addScenario, deleteScenario, fetchScenario } from '../api/scenarios'
+
+/**
+ * Configure the query defaults for the project endpoints.
+ */
+export function configureProjectClient(queryClient, auth) {
+    queryClient.setQueryDefaults('projects', {
+        queryFn: ({ queryKey }) => (queryKey.length === 1 ? fetchProjects(auth) : fetchProject(auth, queryKey[1])),
+    })
+
+    queryClient.setMutationDefaults('addProject', {
+        mutationFn: (data) => addProject(auth, data),
+        onSuccess: async (result) => {
+            queryClient.setQueryData('projects', (old = []) => [...old, result])
+        },
+    })
+    queryClient.setMutationDefaults('deleteProject', {
+        mutationFn: (id) => deleteProject(auth, id),
+        onSuccess: async (result) => {
+            queryClient.setQueryData('projects', (old = []) => old.filter((project) => project._id !== result._id))
+            queryClient.removeQueries(['projects', result._id])
+        },
+    })
+
+    queryClient.setQueryDefaults('portfolios', {
+        queryFn: ({ queryKey }) => fetchPortfolio(auth, queryKey[1]),
+    })
+    queryClient.setMutationDefaults('addPortfolio', {
+        mutationFn: (data) => addPortfolio(auth, data),
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['projects', result.projectId], (old) => ({
+                ...old,
+                portfolioIds: [...old.portfolioIds, result._id],
+            }))
+            queryClient.setQueryData(['portfolios', result._id], result)
+        },
+    })
+    queryClient.setMutationDefaults('deletePortfolio', {
+        mutationFn: (id) => deletePortfolio(auth, id),
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['projects', result.projectId], (old) => ({
+                ...old,
+                portfolioIds: old.portfolioIds.filter((id) => id !== result._id),
+            }))
+            queryClient.removeQueries(['portfolios', result._id])
+        },
+    })
+
+    queryClient.setQueryDefaults('scenarios', {
+        queryFn: ({ queryKey }) => fetchScenario(auth, queryKey[1]),
+    })
+    queryClient.setMutationDefaults('addScenario', {
+        mutationFn: (data) => addScenario(auth, data),
+        onSuccess: async (result) => {
+            // Register updated scenario in cache
+            queryClient.setQueryData(['scenarios', result._id], result)
+
+            // Add scenario id to portfolio
+            queryClient.setQueryData(['portfolios', result.portfolioId], (old) => ({
+                ...old,
+                scenarioIds: [...old.scenarioIds, result._id],
+            }))
+        },
+    })
+    queryClient.setMutationDefaults('deleteScenario', {
+        mutationFn: (id) => deleteScenario(auth, id),
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['portfolios', result.portfolioId], (old) => ({
+                ...old,
+                scenarioIds: old.scenarioIds.filter((id) => id !== result._id),
+            }))
+            queryClient.removeQueries(['scenarios', result._id])
+        },
+    })
+}
 
 /**
  * Return the available projects.
  */
 export function useProjects() {
-    const auth = useAuth()
-    return useQuery('projects', () => fetchProjects(auth))
+    return useQuery('projects')
 }
 
 /**
  * Return the project with the specified identifier.
  */
 export function useProject(projectId) {
-    const auth = useAuth()
-    return useQuery(['projects', projectId], () => fetchProject(auth, projectId), { enabled: !!projectId })
+    return useQuery(['projects', projectId], { enabled: !!projectId })
 }
 
 /**
  * Return the portfolio with the specified identifier.
  */
 export function usePortfolio(portfolioId) {
-    const auth = useAuth()
-    return useQuery(['portfolios', portfolioId], () => fetchPortfolio(auth, portfolioId), { enabled: !!portfolioId })
+    return useQuery(['portfolios', portfolioId], { enabled: !!portfolioId })
 }
 
 /**
  * Return the portfolios for the specified project id.
  */
 export function usePortfolios(portfolioIds) {
-    const auth = useAuth()
     return useQueries(
         portfolioIds.map((portfolioId) => ({
             queryKey: ['portfolios', portfolioId],
-            queryFn: () => fetchPortfolio(auth, portfolioId),
         }))
     )
 }
@@ -68,11 +136,9 @@ export function usePortfolios(portfolioIds) {
  * Return the scenarios with the specified identifiers.
  */
 export function useScenarios(scenarioIds) {
-    const auth = useAuth()
     return useQueries(
         scenarioIds.map((scenarioId) => ({
-            queryKey: ['scenario', scenarioId],
-            queryFn: () => fetchScenario(auth, scenarioId),
+            queryKey: ['scenarios', scenarioId],
         }))
     )
 }

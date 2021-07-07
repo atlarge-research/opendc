@@ -1,6 +1,6 @@
 import { call, put, select, getContext } from 'redux-saga/effects'
 import { addToStore } from '../actions/objects'
-import { getTopology, updateTopology } from '../../api/topologies'
+import { fetchTopology, updateTopology } from '../../api/topologies'
 import { uuid } from 'uuidv4'
 
 export const OBJECT_SELECTORS = {
@@ -32,7 +32,7 @@ export const fetchAndStoreTopology = function* (id) {
 
     let topology = topologyStore[id]
     if (!topology) {
-        const fullTopology = yield call(getTopology, auth, id)
+        const fullTopology = yield call(fetchTopology, auth, id)
 
         for (let roomIdx in fullTopology.rooms) {
             const fullRoom = fullTopology.rooms[roomIdx]

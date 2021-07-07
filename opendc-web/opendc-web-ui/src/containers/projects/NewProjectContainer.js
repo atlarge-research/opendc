@@ -3,23 +3,17 @@ import TextInputModal from '../../components/modals/TextInputModal'
 import { Button } from 'reactstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
-import { useMutation, useQueryClient } from 'react-query'
-import { addProject } from '../../api/projects'
-import { useAuth } from '../../auth'
+import { useMutation } from 'react-query'
 
 /**
  * A container for creating a new project.
  */
 const NewProjectContainer = () => {
     const [isVisible, setVisible] = useState(false)
-    const auth = useAuth()
-    const queryClient = useQueryClient()
-    const mutation = useMutation((data) => addProject(auth, data), {
-        onSuccess: (result) => queryClient.setQueryData('projects', (old) => [...(old || []), result]),
-    })
+    const { mutate: addProject } = useMutation('addProject')
     const callback = (text) => {
         if (text) {
-            mutation.mutate({ name: text })
+            addProject({ name: text })
         }
         setVisible(false)
     }
