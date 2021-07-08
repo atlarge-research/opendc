@@ -26,6 +26,10 @@ export function fetchTopology(auth, topologyId) {
     return request(auth, `topologies/${topologyId}`)
 }
 
+export function fetchTopologiesOfProject(auth, projectId) {
+    return request(auth, `projects/${projectId}/topologies`)
+}
+
 export function addTopology(auth, topology) {
     return request(auth, `projects/${topology.projectId}/topologies`, 'POST', { topology })
 }

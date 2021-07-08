@@ -5,18 +5,16 @@ import { setCurrentTopology } from '../../../../redux/actions/topology/building'
 import { useRouter } from 'next/router'
 import { addTopology } from '../../../../redux/actions/topologies'
 import NewTopologyModalComponent from '../../../../components/modals/custom-components/NewTopologyModalComponent'
-import { useActiveTopology, useTopologies } from '../../../../data/topology'
-import { useProject } from '../../../../data/project'
+import { useActiveTopology, useProjectTopologies } from '../../../../data/topology'
 import { useMutation } from 'react-query'
 
 const TopologyListContainer = () => {
     const dispatch = useDispatch()
     const router = useRouter()
     const { project: currentProjectId } = router.query
-    const { data: currentProject } = useProject(currentProjectId)
-    const topologies = useTopologies(currentProject?.topologyIds ?? [])
-        .filter((res) => res.data)
-        .map((res) => ({ _id: res.data._id, name: res.data.name }))
+    const topologies =
+        useProjectTopologies(currentProjectId).data?.map((topology) => ({ _id: topology._id, name: topology.name })) ??
+        []
     const currentTopologyId = useActiveTopology()?._id
     const [isVisible, setVisible] = useState(false)
 

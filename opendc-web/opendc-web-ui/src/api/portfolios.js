@@ -26,6 +26,10 @@ export function fetchPortfolio(auth, portfolioId) {
     return request(auth, `portfolios/${portfolioId}`)
 }
 
+export function fetchPortfoliosOfProject(auth, projectId) {
+    return request(auth, `projects/${projectId}/portfolios`)
+}
+
 export function addPortfolio(auth, portfolio) {
     return request(auth, `projects/${portfolio.projectId}/portfolios`, 'POST', { portfolio })
 }

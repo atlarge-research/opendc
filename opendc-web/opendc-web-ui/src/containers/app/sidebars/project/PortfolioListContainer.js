@@ -2,16 +2,13 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/router'
 import PortfolioListComponent from '../../../../components/app/sidebars/project/PortfolioListComponent'
 import NewPortfolioModalComponent from '../../../../components/modals/custom-components/NewPortfolioModalComponent'
-import { usePortfolios, useProject } from '../../../../data/project'
+import { useProjectPortfolios } from '../../../../data/project'
 import { useMutation } from 'react-query'
 
 const PortfolioListContainer = () => {
     const router = useRouter()
     const { project: currentProjectId, portfolio: currentPortfolioId } = router.query
-    const { data: currentProject } = useProject(currentProjectId)
-    const portfolios = usePortfolios(currentProject?.portfolioIds ?? [])
-        .filter((res) => res.data)
-        .map((res) => res.data)
+    const portfolios = useProjectPortfolios(currentProjectId).data ?? []
 
     const { mutate: addPortfolio } = useMutation('addPortfolio')
     const { mutateAsync: deletePortfolio } = useMutation('deletePortfolio')

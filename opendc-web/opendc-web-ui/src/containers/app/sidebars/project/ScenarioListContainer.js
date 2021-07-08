@@ -2,20 +2,19 @@ import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import ScenarioListComponent from '../../../../components/app/sidebars/project/ScenarioListComponent'
 import NewScenarioModalComponent from '../../../../components/modals/custom-components/NewScenarioModalComponent'
-import { useTopologies } from '../../../../data/topology'
-import { usePortfolio, useProject, useScenarios } from '../../../../data/project'
+import { useProjectTopologies } from '../../../../data/topology'
+import { usePortfolio, usePortfolioScenarios } from '../../../../data/project'
 import { useSchedulers, useTraces } from '../../../../data/experiments'
 import { useMutation } from 'react-query'
 
 const ScenarioListContainer = ({ portfolioId }) => {
     const { data: portfolio } = usePortfolio(portfolioId)
-    const { data: project } = useProject(portfolio?.projectId)
-    const scenarios = useScenarios(portfolio?.scenarioIds ?? [])
-        .filter((res) => res.data)
-        .map((res) => res.data)
-    const topologies = useTopologies(project?.topologyIds ?? [])
-        .filter((res) => res.data)
-        .map((res) => ({ _id: res.data._id, name: res.data.name }))
+    const scenarios = usePortfolioScenarios(portfolioId).data ?? []
+    const topologies =
+        useProjectTopologies(portfolio?.projectId).data?.map((topology) => ({
+            _id: topology._id,
+            name: topology.name,
+        })) ?? []
     const traces = useTraces().data ?? []
     const schedulers = useSchedulers().data ?? []
 
