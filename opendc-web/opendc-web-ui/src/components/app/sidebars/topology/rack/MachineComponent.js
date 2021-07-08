@@ -23,7 +23,7 @@ UnitIcon.propTypes = {
 
 const MachineComponent = ({ position, machine, onClick }) => {
     const hasNoUnits =
-        machine.cpuIds.length + machine.gpuIds.length + machine.memoryIds.length + machine.storageIds.length === 0
+        machine.cpus.length + machine.gpus.length + machine.memories.length + machine.storages.length === 0
 
     return (
         <ListGroupItem
@@ -36,10 +36,10 @@ const MachineComponent = ({ position, machine, onClick }) => {
                 {position}
             </Badge>
             <div className="d-inline-flex">
-                {machine.cpuIds.length > 0 ? <UnitIcon id="cpu" type="CPU" /> : undefined}
-                {machine.gpuIds.length > 0 ? <UnitIcon id="gpu" type="GPU" /> : undefined}
-                {machine.memoryIds.length > 0 ? <UnitIcon id="memory" type="memory" /> : undefined}
-                {machine.storageIds.length > 0 ? <UnitIcon id="storage" type="storage" /> : undefined}
+                {machine.cpus.length > 0 ? <UnitIcon id="cpu" type="CPU" /> : undefined}
+                {machine.gpus.length > 0 ? <UnitIcon id="gpu" type="GPU" /> : undefined}
+                {machine.memories.length > 0 ? <UnitIcon id="memory" type="memory" /> : undefined}
+                {machine.storages.length > 0 ? <UnitIcon id="storage" type="storage" /> : undefined}
                 {hasNoUnits ? <Badge color="warning">Machine with no units</Badge> : undefined}
             </div>
         </ListGroupItem>

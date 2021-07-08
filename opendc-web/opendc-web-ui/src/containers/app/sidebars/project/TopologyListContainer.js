@@ -16,7 +16,7 @@ const TopologyListContainer = () => {
     const { data: currentProject } = useProject(currentProjectId)
     const topologies = useTopologies(currentProject?.topologyIds ?? [])
         .filter((res) => res.data)
-        .map((res) => res.data)
+        .map((res) => ({ _id: res.data._id, name: res.data.name }))
     const currentTopologyId = useActiveTopology()?._id
     const [isVisible, setVisible] = useState(false)
 

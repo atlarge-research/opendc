@@ -75,7 +75,7 @@ class TopologySchema(Schema):
     Schema representing a datacenter topology.
     """
     _id = fields.String(dump_only=True)
-    projectId = fields.String(dump_only=True)
+    projectId = fields.String()
     name = fields.String(required=True)
     rooms = fields.List(fields.Nested(RoomSchema), required=True)
 

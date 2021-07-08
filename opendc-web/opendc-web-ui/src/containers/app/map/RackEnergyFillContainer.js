@@ -5,17 +5,17 @@ import RackFillBar from '../../../components/app/map/elements/RackFillBar'
 const RackSpaceFillContainer = (props) => {
     const state = useSelector((state) => {
         let energyConsumptionTotal = 0
-        const rack = state.objects.rack[state.objects.tile[props.tileId].rackId]
-        const machineIds = rack.machineIds
+        const rack = state.objects.rack[state.objects.tile[props.tileId].rack]
+        const machineIds = rack.machines
         machineIds.forEach((machineId) => {
             if (machineId !== null) {
                 const machine = state.objects.machine[machineId]
-                machine.cpuIds.forEach((id) => (energyConsumptionTotal += state.objects.cpu[id].energyConsumptionW))
-                machine.gpuIds.forEach((id) => (energyConsumptionTotal += state.objects.gpu[id].energyConsumptionW))
-                machine.memoryIds.forEach(
+                machine.cpus.forEach((id) => (energyConsumptionTotal += state.objects.cpu[id].energyConsumptionW))
+                machine.gpus.forEach((id) => (energyConsumptionTotal += state.objects.gpu[id].energyConsumptionW))
+                machine.memories.forEach(
                     (id) => (energyConsumptionTotal += state.objects.memory[id].energyConsumptionW)
                 )
-                machine.storageIds.forEach(
+                machine.storages.forEach(
                     (id) => (energyConsumptionTotal += state.objects.storage[id].energyConsumptionW)
                 )
             }

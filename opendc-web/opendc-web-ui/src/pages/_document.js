@@ -25,7 +25,7 @@ import Document, { Html, Head, Main, NextScript } from 'next/document'
 class OpenDCDocument extends Document {
     render() {
         return (
-            <Html>
+            <Html lang="en">
                 <Head>
                     <meta charSet="utf-8" />
                     <meta name="theme-color" content="#00A6D6" />

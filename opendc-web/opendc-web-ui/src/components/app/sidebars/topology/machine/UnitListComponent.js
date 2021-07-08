@@ -1,12 +1,19 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import UnitContainer from '../../../../../containers/app/sidebars/topology/machine/UnitContainer'
+import { ProcessingUnit, StorageUnit } from '../../../../../shapes'
+import UnitComponent from './UnitComponent'
 
-const UnitListComponent = ({ unitType, unitIds }) => (
+const UnitListComponent = ({ unitType, units, onDelete }) => (
     <ul className="list-group mt-1">
-        {unitIds.length !== 0 ? (
-            unitIds.map((unitId, index) => (
-                <UnitContainer unitType={unitType} unitId={unitId} index={index} key={index} />
+        {units.length !== 0 ? (
+            units.map((unit, index) => (
+                <UnitComponent
+                    unitType={unitType}
+                    unit={unit}
+                    onDelete={() => onDelete(unit, unitType)}
+                    index={index}
+                    key={index}
+                />
             ))
         ) : (
             <div className="alert alert-info">
@@ -19,8 +26,9 @@ const UnitListComponent = ({ unitType, unitIds }) => (
 )
 
 UnitListComponent.propTypes = {
-    unitType: PropTypes.string,
-    unitIds: PropTypes.array,
+    unitType: PropTypes.string.isRequired,
+    units: PropTypes.arrayOf(PropTypes.oneOfType([ProcessingUnit, StorageUnit])).isRequired,
+    onDelete: PropTypes.func,
 }
 
 export default UnitListComponent

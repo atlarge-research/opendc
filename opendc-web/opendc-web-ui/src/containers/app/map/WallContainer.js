@@ -4,7 +4,7 @@ import WallGroup from '../../../components/app/map/groups/WallGroup'
 
 const WallContainer = (props) => {
     const tiles = useSelector((state) =>
-        state.objects.room[props.roomId].tileIds.map((tileId) => state.objects.tile[tileId])
+        state.objects.room[props.roomId].tiles.map((tileId) => state.objects.tile[tileId])
     )
     return <WallGroup {...props} tiles={tiles} />
 }

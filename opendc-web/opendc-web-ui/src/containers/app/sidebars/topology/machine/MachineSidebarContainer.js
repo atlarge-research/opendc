@@ -5,7 +5,7 @@ import MachineSidebarComponent from '../../../../../components/app/sidebars/topo
 const MachineSidebarContainer = (props) => {
     const machineId = useSelector(
         (state) =>
-            state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].machineIds[
+            state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rack].machines[
                 state.interactionLevel.position - 1
             ]
     )

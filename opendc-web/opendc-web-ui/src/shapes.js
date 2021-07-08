@@ -40,14 +40,6 @@ export const Project = PropTypes.shape({
     portfolioIds: PropTypes.array.isRequired,
 })
 
-export const Authorization = PropTypes.shape({
-    userId: PropTypes.string.isRequired,
-    user: User,
-    projectId: PropTypes.string.isRequired,
-    project: Project,
-    level: PropTypes.string.isRequired,
-})
-
 export const ProcessingUnit = PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
@@ -66,44 +58,37 @@ export const StorageUnit = PropTypes.shape({
 
 export const Machine = PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    rackId: PropTypes.string.isRequired,
     position: PropTypes.number.isRequired,
-    cpuIds: PropTypes.arrayOf(PropTypes.string.isRequired),
-    cpus: PropTypes.arrayOf(ProcessingUnit),
-    gpuIds: PropTypes.arrayOf(PropTypes.string.isRequired),
-    gpus: PropTypes.arrayOf(ProcessingUnit),
-    memoryIds: PropTypes.arrayOf(PropTypes.string.isRequired),
-    memories: PropTypes.arrayOf(StorageUnit),
-    storageIds: PropTypes.arrayOf(PropTypes.string.isRequired),
-    storages: PropTypes.arrayOf(StorageUnit),
+    cpus: PropTypes.arrayOf(PropTypes.string),
+    gpus: PropTypes.arrayOf(PropTypes.string),
+    memories: PropTypes.arrayOf(PropTypes.string),
+    storages: PropTypes.arrayOf(PropTypes.string),
 })
 
 export const Rack = PropTypes.shape({
     _id: PropTypes.string.isRequired,
     capacity: PropTypes.number.isRequired,
     powerCapacityW: PropTypes.number.isRequired,
-    machines: PropTypes.arrayOf(Machine),
+    machines: PropTypes.arrayOf(PropTypes.string),
 })
 
 export const Tile = PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    roomId: PropTypes.string.isRequired,
     positionX: PropTypes.number.isRequired,
     positionY: PropTypes.number.isRequired,
-    rackId: PropTypes.string,
-    rack: Rack,
+    rack: PropTypes.string,
 })
 
 export const Room = PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    tiles: PropTypes.arrayOf(Tile),
+    tiles: PropTypes.arrayOf(PropTypes.string),
 })
 
 export const Topology = PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    rooms: PropTypes.arrayOf(Room),
+    rooms: PropTypes.arrayOf(PropTypes.string),
 })
 
 export const Scheduler = PropTypes.shape({

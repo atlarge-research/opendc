@@ -16,10 +16,10 @@ const ObjectHoverLayer = (props) => {
                 }
 
                 const currentRoom = state.objects.room[state.interactionLevel.roomId]
-                const tiles = currentRoom.tileIds.map((tileId) => state.objects.tile[tileId])
+                const tiles = currentRoom.tiles.map((tileId) => state.objects.tile[tileId])
                 const tile = findTileWithPosition(tiles, x, y)
 
-                return !(tile === null || tile.rackId)
+                return !(tile === null || tile.rack)
             },
         }
     })

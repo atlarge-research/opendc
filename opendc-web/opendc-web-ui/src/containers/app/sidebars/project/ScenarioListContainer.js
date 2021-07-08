@@ -15,7 +15,7 @@ const ScenarioListContainer = ({ portfolioId }) => {
         .map((res) => res.data)
     const topologies = useTopologies(project?.topologyIds ?? [])
         .filter((res) => res.data)
-        .map((res) => res.data)
+        .map((res) => ({ _id: res.data._id, name: res.data.name }))
     const traces = useTraces().data ?? []
     const schedulers = useSchedulers().data ?? []
 

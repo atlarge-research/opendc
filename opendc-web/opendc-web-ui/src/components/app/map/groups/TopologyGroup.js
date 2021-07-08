@@ -12,7 +12,7 @@ const TopologyGroup = ({ topology, interactionLevel }) => {
     if (interactionLevel.mode === 'BUILDING') {
         return (
             <Group>
-                {topology.roomIds.map((roomId) => (
+                {topology.rooms.map((roomId) => (
                     <RoomContainer key={roomId} roomId={roomId} />
                 ))}
             </Group>
@@ -21,13 +21,13 @@ const TopologyGroup = ({ topology, interactionLevel }) => {
 
     return (
         <Group>
-            {topology.roomIds
+            {topology.rooms
                 .filter((roomId) => roomId !== interactionLevel.roomId)
                 .map((roomId) => (
                     <RoomContainer key={roomId} roomId={roomId} />
                 ))}
             {interactionLevel.mode === 'ROOM' ? <GrayContainer /> : null}
-            {topology.roomIds
+            {topology.rooms
                 .filter((roomId) => roomId === interactionLevel.roomId)
                 .map((roomId) => (
                     <RoomContainer key={roomId} roomId={roomId} />

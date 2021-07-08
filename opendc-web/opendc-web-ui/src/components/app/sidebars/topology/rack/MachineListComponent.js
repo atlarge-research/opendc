@@ -1,17 +1,18 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import EmptySlotContainer from '../../../../../containers/app/sidebars/topology/rack/EmptySlotContainer'
-import MachineContainer from '../../../../../containers/app/sidebars/topology/rack/MachineContainer'
 import { machineList } from './MachineListComponent.module.scss'
+import MachineComponent from './MachineComponent'
+import { Machine } from '../../../../../shapes'
+import EmptySlotComponent from './EmptySlotComponent'
 
-const MachineListComponent = ({ machineIds }) => {
+const MachineListComponent = ({ machines = [], onSelect, onAdd }) => {
     return (
         <ul className={`list-group ${machineList}`}>
-            {machineIds.map((machineId, index) => {
-                if (machineId === null) {
-                    return <EmptySlotContainer key={index} position={index + 1} />
+            {machines.map((machine, index) => {
+                if (machine === null) {
+                    return <EmptySlotComponent key={index} onAdd={() => onAdd(index + 1)} />
                 } else {
-                    return <MachineContainer key={index} position={index + 1} machineId={machineId} />
+                    return <MachineComponent key={index} onClick={() => onSelect(index + 1)} machine={machine} />
                 }
             })}
         </ul>
@@ -19,7 +20,9 @@ const MachineListComponent = ({ machineIds }) => {
 }
 
 MachineListComponent.propTypes = {
-    machineIds: PropTypes.array,
+    machines: PropTypes.arrayOf(Machine),
+    onSelect: PropTypes.func.isRequired,
+    onAdd: PropTypes.func.isRequired,
 }
 
 export default MachineListComponent
