@@ -1,47 +1,39 @@
+import PropTypes from 'prop-types'
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
 import ScenarioListComponent from '../../../../components/app/sidebars/project/ScenarioListComponent'
-import { addScenario, deleteScenario, setCurrentScenario } from '../../../../redux/actions/scenarios'
-import { setCurrentPortfolio } from '../../../../redux/actions/portfolios'
 import NewScenarioModalComponent from '../../../../components/modals/custom-components/NewScenarioModalComponent'
 import { useProjectTopologies } from '../../../../data/topology'
-import { useActiveScenario, useActiveProject, useScenarios } from '../../../../data/project'
+import { usePortfolio, usePortfolioScenarios } from '../../../../data/project'
 import { useSchedulers, useTraces } from '../../../../data/experiments'
+import { useMutation } from 'react-query'
 
 const ScenarioListContainer = ({ portfolioId }) => {
-    const currentProjectId = useActiveProject()?._id
-    const currentScenarioId = useActiveScenario()?._id
-    const scenarios = useScenarios(portfolioId)
-    const topologies = useProjectTopologies()
-    const traces = useTraces()
-    const schedulers = useSchedulers()
+    const { data: portfolio } = usePortfolio(portfolioId)
+    const scenarios = usePortfolioScenarios(portfolioId).data ?? []
+    const topologies =
+        useProjectTopologies(portfolio?.projectId).data?.map((topology) => ({
+            _id: topology._id,
+            name: topology.name,
+        })) ?? []
+    const traces = useTraces().data ?? []
+    const schedulers = useSchedulers().data ?? []
 
-    const dispatch = useDispatch()
+    const { mutate: addScenario } = useMutation('addScenario')
+    const { mutate: deleteScenario } = useMutation('deleteScenario')
+
     const [isVisible, setVisible] = useState(false)
 
-    const onNewScenario = (currentPortfolioId) => {
-        dispatch(setCurrentPortfolio(currentPortfolioId))
-        setVisible(true)
-    }
-    const onChooseScenario = (portfolioId, scenarioId) => {
-        dispatch(setCurrentScenario(portfolioId, scenarioId))
-    }
-    const onDeleteScenario = (id) => {
-        if (id) {
-            dispatch(deleteScenario(id))
-        }
-    }
+    const onNewScenario = () => setVisible(true)
+    const onDeleteScenario = (id) => id && deleteScenario(id)
     const callback = (name, portfolioId, trace, topology, operational) => {
         if (name) {
-            dispatch(
-                addScenario({
-                    portfolioId,
-                    name,
-                    trace,
-                    topology,
-                    operational,
-                })
-            )
+            addScenario({
+                portfolioId,
+                name,
+                trace,
+                topology,
+                operational,
+            })
         }
 
         setVisible(false)
@@ -51,11 +43,8 @@ const ScenarioListContainer = ({ portfolioId }) => {
         <>
             <ScenarioListComponent
                 portfolioId={portfolioId}
-                currentProjectId={currentProjectId}
-                currentScenarioId={currentScenarioId}
                 scenarios={scenarios}
                 onNewScenario={onNewScenario}
-                onChooseScenario={onChooseScenario}
                 onDeleteScenario={onDeleteScenario}
             />
             <NewScenarioModalComponent
@@ -69,6 +58,10 @@ const ScenarioListContainer = ({ portfolioId }) => {
             />
         </>
     )
+}
+
+ScenarioListContainer.propTypes = {
+    portfolioId: PropTypes.string,
 }
 
 export default ScenarioListContainer

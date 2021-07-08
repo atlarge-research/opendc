@@ -32,7 +32,7 @@ export function startNewRoomConstructionSucceeded(roomId) {
 export function finishNewRoomConstruction() {
     return (dispatch, getState) => {
         const { objects, construction } = getState()
-        if (objects.room[construction.currentRoomInConstruction].tileIds.length === 0) {
+        if (objects.room[construction.currentRoomInConstruction].tiles.length === 0) {
             dispatch(cancelNewRoomConstruction())
             return
         }
@@ -75,13 +75,10 @@ export function toggleTileAtLocation(positionX, positionY) {
     return (dispatch, getState) => {
         const { objects, construction } = getState()
 
-        const tileIds = objects.room[construction.currentRoomInConstruction].tileIds
-        for (let index in tileIds) {
-            if (
-                objects.tile[tileIds[index]].positionX === positionX &&
-                objects.tile[tileIds[index]].positionY === positionY
-            ) {
-                dispatch(deleteTile(tileIds[index]))
+        const tileIds = objects.room[construction.currentRoomInConstruction].tiles
+        for (const tileId of tileIds) {
+            if (objects.tile[tileId].positionX === positionX && objects.tile[tileId].positionY === positionY) {
+                dispatch(deleteTile(tileId))
                 return
             }
         }

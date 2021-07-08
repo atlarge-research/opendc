@@ -9,7 +9,7 @@ const TileContainer = (props) => {
 
     const dispatch = useDispatch()
     const onClick = (tile) => {
-        if (tile.rackId) {
+        if (tile.rack) {
             dispatch(goFromRoomToRack(tile._id))
         }
     }

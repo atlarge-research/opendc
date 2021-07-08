@@ -1,10 +1,18 @@
 from datetime import datetime
 
+from bson import ObjectId
 from marshmallow import Schema, fields
 
 from opendc.exts import db
 from opendc.models.model import Model
 from opendc.models.portfolio import Portfolio
+
+
+class SimulationSchema(Schema):
+    """
+    Simulation details.
+    """
+    state = fields.String()
 
 
 class TraceSchema(Schema):
@@ -41,6 +49,8 @@ class ScenarioSchema(Schema):
     trace = fields.Nested(TraceSchema)
     topology = fields.Nested(TopologySchema)
     operational = fields.Nested(OperationalSchema)
+    simulation = fields.Nested(SimulationSchema, dump_only=True)
+    results = fields.Dict(dump_only=True)
 
 
 class Scenario(Model):
@@ -64,6 +74,11 @@ class Scenario(Model):
         """Obtain the scenarios that have been queued.
         """
         return cls(db.fetch_all({'simulation.state': 'QUEUED'}, cls.collection_name))
+
+    @classmethod
+    def get_for_portfolio(cls, portfolio_id):
+        """Get all scenarios for the specified portfolio id."""
+        return db.fetch_all({'portfolioId': ObjectId(portfolio_id)}, cls.collection_name)
 
     def update_state(self, new_state, results=None):
         """Atomically update the state of the Scenario.

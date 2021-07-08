@@ -1,30 +1,13 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import PortfolioResultsComponent from '../../../components/app/results/PortfolioResultsComponent'
+import { useRouter } from 'next/router'
+import { usePortfolio, usePortfolioScenarios } from '../../../data/project'
 
 const PortfolioResultsContainer = (props) => {
-    const { scenarios, portfolio } = useSelector((state) => {
-        if (
-            state.currentPortfolioId === '-1' ||
-            !state.objects.portfolio[state.currentPortfolioId] ||
-            state.objects.portfolio[state.currentPortfolioId].scenarioIds
-                .map((scenarioId) => state.objects.scenario[scenarioId])
-                .some((s) => s === undefined)
-        ) {
-            return {
-                portfolio: undefined,
-                scenarios: [],
-            }
-        }
-
-        return {
-            portfolio: state.objects.portfolio[state.currentPortfolioId],
-            scenarios: state.objects.portfolio[state.currentPortfolioId].scenarioIds.map(
-                (scenarioId) => state.objects.scenario[scenarioId]
-            ),
-        }
-    })
-
+    const router = useRouter()
+    const { portfolio: currentPortfolioId } = router.query
+    const { data: portfolio } = usePortfolio(currentPortfolioId)
+    const scenarios = usePortfolioScenarios(currentPortfolioId).data ?? []
     return <PortfolioResultsComponent {...props} scenarios={scenarios} portfolio={portfolio} />
 }
 

@@ -8,7 +8,7 @@ import RoomTile from '../elements/RoomTile'
 
 const TileGroup = ({ tile, newTile, onClick }) => {
     let tileObject
-    if (tile.rackId) {
+    if (tile.rack) {
         tileObject = <RackContainer tile={tile} />
     } else {
         tileObject = null

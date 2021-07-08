@@ -20,66 +20,143 @@
  * SOFTWARE.
  */
 
-import { useSelector } from 'react-redux'
+import { useQueries, useQuery } from 'react-query'
+import { addProject, deleteProject, fetchProject, fetchProjects } from '../api/projects'
+import { useRouter } from 'next/router'
+import { addPortfolio, deletePortfolio, fetchPortfolio, fetchPortfoliosOfProject } from '../api/portfolios'
+import { addScenario, deleteScenario, fetchScenario, fetchScenariosOfPortfolio } from '../api/scenarios'
+
+/**
+ * Configure the query defaults for the project endpoints.
+ */
+export function configureProjectClient(queryClient, auth) {
+    queryClient.setQueryDefaults('projects', {
+        queryFn: ({ queryKey }) => (queryKey.length === 1 ? fetchProjects(auth) : fetchProject(auth, queryKey[1])),
+    })
+
+    queryClient.setMutationDefaults('addProject', {
+        mutationFn: (data) => addProject(auth, data),
+        onSuccess: async (result) => {
+            queryClient.setQueryData('projects', (old = []) => [...old, result])
+        },
+    })
+    queryClient.setMutationDefaults('deleteProject', {
+        mutationFn: (id) => deleteProject(auth, id),
+        onSuccess: async (result) => {
+            queryClient.setQueryData('projects', (old = []) => old.filter((project) => project._id !== result._id))
+            queryClient.removeQueries(['projects', result._id])
+        },
+    })
+
+    queryClient.setQueryDefaults('portfolios', {
+        queryFn: ({ queryKey }) => fetchPortfolio(auth, queryKey[1]),
+    })
+    queryClient.setQueryDefaults('project-portfolios', {
+        queryFn: ({ queryKey }) => fetchPortfoliosOfProject(auth, queryKey[1]),
+    })
+    queryClient.setMutationDefaults('addPortfolio', {
+        mutationFn: (data) => addPortfolio(auth, data),
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['projects', result.projectId], (old) => ({
+                ...old,
+                portfolioIds: [...old.portfolioIds, result._id],
+            }))
+            queryClient.setQueryData(['portfolios', result._id], result)
+        },
+    })
+    queryClient.setMutationDefaults('deletePortfolio', {
+        mutationFn: (id) => deletePortfolio(auth, id),
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['projects', result.projectId], (old) => ({
+                ...old,
+                portfolioIds: old.portfolioIds.filter((id) => id !== result._id),
+            }))
+            queryClient.removeQueries(['portfolios', result._id])
+        },
+    })
+
+    queryClient.setQueryDefaults('scenarios', {
+        queryFn: ({ queryKey }) => fetchScenario(auth, queryKey[1]),
+    })
+    queryClient.setQueryDefaults('portfolio-scenarios', {
+        queryFn: ({ queryKey }) => fetchScenariosOfPortfolio(auth, queryKey[1]),
+    })
+    queryClient.setMutationDefaults('addScenario', {
+        mutationFn: (data) => addScenario(auth, data),
+        onSuccess: async (result) => {
+            // Register updated scenario in cache
+            queryClient.setQueryData(['scenarios', result._id], result)
+
+            // Add scenario id to portfolio
+            queryClient.setQueryData(['portfolios', result.portfolioId], (old) => ({
+                ...old,
+                scenarioIds: [...old.scenarioIds, result._id],
+            }))
+        },
+    })
+    queryClient.setMutationDefaults('deleteScenario', {
+        mutationFn: (id) => deleteScenario(auth, id),
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['portfolios', result.portfolioId], (old) => ({
+                ...old,
+                scenarioIds: old.scenarioIds.filter((id) => id !== result._id),
+            }))
+            queryClient.removeQueries(['scenarios', result._id])
+        },
+    })
+}
 
 /**
  * Return the available projects.
  */
 export function useProjects() {
-    return useSelector((state) => state.projects)
+    return useQuery('projects')
 }
 
 /**
- * Return the current active project.
+ * Return the project with the specified identifier.
  */
-export function useActiveProject() {
-    return useSelector((state) =>
-        state.currentProjectId !== '-1' ? state.objects.project[state.currentProjectId] : undefined
+export function useProject(projectId) {
+    return useQuery(['projects', projectId], { enabled: !!projectId })
+}
+
+/**
+ * Return the portfolio with the specified identifier.
+ */
+export function usePortfolio(portfolioId) {
+    return useQuery(['portfolios', portfolioId], { enabled: !!portfolioId })
+}
+
+/**
+ * Return the portfolios of the specified project.
+ */
+export function useProjectPortfolios(projectId) {
+    return useQuery(['project-portfolios', projectId], { enabled: !!projectId })
+}
+
+/**
+ * Return the scenarios with the specified identifiers.
+ */
+export function useScenarios(scenarioIds) {
+    return useQueries(
+        scenarioIds.map((scenarioId) => ({
+            queryKey: ['scenarios', scenarioId],
+        }))
     )
 }
 
 /**
- * Return the active portfolio.
+ * Return the scenarios of the specified portfolio.
  */
-export function useActivePortfolio() {
-    return useSelector((state) => state.objects.portfolio[state.currentPortfolioId])
+export function usePortfolioScenarios(portfolioId) {
+    return useQuery(['portfolio-scenarios', portfolioId], { enabled: !!portfolioId })
 }
 
 /**
- * Return the active scenario.
+ * Return the current active project identifier.
  */
-export function useActiveScenario() {
-    return useSelector((state) => state.objects.scenario[state.currentScenarioId])
-}
-
-/**
- * Return the portfolios for the specified project id.
- */
-export function usePortfolios(projectId) {
-    return useSelector((state) => {
-        let portfolios = state.objects.project[projectId]
-            ? state.objects.project[projectId].portfolioIds.map((t) => state.objects.portfolio[t])
-            : []
-        if (portfolios.filter((t) => !t).length > 0) {
-            portfolios = []
-        }
-
-        return portfolios
-    })
-}
-
-/**
- * Return the scenarios for the specified portfolio id.
- */
-export function useScenarios(portfolioId) {
-    return useSelector((state) => {
-        let scenarios = state.objects.portfolio[portfolioId]
-            ? state.objects.portfolio[portfolioId].scenarioIds.map((t) => state.objects.scenario[t])
-            : []
-        if (scenarios.filter((t) => !t).length > 0) {
-            scenarios = []
-        }
-
-        return scenarios
-    })
+export function useActiveProjectId() {
+    const router = useRouter()
+    const { project } = router.query
+    return project
 }

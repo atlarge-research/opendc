@@ -21,6 +21,43 @@
  */
 
 import { useSelector } from 'react-redux'
+import { useQueries, useQuery } from 'react-query'
+import { addTopology, deleteTopology, fetchTopologiesOfProject, fetchTopology, updateTopology } from '../api/topologies'
+
+/**
+ * Configure the query defaults for the topology endpoints.
+ */
+export function configureTopologyClient(queryClient, auth) {
+    queryClient.setQueryDefaults('topologies', { queryFn: ({ queryKey }) => fetchTopology(auth, queryKey[1]) })
+    queryClient.setQueryDefaults('project-topologies', {
+        queryFn: ({ queryKey }) => fetchTopologiesOfProject(auth, queryKey[1]),
+    })
+
+    queryClient.setMutationDefaults('addTopology', {
+        mutationFn: (data) => addTopology(auth, data),
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['projects', result.projectId], (old) => ({
+                ...old,
+                topologyIds: [...old.topologyIds, result._id],
+            }))
+            queryClient.setQueryData(['topologies', result._id], result)
+        },
+    })
+    queryClient.setMutationDefaults('updateTopology', {
+        mutationFn: (data) => updateTopology(auth, data),
+        onSuccess: async (result) => queryClient.setQueryData(['topologies', result._id], result),
+    })
+    queryClient.setMutationDefaults('deleteTopology', {
+        mutationFn: (id) => deleteTopology(auth, id),
+        onSuccess: async (result) => {
+            queryClient.setQueryData(['projects', result.projectId], (old) => ({
+                ...old,
+                topologyIds: old.topologyIds.filter((id) => id !== result._id),
+            }))
+            queryClient.removeQueries(['topologies', result._id])
+        },
+    })
+}
 
 /**
  * Return the current active topology.
@@ -30,20 +67,8 @@ export function useActiveTopology() {
 }
 
 /**
- * Return the topologies for the active project.
+ * Return the topologies of the specified project.
  */
-export function useProjectTopologies() {
-    return useSelector(({ currentProjectId, objects }) => {
-        if (currentProjectId === '-1' || !objects.project[currentProjectId]) {
-            return []
-        }
-
-        const topologies = objects.project[currentProjectId].topologyIds.map((t) => objects.topology[t])
-
-        if (topologies.filter((t) => !t).length > 0) {
-            return []
-        }
-
-        return topologies
-    })
+export function useProjectTopologies(projectId) {
+    return useQuery(['project-topologies', projectId], { enabled: !!projectId })
 }

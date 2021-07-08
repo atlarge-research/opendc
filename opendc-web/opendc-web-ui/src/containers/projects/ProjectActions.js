@@ -1,13 +1,12 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import { deleteProject } from '../../redux/actions/projects'
 import ProjectActionButtons from '../../components/projects/ProjectActionButtons'
+import { useMutation } from 'react-query'
 
 const ProjectActions = (props) => {
-    const dispatch = useDispatch()
+    const { mutate: deleteProject } = useMutation('deleteProject')
     const actions = {
         onViewUsers: (id) => {}, // TODO implement user viewing
-        onDelete: (id) => dispatch(deleteProject(id)),
+        onDelete: (id) => deleteProject(id),
     }
     return <ProjectActionButtons {...props} {...actions} />
 }

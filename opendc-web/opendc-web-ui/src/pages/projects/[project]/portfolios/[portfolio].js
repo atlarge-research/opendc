@@ -21,17 +21,40 @@
  */
 
 import { useRouter } from 'next/router'
-import App from '../../../../containers/app/App'
+import Head from 'next/head'
+import AppNavbarContainer from '../../../../containers/navigation/AppNavbarContainer'
+import React from 'react'
+import { useProject } from '../../../../data/project'
+import ProjectSidebarContainer from '../../../../containers/app/sidebars/project/ProjectSidebarContainer'
+import PortfolioResultsContainer from '../../../../containers/app/results/PortfolioResultsContainer'
+import { useDispatch } from 'react-redux'
 
-function Project() {
+/**
+ * Page that displays the results in a portfolio.
+ */
+function Portfolio() {
     const router = useRouter()
-    const { project, portfolio } = router.query
+    const { project: projectId, portfolio: portfolioId } = router.query
 
-    if (project && portfolio) {
-        return <App projectId={project} portfolioId={portfolio} />
-    }
+    const project = useProject(projectId)
+    const title = project?.name ? project?.name + ' - OpenDC' : 'Simulation - OpenDC'
 
-    return <div />
+    const dispatch = useDispatch()
+
+    return (
+        <div className="page-container full-height">
+            <Head>
+                <title>{title}</title>
+            </Head>
+            <AppNavbarContainer fullWidth={true} />
+            <div className="full-height app-page-container">
+                <ProjectSidebarContainer />
+                <div className="container-fluid full-height">
+                    <PortfolioResultsContainer />
+                </div>
+            </div>
+        </div>
+    )
 }
 
-export default Project
+export default Portfolio

@@ -25,7 +25,7 @@ function PortfolioListComponent({
                 </Button>
             </h2>
 
-            {portfolios.map((portfolio, idx) => (
+            {portfolios.map((portfolio) => (
                 <div key={portfolio._id}>
                     <Row className="row mb-1">
                         <Col
@@ -61,7 +61,7 @@ function PortfolioListComponent({
 
 PortfolioListComponent.propTypes = {
     portfolios: PropTypes.arrayOf(Portfolio),
-    currentProjectId: PropTypes.string.isRequired,
+    currentProjectId: PropTypes.string,
     currentPortfolioId: PropTypes.string,
     onNewPortfolio: PropTypes.func.isRequired,
     onChoosePortfolio: PropTypes.func.isRequired,

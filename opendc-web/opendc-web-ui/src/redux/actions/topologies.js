@@ -1,17 +1,18 @@
 export const ADD_TOPOLOGY = 'ADD_TOPOLOGY'
-export const DELETE_TOPOLOGY = 'DELETE_TOPOLOGY'
+export const STORE_TOPOLOGY = 'STORE_TOPOLOGY'
 
-export function addTopology(name, duplicateId) {
+export function addTopology(projectId, name, duplicateId) {
     return {
         type: ADD_TOPOLOGY,
+        projectId,
         name,
         duplicateId,
     }
 }
 
-export function deleteTopology(id) {
+export function storeTopology(entities) {
     return {
-        type: DELETE_TOPOLOGY,
-        id,
+        type: STORE_TOPOLOGY,
+        entities,
     }
 }

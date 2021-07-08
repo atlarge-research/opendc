@@ -23,8 +23,8 @@ const getVisibleProjects = (projects, filter, userId) => {
 
 const ProjectListContainer = ({ filter }) => {
     const { user } = useAuth()
-    const projects = useProjects()
-    return <ProjectList projects={getVisibleProjects(projects, filter, user?.sub)} />
+    const { data: projects } = useProjects()
+    return <ProjectList projects={getVisibleProjects(projects ?? [], filter, user?.sub)} />
 }
 
 ProjectListContainer.propTypes = {

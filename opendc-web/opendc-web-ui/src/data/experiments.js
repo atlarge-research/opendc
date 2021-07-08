@@ -20,18 +20,28 @@
  * SOFTWARE.
  */
 
-import { useSelector } from 'react-redux'
+import { useQuery } from 'react-query'
+import { fetchTraces } from '../api/traces'
+import { fetchSchedulers } from '../api/schedulers'
+
+/**
+ * Configure the query defaults for the experiment endpoints.
+ */
+export function configureExperimentClient(queryClient, auth) {
+    queryClient.setQueryDefaults('traces', { queryFn: () => fetchTraces(auth) })
+    queryClient.setQueryDefaults('schedulers', { queryFn: () => fetchSchedulers(auth) })
+}
 
 /**
  * Return the available traces to experiment with.
  */
 export function useTraces() {
-    return useSelector((state) => Object.values(state.objects.trace))
+    return useQuery('traces')
 }
 
 /**
  * Return the available schedulers to experiment with.
  */
 export function useSchedulers() {
-    return useSelector((state) => Object.values(state.objects.scheduler))
+    return useQuery('schedulers')
 }

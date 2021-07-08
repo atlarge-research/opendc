@@ -60,7 +60,7 @@ function UnitComponent({ index, unitType, unit, onDelete }) {
 UnitComponent.propTypes = {
     index: PropTypes.number,
     unitType: PropTypes.string,
-    unit: PropTypes.oneOf([ProcessingUnit, StorageUnit]),
+    unit: PropTypes.oneOfType([ProcessingUnit, StorageUnit]),
     onDelete: PropTypes.func,
 }
 

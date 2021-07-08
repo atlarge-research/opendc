@@ -23,14 +23,14 @@ const RoomHoverLayer = (props) => {
                     .map((id) => Object.assign({}, state.objects.room[id]))
                     .filter(
                         (room) =>
-                            state.objects.topology[state.currentTopologyId].roomIds.indexOf(room._id) !== -1 &&
+                            state.objects.topology[state.currentTopologyId].rooms.indexOf(room._id) !== -1 &&
                             room._id !== state.construction.currentRoomInConstruction
                     )
 
                 ;[...oldRooms, newRoom].forEach((room) => {
-                    room.tiles = room.tileIds.map((tileId) => state.objects.tile[tileId])
+                    room.tiles = room.tiles.map((tileId) => state.objects.tile[tileId])
                 })
-                if (newRoom.tileIds.length === 0) {
+                if (newRoom.tiles.length === 0) {
                     return findPositionInRooms(oldRooms, x, y) === -1
                 }
 

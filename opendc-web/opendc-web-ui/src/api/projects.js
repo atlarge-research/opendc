@@ -22,11 +22,11 @@
 
 import { request } from './index'
 
-export function getProjects(auth) {
+export function fetchProjects(auth) {
     return request(auth, `projects/`)
 }
 
-export function getProject(auth, projectId) {
+export function fetchProject(auth, projectId) {
     return request(auth, `projects/${projectId}`)
 }
 

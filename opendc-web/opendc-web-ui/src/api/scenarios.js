@@ -22,12 +22,16 @@
 
 import { request } from './index'
 
-export function addScenario(auth, portfolioId, scenario) {
-    return request(auth, `portfolios/${portfolioId}/scenarios`, 'POST', { scenario })
+export function fetchScenario(auth, scenarioId) {
+    return request(auth, `scenarios/${scenarioId}`)
 }
 
-export function getScenario(auth, scenarioId) {
-    return request(auth, `scenarios/${scenarioId}`)
+export function fetchScenariosOfPortfolio(auth, portfolioId) {
+    return request(auth, `portfolios/${portfolioId}/scenarios`)
+}
+
+export function addScenario(auth, scenario) {
+    return request(auth, `portfolios/${scenario.portfolioId}/scenarios`, 'POST', { scenario })
 }
 
 export function updateScenario(auth, scenarioId, scenario) {

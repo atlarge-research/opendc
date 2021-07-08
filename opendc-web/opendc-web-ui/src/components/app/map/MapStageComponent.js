@@ -37,10 +37,11 @@ function MapStageComponent({
         setPos([mousePos.x, mousePos.y])
     }
 
-    useEffect(() => {
-        const updateDimensions = () => setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
-        const updateScale = (e) => zoomInOnPosition(e.deltaY < 0, x, y)
+    const updateDimensions = () => setMapDimensions(window.innerWidth, window.innerHeight - NAVBAR_HEIGHT)
+    const updateScale = (e) => zoomInOnPosition(e.deltaY < 0, x, y)
 
+    // We explicitly do not specify any dependencies to prevent infinitely dispatching updateDimensions commands
+    useEffect(() => {
         updateDimensions()
 
         window.addEventListener('resize', updateDimensions)
@@ -57,7 +58,7 @@ function MapStageComponent({
             window.removeEventListener('resize', updateDimensions)
             window.removeEventListener('wheel', updateScale)
         }
-    }, [x, y, setMapDimensions, zoomInOnPosition])
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const store = useStore()
 

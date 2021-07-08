@@ -7,7 +7,7 @@ import { editRackName } from '../../../../../redux/actions/topology/rack'
 const RackNameContainer = () => {
     const [isVisible, setVisible] = useState(false)
     const rackName = useSelector(
-        (state) => state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rackId].name
+        (state) => state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rack].name
     )
     const dispatch = useDispatch()
     const callback = (name) => {

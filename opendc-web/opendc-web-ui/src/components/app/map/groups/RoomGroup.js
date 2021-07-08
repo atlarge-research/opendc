@@ -10,7 +10,7 @@ const RoomGroup = ({ room, interactionLevel, currentRoomInConstruction, onClick 
     if (currentRoomInConstruction === room._id) {
         return (
             <Group onClick={onClick}>
-                {room.tileIds.map((tileId) => (
+                {room.tiles.map((tileId) => (
                     <TileContainer key={tileId} tileId={tileId} newTile={true} />
                 ))}
             </Group>
@@ -25,16 +25,16 @@ const RoomGroup = ({ room, interactionLevel, currentRoomInConstruction, onClick 
                     interactionLevel.roomId === room._id
                 ) {
                     return [
-                        room.tileIds
+                        room.tiles
                             .filter((tileId) => tileId !== interactionLevel.tileId)
                             .map((tileId) => <TileContainer key={tileId} tileId={tileId} />),
                         <GrayContainer key={-1} />,
-                        room.tileIds
+                        room.tiles
                             .filter((tileId) => tileId === interactionLevel.tileId)
                             .map((tileId) => <TileContainer key={tileId} tileId={tileId} />),
                     ]
                 } else {
-                    return room.tileIds.map((tileId) => <TileContainer key={tileId} tileId={tileId} />)
+                    return room.tiles.map((tileId) => <TileContainer key={tileId} tileId={tileId} />)
                 }
             })()}
             <WallContainer roomId={room._id} />

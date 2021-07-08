@@ -20,25 +20,28 @@
  * SOFTWARE.
  */
 
-import { request } from './index'
+import { schema } from 'normalizr'
 
-export function fetchTopology(auth, topologyId) {
-    return request(auth, `topologies/${topologyId}`)
-}
+const Cpu = new schema.Entity('cpu', {}, { idAttribute: '_id' })
+const Gpu = new schema.Entity('gpu', {}, { idAttribute: '_id' })
+const Memory = new schema.Entity('memory', {}, { idAttribute: '_id' })
+const Storage = new schema.Entity('storage', {}, { idAttribute: '_id' })
 
-export function fetchTopologiesOfProject(auth, projectId) {
-    return request(auth, `projects/${projectId}/topologies`)
-}
+export const Machine = new schema.Entity(
+    'machine',
+    {
+        cpus: [Cpu],
+        gpus: [Gpu],
+        memories: [Memory],
+        storages: [Storage],
+    },
+    { idAttribute: '_id' }
+)
 
-export function addTopology(auth, topology) {
-    return request(auth, `projects/${topology.projectId}/topologies`, 'POST', { topology })
-}
+export const Rack = new schema.Entity('rack', { machines: [Machine] }, { idAttribute: '_id' })
 
-export function updateTopology(auth, topology) {
-    const { _id, ...data } = topology
-    return request(auth, `topologies/${topology._id}`, 'PUT', { topology: data })
-}
+export const Tile = new schema.Entity('tile', { rack: Rack }, { idAttribute: '_id' })
 
-export function deleteTopology(auth, topologyId) {
-    return request(auth, `topologies/${topologyId}`, 'DELETE')
-}
+export const Room = new schema.Entity('room', { tiles: [Tile] }, { idAttribute: '_id' })
+
+export const Topology = new schema.Entity('topology', { rooms: [Room] }, { idAttribute: '_id' })

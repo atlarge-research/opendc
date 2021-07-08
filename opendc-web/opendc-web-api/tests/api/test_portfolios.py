@@ -322,3 +322,19 @@ def test_add_portfolio(client, mocker):
     assert 'projectId' in res.json['data']
     assert 'scenarioIds' in res.json['data']
     assert '200' in res.status
+
+
+def test_get_portfolio_scenarios(client, mocker):
+    mocker.patch.object(db,
+                        'fetch_one',
+                        return_value={
+                            'projectId': test_id,
+                            '_id': test_id,
+                            'authorizations': [{
+                                'userId': 'test',
+                                'level': 'EDIT'
+                            }]
+                        })
+    mocker.patch.object(db, 'fetch_all', return_value=[{'_id': test_id}])
+    res = client.get(f'/portfolios/{test_id}/scenarios')
+    assert '200' in res.status

@@ -1,43 +1,34 @@
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/router'
 import PortfolioListComponent from '../../../../components/app/sidebars/project/PortfolioListComponent'
-import { addPortfolio, deletePortfolio, setCurrentPortfolio } from '../../../../redux/actions/portfolios'
-import { getState } from '../../../../util/state-utils'
-import { setCurrentTopology } from '../../../../redux/actions/topology/building'
 import NewPortfolioModalComponent from '../../../../components/modals/custom-components/NewPortfolioModalComponent'
-import { useActivePortfolio, useActiveProject, usePortfolios } from '../../../../data/project'
+import { useProjectPortfolios } from '../../../../data/project'
+import { useMutation } from 'react-query'
 
 const PortfolioListContainer = () => {
-    const currentProjectId = useActiveProject()?._id
-    const currentPortfolioId = useActivePortfolio()?._id
-    const portfolios = usePortfolios(currentProjectId)
-
-    const dispatch = useDispatch()
-    const [isVisible, setVisible] = useState(false)
     const router = useRouter()
+    const { project: currentProjectId, portfolio: currentPortfolioId } = router.query
+    const portfolios = useProjectPortfolios(currentProjectId).data ?? []
+
+    const { mutate: addPortfolio } = useMutation('addPortfolio')
+    const { mutateAsync: deletePortfolio } = useMutation('deletePortfolio')
+
+    const [isVisible, setVisible] = useState(false)
     const actions = {
         onNewPortfolio: () => setVisible(true),
-        onChoosePortfolio: (portfolioId) => {
-            dispatch(setCurrentPortfolio(portfolioId))
+        onChoosePortfolio: async (portfolioId) => {
+            await router.push(`/projects/${currentProjectId}/portfolios/${portfolioId}`)
         },
         onDeletePortfolio: async (id) => {
             if (id) {
-                const state = await getState(dispatch)
-                dispatch(deletePortfolio(id))
-                dispatch(setCurrentTopology(state.objects.project[state.currentProjectId].topologyIds[0]))
-                router.push(`/projects/${state.currentProjectId}`)
+                await deletePortfolio(id)
+                await router.push(`/projects/${currentProjectId}`)
             }
         },
     }
     const callback = (name, targets) => {
         if (name) {
-            dispatch(
-                addPortfolio({
-                    name,
-                    targets,
-                })
-            )
+            addPortfolio({ projectId: currentProjectId, name, targets })
         }
         setVisible(false)
     }

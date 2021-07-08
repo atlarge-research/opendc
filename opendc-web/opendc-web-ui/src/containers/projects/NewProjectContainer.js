@@ -1,20 +1,19 @@
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { addProject } from '../../redux/actions/projects'
 import TextInputModal from '../../components/modals/TextInputModal'
 import { Button } from 'reactstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { useMutation } from 'react-query'
 
 /**
  * A container for creating a new project.
  */
 const NewProjectContainer = () => {
     const [isVisible, setVisible] = useState(false)
-    const dispatch = useDispatch()
+    const { mutate: addProject } = useMutation('addProject')
     const callback = (text) => {
         if (text) {
-            dispatch(addProject(text))
+            addProject({ name: text })
         }
         setVisible(false)
     }
