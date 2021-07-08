@@ -8,6 +8,13 @@ from opendc.models.model import Model
 from opendc.models.portfolio import Portfolio
 
 
+class SimulationSchema(Schema):
+    """
+    Simulation details.
+    """
+    state = fields.String()
+
+
 class TraceSchema(Schema):
     """
     Schema for specifying the trace of a scenario.
@@ -42,6 +49,8 @@ class ScenarioSchema(Schema):
     trace = fields.Nested(TraceSchema)
     topology = fields.Nested(TopologySchema)
     operational = fields.Nested(OperationalSchema)
+    simulation = fields.Nested(SimulationSchema, dump_only=True)
+    results = fields.Dict(dump_only=True)
 
 
 class Scenario(Model):
