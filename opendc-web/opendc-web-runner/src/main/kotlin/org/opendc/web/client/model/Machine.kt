@@ -38,5 +38,6 @@ public data class Machine(
     @JsonProperty("memories")
     val memory: List<MemoryUnit> = emptyList(),
     @JsonProperty("storages")
-    val storage: List<MemoryUnit> = emptyList()
+    val storage: List<MemoryUnit> = emptyList(),
+    val rackId: String? = null
 )

@@ -34,5 +34,6 @@ public data class RoomTile(
     val id: String,
     val positionX: Double,
     val positionY: Double,
-    val rack: Rack? = null
+    val rack: Rack? = null,
+    val roomId: String? = null,
 )

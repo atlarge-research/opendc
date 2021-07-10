@@ -38,6 +38,7 @@ class MachineSchema(Schema):
     gpus = fields.List(fields.Nested(PuSchema))
     memories = fields.List(fields.Nested(MemorySchema))
     storages = fields.List(fields.Nested(MemorySchema))
+    rackId = fields.String()
 
 
 class ObjectSchema(Schema):
@@ -49,6 +50,7 @@ class ObjectSchema(Schema):
     capacity = fields.Integer()
     powerCapacityW = fields.Integer()
     machines = fields.List(fields.Nested(MachineSchema))
+    tileId = fields.String()
 
 
 class TileSchema(Schema):
@@ -56,9 +58,11 @@ class TileSchema(Schema):
     Schema representing a room tile.
     """
     _id = fields.String()
+    topologyId = fields.String()
     positionX = fields.Integer()
     positionY = fields.Integer()
     rack = fields.Nested(ObjectSchema)
+    roomId = fields.String()
 
 
 class RoomSchema(Schema):
@@ -67,6 +71,7 @@ class RoomSchema(Schema):
     """
     _id = fields.String()
     name = fields.String(required=True)
+    topologyId = fields.String()
     tiles = fields.List(fields.Nested(TileSchema), required=True)
 
 
@@ -78,6 +83,7 @@ class TopologySchema(Schema):
     projectId = fields.String()
     name = fields.String(required=True)
     rooms = fields.List(fields.Nested(RoomSchema), required=True)
+    datetimeLastEdited = fields.DateTime()
 
 
 class Topology(Model):
