@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Group, Layer } from 'react-konva'
-import TopologyContainer from '../../../../containers/app/map/TopologyContainer'
 import Backdrop from '../elements/Backdrop'
 import GridGroup from '../groups/GridGroup'
+import TopologyContainer from '../TopologyContainer'
 
 const MapLayerComponent = ({ mapPosition, mapScale }) => (
     <Layer>

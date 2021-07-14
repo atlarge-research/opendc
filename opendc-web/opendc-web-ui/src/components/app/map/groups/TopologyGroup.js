@@ -1,8 +1,8 @@
 import React from 'react'
 import { Group } from 'react-konva'
-import GrayContainer from '../../../../containers/app/map/GrayContainer'
-import RoomContainer from '../../../../containers/app/map/RoomContainer'
 import { InteractionLevel, Topology } from '../../../../shapes'
+import RoomContainer from '../RoomContainer'
+import GrayContainer from '../GrayContainer'
 
 const TopologyGroup = ({ topology, interactionLevel }) => {
     if (!topology) {

@@ -1,21 +1,66 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { machineList } from './MachineListComponent.module.scss'
 import MachineComponent from './MachineComponent'
 import { Machine } from '../../../../../shapes'
-import EmptySlotComponent from './EmptySlotComponent'
+import {
+    Badge,
+    Button,
+    DataList,
+    DataListAction,
+    DataListCell,
+    DataListItem,
+    DataListItemCells,
+    DataListItemRow,
+} from '@patternfly/react-core'
+import { AngleRightIcon, PlusIcon } from '@patternfly/react-icons'
 
-const MachineListComponent = ({ machines = [], onSelect, onAdd }) => {
+function MachineListComponent({ machines = [], onSelect, onAdd }) {
     return (
-        <ul className={`list-group ${machineList}`}>
-            {machines.map((machine, index) => {
-                if (machine === null) {
-                    return <EmptySlotComponent key={index} onAdd={() => onAdd(index + 1)} />
-                } else {
-                    return <MachineComponent key={index} onClick={() => onSelect(index + 1)} machine={machine} />
-                }
-            })}
-        </ul>
+        <DataList aria-label="Rack Units">
+            {machines.map((machine, index) =>
+                machine ? (
+                    <DataListItem key={index} onClick={() => onSelect(index + 1)}>
+                        <DataListItemRow>
+                            <DataListItemCells
+                                dataListCells={[
+                                    <DataListCell isIcon key="icon">
+                                        <Badge isRead>{machines.length - index}U</Badge>
+                                    </DataListCell>,
+                                    <DataListCell key="primary content">
+                                        <MachineComponent onClick={() => onSelect(index + 1)} machine={machine} />
+                                    </DataListCell>,
+                                ]}
+                            />
+                            <DataListAction id="goto" aria-label="Goto Machine" aria-labelledby="goto">
+                                <Button isSmall variant="plain" className="pf-u-p-0">
+                                    <AngleRightIcon />
+                                </Button>
+                            </DataListAction>
+                        </DataListItemRow>
+                    </DataListItem>
+                ) : (
+                    <DataListItem key={index}>
+                        <DataListItemRow>
+                            <DataListItemCells
+                                dataListCells={[
+                                    <DataListCell isIcon key="icon">
+                                        <Badge isRead>{machines.length - index}U</Badge>
+                                    </DataListCell>,
+                                    <DataListCell key="add" className="text-secondary">
+                                        Empty Slot
+                                    </DataListCell>,
+                                ]}
+                            />
+                            <DataListAction id="add" aria-label="Add Machine" aria-labelledby="add">
+                                <Button isSmall variant="plain" className="pf-u-p-0" onClick={() => onAdd(index + 1)}>
+                                    <PlusIcon />
+                                </Button>
+                            </DataListAction>
+                        </DataListItemRow>
+                    </DataListItem>
+                )
+            )}
+        </DataList>
     )
 }
 

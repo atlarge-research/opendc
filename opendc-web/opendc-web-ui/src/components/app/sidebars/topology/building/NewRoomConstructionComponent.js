@@ -1,29 +1,38 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
-import { Button } from 'reactstrap'
+import { Button, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem } from '@patternfly/react-core'
+import PlusIcon from '@patternfly/react-icons/dist/js/icons/plus-icon'
+import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-icon'
 
 const NewRoomConstructionComponent = ({ onStart, onFinish, onCancel, currentRoomInConstruction }) => {
     if (currentRoomInConstruction === '-1') {
         return (
-            <div className="btn btn-outline-primary btn-block" onClick={onStart}>
-                <FontAwesomeIcon icon={faPlus} className="mr-2" />
+            <Button isBlock icon={<PlusIcon />} onClick={onStart}>
                 Construct a new room
-            </div>
+            </Button>
         )
     }
     return (
-        <div>
-            <Button color="primary" block onClick={onFinish}>
-                <FontAwesomeIcon icon={faCheck} className="mr-2" />
-                Finalize new room
-            </Button>
-            <Button color="default" block onClick={onCancel}>
-                <FontAwesomeIcon icon={faTimes} className="mr-2" />
-                Cancel construction
-            </Button>
-        </div>
+        <Toolbar
+            inset={{
+                default: 'insetNone',
+            }}
+        >
+            <ToolbarContent>
+                <ToolbarGroup>
+                    <ToolbarItem>
+                        <Button icon={<CheckIcon />} onClick={onFinish}>
+                            Finalize new room
+                        </Button>
+                    </ToolbarItem>
+                    <ToolbarItem widths={{ default: '100%' }}>
+                        <Button isBlock variant="secondary" onClick={onCancel}>
+                            Cancel
+                        </Button>
+                    </ToolbarItem>
+                </ToolbarGroup>
+            </ToolbarContent>
+        </Toolbar>
     )
 }
 

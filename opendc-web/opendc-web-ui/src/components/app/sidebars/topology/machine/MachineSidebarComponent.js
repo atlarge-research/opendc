@@ -1,17 +1,38 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import BackToRackContainer from '../../../../../containers/app/sidebars/topology/machine/BackToRackContainer'
-import DeleteMachineContainer from '../../../../../containers/app/sidebars/topology/machine/DeleteMachineContainer'
-import MachineNameContainer from '../../../../../containers/app/sidebars/topology/machine/MachineNameContainer'
-import UnitTabsContainer from '../../../../../containers/app/sidebars/topology/machine/UnitTabsContainer'
+import UnitTabsComponent from './UnitTabsComponent'
+import DeleteMachine from './DeleteMachine'
+import {
+    TextContent,
+    TextList,
+    TextListItem,
+    TextListItemVariants,
+    TextListVariants,
+    Title,
+} from '@patternfly/react-core'
+import { useSelector } from 'react-redux'
 
 const MachineSidebarComponent = ({ machineId }) => {
+    const machine = useSelector((state) => state.objects.machine[machineId])
     return (
-        <div className="h-100 overflow-auto">
-            <MachineNameContainer />
-            <BackToRackContainer />
-            <DeleteMachineContainer />
-            <UnitTabsContainer />
+        <div>
+            <TextContent>
+                <Title headingLevel="h2">Details</Title>
+                <TextList component={TextListVariants.dl}>
+                    <TextListItem component={TextListItemVariants.dt}>Name</TextListItem>
+                    <TextListItem component={TextListItemVariants.dd}>
+                        Machine at position {machine.position}
+                    </TextListItem>
+                </TextList>
+
+                <Title headingLevel="h2">Actions</Title>
+                <DeleteMachine />
+
+                <Title headingLevel="h2">Units</Title>
+            </TextContent>
+            <div className="pf-u-h-100">
+                <UnitTabsComponent />
+            </div>
         </div>
     )
 }

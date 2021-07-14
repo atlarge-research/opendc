@@ -20,9 +20,8 @@
  * SOFTWARE.
  */
 
-import { useQueries, useQuery } from 'react-query'
+import { useQuery } from 'react-query'
 import { addProject, deleteProject, fetchProject, fetchProjects } from '../api/projects'
-import { useRouter } from 'next/router'
 import { addPortfolio, deletePortfolio, fetchPortfolio, fetchPortfoliosOfProject } from '../api/portfolios'
 import { addScenario, deleteScenario, fetchScenario, fetchScenariosOfPortfolio } from '../api/scenarios'
 
@@ -38,6 +37,7 @@ export function configureProjectClient(queryClient, auth) {
         mutationFn: (data) => addProject(auth, data),
         onSuccess: async (result) => {
             queryClient.setQueryData('projects', (old = []) => [...old, result])
+            queryClient.setQueryData(['projects', result._id], result)
         },
     })
     queryClient.setMutationDefaults('deleteProject', {
@@ -61,6 +61,7 @@ export function configureProjectClient(queryClient, auth) {
                 ...old,
                 portfolioIds: [...old.portfolioIds, result._id],
             }))
+            queryClient.setQueryData(['project-portfolios', result.projectId], (old = []) => [...old, result])
             queryClient.setQueryData(['portfolios', result._id], result)
         },
     })
@@ -71,6 +72,9 @@ export function configureProjectClient(queryClient, auth) {
                 ...old,
                 portfolioIds: old.portfolioIds.filter((id) => id !== result._id),
             }))
+            queryClient.setQueryData(['project-portfolios', result.projectId], (old = []) =>
+                old.filter((portfolio) => portfolio._id !== result._id)
+            )
             queryClient.removeQueries(['portfolios', result._id])
         },
     })
@@ -86,6 +90,7 @@ export function configureProjectClient(queryClient, auth) {
         onSuccess: async (result) => {
             // Register updated scenario in cache
             queryClient.setQueryData(['scenarios', result._id], result)
+            queryClient.setQueryData(['portfolio-scenarios', result.portfolioId], (old = []) => [...old, result])
 
             // Add scenario id to portfolio
             queryClient.setQueryData(['portfolios', result.portfolioId], (old) => ({
@@ -101,6 +106,9 @@ export function configureProjectClient(queryClient, auth) {
                 ...old,
                 scenarioIds: old.scenarioIds.filter((id) => id !== result._id),
             }))
+            queryClient.setQueryData(['portfolio-scenarios', result.portfolioId], (old = []) =>
+                old.filter((scenario) => scenario._id !== result._id)
+            )
             queryClient.removeQueries(['scenarios', result._id])
         },
     })
@@ -109,54 +117,34 @@ export function configureProjectClient(queryClient, auth) {
 /**
  * Return the available projects.
  */
-export function useProjects() {
-    return useQuery('projects')
+export function useProjects(options = {}) {
+    return useQuery('projects', options)
 }
 
 /**
  * Return the project with the specified identifier.
  */
-export function useProject(projectId) {
-    return useQuery(['projects', projectId], { enabled: !!projectId })
+export function useProject(projectId, options = {}) {
+    return useQuery(['projects', projectId], { enabled: !!projectId, ...options })
 }
 
 /**
  * Return the portfolio with the specified identifier.
  */
-export function usePortfolio(portfolioId) {
-    return useQuery(['portfolios', portfolioId], { enabled: !!portfolioId })
+export function usePortfolio(portfolioId, options = {}) {
+    return useQuery(['portfolios', portfolioId], { enabled: !!portfolioId, ...options })
 }
 
 /**
  * Return the portfolios of the specified project.
  */
-export function useProjectPortfolios(projectId) {
-    return useQuery(['project-portfolios', projectId], { enabled: !!projectId })
-}
-
-/**
- * Return the scenarios with the specified identifiers.
- */
-export function useScenarios(scenarioIds) {
-    return useQueries(
-        scenarioIds.map((scenarioId) => ({
-            queryKey: ['scenarios', scenarioId],
-        }))
-    )
+export function useProjectPortfolios(projectId, options = {}) {
+    return useQuery(['project-portfolios', projectId], { enabled: !!projectId, ...options })
 }
 
 /**
  * Return the scenarios of the specified portfolio.
  */
-export function usePortfolioScenarios(portfolioId) {
-    return useQuery(['portfolio-scenarios', portfolioId], { enabled: !!portfolioId })
-}
-
-/**
- * Return the current active project identifier.
- */
-export function useActiveProjectId() {
-    const router = useRouter()
-    const { project } = router.query
-    return project
+export function usePortfolioScenarios(portfolioId, options = {}) {
+    return useQuery(['portfolio-scenarios', portfolioId], { enabled: !!portfolioId, ...options })
 }

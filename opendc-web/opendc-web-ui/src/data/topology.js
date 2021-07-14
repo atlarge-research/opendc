@@ -21,7 +21,7 @@
  */
 
 import { useSelector } from 'react-redux'
-import { useQueries, useQuery } from 'react-query'
+import { useQuery } from 'react-query'
 import { addTopology, deleteTopology, fetchTopologiesOfProject, fetchTopology, updateTopology } from '../api/topologies'
 
 /**
@@ -40,6 +40,7 @@ export function configureTopologyClient(queryClient, auth) {
                 ...old,
                 topologyIds: [...old.topologyIds, result._id],
             }))
+            queryClient.setQueryData(['project-topologies', result.projectId], (old = []) => [...old, result])
             queryClient.setQueryData(['topologies', result._id], result)
         },
     })
@@ -54,6 +55,9 @@ export function configureTopologyClient(queryClient, auth) {
                 ...old,
                 topologyIds: old.topologyIds.filter((id) => id !== result._id),
             }))
+            queryClient.setQueryData(['project-topologies', result.projectId], (old = []) =>
+                old.filter((topology) => topology._id !== result._id)
+            )
             queryClient.removeQueries(['topologies', result._id])
         },
     })
@@ -69,6 +73,6 @@ export function useActiveTopology() {
 /**
  * Return the topologies of the specified project.
  */
-export function useProjectTopologies(projectId) {
-    return useQuery(['project-topologies', projectId], { enabled: !!projectId })
+export function useProjectTopologies(projectId, options = {}) {
+    return useQuery(['project-topologies', projectId], { enabled: !!projectId, ...options })
 }

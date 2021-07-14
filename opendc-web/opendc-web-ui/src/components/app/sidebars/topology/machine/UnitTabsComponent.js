@@ -1,85 +1,30 @@
 import React, { useState } from 'react'
-import { Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap'
-import UnitAddContainer from '../../../../../containers/app/sidebars/topology/machine/UnitAddContainer'
-import UnitListContainer from '../../../../../containers/app/sidebars/topology/machine/UnitListContainer'
+import { Tab, Tabs, TabTitleText } from '@patternfly/react-core'
+import UnitAddContainer from './UnitAddContainer'
+import UnitListContainer from './UnitListContainer'
 
 const UnitTabsComponent = () => {
     const [activeTab, setActiveTab] = useState('cpu-units')
-    const toggle = (tab) => {
-        if (activeTab !== tab) setActiveTab(tab)
-    }
 
     return (
-        <div className="mt-2">
-            <Nav tabs>
-                <NavItem>
-                    <NavLink
-                        className={activeTab === 'cpu-units' ? 'active' : ''}
-                        onClick={() => {
-                            toggle('cpu-units')
-                        }}
-                    >
-                        CPU
-                    </NavLink>
-                </NavItem>
-                <NavItem>
-                    <NavLink
-                        className={activeTab === 'gpu-units' ? 'active' : ''}
-                        onClick={() => {
-                            toggle('gpu-units')
-                        }}
-                    >
-                        GPU
-                    </NavLink>
-                </NavItem>
-                <NavItem>
-                    <NavLink
-                        className={activeTab === 'memory-units' ? 'active' : ''}
-                        onClick={() => {
-                            toggle('memory-units')
-                        }}
-                    >
-                        Memory
-                    </NavLink>
-                </NavItem>
-                <NavItem>
-                    <NavLink
-                        className={activeTab === 'storage-units' ? 'active' : ''}
-                        onClick={() => {
-                            toggle('storage-units')
-                        }}
-                    >
-                        Stor.
-                    </NavLink>
-                </NavItem>
-            </Nav>
-            <TabContent activeTab={activeTab}>
-                <TabPane tabId="cpu-units">
-                    <div className="py-2">
-                        <UnitAddContainer unitType="cpu" />
-                        <UnitListContainer unitType="cpu" />
-                    </div>
-                </TabPane>
-                <TabPane tabId="gpu-units">
-                    <div className="py-2">
-                        <UnitAddContainer unitType="gpu" />
-                        <UnitListContainer unitType="gpu" />
-                    </div>
-                </TabPane>
-                <TabPane tabId="memory-units">
-                    <div className="py-2">
-                        <UnitAddContainer unitType="memory" />
-                        <UnitListContainer unitType="memory" />
-                    </div>
-                </TabPane>
-                <TabPane tabId="storage-units">
-                    <div className="py-2">
-                        <UnitAddContainer unitType="storage" />
-                        <UnitListContainer unitType="storage" />
-                    </div>
-                </TabPane>
-            </TabContent>
-        </div>
+        <Tabs activeKey={activeTab} onSelect={(_, tab) => setActiveTab(tab)}>
+            <Tab eventKey="cpu-units" title={<TabTitleText>CPU</TabTitleText>}>
+                <UnitAddContainer unitType="cpu" />
+                <UnitListContainer unitType="cpu" />
+            </Tab>
+            <Tab eventKey="gpu-units" title={<TabTitleText>GPU</TabTitleText>}>
+                <UnitAddContainer unitType="gpu" />
+                <UnitListContainer unitType="gpu" />
+            </Tab>
+            <Tab eventKey="memory-units" title={<TabTitleText>Memory</TabTitleText>}>
+                <UnitAddContainer unitType="memory" />
+                <UnitListContainer unitType="memory" />
+            </Tab>
+            <Tab eventKey="storage-units" title={<TabTitleText>Storage</TabTitleText>}>
+                <UnitAddContainer unitType="storage" />
+                <UnitListContainer unitType="storage" />
+            </Tab>
+        </Tabs>
     )
 }
 

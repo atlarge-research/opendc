@@ -1,18 +1,4 @@
-import { convertSecondsToFormattedTime, parseDateTime } from './date-time'
-
-describe('date-time parsing', () => {
-    it('reads components properly', () => {
-        const dateString = '2017-09-27T20:55:01'
-        const parsedDate = parseDateTime(dateString)
-
-        expect(parsedDate.getUTCFullYear()).toEqual(2017)
-        expect(parsedDate.getUTCMonth()).toEqual(8)
-        expect(parsedDate.getUTCDate()).toEqual(27)
-        expect(parsedDate.getUTCHours()).toEqual(20)
-        expect(parsedDate.getUTCMinutes()).toEqual(55)
-        expect(parsedDate.getUTCSeconds()).toEqual(1)
-    })
-})
+import { convertSecondsToFormattedTime } from './date-time'
 
 describe('tick formatting', () => {
     it("returns '0s' for numbers <= 0", () => {

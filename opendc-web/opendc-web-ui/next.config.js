@@ -25,6 +25,8 @@
 const withTM = require('next-transpile-modules')([
     '@patternfly/react-core',
     '@patternfly/react-styles',
+    '@patternfly/react-table',
+    '@patternfly/react-tokens',
 ])
 
 module.exports = withTM({

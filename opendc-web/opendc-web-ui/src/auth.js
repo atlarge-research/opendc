@@ -23,7 +23,6 @@
 import PropTypes from 'prop-types'
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react'
 import { useEffect } from 'react'
-import { useRouter } from 'next/router'
 
 /**
  * Obtain the authentication context.
@@ -37,14 +36,13 @@ export function useAuth() {
  */
 export function useRequireAuth() {
     const auth = useAuth()
-    const router = useRouter()
-    const { isLoading, isAuthenticated } = auth
+    const { loginWithRedirect, isLoading, isAuthenticated } = auth
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            router.replace('/')
+            loginWithRedirect()
         }
-    }, [router, isLoading, isAuthenticated])
+    }, [loginWithRedirect, isLoading, isAuthenticated])
 
     return auth
 }

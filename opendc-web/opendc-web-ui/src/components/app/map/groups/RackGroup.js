@@ -1,10 +1,10 @@
 import React from 'react'
 import { Group } from 'react-konva'
-import RackEnergyFillContainer from '../../../../containers/app/map/RackEnergyFillContainer'
-import RackSpaceFillContainer from '../../../../containers/app/map/RackSpaceFillContainer'
 import { Tile } from '../../../../shapes'
 import { RACK_BACKGROUND_COLOR } from '../../../../util/colors'
 import TileObject from '../elements/TileObject'
+import RackSpaceFillContainer from '../RackSpaceFillContainer'
+import RackEnergyFillContainer from '../RackEnergyFillContainer'
 
 const RackGroup = ({ tile }) => {
     return (
