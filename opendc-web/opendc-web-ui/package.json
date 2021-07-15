@@ -10,10 +10,10 @@
     ],
     "homepage": "http://opendc.org",
     "bugs": {
-        "url": "https://github.com/atlarge-research/opendc-frontend/issues",
+        "url": "https://github.com/atlarge-research/opendc/issues",
         "email": "opendc@atlarge-research.com"
     },
-    "author": "Georgios Andreadis <g.andreadis@atlarge-research.com> (https://gandreadis.com/)",
+    "author": "OpenDC Maintainers <opendc@atlarge-research.com>",
     "license": "MIT",
     "private": true,
     "dependencies": {

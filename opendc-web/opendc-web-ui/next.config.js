@@ -25,4 +25,13 @@ module.exports = {
     experimental: {
         eslint: true,
     },
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: '/projects',
+                permanent: true,
+            },
+        ]
+    },
 }
