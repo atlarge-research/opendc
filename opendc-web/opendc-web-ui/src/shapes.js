@@ -149,3 +149,5 @@ export const InteractionLevel = PropTypes.shape({
     roomId: PropTypes.string,
     rackId: PropTypes.string,
 })
+
+export const Status = PropTypes.oneOf(['idle', 'loading', 'error', 'success'])

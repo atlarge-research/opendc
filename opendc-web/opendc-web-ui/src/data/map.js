@@ -35,7 +35,3 @@ export function useMapScale() {
 export function useMapPosition() {
     return useSelector((state) => state.map.position)
 }
-
-export function useMapDimensions() {
-    return useSelector((state) => state.map.dimensions)
-}

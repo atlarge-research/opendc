@@ -20,6 +20,113 @@
  * SOFTWARE.
  */
 
-import Topology from './topologies/[topology]'
+import { useRouter } from 'next/router'
+import { useProject } from '../../../data/project'
+import { AppPage } from '../../../components/AppPage'
+import Head from 'next/head'
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    Button,
+    Card,
+    CardActions,
+    CardBody,
+    CardHeader,
+    CardTitle,
+    DescriptionList,
+    DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
+    Grid,
+    GridItem,
+    PageSection,
+    PageSectionVariants,
+    Skeleton,
+    Text,
+    TextContent,
+} from '@patternfly/react-core'
+import BreadcrumbLink from '../../../components/util/BreadcrumbLink'
+import PortfolioTable from '../../../components/projects/PortfolioTable'
+import TopologyTable from '../../../components/projects/TopologyTable'
+import NewTopology from '../../../components/projects/NewTopology'
+import NewPortfolio from '../../../components/projects/NewPortfolio'
 
-export default Topology
+function Project() {
+    const router = useRouter()
+    const { project: projectId } = router.query
+
+    const { data: project } = useProject(projectId)
+
+    const breadcrumb = (
+        <Breadcrumb>
+            <BreadcrumbItem to="/projects" component={BreadcrumbLink}>
+                Projects
+            </BreadcrumbItem>
+            <BreadcrumbItem to={`/projects/${projectId}`} component={BreadcrumbLink} isActive>
+                Project details
+            </BreadcrumbItem>
+        </Breadcrumb>
+    )
+
+    return (
+        <AppPage breadcrumb={breadcrumb}>
+            <Head>
+                <title>{project?.name ?? 'Project'} - OpenDC</title>
+            </Head>
+            <PageSection variant={PageSectionVariants.light}>
+                <TextContent>
+                    <Text component="h1">
+                        {project?.name ?? <Skeleton width="15%" screenreaderText="Loading project" />}
+                    </Text>
+                </TextContent>
+            </PageSection>
+            <PageSection isFilled>
+                <Grid hasGutter>
+                    <GridItem md={2}>
+                        <Card>
+                            <CardTitle>Details</CardTitle>
+                            <CardBody>
+                                <DescriptionList>
+                                    <DescriptionListGroup>
+                                        <DescriptionListTerm>Name</DescriptionListTerm>
+                                        <DescriptionListDescription>
+                                            {project?.name ?? <Skeleton screenreaderText="Loading project" />}
+                                        </DescriptionListDescription>
+                                    </DescriptionListGroup>
+                                </DescriptionList>
+                            </CardBody>
+                        </Card>
+                    </GridItem>
+                    <GridItem md={5}>
+                        <Card>
+                            <CardHeader>
+                                <CardActions>
+                                    <NewTopology projectId={projectId} />
+                                </CardActions>
+                                <CardTitle>Topologies</CardTitle>
+                            </CardHeader>
+                            <CardBody>
+                                <TopologyTable projectId={projectId} />
+                            </CardBody>
+                        </Card>
+                    </GridItem>
+                    <GridItem md={5}>
+                        <Card>
+                            <CardHeader>
+                                <CardActions>
+                                    <NewPortfolio projectId={projectId} />
+                                </CardActions>
+                                <CardTitle>Portfolios</CardTitle>
+                            </CardHeader>
+                            <CardBody>
+                                <PortfolioTable projectId={projectId} />
+                            </CardBody>
+                        </Card>
+                    </GridItem>
+                </Grid>
+            </PageSection>
+        </AppPage>
+    )
+}
+
+export default Project

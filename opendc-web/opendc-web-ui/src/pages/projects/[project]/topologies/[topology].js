@@ -23,18 +23,29 @@
 import { useRouter } from 'next/router'
 import { useProject } from '../../../../data/project'
 import { useDispatch, useSelector } from 'react-redux'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { HotKeys } from 'react-hotkeys'
 import { KeymapConfiguration } from '../../../../hotkeys'
 import Head from 'next/head'
-import AppNavbarContainer from '../../../../containers/navigation/AppNavbarContainer'
-import LoadingScreen from '../../../../components/app/map/LoadingScreen'
-import MapStage from '../../../../containers/app/map/MapStage'
-import ScaleIndicatorContainer from '../../../../containers/app/map/controls/ScaleIndicatorContainer'
-import ToolPanelComponent from '../../../../components/app/map/controls/ToolPanelComponent'
-import ProjectSidebarContainer from '../../../../containers/app/sidebars/project/ProjectSidebarContainer'
-import TopologySidebarContainer from '../../../../containers/app/sidebars/topology/TopologySidebarContainer'
+import MapStage from '../../../../components/app/map/MapStage'
 import { openProjectSucceeded } from '../../../../redux/actions/projects'
+import { AppPage } from '../../../../components/AppPage'
+import {
+    Bullseye,
+    Drawer,
+    DrawerContent,
+    DrawerContentBody,
+    EmptyState,
+    EmptyStateIcon,
+    Spinner,
+    Title,
+} from '@patternfly/react-core'
+import { zoomInOnCenter } from '../../../../redux/actions/map'
+import Toolbar from '../../../../components/app/map/controls/Toolbar'
+import { useMapScale } from '../../../../data/map'
+import ScaleIndicator from '../../../../components/app/map/controls/ScaleIndicator'
+import TopologySidebar from '../../../../components/app/sidebars/topology/TopologySidebar'
+import Collapse from '../../../../components/app/map/controls/Collapse'
 
 /**
  * Page that displays a datacenter topology.
@@ -44,7 +55,6 @@ function Topology() {
     const { project: projectId, topology: topologyId } = router.query
 
     const { data: project } = useProject(projectId)
-    const title = project?.name ? project?.name + ' - OpenDC' : 'Simulation - OpenDC'
 
     const dispatch = useDispatch()
     useEffect(() => {
@@ -54,27 +64,44 @@ function Topology() {
     }, [projectId, topologyId, dispatch])
 
     const topologyIsLoading = useSelector((state) => state.currentTopologyId === '-1')
+    const scale = useMapScale()
+    const interactionLevel = useSelector((state) => state.interactionLevel)
+
+    const [isExpanded, setExpanded] = useState(true)
+    const panelContent = <TopologySidebar interactionLevel={interactionLevel} onClose={() => setExpanded(false)} />
 
     return (
-        <HotKeys keyMap={KeymapConfiguration} allowChanges={true} className="page-container full-height">
+        <AppPage>
             <Head>
-                <title>{title}</title>
+                <title>{project?.name ?? 'Topologies'} - OpenDC</title>
             </Head>
-            <AppNavbarContainer fullWidth={true} />
             {topologyIsLoading ? (
-                <div className="full-height d-flex align-items-center justify-content-center">
-                    <LoadingScreen />
-                </div>
+                <Bullseye>
+                    <EmptyState>
+                        <EmptyStateIcon variant="container" component={Spinner} />
+                        <Title size="lg" headingLevel="h4">
+                            Loading Topology
+                        </Title>
+                    </EmptyState>
+                </Bullseye>
             ) : (
-                <div className="full-height">
-                    <MapStage />
-                    <ScaleIndicatorContainer />
-                    <ToolPanelComponent />
-                    <ProjectSidebarContainer />
-                    <TopologySidebarContainer />
-                </div>
+                <HotKeys keyMap={KeymapConfiguration} allowChanges={true} className="full-height">
+                    <Drawer isExpanded={isExpanded}>
+                        <DrawerContent panelContent={panelContent}>
+                            <DrawerContentBody>
+                                <MapStage />
+                                <ScaleIndicator scale={scale} />
+                                <Toolbar
+                                    onZoom={(zoomIn) => dispatch(zoomInOnCenter(zoomIn))}
+                                    onExport={() => window['exportCanvasToImage']()}
+                                />
+                                <Collapse onClick={() => setExpanded(true)} />
+                            </DrawerContentBody>
+                        </DrawerContent>
+                    </Drawer>
+                </HotKeys>
             )}
-        </HotKeys>
+        </AppPage>
     )
 }
 

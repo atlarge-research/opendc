@@ -33,5 +33,6 @@ public data class Room(
     @JsonProperty("_id")
     val id: String,
     val name: String,
-    val tiles: Set<RoomTile>
+    val tiles: Set<RoomTile>,
+    val topologyId: String? = null,
 )

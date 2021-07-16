@@ -1,20 +1,43 @@
+import PropTypes from 'prop-types'
 import React from 'react'
-import BackToBuildingContainer from '../../../../../containers/app/sidebars/topology/room/BackToBuildingContainer'
-import DeleteRoomContainer from '../../../../../containers/app/sidebars/topology/room/DeleteRoomContainer'
-import EditRoomContainer from '../../../../../containers/app/sidebars/topology/room/EditRoomContainer'
-import RackConstructionContainer from '../../../../../containers/app/sidebars/topology/room/RackConstructionContainer'
-import RoomNameContainer from '../../../../../containers/app/sidebars/topology/room/RoomNameContainer'
+import RoomName from './RoomName'
+import RackConstructionContainer from './RackConstructionContainer'
+import EditRoomContainer from './EditRoomContainer'
+import DeleteRoomContainer from './DeleteRoomContainer'
+import {
+    TextContent,
+    TextList,
+    TextListItem,
+    TextListItemVariants,
+    TextListVariants,
+    Title,
+} from '@patternfly/react-core'
 
-const RoomSidebarComponent = () => {
+const RoomSidebarComponent = ({ roomId }) => {
     return (
-        <div>
-            <RoomNameContainer />
-            <BackToBuildingContainer />
+        <TextContent>
+            <Title headingLevel="h2">Details</Title>
+            <TextList component={TextListVariants.dl}>
+                <TextListItem
+                    component={TextListItemVariants.dt}
+                    className="pf-u-display-inline-flex pf-u-align-items-center"
+                >
+                    Name
+                </TextListItem>
+                <TextListItem component={TextListItemVariants.dd}>
+                    <RoomName roomId={roomId} />
+                </TextListItem>
+            </TextList>
+            <Title headingLevel="h2">Construction</Title>
             <RackConstructionContainer />
             <EditRoomContainer />
             <DeleteRoomContainer />
-        </div>
+        </TextContent>
     )
+}
+
+RoomSidebarComponent.propTypes = {
+    roomId: PropTypes.string.isRequired,
 }
 
 export default RoomSidebarComponent

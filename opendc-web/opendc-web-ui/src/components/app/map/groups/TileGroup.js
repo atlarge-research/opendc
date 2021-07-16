@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Group } from 'react-konva'
-import RackContainer from '../../../../containers/app/map/RackContainer'
 import { Tile } from '../../../../shapes'
 import { ROOM_DEFAULT_COLOR, ROOM_IN_CONSTRUCTION_COLOR } from '../../../../util/colors'
 import RoomTile from '../elements/RoomTile'
+import RackContainer from '../RackContainer'
 
 const TileGroup = ({ tile, newTile, onClick }) => {
     let tileObject

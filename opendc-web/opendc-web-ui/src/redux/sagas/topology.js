@@ -123,8 +123,6 @@ export function* onEditRoomName(action) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
         const roomId = yield select((state) => state.interactionLevel.roomId)
-        const room = Object.assign({}, yield select((state) => state.objects.room[roomId]))
-        room.name = action.name
         yield put(addPropToStoreObject('room', roomId, { name: action.name }))
         yield updateTopologyOnServer(topologyId)
     } catch (error) {
@@ -148,8 +146,6 @@ export function* onEditRackName(action) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
         const rackId = yield select((state) => state.objects.tile[state.interactionLevel.tileId].rack)
-        const rack = Object.assign({}, yield select((state) => state.objects.rack[rackId]))
-        rack.name = action.name
         yield put(addPropToStoreObject('rack', rackId, { name: action.name }))
         yield updateTopologyOnServer(topologyId)
     } catch (error) {
@@ -175,6 +171,7 @@ export function* onAddRackToTile(action) {
         const rack = {
             _id: uuid(),
             name: 'Rack',
+            tileId: action.tileId,
             capacity: DEFAULT_RACK_SLOT_CAPACITY,
             powerCapacityW: DEFAULT_RACK_POWER_CAPACITY,
             machines: [],
@@ -195,6 +192,7 @@ export function* onAddMachine(action) {
 
         const machine = {
             _id: uuid(),
+            rackId,
             position: action.position,
             cpus: [],
             gpus: [],

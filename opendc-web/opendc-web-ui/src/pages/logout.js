@@ -22,17 +22,17 @@
 
 import React from 'react'
 import Head from 'next/head'
-import AppNavbarContainer from '../containers/navigation/AppNavbarContainer'
+import { AppPage } from '../components/AppPage'
+import { PageSection, PageSectionVariants } from '@patternfly/react-core'
 
 function Logout() {
     return (
-        <>
+        <AppPage>
             <Head>
                 <title>Logged Out - OpenDC</title>
             </Head>
-            <AppNavbarContainer fullWidth={false} />
-            <span>Logged out successfully</span>
-        </>
+            <PageSection variant={PageSectionVariants.light}>Logged out successfully</PageSection>
+        </AppPage>
     )
 }
 

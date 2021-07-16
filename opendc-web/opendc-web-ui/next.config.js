@@ -20,9 +20,27 @@
  * SOFTWARE.
  */
 
-module.exports = {
+// PatternFly 4 uses global CSS imports in its distribution files. Therefore,
+// we need to transpile the modules before we can use them.
+const withTM = require('next-transpile-modules')([
+    '@patternfly/react-core',
+    '@patternfly/react-styles',
+    '@patternfly/react-table',
+    '@patternfly/react-tokens',
+])
+
+module.exports = withTM({
     reactStrictMode: true,
     experimental: {
         eslint: true,
     },
-}
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: '/projects',
+                permanent: true,
+            },
+        ]
+    },
+})

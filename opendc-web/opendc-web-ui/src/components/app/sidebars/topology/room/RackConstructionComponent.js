@@ -1,14 +1,13 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { Button } from 'reactstrap'
+import { Button } from '@patternfly/react-core'
+import PlusIcon from '@patternfly/react-icons/dist/js/icons/plus-icon'
+import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 
 const RackConstructionComponent = ({ onStart, onStop, inRackConstructionMode, isEditingRoom }) => {
     if (inRackConstructionMode) {
         return (
-            <Button color="primary" block onClick={onStop}>
-                <FontAwesomeIcon icon={faTimes} className="mr-2" />
+            <Button isBlock={true} icon={<TimesIcon />} onClick={onStop}>
                 Stop rack construction
             </Button>
         )
@@ -16,13 +15,12 @@ const RackConstructionComponent = ({ onStart, onStop, inRackConstructionMode, is
 
     return (
         <Button
-            color="primary"
-            outline
-            block
-            disabled={isEditingRoom}
+            icon={<PlusIcon />}
+            isBlock
+            isDisabled={isEditingRoom}
             onClick={() => (isEditingRoom ? undefined : onStart())}
+            className="pf-u-mb-sm"
         >
-            <FontAwesomeIcon icon={faPlus} className="mr-2" />
             Start rack construction
         </Button>
     )
