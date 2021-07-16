@@ -24,7 +24,7 @@ import { useRouter } from 'next/router'
 import { useProject } from '../../../../data/project'
 import { useDispatch, useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
-import { HotKeys } from 'react-hotkeys'
+import {configure, HotKeys} from 'react-hotkeys'
 import { KeymapConfiguration } from '../../../../hotkeys'
 import Head from 'next/head'
 import MapStage from '../../../../components/app/map/MapStage'
@@ -69,6 +69,11 @@ function Topology() {
 
     const [isExpanded, setExpanded] = useState(true)
     const panelContent = <TopologySidebar interactionLevel={interactionLevel} onClose={() => setExpanded(false)} />
+
+    // Make sure that holding down a key will generate repeated events
+    configure({
+        ignoreRepeatedEventsWhenKeyHeldDown: false
+    })
 
     return (
         <AppPage>

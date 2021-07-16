@@ -52,7 +52,7 @@ function MapStage() {
 
     return (
         <HotKeys handlers={handlers} allowChanges={true} innerRef={ref} className={mapContainer}>
-            <Stage ref={stage} width={width} height={height} onMouseMove={updateMousePosition} onWheel={updateScale}>
+            <Stage ref={stage} width={width} height={height} onMouseMove={updateMousePosition} onWheel={updateScale} draggable>
                 <Provider store={store}>
                     <MapLayer />
                     <RoomHoverLayer mouseX={x} mouseY={y} />
