@@ -4,10 +4,10 @@ import { Rect } from 'react-konva'
 import { ROOM_HOVER_INVALID_COLOR, ROOM_HOVER_VALID_COLOR } from '../../../../util/colors'
 import { TILE_SIZE_IN_PIXELS } from '../MapConstants'
 
-const HoverTile = ({ pixelX, pixelY, isValid, scale, onClick }) => (
+const HoverTile = ({ x, y, isValid, scale = 1, onClick }) => (
     <Rect
-        x={pixelX}
-        y={pixelY}
+        x={x}
+        y={y}
         scaleX={scale}
         scaleY={scale}
         width={TILE_SIZE_IN_PIXELS}
@@ -18,10 +18,10 @@ const HoverTile = ({ pixelX, pixelY, isValid, scale, onClick }) => (
 )
 
 HoverTile.propTypes = {
-    pixelX: PropTypes.number.isRequired,
-    pixelY: PropTypes.number.isRequired,
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
     isValid: PropTypes.bool.isRequired,
-    scale: PropTypes.number.isRequired,
+    scale: PropTypes.number,
     onClick: PropTypes.func.isRequired,
 }
 

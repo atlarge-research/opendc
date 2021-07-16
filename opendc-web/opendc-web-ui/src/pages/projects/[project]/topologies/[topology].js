@@ -24,7 +24,7 @@ import { useRouter } from 'next/router'
 import { useProject } from '../../../../data/project'
 import { useDispatch, useSelector } from 'react-redux'
 import React, { useEffect, useState } from 'react'
-import {configure, HotKeys} from 'react-hotkeys'
+import { configure, HotKeys } from 'react-hotkeys'
 import { KeymapConfiguration } from '../../../../hotkeys'
 import Head from 'next/head'
 import MapStage from '../../../../components/app/map/MapStage'
@@ -40,9 +40,7 @@ import {
     Spinner,
     Title,
 } from '@patternfly/react-core'
-import { zoomInOnCenter } from '../../../../redux/actions/map'
 import Toolbar from '../../../../components/app/map/controls/Toolbar'
-import { useMapScale } from '../../../../data/map'
 import ScaleIndicator from '../../../../components/app/map/controls/ScaleIndicator'
 import TopologySidebar from '../../../../components/app/sidebars/topology/TopologySidebar'
 import Collapse from '../../../../components/app/map/controls/Collapse'
@@ -64,7 +62,6 @@ function Topology() {
     }, [projectId, topologyId, dispatch])
 
     const topologyIsLoading = useSelector((state) => state.currentTopologyId === '-1')
-    const scale = useMapScale()
     const interactionLevel = useSelector((state) => state.interactionLevel)
 
     const [isExpanded, setExpanded] = useState(true)
@@ -72,7 +69,7 @@ function Topology() {
 
     // Make sure that holding down a key will generate repeated events
     configure({
-        ignoreRepeatedEventsWhenKeyHeldDown: false
+        ignoreRepeatedEventsWhenKeyHeldDown: false,
     })
 
     return (
@@ -95,11 +92,6 @@ function Topology() {
                         <DrawerContent panelContent={panelContent}>
                             <DrawerContentBody>
                                 <MapStage />
-                                <ScaleIndicator scale={scale} />
-                                <Toolbar
-                                    onZoom={(zoomIn) => dispatch(zoomInOnCenter(zoomIn))}
-                                    onExport={() => window['exportCanvasToImage']()}
-                                />
                                 <Collapse onClick={() => setExpanded(true)} />
                             </DrawerContentBody>
                         </DrawerContent>

@@ -3,10 +3,10 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import RackFillBar from '../../../components/app/map/elements/RackFillBar'
 
-const RackSpaceFillContainer = (props) => {
-    const state = useSelector((state) => {
+function RackSpaceFillContainer({ tileId, ...props }) {
+    const fillFraction = useSelector((state) => {
         let energyConsumptionTotal = 0
-        const rack = state.objects.rack[state.objects.tile[props.tileId].rack]
+        const rack = state.objects.rack[state.objects.tile[tileId].rack]
         const machineIds = rack.machines
         machineIds.forEach((machineId) => {
             if (machineId !== null) {
@@ -22,12 +22,9 @@ const RackSpaceFillContainer = (props) => {
             }
         })
 
-        return {
-            type: 'energy',
-            fillFraction: Math.min(1, energyConsumptionTotal / rack.powerCapacityW),
-        }
+        return Math.min(1, energyConsumptionTotal / rack.powerCapacityW)
     })
-    return <RackFillBar {...props} {...state} />
+    return <RackFillBar {...props} type="energy" fillFraction={fillFraction} />
 }
 
 RackSpaceFillContainer.propTypes = {

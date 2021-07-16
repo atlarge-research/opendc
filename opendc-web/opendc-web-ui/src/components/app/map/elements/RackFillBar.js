@@ -16,7 +16,7 @@ import {
 } from '../MapConstants'
 import ImageComponent from './ImageComponent'
 
-const RackFillBar = ({ positionX, positionY, type, fillFraction }) => {
+function RackFillBar({ positionX, positionY, type, fillFraction }) {
     const halfOfObjectBorderWidth = OBJECT_BORDER_WIDTH_IN_PIXELS / 2
     const x =
         positionX * TILE_SIZE_IN_PIXELS +

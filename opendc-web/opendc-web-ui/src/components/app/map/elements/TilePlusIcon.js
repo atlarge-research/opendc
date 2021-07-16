@@ -4,19 +4,19 @@ import { Group, Line } from 'react-konva'
 import { TILE_PLUS_COLOR } from '../../../../util/colors'
 import { TILE_PLUS_MARGIN_IN_PIXELS, TILE_PLUS_WIDTH_IN_PIXELS, TILE_SIZE_IN_PIXELS } from '../MapConstants'
 
-const TilePlusIcon = ({ pixelX, pixelY, mapScale }) => {
+function TilePlusIcon({ x, y, scale = 1 }) {
     const linePoints = [
         [
-            pixelX + 0.5 * TILE_SIZE_IN_PIXELS * mapScale,
-            pixelY + TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
-            pixelX + 0.5 * TILE_SIZE_IN_PIXELS * mapScale,
-            pixelY + TILE_SIZE_IN_PIXELS * mapScale - TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
+            x + 0.5 * TILE_SIZE_IN_PIXELS * scale,
+            y + TILE_PLUS_MARGIN_IN_PIXELS * scale,
+            x + 0.5 * TILE_SIZE_IN_PIXELS * scale,
+            y + TILE_SIZE_IN_PIXELS * scale - TILE_PLUS_MARGIN_IN_PIXELS * scale,
         ],
         [
-            pixelX + TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
-            pixelY + 0.5 * TILE_SIZE_IN_PIXELS * mapScale,
-            pixelX + TILE_SIZE_IN_PIXELS * mapScale - TILE_PLUS_MARGIN_IN_PIXELS * mapScale,
-            pixelY + 0.5 * TILE_SIZE_IN_PIXELS * mapScale,
+            x + TILE_PLUS_MARGIN_IN_PIXELS * scale,
+            y + 0.5 * TILE_SIZE_IN_PIXELS * scale,
+            x + TILE_SIZE_IN_PIXELS * scale - TILE_PLUS_MARGIN_IN_PIXELS * scale,
+            y + 0.5 * TILE_SIZE_IN_PIXELS * scale,
         ],
     ]
     return (
@@ -27,7 +27,7 @@ const TilePlusIcon = ({ pixelX, pixelY, mapScale }) => {
                     points={points}
                     lineCap="round"
                     stroke={TILE_PLUS_COLOR}
-                    strokeWidth={TILE_PLUS_WIDTH_IN_PIXELS * mapScale}
+                    strokeWidth={TILE_PLUS_WIDTH_IN_PIXELS * scale}
                     listening={false}
                 />
             ))}
@@ -36,9 +36,9 @@ const TilePlusIcon = ({ pixelX, pixelY, mapScale }) => {
 }
 
 TilePlusIcon.propTypes = {
-    pixelX: PropTypes.number,
-    pixelY: PropTypes.number,
-    mapScale: PropTypes.number,
+    x: PropTypes.number,
+    y: PropTypes.number,
+    scale: PropTypes.number,
 }
 
 export default TilePlusIcon

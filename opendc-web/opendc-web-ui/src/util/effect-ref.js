@@ -20,18 +20,22 @@
  * SOFTWARE.
  */
 
-import { useSelector } from 'react-redux'
+import { useCallback, useRef } from 'react'
+
+const noop = () => {}
 
 /**
- * Return the map scale.
+ * A hook that will invoke the specified callback when the reference returned by this function is initialized.
+ * The callback can return an optional clean up function.
  */
-export function useMapScale() {
-    return useSelector((state) => state.map.scale)
-}
+export function useEffectRef(callback) {
+    const disposeRef = useRef(noop)
+    return useCallback((element) => {
+        disposeRef.current()
+        disposeRef.current = noop
 
-/**
- * Return the map position.
- */
-export function useMapPosition() {
-    return useSelector((state) => state.map.position)
+        if (element) {
+            disposeRef.current = callback(element) || noop
+        }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 }

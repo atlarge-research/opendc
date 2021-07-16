@@ -21,13 +21,21 @@
  */
 
 import React from 'react'
-import MapLayerComponent from '../../../../components/app/map/layers/MapLayerComponent'
-import { useMapPosition, useMapScale } from '../../../../data/map'
+import { Group, Layer } from 'react-konva'
+import Backdrop from '../elements/Backdrop'
+import TopologyContainer from '../TopologyContainer'
+import GridGroup from '../groups/GridGroup'
 
-const MapLayer = (props) => {
-    const position = useMapPosition()
-    const scale = useMapScale()
-    return <MapLayerComponent {...props} mapPosition={position} mapScale={scale} />
+function MapLayer() {
+    return (
+        <Layer>
+            <Group>
+                <Backdrop />
+                <TopologyContainer />
+                <GridGroup />
+            </Group>
+        </Layer>
+    )
 }
 
 export default MapLayer
