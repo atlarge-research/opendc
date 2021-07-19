@@ -71,6 +71,13 @@ export function useActiveTopology() {
 }
 
 /**
+ * Return the current active topology.
+ */
+export function useTopology(topologyId, options = {}) {
+    return useQuery(['topologies', topologyId], { enabled: !!topologyId, ...options })
+}
+
+/**
  * Return the topologies of the specified project.
  */
 export function useProjectTopologies(projectId, options = {}) {

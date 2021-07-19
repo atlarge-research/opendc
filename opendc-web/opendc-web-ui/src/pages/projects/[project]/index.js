@@ -21,23 +21,13 @@
  */
 
 import { useRouter } from 'next/router'
+import ProjectOverview from '../../../components/projects/ProjectOverview'
 import { useProject } from '../../../data/project'
 import { AppPage } from '../../../components/AppPage'
 import Head from 'next/head'
 import {
     Breadcrumb,
     BreadcrumbItem,
-    Card,
-    CardActions,
-    CardBody,
-    CardHeader,
-    CardTitle,
-    DescriptionList,
-    DescriptionListDescription,
-    DescriptionListGroup,
-    DescriptionListTerm,
-    Grid,
-    GridItem,
     PageSection,
     PageSectionVariants,
     Skeleton,
@@ -45,10 +35,6 @@ import {
     TextContent,
 } from '@patternfly/react-core'
 import BreadcrumbLink from '../../../components/util/BreadcrumbLink'
-import PortfolioTable from '../../../components/projects/PortfolioTable'
-import TopologyTable from '../../../components/projects/TopologyTable'
-import NewTopology from '../../../components/projects/NewTopology'
-import NewPortfolio from '../../../components/projects/NewPortfolio'
 
 function Project() {
     const router = useRouter()
@@ -80,49 +66,7 @@ function Project() {
                 </TextContent>
             </PageSection>
             <PageSection isFilled>
-                <Grid hasGutter>
-                    <GridItem md={2}>
-                        <Card>
-                            <CardTitle>Details</CardTitle>
-                            <CardBody>
-                                <DescriptionList>
-                                    <DescriptionListGroup>
-                                        <DescriptionListTerm>Name</DescriptionListTerm>
-                                        <DescriptionListDescription>
-                                            {project?.name ?? <Skeleton screenreaderText="Loading project" />}
-                                        </DescriptionListDescription>
-                                    </DescriptionListGroup>
-                                </DescriptionList>
-                            </CardBody>
-                        </Card>
-                    </GridItem>
-                    <GridItem md={5}>
-                        <Card>
-                            <CardHeader>
-                                <CardActions>
-                                    <NewTopology projectId={projectId} />
-                                </CardActions>
-                                <CardTitle>Topologies</CardTitle>
-                            </CardHeader>
-                            <CardBody>
-                                <TopologyTable projectId={projectId} />
-                            </CardBody>
-                        </Card>
-                    </GridItem>
-                    <GridItem md={5}>
-                        <Card>
-                            <CardHeader>
-                                <CardActions>
-                                    <NewPortfolio projectId={projectId} />
-                                </CardActions>
-                                <CardTitle>Portfolios</CardTitle>
-                            </CardHeader>
-                            <CardBody>
-                                <PortfolioTable projectId={projectId} />
-                            </CardBody>
-                        </Card>
-                    </GridItem>
-                </Grid>
+                <ProjectOverview projectId={projectId} />
             </PageSection>
         </AppPage>
     )

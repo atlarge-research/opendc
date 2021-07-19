@@ -23,27 +23,12 @@
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import React, { useRef } from 'react'
-import { usePortfolio, useProject } from '../../../../data/project'
 import {
     Breadcrumb,
     BreadcrumbItem,
-    Card,
-    CardActions,
-    CardBody,
-    CardHeader,
-    CardTitle,
-    Chip,
-    ChipGroup,
-    DescriptionList,
-    DescriptionListDescription,
-    DescriptionListGroup,
-    DescriptionListTerm,
     Divider,
-    Grid,
-    GridItem,
     PageSection,
     PageSectionVariants,
-    Skeleton,
     Tab,
     TabContent,
     Tabs,
@@ -53,10 +38,8 @@ import {
 } from '@patternfly/react-core'
 import { AppPage } from '../../../../components/AppPage'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
-import { METRIC_NAMES } from '../../../../util/available-metrics'
-import NewScenario from '../../../../components/portfolios/NewScenario'
-import ScenarioTable from '../../../../components/portfolios/ScenarioTable'
-import PortfolioResults from '../../../../components/portfolios/results/PortfolioResults'
+import PortfolioOverview from '../../../../components/portfolios/PortfolioOverview'
+import PortfolioResults from '../../../../components/portfolios/PortfolioResults'
 
 /**
  * Page that displays the results in a portfolio.
@@ -64,9 +47,6 @@ import PortfolioResults from '../../../../components/portfolios/results/Portfoli
 function Portfolio() {
     const router = useRouter()
     const { project: projectId, portfolio: portfolioId } = router.query
-
-    const { data: project } = useProject(projectId)
-    const { data: portfolio } = usePortfolio(portfolioId)
 
     const overviewRef = useRef(null)
     const resultsRef = useRef(null)
@@ -88,7 +68,7 @@ function Portfolio() {
     return (
         <AppPage breadcrumb={breadcrumb}>
             <Head>
-                <title>{project?.name ?? 'Portfolios'} - OpenDC</title>
+                <title>Portfolio - OpenDC</title>
             </Head>
             <PageSection variant={PageSectionVariants.light}>
                 <TextContent>
@@ -114,72 +94,7 @@ function Portfolio() {
             </PageSection>
             <PageSection isFilled>
                 <TabContent eventKey={0} id="overview" ref={overviewRef} aria-label="Overview tab">
-                    <Grid hasGutter>
-                        <GridItem md={2}>
-                            <Card>
-                                <CardTitle>Details</CardTitle>
-                                <CardBody>
-                                    <DescriptionList>
-                                        <DescriptionListGroup>
-                                            <DescriptionListTerm>Name</DescriptionListTerm>
-                                            <DescriptionListDescription>
-                                                {portfolio?.name ?? <Skeleton screenreaderText="Loading portfolio" />}
-                                            </DescriptionListDescription>
-                                        </DescriptionListGroup>
-                                        <DescriptionListGroup>
-                                            <DescriptionListTerm>Scenarios</DescriptionListTerm>
-                                            <DescriptionListDescription>
-                                                {portfolio?.scenarioIds.length ?? (
-                                                    <Skeleton screenreaderText="Loading portfolio" />
-                                                )}
-                                            </DescriptionListDescription>
-                                        </DescriptionListGroup>
-                                        <DescriptionListGroup>
-                                            <DescriptionListTerm>Metrics</DescriptionListTerm>
-                                            <DescriptionListDescription>
-                                                {portfolio?.targets?.enabledMetrics ? (
-                                                    portfolio.targets.enabledMetrics.length > 0 ? (
-                                                        <ChipGroup>
-                                                            {portfolio.targets.enabledMetrics.map((metric) => (
-                                                                <Chip isReadOnly key={metric}>
-                                                                    {METRIC_NAMES[metric]}
-                                                                </Chip>
-                                                            ))}
-                                                        </ChipGroup>
-                                                    ) : (
-                                                        'No metrics enabled'
-                                                    )
-                                                ) : (
-                                                    <Skeleton screenreaderText="Loading portfolio" />
-                                                )}
-                                            </DescriptionListDescription>
-                                        </DescriptionListGroup>
-                                        <DescriptionListGroup>
-                                            <DescriptionListTerm>Repeats per Scenario</DescriptionListTerm>
-                                            <DescriptionListDescription>
-                                                {portfolio?.targets?.repeatsPerScenario ?? (
-                                                    <Skeleton screenreaderText="Loading portfolio" />
-                                                )}
-                                            </DescriptionListDescription>
-                                        </DescriptionListGroup>
-                                    </DescriptionList>
-                                </CardBody>
-                            </Card>
-                        </GridItem>
-                        <GridItem md={6}>
-                            <Card>
-                                <CardHeader>
-                                    <CardActions>
-                                        <NewScenario portfolioId={portfolioId} />
-                                    </CardActions>
-                                    <CardTitle>Scenarios</CardTitle>
-                                </CardHeader>
-                                <CardBody>
-                                    <ScenarioTable portfolioId={portfolioId} />
-                                </CardBody>
-                            </Card>
-                        </GridItem>
-                    </Grid>
+                    <PortfolioOverview portfolioId={portfolioId} />
                 </TabContent>
                 <TabContent eventKey={1} id="results" ref={resultsRef} aria-label="Results tab" hidden>
                     <PortfolioResults portfolioId={portfolioId} />

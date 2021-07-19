@@ -23,7 +23,7 @@
 import PropTypes from 'prop-types'
 import { Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { METRIC_DESCRIPTIONS } from '../../../util/available-metrics'
+import { METRIC_DESCRIPTIONS } from '../../util/available-metrics'
 
 function PortfolioResultInfo({ metric }) {
     return (
