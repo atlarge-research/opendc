@@ -53,10 +53,10 @@ import {
 } from '@patternfly/react-core'
 import { AppPage } from '../../../../components/AppPage'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
-import ScenarioTable from '../../../../components/projects/ScenarioTable'
-import NewScenario from '../../../../components/projects/NewScenario'
 import { METRIC_NAMES } from '../../../../util/available-metrics'
-import PortfolioResults from '../../../../components/app/results/PortfolioResults'
+import NewScenario from '../../../../components/portfolios/NewScenario'
+import ScenarioTable from '../../../../components/portfolios/ScenarioTable'
+import PortfolioResults from '../../../../components/portfolios/results/PortfolioResults'
 
 /**
  * Page that displays the results in a portfolio.

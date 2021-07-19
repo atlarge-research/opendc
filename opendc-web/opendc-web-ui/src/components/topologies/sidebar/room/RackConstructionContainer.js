@@ -20,21 +20,27 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useDispatch, useSelector } from 'react-redux'
+import { startRackConstruction, stopRackConstruction } from '../../../../redux/actions/topology/room'
+import RackConstructionComponent from './RackConstructionComponent'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
+function RackConstructionContainer(props) {
+    const isRackConstructionMode = useSelector((state) => state.construction.inRackConstructionMode)
+    const isEditingRoom = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
+
+    const dispatch = useDispatch()
+    const onStart = () => dispatch(startRackConstruction())
+    const onStop = () => dispatch(stopRackConstruction())
     return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
+        <RackConstructionComponent
+            {...props}
+            inRackConstructionMode={isRackConstructionMode}
+            isEditingRoom={isEditingRoom}
+            onStart={onStart}
+            onStop={onStop}
+        />
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
-}
+export default RackConstructionContainer

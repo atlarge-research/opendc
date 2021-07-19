@@ -21,20 +21,39 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page } from '@patternfly/react-core'
+import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
+import { Button } from '@patternfly/react-core'
+import ConfirmationModal from '../../../util/modals/ConfirmationModal'
+import { deleteRack } from '../../../../redux/actions/topology/rack'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
+function DeleteRackContainer({ tileId }) {
+    const dispatch = useDispatch()
+    const [isVisible, setVisible] = useState(false)
+    const callback = (isConfirmed) => {
+        if (isConfirmed) {
+            dispatch(deleteRack(tileId))
+        }
+        setVisible(false)
+    }
     return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
+        <>
+            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)}>
+                Delete this rack
+            </Button>
+            <ConfirmationModal
+                title="Delete this rack"
+                message="Are you sure you want to delete this rack?"
+                isOpen={isVisible}
+                callback={callback}
+            />
+        </>
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+DeleteRackContainer.propTypes = {
+    tileId: PropTypes.string.isRequired,
 }
+
+export default DeleteRackContainer

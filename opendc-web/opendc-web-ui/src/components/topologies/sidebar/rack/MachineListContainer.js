@@ -21,20 +21,36 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page } from '@patternfly/react-core'
+import React, { useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import MachineListComponent from './MachineListComponent'
+import { goFromRackToMachine } from '../../../../redux/actions/interaction-level'
+import { addMachine } from '../../../../redux/actions/topology/rack'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
+function MachineListContainer({ tileId, ...props }) {
+    const rack = useSelector((state) => state.objects.rack[state.objects.tile[tileId].rack])
+    const machines = useSelector((state) => rack.machines.map((id) => state.objects.machine[id]))
+    const machinesNull = useMemo(() => {
+        const res = Array(rack.capacity).fill(null)
+        for (const machine of machines) {
+            res[machine.position - 1] = machine
+        }
+        return res
+    }, [rack, machines])
+    const dispatch = useDispatch()
+
     return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
+        <MachineListComponent
+            {...props}
+            machines={machinesNull}
+            onAdd={(index) => dispatch(addMachine(rack._id, index))}
+            onSelect={(index) => dispatch(goFromRackToMachine(index))}
+        />
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+MachineListContainer.propTypes = {
+    tileId: PropTypes.string.isRequired,
 }
+
+export default MachineListContainer

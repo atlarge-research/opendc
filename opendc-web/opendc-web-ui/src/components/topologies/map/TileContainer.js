@@ -20,21 +20,27 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import PropTypes from 'prop-types'
+import { useDispatch, useSelector } from 'react-redux'
+import { goFromRoomToRack } from '../../../redux/actions/interaction-level'
+import TileGroup from './groups/TileGroup'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function TileContainer({ tileId, ...props }) {
+    const interactionLevel = useSelector((state) => state.interactionLevel)
+    const tile = useSelector((state) => state.objects.tile[tileId])
+
+    const dispatch = useDispatch()
+    const onClick = (tile) => {
+        if (tile.rack) {
+            dispatch(goFromRoomToRack(tile._id))
+        }
+    }
+    return <TileGroup {...props} onClick={onClick} tile={tile} interactionLevel={interactionLevel} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+TileContainer.propTypes = {
+    tileId: PropTypes.string.isRequired,
 }
+
+export default TileContainer

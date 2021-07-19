@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-import { Dropdown, DropdownItem, DropdownToggle, Nav, NavItem, NavList } from '@patternfly/react-core'
+import { Nav, NavItem, NavList } from '@patternfly/react-core'
 import { useRouter } from 'next/router'
 import NavItemLink from './util/NavItemLink'
 import { useProject } from '../data/project'

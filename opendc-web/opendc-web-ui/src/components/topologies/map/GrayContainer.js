@@ -20,21 +20,15 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useDispatch } from 'react-redux'
+import { goDownOneInteractionLevel } from '../../../redux/actions/interaction-level'
+import GrayLayer from './elements/GrayLayer'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function GrayContainer() {
+    const dispatch = useDispatch()
+    const onClick = () => dispatch(goDownOneInteractionLevel())
+    return <GrayLayer onClick={onClick} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
-}
+export default GrayContainer

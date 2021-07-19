@@ -20,21 +20,18 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
+import RackFillBar from './elements/RackFillBar'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function RackSpaceFillContainer({ tileId, ...props }) {
+    const rack = useSelector((state) => state.objects.rack[state.objects.tile[tileId].rack])
+    return <RackFillBar {...props} type="space" fillFraction={rack.machines.length / rack.capacity} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+RackSpaceFillContainer.propTypes = {
+    tileId: PropTypes.string.isRequired,
 }
+
+export default RackSpaceFillContainer

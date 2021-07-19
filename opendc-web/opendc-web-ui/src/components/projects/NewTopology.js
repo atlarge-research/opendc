@@ -24,9 +24,9 @@ import PropTypes from 'prop-types'
 import { PlusIcon } from '@patternfly/react-icons'
 import { Button } from '@patternfly/react-core'
 import { useState } from 'react'
-import NewTopologyModal from '../modals/custom-components/NewTopologyModal'
 import { useDispatch } from 'react-redux'
 import { addTopology } from '../../redux/actions/topologies'
+import NewTopologyModal from './NewTopologyModal'
 
 function NewTopology({ projectId }) {
     const [isVisible, setVisible] = useState(false)

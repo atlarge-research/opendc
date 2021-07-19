@@ -20,21 +20,27 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+    cancelNewRoomConstruction,
+    finishNewRoomConstruction,
+    startNewRoomConstruction,
+} from '../../../../redux/actions/topology/building'
+import NewRoomConstructionComponent from './NewRoomConstructionComponent'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
+function NewRoomConstructionButton() {
+    const currentRoomInConstruction = useSelector((state) => state.construction.currentRoomInConstruction)
+    const dispatch = useDispatch()
+
     return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
+        <NewRoomConstructionComponent
+            onStart={() => dispatch(startNewRoomConstruction())}
+            onFinish={() => dispatch(finishNewRoomConstruction())}
+            onCancel={() => dispatch(cancelNewRoomConstruction())}
+            currentRoomInConstruction={currentRoomInConstruction}
+        />
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
-}
+export default NewRoomConstructionButton

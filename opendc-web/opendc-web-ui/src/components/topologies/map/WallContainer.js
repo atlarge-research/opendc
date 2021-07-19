@@ -20,21 +20,18 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
+import WallGroup from './groups/WallGroup'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function WallContainer({ roomId, ...props }) {
+    const tiles = useSelector((state) => state.objects.room[roomId].tiles.map((tileId) => state.objects.tile[tileId]))
+    return <WallGroup {...props} tiles={tiles} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+WallContainer.propTypes = {
+    roomId: PropTypes.string.isRequired,
 }
+
+export default WallContainer

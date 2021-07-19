@@ -21,20 +21,44 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { PlusIcon } from '@patternfly/react-icons'
+import { Button } from '@patternfly/react-core'
+import { useState } from 'react'
+import { useMutation } from 'react-query'
+import NewScenarioModal from './NewScenarioModal'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
+function NewScenario({ portfolioId }) {
+    const [isVisible, setVisible] = useState(false)
+    const { mutate: addScenario } = useMutation('addScenario')
+
+    const onSubmit = (name, portfolioId, trace, topology, operational) => {
+        addScenario({
+            portfolioId,
+            name,
+            trace,
+            topology,
+            operational,
+        })
+        setVisible(false)
+    }
+
     return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
+        <>
+            <Button icon={<PlusIcon />} isSmall onClick={() => setVisible(true)}>
+                New Scenario
+            </Button>
+            <NewScenarioModal
+                portfolioId={portfolioId}
+                isOpen={isVisible}
+                onSubmit={onSubmit}
+                onCancel={() => setVisible(false)}
+            />
+        </>
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+NewScenario.propTypes = {
+    portfolioId: PropTypes.string,
 }
+
+export default NewScenario

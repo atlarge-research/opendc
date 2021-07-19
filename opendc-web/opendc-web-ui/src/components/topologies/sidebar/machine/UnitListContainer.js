@@ -21,20 +21,33 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useDispatch, useSelector } from 'react-redux'
+import UnitListComponent from './UnitListComponent'
+import { deleteUnit } from '../../../../redux/actions/topology/machine'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+const unitMapping = {
+    cpu: 'cpus',
+    gpu: 'gpus',
+    memory: 'memories',
+    storage: 'storages',
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+function UnitListContainer({ machineId, unitType }) {
+    const dispatch = useDispatch()
+    const units = useSelector((state) => {
+        const machine = state.objects.machine[machineId]
+        return machine[unitMapping[unitType]].map((id) => state.objects[unitType][id])
+    })
+
+    const onDelete = (unit) => dispatch(deleteUnit(machineId, unitType, unit._id))
+
+    return <UnitListComponent units={units} unitType={unitType} onDelete={onDelete} />
 }
+
+UnitListContainer.propTypes = {
+    machineId: PropTypes.string.isRequired,
+    unitType: PropTypes.string.isRequired,
+}
+
+export default UnitListContainer

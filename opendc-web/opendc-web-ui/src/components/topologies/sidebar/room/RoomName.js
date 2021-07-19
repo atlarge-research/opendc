@@ -21,20 +21,24 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useDispatch, useSelector } from 'react-redux'
+import NameComponent from '../NameComponent'
+import { editRoomName } from '../../../../redux/actions/topology/room'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function RoomName({ roomId }) {
+    const { name: roomName, _id } = useSelector((state) => state.objects.room[roomId])
+    const dispatch = useDispatch()
+    const callback = (name) => {
+        if (name) {
+            dispatch(editRoomName(_id, name))
+        }
+    }
+    return <NameComponent name={roomName} onEdit={callback} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+RoomName.propTypes = {
+    roomId: PropTypes.string.isRequired,
 }
+
+export default RoomName

@@ -35,6 +35,7 @@ export function addTopology(auth, topology) {
 }
 
 export function updateTopology(auth, topology) {
+    // eslint-disable-next-line no-unused-vars
     const { _id, ...data } = topology
     return request(auth, `topologies/${topology._id}`, 'PUT', { topology: data })
 }

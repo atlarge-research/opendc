@@ -21,20 +21,42 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { ClockIcon, CheckCircleIcon, ErrorCircleOIcon } from '@patternfly/react-icons'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function ScenarioState({ state }) {
+    switch (state) {
+        case 'CLAIMED':
+        case 'QUEUED':
+            return (
+                <span>
+                    <ClockIcon color="blue" /> Queued
+                </span>
+            )
+        case 'RUNNING':
+            return (
+                <span>
+                    <ClockIcon color="green" /> Running
+                </span>
+            )
+        case 'FINISHED':
+            return (
+                <span>
+                    <CheckCircleIcon color="green" /> Finished
+                </span>
+            )
+        case 'FAILED':
+            return (
+                <span>
+                    <ErrorCircleOIcon color="red" /> Failed
+                </span>
+            )
+    }
+
+    return 'Unknown'
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+ScenarioState.propTypes = {
+    state: PropTypes.oneOf(['QUEUED', 'CLAIMED', 'RUNNING', 'FINISHED', 'FAILED']),
 }
+
+export default ScenarioState

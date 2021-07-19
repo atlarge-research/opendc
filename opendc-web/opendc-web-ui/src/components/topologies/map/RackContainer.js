@@ -20,21 +20,18 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useSelector } from 'react-redux'
+import { Tile } from '../../../shapes'
+import RackGroup from './groups/RackGroup'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function RackContainer({ tile }) {
+    const interactionLevel = useSelector((state) => state.interactionLevel)
+    return <RackGroup interactionLevel={interactionLevel} tile={tile} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+RackContainer.propTypes = {
+    tile: Tile,
 }
+
+export default RackContainer

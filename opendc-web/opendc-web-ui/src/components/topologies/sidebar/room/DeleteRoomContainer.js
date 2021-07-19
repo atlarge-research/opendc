@@ -21,20 +21,39 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page } from '@patternfly/react-core'
+import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import ConfirmationModal from '../../../util/modals/ConfirmationModal'
+import { deleteRoom } from '../../../../redux/actions/topology/room'
+import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
+import { Button } from '@patternfly/react-core'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
+function DeleteRoomContainer({ roomId }) {
+    const dispatch = useDispatch()
+    const [isVisible, setVisible] = useState(false)
+    const callback = (isConfirmed) => {
+        if (isConfirmed) {
+            dispatch(deleteRoom(roomId))
+        }
+        setVisible(false)
+    }
     return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
+        <>
+            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)}>
+                Delete this room
+            </Button>
+            <ConfirmationModal
+                title="Delete this room"
+                message="Are you sure you want to delete this room?"
+                isOpen={isVisible}
+                callback={callback}
+            />
+        </>
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+DeleteRoomContainer.propTypes = {
+    roomId: PropTypes.string.isRequired,
 }
+
+export default DeleteRoomContainer

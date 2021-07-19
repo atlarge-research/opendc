@@ -21,20 +21,23 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useDispatch, useSelector } from 'react-redux'
+import UnitAddComponent from './UnitAddComponent'
+import { addUnit } from '../../../../redux/actions/topology/machine'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function UnitAddContainer({ machineId, unitType }) {
+    const units = useSelector((state) => Object.values(state.objects[unitType]))
+    const dispatch = useDispatch()
+
+    const onAdd = (id) => dispatch(addUnit(machineId, unitType, id))
+
+    return <UnitAddComponent onAdd={onAdd} units={units} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+UnitAddContainer.propTypes = {
+    machineId: PropTypes.string.isRequired,
+    unitType: PropTypes.string.isRequired,
 }
+
+export default UnitAddContainer

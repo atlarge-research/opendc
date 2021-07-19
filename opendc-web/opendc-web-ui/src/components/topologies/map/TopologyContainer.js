@@ -20,21 +20,16 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useSelector } from 'react-redux'
+import { useActiveTopology } from '../../../data/topology'
+import TopologyGroup from './groups/TopologyGroup'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function TopologyContainer() {
+    const topology = useActiveTopology()
+    const interactionLevel = useSelector((state) => state.interactionLevel)
+
+    return <TopologyGroup topology={topology} interactionLevel={interactionLevel} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
-}
+export default TopologyContainer

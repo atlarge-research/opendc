@@ -20,34 +20,37 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { PlusIcon } from '@patternfly/react-icons'
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Button } from '@patternfly/react-core'
-import { useState } from 'react'
-import { useMutation } from 'react-query'
-import NewPortfolioModal from './NewPortfolioModal'
+import { TrashIcon } from '@patternfly/react-icons'
+import ConfirmationModal from '../../../util/modals/ConfirmationModal'
+import { deleteMachine } from '../../../../redux/actions/topology/machine'
 
-function NewPortfolio({ projectId }) {
+function DeleteMachine() {
+    const dispatch = useDispatch()
     const [isVisible, setVisible] = useState(false)
-    const { mutate: addPortfolio } = useMutation('addPortfolio')
-
-    const onSubmit = (name, targets) => {
-        addPortfolio({ projectId, name, targets })
+    const rackId = useSelector((state) => state.objects.tile[state.interactionLevel.tileId].rack)
+    const position = useSelector((state) => state.interactionLevel.position)
+    const callback = (isConfirmed) => {
+        if (isConfirmed) {
+            dispatch(deleteMachine(rackId, position))
+        }
         setVisible(false)
     }
-
     return (
         <>
-            <Button icon={<PlusIcon />} isSmall onClick={() => setVisible(true)}>
-                New Portfolio
+            <Button variant="danger" icon={<TrashIcon />} isBlock onClick={() => setVisible(true)}>
+                Delete this machine
             </Button>
-            <NewPortfolioModal isOpen={isVisible} onSubmit={onSubmit} onCancel={() => setVisible(false)} />
+            <ConfirmationModal
+                title="Delete this machine"
+                message="Are you sure you want to delete this machine?"
+                isOpen={isVisible}
+                callback={callback}
+            />
         </>
     )
 }
 
-NewPortfolio.propTypes = {
-    projectId: PropTypes.string,
-}
-
-export default NewPortfolio
+export default DeleteMachine

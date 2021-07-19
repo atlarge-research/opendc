@@ -15,7 +15,7 @@ import {
     DEFAULT_RACK_POWER_CAPACITY,
     DEFAULT_RACK_SLOT_CAPACITY,
     MAX_NUM_UNITS_PER_MACHINE,
-} from '../../components/app/map/MapConstants'
+} from '../../components/topologies/map/MapConstants'
 import { fetchAndStoreTopology, denormalizeTopology, updateTopologyOnServer } from './objects'
 import { uuid } from 'uuidv4'
 import { addTopology } from '../../api/topologies'
@@ -45,7 +45,7 @@ export function* onAddTopology({ projectId, duplicateId, name }) {
             topologyToBeCreated = { ...topologyToBeCreated, name }
             delete topologyToBeCreated._id
         } else {
-            topologyToBeCreated = { name: action.name, rooms: [] }
+            topologyToBeCreated = { name, rooms: [] }
         }
 
         const auth = yield getContext('auth')

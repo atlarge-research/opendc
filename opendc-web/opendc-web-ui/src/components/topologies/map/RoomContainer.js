@@ -21,20 +21,25 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
 import React from 'react'
-import { Page } from '@patternfly/react-core'
+import { useDispatch, useSelector } from 'react-redux'
+import { goFromBuildingToRoom } from '../../../redux/actions/interaction-level'
+import RoomGroup from './groups/RoomGroup'
 
-export function AppPage({ children, breadcrumb, tertiaryNav }) {
-    return (
-        <Page breadcrumb={breadcrumb} tertiaryNav={tertiaryNav} header={<AppHeader />}>
-            {children}
-        </Page>
-    )
+function RoomContainer({ roomId, ...props }) {
+    const state = useSelector((state) => {
+        return {
+            interactionLevel: state.interactionLevel,
+            currentRoomInConstruction: state.construction.currentRoomInConstruction,
+            room: state.objects.room[roomId],
+        }
+    })
+    const dispatch = useDispatch()
+    return <RoomGroup {...props} {...state} onClick={() => dispatch(goFromBuildingToRoom(roomId))} />
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    tertiaryNav: PropTypes.node,
-    children: PropTypes.node,
+RoomContainer.propTypes = {
+    roomId: PropTypes.string,
 }
+
+export default RoomContainer
