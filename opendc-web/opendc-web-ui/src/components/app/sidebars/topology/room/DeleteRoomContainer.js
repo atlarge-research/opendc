@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import ConfirmationModal from '../../../../../components/modals/ConfirmationModal'
@@ -27,12 +28,12 @@ import { deleteRoom } from '../../../../../redux/actions/topology/room'
 import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
 import { Button } from '@patternfly/react-core'
 
-const DeleteRoomContainer = () => {
+function DeleteRoomContainer({ roomId }) {
     const dispatch = useDispatch()
     const [isVisible, setVisible] = useState(false)
     const callback = (isConfirmed) => {
         if (isConfirmed) {
-            dispatch(deleteRoom())
+            dispatch(deleteRoom(roomId))
         }
         setVisible(false)
     }
@@ -49,6 +50,10 @@ const DeleteRoomContainer = () => {
             />
         </>
     )
+}
+
+DeleteRoomContainer.propTypes = {
+    roomId: PropTypes.string.isRequired,
 }
 
 export default DeleteRoomContainer

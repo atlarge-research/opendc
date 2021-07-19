@@ -6,10 +6,11 @@ export const START_RACK_CONSTRUCTION = 'START_RACK_CONSTRUCTION'
 export const STOP_RACK_CONSTRUCTION = 'STOP_RACK_CONSTRUCTION'
 export const ADD_RACK_TO_TILE = 'ADD_RACK_TO_TILE'
 
-export function editRoomName(name) {
+export function editRoomName(roomId, name) {
     return {
         type: EDIT_ROOM_NAME,
         name,
+        roomId,
     }
 }
 
@@ -41,8 +42,9 @@ export function addRackToTile(positionX, positionY) {
     }
 }
 
-export function deleteRoom() {
+export function deleteRoom(roomId) {
     return {
         type: DELETE_ROOM,
+        roomId,
     }
 }

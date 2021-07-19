@@ -55,13 +55,10 @@ export function cancelNewRoomConstructionSucceeded() {
     }
 }
 
-export function startRoomEdit() {
-    return (dispatch, getState) => {
-        const { interactionLevel } = getState()
-        dispatch({
-            type: START_ROOM_EDIT,
-            roomId: interactionLevel.roomId,
-        })
+export function startRoomEdit(roomId) {
+    return {
+        type: START_ROOM_EDIT,
+        roomId: roomId,
     }
 }
 

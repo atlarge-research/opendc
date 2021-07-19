@@ -29,7 +29,7 @@ import {
 } from '../../../../../redux/actions/topology/building'
 import NewRoomConstructionComponent from './NewRoomConstructionComponent'
 
-const NewRoomConstructionButton = (props) => {
+function NewRoomConstructionButton(props) {
     const currentRoomInConstruction = useSelector((state) => state.construction.currentRoomInConstruction)
 
     const dispatch = useDispatch()

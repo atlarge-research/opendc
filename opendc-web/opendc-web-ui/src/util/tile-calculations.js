@@ -18,8 +18,8 @@ function getWallSegments(tiles) {
                 }
 
                 let doInsert = true
-                for (let tileIndex in tiles) {
-                    if (tiles[tileIndex].positionX === x + dX && tiles[tileIndex].positionY === y + dY) {
+                for (const tile of tiles) {
+                    if (tile.positionX === x + dX && tile.positionY === y + dY) {
                         doInsert = false
                         break
                     }

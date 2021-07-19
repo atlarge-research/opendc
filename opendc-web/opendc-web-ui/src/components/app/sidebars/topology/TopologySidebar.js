@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { InteractionLevel } from '../../../../shapes'
-import BuildingSidebarComponent from './building/BuildingSidebarComponent'
+import BuildingSidebar from './building/BuildingSidebar'
 import {
     Button,
     DrawerActions,
@@ -16,9 +16,9 @@ import { AngleLeftIcon } from '@patternfly/react-icons'
 import { useDispatch } from 'react-redux'
 import { goDownOneInteractionLevel } from '../../../../redux/actions/interaction-level'
 import { backButton } from './TopologySidebar.module.scss'
-import RoomSidebarContainer from './room/RoomSidebarContainer'
-import RackSidebarContainer from './rack/RackSidebarContainer'
-import MachineSidebarContainer from './machine/MachineSidebarContainer'
+import RoomSidebar from './room/RoomSidebar'
+import RackSidebar from './rack/RackSidebar'
+import MachineSidebar from './machine/MachineSidebar'
 
 const name = {
     BUILDING: 'Building',
@@ -27,21 +27,21 @@ const name = {
     MACHINE: 'Machine',
 }
 
-const TopologySidebar = ({ interactionLevel, onClose }) => {
+function TopologySidebar({ interactionLevel, onClose }) {
     let sidebarContent
 
     switch (interactionLevel.mode) {
         case 'BUILDING':
-            sidebarContent = <BuildingSidebarComponent />
+            sidebarContent = <BuildingSidebar />
             break
         case 'ROOM':
-            sidebarContent = <RoomSidebarContainer />
+            sidebarContent = <RoomSidebar roomId={interactionLevel.roomId} />
             break
         case 'RACK':
-            sidebarContent = <RackSidebarContainer />
+            sidebarContent = <RackSidebar tileId={interactionLevel.tileId} />
             break
         case 'MACHINE':
-            sidebarContent = <MachineSidebarContainer />
+            sidebarContent = <MachineSidebar tileId={interactionLevel.tileId} position={interactionLevel.position} />
             break
         default:
             sidebarContent = 'Missing Content'

@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { machineListContainer, sidebarContainer } from './RackSidebarComponent.module.scss'
+import { machineListContainer, sidebarContainer } from './RackSidebar.module.scss'
 import RackNameContainer from './RackNameContainer'
-import AddPrefabContainer from './AddPrefabContainer'
+import AddPrefab from './AddPrefab'
 import DeleteRackContainer from './DeleteRackContainer'
 import MachineListContainer from './MachineListContainer'
 import {
@@ -16,7 +16,7 @@ import {
 } from '@patternfly/react-core'
 import { useSelector } from 'react-redux'
 
-function RackSidebarComponent({ tileId }) {
+function RackSidebar({ tileId }) {
     const rack = useSelector((state) => state.objects.rack[state.objects.tile[tileId].rack])
 
     return (
@@ -39,8 +39,8 @@ function RackSidebarComponent({ tileId }) {
                     </TextListItem>
                 </TextList>
                 <Title headingLevel="h2">Actions</Title>
-                <AddPrefabContainer />
-                <DeleteRackContainer />
+                <AddPrefab tileId={tileId} />
+                <DeleteRackContainer tileId={tileId} />
 
                 <Title headingLevel="h2">Slots</Title>
             </TextContent>
@@ -51,8 +51,8 @@ function RackSidebarComponent({ tileId }) {
     )
 }
 
-RackSidebarComponent.propTypes = {
+RackSidebar.propTypes = {
     tileId: PropTypes.string.isRequired,
 }
 
-export default RackSidebarComponent
+export default RackSidebar

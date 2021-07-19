@@ -4,7 +4,7 @@ import { Button, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem } from '@pat
 import PlusIcon from '@patternfly/react-icons/dist/js/icons/plus-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-icon'
 
-const NewRoomConstructionComponent = ({ onStart, onFinish, onCancel, currentRoomInConstruction }) => {
+function NewRoomConstructionComponent({ onStart, onFinish, onCancel, currentRoomInConstruction }) {
     if (currentRoomInConstruction === '-1') {
         return (
             <Button isBlock icon={<PlusIcon />} onClick={onStart}>

@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { startRackConstruction, stopRackConstruction } from '../../../../../redux/actions/topology/room'
 import RackConstructionComponent from './RackConstructionComponent'
 
-const RackConstructionContainer = (props) => {
+function RackConstructionContainer(props) {
     const isRackConstructionMode = useSelector((state) => state.construction.inRackConstructionMode)
     const isEditingRoom = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
 

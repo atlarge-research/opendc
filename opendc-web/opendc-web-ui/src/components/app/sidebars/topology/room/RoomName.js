@@ -27,11 +27,11 @@ import NameComponent from '../../../../../components/app/sidebars/topology/NameC
 import { editRoomName } from '../../../../../redux/actions/topology/room'
 
 function RoomName({ roomId }) {
-    const roomName = useSelector((state) => state.objects.room[roomId].name)
+    const { name: roomName, _id } = useSelector((state) => state.objects.room[roomId])
     const dispatch = useDispatch()
     const callback = (name) => {
         if (name) {
-            dispatch(editRoomName(name))
+            dispatch(editRoomName(_id, name))
         }
     }
     return <NameComponent name={roomName} onEdit={callback} />

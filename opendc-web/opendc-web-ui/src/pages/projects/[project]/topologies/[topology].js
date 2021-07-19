@@ -40,8 +40,6 @@ import {
     Spinner,
     Title,
 } from '@patternfly/react-core'
-import Toolbar from '../../../../components/app/map/controls/Toolbar'
-import ScaleIndicator from '../../../../components/app/map/controls/ScaleIndicator'
 import TopologySidebar from '../../../../components/app/sidebars/topology/TopologySidebar'
 import Collapse from '../../../../components/app/map/controls/Collapse'
 

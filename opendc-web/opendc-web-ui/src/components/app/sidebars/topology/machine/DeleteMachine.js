@@ -21,18 +21,20 @@
  */
 
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { deleteMachine } from '../../../../../redux/actions/topology/machine'
 import { Button } from '@patternfly/react-core'
 import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
 import ConfirmationModal from '../../../../modals/ConfirmationModal'
 
-const DeleteMachine = () => {
+function DeleteMachine() {
     const dispatch = useDispatch()
     const [isVisible, setVisible] = useState(false)
+    const rackId = useSelector((state) => state.objects.tile[state.interactionLevel.tileId].rack)
+    const position = useSelector((state) => state.interactionLevel.position)
     const callback = (isConfirmed) => {
         if (isConfirmed) {
-            dispatch(deleteMachine())
+            dispatch(deleteMachine(rackId, position))
         }
         setVisible(false)
     }

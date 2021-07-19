@@ -33,23 +33,20 @@ const unitMapping = {
     storage: 'storages',
 }
 
-const UnitListContainer = ({ unitType, ...props }) => {
+function UnitListContainer({ machineId, unitType }) {
     const dispatch = useDispatch()
     const units = useSelector((state) => {
-        const machine =
-            state.objects.machine[
-                state.objects.rack[state.objects.tile[state.interactionLevel.tileId].rack].machines[
-                    state.interactionLevel.position - 1
-                ]
-            ]
+        const machine = state.objects.machine[machineId]
         return machine[unitMapping[unitType]].map((id) => state.objects[unitType][id])
     })
-    const onDelete = (unit, unitType) => dispatch(deleteUnit(unitType, unit._id))
 
-    return <UnitListComponent {...props} units={units} unitType={unitType} onDelete={onDelete} />
+    const onDelete = (unit) => dispatch(deleteUnit(machineId, unitType, unit._id))
+
+    return <UnitListComponent units={units} unitType={unitType} onDelete={onDelete} />
 }
 
 UnitListContainer.propTypes = {
+    machineId: PropTypes.string.isRequired,
     unitType: PropTypes.string.isRequired,
 }
 

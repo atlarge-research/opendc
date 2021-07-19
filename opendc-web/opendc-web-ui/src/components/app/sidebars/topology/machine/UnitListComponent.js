@@ -21,7 +21,7 @@ import {
 } from '@patternfly/react-core'
 import { CubesIcon, InfoIcon, TrashIcon } from '@patternfly/react-icons'
 
-const UnitInfo = ({ unit, unitType }) => {
+function UnitInfo({ unit, unitType }) {
     if (unitType === 'cpu' || unitType === 'gpu') {
         return (
             <DescriptionList>
@@ -64,7 +64,7 @@ UnitInfo.propTypes = {
     unit: PropTypes.oneOfType([ProcessingUnit, StorageUnit]).isRequired,
 }
 
-const UnitListComponent = ({ unitType, units, onDelete }) => {
+function UnitListComponent({ unitType, units, onDelete }) {
     if (units.length === 0) {
         return (
             <EmptyState>

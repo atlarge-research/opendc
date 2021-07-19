@@ -7,7 +7,7 @@ import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 const RackConstructionComponent = ({ onStart, onStop, inRackConstructionMode, isEditingRoom }) => {
     if (inRackConstructionMode) {
         return (
-            <Button isBlock={true} icon={<TimesIcon />} onClick={onStop}>
+            <Button isBlock={true} icon={<TimesIcon />} onClick={onStop} className="pf-u-mb-sm">
                 Stop rack construction
             </Button>
         )

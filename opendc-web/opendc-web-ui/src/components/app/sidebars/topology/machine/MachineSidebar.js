@@ -12,8 +12,12 @@ import {
 } from '@patternfly/react-core'
 import { useSelector } from 'react-redux'
 
-const MachineSidebarComponent = ({ machineId }) => {
-    const machine = useSelector((state) => state.objects.machine[machineId])
+function MachineSidebar({ tileId, position }) {
+    const machine = useSelector(({ objects }) => {
+        const rack = objects.rack[objects.tile[tileId].rack]
+        return objects.machine[rack.machines[position - 1]]
+    })
+    const machineId = machine._id
     return (
         <div>
             <TextContent>
@@ -31,14 +35,15 @@ const MachineSidebarComponent = ({ machineId }) => {
                 <Title headingLevel="h2">Units</Title>
             </TextContent>
             <div className="pf-u-h-100">
-                <UnitTabsComponent />
+                <UnitTabsComponent machineId={machineId} />
             </div>
         </div>
     )
 }
 
-MachineSidebarComponent.propTypes = {
-    machineId: PropTypes.string,
+MachineSidebar.propTypes = {
+    tileId: PropTypes.string.isRequired,
+    position: PropTypes.number.isRequired,
 }
 
-export default MachineSidebarComponent
+export default MachineSidebar

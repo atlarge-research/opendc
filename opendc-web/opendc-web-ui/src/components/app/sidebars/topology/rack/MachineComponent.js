@@ -19,7 +19,7 @@ UnitIcon.propTypes = {
     type: PropTypes.string,
 }
 
-const MachineComponent = ({ machine, onClick }) => {
+function MachineComponent({ machine, onClick }) {
     const hasNoUnits =
         machine.cpus.length + machine.gpus.length + machine.memories.length + machine.storages.length === 0
 

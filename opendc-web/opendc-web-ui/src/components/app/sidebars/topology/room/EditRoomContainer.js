@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+import PropTypes from 'prop-types'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { finishRoomEdit, startRoomEdit } from '../../../../../redux/actions/topology/building'
@@ -27,12 +28,12 @@ import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-icon'
 import PencilAltIcon from '@patternfly/react-icons/dist/js/icons/pencil-alt-icon'
 import { Button } from '@patternfly/react-core'
 
-const EditRoomContainer = () => {
+function EditRoomContainer({ roomId }) {
     const isEditing = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
     const isInRackConstructionMode = useSelector((state) => state.construction.inRackConstructionMode)
 
     const dispatch = useDispatch()
-    const onEdit = () => dispatch(startRoomEdit())
+    const onEdit = () => dispatch(startRoomEdit(roomId))
     const onFinish = () => dispatch(finishRoomEdit())
 
     return isEditing ? (
@@ -51,6 +52,10 @@ const EditRoomContainer = () => {
             Edit the tiles of this room
         </Button>
     )
+}
+
+EditRoomContainer.propTypes = {
+    roomId: PropTypes.string.isRequired,
 }
 
 export default EditRoomContainer

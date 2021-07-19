@@ -20,13 +20,25 @@
  * SOFTWARE.
  */
 
+import PropTypes from 'prop-types'
 import React from 'react'
-import { useSelector } from 'react-redux'
-import RoomSidebarComponent from './RoomSidebarComponent'
+import { useDispatch } from 'react-redux'
+import { addPrefab } from '../../../../../redux/actions/prefabs'
+import { Button } from '@patternfly/react-core'
+import { SaveIcon } from '@patternfly/react-icons'
 
-const RoomSidebarContainer = (props) => {
-    const roomId = useSelector((state) => state.interactionLevel.roomId)
-    return <RoomSidebarComponent {...props} roomId={roomId} />
+function AddPrefab({ tileId }) {
+    const dispatch = useDispatch()
+    const onClick = () => dispatch(addPrefab('name', tileId))
+    return (
+        <Button variant="primary" icon={<SaveIcon />} isBlock onClick={onClick} className="pf-u-mb-sm">
+            Save this rack to a prefab
+        </Button>
+    )
 }
 
-export default RoomSidebarContainer
+AddPrefab.propTypes = {
+    tileId: PropTypes.string.isRequired,
+}
+
+export default AddPrefab

@@ -26,16 +26,17 @@ import { useDispatch, useSelector } from 'react-redux'
 import { addUnit } from '../../../../../redux/actions/topology/machine'
 import UnitAddComponent from './UnitAddComponent'
 
-const UnitAddContainer = ({ unitType }) => {
+function UnitAddContainer({ machineId, unitType }) {
     const units = useSelector((state) => Object.values(state.objects[unitType]))
     const dispatch = useDispatch()
 
-    const onAdd = (id) => dispatch(addUnit(unitType, id))
+    const onAdd = (id) => dispatch(addUnit(machineId, unitType, id))
 
     return <UnitAddComponent onAdd={onAdd} units={units} />
 }
 
 UnitAddContainer.propTypes = {
+    machineId: PropTypes.string.isRequired,
     unitType: PropTypes.string.isRequired,
 }
 

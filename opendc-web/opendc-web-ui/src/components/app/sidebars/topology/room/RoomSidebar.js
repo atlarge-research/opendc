@@ -13,7 +13,7 @@ import {
     Title,
 } from '@patternfly/react-core'
 
-const RoomSidebarComponent = ({ roomId }) => {
+const RoomSidebar = ({ roomId }) => {
     return (
         <TextContent>
             <Title headingLevel="h2">Details</Title>
@@ -30,14 +30,14 @@ const RoomSidebarComponent = ({ roomId }) => {
             </TextList>
             <Title headingLevel="h2">Construction</Title>
             <RackConstructionContainer />
-            <EditRoomContainer />
-            <DeleteRoomContainer />
+            <EditRoomContainer roomId={roomId} />
+            <DeleteRoomContainer roomId={roomId} />
         </TextContent>
     )
 }
 
-RoomSidebarComponent.propTypes = {
+RoomSidebar.propTypes = {
     roomId: PropTypes.string.isRequired,
 }
 
-export default RoomSidebarComponent
+export default RoomSidebar

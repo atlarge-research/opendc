@@ -1,8 +1,8 @@
 import React from 'react'
 import NewRoomConstructionContainer from './NewRoomConstructionContainer'
 
-const BuildingSidebarComponent = () => {
+function BuildingSidebar() {
     return <NewRoomConstructionContainer />
 }
 
-export default BuildingSidebarComponent
+export default BuildingSidebar
