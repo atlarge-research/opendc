@@ -33,12 +33,13 @@ import {
     GridItem,
     Skeleton,
 } from '@patternfly/react-core'
+import React from 'react'
 import { useTopology } from '../../data/topology'
 import { parseAndFormatDateTime } from '../../util/date-time'
+import RoomTable from './RoomTable'
 
 function TopologyOverview({ topologyId }) {
     const { data: topology } = useTopology(topologyId)
-
     return (
         <Grid hasGutter>
             <GridItem md={2}>
@@ -63,6 +64,14 @@ function TopologyOverview({ topologyId }) {
                                 </DescriptionListDescription>
                             </DescriptionListGroup>
                         </DescriptionList>
+                    </CardBody>
+                </Card>
+            </GridItem>
+            <GridItem md={5}>
+                <Card>
+                    <CardTitle>Rooms</CardTitle>
+                    <CardBody>
+                        <RoomTable topologyId={topologyId} />
                     </CardBody>
                 </Card>
             </GridItem>
