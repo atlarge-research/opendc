@@ -43,4 +43,18 @@ module.exports = withTM({
             },
         ]
     },
+    webpack: (config, options) => {
+        if (options.dev) {
+            config.optimization.splitChunks = {
+                cacheGroups: {
+                    vendor: {
+                        test: /[\\/]node_modules[\\/]/,
+                        name: 'transpiled-modules',
+                        chunks: 'all',
+                    },
+                },
+            }
+        }
+        return config
+    }
 })

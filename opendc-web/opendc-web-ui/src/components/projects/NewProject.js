@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import TextInputModal from '../../components/modals/TextInputModal'
 import { Button } from '@patternfly/react-core'
 import { useMutation } from 'react-query'
 import { PlusIcon } from '@patternfly/react-icons'
 import { buttonContainer } from './NewProject.module.scss'
+import TextInputModal from '../util/modals/TextInputModal'
 
 /**
  * A container for creating a new project.

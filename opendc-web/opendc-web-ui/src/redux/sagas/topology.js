@@ -15,7 +15,7 @@ import {
     DEFAULT_RACK_POWER_CAPACITY,
     DEFAULT_RACK_SLOT_CAPACITY,
     MAX_NUM_UNITS_PER_MACHINE,
-} from '../../components/app/map/MapConstants'
+} from '../../components/topologies/map/MapConstants'
 import { fetchAndStoreTopology, denormalizeTopology, updateTopologyOnServer } from './objects'
 import { uuid } from 'uuidv4'
 import { addTopology } from '../../api/topologies'
@@ -37,17 +37,15 @@ export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = fa
     }
 }
 
-export function* onAddTopology(action) {
+export function* onAddTopology({ projectId, duplicateId, name }) {
     try {
-        const { projectId, duplicateId, name } = action
-
         let topologyToBeCreated
         if (duplicateId) {
             topologyToBeCreated = yield denormalizeTopology(duplicateId)
             topologyToBeCreated = { ...topologyToBeCreated, name }
             delete topologyToBeCreated._id
         } else {
-            topologyToBeCreated = { name: action.name, rooms: [] }
+            topologyToBeCreated = { name, rooms: [] }
         }
 
         const auth = yield getContext('auth')
@@ -119,21 +117,19 @@ export function* onDeleteTile(action) {
     }
 }
 
-export function* onEditRoomName(action) {
+export function* onEditRoomName({ roomId, name }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
-        const roomId = yield select((state) => state.interactionLevel.roomId)
-        yield put(addPropToStoreObject('room', roomId, { name: action.name }))
+        yield put(addPropToStoreObject('room', roomId, { name }))
         yield updateTopologyOnServer(topologyId)
     } catch (error) {
         console.error(error)
     }
 }
 
-export function* onDeleteRoom() {
+export function* onDeleteRoom({ roomId }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
-        const roomId = yield select((state) => state.interactionLevel.roomId)
         yield put(goDownOneInteractionLevel())
         yield put(removeIdFromStoreObjectListProp('topology', topologyId, 'rooms', roomId))
         yield updateTopologyOnServer(topologyId)
@@ -142,21 +138,19 @@ export function* onDeleteRoom() {
     }
 }
 
-export function* onEditRackName(action) {
+export function* onEditRackName({ rackId, name }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
-        const rackId = yield select((state) => state.objects.tile[state.interactionLevel.tileId].rack)
-        yield put(addPropToStoreObject('rack', rackId, { name: action.name }))
+        yield put(addPropToStoreObject('rack', rackId, { name }))
         yield updateTopologyOnServer(topologyId)
     } catch (error) {
         console.error(error)
     }
 }
 
-export function* onDeleteRack() {
+export function* onDeleteRack({ tileId }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
-        const tileId = yield select((state) => state.interactionLevel.tileId)
         yield put(goDownOneInteractionLevel())
         yield put(addPropToStoreObject('tile', tileId, { rack: undefined }))
         yield updateTopologyOnServer(topologyId)
@@ -165,35 +159,34 @@ export function* onDeleteRack() {
     }
 }
 
-export function* onAddRackToTile(action) {
+export function* onAddRackToTile({ tileId }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
         const rack = {
             _id: uuid(),
             name: 'Rack',
-            tileId: action.tileId,
+            tileId,
             capacity: DEFAULT_RACK_SLOT_CAPACITY,
             powerCapacityW: DEFAULT_RACK_POWER_CAPACITY,
             machines: [],
         }
         yield put(addToStore('rack', rack))
-        yield put(addPropToStoreObject('tile', action.tileId, { rack: rack._id }))
+        yield put(addPropToStoreObject('tile', tileId, { rack: rack._id }))
         yield updateTopologyOnServer(topologyId)
     } catch (error) {
         console.error(error)
     }
 }
 
-export function* onAddMachine(action) {
+export function* onAddMachine({ rackId, position }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
-        const rackId = yield select((state) => state.objects.tile[state.interactionLevel.tileId].rack)
         const rack = yield select((state) => state.objects.rack[rackId])
 
         const machine = {
             _id: uuid(),
             rackId,
-            position: action.position,
+            position,
             cpus: [],
             gpus: [],
             memories: [],
@@ -209,15 +202,13 @@ export function* onAddMachine(action) {
     }
 }
 
-export function* onDeleteMachine() {
+export function* onDeleteMachine({ rackId, position }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
-        const tileId = yield select((state) => state.interactionLevel.tileId)
-        const position = yield select((state) => state.interactionLevel.position)
-        const rack = yield select((state) => state.objects.rack[state.objects.tile[tileId].rack])
+        const rack = yield select((state) => state.objects.rack[rackId])
         yield put(goDownOneInteractionLevel())
         yield put(
-            addPropToStoreObject('rack', rack._id, { machines: rack.machines.filter((_, idx) => idx !== position - 1) })
+            addPropToStoreObject('rack', rackId, { machines: rack.machines.filter((_, idx) => idx !== position - 1) })
         )
         yield updateTopologyOnServer(topologyId)
     } catch (error) {
@@ -232,23 +223,19 @@ const unitMapping = {
     storage: 'storages',
 }
 
-export function* onAddUnit(action) {
+export function* onAddUnit({ machineId, unitType, id }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
-        const tileId = yield select((state) => state.interactionLevel.tileId)
-        const position = yield select((state) => state.interactionLevel.position)
-        const machine = yield select(
-            (state) => state.objects.machine[state.objects.rack[state.objects.tile[tileId].rack].machines[position - 1]]
-        )
+        const machine = yield select((state) => state.objects.machine[machineId])
 
-        if (machine[unitMapping[action.unitType]].length >= MAX_NUM_UNITS_PER_MACHINE) {
+        if (machine[unitMapping[unitType]].length >= MAX_NUM_UNITS_PER_MACHINE) {
             return
         }
 
-        const units = [...machine[unitMapping[action.unitType]], action.id]
+        const units = [...machine[unitMapping[unitType]], id]
         yield put(
             addPropToStoreObject('machine', machine._id, {
-                [unitMapping[action.unitType]]: units,
+                [unitMapping[unitType]]: units,
             })
         )
         yield updateTopologyOnServer(topologyId)
@@ -257,20 +244,16 @@ export function* onAddUnit(action) {
     }
 }
 
-export function* onDeleteUnit(action) {
+export function* onDeleteUnit({ machineId, unitType, index }) {
     try {
         const topologyId = yield select((state) => state.currentTopologyId)
-        const tileId = yield select((state) => state.interactionLevel.tileId)
-        const position = yield select((state) => state.interactionLevel.position)
-        const machine = yield select(
-            (state) => state.objects.machine[state.objects.rack[state.objects.tile[tileId].rack].machines[position - 1]]
-        )
-        const unitIds = machine[unitMapping[action.unitType]].slice()
-        unitIds.splice(action.index, 1)
+        const machine = yield select((state) => state.objects.machine[machineId])
+        const unitIds = machine[unitMapping[unitType]].slice()
+        unitIds.splice(index, 1)
 
         yield put(
             addPropToStoreObject('machine', machine._id, {
-                [unitMapping[action.unitType]]: unitIds,
+                [unitMapping[unitType]]: unitIds,
             })
         )
         yield updateTopologyOnServer(topologyId)

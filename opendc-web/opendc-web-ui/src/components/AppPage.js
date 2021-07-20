@@ -22,8 +22,7 @@
 
 import PropTypes from 'prop-types'
 import { AppHeader } from './AppHeader'
-import { AppNavigation } from './AppNavigation'
-import React, { useState } from 'react'
+import React from 'react'
 import { Page } from '@patternfly/react-core'
 
 export function AppPage({ children, breadcrumb, tertiaryNav }) {

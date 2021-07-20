@@ -24,7 +24,7 @@ import PropTypes from 'prop-types'
 import Head from 'next/head'
 import { Provider } from 'react-redux'
 import { useStore } from '../redux'
-import { AuthProvider, useAuth } from '../auth'
+import { AuthProvider, useAuth, useRequireAuth } from '../auth'
 import * as Sentry from '@sentry/react'
 import { Integrations } from '@sentry/tracing'
 import { QueryClient, QueryClientProvider } from 'react-query'
@@ -48,6 +48,7 @@ import '../style/index.scss'
 
 // This setup is necessary to forward the Auth0 context to the Redux context
 const Inner = ({ Component, pageProps }) => {
+    useRequireAuth()
     const auth = useAuth()
 
     const queryClient = useMemo(() => {

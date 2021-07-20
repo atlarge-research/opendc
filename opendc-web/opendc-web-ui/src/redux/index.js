@@ -5,7 +5,6 @@ import createSagaMiddleware from 'redux-saga'
 import thunk from 'redux-thunk'
 import rootReducer from './reducers'
 import rootSaga from './sagas'
-import { viewportAdjustmentMiddleware } from './middleware/viewport-adjustment'
 import { createReduxEnhancer } from '@sentry/react'
 
 let store
@@ -13,7 +12,7 @@ let store
 function initStore(initialState, ctx) {
     const sagaMiddleware = createSagaMiddleware({ context: ctx })
 
-    const middlewares = [thunk, sagaMiddleware, viewportAdjustmentMiddleware]
+    const middlewares = [thunk, sagaMiddleware]
 
     if (process.env.NODE_ENV !== 'production') {
         middlewares.push(createLogger())

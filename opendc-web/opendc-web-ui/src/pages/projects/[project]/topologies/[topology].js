@@ -21,31 +21,28 @@
  */
 
 import { useRouter } from 'next/router'
+import TopologyOverview from '../../../../components/topologies/TopologyOverview'
 import { useProject } from '../../../../data/project'
-import { useDispatch, useSelector } from 'react-redux'
-import React, { useEffect, useState } from 'react'
-import { HotKeys } from 'react-hotkeys'
-import { KeymapConfiguration } from '../../../../hotkeys'
+import { useDispatch } from 'react-redux'
+import React, { useEffect, useRef, useState } from 'react'
 import Head from 'next/head'
-import MapStage from '../../../../components/app/map/MapStage'
 import { openProjectSucceeded } from '../../../../redux/actions/projects'
 import { AppPage } from '../../../../components/AppPage'
 import {
-    Bullseye,
-    Drawer,
-    DrawerContent,
-    DrawerContentBody,
-    EmptyState,
-    EmptyStateIcon,
-    Spinner,
-    Title,
+    Breadcrumb,
+    BreadcrumbItem,
+    Divider,
+    PageSection,
+    PageSectionVariants,
+    Tab,
+    TabContent,
+    Tabs,
+    TabTitleText,
+    Text,
+    TextContent,
 } from '@patternfly/react-core'
-import { zoomInOnCenter } from '../../../../redux/actions/map'
-import Toolbar from '../../../../components/app/map/controls/Toolbar'
-import { useMapScale } from '../../../../data/map'
-import ScaleIndicator from '../../../../components/app/map/controls/ScaleIndicator'
-import TopologySidebar from '../../../../components/app/sidebars/topology/TopologySidebar'
-import Collapse from '../../../../components/app/map/controls/Collapse'
+import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
+import TopologyMap from '../../../../components/topologies/TopologyMap'
 
 /**
  * Page that displays a datacenter topology.
@@ -63,44 +60,70 @@ function Topology() {
         }
     }, [projectId, topologyId, dispatch])
 
-    const topologyIsLoading = useSelector((state) => state.currentTopologyId === '-1')
-    const scale = useMapScale()
-    const interactionLevel = useSelector((state) => state.interactionLevel)
+    const [activeTab, setActiveTab] = useState('overview')
+    const overviewRef = useRef(null)
+    const floorPlanRef = useRef(null)
 
-    const [isExpanded, setExpanded] = useState(true)
-    const panelContent = <TopologySidebar interactionLevel={interactionLevel} onClose={() => setExpanded(false)} />
+    const breadcrumb = (
+        <Breadcrumb>
+            <BreadcrumbItem to="/projects" component={BreadcrumbLink}>
+                Projects
+            </BreadcrumbItem>
+            <BreadcrumbItem to={`/projects/${projectId}`} component={BreadcrumbLink}>
+                Project details
+            </BreadcrumbItem>
+            <BreadcrumbItem to={`/projects/${projectId}/topologies/${topologyId}`} component={BreadcrumbLink} isActive>
+                Topology
+            </BreadcrumbItem>
+        </Breadcrumb>
+    )
 
     return (
-        <AppPage>
+        <AppPage breadcrumb={breadcrumb}>
             <Head>
                 <title>{project?.name ?? 'Topologies'} - OpenDC</title>
             </Head>
-            {topologyIsLoading ? (
-                <Bullseye>
-                    <EmptyState>
-                        <EmptyStateIcon variant="container" component={Spinner} />
-                        <Title size="lg" headingLevel="h4">
-                            Loading Topology
-                        </Title>
-                    </EmptyState>
-                </Bullseye>
-            ) : (
-                <HotKeys keyMap={KeymapConfiguration} allowChanges={true} className="full-height">
-                    <Drawer isExpanded={isExpanded}>
-                        <DrawerContent panelContent={panelContent}>
-                            <DrawerContentBody>
-                                <MapStage />
-                                <ScaleIndicator scale={scale} />
-                                <Toolbar
-                                    onZoom={(zoomIn) => dispatch(zoomInOnCenter(zoomIn))}
-                                    onExport={() => window['exportCanvasToImage']()}
-                                />
-                                <Collapse onClick={() => setExpanded(true)} />
-                            </DrawerContentBody>
-                        </DrawerContent>
-                    </Drawer>
-                </HotKeys>
-            )}
+            <PageSection variant={PageSectionVariants.light}>
+                <TextContent>
+                    <Text component="h1">Topology</Text>
+                </TextContent>
+            </PageSection>
+            <PageSection type="none" variant={PageSectionVariants.light} className="pf-c-page__main-tabs" sticky="top">
+                <Divider component="div" />
+                <Tabs
+                    activeKey={activeTab}
+                    onSelect={(_, tabIndex) => setActiveTab(tabIndex)}
+                    className="pf-m-page-insets"
+                >
+                    <Tab
+                        eventKey="overview"
+                        title={<TabTitleText>Overview</TabTitleText>}
+                        tabContentId="overview"
+                        tabContentRef={overviewRef}
+                    />
+                    <Tab
+                        eventKey="floor-plan"
+                        title={<TabTitleText>Floor Plan</TabTitleText>}
+                        tabContentId="floor-plan"
+                        tabContentRef={floorPlanRef}
+                    />
+                </Tabs>
+            </PageSection>
+            <PageSection padding={activeTab === 'floor-plan' && { default: 'noPadding' }} isFilled>
+                <TabContent eventKey="overview" id="overview" ref={overviewRef} aria-label="Overview tab">
+                    <TopologyOverview topologyId={topologyId} />
+                </TabContent>
+                <TabContent
+                    eventKey="floor-plan"
+                    id="floor-plan"
+                    ref={floorPlanRef}
+                    aria-label="Floor Plan tab"
+                    className="pf-u-h-100"
+                    hidden
+                >
+                    <TopologyMap />
+                </TabContent>
+            </PageSection>
         </AppPage>
     )
 }

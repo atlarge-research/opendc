@@ -23,7 +23,7 @@
 import React, { useMemo, useState } from 'react'
 import Head from 'next/head'
 import ProjectFilterPanel from '../../components/projects/FilterPanel'
-import { useAuth, useRequireAuth } from '../../auth'
+import { useAuth } from '../../auth'
 import { AppPage } from '../../components/AppPage'
 import { PageSection, PageSectionVariants, Text, TextContent } from '@patternfly/react-core'
 import { useProjects } from '../../data/project'
@@ -49,7 +49,6 @@ const getVisibleProjects = (projects, filter, userId) => {
 }
 
 function Projects() {
-    useRequireAuth()
     const { user } = useAuth()
     const { status, data: projects } = useProjects()
     const [filter, setFilter] = useState('SHOW_ALL')

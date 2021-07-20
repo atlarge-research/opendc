@@ -24,8 +24,8 @@ import PropTypes from 'prop-types'
 import { PlusIcon } from '@patternfly/react-icons'
 import { Button } from '@patternfly/react-core'
 import { useState } from 'react'
-import NewPortfolioModal from '../modals/custom-components/NewPortfolioModal'
 import { useMutation } from 'react-query'
+import NewPortfolioModal from './NewPortfolioModal'
 
 function NewPortfolio({ projectId }) {
     const [isVisible, setVisible] = useState(false)
