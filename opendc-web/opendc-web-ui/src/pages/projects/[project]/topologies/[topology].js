@@ -26,7 +26,6 @@ import { useProject } from '../../../../data/project'
 import { useDispatch } from 'react-redux'
 import React, { useEffect, useRef, useState } from 'react'
 import Head from 'next/head'
-import { openProjectSucceeded } from '../../../../redux/actions/projects'
 import { AppPage } from '../../../../components/AppPage'
 import {
     Breadcrumb,
@@ -43,6 +42,7 @@ import {
 } from '@patternfly/react-core'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import TopologyMap from '../../../../components/topologies/TopologyMap'
+import { openTopology } from '../../../../redux/actions/topologies'
 
 /**
  * Page that displays a datacenter topology.
@@ -55,10 +55,10 @@ function Topology() {
 
     const dispatch = useDispatch()
     useEffect(() => {
-        if (projectId) {
-            dispatch(openProjectSucceeded(projectId))
+        if (topologyId) {
+            dispatch(openTopology(topologyId))
         }
-    }, [projectId, topologyId, dispatch])
+    }, [topologyId, dispatch])
 
     const [activeTab, setActiveTab] = useState('overview')
     const overviewRef = useRef(null)

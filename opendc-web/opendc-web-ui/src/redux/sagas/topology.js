@@ -23,28 +23,9 @@ import { uuid } from 'uuidv4'
 import { fetchQuery, mutate } from './query'
 
 /**
- * Fetches all topologies of the project with the specified identifier.
- */
-export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = false) {
-    try {
-        const project = yield fetchQuery(['projects', projectId])
-
-        for (const id of project.topologyIds) {
-            yield fetchAndStoreTopology(id)
-        }
-
-        if (setTopology) {
-            yield put(setCurrentTopology(project.topologyIds[0]))
-        }
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-/**
  * Fetches and normalizes the topology with the specified identifier.
  */
-export function* fetchAndStoreTopology(id) {
+function* fetchAndStoreTopology(id) {
     let topology = yield select((state) => state.objects.topology[id])
     if (!topology) {
         const newTopology = yield fetchQuery(['topologies', id])
@@ -58,7 +39,7 @@ export function* fetchAndStoreTopology(id) {
 /**
  * Synchronize the topology with the specified identifier with the server.
  */
-export function* updateTopologyOnServer(id) {
+function* updateTopologyOnServer(id) {
     const topology = yield denormalizeTopology(id)
     yield mutate('updateTopology', topology)
 }
@@ -66,10 +47,19 @@ export function* updateTopologyOnServer(id) {
 /**
  * Denormalizes the topology representation in order to be stored on the server.
  */
-export function* denormalizeTopology(id) {
+function* denormalizeTopology(id) {
     const objects = yield select((state) => state.objects)
     const topology = objects.topology[id]
     return denormalize(topology, Topology, objects)
+}
+
+export function* onOpenTopology({ id }) {
+    try {
+        yield fetchAndStoreTopology(id)
+        yield put(setCurrentTopology(id))
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 export function* onAddTopology({ projectId, duplicateId, name }) {

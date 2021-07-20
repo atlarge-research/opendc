@@ -1,5 +1,4 @@
 import { takeEvery } from 'redux-saga/effects'
-import { OPEN_PROJECT_SUCCEEDED } from '../actions/projects'
 import {
     ADD_TILE,
     CANCEL_NEW_ROOM_CONSTRUCTION,
@@ -9,7 +8,6 @@ import {
 import { ADD_UNIT, DELETE_MACHINE, DELETE_UNIT } from '../actions/topology/machine'
 import { ADD_MACHINE, DELETE_RACK, EDIT_RACK_NAME } from '../actions/topology/rack'
 import { ADD_RACK_TO_TILE, DELETE_ROOM, EDIT_ROOM_NAME } from '../actions/topology/room'
-import { onOpenProjectSucceeded } from './projects'
 import {
     onAddMachine,
     onAddRackToTile,
@@ -25,13 +23,14 @@ import {
     onEditRackName,
     onEditRoomName,
     onStartNewRoomConstruction,
+    onOpenTopology,
 } from './topology'
-import { ADD_TOPOLOGY } from '../actions/topologies'
+import { ADD_TOPOLOGY, OPEN_TOPOLOGY } from '../actions/topologies'
 import { onAddPrefab } from './prefabs'
 import { ADD_PREFAB } from '../actions/prefabs'
 
 export default function* rootSaga() {
-    yield takeEvery(OPEN_PROJECT_SUCCEEDED, onOpenProjectSucceeded)
+    yield takeEvery(OPEN_TOPOLOGY, onOpenTopology)
 
     yield takeEvery(ADD_TOPOLOGY, onAddTopology)
     yield takeEvery(START_NEW_ROOM_CONSTRUCTION, onStartNewRoomConstruction)
