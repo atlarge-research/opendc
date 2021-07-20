@@ -1,4 +1,6 @@
-import { call, put, select, getContext } from 'redux-saga/effects'
+import { normalize, denormalize } from 'normalizr'
+import { put, select } from 'redux-saga/effects'
+import { Topology } from '../../util/topology-schema'
 import { goDownOneInteractionLevel } from '../actions/interaction-level'
 import {
     addIdToStoreObjectListProp,
@@ -6,6 +8,7 @@ import {
     addToStore,
     removeIdFromStoreObjectListProp,
 } from '../actions/objects'
+import { storeTopology } from '../actions/topologies'
 import {
     cancelNewRoomConstructionSucceeded,
     setCurrentTopology,
@@ -16,14 +19,15 @@ import {
     DEFAULT_RACK_SLOT_CAPACITY,
     MAX_NUM_UNITS_PER_MACHINE,
 } from '../../components/topologies/map/MapConstants'
-import { fetchAndStoreTopology, denormalizeTopology, updateTopologyOnServer } from './objects'
 import { uuid } from 'uuidv4'
-import { addTopology } from '../../api/topologies'
+import { fetchQuery, mutate } from './query'
 
+/**
+ * Fetches all topologies of the project with the specified identifier.
+ */
 export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = false) {
     try {
-        const queryClient = yield getContext('queryClient')
-        const project = yield call(() => queryClient.fetchQuery(['projects', projectId]))
+        const project = yield fetchQuery(['projects', projectId])
 
         for (const id of project.topologyIds) {
             yield fetchAndStoreTopology(id)
@@ -37,6 +41,37 @@ export function* fetchAndStoreAllTopologiesOfProject(projectId, setTopology = fa
     }
 }
 
+/**
+ * Fetches and normalizes the topology with the specified identifier.
+ */
+export function* fetchAndStoreTopology(id) {
+    let topology = yield select((state) => state.objects.topology[id])
+    if (!topology) {
+        const newTopology = yield fetchQuery(['topologies', id])
+        const { entities } = normalize(newTopology, Topology)
+        yield put(storeTopology(entities))
+    }
+
+    return topology
+}
+
+/**
+ * Synchronize the topology with the specified identifier with the server.
+ */
+export function* updateTopologyOnServer(id) {
+    const topology = yield denormalizeTopology(id)
+    yield mutate('updateTopology', topology)
+}
+
+/**
+ * Denormalizes the topology representation in order to be stored on the server.
+ */
+export function* denormalizeTopology(id) {
+    const objects = yield select((state) => state.objects)
+    const topology = objects.topology[id]
+    return denormalize(topology, Topology, objects)
+}
+
 export function* onAddTopology({ projectId, duplicateId, name }) {
     try {
         let topologyToBeCreated
@@ -48,8 +83,7 @@ export function* onAddTopology({ projectId, duplicateId, name }) {
             topologyToBeCreated = { name, rooms: [] }
         }
 
-        const auth = yield getContext('auth')
-        const topology = yield call(addTopology, auth, { ...topologyToBeCreated, projectId })
+        const topology = yield mutate('addTopology', { ...topologyToBeCreated, projectId })
         yield fetchAndStoreTopology(topology._id)
         yield put(setCurrentTopology(topology._id))
     } catch (error) {

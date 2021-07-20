@@ -23,15 +23,12 @@
 import PropTypes from 'prop-types'
 import Head from 'next/head'
 import { Provider } from 'react-redux'
+import { useNewQueryClient } from '../data/query'
 import { useStore } from '../redux'
-import { AuthProvider, useAuth, useRequireAuth } from '../auth'
+import { AuthProvider, useRequireAuth } from '../auth'
 import * as Sentry from '@sentry/react'
 import { Integrations } from '@sentry/tracing'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import { useMemo } from 'react'
-import { configureProjectClient } from '../data/project'
-import { configureExperimentClient } from '../data/experiments'
-import { configureTopologyClient } from '../data/topology'
+import { QueryClientProvider } from 'react-query'
 
 import '@patternfly/react-core/dist/styles/base.css'
 import '@patternfly/react-styles/css/utilities/Alignment/alignment.css'
@@ -47,18 +44,12 @@ import '@patternfly/react-styles/css/components/InlineEdit/inline-edit.css'
 import '../style/index.scss'
 
 // This setup is necessary to forward the Auth0 context to the Redux context
-const Inner = ({ Component, pageProps }) => {
+function Inner({ Component, pageProps }) {
+    // Force user to be authorized
     useRequireAuth()
-    const auth = useAuth()
 
-    const queryClient = useMemo(() => {
-        const client = new QueryClient()
-        configureProjectClient(client, auth)
-        configureExperimentClient(client, auth)
-        configureTopologyClient(client, auth)
-        return client
-    }, []) // eslint-disable-line react-hooks/exhaustive-deps
-    const store = useStore(pageProps.initialReduxState, { auth, queryClient })
+    const queryClient = useNewQueryClient()
+    const store = useStore(pageProps.initialReduxState, { queryClient })
     return (
         <QueryClientProvider client={queryClient}>
             <Provider store={store}>

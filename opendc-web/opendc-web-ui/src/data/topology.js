@@ -46,7 +46,7 @@ export function configureTopologyClient(queryClient, auth) {
     })
     queryClient.setMutationDefaults('updateTopology', {
         mutationFn: (data) => updateTopology(auth, data),
-        onSuccess: async (result) => queryClient.setQueryData(['topologies', result._id], result),
+        onSuccess: (result) => queryClient.setQueryData(['topologies', result._id], result),
     })
     queryClient.setMutationDefaults('deleteTopology', {
         mutationFn: (id) => deleteTopology(auth, id),
