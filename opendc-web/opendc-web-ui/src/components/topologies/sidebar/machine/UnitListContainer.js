@@ -26,18 +26,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import UnitListComponent from './UnitListComponent'
 import { deleteUnit } from '../../../../redux/actions/topology/machine'
 
-const unitMapping = {
-    cpu: 'cpus',
-    gpu: 'gpus',
-    memory: 'memories',
-    storage: 'storages',
-}
-
 function UnitListContainer({ machineId, unitType }) {
     const dispatch = useDispatch()
     const units = useSelector((state) => {
-        const machine = state.objects.machine[machineId]
-        return machine[unitMapping[unitType]].map((id) => state.objects[unitType][id])
+        const machine = state.topology.machines[machineId]
+        return machine[unitType].map((id) => state.topology[unitType][id])
     })
 
     const onDelete = (unit) => dispatch(deleteUnit(machineId, unitType, unit._id))

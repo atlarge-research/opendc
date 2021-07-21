@@ -28,8 +28,8 @@ import { goFromRackToMachine } from '../../../../redux/actions/interaction-level
 import { addMachine } from '../../../../redux/actions/topology/rack'
 
 function MachineListContainer({ tileId, ...props }) {
-    const rack = useSelector((state) => state.objects.rack[state.objects.tile[tileId].rack])
-    const machines = useSelector((state) => rack.machines.map((id) => state.objects.machine[id]))
+    const rack = useSelector((state) => state.topology.racks[state.topology.tiles[tileId].rack])
+    const machines = useSelector((state) => rack.machines.map((id) => state.topology.machines[id]))
     const machinesNull = useMemo(() => {
         const res = Array(rack.capacity).fill(null)
         for (const machine of machines) {

@@ -20,21 +20,20 @@
  * SOFTWARE.
  */
 
+import PropTypes from 'prop-types'
 import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { Button } from '@patternfly/react-core'
 import { TrashIcon } from '@patternfly/react-icons'
 import ConfirmationModal from '../../../util/modals/ConfirmationModal'
 import { deleteMachine } from '../../../../redux/actions/topology/machine'
 
-function DeleteMachine() {
+function DeleteMachine({ machineId }) {
     const dispatch = useDispatch()
     const [isVisible, setVisible] = useState(false)
-    const rackId = useSelector((state) => state.objects.tile[state.interactionLevel.tileId].rack)
-    const position = useSelector((state) => state.interactionLevel.position)
     const callback = (isConfirmed) => {
         if (isConfirmed) {
-            dispatch(deleteMachine(rackId, position))
+            dispatch(deleteMachine(machineId))
         }
         setVisible(false)
     }
@@ -51,6 +50,10 @@ function DeleteMachine() {
             />
         </>
     )
+}
+
+DeleteMachine.propTypes = {
+    machineId: PropTypes.string.isRequired,
 }
 
 export default DeleteMachine

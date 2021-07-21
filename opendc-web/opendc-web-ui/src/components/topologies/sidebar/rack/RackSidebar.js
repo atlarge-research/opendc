@@ -17,7 +17,7 @@ import {
 import { useSelector } from 'react-redux'
 
 function RackSidebar({ tileId }) {
-    const rack = useSelector((state) => state.objects.rack[state.objects.tile[tileId].rack])
+    const rack = useSelector((state) => state.topology.racks[state.topology.tiles[tileId].rack])
 
     return (
         <div className={sidebarContainer}>

@@ -13,9 +13,9 @@ import {
 import { useSelector } from 'react-redux'
 
 function MachineSidebar({ tileId, position }) {
-    const machine = useSelector(({ objects }) => {
-        const rack = objects.rack[objects.tile[tileId].rack]
-        return objects.machine[rack.machines[position - 1]]
+    const machine = useSelector(({ topology }) => {
+        const rack = topology.racks[topology.tiles[tileId].rack]
+        return topology.machines[rack.machines[position - 1]]
     })
     const machineId = machine._id
     return (
@@ -30,7 +30,7 @@ function MachineSidebar({ tileId, position }) {
                 </TextList>
 
                 <Title headingLevel="h2">Actions</Title>
-                <DeleteMachine />
+                <DeleteMachine machineId={machineId} />
 
                 <Title headingLevel="h2">Units</Title>
             </TextContent>

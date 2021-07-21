@@ -20,22 +20,25 @@
  * SOFTWARE.
  */
 
-import { MutationObserver } from 'react-query'
-import { getContext, call } from 'redux-saga/effects'
+import { CPU_UNITS, GPU_UNITS, MEMORY_UNITS, STORAGE_UNITS } from '../../../util/unit-specifications'
+import machine from './machine'
+import rack from './rack'
+import room from './room'
+import tile from './tile'
+import topology from './topology'
 
-/**
- * Fetch the query with the specified key.
- */
-export function* fetchQuery(key, options) {
-    const queryClient = yield getContext('queryClient')
-    return yield call([queryClient, queryClient.fetchQuery], key, options)
+function objects(state = {}, action) {
+    return {
+        cpus: CPU_UNITS,
+        gpus: GPU_UNITS,
+        memories: MEMORY_UNITS,
+        storages: STORAGE_UNITS,
+        machines: machine(state.machines, action, state),
+        racks: rack(state.racks, action, state),
+        tiles: tile(state.tiles, action, state),
+        rooms: room(state.rooms, action, state),
+        root: topology(state.root, action, state),
+    }
 }
 
-/**
- * Perform a mutation with the specified key.
- */
-export function* mutate(key, object, options) {
-    const queryClient = yield getContext('queryClient')
-    const mutationObserver = new MutationObserver(queryClient, { mutationKey: key })
-    return yield call([mutationObserver, mutationObserver.mutate], object, options)
-}
+export default objects

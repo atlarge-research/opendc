@@ -22,11 +22,10 @@
 
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { useActiveTopology } from '../../../data/topology'
 import TopologyGroup from './groups/TopologyGroup'
 
 function TopologyContainer() {
-    const topology = useActiveTopology()
+    const topology = useSelector((state) => state.topology.root)
     const interactionLevel = useSelector((state) => state.interactionLevel)
 
     return <TopologyGroup topology={topology} interactionLevel={interactionLevel} />

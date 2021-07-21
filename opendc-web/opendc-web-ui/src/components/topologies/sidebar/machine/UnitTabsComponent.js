@@ -10,20 +10,20 @@ function UnitTabsComponent({ machineId }) {
     return (
         <Tabs activeKey={activeTab} onSelect={(_, tab) => setActiveTab(tab)}>
             <Tab eventKey="cpu-units" title={<TabTitleText>CPU</TabTitleText>}>
-                <UnitAddContainer machineId={machineId} unitType="cpu" />
-                <UnitListContainer machineId={machineId} unitType="cpu" />
+                <UnitAddContainer machineId={machineId} unitType="cpus" />
+                <UnitListContainer machineId={machineId} unitType="cpus" />
             </Tab>
             <Tab eventKey="gpu-units" title={<TabTitleText>GPU</TabTitleText>}>
-                <UnitAddContainer machineId={machineId} unitType="gpu" />
-                <UnitListContainer machineId={machineId} unitType="gpu" />
+                <UnitAddContainer machineId={machineId} unitType="gpus" />
+                <UnitListContainer machineId={machineId} unitType="gpus" />
             </Tab>
             <Tab eventKey="memory-units" title={<TabTitleText>Memory</TabTitleText>}>
-                <UnitAddContainer machineId={machineId} unitType="memory" />
-                <UnitListContainer machineId={machineId} unitType="memory" />
+                <UnitAddContainer machineId={machineId} unitType="memories" />
+                <UnitListContainer machineId={machineId} unitType="memories" />
             </Tab>
             <Tab eventKey="storage-units" title={<TabTitleText>Storage</TabTitleText>}>
-                <UnitAddContainer machineId={machineId} unitType="storage" />
-                <UnitListContainer machineId={machineId} unitType="storage" />
+                <UnitAddContainer machineId={machineId} unitType="storages" />
+                <UnitListContainer machineId={machineId} unitType="storages" />
             </Tab>
         </Tabs>
     )

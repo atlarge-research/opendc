@@ -27,7 +27,7 @@ import UnitAddComponent from './UnitAddComponent'
 import { addUnit } from '../../../../redux/actions/topology/machine'
 
 function UnitAddContainer({ machineId, unitType }) {
-    const units = useSelector((state) => Object.values(state.objects[unitType]))
+    const units = useSelector((state) => Object.values(state.topology[unitType]))
     const dispatch = useDispatch()
 
     const onAdd = (id) => dispatch(addUnit(machineId, unitType, id))

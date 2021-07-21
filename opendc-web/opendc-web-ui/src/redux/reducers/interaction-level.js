@@ -4,14 +4,12 @@ import {
     GO_FROM_RACK_TO_MACHINE,
     GO_FROM_ROOM_TO_RACK,
 } from '../actions/interaction-level'
-import { SET_CURRENT_TOPOLOGY } from '../actions/topology/building'
+import { DELETE_MACHINE } from '../actions/topology/machine'
+import { DELETE_RACK } from '../actions/topology/rack'
+import { DELETE_ROOM } from '../actions/topology/room'
 
 export function interactionLevel(state = { mode: 'BUILDING' }, action) {
     switch (action.type) {
-        case SET_CURRENT_TOPOLOGY:
-            return {
-                mode: 'BUILDING',
-            }
         case GO_FROM_BUILDING_TO_ROOM:
             return {
                 mode: 'ROOM',
@@ -48,6 +46,21 @@ export function interactionLevel(state = { mode: 'BUILDING' }, action) {
                 }
             } else {
                 return state
+            }
+        case DELETE_MACHINE:
+            return {
+                mode: 'RACK',
+                roomId: state.roomId,
+                tileId: state.tileId,
+            }
+        case DELETE_RACK:
+            return {
+                mode: 'ROOM',
+                roomId: state.roomId,
+            }
+        case DELETE_ROOM:
+            return {
+                mode: 'BUILDING',
             }
         default:
             return state

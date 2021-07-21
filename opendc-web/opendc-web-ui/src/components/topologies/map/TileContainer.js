@@ -28,7 +28,7 @@ import TileGroup from './groups/TileGroup'
 
 function TileContainer({ tileId, ...props }) {
     const interactionLevel = useSelector((state) => state.interactionLevel)
-    const tile = useSelector((state) => state.objects.tile[tileId])
+    const tile = useSelector((state) => state.topology.tiles[tileId])
 
     const dispatch = useDispatch()
     const onClick = (tile) => {

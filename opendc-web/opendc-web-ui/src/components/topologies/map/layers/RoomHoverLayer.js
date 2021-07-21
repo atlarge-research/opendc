@@ -35,17 +35,17 @@ function RoomHoverLayer() {
     const onClick = (x, y) => dispatch(toggleTileAtLocation(x, y))
     const isEnabled = useSelector((state) => state.construction.currentRoomInConstruction !== '-1')
     const isValid = useSelector((state) => (x, y) => {
-        const newRoom = { ...state.objects.room[state.construction.currentRoomInConstruction] }
-        const oldRooms = Object.keys(state.objects.room)
-            .map((id) => ({ ...state.objects.room[id] }))
+        const newRoom = { ...state.topology.rooms[state.construction.currentRoomInConstruction] }
+        const oldRooms = Object.keys(state.topology.rooms)
+            .map((id) => ({ ...state.topology.rooms[id] }))
             .filter(
                 (room) =>
-                    state.objects.topology[state.currentTopologyId].rooms.indexOf(room._id) !== -1 &&
+                    state.topology.root.rooms.indexOf(room._id) !== -1 &&
                     room._id !== state.construction.currentRoomInConstruction
             )
 
         ;[...oldRooms, newRoom].forEach((room) => {
-            room.tiles = room.tiles.map((tileId) => state.objects.tile[tileId])
+            room.tiles = room.tiles.map((tileId) => state.topology.tiles[tileId])
         })
         if (newRoom.tiles.length === 0) {
             return findPositionInRooms(oldRooms, x, y) === -1

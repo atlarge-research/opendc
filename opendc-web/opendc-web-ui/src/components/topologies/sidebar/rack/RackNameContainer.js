@@ -5,7 +5,7 @@ import NameComponent from '../NameComponent'
 import { editRackName } from '../../../../redux/actions/topology/rack'
 
 const RackNameContainer = ({ tileId }) => {
-    const { name: rackName, _id } = useSelector((state) => state.objects.rack[state.objects.tile[tileId].rack])
+    const { name: rackName, _id } = useSelector((state) => state.topology.racks[state.topology.tiles[tileId].rack])
     const dispatch = useDispatch()
     const callback = (name) => {
         if (name) {

@@ -18,9 +18,10 @@ export function addTopology(projectId, name, duplicateId) {
     }
 }
 
-export function storeTopology(entities) {
+export function storeTopology(topology, entities) {
     return {
         type: STORE_TOPOLOGY,
+        topology,
         entities,
     }
 }

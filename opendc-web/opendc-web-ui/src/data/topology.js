@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-import { useSelector } from 'react-redux'
 import { useQuery } from 'react-query'
 import { addTopology, deleteTopology, fetchTopologiesOfProject, fetchTopology, updateTopology } from '../api/topologies'
 
@@ -61,13 +60,6 @@ export function configureTopologyClient(queryClient, auth) {
             queryClient.removeQueries(['topologies', result._id])
         },
     })
-}
-
-/**
- * Return the current active topology.
- */
-export function useActiveTopology() {
-    return useSelector((state) => state.currentTopologyId !== '-1' && state.objects.topology[state.currentTopologyId])
 }
 
 /**
