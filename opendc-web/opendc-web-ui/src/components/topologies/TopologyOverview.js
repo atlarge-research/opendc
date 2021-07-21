@@ -38,7 +38,7 @@ import { useTopology } from '../../data/topology'
 import { parseAndFormatDateTime } from '../../util/date-time'
 import RoomTable from './RoomTable'
 
-function TopologyOverview({ topologyId }) {
+function TopologyOverview({ topologyId, onSelect }) {
     const { data: topology } = useTopology(topologyId)
     return (
         <Grid hasGutter>
@@ -71,7 +71,7 @@ function TopologyOverview({ topologyId }) {
                 <Card>
                     <CardTitle>Rooms</CardTitle>
                     <CardBody>
-                        <RoomTable topologyId={topologyId} />
+                        <RoomTable topologyId={topologyId} onSelect={(room) => onSelect('room', room)} />
                     </CardBody>
                 </Card>
             </GridItem>
@@ -81,6 +81,7 @@ function TopologyOverview({ topologyId }) {
 
 TopologyOverview.propTypes = {
     topologyId: PropTypes.string,
+    onSelect: PropTypes.func,
 }
 
 export default TopologyOverview

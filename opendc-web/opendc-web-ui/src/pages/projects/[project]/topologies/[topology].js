@@ -24,7 +24,7 @@ import { useRouter } from 'next/router'
 import TopologyOverview from '../../../../components/topologies/TopologyOverview'
 import { useProject } from '../../../../data/project'
 import { useDispatch } from 'react-redux'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { AppPage } from '../../../../components/AppPage'
 import {
@@ -42,6 +42,7 @@ import {
 } from '@patternfly/react-core'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import TopologyMap from '../../../../components/topologies/TopologyMap'
+import { goToRoom } from '../../../../redux/actions/interaction-level'
 import { openTopology } from '../../../../redux/actions/topologies'
 
 /**
@@ -61,8 +62,6 @@ function Topology() {
     }, [topologyId, dispatch])
 
     const [activeTab, setActiveTab] = useState('overview')
-    const overviewRef = useRef(null)
-    const floorPlanRef = useRef(null)
 
     const breadcrumb = (
         <Breadcrumb>
@@ -95,31 +94,31 @@ function Topology() {
                     onSelect={(_, tabIndex) => setActiveTab(tabIndex)}
                     className="pf-m-page-insets"
                 >
-                    <Tab
-                        eventKey="overview"
-                        title={<TabTitleText>Overview</TabTitleText>}
-                        tabContentId="overview"
-                        tabContentRef={overviewRef}
-                    />
+                    <Tab eventKey="overview" title={<TabTitleText>Overview</TabTitleText>} tabContentId="overview" />
                     <Tab
                         eventKey="floor-plan"
                         title={<TabTitleText>Floor Plan</TabTitleText>}
                         tabContentId="floor-plan"
-                        tabContentRef={floorPlanRef}
                     />
                 </Tabs>
             </PageSection>
             <PageSection padding={activeTab === 'floor-plan' && { default: 'noPadding' }} isFilled>
-                <TabContent eventKey="overview" id="overview" ref={overviewRef} aria-label="Overview tab">
-                    <TopologyOverview topologyId={topologyId} />
+                <TabContent id="overview" aria-label="Overview tab" hidden={activeTab !== 'overview'}>
+                    <TopologyOverview
+                        topologyId={topologyId}
+                        onSelect={(type, obj) => {
+                            if (type === 'room') {
+                                dispatch(goToRoom(obj._id))
+                                setActiveTab('floor-plan')
+                            }
+                        }}
+                    />
                 </TabContent>
                 <TabContent
-                    eventKey="floor-plan"
                     id="floor-plan"
-                    ref={floorPlanRef}
                     aria-label="Floor Plan tab"
                     className="pf-u-h-100"
-                    hidden
+                    hidden={activeTab !== 'floor-plan'}
                 >
                     <TopologyMap />
                 </TabContent>

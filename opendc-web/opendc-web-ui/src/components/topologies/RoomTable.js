@@ -4,15 +4,13 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { useTopology } from '../../data/topology'
 import { Table, TableBody, TableHeader } from '@patternfly/react-table'
-import { goToRoom } from '../../redux/actions/interaction-level'
 import { deleteRoom } from '../../redux/actions/topology/room'
 import TableEmptyState from '../util/TableEmptyState'
 
-function RoomTable({ topologyId }) {
+function RoomTable({ topologyId, onSelect }) {
     const dispatch = useDispatch()
     const { status, data: topology } = useTopology(topologyId)
 
-    const onClick = (room) => dispatch(goToRoom(room._id))
     const onDelete = (room) => dispatch(deleteRoom(room._id))
 
     const columns = ['Name', 'Tiles', 'Racks']
@@ -24,7 +22,7 @@ function RoomTable({ topologyId }) {
                   return [
                       {
                           title: (
-                              <Button variant="link" isInline onClick={() => onClick(room)}>
+                              <Button variant="link" isInline onClick={() => onSelect(room)}>
                                   {room.name}
                               </Button>
                           ),
@@ -65,6 +63,7 @@ function RoomTable({ topologyId }) {
 
 RoomTable.propTypes = {
     topologyId: PropTypes.string,
+    onSelect: PropTypes.func,
 }
 
 export default RoomTable
