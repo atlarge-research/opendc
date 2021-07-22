@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import ContextSelectionSection from '../../../../components/context/ContextSelectionSection'
 import ProjectSelector from '../../../../components/context/ProjectSelector'
@@ -44,9 +45,10 @@ import {
     TextContent,
 } from '@patternfly/react-core'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
-import TopologyMap from '../../../../components/topologies/TopologyMap'
 import { goToRoom } from '../../../../redux/actions/interaction-level'
-import { openTopology } from '../../../../redux/actions/topologies'
+import { openTopology } from '../../../../redux/actions/topology'
+
+const TopologyMap = dynamic(() => import('../../../../components/topologies/TopologyMap'))
 
 /**
  * Page that displays a datacenter topology.
@@ -124,12 +126,7 @@ function Topology() {
                         }}
                     />
                 </TabContent>
-                <TabContent
-                    id="floor-plan"
-                    aria-label="Floor Plan tab"
-                    className="pf-u-h-100"
-                    hidden={activeTab !== 'floor-plan'}
-                >
+                <TabContent id="floor-plan" aria-label="Floor Plan tab" className="pf-u-h-100" hidden={activeTab !== 'floor-plan'}>
                     <TopologyMap />
                 </TabContent>
             </PageSection>

@@ -1,5 +1,5 @@
 import produce from 'immer'
-import { STORE_TOPOLOGY } from '../../actions/topologies'
+import { STORE_TOPOLOGY } from '../../actions/topology'
 import { DELETE_MACHINE, ADD_UNIT, DELETE_UNIT } from '../../actions/topology/machine'
 import { ADD_MACHINE, DELETE_RACK } from '../../actions/topology/rack'
 

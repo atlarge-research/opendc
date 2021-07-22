@@ -21,19 +21,26 @@
  */
 
 import PropTypes from 'prop-types'
+import produce from 'immer'
 import { PlusIcon } from '@patternfly/react-icons'
 import { Button } from '@patternfly/react-core'
 import { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { addTopology } from '../../redux/actions/topologies'
+import { useMutation } from "react-query";
+import { useProjectTopologies } from "../../data/topology";
 import NewTopologyModal from './NewTopologyModal'
 
 function NewTopology({ projectId }) {
     const [isVisible, setVisible] = useState(false)
-    const dispatch = useDispatch()
+    const { data: topologies = [] } = useProjectTopologies(projectId)
+    const { mutate: addTopology } = useMutation('addTopology')
 
     const onSubmit = (name, duplicateId) => {
-        dispatch(addTopology(projectId, name, duplicateId))
+        const candidate = topologies.find((topology) => topology._id === duplicateId) || { projectId, rooms: [] }
+        const topology = produce(candidate, (draft) => {
+            delete draft._id
+            draft.name = name
+        })
+        addTopology(topology)
         setVisible(false)
     }
     return (

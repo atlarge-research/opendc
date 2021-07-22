@@ -20,28 +20,20 @@
  * SOFTWARE.
  */
 
-import produce from 'immer'
-import { STORE_TOPOLOGY } from "../../actions/topology";
-import { ADD_ROOM, DELETE_ROOM } from '../../actions/topology/room'
+export const OPEN_TOPOLOGY = 'OPEN_TOPOLOGY'
+export const STORE_TOPOLOGY = 'STORE_TOPOLOGY'
 
-function topology(state = undefined, action) {
-    switch (action.type) {
-        case STORE_TOPOLOGY:
-            return action.topology
-        case ADD_ROOM:
-            return produce(state, (draft) => {
-                const { room } = action
-                draft.rooms.push(room._id)
-            })
-        case DELETE_ROOM:
-            return produce(state, (draft) => {
-                const { roomId } = action
-                const index = draft.rooms.indexOf(roomId)
-                draft.rooms.splice(index, 1)
-            })
-        default:
-            return state
+export function openTopology(id) {
+    return {
+        type: OPEN_TOPOLOGY,
+        id,
     }
 }
 
-export default topology
+export function storeTopology(topology, entities) {
+    return {
+        type: STORE_TOPOLOGY,
+        topology,
+        entities,
+    }
+}

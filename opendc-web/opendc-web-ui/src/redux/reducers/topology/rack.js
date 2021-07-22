@@ -21,7 +21,7 @@
  */
 
 import produce from 'immer'
-import { STORE_TOPOLOGY } from '../../actions/topologies'
+import { STORE_TOPOLOGY } from '../../actions/topology'
 import { DELETE_MACHINE } from '../../actions/topology/machine'
 import { DELETE_RACK, EDIT_RACK_NAME, ADD_MACHINE } from '../../actions/topology/rack'
 import { ADD_RACK_TO_TILE } from '../../actions/topology/room'

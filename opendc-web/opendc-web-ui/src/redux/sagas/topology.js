@@ -3,7 +3,7 @@ import { normalize, denormalize } from 'normalizr'
 import { select, put, take, race, getContext, call } from 'redux-saga/effects'
 import { eventChannel } from 'redux-saga'
 import { Topology } from '../../util/topology-schema'
-import { storeTopology, OPEN_TOPOLOGY } from '../actions/topologies'
+import { storeTopology, OPEN_TOPOLOGY } from '../actions/topology'
 
 /**
  * Update the topology on the server.
