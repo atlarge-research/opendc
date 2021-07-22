@@ -30,6 +30,7 @@
         "approximate-number": "~2.0.0",
         "classnames": "~2.2.5",
         "husky": "~4.2.5",
+        "immer": "^9.0.5",
         "konva": "~7.2.5",
         "lint-staged": "~10.2.2",
         "mathjs": "~7.6.0",

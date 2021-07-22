@@ -34,8 +34,8 @@ function ObjectHoverLayer() {
             return false
         }
 
-        const currentRoom = state.objects.room[state.interactionLevel.roomId]
-        const tiles = currentRoom.tiles.map((tileId) => state.objects.tile[tileId])
+        const currentRoom = state.topology.rooms[state.interactionLevel.roomId]
+        const tiles = currentRoom.tiles.map((tileId) => state.topology.tiles[tileId])
         const tile = findTileWithPosition(tiles, x, y)
 
         return !(tile === null || tile.rack)

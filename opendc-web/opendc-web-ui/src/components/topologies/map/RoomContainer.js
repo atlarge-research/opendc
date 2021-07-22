@@ -31,7 +31,7 @@ function RoomContainer({ roomId, ...props }) {
         return {
             interactionLevel: state.interactionLevel,
             currentRoomInConstruction: state.construction.currentRoomInConstruction,
-            room: state.objects.room[roomId],
+            room: state.topology.rooms[roomId],
         }
     })
     const dispatch = useDispatch()

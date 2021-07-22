@@ -22,7 +22,7 @@
 
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
 import { Button } from '@patternfly/react-core'
 import ConfirmationModal from '../../../util/modals/ConfirmationModal'
@@ -31,9 +31,10 @@ import { deleteRack } from '../../../../redux/actions/topology/rack'
 function DeleteRackContainer({ tileId }) {
     const dispatch = useDispatch()
     const [isVisible, setVisible] = useState(false)
+    const rackId = useSelector((state) => state.topology.tiles[tileId].rack)
     const callback = (isConfirmed) => {
         if (isConfirmed) {
-            dispatch(deleteRack(tileId))
+            dispatch(deleteRack(tileId, rackId))
         }
         setVisible(false)
     }

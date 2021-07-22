@@ -3,6 +3,13 @@ export const GO_FROM_ROOM_TO_RACK = 'GO_FROM_ROOM_TO_RACK'
 export const GO_FROM_RACK_TO_MACHINE = 'GO_FROM_RACK_TO_MACHINE'
 export const GO_DOWN_ONE_INTERACTION_LEVEL = 'GO_DOWN_ONE_INTERACTION_LEVEL'
 
+export function goToRoom(roomId) {
+    return {
+        type: GO_FROM_BUILDING_TO_ROOM,
+        roomId,
+    }
+}
+
 export function goFromBuildingToRoom(roomId) {
     return (dispatch, getState) => {
         const { interactionLevel } = getState()

@@ -39,7 +39,7 @@ import { useSelector } from 'react-redux'
 import TopologySidebar from './sidebar/TopologySidebar'
 
 function TopologyMap() {
-    const topologyIsLoading = useSelector((state) => state.currentTopologyId === '-1')
+    const topologyIsLoading = useSelector((state) => !state.topology.root)
     const interactionLevel = useSelector((state) => state.interactionLevel)
 
     const [isExpanded, setExpanded] = useState(true)

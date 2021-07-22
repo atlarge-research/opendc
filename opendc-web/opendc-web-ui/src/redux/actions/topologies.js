@@ -1,5 +1,13 @@
+export const OPEN_TOPOLOGY = 'OPEN_TOPOLOGY'
 export const ADD_TOPOLOGY = 'ADD_TOPOLOGY'
 export const STORE_TOPOLOGY = 'STORE_TOPOLOGY'
+
+export function openTopology(id) {
+    return {
+        type: OPEN_TOPOLOGY,
+        id,
+    }
+}
 
 export function addTopology(projectId, name, duplicateId) {
     return {
@@ -10,9 +18,10 @@ export function addTopology(projectId, name, duplicateId) {
     }
 }
 
-export function storeTopology(entities) {
+export function storeTopology(topology, entities) {
     return {
         type: STORE_TOPOLOGY,
+        topology,
         entities,
     }
 }

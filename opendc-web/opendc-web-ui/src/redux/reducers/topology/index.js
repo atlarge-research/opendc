@@ -20,18 +20,25 @@
  * SOFTWARE.
  */
 
-import React from 'react'
-import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
-import RackFillBar from './elements/RackFillBar'
+import { CPU_UNITS, GPU_UNITS, MEMORY_UNITS, STORAGE_UNITS } from '../../../util/unit-specifications'
+import machine from './machine'
+import rack from './rack'
+import room from './room'
+import tile from './tile'
+import topology from './topology'
 
-function RackSpaceFillContainer({ tileId, ...props }) {
-    const rack = useSelector((state) => state.topology.racks[state.topology.tiles[tileId].rack])
-    return <RackFillBar {...props} type="space" fillFraction={rack.machines.length / rack.capacity} />
+function objects(state = {}, action) {
+    return {
+        cpus: CPU_UNITS,
+        gpus: GPU_UNITS,
+        memories: MEMORY_UNITS,
+        storages: STORAGE_UNITS,
+        machines: machine(state.machines, action, state),
+        racks: rack(state.racks, action, state),
+        tiles: tile(state.tiles, action, state),
+        rooms: room(state.rooms, action, state),
+        root: topology(state.root, action, state),
+    }
 }
 
-RackSpaceFillContainer.propTypes = {
-    tileId: PropTypes.string.isRequired,
-}
-
-export default RackSpaceFillContainer
+export default objects

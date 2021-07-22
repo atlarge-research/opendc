@@ -1,4 +1,6 @@
-export const SET_CURRENT_TOPOLOGY = 'SET_CURRENT_TOPOLOGY'
+import { uuid } from 'uuidv4'
+import { addRoom, deleteRoom } from './room'
+
 export const START_NEW_ROOM_CONSTRUCTION = 'START_NEW_ROOM_CONSTRUCTION'
 export const START_NEW_ROOM_CONSTRUCTION_SUCCEEDED = 'START_NEW_ROOM_CONSTRUCTION_SUCCEEDED'
 export const FINISH_NEW_ROOM_CONSTRUCTION = 'FINISH_NEW_ROOM_CONSTRUCTION'
@@ -9,16 +11,19 @@ export const FINISH_ROOM_EDIT = 'FINISH_ROOM_EDIT'
 export const ADD_TILE = 'ADD_TILE'
 export const DELETE_TILE = 'DELETE_TILE'
 
-export function setCurrentTopology(topologyId) {
-    return {
-        type: SET_CURRENT_TOPOLOGY,
-        topologyId,
-    }
-}
-
 export function startNewRoomConstruction() {
-    return {
-        type: START_NEW_ROOM_CONSTRUCTION,
+    return (dispatch, getState) => {
+        const { topology } = getState()
+        const topologyId = topology.root._id
+        const room = {
+            _id: uuid(),
+            name: 'Room',
+            topologyId,
+            tiles: [],
+        }
+
+        dispatch(addRoom(topologyId, room))
+        dispatch(startNewRoomConstructionSucceeded(room._id))
     }
 }
 
@@ -31,8 +36,8 @@ export function startNewRoomConstructionSucceeded(roomId) {
 
 export function finishNewRoomConstruction() {
     return (dispatch, getState) => {
-        const { objects, construction } = getState()
-        if (objects.room[construction.currentRoomInConstruction].tiles.length === 0) {
+        const { topology, construction } = getState()
+        if (topology.rooms[construction.currentRoomInConstruction].tiles.length === 0) {
             dispatch(cancelNewRoomConstruction())
             return
         }
@@ -44,8 +49,11 @@ export function finishNewRoomConstruction() {
 }
 
 export function cancelNewRoomConstruction() {
-    return {
-        type: CANCEL_NEW_ROOM_CONSTRUCTION,
+    return (dispatch, getState) => {
+        const { construction } = getState()
+        const roomId = construction.currentRoomInConstruction
+        dispatch(deleteRoom(roomId))
+        dispatch(cancelNewRoomConstructionSucceeded())
     }
 }
 
@@ -70,24 +78,30 @@ export function finishRoomEdit() {
 
 export function toggleTileAtLocation(positionX, positionY) {
     return (dispatch, getState) => {
-        const { objects, construction } = getState()
+        const { topology, construction } = getState()
 
-        const tileIds = objects.room[construction.currentRoomInConstruction].tiles
+        const roomId = construction.currentRoomInConstruction
+        const tileIds = topology.rooms[roomId].tiles
         for (const tileId of tileIds) {
-            if (objects.tile[tileId].positionX === positionX && objects.tile[tileId].positionY === positionY) {
+            if (topology.tiles[tileId].positionX === positionX && topology.tiles[tileId].positionY === positionY) {
                 dispatch(deleteTile(tileId))
                 return
             }
         }
-        dispatch(addTile(positionX, positionY))
+
+        dispatch(addTile(roomId, positionX, positionY))
     }
 }
 
-export function addTile(positionX, positionY) {
+export function addTile(roomId, positionX, positionY) {
     return {
         type: ADD_TILE,
-        positionX,
-        positionY,
+        tile: {
+            _id: uuid(),
+            roomId,
+            positionX,
+            positionY,
+        },
     }
 }
 

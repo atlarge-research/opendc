@@ -20,18 +20,38 @@
  * SOFTWARE.
  */
 
-import React from 'react'
-import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
-import RackFillBar from './elements/RackFillBar'
+import { useMemo } from 'react'
+import { QueryClient } from 'react-query'
+import { useAuth } from '../auth'
+import { configureExperimentClient } from './experiments'
+import { configureProjectClient } from './project'
+import { configureTopologyClient } from './topology'
 
-function RackSpaceFillContainer({ tileId, ...props }) {
-    const rack = useSelector((state) => state.topology.racks[state.topology.tiles[tileId].rack])
-    return <RackFillBar {...props} type="space" fillFraction={rack.machines.length / rack.capacity} />
+let queryClient
+
+function createQueryClient(auth) {
+    const client = new QueryClient()
+    configureProjectClient(client, auth)
+    configureExperimentClient(client, auth)
+    configureTopologyClient(client, auth)
+    return client
 }
 
-RackSpaceFillContainer.propTypes = {
-    tileId: PropTypes.string.isRequired,
+function initializeQueryClient(auth) {
+    const _queryClient = queryClient ?? createQueryClient(auth)
+
+    // For SSG and SSR always create a new query client
+    if (typeof window === 'undefined') return _queryClient
+    // Create the query client once in the client
+    if (!queryClient) queryClient = _queryClient
+
+    return _queryClient
 }
 
-export default RackSpaceFillContainer
+/**
+ * Obtain a cached query client.
+ */
+export function useNewQueryClient() {
+    const auth = useAuth()
+    return useMemo(() => initializeQueryClient(auth), []) // eslint-disable-line react-hooks/exhaustive-deps
+}

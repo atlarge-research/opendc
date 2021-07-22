@@ -1,13 +1,11 @@
 import { combineReducers } from 'redux'
 import { construction } from './construction-mode'
-import { currentTopologyId } from './current-ids'
 import { interactionLevel } from './interaction-level'
-import { objects } from './objects'
+import topology from './topology'
 
 const rootReducer = combineReducers({
-    objects,
+    topology,
     construction,
-    currentTopologyId,
     interactionLevel,
 })
 
