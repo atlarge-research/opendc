@@ -31,10 +31,10 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("gradle-plugin", version = "1.5.20"))
+    implementation(kotlin("gradle-plugin", version = "1.5.21"))
     implementation("org.jlleitschuh.gradle:ktlint-gradle:10.1.0")
-    implementation("org.jetbrains.kotlin:kotlin-allopen:1.5.20")
+    implementation("org.jetbrains.kotlin:kotlin-allopen:1.5.21")
     implementation("org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.3.1")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.4.32")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.5.0")
     implementation("gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0")
 }
