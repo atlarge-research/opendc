@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.capelin.monitor
 
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricExporter
@@ -36,6 +37,8 @@ public class ExperimentMetricExporter(
     private val clock: Clock,
     private val hosts: Map<String, Host>
 ) : MetricExporter {
+    private val hostKey = AttributeKey.stringKey("host")
+
     override fun export(metrics: Collection<MetricData>): CompletableResultCode {
         val metricsByName = metrics.associateBy { it.name }
         reportHostMetrics(metricsByName)
@@ -99,7 +102,7 @@ public class ExperimentMetricExporter(
     private fun mapDoubleSummary(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
         val points = data?.doubleSummaryData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.labels["host"]
+            val uid = point.attributes[hostKey]
             val hostMetric = hostMetrics[uid]
 
             if (hostMetric != null) {
@@ -113,7 +116,7 @@ public class ExperimentMetricExporter(
     private fun mapDoubleGauge(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
         val points = data?.doubleGaugeData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.labels["host"]
+            val uid = point.attributes[hostKey]
             val hostMetric = hostMetrics[uid]
 
             if (hostMetric != null) {
@@ -125,7 +128,7 @@ public class ExperimentMetricExporter(
     private fun mapLongSum(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Long) -> Unit) {
         val points = data?.longSumData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.labels["host"]
+            val uid = point.attributes[hostKey]
             val hostMetric = hostMetrics[uid]
 
             if (hostMetric != null) {

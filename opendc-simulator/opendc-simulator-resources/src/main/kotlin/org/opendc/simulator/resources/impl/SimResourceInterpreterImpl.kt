@@ -318,7 +318,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
      */
     private data class Invocation(
         @JvmField val timestamp: Long,
-        @JvmField private val disposableHandle: DisposableHandle
+        private val disposableHandle: DisposableHandle
     ) {
         /**
          * Cancel the interpreter invocation.

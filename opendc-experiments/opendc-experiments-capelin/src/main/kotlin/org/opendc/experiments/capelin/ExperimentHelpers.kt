@@ -186,7 +186,7 @@ suspend fun withMonitor(
         this,
         listOf(metricProducer),
         ExperimentMetricExporter(monitor, clock, scheduler.hosts.associateBy { it.uid.toString() }),
-        exportInterval = 5 * 60 * 1000 /* Every 5 min (which is the granularity of the workload trace) */
+        exportInterval = 5L * 60 * 1000 /* Every 5 min (which is the granularity of the workload trace) */
     )
 
     try {
