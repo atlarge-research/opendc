@@ -20,25 +20,26 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page, PageGroup, PageBreadcrumb } from '@patternfly/react-core'
+.contextSelector {
+    width: auto;
+    margin-right: 20px;
 
-export function AppPage({ children, breadcrumb, contextSelectors }) {
-    return (
-        <Page header={<AppHeader />}>
-            <PageGroup>
-                {contextSelectors}
-                {breadcrumb && <PageBreadcrumb>{breadcrumb}</PageBreadcrumb>}
-            </PageGroup>
-            {children}
-        </Page>
-    )
-}
+    --pf-c-context-selector__toggle--PaddingTop: var(--pf-global--spacer--sm);
+    --pf-c-context-selector__toggle--PaddingRight: 0;
+    --pf-c-context-selector__toggle--PaddingBottom: var(--pf-global--spacer--sm);
+    --pf-c-context-selector__toggle--PaddingLeft: 0;
+    --pf-c-context-selector__toggle--BorderWidth: 0;
+    --pf-c-context-selector__toggle-text--FontSize: var(--pf-global--FontSize--sm);
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    contextSelectors: PropTypes.node,
-    children: PropTypes.node,
+    & :global(.pf-c-context-selector__toggle) {
+        &:active,
+        &:focus-within,
+        &:global(.pf-m-active) {
+            --pf-c-context-selector__toggle--after--BorderBottomWidth: 0;
+        }
+    }
+
+    &:global(.pf-m-expanded) > :global(.pf-c-context-selector__toggle) {
+        --pf-c-context-selector__toggle--after--BorderBottomWidth: 0;
+    }
 }

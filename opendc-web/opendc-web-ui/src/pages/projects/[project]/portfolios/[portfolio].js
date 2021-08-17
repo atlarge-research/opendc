@@ -37,6 +37,9 @@ import {
     TextContent,
 } from '@patternfly/react-core'
 import { AppPage } from '../../../../components/AppPage'
+import ContextSelectionSection from '../../../../components/context/ContextSelectionSection'
+import PortfolioSelector from '../../../../components/context/PortfolioSelector'
+import ProjectSelector from '../../../../components/context/ProjectSelector'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import PortfolioOverview from '../../../../components/portfolios/PortfolioOverview'
 import PortfolioResults from '../../../../components/portfolios/PortfolioResults'
@@ -65,8 +68,15 @@ function Portfolio() {
         </Breadcrumb>
     )
 
+    const contextSelectors = (
+        <ContextSelectionSection>
+            <ProjectSelector projectId={projectId} />
+            <PortfolioSelector projectId={projectId} portfolioId={portfolioId} />
+        </ContextSelectionSection>
+    )
+
     return (
-        <AppPage breadcrumb={breadcrumb}>
+        <AppPage breadcrumb={breadcrumb} contextSelectors={contextSelectors}>
             <Head>
                 <title>Portfolio - OpenDC</title>
             </Head>

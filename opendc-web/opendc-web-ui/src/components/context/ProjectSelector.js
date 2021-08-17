@@ -21,24 +21,28 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page, PageGroup, PageBreadcrumb } from '@patternfly/react-core'
+import { useRouter } from 'next/router'
+import { useMemo } from 'react'
+import { useProjects } from '../../data/project'
+import ContextSelector from './ContextSelector'
 
-export function AppPage({ children, breadcrumb, contextSelectors }) {
+function ProjectSelector({ projectId }) {
+    const router = useRouter()
+    const { data: projects = [] } = useProjects()
+    const activeProject = useMemo(() => projects.find((project) => project._id === projectId), [projectId, projects])
+
     return (
-        <Page header={<AppHeader />}>
-            <PageGroup>
-                {contextSelectors}
-                {breadcrumb && <PageBreadcrumb>{breadcrumb}</PageBreadcrumb>}
-            </PageGroup>
-            {children}
-        </Page>
+        <ContextSelector
+            label="Project"
+            activeItem={activeProject}
+            items={projects}
+            onSelect={(project) => router.push(`/projects/${project._id}`)}
+        />
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    contextSelectors: PropTypes.node,
-    children: PropTypes.node,
+ProjectSelector.propTypes = {
+    projectId: PropTypes.string,
 }
+
+export default ProjectSelector

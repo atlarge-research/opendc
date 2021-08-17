@@ -21,24 +21,14 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page, PageGroup, PageBreadcrumb } from '@patternfly/react-core'
+import { contextSelectionSection } from './ContextSelectionSection.module.scss'
 
-export function AppPage({ children, breadcrumb, contextSelectors }) {
-    return (
-        <Page header={<AppHeader />}>
-            <PageGroup>
-                {contextSelectors}
-                {breadcrumb && <PageBreadcrumb>{breadcrumb}</PageBreadcrumb>}
-            </PageGroup>
-            {children}
-        </Page>
-    )
+function ContextSelectionSection({ children }) {
+    return <section className={contextSelectionSection}>{children}</section>
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    contextSelectors: PropTypes.node,
+ContextSelectionSection.propTypes = {
     children: PropTypes.node,
 }
+
+export default ContextSelectionSection

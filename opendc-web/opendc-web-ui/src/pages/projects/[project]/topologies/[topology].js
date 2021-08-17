@@ -21,6 +21,9 @@
  */
 
 import { useRouter } from 'next/router'
+import ContextSelectionSection from '../../../../components/context/ContextSelectionSection'
+import ProjectSelector from '../../../../components/context/ProjectSelector'
+import TopologySelector from '../../../../components/context/TopologySelector'
 import TopologyOverview from '../../../../components/topologies/TopologyOverview'
 import { useProject } from '../../../../data/project'
 import { useDispatch } from 'react-redux'
@@ -77,8 +80,15 @@ function Topology() {
         </Breadcrumb>
     )
 
+    const contextSelectors = (
+        <ContextSelectionSection>
+            <ProjectSelector projectId={projectId} />
+            <TopologySelector projectId={projectId} topologyId={topologyId} />
+        </ContextSelectionSection>
+    )
+
     return (
-        <AppPage breadcrumb={breadcrumb}>
+        <AppPage breadcrumb={breadcrumb} contextSelectors={contextSelectors}>
             <Head>
                 <title>{project?.name ?? 'Topologies'} - OpenDC</title>
             </Head>

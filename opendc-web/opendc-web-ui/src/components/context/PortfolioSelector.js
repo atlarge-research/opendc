@@ -20,25 +20,28 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page, PageGroup, PageBreadcrumb } from '@patternfly/react-core'
+import { useRouter } from 'next/router'
+import { useMemo } from 'react'
+import { useProjectPortfolios } from '../../data/project'
+import ContextSelector from './ContextSelector'
 
-export function AppPage({ children, breadcrumb, contextSelectors }) {
+function PortfolioSelector() {
+    const router = useRouter()
+    const { project, portfolio: activePortfolioId } = router.query
+    const { data: portfolios = [] } = useProjectPortfolios(project)
+    const activePortfolio = useMemo(() => portfolios.find((portfolio) => portfolio._id === activePortfolioId), [
+        activePortfolioId,
+        portfolios,
+    ])
+
     return (
-        <Page header={<AppHeader />}>
-            <PageGroup>
-                {contextSelectors}
-                {breadcrumb && <PageBreadcrumb>{breadcrumb}</PageBreadcrumb>}
-            </PageGroup>
-            {children}
-        </Page>
+        <ContextSelector
+            label="Portfolio"
+            activeItem={activePortfolio}
+            items={portfolios}
+            onSelect={(portfolio) => router.push(`/projects/${portfolio.projectId}/portfolios/${portfolio._id}`)}
+        />
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    contextSelectors: PropTypes.node,
-    children: PropTypes.node,
-}
+export default PortfolioSelector

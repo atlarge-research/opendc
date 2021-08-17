@@ -21,24 +21,32 @@
  */
 
 import PropTypes from 'prop-types'
-import { AppHeader } from './AppHeader'
-import React from 'react'
-import { Page, PageGroup, PageBreadcrumb } from '@patternfly/react-core'
+import { useRouter } from 'next/router'
+import { useMemo } from 'react'
+import { useProjectTopologies } from '../../data/topology'
+import ContextSelector from './ContextSelector'
 
-export function AppPage({ children, breadcrumb, contextSelectors }) {
+function TopologySelector({ projectId, topologyId }) {
+    const router = useRouter()
+    const { data: topologies = [] } = useProjectTopologies(projectId)
+    const activeTopology = useMemo(() => topologies.find((topology) => topology._id === topologyId), [
+        topologyId,
+        topologies,
+    ])
+
     return (
-        <Page header={<AppHeader />}>
-            <PageGroup>
-                {contextSelectors}
-                {breadcrumb && <PageBreadcrumb>{breadcrumb}</PageBreadcrumb>}
-            </PageGroup>
-            {children}
-        </Page>
+        <ContextSelector
+            label="Topology"
+            activeItem={activeTopology}
+            items={topologies}
+            onSelect={(topology) => router.push(`/projects/${topology.projectId}/topologies/${topology._id}`)}
+        />
     )
 }
 
-AppPage.propTypes = {
-    breadcrumb: PropTypes.node,
-    contextSelectors: PropTypes.node,
-    children: PropTypes.node,
+TopologySelector.propTypes = {
+    projectId: PropTypes.string,
+    topologyId: PropTypes.string,
 }
+
+export default TopologySelector
