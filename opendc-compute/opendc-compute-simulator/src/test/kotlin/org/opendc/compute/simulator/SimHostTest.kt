@@ -189,6 +189,8 @@ internal class SimHostTest {
     fun testFailure() = runBlockingSimulation {
         var requestedWork = 0L
         var grantedWork = 0L
+        var totalTime = 0L
+        var downTime = 0L
 
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
@@ -238,6 +240,12 @@ internal class SimHostTest {
                     metricsByName["cpu.work.granted"]?.let {
                         grantedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
                     }
+                    metricsByName["host.time.total"]?.let {
+                        totalTime = it.longSumData.points.first().value
+                    }
+                    metricsByName["host.time.down"]?.let {
+                        downTime = it.longSumData.points.first().value
+                    }
                     return CompletableResultCode.ofSuccess()
                 }
 
@@ -275,6 +283,8 @@ internal class SimHostTest {
         assertAll(
             { assertEquals(2226039, requestedWork, "Total time does not match") },
             { assertEquals(1086039, grantedWork, "Down time does not match") },
+            { assertEquals(1200001, totalTime, "Total time does not match") },
+            { assertEquals(5000, downTime, "Down time does not match") },
         )
     }
 

@@ -72,6 +72,11 @@ public class SimHost(
     override val scope: CoroutineScope = CoroutineScope(context + Job())
 
     /**
+     * The clock instance used by the host.
+     */
+    private val clock = interpreter.clock
+
+    /**
      * The logger instance of this server.
      */
     private val logger = KotlinLogging.logger {}
@@ -115,6 +120,8 @@ public class SimHost(
                 _cpuDemand.record(cpuDemand)
                 _cpuUsage.record(cpuUsage)
                 _powerUsage.record(machine.powerDraw)
+
+                reportTime()
             }
         }
     )
@@ -221,6 +228,33 @@ public class SimHost(
         .build()
         .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
+    /**
+     * The amount of time in the system.
+     */
+    private val _totalTime = meter.counterBuilder("host.time.total")
+        .setDescription("The amount of time in the system")
+        .setUnit("ms")
+        .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
+
+    /**
+     * The uptime of the host.
+     */
+    private val _upTime = meter.counterBuilder("host.time.up")
+        .setDescription("The uptime of the host")
+        .setUnit("ms")
+        .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
+
+    /**
+     * The downtime of the host.
+     */
+    private val _downTime = meter.counterBuilder("host.time.down")
+        .setDescription("The downtime of the host")
+        .setUnit("ms")
+        .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
+
     init {
         // Launch hypervisor onto machine
         scope.launch {
@@ -236,6 +270,24 @@ public class SimHost(
                 _state = HostState.DOWN
             }
         }
+    }
+
+    private var _lastReport = clock.millis()
+
+    private fun reportTime() {
+        if (!scope.isActive)
+            return
+
+        val now = clock.millis()
+        val duration = now - _lastReport
+
+        _totalTime.add(duration)
+        when (_state) {
+            HostState.UP -> _upTime.add(duration)
+            HostState.DOWN -> _downTime.add(duration)
+        }
+
+        _lastReport = now
     }
 
     override fun canFit(server: Server): Boolean {
@@ -291,6 +343,7 @@ public class SimHost(
     }
 
     override fun close() {
+        reportTime()
         scope.cancel()
         machine.close()
     }
@@ -320,6 +373,7 @@ public class SimHost(
     }
 
     override suspend fun fail() {
+        reportTime()
         _state = HostState.DOWN
         for (guest in guests.values) {
             guest.fail()
@@ -327,6 +381,7 @@ public class SimHost(
     }
 
     override suspend fun recover() {
+        reportTime()
         _state = HostState.UP
         for (guest in guests.values) {
             guest.start()
