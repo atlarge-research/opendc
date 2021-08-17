@@ -81,7 +81,7 @@ class StreamingParquetTraceReader(traceFile: File, selectedVms: List<String> = e
     /**
      * A poisonous fragment.
      */
-    private val poison = Pair("\u0000", SimTraceWorkload.Fragment(0, 0.0, 0))
+    private val poison = Pair("\u0000", SimTraceWorkload.Fragment(0L, 0, 0.0, 0))
 
     /**
      * The thread to read the records in.
@@ -103,11 +103,13 @@ class StreamingParquetTraceReader(traceFile: File, selectedVms: List<String> = e
                 }
 
                 val id = record["id"].toString()
+                val time = record["time"] as Long
                 val duration = record["duration"] as Long
                 val cores = record["cores"] as Int
                 val cpuUsage = record["cpuUsage"] as Double
 
                 val fragment = SimTraceWorkload.Fragment(
+                    time,
                     duration,
                     cpuUsage,
                     cores

@@ -71,10 +71,10 @@ internal class SimSpaceSharedHypervisorTest {
         val workloadA =
             SimTraceWorkload(
                 sequenceOf(
-                    SimTraceWorkload.Fragment(duration * 1000, 28.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 3500.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 0.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, 183.0, 1)
+                    SimTraceWorkload.Fragment(0, duration * 1000, 28.0, 1),
+                    SimTraceWorkload.Fragment(duration * 1000, duration * 1000, 3500.0, 1),
+                    SimTraceWorkload.Fragment(duration * 2000, duration * 1000, 0.0, 1),
+                    SimTraceWorkload.Fragment(duration * 3000, duration * 1000, 183.0, 1)
                 ),
             )
 

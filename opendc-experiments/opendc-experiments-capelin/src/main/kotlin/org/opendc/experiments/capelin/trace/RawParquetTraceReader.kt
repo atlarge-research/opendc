@@ -50,11 +50,13 @@ class RawParquetTraceReader(private val path: File) {
                 val record = reader.read() ?: break
 
                 val id = record["id"].toString()
+                val time = record["time"] as Long
                 val duration = record["duration"] as Long
                 val cores = record["cores"] as Int
                 val cpuUsage = record["cpuUsage"] as Double
 
                 val fragment = SimTraceWorkload.Fragment(
+                    time,
                     duration,
                     cpuUsage,
                     cores

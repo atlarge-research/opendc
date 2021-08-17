@@ -85,17 +85,19 @@ public class BitbrainsTraceReader(traceDirectory: File) : TraceReader<SimWorkloa
                             }
 
                             vmId = vmFile.nameWithoutExtension.trim().toLong()
-                            startTime = min(startTime, values[timestampCol].trim().toLong() - 5 * 60)
+                            val timestamp = values[timestampCol].trim().toLong() - 5 * 60
+                            startTime = min(startTime, timestamp)
                             cores = values[coreCol].trim().toInt()
                             val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
                             requiredMemory = (values[provisionedMemoryCol].trim().toDouble() / 1000).toLong()
 
                             if (flopsHistory.isEmpty()) {
-                                flopsHistory.add(SimTraceWorkload.Fragment(traceInterval, cpuUsage, cores))
+                                flopsHistory.add(SimTraceWorkload.Fragment(timestamp, traceInterval, cpuUsage, cores))
                             } else {
                                 if (flopsHistory.last().usage != cpuUsage) {
                                     flopsHistory.add(
                                         SimTraceWorkload.Fragment(
+                                            timestamp,
                                             traceInterval,
                                             cpuUsage,
                                             cores
@@ -105,6 +107,7 @@ public class BitbrainsTraceReader(traceDirectory: File) : TraceReader<SimWorkloa
                                     val oldFragment = flopsHistory.removeAt(flopsHistory.size - 1)
                                     flopsHistory.add(
                                         SimTraceWorkload.Fragment(
+                                            oldFragment.timestamp,
                                             oldFragment.duration + traceInterval,
                                             cpuUsage,
                                             cores

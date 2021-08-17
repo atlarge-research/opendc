@@ -70,14 +70,14 @@ class SimMachineBenchmarks {
         @Setup
         fun setUp() {
             trace = sequenceOf(
-                SimTraceWorkload.Fragment(1000, 28.0, 1),
-                SimTraceWorkload.Fragment(1000, 3500.0, 1),
-                SimTraceWorkload.Fragment(1000, 0.0, 1),
-                SimTraceWorkload.Fragment(1000, 183.0, 1),
-                SimTraceWorkload.Fragment(1000, 400.0, 1),
-                SimTraceWorkload.Fragment(1000, 100.0, 1),
-                SimTraceWorkload.Fragment(1000, 3000.0, 1),
-                SimTraceWorkload.Fragment(1000, 4500.0, 1),
+                SimTraceWorkload.Fragment(0, 1000, 28.0, 1),
+                SimTraceWorkload.Fragment(1000, 1000, 3500.0, 1),
+                SimTraceWorkload.Fragment(2000, 1000, 0.0, 1),
+                SimTraceWorkload.Fragment(3000, 1000, 183.0, 1),
+                SimTraceWorkload.Fragment(4000, 1000, 400.0, 1),
+                SimTraceWorkload.Fragment(5000, 1000, 100.0, 1),
+                SimTraceWorkload.Fragment(6000, 1000, 3000.0, 1),
+                SimTraceWorkload.Fragment(7000, 1000, 4500.0, 1),
             )
         }
     }

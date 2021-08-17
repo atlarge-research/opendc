@@ -44,7 +44,6 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 /**
  * Test suite for the [SimBareMetalMachine] class.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineTest {
     private lateinit var machineModel: MachineModel
 

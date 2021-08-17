@@ -27,25 +27,19 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
-import org.opendc.simulator.resources.consumer.SimConsumerBarrier
 
 /**
  * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
  * consumption for some period of time.
+ *
+ * @param trace The trace of fragments to use.
+ * @param offset The offset for the timestamps.
  */
-public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkload {
-    private var offset = Long.MIN_VALUE
+public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val offset: Long = 0L) : SimWorkload {
     private val iterator = trace.iterator()
     private var fragment: Fragment? = null
-    private lateinit var barrier: SimConsumerBarrier
 
     override fun onStart(ctx: SimMachineContext) {
-        check(offset == Long.MIN_VALUE) { "Workload does not support re-use" }
-
-        barrier = SimConsumerBarrier(ctx.cpus.size)
-        fragment = nextFragment()
-        offset = ctx.interpreter.clock.millis()
-
         val lifecycle = SimWorkloadLifecycle(ctx)
 
         for (cpu in ctx.cpus) {
@@ -56,43 +50,59 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkloa
     override fun toString(): String = "SimTraceWorkload"
 
     /**
-     * Obtain the next fragment.
+     * Obtain the fragment with a timestamp equal or greater than [now].
      */
-    private fun nextFragment(): Fragment? {
-        return if (iterator.hasNext()) {
-            iterator.next()
-        } else {
-            null
+    private fun pullFragment(now: Long): Fragment? {
+        var fragment = fragment
+        if (fragment != null && !fragment.isExpired(now)) {
+            return fragment
         }
+
+        while (iterator.hasNext()) {
+            fragment = iterator.next()
+            if (!fragment.isExpired(now)) {
+                this.fragment = fragment
+                return fragment
+            }
+        }
+
+        this.fragment = null
+        return null
+    }
+
+    /**
+     * Determine if the specified [Fragment] is expired, i.e., it has already passed.
+     */
+    private fun Fragment.isExpired(now: Long): Boolean {
+        val timestamp = this.timestamp + offset
+        return now >= timestamp + duration
     }
 
     private inner class Consumer(val cpu: ProcessingUnit) : SimResourceConsumer {
         override fun onNext(ctx: SimResourceContext): SimResourceCommand {
             val now = ctx.clock.millis()
-            val fragment = fragment ?: return SimResourceCommand.Exit
-            val usage = fragment.usage / fragment.cores
-            val work = (fragment.duration / 1000) * usage
-            val deadline = offset + fragment.duration
+            val fragment = pullFragment(now) ?: return SimResourceCommand.Exit
+            val timestamp = fragment.timestamp + offset
 
-            assert(deadline >= now) { "Deadline already passed" }
-
-            val cmd =
-                if (cpu.id < fragment.cores && work > 0.0)
-                    SimResourceCommand.Consume(work, usage, deadline)
-                else
-                    SimResourceCommand.Idle(deadline)
-
-            if (barrier.enter()) {
-                this@SimTraceWorkload.fragment = nextFragment()
-                this@SimTraceWorkload.offset += fragment.duration
+            // Fragment is in the future
+            if (timestamp > now) {
+                return SimResourceCommand.Idle(timestamp)
             }
 
-            return cmd
+            val usage = fragment.usage / fragment.cores
+            val deadline = timestamp + fragment.duration
+            val duration = deadline - now
+            val work = duration * usage / 1000
+
+            return if (cpu.id < fragment.cores && work > 0.0)
+                SimResourceCommand.Consume(work, usage, deadline)
+            else
+                SimResourceCommand.Idle(deadline)
         }
     }
 
     /**
      * A fragment of the workload.
      */
-    public data class Fragment(val duration: Long, val usage: Double, val cores: Int)
+    public data class Fragment(val timestamp: Long, val duration: Long, val usage: Double, val cores: Int)
 }
