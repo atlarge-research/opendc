@@ -26,10 +26,10 @@ import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileReader
+import java.io.FileInputStream
 import java.util.*
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -48,74 +48,55 @@ public class BitbrainsTraceReader(traceDirectory: File) : TraceReader<SimWorkloa
      */
     init {
         val entries = mutableMapOf<Long, TraceEntry<SimWorkload>>()
-
-        var timestampCol = 0
-        var coreCol = 0
-        var cpuUsageCol = 0
-        var provisionedMemoryCol = 0
         val traceInterval = 5 * 60 * 1000L
 
         traceDirectory.walk()
             .filterNot { it.isDirectory }
+            .filter { it.extension == "csv" }
             .forEach { vmFile ->
-                println(vmFile)
                 val flopsHistory = mutableListOf<SimTraceWorkload.Fragment>()
                 var vmId = -1L
-                var cores = -1
-                var requiredMemory = -1L
-                var startTime = -1L
+                var maxCores = Int.MIN_VALUE
+                var requiredMemory = Long.MIN_VALUE
+                var startTime = Long.MAX_VALUE
+                var lastTimestamp = Long.MIN_VALUE
 
-                BufferedReader(FileReader(vmFile)).use { reader ->
-                    reader.lineSequence()
-                        .filter { line ->
-                            // Ignore comments in the trace
-                            !line.startsWith("#") && line.isNotBlank()
+                BitbrainsRawTraceReader(FileInputStream(vmFile)).use { reader ->
+                    reader.forEach { entry ->
+                        val timestamp = entry.timestamp * 1000L
+                        val cpuUsage = entry.cpuUsage
+                        vmId = vmFile.nameWithoutExtension.trim().toLong()
+                        val cores = entry.cpuCores
+                        maxCores = max(maxCores, cores)
+                        requiredMemory = max(requiredMemory, (entry.memCapacity / 1000).toLong())
+
+                        if (lastTimestamp < 0) {
+                            lastTimestamp = timestamp - 5 * 60 * 1000L
+                            startTime = min(startTime, lastTimestamp)
                         }
-                        .forEachIndexed { idx, line ->
-                            val values = line.split(";\t")
 
-                            // Parse GWF header
-                            if (idx == 0) {
-                                val header = values.mapIndexed { col, name -> Pair(name.trim(), col) }.toMap()
-                                timestampCol = header["Timestamp [ms]"]!!
-                                coreCol = header["CPU cores"]!!
-                                cpuUsageCol = header["CPU usage [MHZ]"]!!
-                                provisionedMemoryCol = header["Memory capacity provisioned [KB]"]!!
-                                return@forEachIndexed
-                            }
-
-                            vmId = vmFile.nameWithoutExtension.trim().toLong()
-                            val timestamp = values[timestampCol].trim().toLong() - 5 * 60
-                            startTime = min(startTime, timestamp)
-                            cores = values[coreCol].trim().toInt()
-                            val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
-                            requiredMemory = (values[provisionedMemoryCol].trim().toDouble() / 1000).toLong()
-
-                            if (flopsHistory.isEmpty()) {
-                                flopsHistory.add(SimTraceWorkload.Fragment(timestamp, traceInterval, cpuUsage, cores))
+                        if (flopsHistory.isEmpty()) {
+                            flopsHistory.add(SimTraceWorkload.Fragment(lastTimestamp, traceInterval, cpuUsage, cores))
+                        } else {
+                            val last = flopsHistory.last()
+                            val duration = timestamp - lastTimestamp
+                            // Perform run-length encoding
+                            if (duration == 0L || last.usage == cpuUsage) {
+                                flopsHistory[flopsHistory.size - 1] = last.copy(duration = last.duration + duration)
                             } else {
-                                if (flopsHistory.last().usage != cpuUsage) {
-                                    flopsHistory.add(
-                                        SimTraceWorkload.Fragment(
-                                            timestamp,
-                                            traceInterval,
-                                            cpuUsage,
-                                            cores
-                                        )
+                                flopsHistory.add(
+                                    SimTraceWorkload.Fragment(
+                                        lastTimestamp,
+                                        duration,
+                                        cpuUsage,
+                                        cores
                                     )
-                                } else {
-                                    val oldFragment = flopsHistory.removeAt(flopsHistory.size - 1)
-                                    flopsHistory.add(
-                                        SimTraceWorkload.Fragment(
-                                            oldFragment.timestamp,
-                                            oldFragment.duration + traceInterval,
-                                            cpuUsage,
-                                            cores
-                                        )
-                                    )
-                                }
+                                )
                             }
                         }
+
+                        lastTimestamp = timestamp
+                    }
                 }
 
                 val uuid = UUID(0L, vmId)
@@ -127,7 +108,7 @@ public class BitbrainsTraceReader(traceDirectory: File) : TraceReader<SimWorkloa
                     startTime,
                     workload,
                     mapOf(
-                        "cores" to cores,
+                        "cores" to maxCores,
                         "required-memory" to requiredMemory,
                         "workload" to workload
                     )
