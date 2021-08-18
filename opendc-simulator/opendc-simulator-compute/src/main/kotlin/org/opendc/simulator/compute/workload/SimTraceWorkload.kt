@@ -89,7 +89,10 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
                 return SimResourceCommand.Idle(timestamp)
             }
 
-            val usage = fragment.usage / fragment.cores
+            val usage = if (fragment.cores > 0)
+                fragment.usage / fragment.cores
+            else
+                0.0
             val deadline = timestamp + fragment.duration
             val duration = deadline - now
             val work = duration * usage / 1000
@@ -103,6 +106,11 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
 
     /**
      * A fragment of the workload.
+     *
+     * @param timestamp The timestamp at which the fragment starts.
+     * @param duration The duration of the fragment.
+     * @param usage The CPU usage during the fragment.
+     * @param cores The amount of cores utilized during the fragment.
      */
     public data class Fragment(val timestamp: Long, val duration: Long, val usage: Double, val cores: Int)
 }
