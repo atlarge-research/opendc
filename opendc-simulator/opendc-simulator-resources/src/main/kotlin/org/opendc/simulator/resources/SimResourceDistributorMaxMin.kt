@@ -22,9 +22,9 @@
 
 package org.opendc.simulator.resources
 
-import org.opendc.simulator.resources.impl.SimResourceCountersImpl
 import org.opendc.simulator.resources.interference.InterferenceDomain
 import org.opendc.simulator.resources.interference.InterferenceKey
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -71,9 +71,23 @@ public class SimResourceDistributorMaxMin(
     /**
      * The resource counters of this distributor.
      */
-    public val counters: SimResourceCounters
+    public val counters: Counters
         get() = _counters
-    private val _counters = SimResourceCountersImpl()
+    private val _counters = object : Counters {
+        override var demand: Double = 0.0
+        override var actual: Double = 0.0
+        override var overcommit: Double = 0.0
+        override var interference: Double = 0.0
+
+        override fun reset() {
+            demand = 0.0
+            actual = 0.0
+            overcommit = 0.0
+            interference = 0.0
+        }
+
+        override fun toString(): String = "SimResourceDistributorMaxMin.Counters[demand=$demand,actual=$actual,overcommit=$overcommit,interference=$interference]"
+    }
 
     /* SimResourceDistributor */
     override fun newOutput(key: InterferenceKey?): SimResourceCloseableProvider {
@@ -108,6 +122,16 @@ public class SimResourceDistributorMaxMin(
             SimResourceEvent.Capacity -> updateCapacity(ctx)
             else -> {}
         }
+    }
+
+    /**
+     * Extended [SimResourceCounters] interface for the distributor.
+     */
+    public interface Counters : SimResourceCounters {
+        /**
+         * The amount of work lost due to interference.
+         */
+        public val interference: Double
     }
 
     /**
@@ -326,7 +350,11 @@ public class SimResourceDistributorMaxMin(
             }
 
             // Compute the work that was actually granted to the output.
-            return (totalAllocatedWork - totalRemainingWork) * fraction * perfScore
+            val potentialConsumedWork = (totalAllocatedWork - totalRemainingWork) * fraction
+
+            _counters.interference += potentialConsumedWork * max(0.0, 1 - perfScore)
+
+            return potentialConsumedWork
         }
 
         /* Comparable */
