@@ -116,9 +116,9 @@ internal class SimHostTest {
                 "workload" to SimTraceWorkload(
                     sequenceOf(
                         SimTraceWorkload.Fragment(0, duration * 1000, 2 * 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000L, duration * 1000, 2 * 3100.0, 2),
-                        SimTraceWorkload.Fragment(duration * 2000L, duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 3000L, duration * 1000, 2 * 73.0, 2)
+                        SimTraceWorkload.Fragment(duration * 1000, duration * 1000, 2 * 3100.0, 2),
+                        SimTraceWorkload.Fragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 3000, duration * 1000, 2 * 73.0, 2)
                     ),
                     offset = 1
                 )
