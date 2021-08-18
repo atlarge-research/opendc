@@ -160,7 +160,8 @@ public class SimResourceDistributorMaxMin(
 
         this.totalRequestedWork = totalRequestedWork
         this.totalRequestedSpeed = totalRequestedSpeed
-        this.totalAllocatedSpeed = capacity - availableSpeed
+        val totalAllocatedSpeed = capacity - availableSpeed
+        this.totalAllocatedSpeed = totalAllocatedSpeed
         val totalAllocatedWork = min(
             totalRequestedWork,
             totalAllocatedSpeed * min((deadline - interpreter.clock.millis()) / 1000.0, duration)
@@ -262,8 +263,8 @@ public class SimResourceDistributorMaxMin(
             return Long.MAX_VALUE
         }
 
-        override fun onUpdate(ctx: SimResourceControllableContext, work: Double) {
-            updateCounters(ctx, work)
+        override fun onUpdate(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {
+            updateCounters(ctx, work, willOvercommit)
         }
 
         override fun onFinish(ctx: SimResourceControllableContext) {

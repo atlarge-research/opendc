@@ -116,7 +116,7 @@ class CapelinIntegrationTest {
             { assertEquals(0, monitorResults.queuedVms, "No VM should not be in the queue") },
             { assertEquals(155252275350, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
             { assertEquals(155086837649, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
-            { assertEquals(165488283, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
+            { assertEquals(155088144, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Incorrect interfered burst" } }
         )
     }

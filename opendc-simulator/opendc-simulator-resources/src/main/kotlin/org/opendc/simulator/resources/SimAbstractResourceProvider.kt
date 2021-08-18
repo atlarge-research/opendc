@@ -87,7 +87,7 @@ public abstract class SimAbstractResourceProvider(
     /**
      * Update the counters of the resource provider.
      */
-    protected fun updateCounters(ctx: SimResourceContext, work: Double) {
+    protected fun updateCounters(ctx: SimResourceContext, work: Double, willOvercommit: Boolean) {
         if (work <= 0.0) {
             return
         }
@@ -96,7 +96,10 @@ public abstract class SimAbstractResourceProvider(
         val remainingWork = ctx.remainingWork
         counters.demand += work
         counters.actual += work - remainingWork
-        counters.overcommit += remainingWork
+
+        if (willOvercommit && remainingWork > 0.0) {
+            counters.overcommit += remainingWork
+        }
     }
 
     final override fun startConsumer(consumer: SimResourceConsumer) {
