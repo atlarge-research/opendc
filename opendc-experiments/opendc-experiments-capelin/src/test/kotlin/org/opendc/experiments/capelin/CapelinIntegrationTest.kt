@@ -114,9 +114,9 @@ class CapelinIntegrationTest {
             { assertEquals(0, monitorResults.runningVms, "All VMs should finish after a run") },
             { assertEquals(0, monitorResults.unscheduledVms, "No VM should not be unscheduled") },
             { assertEquals(0, monitorResults.queuedVms, "No VM should not be in the queue") },
-            { assertEquals(155252275350, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
-            { assertEquals(155086837649, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
-            { assertEquals(155088144, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
+            { assertEquals(155252275351, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
+            { assertEquals(155086837645, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
+            { assertEquals(725049, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Incorrect interfered burst" } }
         )
     }
@@ -153,7 +153,7 @@ class CapelinIntegrationTest {
         assertAll(
             { assertEquals(29454904468, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
             { assertEquals(29355293349, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
-            { assertEquals(99627123, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
+            { assertEquals(0, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
         )
     }
