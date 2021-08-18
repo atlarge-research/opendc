@@ -277,7 +277,7 @@ suspend fun processTrace(
                             override fun onStateChanged(server: Server, newState: ServerState) {
                                 monitor.reportVmStateChange(clock.millis(), server, newState)
 
-                                if (newState == ServerState.TERMINATED || newState == ServerState.ERROR) {
+                                if (newState == ServerState.TERMINATED) {
                                     cont.resume(Unit)
                                 }
                             }

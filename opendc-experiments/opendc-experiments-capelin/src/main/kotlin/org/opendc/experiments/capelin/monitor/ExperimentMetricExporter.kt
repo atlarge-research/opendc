@@ -74,7 +74,7 @@ public class ExperimentMetricExporter(
             m.overcommissionedBurst = v.toLong()
         }
 
-        mapDoubleSummary(metrics["cpu.work.interfered"], hostMetrics) { m, v ->
+        mapDoubleSummary(metrics["cpu.work.interference"], hostMetrics) { m, v ->
             m.interferedBurst = v.toLong()
         }
 

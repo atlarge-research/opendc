@@ -39,12 +39,15 @@ import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
+import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
 import org.opendc.format.environment.EnvironmentReader
 import org.opendc.format.trace.TraceReader
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import java.io.File
+import java.util.*
 
 /**
  * An integration test suite for the SC20 experiments.
@@ -63,6 +66,9 @@ class CapelinIntegrationTest {
         monitor = TestExperimentReporter()
     }
 
+    /**
+     * Test a large simulation setup.
+     */
     @Test
     fun testLarge() = runBlockingSimulation {
         val failures = false
@@ -121,6 +127,9 @@ class CapelinIntegrationTest {
         )
     }
 
+    /**
+     * Test a small simulation setup.
+     */
     @Test
     fun testSmall() = runBlockingSimulation {
         val seed = 1
@@ -154,6 +163,102 @@ class CapelinIntegrationTest {
             { assertEquals(37954956986, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
             { assertEquals(34840774250, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
             { assertEquals(971076806, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
+            { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
+        )
+    }
+
+    /**
+     * Test a small simulation setup with interference.
+     */
+    @Test
+    fun testInterference() = runBlockingSimulation {
+        val seed = 1
+        val chan = Channel<Unit>(Channel.CONFLATED)
+        val allocationPolicy = FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
+            weighers = listOf(CoreRamWeigher(multiplier = 1.0))
+        )
+        val traceReader = createTestTraceReader(0.25, seed)
+        val environmentReader = createTestEnvironmentReader("single")
+
+        val perfInterferenceInput = checkNotNull(CapelinIntegrationTest::class.java.getResourceAsStream("/bitbrains-perf-interference.json"))
+        val performanceInterferenceModel =
+            PerformanceInterferenceReader(perfInterferenceInput).use { VmInterferenceModel(it.read(), Random(seed.toLong())) }
+
+        val meterProvider = createMeterProvider(clock)
+
+        withComputeService(clock, meterProvider, environmentReader, allocationPolicy, performanceInterferenceModel) { scheduler ->
+            withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
+                processTrace(
+                    clock,
+                    traceReader,
+                    scheduler,
+                    chan,
+                    monitor
+                )
+            }
+        }
+
+        val metrics = collectMetrics(meterProvider as MetricProducer)
+        println("Finish SUBMIT=${metrics.submittedVms} FAIL=${metrics.unscheduledVms} QUEUE=${metrics.queuedVms} RUNNING=${metrics.runningVms}")
+
+        // Note that these values have been verified beforehand
+        assertAll(
+            { assertEquals(37954956986, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
+            { assertEquals(34840774250, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
+            { assertEquals(971076806, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
+            { assertEquals(13885404, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
+        )
+    }
+
+    /**
+     * Test a small simulation setup with failures.
+     */
+    @Test
+    fun testFailures() = runBlockingSimulation {
+        val seed = 1
+        val chan = Channel<Unit>(Channel.CONFLATED)
+        val allocationPolicy = FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
+            weighers = listOf(CoreRamWeigher(multiplier = 1.0))
+        )
+        val traceReader = createTestTraceReader(0.25, seed)
+        val environmentReader = createTestEnvironmentReader("single")
+
+        val meterProvider = createMeterProvider(clock)
+
+        withComputeService(clock, meterProvider, environmentReader, allocationPolicy) { scheduler ->
+            val failureDomain =
+                createFailureDomain(
+                    this,
+                    clock,
+                    seed,
+                    24.0 * 7,
+                    scheduler,
+                    chan
+                )
+
+            withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
+                processTrace(
+                    clock,
+                    traceReader,
+                    scheduler,
+                    chan,
+                    monitor
+                )
+            }
+
+            failureDomain.cancel()
+        }
+
+        val metrics = collectMetrics(meterProvider as MetricProducer)
+        println("Finish SUBMIT=${metrics.submittedVms} FAIL=${metrics.unscheduledVms} QUEUE=${metrics.queuedVms} RUNNING=${metrics.runningVms}")
+
+        // Note that these values have been verified beforehand
+        assertAll(
+            { assertEquals(25336984869, monitor.totalRequestedBurst) { "Total requested work incorrect" } },
+            { assertEquals(23668547517, monitor.totalGrantedBurst) { "Total granted work incorrect" } },
+            { assertEquals(368151656, monitor.totalOvercommissionedBurst) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Total interfered work incorrect" } }
         )
     }
