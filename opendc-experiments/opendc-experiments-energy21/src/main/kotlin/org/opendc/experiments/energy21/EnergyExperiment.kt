@@ -32,9 +32,9 @@ import mu.KotlinLogging
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.service.scheduler.FilterScheduler
-import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
-import org.opendc.compute.service.scheduler.weights.RandomWeigher
+import org.opendc.compute.service.scheduler.filters.RamFilter
+import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
@@ -81,8 +81,9 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
-            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-            weighers = listOf(RandomWeigher(Random(0)) to 1.0)
+            filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
+            weighers = listOf(),
+            subsetSize = Int.MAX_VALUE
         )
 
         val meterProvider: MeterProvider = createMeterProvider(clock)

@@ -31,9 +31,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.scheduler.FilterScheduler
-import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
-import org.opendc.compute.service.scheduler.weights.CoreMemoryWeigher
+import org.opendc.compute.service.scheduler.filters.RamFilter
+import org.opendc.compute.service.scheduler.filters.VCpuFilter
+import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
@@ -68,8 +69,8 @@ class CapelinIntegrationTest {
         val seed = 0
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
-            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-            weighers = listOf(CoreMemoryWeigher() to -1.0)
+            filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
+            weighers = listOf(CoreRamWeigher(multiplier = 1.0))
         )
         val traceReader = createTestTraceReader()
         val environmentReader = createTestEnvironmentReader()
@@ -113,9 +114,9 @@ class CapelinIntegrationTest {
             { assertEquals(0, monitorResults.runningVms, "All VMs should finish after a run") },
             { assertEquals(0, monitorResults.unscheduledVms, "No VM should not be unscheduled") },
             { assertEquals(0, monitorResults.queuedVms, "No VM should not be in the queue") },
-            { assertEquals(207380244590, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
-            { assertEquals(207112418950, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
-            { assertEquals(267825640, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
+            { assertEquals(207380204679, monitor.totalRequestedBurst) { "Incorrect requested burst" } },
+            { assertEquals(207371815929, monitor.totalGrantedBurst) { "Incorrect granted burst" } },
+            { assertEquals(8388750, monitor.totalOvercommissionedBurst) { "Incorrect overcommitted burst" } },
             { assertEquals(0, monitor.totalInterferedBurst) { "Incorrect interfered burst" } }
         )
     }
@@ -125,8 +126,8 @@ class CapelinIntegrationTest {
         val seed = 1
         val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
-            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-            weighers = listOf(CoreMemoryWeigher() to -1.0)
+            filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
+            weighers = listOf(CoreRamWeigher(multiplier = 1.0))
         )
         val traceReader = createTestTraceReader(0.5, seed)
         val environmentReader = createTestEnvironmentReader("single")

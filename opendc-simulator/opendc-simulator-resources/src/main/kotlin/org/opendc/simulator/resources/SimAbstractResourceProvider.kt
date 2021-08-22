@@ -88,6 +88,10 @@ public abstract class SimAbstractResourceProvider(
      * Update the counters of the resource provider.
      */
     protected fun updateCounters(ctx: SimResourceContext, work: Double) {
+        if (work <= 0.0) {
+            return
+        }
+
         val counters = _counters
         val remainingWork = ctx.remainingWork
         counters.demand += work

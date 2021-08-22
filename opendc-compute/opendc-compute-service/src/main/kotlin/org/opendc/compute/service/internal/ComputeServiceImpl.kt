@@ -477,6 +477,8 @@ internal class ComputeServiceImpl(
 
         if (newState == ServerState.RUNNING) {
             _runningServers.add(1)
+        } else if (newState == ServerState.ERROR) {
+            _runningServers.add(-1)
         } else if (newState == ServerState.TERMINATED || newState == ServerState.DELETED) {
             logger.info { "[${clock.millis()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
 

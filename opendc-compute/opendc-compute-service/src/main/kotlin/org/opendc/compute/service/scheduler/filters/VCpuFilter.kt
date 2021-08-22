@@ -20,18 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler.weights
+package org.opendc.compute.service.scheduler.filters
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 
 /**
- * A [HostWeigher] that weighs the hosts based on the available memory per core on the host.
+ * A [HostFilter] that filters hosts based on the vCPU requirements of a [Server] and the available vCPUs on the host.
+ *
+ * @param allocationRatio Virtual CPU to physical CPU allocation ratio.
  */
-public class CoreMemoryWeigher : HostWeigher {
-    override fun getWeight(host: HostView, server: Server): Double {
-        return host.availableMemory.toDouble() / host.host.model.cpuCount
-    }
+public class VCpuFilter(private val allocationRatio: Double) : HostFilter {
+    override fun test(host: HostView, server: Server): Boolean {
+        val requested = server.flavor.cpuCount
+        val total = host.host.model.cpuCount
+        val limit = total * allocationRatio
 
-    override fun toString(): String = "CoreMemoryWeigher"
+        // Do not allow an instance to overcommit against itself, only against other instances
+        if (requested > total) {
+            return false
+        }
+
+        val free = limit - host.provisionedCores
+        return free >= requested
+    }
 }

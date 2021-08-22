@@ -34,9 +34,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.FilterScheduler
-import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
-import org.opendc.compute.service.scheduler.weights.ProvisionedCoresWeigher
+import org.opendc.compute.service.scheduler.filters.RamFilter
+import org.opendc.compute.service.scheduler.filters.VCpuFilter
+import org.opendc.compute.service.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.SimHost
 import org.opendc.format.environment.sc18.Sc18EnvironmentReader
 import org.opendc.format.trace.gwf.GwfTraceReader
@@ -55,7 +56,7 @@ import kotlin.math.max
 /**
  * Integration test suite for the [WorkflowServiceImpl].
  */
-@DisplayName("WorkflowServiceImpl")
+@DisplayName("WorkflowService")
 internal class WorkflowServiceIntegrationTest {
     /**
      * A large integration test where we check whether all tasks in some trace are executed correctly.
@@ -85,8 +86,8 @@ internal class WorkflowServiceIntegrationTest {
 
         val meter = MeterProvider.noop().get("opendc-compute")
         val computeScheduler = FilterScheduler(
-            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-            weighers = listOf(ProvisionedCoresWeigher() to -1.0)
+            filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
+            weighers = listOf(VCpuWeigher(1.0, multiplier = 1.0))
         )
         val compute = ComputeService(coroutineContext, clock, meter, computeScheduler, schedulingQuantum = 1000)
 

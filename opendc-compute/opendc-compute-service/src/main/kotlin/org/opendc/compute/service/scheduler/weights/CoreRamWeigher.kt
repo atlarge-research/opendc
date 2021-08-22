@@ -26,12 +26,16 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 
 /**
- * A [HostWeigher] that weighs the hosts based on the number of provisioned cores on the host.
+ * A [HostWeigher] that weighs the hosts based on the available memory per core on the host.
+ *
+ * @param multiplier Weight multiplier ratio. A positive value will result in the scheduler preferring hosts with more
+ * available core memory, and a negative number will result in the scheduler preferring hosts with less available core
+ * memory.
  */
-public class ProvisionedCoresWeigher : HostWeigher {
+public class CoreRamWeigher(override val multiplier: Double = 1.0) : HostWeigher {
     override fun getWeight(host: HostView, server: Server): Double {
-        return host.provisionedCores.toDouble()
+        return host.availableMemory.toDouble() / host.host.model.cpuCount
     }
 
-    override fun toString(): String = "ProvisionedCoresWeigher"
+    override fun toString(): String = "CoreRamWeigher"
 }

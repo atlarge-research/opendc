@@ -38,6 +38,15 @@ import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.ComputeScheduler
+import org.opendc.compute.service.scheduler.FilterScheduler
+import org.opendc.compute.service.scheduler.ReplayScheduler
+import org.opendc.compute.service.scheduler.filters.ComputeFilter
+import org.opendc.compute.service.scheduler.filters.RamFilter
+import org.opendc.compute.service.scheduler.filters.VCpuFilter
+import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
+import org.opendc.compute.service.scheduler.weights.InstanceCountWeigher
+import org.opendc.compute.service.scheduler.weights.RamWeigher
+import org.opendc.compute.service.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.monitor.ExperimentMetricExporter
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
@@ -300,4 +309,54 @@ fun createMeterProvider(clock: Clock): MeterProvider {
         .setClock(clock.toOtelClock())
         .registerView(powerSelector, powerView)
         .build()
+}
+
+/**
+ * Create a [ComputeScheduler] for the experiment.
+ */
+fun createComputeScheduler(allocationPolicy: String, seeder: Random, vmPlacements: Map<String, String> = emptyMap()): ComputeScheduler {
+    val cpuAllocationRatio = 16.0
+    val ramAllocationRatio = 1.5
+    return when (allocationPolicy) {
+        "mem" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(RamWeigher(multiplier = 1.0))
+        )
+        "mem-inv" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(RamWeigher(multiplier = -1.0))
+        )
+        "core-mem" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(CoreRamWeigher(multiplier = 1.0))
+        )
+        "core-mem-inv" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(CoreRamWeigher(multiplier = -1.0))
+        )
+        "active-servers" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(InstanceCountWeigher(multiplier = -1.0))
+        )
+        "active-servers-inv" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(InstanceCountWeigher(multiplier = 1.0))
+        )
+        "provisioned-cores" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = 1.0))
+        )
+        "provisioned-cores-inv" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = listOf(VCpuWeigher(cpuAllocationRatio, multiplier = -1.0))
+        )
+        "random" -> FilterScheduler(
+            filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
+            weighers = emptyList(),
+            subsetSize = Int.MAX_VALUE,
+            random = java.util.Random(seeder.nextLong())
+        )
+        "replay" -> ReplayScheduler(vmPlacements)
+        else -> throw IllegalArgumentException("Unknown policy $allocationPolicy")
+    }
 }

@@ -24,13 +24,17 @@ package org.opendc.compute.service.scheduler.weights
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
-import java.util.*
 
 /**
- * A [HostWeigher] that assigns random weights to each host every selection.
+ * A [HostWeigher] that weighs the hosts based on the available RAM (memory) on the host.
+ *
+ * @param multiplier Weight multiplier ratio. A positive value will result in the scheduler preferring hosts with more
+ * available memory, and a negative number will result in the scheduler preferring hosts with less memory.
  */
-public class RandomWeigher(private val random: Random) : HostWeigher {
-    override fun getWeight(host: HostView, server: Server): Double = random.nextDouble()
+public class RamWeigher(override val multiplier: Double = 1.0) : HostWeigher {
+    override fun getWeight(host: HostView, server: Server): Double {
+        return host.availableMemory.toDouble()
+    }
 
-    override fun toString(): String = "RandomWeigher"
+    override fun toString(): String = "RamWeigher"
 }
