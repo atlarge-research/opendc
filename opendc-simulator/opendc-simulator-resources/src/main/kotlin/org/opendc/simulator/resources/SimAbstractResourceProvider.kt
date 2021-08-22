@@ -89,7 +89,7 @@ public abstract class SimAbstractResourceProvider(
      */
     protected fun updateCounters(ctx: SimResourceContext, work: Double) {
         if (work <= 0.0) {
-           return 
+            return
         }
 
         val counters = _counters

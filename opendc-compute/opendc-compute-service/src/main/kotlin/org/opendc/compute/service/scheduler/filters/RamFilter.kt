@@ -20,18 +20,31 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.scheduler.weights
+package org.opendc.compute.service.scheduler.filters
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 
 /**
- * A [HostWeigher] that weighs the hosts based on the available memory on the host.
+ * A [HostFilter] that filters hosts based on the memory requirements of a [Server] and the RAM available on the host.
+ *
+ * @param allocationRatio Virtual RAM to physical RAM allocation ratio.
  */
-public class MemoryWeigher : HostWeigher {
-    override fun getWeight(host: HostView, server: Server): Double {
-        return host.availableMemory.toDouble()
-    }
+public class RamFilter(private val allocationRatio: Double) : HostFilter {
+    override fun test(host: HostView, server: Server): Boolean {
+        val requested = server.flavor.memorySize
+        val available = host.availableMemory
+        val total = host.host.model.memorySize
 
-    override fun toString(): String = "MemoryWeigher"
+        // Do not allow an instance to overcommit against itself, only against
+        // other instances.
+        if (requested > total) {
+            return false
+        }
+
+        val limit = total * allocationRatio
+        val used = total - available
+        val usable = limit - used
+        return usable >= requested
+    }
 }

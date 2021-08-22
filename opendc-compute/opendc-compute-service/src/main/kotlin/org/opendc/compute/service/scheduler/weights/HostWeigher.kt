@@ -29,9 +29,47 @@ import org.opendc.compute.service.scheduler.FilterScheduler
 /**
  * An interface used by the [FilterScheduler] to weigh the pool of host for a scheduling request.
  */
-public fun interface HostWeigher {
+public interface HostWeigher {
+    /**
+     * The multiplier for the weigher.
+     */
+    public val multiplier: Double
+
     /**
      * Obtain the weight of the specified [host] when scheduling the specified [server].
      */
     public fun getWeight(host: HostView, server: Server): Double
+
+    /**
+     * Obtain the weights for [hosts] when scheduling the specified [server].
+     */
+    public fun getWeights(hosts: List<HostView>, server: Server): Result {
+        val weights = DoubleArray(hosts.size)
+        var min = Double.MAX_VALUE
+        var max = Double.MIN_VALUE
+
+        for ((i, host) in hosts.withIndex()) {
+            val weight = getWeight(host, server)
+            weights[i] = weight
+            min = kotlin.math.min(min, weight)
+            max = kotlin.math.max(max, weight)
+        }
+
+        return Result(weights, min, max, multiplier)
+    }
+
+    /**
+     * A result returned by the weigher.
+     *
+     * @param weights The weights returned by the weigher.
+     * @param min The minimum weight returned.
+     * @param max The maximum weight returned.
+     * @param multiplier The weight multiplier to use.
+     */
+    public class Result(
+        public val weights: DoubleArray,
+        public val min: Double,
+        public val max: Double,
+        public val multiplier: Double,
+    )
 }

@@ -28,10 +28,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
-import org.opendc.compute.service.scheduler.*
-import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
-import org.opendc.compute.service.scheduler.filters.ComputeFilter
-import org.opendc.compute.service.scheduler.weights.*
 import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
@@ -49,6 +45,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.asKotlinRandom
 
 /**
  * A portfolio represents a collection of scenarios are tested for the work.
@@ -105,7 +102,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
         val environment = ClusterEnvironmentReader(File(config.getString("env-path"), "${topology.name}.txt"))
 
         val chan = Channel<Unit>(Channel.CONFLATED)
-        val allocationPolicy = createComputeScheduler(seeder)
+        val allocationPolicy = createComputeScheduler(allocationPolicy, seeder.asKotlinRandom(), vmPlacements)
 
         val meterProvider = createMeterProvider(clock)
         val workload = workload
@@ -166,51 +163,5 @@ abstract class Portfolio(name: String) : Experiment(name) {
 
         val monitorResults = collectMetrics(meterProvider as MetricProducer)
         logger.debug { "Finish SUBMIT=${monitorResults.submittedVms} FAIL=${monitorResults.unscheduledVms} QUEUE=${monitorResults.queuedVms} RUNNING=${monitorResults.runningVms}" }
-    }
-
-    /**
-     * Create the [ComputeScheduler] instance to use for the trial.
-     */
-    private fun createComputeScheduler(seeder: Random): ComputeScheduler {
-        return when (allocationPolicy) {
-            "mem" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(MemoryWeigher() to -1.0)
-            )
-            "mem-inv" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(MemoryWeigher() to -1.0)
-            )
-            "core-mem" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(CoreMemoryWeigher() to -1.0)
-            )
-            "core-mem-inv" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(CoreMemoryWeigher() to -1.0)
-            )
-            "active-servers" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(ProvisionedCoresWeigher() to -1.0)
-            )
-            "active-servers-inv" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(InstanceCountWeigher() to 1.0)
-            )
-            "provisioned-cores" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(ProvisionedCoresWeigher() to -1.0)
-            )
-            "provisioned-cores-inv" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(ProvisionedCoresWeigher() to 1.0)
-            )
-            "random" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(RandomWeigher(Random(seeder.nextLong())) to 1.0)
-            )
-            "replay" -> ReplayScheduler(vmPlacements)
-            else -> throw IllegalArgumentException("Unknown policy $allocationPolicy")
-        }
     }
 }

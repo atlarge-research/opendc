@@ -32,9 +32,6 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
-import org.opendc.compute.service.scheduler.FilterScheduler
-import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
-import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.weights.*
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.model.Workload
@@ -199,46 +196,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                 val metricProducer = meterProvider as MetricProducer
 
                 val operational = scenario.operationalPhenomena
-                val allocationPolicy =
-                    when (val policyName = operational.schedulerName) {
-                        "mem" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(MemoryWeigher() to -1.0)
-                        )
-                        "mem-inv" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(MemoryWeigher() to 1.0)
-                        )
-                        "core-mem" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(CoreMemoryWeigher() to -1.0)
-                        )
-                        "core-mem-inv" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(CoreMemoryWeigher() to 1.0)
-                        )
-                        "active-servers" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(ProvisionedCoresWeigher() to -1.0)
-                        )
-                        "active-servers-inv" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(InstanceCountWeigher() to 1.0)
-                        )
-                        "provisioned-cores" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(ProvisionedCoresWeigher() to -1.0)
-                        )
-                        "provisioned-cores-inv" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(ProvisionedCoresWeigher() to 1.0)
-                        )
-                        "random" -> FilterScheduler(
-                            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                            weighers = listOf(RandomWeigher(java.util.Random(seeder.nextLong())) to 1.0)
-                        )
-                        else -> throw IllegalArgumentException("Unknown policy $policyName")
-                    }
+                val allocationPolicy = createComputeScheduler(operational.schedulerName, seeder)
 
                 val trace = ParquetTraceReader(
                     listOf(traceReader),
