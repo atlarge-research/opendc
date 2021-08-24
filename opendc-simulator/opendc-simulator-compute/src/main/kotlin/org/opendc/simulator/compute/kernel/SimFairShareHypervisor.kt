@@ -67,6 +67,7 @@ public class SimFairShareHypervisor(
         private var lastDemand = 0.0
         private var lastActual = 0.0
         private var lastOvercommit = 0.0
+        private var lastInterference = 0.0
         private var lastReport = Long.MIN_VALUE
 
         override fun onConverge(timestamp: Long) {
@@ -79,7 +80,7 @@ public class SimFairShareHypervisor(
                     (counters.demand - lastDemand).toLong(),
                     (counters.actual - lastActual).toLong(),
                     (counters.overcommit - lastOvercommit).toLong(),
-                    0L,
+                    (counters.interference - lastInterference).toLong(),
                     lastCpuUsage,
                     lastCpuDemand
                 )
@@ -91,6 +92,7 @@ public class SimFairShareHypervisor(
             lastDemand = counters.demand
             lastActual = counters.actual
             lastOvercommit = counters.overcommit
+            lastInterference = counters.interference
 
             val load = lastCpuDemand / ctx.cpus.sumOf { it.model.frequency }
             triggerGovernors(load)

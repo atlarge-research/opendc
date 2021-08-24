@@ -255,6 +255,8 @@ suspend fun processTrace(
                     offset = entry.start - clock.millis()
                 }
 
+                // Make sure the trace entries are ordered by submission time
+                assert(entry.start - offset >= 0) { "Invalid trace order" }
                 delay(max(0, (entry.start - offset) - clock.millis()))
                 launch {
                     chan.send(Unit)
@@ -275,7 +277,7 @@ suspend fun processTrace(
                             override fun onStateChanged(server: Server, newState: ServerState) {
                                 monitor.reportVmStateChange(clock.millis(), server, newState)
 
-                                if (newState == ServerState.TERMINATED || newState == ServerState.ERROR) {
+                                if (newState == ServerState.TERMINATED) {
                                     cont.resume(Unit)
                                 }
                             }

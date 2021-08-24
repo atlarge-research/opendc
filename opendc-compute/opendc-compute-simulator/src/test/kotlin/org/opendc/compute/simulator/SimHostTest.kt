@@ -116,9 +116,9 @@ internal class SimHostTest {
                 "workload" to SimTraceWorkload(
                     sequenceOf(
                         SimTraceWorkload.Fragment(0, duration * 1000, 2 * 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000L, duration * 1000, 2 * 3100.0, 2),
-                        SimTraceWorkload.Fragment(duration * 2000L, duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 3000L, duration * 1000, 2 * 73.0, 2)
+                        SimTraceWorkload.Fragment(duration * 1000, duration * 1000, 2 * 3100.0, 2),
+                        SimTraceWorkload.Fragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 3000, duration * 1000, 2 * 73.0, 2)
                     ),
                     offset = 1
                 )
@@ -182,6 +182,102 @@ internal class SimHostTest {
             { assertEquals(2107200, grantedWork, "Granted work does not match") },
             { assertEquals(2040000, overcommittedWork, "Overcommitted work does not match") },
             { assertEquals(1500001, clock.millis()) }
+        )
+    }
+
+    /**
+     * Test failure of the host.
+     */
+    @Test
+    fun testFailure() = runBlockingSimulation {
+        var requestedWork = 0L
+        var grantedWork = 0L
+
+        val meterProvider: MeterProvider = SdkMeterProvider
+            .builder()
+            .setClock(clock.toOtelClock())
+            .build()
+
+        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val host = SimHost(
+            uid = UUID.randomUUID(),
+            name = "test",
+            model = machineModel,
+            meta = emptyMap(),
+            coroutineContext,
+            interpreter,
+            meterProvider.get("opendc-compute-simulator"),
+            SimFairShareHypervisorProvider()
+        )
+        val duration = 5 * 60L
+        val image = MockImage(
+            UUID.randomUUID(),
+            "<unnamed>",
+            emptyMap(),
+            mapOf(
+                "workload" to SimTraceWorkload(
+                    sequenceOf(
+                        SimTraceWorkload.Fragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000L, duration * 1000, 2 * 3500.0, 2),
+                        SimTraceWorkload.Fragment(duration * 2000L, duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 3000L, duration * 1000, 2 * 183.0, 2)
+                    ),
+                    offset = 1
+                )
+            )
+        )
+        val flavor = MockFlavor(2, 0)
+        val server = MockServer(UUID.randomUUID(), "a", flavor, image)
+
+        // Setup metric reader
+        val reader = CoroutineMetricReader(
+            this, listOf(meterProvider as MetricProducer),
+            object : MetricExporter {
+                override fun export(metrics: Collection<MetricData>): CompletableResultCode {
+                    val metricsByName = metrics.associateBy { it.name }
+                    metricsByName["cpu.work.total"]?.let {
+                        requestedWork += it.doubleSummaryData.points.first().sum.toLong()
+                    }
+                    metricsByName["cpu.work.granted"]?.let {
+                        grantedWork += it.doubleSummaryData.points.first().sum.toLong()
+                    }
+                    return CompletableResultCode.ofSuccess()
+                }
+
+                override fun flush(): CompletableResultCode = CompletableResultCode.ofSuccess()
+
+                override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
+            },
+            exportInterval = duration * 1000L
+        )
+
+        coroutineScope {
+            host.spawn(server)
+            delay(5000L)
+            host.fail()
+            delay(5000L)
+            host.recover()
+
+            suspendCancellableCoroutine<Unit> { cont ->
+                host.addListener(object : HostListener {
+                    override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
+                        if (newState == ServerState.TERMINATED) {
+                            cont.resume(Unit)
+                        }
+                    }
+                })
+            }
+        }
+
+        host.close()
+        // Ensure last cycle is collected
+        delay(1000L * duration)
+
+        reader.close()
+
+        assertAll(
+            { assertEquals(2226039, requestedWork, "Total time does not match") },
+            { assertEquals(1086039, grantedWork, "Down time does not match") },
         )
     }
 

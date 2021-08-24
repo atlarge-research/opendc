@@ -53,7 +53,7 @@ public class SimResourceSwitchMaxMin(
     /**
      * The resource counters to track the execution metrics of all switch resources.
      */
-    override val counters: SimResourceCounters
+    override val counters: SimResourceDistributorMaxMin.Counters
         get() = distributor.counters
 
     /**

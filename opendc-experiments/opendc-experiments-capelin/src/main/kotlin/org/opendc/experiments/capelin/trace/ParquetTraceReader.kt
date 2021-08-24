@@ -53,8 +53,7 @@ public class ParquetTraceReader(
                     this.zip(listOf(workload))
                 }
             }
-            .map { sampleWorkload(it.first, workload, it.second, seed) }
-            .flatten()
+            .flatMap { sampleWorkload(it.first, workload, it.second, seed).sortedBy(TraceEntry<SimWorkload>::start) }
             .iterator()
 
     override fun hasNext(): Boolean = iterator.hasNext()

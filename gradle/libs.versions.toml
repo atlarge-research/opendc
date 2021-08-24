@@ -39,6 +39,7 @@ progressbar = { module = "me.tongfei:progressbar", version = "0.9.0" }
 # Format
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }
 parquet = { module = "org.apache.parquet:parquet-avro", version = "1.12.0" }
 yaml = { module = "org.yaml:snakeyaml", version = "1.29" }
 config = { module = "com.typesafe:config", version = "1.4.1" }
