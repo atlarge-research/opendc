@@ -294,15 +294,11 @@ public class SimHost(
     }
 
     override suspend fun spawn(server: Server, start: Boolean) {
-        // Return if the server already exists on this host
-        if (server in this) {
-            return
+        val guest = guests.computeIfAbsent(server) { key ->
+            require(canFit(key)) { "Server does not fit" }
+            _guests.add(1)
+            Guest(key, hypervisor.createMachine(key.flavor.toMachineModel(), key.name))
         }
-
-        require(canFit(server)) { "Server does not fit" }
-        val guest = Guest(server, hypervisor.createMachine(server.flavor.toMachineModel(), server.name))
-        guests[server] = guest
-        _guests.add(1)
 
         if (start) {
             guest.start()
