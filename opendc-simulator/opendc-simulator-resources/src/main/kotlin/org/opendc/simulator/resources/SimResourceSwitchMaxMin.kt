@@ -54,7 +54,7 @@ public class SimResourceSwitchMaxMin(
      * The resource counters to track the execution metrics of all switch resources.
      */
     override val counters: SimResourceCounters
-        get() = aggregator.counters
+        get() = distributor.counters
 
     /**
      * A flag to indicate that the switch was closed.

@@ -99,11 +99,12 @@ internal class SimHostTest {
             mapOf(
                 "workload" to SimTraceWorkload(
                     sequenceOf(
-                        SimTraceWorkload.Fragment(duration * 1000, 2 * 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 2 * 3500.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 2 * 183.0, 2)
+                        SimTraceWorkload.Fragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
+                        SimTraceWorkload.Fragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 3000, duration * 1000, 2 * 183.0, 2)
                     ),
+                    offset = 1
                 )
             )
         )
@@ -114,11 +115,12 @@ internal class SimHostTest {
             mapOf(
                 "workload" to SimTraceWorkload(
                     sequenceOf(
-                        SimTraceWorkload.Fragment(duration * 1000, 2 * 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 2 * 3100.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, 2 * 73.0, 2)
-                    )
+                        SimTraceWorkload.Fragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceWorkload.Fragment(duration * 1000L, duration * 1000, 2 * 3100.0, 2),
+                        SimTraceWorkload.Fragment(duration * 2000L, duration * 1000, 0.0, 2),
+                        SimTraceWorkload.Fragment(duration * 3000L, duration * 1000, 2 * 73.0, 2)
+                    ),
+                    offset = 1
                 )
             )
         )
@@ -150,7 +152,7 @@ internal class SimHostTest {
 
                 override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
             },
-            exportInterval = duration * 1000
+            exportInterval = duration * 1000L
         )
 
         coroutineScope {
@@ -171,7 +173,7 @@ internal class SimHostTest {
         }
 
         // Ensure last cycle is collected
-        delay(1000 * duration)
+        delay(1000L * duration)
         virtDriver.close()
         reader.close()
 

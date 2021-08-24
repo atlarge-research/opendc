@@ -51,8 +51,8 @@ public class SimResourceSource(
                 }
             }
 
-            override fun onUpdate(ctx: SimResourceControllableContext, work: Double) {
-                updateCounters(ctx, work)
+            override fun onUpdate(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {
+                updateCounters(ctx, work, willOvercommit)
             }
 
             override fun onFinish(ctx: SimResourceControllableContext) {

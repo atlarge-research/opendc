@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.resources
 
+import org.opendc.simulator.resources.impl.SimResourceCountersImpl
 import org.opendc.simulator.resources.interference.InterferenceDomain
 import org.opendc.simulator.resources.interference.InterferenceKey
 import kotlin.math.min
@@ -53,9 +54,9 @@ public class SimResourceDistributorMaxMin(
     private val activeOutputs: MutableList<Output> = mutableListOf()
 
     /**
-     * The total amount of work requested by the output resources.
+     * The total amount of work allocated to be executed.
      */
-    private var totalRequestedWork = 0.0
+    private var totalAllocatedWork = 0.0
 
     /**
      * The total allocated speed for the output resources.
@@ -66,6 +67,13 @@ public class SimResourceDistributorMaxMin(
      * The total requested speed for the output resources.
      */
     private var totalRequestedSpeed = 0.0
+
+    /**
+     * The resource counters of this distributor.
+     */
+    public val counters: SimResourceCounters
+        get() = _counters
+    private val _counters = SimResourceCountersImpl()
 
     /* SimResourceDistributor */
     override fun newOutput(key: InterferenceKey?): SimResourceCloseableProvider {
@@ -103,6 +111,25 @@ public class SimResourceDistributorMaxMin(
     }
 
     /**
+     * Update the counters of the distributor.
+     */
+    private fun updateCounters(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {
+        if (work <= 0.0) {
+            return
+        }
+
+        val counters = _counters
+        val remainingWork = ctx.remainingWork
+
+        counters.demand += work
+        counters.actual += work - remainingWork
+
+        if (willOvercommit && remainingWork > 0.0) {
+            counters.overcommit += remainingWork
+        }
+    }
+
+    /**
      * Schedule the work of the outputs.
      */
     private fun doNext(ctx: SimResourceContext): SimResourceCommand {
@@ -116,7 +143,6 @@ public class SimResourceDistributorMaxMin(
         var deadline: Long = Long.MAX_VALUE
         var availableSpeed = capacity
         var totalRequestedSpeed = 0.0
-        var totalRequestedWork = 0.0
 
         // Pull in the work of the outputs
         val outputIterator = activeOutputs.listIterator()
@@ -138,6 +164,7 @@ public class SimResourceDistributorMaxMin(
         for (output in activeOutputs) {
             val availableShare = availableSpeed / remaining--
             val grantedSpeed = min(output.allowedSpeed, availableShare)
+
             deadline = min(deadline, output.deadline)
 
             // Ignore idle computation
@@ -147,7 +174,6 @@ public class SimResourceDistributorMaxMin(
             }
 
             totalRequestedSpeed += output.limit
-            totalRequestedWork += output.work
 
             output.actualSpeed = grantedSpeed
             availableSpeed -= grantedSpeed
@@ -156,18 +182,28 @@ public class SimResourceDistributorMaxMin(
             duration = min(duration, output.work / grantedSpeed)
         }
 
+        val targetDuration = min(duration, (deadline - interpreter.clock.millis()) / 1000.0)
+        var totalRequestedWork = 0.0
+        var totalAllocatedWork = 0.0
+        for (output in activeOutputs) {
+            val work = output.work
+            val speed = output.actualSpeed
+            if (speed > 0.0) {
+                val outputDuration = work / speed
+                totalRequestedWork += work * (duration / outputDuration)
+                totalAllocatedWork += work * (targetDuration / outputDuration)
+            }
+        }
+
         assert(deadline >= interpreter.clock.millis()) { "Deadline already passed" }
 
-        this.totalRequestedWork = totalRequestedWork
         this.totalRequestedSpeed = totalRequestedSpeed
-        this.totalAllocatedSpeed = capacity - availableSpeed
-        val totalAllocatedWork = min(
-            totalRequestedWork,
-            totalAllocatedSpeed * min((deadline - interpreter.clock.millis()) / 1000.0, duration)
-        )
+        this.totalAllocatedWork = totalAllocatedWork
+        val totalAllocatedSpeed = capacity - availableSpeed
+        this.totalAllocatedSpeed = totalAllocatedSpeed
 
         return if (totalAllocatedWork > 0.0 && totalAllocatedSpeed > 0.0)
-            SimResourceCommand.Consume(totalRequestedWork, totalAllocatedSpeed, deadline)
+            SimResourceCommand.Consume(totalAllocatedWork, totalAllocatedSpeed, deadline)
         else
             SimResourceCommand.Idle(deadline)
     }
@@ -262,8 +298,10 @@ public class SimResourceDistributorMaxMin(
             return Long.MAX_VALUE
         }
 
-        override fun onUpdate(ctx: SimResourceControllableContext, work: Double) {
-            updateCounters(ctx, work)
+        override fun onUpdate(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {
+            updateCounters(ctx, work, willOvercommit)
+
+            this@SimResourceDistributorMaxMin.updateCounters(ctx, work, willOvercommit)
         }
 
         override fun onFinish(ctx: SimResourceControllableContext) {
@@ -288,7 +326,7 @@ public class SimResourceDistributorMaxMin(
             }
 
             // Compute the work that was actually granted to the output.
-            return (totalRequestedWork - totalRemainingWork) * fraction * perfScore
+            return (totalAllocatedWork - totalRemainingWork) * fraction * perfScore
         }
 
         /* Comparable */

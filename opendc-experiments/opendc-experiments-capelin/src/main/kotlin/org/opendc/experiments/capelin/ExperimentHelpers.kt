@@ -258,7 +258,7 @@ suspend fun processTrace(
                 delay(max(0, (entry.start - offset) - clock.millis()))
                 launch {
                     chan.send(Unit)
-                    val workload = SimTraceWorkload((entry.meta["workload"] as SimTraceWorkload).trace)
+                    val workload = SimTraceWorkload((entry.meta["workload"] as SimTraceWorkload).trace, offset = -offset + 300001)
                     val server = client.newServer(
                         entry.name,
                         image,

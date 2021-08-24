@@ -202,17 +202,18 @@ internal class SimResourceContextImpl(
                 val isInterrupted = _flag and FLAG_INTERRUPT != 0
                 val remainingWork = getRemainingWork(timestamp)
                 val isConsume = _limit > 0.0
+                val reachedDeadline = _deadline <= timestamp
 
                 // Update the resource counters only if there is some progress
                 if (timestamp > _timestamp) {
-                    logic.onUpdate(this, _work)
+                    logic.onUpdate(this, _work, reachedDeadline)
                 }
 
                 // We should only continue processing the next command if:
                 // 1. The resource consumption was finished.
                 // 2. The resource capacity cannot satisfy the demand.
                 // 3. The resource consumer should be interrupted (e.g., someone called .interrupt())
-                if ((isConsume && remainingWork == 0.0) || _deadline <= timestamp || isInterrupted) {
+                if ((isConsume && remainingWork == 0.0) || reachedDeadline || isInterrupted) {
                     when (val command = consumer.onNext(this)) {
                         is SimResourceCommand.Idle -> interpretIdle(timestamp, command.deadline)
                         is SimResourceCommand.Consume -> interpretConsume(timestamp, command.work, command.limit, command.deadline)

@@ -116,7 +116,6 @@ public abstract class SimAbstractMachine(
             // Cancel all cpus on cancellation
             cont.invokeOnCancellation {
                 this.cont = null
-
                 interpreter.batch {
                     for (cpu in cpus) {
                         cpu.cancel()

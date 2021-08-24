@@ -52,8 +52,9 @@ public interface SimResourceProviderLogic {
      *
      * @param ctx The context in which the provider runs.
      * @param work The amount of work that was requested by the resource consumer.
+     * @param willOvercommit A flag to indicate that the remaining work is overcommitted.
      */
-    public fun onUpdate(ctx: SimResourceControllableContext, work: Double) {}
+    public fun onUpdate(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {}
 
     /**
      * This method is invoked when the resource consumer has finished.
