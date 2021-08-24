@@ -87,11 +87,6 @@ public class SimHost(
     private val listeners = mutableListOf<HostListener>()
 
     /**
-     * Current total memory use of the images on this hypervisor.
-     */
-    private var availableMemory: Long = model.memory.sumOf { it.size }
-
-    /**
      * The machine to run on.
      */
     public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model, powerDriver)
@@ -291,7 +286,7 @@ public class SimHost(
     }
 
     override fun canFit(server: Server): Boolean {
-        val sufficientMemory = availableMemory > server.flavor.memorySize
+        val sufficientMemory = machine.model.memory.size >= server.flavor.memorySize
         val enoughCpus = machine.model.cpus.size >= server.flavor.cpuCount
         val canFit = hypervisor.canFit(server.flavor.toMachineModel())
 
@@ -469,7 +464,6 @@ public class SimHost(
                 else
                     ServerState.ERROR
 
-            availableMemory += server.flavor.memorySize
             onGuestStop(this)
         }
     }
