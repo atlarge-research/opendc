@@ -46,6 +46,7 @@ import org.opendc.simulator.resources.SimResourceInterpreter
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
  * A [Host] that is simulates virtual machines on a physical machine using [SimHypervisor].
@@ -315,10 +316,16 @@ public class SimHost(
 
     override suspend fun fail() {
         _state = HostState.DOWN
+        for (guest in guests.values) {
+            guest.fail()
+        }
     }
 
     override suspend fun recover() {
         _state = HostState.UP
+        for (guest in guests.values) {
+            guest.start()
+        }
     }
 
     /**
@@ -329,7 +336,7 @@ public class SimHost(
 
         suspend fun start() {
             when (state) {
-                ServerState.TERMINATED -> {
+                ServerState.TERMINATED, ServerState.ERROR -> {
                     logger.info { "User requested to start server ${server.uid}" }
                     launch()
                 }
@@ -356,7 +363,13 @@ public class SimHost(
 
         suspend fun terminate() {
             stop()
+            machine.close()
             state = ServerState.DELETED
+        }
+
+        suspend fun fail() {
+            stop()
+            state = ServerState.ERROR
         }
 
         private var job: Job? = null
@@ -366,16 +379,19 @@ public class SimHost(
             val workload = mapper.createWorkload(server)
 
             job = scope.launch {
-                delay(1) // TODO Introduce boot time
-                init()
-                cont.resume(Unit)
+                try {
+                    delay(1) // TODO Introduce boot time
+                    init()
+                    cont.resume(Unit)
+                } catch (e: Throwable) {
+                    cont.resumeWithException(e)
+                }
                 try {
                     machine.run(workload, mapOf("driver" to this@SimHost, "server" to server))
                     exit(null)
                 } catch (cause: Throwable) {
                     exit(cause)
                 } finally {
-                    machine.close()
                     job = null
                 }
             }
