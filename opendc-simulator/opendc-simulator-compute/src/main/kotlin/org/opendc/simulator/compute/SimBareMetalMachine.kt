@@ -49,6 +49,12 @@ public class SimBareMetalMachine(
     parent: SimResourceSystem? = null,
 ) : SimAbstractMachine(interpreter, parent, model) {
     /**
+     * The power draw of the machine onto the PSU.
+     */
+    public val powerDraw: Double
+        get() = powerDriverLogic.computePower()
+
+    /**
      * The processing units of the machine.
      */
     override val cpus: List<SimProcessingUnit> = model.cpus.map { cpu ->

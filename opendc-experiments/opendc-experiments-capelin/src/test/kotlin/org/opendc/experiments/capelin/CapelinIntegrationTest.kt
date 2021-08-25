@@ -123,7 +123,8 @@ class CapelinIntegrationTest {
             { assertEquals(220346369753, monitor.totalWork) { "Incorrect requested burst" } },
             { assertEquals(206667809529, monitor.totalGrantedWork) { "Incorrect granted burst" } },
             { assertEquals(1151611104, monitor.totalOvercommittedWork) { "Incorrect overcommitted burst" } },
-            { assertEquals(0, monitor.totalInterferedWork) { "Incorrect interfered burst" } }
+            { assertEquals(0, monitor.totalInterferedWork) { "Incorrect interfered burst" } },
+            { assertEquals(1.7671768767192196E7, monitor.totalPowerDraw, 0.01) { "Incorrect power draw" } },
         )
     }
 
@@ -287,6 +288,7 @@ class CapelinIntegrationTest {
         var totalGrantedWork = 0L
         var totalOvercommittedWork = 0L
         var totalInterferedWork = 0L
+        var totalPowerDraw = 0.0
 
         override fun reportHostData(
             time: Long,
@@ -304,6 +306,7 @@ class CapelinIntegrationTest {
             totalGrantedWork += grantedWork.toLong()
             totalOvercommittedWork += overcommittedWork.toLong()
             totalInterferedWork += interferedWork.toLong()
+            totalPowerDraw += powerDraw
         }
 
         override fun close() {}
