@@ -23,9 +23,7 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.opendc.simulator.compute.device.SimNetworkAdapter
 import org.opendc.simulator.compute.model.*
@@ -95,45 +93,6 @@ class SimMachineTest {
 
             // Two sockets with two cores execute 2000 MFlOps per second (500 ms)
             assertEquals(500, clock.millis())
-        } finally {
-            machine.close()
-        }
-    }
-
-    @Test
-    fun testUsage() = runBlockingSimulation {
-        val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-
-        val res = mutableListOf<Double>()
-        val job = launch { machine.usage.toList(res) }
-
-        try {
-            machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
-            yield()
-            job.cancel()
-            assertEquals(listOf(0.0, 1.0, 0.0), res) { "Machine is fully utilized" }
-        } finally {
-            machine.close()
-        }
-    }
-
-    @Test
-    fun testSpeed() = runBlockingSimulation {
-        val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-
-        try {
-            coroutineScope {
-                launch { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
-                assertArrayEquals(doubleArrayOf(1000.0, 1000.0), machine.speed)
-            }
         } finally {
             machine.close()
         }

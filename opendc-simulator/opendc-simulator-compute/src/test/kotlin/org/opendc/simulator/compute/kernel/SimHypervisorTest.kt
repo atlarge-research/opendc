@@ -22,11 +22,7 @@
 
 package org.opendc.simulator.compute.kernel
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -108,19 +104,14 @@ internal class SimHypervisorTest {
         }
         yield()
         val vm = hypervisor.createMachine(model)
-        val res = mutableListOf<Double>()
-        val job = launch { machine.usage.toList(res) }
-
         vm.run(workloadA)
         yield()
-        job.cancel()
         machine.close()
 
         assertAll(
             { assertEquals(1113300.0, listener.totalRequestedWork, "Requested Burst does not match") },
             { assertEquals(1023300.0, listener.totalGrantedWork, "Granted Burst does not match") },
             { assertEquals(90000.0, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
-            { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), res) { "VM usage is correct" } },
             { assertEquals(1200000, clock.millis()) { "Current time is correct" } }
         )
     }

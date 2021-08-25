@@ -30,8 +30,17 @@ import org.opendc.simulator.compute.SimProcessingUnit
  */
 public class SimplePowerDriver(private val model: PowerModel) : PowerDriver {
     override fun createLogic(machine: SimMachine, cpus: List<SimProcessingUnit>): PowerDriver.Logic = object : PowerDriver.Logic {
+
         override fun computePower(): Double {
-            return model.computePower(machine.usage.value)
+            var targetFreq = 0.0
+            var totalSpeed = 0.0
+
+            for (cpu in cpus) {
+                targetFreq += cpu.capacity
+                totalSpeed += cpu.speed
+            }
+
+            return model.computePower(totalSpeed / targetFreq)
         }
     }
 
