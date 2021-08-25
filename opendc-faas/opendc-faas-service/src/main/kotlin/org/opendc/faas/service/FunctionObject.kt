@@ -22,11 +22,12 @@
 
 package org.opendc.faas.service
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.BoundLongCounter
+import io.opentelemetry.api.metrics.BoundLongHistogram
 import io.opentelemetry.api.metrics.BoundLongUpDownCounter
-import io.opentelemetry.api.metrics.BoundLongValueRecorder
 import io.opentelemetry.api.metrics.Meter
-import io.opentelemetry.api.metrics.common.Labels
 import org.opendc.faas.service.deployer.FunctionInstance
 import java.util.*
 
@@ -42,76 +43,83 @@ public class FunctionObject(
     meta: Map<String, Any>
 ) : AutoCloseable {
     /**
+     * The function identifier attached to the metrics.
+     */
+    private val functionId = AttributeKey.stringKey("function")
+
+    /**
      * The total amount of function invocations received by the function.
      */
-    public val invocations: BoundLongCounter = meter.longCounterBuilder("function.invocations.total")
+    public val invocations: BoundLongCounter = meter.counterBuilder("function.invocations.total")
         .setDescription("Number of function invocations")
         .setUnit("1")
         .build()
-        .bind(Labels.of("function", uid.toString()))
+        .bind(Attributes.of(functionId, uid.toString()))
 
     /**
      * The amount of function invocations that could be handled directly.
      */
-    public val timelyInvocations: BoundLongCounter = meter.longCounterBuilder("function.invocations.warm")
+    public val timelyInvocations: BoundLongCounter = meter.counterBuilder("function.invocations.warm")
         .setDescription("Number of function invocations handled directly")
         .setUnit("1")
         .build()
-        .bind(Labels.of("function", uid.toString()))
+        .bind(Attributes.of(functionId, uid.toString()))
 
     /**
      * The amount of function invocations that were delayed due to function deployment.
      */
-    public val delayedInvocations: BoundLongCounter = meter.longCounterBuilder("function.invocations.cold")
+    public val delayedInvocations: BoundLongCounter = meter.counterBuilder("function.invocations.cold")
         .setDescription("Number of function invocations that are delayed")
         .setUnit("1")
         .build()
-        .bind(Labels.of("function", uid.toString()))
+        .bind(Attributes.of(functionId, uid.toString()))
 
     /**
      * The amount of function invocations that failed.
      */
-    public val failedInvocations: BoundLongCounter = meter.longCounterBuilder("function.invocations.failed")
+    public val failedInvocations: BoundLongCounter = meter.counterBuilder("function.invocations.failed")
         .setDescription("Number of function invocations that failed")
         .setUnit("1")
         .build()
-        .bind(Labels.of("function", uid.toString()))
+        .bind(Attributes.of(functionId, uid.toString()))
 
     /**
      * The amount of instances for this function.
      */
-    public val activeInstances: BoundLongUpDownCounter = meter.longUpDownCounterBuilder("function.instances.active")
+    public val activeInstances: BoundLongUpDownCounter = meter.upDownCounterBuilder("function.instances.active")
         .setDescription("Number of active function instances")
         .setUnit("1")
         .build()
-        .bind(Labels.of("function", uid.toString()))
+        .bind(Attributes.of(functionId, uid.toString()))
 
     /**
      * The amount of idle instances for this function.
      */
-    public val idleInstances: BoundLongUpDownCounter = meter.longUpDownCounterBuilder("function.instances.idle")
+    public val idleInstances: BoundLongUpDownCounter = meter.upDownCounterBuilder("function.instances.idle")
         .setDescription("Number of idle function instances")
         .setUnit("1")
         .build()
-        .bind(Labels.of("function", uid.toString()))
+        .bind(Attributes.of(functionId, uid.toString()))
 
     /**
      * The time that the function waited.
      */
-    public val waitTime: BoundLongValueRecorder = meter.longValueRecorderBuilder("function.time.wait")
+    public val waitTime: BoundLongHistogram = meter.histogramBuilder("function.time.wait")
+        .ofLongs()
         .setDescription("Time the function has to wait before being started")
         .setUnit("ms")
         .build()
-        .bind(Labels.of("function", uid.toString()))
+        .bind(Attributes.of(functionId, uid.toString()))
 
     /**
      * The time that the function was running.
      */
-    public val activeTime: BoundLongValueRecorder = meter.longValueRecorderBuilder("function.time.active")
+    public val activeTime: BoundLongHistogram = meter.histogramBuilder("function.time.active")
+        .ofLongs()
         .setDescription("Time the function was running")
         .setUnit("ms")
         .build()
-        .bind(Labels.of("function", uid.toString()))
+        .bind(Attributes.of(functionId, uid.toString()))
 
     /**
      * The instances associated with this function.

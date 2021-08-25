@@ -55,8 +55,7 @@ public interface ExperimentMonitor : AutoCloseable {
         powerDraw: Double,
         numberOfDeployedImages: Int,
         host: Host
-    ) {
-    }
+    ) {}
 
     /**
      * This method is invoked for a provisioner event.

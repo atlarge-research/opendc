@@ -133,17 +133,14 @@ internal class SimHostTest {
             object : MetricExporter {
                 override fun export(metrics: Collection<MetricData>): CompletableResultCode {
                     val metricsByName = metrics.associateBy { it.name }
-                    val totalWork = metricsByName["cpu.work.total"]
-                    if (totalWork != null) {
-                        requestedWork += totalWork.doubleSummaryData.points.first().sum.toLong()
+                    metricsByName["cpu.work.total"]?.let {
+                        requestedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
                     }
-                    val grantedWorkCycle = metricsByName["cpu.work.granted"]
-                    if (grantedWorkCycle != null) {
-                        grantedWork += grantedWorkCycle.doubleSummaryData.points.first().sum.toLong()
+                    metricsByName["cpu.work.granted"]?.let {
+                        grantedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
                     }
-                    val overcommittedWorkCycle = metricsByName["cpu.work.overcommit"]
-                    if (overcommittedWorkCycle != null) {
-                        overcommittedWork += overcommittedWorkCycle.doubleSummaryData.points.first().sum.toLong()
+                    metricsByName["cpu.work.overcommit"]?.let {
+                        overcommittedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
                     }
                     return CompletableResultCode.ofSuccess()
                 }
@@ -236,10 +233,10 @@ internal class SimHostTest {
                 override fun export(metrics: Collection<MetricData>): CompletableResultCode {
                     val metricsByName = metrics.associateBy { it.name }
                     metricsByName["cpu.work.total"]?.let {
-                        requestedWork += it.doubleSummaryData.points.first().sum.toLong()
+                        requestedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
                     }
                     metricsByName["cpu.work.granted"]?.let {
-                        grantedWork += it.doubleSummaryData.points.first().sum.toLong()
+                        grantedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
                     }
                     return CompletableResultCode.ofSuccess()
                 }

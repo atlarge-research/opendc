@@ -155,7 +155,7 @@ public class WorkflowServiceImpl(
     /**
      * The number of jobs that have been submitted to the service.
      */
-    private val submittedJobs = meter.longCounterBuilder("jobs.submitted")
+    private val submittedJobs = meter.counterBuilder("jobs.submitted")
         .setDescription("Number of submitted jobs")
         .setUnit("1")
         .build()
@@ -163,7 +163,7 @@ public class WorkflowServiceImpl(
     /**
      * The number of jobs that are running.
      */
-    private val runningJobs = meter.longUpDownCounterBuilder("jobs.active")
+    private val runningJobs = meter.upDownCounterBuilder("jobs.active")
         .setDescription("Number of jobs running")
         .setUnit("1")
         .build()
@@ -171,7 +171,7 @@ public class WorkflowServiceImpl(
     /**
      * The number of jobs that have finished running.
      */
-    private val finishedJobs = meter.longCounterBuilder("jobs.finished")
+    private val finishedJobs = meter.counterBuilder("jobs.finished")
         .setDescription("Number of jobs that finished running")
         .setUnit("1")
         .build()
@@ -179,7 +179,7 @@ public class WorkflowServiceImpl(
     /**
      * The number of tasks that have been submitted to the service.
      */
-    private val submittedTasks = meter.longCounterBuilder("tasks.submitted")
+    private val submittedTasks = meter.counterBuilder("tasks.submitted")
         .setDescription("Number of submitted tasks")
         .setUnit("1")
         .build()
@@ -187,7 +187,7 @@ public class WorkflowServiceImpl(
     /**
      * The number of jobs that are running.
      */
-    private val runningTasks = meter.longUpDownCounterBuilder("tasks.active")
+    private val runningTasks = meter.upDownCounterBuilder("tasks.active")
         .setDescription("Number of tasks running")
         .setUnit("1")
         .build()
@@ -195,7 +195,7 @@ public class WorkflowServiceImpl(
     /**
      * The number of jobs that have finished running.
      */
-    private val finishedTasks = meter.longCounterBuilder("tasks.finished")
+    private val finishedTasks = meter.counterBuilder("tasks.finished")
         .setDescription("Number of tasks that finished running")
         .setUnit("1")
         .build()

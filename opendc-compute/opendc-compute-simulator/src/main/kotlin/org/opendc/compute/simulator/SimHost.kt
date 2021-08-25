@@ -22,8 +22,9 @@
 
 package org.opendc.compute.simulator
 
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
-import io.opentelemetry.api.metrics.common.Labels
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.compute.api.Flavor
@@ -107,15 +108,13 @@ public class SimHost(
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
-
-                _batch.put(_cpuWork, requestedWork.toDouble())
-                _batch.put(_cpuWorkGranted, grantedWork.toDouble())
-                _batch.put(_cpuWorkOvercommit, overcommittedWork.toDouble())
-                _batch.put(_cpuWorkInterference, interferedWork.toDouble())
-                _batch.put(_cpuUsage, cpuUsage)
-                _batch.put(_cpuDemand, cpuDemand)
-                _batch.put(_cpuPower, machine.psu.powerDraw)
-                _batch.record()
+                _totalWork.add(requestedWork.toDouble())
+                _grantedWork.add(grantedWork.toDouble())
+                _overcommittedWork.add(overcommittedWork.toDouble())
+                _interferedWork.add(interferedWork.toDouble())
+                _cpuDemand.record(cpuDemand)
+                _cpuUsage.record(cpuUsage)
+                _powerUsage.record(machine.psu.powerDraw)
             }
         }
     )
@@ -135,86 +134,92 @@ public class SimHost(
             field = value
         }
 
-    override val model: HostModel = HostModel(model.cpus.size, model.memory.map { it.size }.sum())
+    override val model: HostModel = HostModel(model.cpus.size, model.memory.sumOf { it.size })
 
     /**
-     * The number of guests on the host.
+     * The total number of guests.
      */
-    private val _guests = meter.longUpDownCounterBuilder("guests.total")
+    private val _guests = meter.upDownCounterBuilder("guests.total")
         .setDescription("Number of guests")
         .setUnit("1")
         .build()
-        .bind(Labels.of("host", uid.toString()))
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The number of active guests on the host.
      */
-    private val _activeGuests = meter.longUpDownCounterBuilder("guests.active")
+    private val _activeGuests = meter.upDownCounterBuilder("guests.active")
         .setDescription("Number of active guests")
         .setUnit("1")
         .build()
-        .bind(Labels.of("host", uid.toString()))
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
-     * The CPU usage on the host.
+     * The CPU demand of the host.
      */
-    private val _cpuUsage = meter.doubleValueRecorderBuilder("cpu.usage")
-        .setDescription("The amount of CPU resources used by the host")
-        .setUnit("MHz")
-        .build()
-
-    /**
-     * The CPU demand on the host.
-     */
-    private val _cpuDemand = meter.doubleValueRecorderBuilder("cpu.demand")
+    private val _cpuDemand = meter.histogramBuilder("cpu.demand")
         .setDescription("The amount of CPU resources the guests would use if there were no CPU contention or CPU limits")
         .setUnit("MHz")
         .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
-     * The requested work for the CPU.
+     * The CPU usage of the host.
      */
-    private val _cpuPower = meter.doubleValueRecorderBuilder("power.usage")
+    private val _cpuUsage = meter.histogramBuilder("cpu.usage")
+        .setDescription("The amount of CPU resources used by the host")
+        .setUnit("MHz")
+        .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
+
+    /**
+     * The power usage of the host.
+     */
+    private val _powerUsage = meter.histogramBuilder("power.usage")
         .setDescription("The amount of power used by the CPU")
         .setUnit("W")
         .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
-     * The requested work for the CPU.
+     * The total amount of work supplied to the CPU.
      */
-    private val _cpuWork = meter.doubleValueRecorderBuilder("cpu.work.total")
+    private val _totalWork = meter.counterBuilder("cpu.work.total")
         .setDescription("The amount of work supplied to the CPU")
         .setUnit("1")
+        .ofDoubles()
         .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
-     * The work actually performed by the CPU.
+     * The work performed by the CPU.
      */
-    private val _cpuWorkGranted = meter.doubleValueRecorderBuilder("cpu.work.granted")
+    private val _grantedWork = meter.counterBuilder("cpu.work.granted")
         .setDescription("The amount of work performed by the CPU")
         .setUnit("1")
+        .ofDoubles()
         .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
-     * The work that could not be performed by the CPU due to overcommitting resource.
+     * The amount not performed by the CPU due to overcommitment.
      */
-    private val _cpuWorkOvercommit = meter.doubleValueRecorderBuilder("cpu.work.overcommit")
+    private val _overcommittedWork = meter.counterBuilder("cpu.work.overcommit")
         .setDescription("The amount of work not performed by the CPU due to overcommitment")
         .setUnit("1")
+        .ofDoubles()
         .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
-     * The work that could not be performed by the CPU due to interference.
+     * The amount of work not performed by the CPU due to interference.
      */
-    private val _cpuWorkInterference = meter.doubleValueRecorderBuilder("cpu.work.interference")
+    private val _interferedWork = meter.counterBuilder("cpu.work.interference")
         .setDescription("The amount of work not performed by the CPU due to interference")
         .setUnit("1")
+        .ofDoubles()
         .build()
-
-    /**
-     * The batch recorder used to record multiple metrics atomically.
-     */
-    private val _batch = meter.newBatchRecorder("host", uid.toString())
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     init {
         // Launch hypervisor onto machine
@@ -273,8 +278,8 @@ public class SimHost(
 
     override suspend fun delete(server: Server) {
         val guest = guests.remove(server) ?: return
-        guest.terminate()
         _guests.add(-1)
+        guest.terminate()
     }
 
     override fun addListener(listener: HostListener) {

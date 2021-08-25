@@ -106,7 +106,7 @@ internal class ComputeServiceImpl(
     /**
      * The number of servers that have been submitted to the service for provisioning.
      */
-    private val _submittedServers = meter.longCounterBuilder("servers.submitted")
+    private val _submittedServers = meter.counterBuilder("servers.submitted")
         .setDescription("Number of start requests")
         .setUnit("1")
         .build()
@@ -114,7 +114,7 @@ internal class ComputeServiceImpl(
     /**
      * The number of servers that failed to be scheduled.
      */
-    private val _unscheduledServers = meter.longCounterBuilder("servers.unscheduled")
+    private val _unscheduledServers = meter.counterBuilder("servers.unscheduled")
         .setDescription("Number of unscheduled servers")
         .setUnit("1")
         .build()
@@ -122,7 +122,7 @@ internal class ComputeServiceImpl(
     /**
      * The number of servers that are waiting to be provisioned.
      */
-    private val _waitingServers = meter.longUpDownCounterBuilder("servers.waiting")
+    private val _waitingServers = meter.upDownCounterBuilder("servers.waiting")
         .setDescription("Number of servers waiting to be provisioned")
         .setUnit("1")
         .build()
@@ -130,7 +130,7 @@ internal class ComputeServiceImpl(
     /**
      * The number of servers that are waiting to be provisioned.
      */
-    private val _runningServers = meter.longUpDownCounterBuilder("servers.active")
+    private val _runningServers = meter.upDownCounterBuilder("servers.active")
         .setDescription("Number of servers currently running")
         .setUnit("1")
         .build()
@@ -138,7 +138,7 @@ internal class ComputeServiceImpl(
     /**
      * The number of servers that have finished running.
      */
-    private val _finishedServers = meter.longCounterBuilder("servers.finished")
+    private val _finishedServers = meter.counterBuilder("servers.finished")
         .setDescription("Number of servers that finished running")
         .setUnit("1")
         .build()
@@ -146,7 +146,7 @@ internal class ComputeServiceImpl(
     /**
      * The number of hosts registered at the compute service.
      */
-    private val _hostCount = meter.longUpDownCounterBuilder("hosts.total")
+    private val _hostCount = meter.upDownCounterBuilder("hosts.total")
         .setDescription("Number of hosts")
         .setUnit("1")
         .build()
@@ -154,7 +154,7 @@ internal class ComputeServiceImpl(
     /**
      * The number of available hosts registered at the compute service.
      */
-    private val _availableHostCount = meter.longUpDownCounterBuilder("hosts.available")
+    private val _availableHostCount = meter.upDownCounterBuilder("hosts.available")
         .setDescription("Number of available hosts")
         .setUnit("1")
         .build()

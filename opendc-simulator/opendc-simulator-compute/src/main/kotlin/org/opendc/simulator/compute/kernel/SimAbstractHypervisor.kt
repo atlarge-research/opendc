@@ -60,6 +60,12 @@ public abstract class SimAbstractHypervisor(
         get() = _vms
 
     /**
+     * The resource counters associated with the hypervisor.
+     */
+    public override val counters: SimResourceCounters
+        get() = switch.counters
+
+    /**
      * The scaling governors attached to the physical CPUs backing this hypervisor.
      */
     private val governors = mutableListOf<ScalingGovernor.Logic>()

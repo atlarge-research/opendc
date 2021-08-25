@@ -45,10 +45,10 @@ public class WebExperimentMonitor : ExperimentMonitor {
 
     override fun reportHostSlice(
         time: Long,
-        requestedBurst: Long,
-        grantedBurst: Long,
-        overcommissionedBurst: Long,
-        interferedBurst: Long,
+        requestedBurst: Double,
+        grantedBurst: Double,
+        overcommissionedBurst: Double,
+        interferedBurst: Double,
         cpuUsage: Double,
         cpuDemand: Double,
         powerDraw: Double,

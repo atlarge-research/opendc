@@ -24,11 +24,7 @@ package org.opendc.experiments.capelin
 
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory
-import io.opentelemetry.sdk.metrics.common.InstrumentType
 import io.opentelemetry.sdk.metrics.export.MetricProducer
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector
-import io.opentelemetry.sdk.metrics.view.View
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
@@ -298,18 +294,9 @@ suspend fun processTrace(
  * Create a [MeterProvider] instance for the experiment.
  */
 fun createMeterProvider(clock: Clock): MeterProvider {
-    val powerSelector = InstrumentSelector.builder()
-        .setInstrumentNameRegex("power\\.usage")
-        .setInstrumentType(InstrumentType.VALUE_RECORDER)
-        .build()
-    val powerView = View.builder()
-        .setAggregatorFactory(AggregatorFactory.lastValue())
-        .build()
-
     return SdkMeterProvider
         .builder()
         .setClock(clock.toOtelClock())
-        .registerView(powerSelector, powerView)
         .build()
 }
 
