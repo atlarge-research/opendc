@@ -23,7 +23,6 @@
 package org.opendc.simulator.compute.kernel
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.*
@@ -64,9 +63,6 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testTrace() = runBlockingSimulation {
-        val usagePm = mutableListOf<Double>()
-        val usageVm = mutableListOf<Double>()
-
         val duration = 5 * 60L
         val workloadA =
             SimTraceWorkload(
@@ -84,27 +80,15 @@ internal class SimSpaceSharedHypervisorTest {
         )
         val hypervisor = SimSpaceSharedHypervisor(interpreter)
 
-        val colA = launch { machine.usage.toList(usagePm) }
         launch { machine.run(hypervisor) }
-
-        yield()
-
         val vm = hypervisor.createMachine(machineModel)
-        val colB = launch { vm.usage.toList(usageVm) }
         vm.run(workloadA)
         yield()
 
         vm.close()
         machine.close()
-        colA.cancel()
-        colB.cancel()
 
-        assertAll(
-            { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), usagePm) { "Correct PM usage" } },
-            // Temporary limitation is that VMs do not emit usage information
-            // { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), usageVm) { "Correct VM usage" } },
-            { assertEquals(5 * 60L * 4000, clock.millis()) { "Took enough time" } }
-        )
+        assertEquals(5 * 60L * 4000, clock.millis()) { "Took enough time" }
     }
 
     /**

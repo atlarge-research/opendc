@@ -23,8 +23,6 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import org.opendc.simulator.compute.device.SimNetworkAdapter
 import org.opendc.simulator.compute.device.SimPeripheral
 import org.opendc.simulator.compute.model.MachineModel
@@ -48,20 +46,6 @@ public abstract class SimAbstractMachine(
     final override val parent: SimResourceSystem?,
     final override val model: MachineModel
 ) : SimMachine, SimResourceSystem {
-    /**
-     * A [StateFlow] representing the CPU usage of the simulated machine.
-     */
-    private val _usage = MutableStateFlow(0.0)
-    public final override val usage: StateFlow<Double>
-        get() = _usage
-
-    /**
-     * The speed of the CPU cores.
-     */
-    public val speed: DoubleArray
-        get() = _speed
-    private var _speed = doubleArrayOf()
-
     /**
      * The resources allocated for this machine.
      */
@@ -106,10 +90,6 @@ public abstract class SimAbstractMachine(
 
         val ctx = Context(meta)
 
-        // Before the workload starts, initialize the initial power draw
-        _speed = DoubleArray(model.cpus.size) { 0.0 }
-        updateUsage(0.0)
-
         return suspendCancellableCoroutine { cont ->
             this.cont = cont
 
@@ -134,26 +114,6 @@ public abstract class SimAbstractMachine(
 
         isTerminated = true
         cancel()
-    }
-
-    /* SimResourceSystem */
-    override fun onConverge(timestamp: Long) {
-        val totalCapacity = model.cpus.sumOf { it.frequency }
-        val cpus = cpus
-        var totalSpeed = 0.0
-        for (cpu in cpus) {
-            _speed[cpu.model.id] = cpu.speed
-            totalSpeed += cpu.speed
-        }
-
-        updateUsage(totalSpeed / totalCapacity)
-    }
-
-    /**
-     * This method is invoked when the usage of the machine is updated.
-     */
-    protected open fun updateUsage(usage: Double) {
-        _usage.value = usage
     }
 
     /**
