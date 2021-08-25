@@ -68,16 +68,16 @@ internal class SimHypervisorTest {
     @Test
     fun testOvercommittedSingle() = runBlockingSimulation {
         val listener = object : SimHypervisor.Listener {
-            var totalRequestedWork = 0L
-            var totalGrantedWork = 0L
-            var totalOvercommittedWork = 0L
+            var totalRequestedWork = 0.0
+            var totalGrantedWork = 0.0
+            var totalOvercommittedWork = 0.0
 
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
-                requestedWork: Long,
-                grantedWork: Long,
-                overcommittedWork: Long,
-                interferedWork: Long,
+                requestedWork: Double,
+                grantedWork: Double,
+                overcommittedWork: Double,
+                interferedWork: Double,
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
@@ -117,9 +117,9 @@ internal class SimHypervisorTest {
         machine.close()
 
         assertAll(
-            { assertEquals(1113300, listener.totalRequestedWork, "Requested Burst does not match") },
-            { assertEquals(1023300, listener.totalGrantedWork, "Granted Burst does not match") },
-            { assertEquals(90000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
+            { assertEquals(1113300.0, listener.totalRequestedWork, "Requested Burst does not match") },
+            { assertEquals(1023300.0, listener.totalGrantedWork, "Granted Burst does not match") },
+            { assertEquals(90000.0, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
             { assertEquals(listOf(0.0, 0.00875, 1.0, 0.0, 0.0571875, 0.0), res) { "VM usage is correct" } },
             { assertEquals(1200000, clock.millis()) { "Current time is correct" } }
         )
@@ -131,16 +131,16 @@ internal class SimHypervisorTest {
     @Test
     fun testOvercommittedDual() = runBlockingSimulation {
         val listener = object : SimHypervisor.Listener {
-            var totalRequestedWork = 0L
-            var totalGrantedWork = 0L
-            var totalOvercommittedWork = 0L
+            var totalRequestedWork = 0.0
+            var totalGrantedWork = 0.0
+            var totalOvercommittedWork = 0.0
 
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
-                requestedWork: Long,
-                grantedWork: Long,
-                overcommittedWork: Long,
-                interferedWork: Long,
+                requestedWork: Double,
+                grantedWork: Double,
+                overcommittedWork: Double,
+                interferedWork: Double,
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
@@ -196,9 +196,9 @@ internal class SimHypervisorTest {
         yield()
 
         assertAll(
-            { assertEquals(2073600, listener.totalRequestedWork, "Requested Burst does not match") },
-            { assertEquals(1053600, listener.totalGrantedWork, "Granted Burst does not match") },
-            { assertEquals(1020000, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
+            { assertEquals(2073600.0, listener.totalRequestedWork, "Requested Burst does not match") },
+            { assertEquals(1053600.0, listener.totalGrantedWork, "Granted Burst does not match") },
+            { assertEquals(1020000.0, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
             { assertEquals(1200000, clock.millis()) }
         )
     }

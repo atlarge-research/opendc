@@ -101,17 +101,17 @@ public class SimHost(
         listener = object : SimHypervisor.Listener {
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
-                requestedWork: Long,
-                grantedWork: Long,
-                overcommittedWork: Long,
-                interferedWork: Long,
+                requestedWork: Double,
+                grantedWork: Double,
+                overcommittedWork: Double,
+                interferedWork: Double,
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
-                _totalWork.add(requestedWork.toDouble())
-                _grantedWork.add(grantedWork.toDouble())
-                _overcommittedWork.add(overcommittedWork.toDouble())
-                _interferedWork.add(interferedWork.toDouble())
+                _totalWork.add(requestedWork)
+                _grantedWork.add(grantedWork)
+                _overcommittedWork.add(overcommittedWork)
+                _interferedWork.add(interferedWork)
                 _cpuDemand.record(cpuDemand)
                 _cpuUsage.record(cpuUsage)
                 _powerUsage.record(machine.psu.powerDraw)

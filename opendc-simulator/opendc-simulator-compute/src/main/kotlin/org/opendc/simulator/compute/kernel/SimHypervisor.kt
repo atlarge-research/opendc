@@ -64,10 +64,10 @@ public interface SimHypervisor : SimWorkload {
          */
         public fun onSliceFinish(
             hypervisor: SimHypervisor,
-            requestedWork: Long,
-            grantedWork: Long,
-            overcommittedWork: Long,
-            interferedWork: Long,
+            requestedWork: Double,
+            grantedWork: Double,
+            overcommittedWork: Double,
+            interferedWork: Double,
             cpuUsage: Double,
             cpuDemand: Double
         )
