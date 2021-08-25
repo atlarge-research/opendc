@@ -22,6 +22,7 @@
 
 package org.opendc.compute.simulator
 
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
@@ -59,7 +60,7 @@ public class SimHost(
     override val meta: Map<String, Any>,
     context: CoroutineContext,
     interpreter: SimResourceInterpreter,
-    meter: Meter,
+    private val meter: Meter,
     hypervisor: SimHypervisorProvider,
     scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
     powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
@@ -282,6 +283,11 @@ public class SimHost(
             HostState.DOWN -> _downTime.add(duration)
         }
 
+        // Track time of guests
+        for (guest in guests.values) {
+            guest.reportTime()
+        }
+
         _lastReport = now
     }
 
@@ -385,6 +391,33 @@ public class SimHost(
     private inner class Guest(val server: Server, val machine: SimMachine) {
         var state: ServerState = ServerState.TERMINATED
 
+        /**
+         * The amount of time in the system.
+         */
+        private val _totalTime = meter.counterBuilder("guest.time.total")
+            .setDescription("The amount of time in the system")
+            .setUnit("ms")
+            .build()
+            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
+
+        /**
+         * The uptime of the guest.
+         */
+        private val _runningTime = meter.counterBuilder("guest.time.running")
+            .setDescription("The uptime of the guest")
+            .setUnit("ms")
+            .build()
+            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
+
+        /**
+         * The time the guest is in an error state.
+         */
+        private val _errorTime = meter.counterBuilder("guest.time.error")
+            .setDescription("The time the guest is in an error state")
+            .setUnit("ms")
+            .build()
+            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
+
         suspend fun start() {
             when (state) {
                 ServerState.TERMINATED, ServerState.ERROR -> {
@@ -461,6 +494,25 @@ public class SimHost(
                     ServerState.ERROR
 
             onGuestStop(this)
+        }
+
+        private var _lastReport = clock.millis()
+
+        fun reportTime() {
+            if (state == ServerState.DELETED)
+                return
+
+            val now = clock.millis()
+            val duration = now - _lastReport
+
+            _totalTime.add(duration)
+            when (state) {
+                ServerState.RUNNING -> _runningTime.add(duration)
+                ServerState.ERROR -> _errorTime.add(duration)
+                else -> {}
+            }
+
+            _lastReport = now
         }
     }
 }

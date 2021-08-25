@@ -191,6 +191,8 @@ internal class SimHostTest {
         var grantedWork = 0L
         var totalTime = 0L
         var downTime = 0L
+        var guestTotalTime = 0L
+        var guestDownTime = 0L
 
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
@@ -246,6 +248,12 @@ internal class SimHostTest {
                     metricsByName["host.time.down"]?.let {
                         downTime = it.longSumData.points.first().value
                     }
+                    metricsByName["guest.time.total"]?.let {
+                        guestTotalTime = it.longSumData.points.first().value
+                    }
+                    metricsByName["guest.time.error"]?.let {
+                        guestDownTime = it.longSumData.points.first().value
+                    }
                     return CompletableResultCode.ofSuccess()
                 }
 
@@ -284,7 +292,9 @@ internal class SimHostTest {
             { assertEquals(2226039, requestedWork, "Total time does not match") },
             { assertEquals(1086039, grantedWork, "Down time does not match") },
             { assertEquals(1200001, totalTime, "Total time does not match") },
+            { assertEquals(1200001, guestTotalTime, "Guest total time does not match") },
             { assertEquals(5000, downTime, "Down time does not match") },
+            { assertEquals(5000, guestDownTime, "Guest down time does not match") },
         )
     }
 
