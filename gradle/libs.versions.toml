@@ -3,8 +3,9 @@ junit-jupiter = "5.7.2"
 junit-platform = "1.7.2"
 slf4j = "1.7.32"
 log4j = "2.14.1"
-opentelemetry-main = "1.4.1"
-opentelemetry-metrics = "1.4.1-alpha"
+opentelemetry-main = "1.5.0"
+opentelemetry-metrics = "1.5.0-alpha"
+opentelemetry-semconv = "1.5.0-alpha"
 hadoop = "3.3.0"
 ktor = "1.6.2"
 jackson = "2.12.4"
@@ -23,6 +24,8 @@ opentelemetry-api-main = { module = "io.opentelemetry:opentelemetry-api", versio
 opentelemetry-sdk-main = { module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry-main" }
 opentelemetry-api-metrics = { module = "io.opentelemetry:opentelemetry-api-metrics", version.ref = "opentelemetry-metrics" }
 opentelemetry-sdk-metrics = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version.ref = "opentelemetry-metrics" }
+opentelemetry-semconv = { module = "io.opentelemetry:opentelemetry-semconv", version.ref = "opentelemetry-semconv" }
+
 
 # Testing
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }

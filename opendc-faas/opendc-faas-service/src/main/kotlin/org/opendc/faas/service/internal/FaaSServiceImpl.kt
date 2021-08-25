@@ -93,7 +93,7 @@ internal class FaaSServiceImpl(
     /**
      * The total amount of function invocations received by the service.
      */
-    private val _invocations = meter.longCounterBuilder("service.invocations.total")
+    private val _invocations = meter.counterBuilder("service.invocations.total")
         .setDescription("Number of function invocations")
         .setUnit("1")
         .build()
@@ -101,7 +101,7 @@ internal class FaaSServiceImpl(
     /**
      * The amount of function invocations that could be handled directly.
      */
-    private val _timelyInvocations = meter.longCounterBuilder("service.invocations.warm")
+    private val _timelyInvocations = meter.counterBuilder("service.invocations.warm")
         .setDescription("Number of function invocations handled directly")
         .setUnit("1")
         .build()
@@ -109,7 +109,7 @@ internal class FaaSServiceImpl(
     /**
      * The amount of function invocations that were delayed due to function deployment.
      */
-    private val _delayedInvocations = meter.longCounterBuilder("service.invocations.cold")
+    private val _delayedInvocations = meter.counterBuilder("service.invocations.cold")
         .setDescription("Number of function invocations that are delayed")
         .setUnit("1")
         .build()

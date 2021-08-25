@@ -22,11 +22,12 @@
 
 package org.opendc.experiments.capelin.monitor
 
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricExporter
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import org.opendc.compute.service.driver.Host
+import org.opendc.experiments.capelin.extractComputeMetrics
 import java.time.Clock
 
 /**
@@ -37,72 +38,61 @@ public class ExperimentMetricExporter(
     private val clock: Clock,
     private val hosts: Map<String, Host>
 ) : MetricExporter {
-    private val hostKey = AttributeKey.stringKey("host")
 
     override fun export(metrics: Collection<MetricData>): CompletableResultCode {
-        val metricsByName = metrics.associateBy { it.name }
-        reportHostMetrics(metricsByName)
-        reportProvisionerMetrics(metricsByName)
-        return CompletableResultCode.ofSuccess()
+        return try {
+            reportHostMetrics(metrics)
+            reportProvisionerMetrics(metrics)
+            CompletableResultCode.ofSuccess()
+        } catch (e: Throwable) {
+            CompletableResultCode.ofFailure()
+        }
     }
 
-    private fun reportHostMetrics(metrics: Map<String, MetricData>) {
+    private var lastHostMetrics: Map<String, HostMetrics> = emptyMap()
+    private val hostMetricsSingleton = HostMetrics()
+
+    private fun reportHostMetrics(metrics: Collection<MetricData>) {
         val hostMetrics = mutableMapOf<String, HostMetrics>()
         hosts.mapValuesTo(hostMetrics) { HostMetrics() }
 
-        mapDoubleSummary(metrics["cpu.demand"], hostMetrics) { m, v ->
-            m.cpuDemand = v
-        }
-
-        mapDoubleSummary(metrics["cpu.usage"], hostMetrics) { m, v ->
-            m.cpuUsage = v
-        }
-
-        mapDoubleGauge(metrics["power.usage"], hostMetrics) { m, v ->
-            m.powerDraw = v
-        }
-
-        mapDoubleSummary(metrics["cpu.work.total"], hostMetrics) { m, v ->
-            m.requestedBurst = v.toLong()
-        }
-
-        mapDoubleSummary(metrics["cpu.work.granted"], hostMetrics) { m, v ->
-            m.grantedBurst = v.toLong()
-        }
-
-        mapDoubleSummary(metrics["cpu.work.overcommit"], hostMetrics) { m, v ->
-            m.overcommissionedBurst = v.toLong()
-        }
-
-        mapDoubleSummary(metrics["cpu.work.interference"], hostMetrics) { m, v ->
-            m.interferedBurst = v.toLong()
-        }
-
-        mapLongSum(metrics["guests.active"], hostMetrics) { m, v ->
-            m.numberOfDeployedImages = v.toInt()
+        for (metric in metrics) {
+            when (metric.name) {
+                "cpu.demand" -> mapDoubleSummary(metric, hostMetrics) { m, v -> m.cpuDemand = v }
+                "cpu.usage" -> mapDoubleSummary(metric, hostMetrics) { m, v -> m.cpuUsage = v }
+                "power.usage" -> mapDoubleGauge(metric, hostMetrics) { m, v -> m.powerDraw = v }
+                "cpu.work.total" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.totalWork = v }
+                "cpu.work.granted" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.grantedWork = v }
+                "cpu.work.overcommit" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.overcommittedWork = v }
+                "cpu.work.interference" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.interferedWork = v }
+                "guests.active" -> mapLongSum(metric, hostMetrics) { m, v -> m.instanceCount = v.toInt() }
+            }
         }
 
         for ((id, hostMetric) in hostMetrics) {
+            val lastHostMetric = lastHostMetrics.getOrDefault(id, hostMetricsSingleton)
             val host = hosts.getValue(id)
-            monitor.reportHostSlice(
+            monitor.reportHostData(
                 clock.millis(),
-                hostMetric.requestedBurst,
-                hostMetric.grantedBurst,
-                hostMetric.overcommissionedBurst,
-                hostMetric.interferedBurst,
+                hostMetric.totalWork - lastHostMetric.totalWork,
+                hostMetric.grantedWork - lastHostMetric.grantedWork,
+                hostMetric.overcommittedWork - lastHostMetric.overcommittedWork,
+                hostMetric.interferedWork - lastHostMetric.interferedWork,
                 hostMetric.cpuUsage,
                 hostMetric.cpuDemand,
                 hostMetric.powerDraw,
-                hostMetric.numberOfDeployedImages,
+                hostMetric.instanceCount,
                 host
             )
         }
+
+        lastHostMetrics = hostMetrics
     }
 
-    private fun mapDoubleSummary(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
-        val points = data?.doubleSummaryData?.points ?: emptyList()
+    private fun mapDoubleSummary(data: MetricData, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
+        val points = data.doubleSummaryData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.attributes[hostKey]
+            val uid = point.attributes[ResourceAttributes.HOST_ID]
             val hostMetric = hostMetrics[uid]
 
             if (hostMetric != null) {
@@ -116,7 +106,7 @@ public class ExperimentMetricExporter(
     private fun mapDoubleGauge(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
         val points = data?.doubleGaugeData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.attributes[hostKey]
+            val uid = point.attributes[ResourceAttributes.HOST_ID]
             val hostMetric = hostMetrics[uid]
 
             if (hostMetric != null) {
@@ -128,7 +118,7 @@ public class ExperimentMetricExporter(
     private fun mapLongSum(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Long) -> Unit) {
         val points = data?.longSumData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.attributes[hostKey]
+            val uid = point.attributes[ResourceAttributes.HOST_ID]
             val hostMetric = hostMetrics[uid]
 
             if (hostMetric != null) {
@@ -137,35 +127,41 @@ public class ExperimentMetricExporter(
         }
     }
 
-    private fun reportProvisionerMetrics(metrics: Map<String, MetricData>) {
-        val submittedVms = metrics["servers.submitted"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        val queuedVms = metrics["servers.waiting"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        val unscheduledVms = metrics["servers.unscheduled"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        val runningVms = metrics["servers.active"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        val finishedVms = metrics["servers.finished"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        val hosts = metrics["hosts.total"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        val availableHosts = metrics["hosts.available"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
+    private fun mapDoubleSum(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
+        val points = data?.doubleSumData?.points ?: emptyList()
+        for (point in points) {
+            val uid = point.attributes[ResourceAttributes.HOST_ID]
+            val hostMetric = hostMetrics[uid]
 
-        monitor.reportProvisionerMetrics(
+            if (hostMetric != null) {
+                block(hostMetric, point.value)
+            }
+        }
+    }
+
+    private fun reportProvisionerMetrics(metrics: Collection<MetricData>) {
+        val res = extractComputeMetrics(metrics)
+
+        monitor.reportServiceData(
             clock.millis(),
-            hosts,
-            availableHosts,
-            submittedVms,
-            runningVms,
-            finishedVms,
-            queuedVms,
-            unscheduledVms
+            res.hosts,
+            res.availableHosts,
+            res.submittedVms,
+            res.runningVms,
+            res.finishedVms,
+            res.queuedVms,
+            res.unscheduledVms
         )
     }
 
     private class HostMetrics {
-        var requestedBurst: Long = 0
-        var grantedBurst: Long = 0
-        var overcommissionedBurst: Long = 0
-        var interferedBurst: Long = 0
+        var totalWork: Double = 0.0
+        var grantedWork: Double = 0.0
+        var overcommittedWork: Double = 0.0
+        var interferedWork: Double = 0.0
         var cpuUsage: Double = 0.0
         var cpuDemand: Double = 0.0
-        var numberOfDeployedImages: Int = 0
+        var instanceCount: Int = 0
         var powerDraw: Double = 0.0
     }
 

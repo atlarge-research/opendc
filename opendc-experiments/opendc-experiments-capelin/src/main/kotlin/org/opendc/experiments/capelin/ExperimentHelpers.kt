@@ -24,11 +24,8 @@ package org.opendc.experiments.capelin
 
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory
-import io.opentelemetry.sdk.metrics.common.InstrumentType
+import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricProducer
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector
-import io.opentelemetry.sdk.metrics.view.View
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
@@ -212,24 +209,41 @@ class ComputeMetrics {
     var runningVms: Int = 0
     var unscheduledVms: Int = 0
     var finishedVms: Int = 0
+    var hosts: Int = 0
+    var availableHosts = 0
 }
 
 /**
  * Collect the metrics of the compute service.
  */
 fun collectMetrics(metricProducer: MetricProducer): ComputeMetrics {
-    val metrics = metricProducer.collectAllMetrics().associateBy { it.name }
+    return extractComputeMetrics(metricProducer.collectAllMetrics())
+}
+
+/**
+ * Extract an [ComputeMetrics] object from the specified list of metric data.
+ */
+internal fun extractComputeMetrics(metrics: Collection<MetricData>): ComputeMetrics {
     val res = ComputeMetrics()
-    try {
-        // Hack to extract metrics from OpenTelemetry SDK
-        res.submittedVms = metrics["servers.submitted"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        res.queuedVms = metrics["servers.waiting"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        res.unscheduledVms = metrics["servers.unscheduled"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        res.runningVms = metrics["servers.active"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-        res.finishedVms = metrics["servers.finished"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
-    } catch (cause: Throwable) {
-        logger.warn(cause) { "Failed to collect metrics" }
+    for (metric in metrics) {
+        val points = metric.longSumData.points
+
+        if (points.isEmpty()) {
+            continue
+        }
+
+        val value = points.first().value.toInt()
+        when (metric.name) {
+            "servers.submitted" -> res.submittedVms = value
+            "servers.waiting" -> res.queuedVms = value
+            "servers.unscheduled" -> res.unscheduledVms = value
+            "servers.active" -> res.runningVms = value
+            "servers.finished" -> res.finishedVms = value
+            "hosts.total" -> res.hosts = value
+            "hosts.available" -> res.availableHosts = value
+        }
     }
+
     return res
 }
 
@@ -298,18 +312,9 @@ suspend fun processTrace(
  * Create a [MeterProvider] instance for the experiment.
  */
 fun createMeterProvider(clock: Clock): MeterProvider {
-    val powerSelector = InstrumentSelector.builder()
-        .setInstrumentNameRegex("power\\.usage")
-        .setInstrumentType(InstrumentType.VALUE_RECORDER)
-        .build()
-    val powerView = View.builder()
-        .setAggregatorFactory(AggregatorFactory.lastValue())
-        .build()
-
     return SdkMeterProvider
         .builder()
         .setClock(clock.toOtelClock())
-        .registerView(powerSelector, powerView)
         .build()
 }
 

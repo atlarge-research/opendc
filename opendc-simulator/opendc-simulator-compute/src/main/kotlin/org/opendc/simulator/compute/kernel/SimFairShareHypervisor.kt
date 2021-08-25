@@ -77,10 +77,10 @@ public class SimFairShareHypervisor(
             if (timestamp > lastReport) {
                 listener.onSliceFinish(
                     this@SimFairShareHypervisor,
-                    (counters.demand - lastDemand).toLong(),
-                    (counters.actual - lastActual).toLong(),
-                    (counters.overcommit - lastOvercommit).toLong(),
-                    (counters.interference - lastInterference).toLong(),
+                    counters.demand - lastDemand,
+                    counters.actual - lastActual,
+                    counters.overcommit - lastOvercommit,
+                    counters.interference - lastInterference,
                     lastCpuUsage,
                     lastCpuDemand
                 )

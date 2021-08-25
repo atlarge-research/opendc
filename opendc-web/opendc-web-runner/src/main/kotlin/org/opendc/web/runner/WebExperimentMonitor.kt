@@ -43,16 +43,16 @@ public class WebExperimentMonitor : ExperimentMonitor {
         logger.debug { "Host ${host.uid} changed state $newState [$time]" }
     }
 
-    override fun reportHostSlice(
+    override fun reportHostData(
         time: Long,
-        requestedBurst: Long,
-        grantedBurst: Long,
-        overcommissionedBurst: Long,
-        interferedBurst: Long,
+        totalWork: Double,
+        grantedWork: Double,
+        overcommittedWork: Double,
+        interferedWork: Double,
         cpuUsage: Double,
         cpuDemand: Double,
         powerDraw: Double,
-        numberOfDeployedImages: Int,
+        instanceCount: Int,
         host: Host,
     ) {
         processHostEvent(
@@ -60,11 +60,11 @@ public class WebExperimentMonitor : ExperimentMonitor {
                 time,
                 5 * 60 * 1000L,
                 host,
-                numberOfDeployedImages,
-                requestedBurst,
-                grantedBurst,
-                overcommissionedBurst,
-                interferedBurst,
+                instanceCount,
+                totalWork.toLong(),
+                grantedWork.toLong(),
+                overcommittedWork.toLong(),
+                interferedWork.toLong(),
                 cpuUsage,
                 cpuDemand,
                 powerDraw,
@@ -120,7 +120,7 @@ public class WebExperimentMonitor : ExperimentMonitor {
 
     private var provisionerMetrics: AggregateProvisionerMetrics = AggregateProvisionerMetrics()
 
-    override fun reportProvisionerMetrics(
+    override fun reportServiceData(
         time: Long,
         totalHostCount: Int,
         availableHostCount: Int,
