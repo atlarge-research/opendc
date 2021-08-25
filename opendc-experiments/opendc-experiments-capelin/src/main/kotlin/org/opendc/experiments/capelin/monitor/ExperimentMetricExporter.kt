@@ -65,12 +65,12 @@ public class ExperimentMetricExporter(
         for ((id, hostMetric) in hostMetrics) {
             val lastHostMetric = lastHostMetrics.getOrDefault(id, hostMetricsSingleton)
             val host = hosts.getValue(id)
-            monitor.reportHostSlice(
+            monitor.reportHostData(
                 clock.millis(),
-                (hostMetric.requestedBurst - lastHostMetric.requestedBurst).toLong(),
-                (hostMetric.grantedBurst - lastHostMetric.grantedBurst).toLong(),
-                (hostMetric.overcommissionedBurst - lastHostMetric.overcommissionedBurst).toLong(),
-                (hostMetric.interferedBurst - lastHostMetric.interferedBurst).toLong(),
+                hostMetric.requestedBurst - lastHostMetric.requestedBurst,
+                hostMetric.grantedBurst - lastHostMetric.grantedBurst,
+                hostMetric.overcommissionedBurst - lastHostMetric.overcommissionedBurst,
+                hostMetric.interferedBurst - lastHostMetric.interferedBurst,
                 hostMetric.cpuUsage,
                 hostMetric.cpuDemand,
                 hostMetric.powerDraw,
@@ -141,7 +141,7 @@ public class ExperimentMetricExporter(
         val hosts = metrics["hosts.total"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
         val availableHosts = metrics["hosts.available"]?.longSumData?.points?.last()?.value?.toInt() ?: 0
 
-        monitor.reportProvisionerMetrics(
+        monitor.reportServiceData(
             clock.millis(),
             hosts,
             availableHosts,

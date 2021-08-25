@@ -44,23 +44,23 @@ public interface ExperimentMonitor : AutoCloseable {
     /**
      * This method is invoked for a host for each slice that is finishes.
      */
-    public fun reportHostSlice(
+    public fun reportHostData(
         time: Long,
-        requestedBurst: Long,
-        grantedBurst: Long,
-        overcommissionedBurst: Long,
-        interferedBurst: Long,
+        totalWork: Double,
+        grantedWork: Double,
+        overcommittedWork: Double,
+        interferedWork: Double,
         cpuUsage: Double,
         cpuDemand: Double,
         powerDraw: Double,
-        numberOfDeployedImages: Int,
+        instanceCount: Int,
         host: Host
     ) {}
 
     /**
-     * This method is invoked for a provisioner event.
+     * This method is invoked for reporting service data.
      */
-    public fun reportProvisionerMetrics(
+    public fun reportServiceData(
         time: Long,
         totalHostCount: Int,
         availableHostCount: Int,
