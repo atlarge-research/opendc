@@ -402,7 +402,7 @@ internal class ComputeServiceImpl(
 
                     logger.warn("Failed to spawn $server: does not fit [${clock.millis()}]")
 
-                    server.state = ServerState.ERROR
+                    server.state = ServerState.TERMINATED
                     continue
                 } else {
                     break

@@ -170,7 +170,7 @@ internal class ComputeServiceTest {
         server.start()
         delay(5L * 60 * 1000)
         server.refresh()
-        assertEquals(ServerState.ERROR, server.state)
+        assertEquals(ServerState.TERMINATED, server.state)
     }
 
     @Test
@@ -183,7 +183,7 @@ internal class ComputeServiceTest {
         server.start()
         delay(5L * 60 * 1000)
         server.refresh()
-        assertEquals(ServerState.ERROR, server.state)
+        assertEquals(ServerState.TERMINATED, server.state)
     }
 
     @Test
@@ -196,7 +196,7 @@ internal class ComputeServiceTest {
         server.start()
         delay(5L * 60 * 1000)
         server.refresh()
-        assertEquals(ServerState.ERROR, server.state)
+        assertEquals(ServerState.TERMINATED, server.state)
     }
 
     @Test
