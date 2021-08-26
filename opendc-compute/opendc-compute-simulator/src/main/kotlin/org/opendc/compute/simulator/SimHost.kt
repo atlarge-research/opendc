@@ -292,8 +292,8 @@ public class SimHost(
     }
 
     override fun canFit(server: Server): Boolean {
-        val sufficientMemory = machine.model.memory.size >= server.flavor.memorySize
-        val enoughCpus = machine.model.cpus.size >= server.flavor.cpuCount
+        val sufficientMemory = model.memorySize >= server.flavor.memorySize
+        val enoughCpus = model.cpuCount >= server.flavor.cpuCount
         val canFit = hypervisor.canFit(server.flavor.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
