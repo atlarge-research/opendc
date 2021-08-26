@@ -452,6 +452,9 @@ public class SimHost(
         }
 
         suspend fun fail() {
+            if (state != ServerState.RUNNING) {
+                return
+            }
             stop()
             state = ServerState.ERROR
         }
