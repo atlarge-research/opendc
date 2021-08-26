@@ -53,6 +53,8 @@ public class WebExperimentMonitor : ExperimentMonitor {
         cpuDemand: Double,
         powerDraw: Double,
         instanceCount: Int,
+        uptime: Long,
+        downtime: Long,
         host: Host,
     ) {
         processHostEvent(

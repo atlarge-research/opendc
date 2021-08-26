@@ -300,6 +300,8 @@ class CapelinIntegrationTest {
             cpuDemand: Double,
             powerDraw: Double,
             instanceCount: Int,
+            uptime: Long,
+            downtime: Long,
             host: Host,
         ) {
             this.totalWork += totalWork.toLong()

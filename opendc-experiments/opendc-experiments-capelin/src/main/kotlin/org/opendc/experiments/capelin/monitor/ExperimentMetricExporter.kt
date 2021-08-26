@@ -54,7 +54,6 @@ public class ExperimentMetricExporter(
 
     private fun reportHostMetrics(metrics: Collection<MetricData>) {
         val hostMetrics = mutableMapOf<String, HostMetrics>()
-        hosts.mapValuesTo(hostMetrics) { HostMetrics() }
 
         for (metric in metrics) {
             when (metric.name) {
@@ -66,12 +65,15 @@ public class ExperimentMetricExporter(
                 "cpu.work.overcommit" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.overcommittedWork = v }
                 "cpu.work.interference" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.interferedWork = v }
                 "guests.active" -> mapLongSum(metric, hostMetrics) { m, v -> m.instanceCount = v.toInt() }
+                "host.time.up" -> mapLongSum(metric, hostMetrics) { m, v -> m.uptime = v }
+                "host.time.down" -> mapLongSum(metric, hostMetrics) { m, v -> m.downtime = v }
             }
         }
 
         for ((id, hostMetric) in hostMetrics) {
             val lastHostMetric = lastHostMetrics.getOrDefault(id, hostMetricsSingleton)
-            val host = hosts.getValue(id)
+            val host = hosts[id] ?: continue
+
             monitor.reportHostData(
                 clock.millis(),
                 hostMetric.totalWork - lastHostMetric.totalWork,
@@ -82,6 +84,8 @@ public class ExperimentMetricExporter(
                 hostMetric.cpuDemand,
                 hostMetric.powerDraw,
                 hostMetric.instanceCount,
+                hostMetric.uptime - lastHostMetric.uptime,
+                hostMetric.downtime - lastHostMetric.downtime,
                 host
             )
         }
@@ -92,38 +96,28 @@ public class ExperimentMetricExporter(
     private fun mapDoubleSummary(data: MetricData, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
         val points = data.doubleSummaryData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.attributes[ResourceAttributes.HOST_ID]
-            val hostMetric = hostMetrics[uid]
-
-            if (hostMetric != null) {
-                // Take the average of the summary
-                val avg = (point.percentileValues[0].value + point.percentileValues[1].value) / 2
-                block(hostMetric, avg)
-            }
+            val uid = point.attributes[ResourceAttributes.HOST_ID] ?: continue
+            val hostMetric = hostMetrics.computeIfAbsent(uid) { HostMetrics() }
+            val avg = (point.percentileValues[0].value + point.percentileValues[1].value) / 2
+            block(hostMetric, avg)
         }
     }
 
     private fun mapLongSum(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Long) -> Unit) {
         val points = data?.longSumData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.attributes[ResourceAttributes.HOST_ID]
-            val hostMetric = hostMetrics[uid]
-
-            if (hostMetric != null) {
-                block(hostMetric, point.value)
-            }
+            val uid = point.attributes[ResourceAttributes.HOST_ID] ?: continue
+            val hostMetric = hostMetrics.computeIfAbsent(uid) { HostMetrics() }
+            block(hostMetric, point.value)
         }
     }
 
     private fun mapDoubleSum(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
         val points = data?.doubleSumData?.points ?: emptyList()
         for (point in points) {
-            val uid = point.attributes[ResourceAttributes.HOST_ID]
-            val hostMetric = hostMetrics[uid]
-
-            if (hostMetric != null) {
-                block(hostMetric, point.value)
-            }
+            val uid = point.attributes[ResourceAttributes.HOST_ID] ?: continue
+            val hostMetric = hostMetrics.computeIfAbsent(uid) { HostMetrics() }
+            block(hostMetric, point.value)
         }
     }
 
@@ -151,6 +145,8 @@ public class ExperimentMetricExporter(
         var cpuDemand: Double = 0.0
         var instanceCount: Int = 0
         var powerDraw: Double = 0.0
+        var uptime: Long = 0
+        var downtime: Long = 0
     }
 
     override fun flush(): CompletableResultCode = CompletableResultCode.ofSuccess()

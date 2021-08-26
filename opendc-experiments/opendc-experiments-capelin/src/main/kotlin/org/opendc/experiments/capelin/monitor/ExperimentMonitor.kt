@@ -54,6 +54,8 @@ public interface ExperimentMonitor : AutoCloseable {
         cpuDemand: Double,
         powerDraw: Double,
         instanceCount: Int,
+        uptime: Long,
+        downtime: Long,
         host: Host
     ) {}
 

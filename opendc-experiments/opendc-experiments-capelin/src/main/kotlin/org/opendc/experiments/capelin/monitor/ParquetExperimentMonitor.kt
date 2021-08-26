@@ -67,6 +67,8 @@ public class ParquetExperimentMonitor(base: File, partition: String, bufferSize:
         cpuDemand: Double,
         powerDraw: Double,
         instanceCount: Int,
+        uptime: Long,
+        downtime: Long,
         host: Host
     ) {
         hostWriter.write(
