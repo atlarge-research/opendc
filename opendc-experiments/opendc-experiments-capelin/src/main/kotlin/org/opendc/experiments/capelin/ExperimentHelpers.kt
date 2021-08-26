@@ -255,7 +255,7 @@ suspend fun processTrace(
     reader: TraceReader<SimWorkload>,
     scheduler: ComputeService,
     chan: Channel<Unit>,
-    monitor: ExperimentMonitor
+    monitor: ExperimentMonitor? = null,
 ) {
     val client = scheduler.newClient()
     val image = client.newImage("vm-image")
@@ -289,7 +289,7 @@ suspend fun processTrace(
                     suspendCancellableCoroutine { cont ->
                         server.watch(object : ServerWatcher {
                             override fun onStateChanged(server: Server, newState: ServerState) {
-                                monitor.reportVmStateChange(clock.millis(), server, newState)
+                                monitor?.reportVmStateChange(clock.millis(), server, newState)
 
                                 if (newState == ServerState.TERMINATED) {
                                     cont.resume(Unit)
