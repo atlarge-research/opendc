@@ -61,14 +61,14 @@ public class ScenarioManager(private val client: ApiClient) {
     /**
      * Persist the specified results.
      */
-    public suspend fun finish(id: String, results: List<WebExperimentMonitor.Result>) {
+    public suspend fun finish(id: String, results: List<WebComputeMonitor.Result>) {
         client.updateJob(
             id, SimulationState.FINISHED,
             mapOf(
-                "total_requested_burst" to results.map { it.totalRequestedBurst },
-                "total_granted_burst" to results.map { it.totalGrantedBurst },
-                "total_overcommitted_burst" to results.map { it.totalOvercommittedBurst },
-                "total_interfered_burst" to results.map { it.totalInterferedBurst },
+                "total_requested_burst" to results.map { it.totalWork },
+                "total_granted_burst" to results.map { it.totalGrantedWork },
+                "total_overcommitted_burst" to results.map { it.totalOvercommittedWork },
+                "total_interfered_burst" to results.map { it.totalInterferedWork },
                 "mean_cpu_usage" to results.map { it.meanCpuUsage },
                 "mean_cpu_demand" to results.map { it.meanCpuDemand },
                 "mean_num_deployed_images" to results.map { it.meanNumDeployedImages },

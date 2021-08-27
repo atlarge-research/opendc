@@ -38,6 +38,7 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorFailures)
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
     implementation(libs.opentelemetry.semconv)
 
     implementation(libs.kotlin.logging)

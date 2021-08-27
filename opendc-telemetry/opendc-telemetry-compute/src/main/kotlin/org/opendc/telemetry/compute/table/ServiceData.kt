@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.telemetry
+package org.opendc.telemetry.compute.table
 
 /**
- * An event that occurs within the system.
+ * A trace entry for the compute service.
  */
-public abstract class Event(public val name: String) {
-    /**
-     * The time of occurrence of this event.
-     */
-    public abstract val timestamp: Long
-}
+public data class ServiceData(
+    public val timestamp: Long,
+    public val hostCount: Int,
+    public val activeHostCount: Int,
+    public val instanceCount: Int,
+    public val runningInstanceCount: Int,
+    public val finishedInstanceCount: Int,
+    public val queuedInstanceCount: Int,
+    public val failedInstanceCount: Int
+)

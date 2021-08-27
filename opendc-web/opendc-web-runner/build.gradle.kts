@@ -39,6 +39,7 @@ dependencies {
     implementation(projects.opendcExperiments.opendcExperimentsCapelin)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
 
     implementation(libs.kotlin.logging)
     implementation(libs.clikt)

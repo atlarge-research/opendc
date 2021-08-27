@@ -20,56 +20,42 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.monitor
+package org.opendc.telemetry.compute
 
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostState
+import org.opendc.telemetry.compute.table.HostData
+import org.opendc.telemetry.compute.table.ServerData
+import org.opendc.telemetry.compute.table.ServiceData
 
 /**
- * A monitor watches the events of an experiment.
+ * A monitor that tracks the metrics and events of the OpenDC Compute service.
  */
-public interface ExperimentMonitor : AutoCloseable {
+public interface ComputeMonitor {
     /**
-     * This method is invoked when the state of a VM changes.
+     * This method is invoked when the state of a [Server] changes.
      */
-    public fun reportVmStateChange(time: Long, server: Server, newState: ServerState) {}
+    public fun onStateChange(timestamp: Long, server: Server, newState: ServerState) {}
 
     /**
-     * This method is invoked when the state of a host changes.
+     * This method is invoked when the state of a [Host] changes.
      */
-    public fun reportHostStateChange(time: Long, host: Host, newState: HostState) {}
+    public fun onStateChange(time: Long, host: Host, newState: HostState) {}
 
     /**
-     * This method is invoked for a host for each slice that is finishes.
+     * Record the specified [data].
      */
-    public fun reportHostData(
-        time: Long,
-        totalWork: Double,
-        grantedWork: Double,
-        overcommittedWork: Double,
-        interferedWork: Double,
-        cpuUsage: Double,
-        cpuDemand: Double,
-        powerDraw: Double,
-        instanceCount: Int,
-        uptime: Long,
-        downtime: Long,
-        host: Host
-    ) {}
+    public fun record(data: ServerData) {}
 
     /**
-     * This method is invoked for reporting service data.
+     * Record the specified [data].
      */
-    public fun reportServiceData(
-        time: Long,
-        totalHostCount: Int,
-        availableHostCount: Int,
-        totalVmCount: Int,
-        activeVmCount: Int,
-        inactiveVmCount: Int,
-        waitingVmCount: Int,
-        failedVmCount: Int
-    ) {}
+    public fun record(data: HostData) {}
+
+    /**
+     * Record the specified [data].
+     */
+    public fun record(data: ServiceData) {}
 }

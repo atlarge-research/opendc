@@ -20,40 +20,40 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.monitor
+package org.opendc.telemetry.compute
 
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricExporter
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import org.opendc.compute.service.driver.Host
-import org.opendc.experiments.capelin.extractComputeMetrics
+import org.opendc.telemetry.compute.table.HostData
 import java.time.Clock
 
 /**
- * A [MetricExporter] that exports the metrics to the [ExperimentMonitor].
+ * A [MetricExporter] that redirects data to a [ComputeMonitor] implementation.
  */
-public class ExperimentMetricExporter(
-    private val monitor: ExperimentMonitor,
+public class ComputeMetricExporter(
     private val clock: Clock,
-    private val hosts: Map<String, Host>
+    private val hosts: Map<String, Host>,
+    private val monitor: ComputeMonitor
 ) : MetricExporter {
 
     override fun export(metrics: Collection<MetricData>): CompletableResultCode {
         return try {
             reportHostMetrics(metrics)
-            reportProvisionerMetrics(metrics)
+            reportServiceMetrics(metrics)
             CompletableResultCode.ofSuccess()
         } catch (e: Throwable) {
             CompletableResultCode.ofFailure()
         }
     }
 
-    private var lastHostMetrics: Map<String, HostMetrics> = emptyMap()
-    private val hostMetricsSingleton = HostMetrics()
+    private var lastHostMetrics: Map<String, HBuffer> = emptyMap()
+    private val hostMetricsSingleton = HBuffer()
 
     private fun reportHostMetrics(metrics: Collection<MetricData>) {
-        val hostMetrics = mutableMapOf<String, HostMetrics>()
+        val hostMetrics = mutableMapOf<String, HBuffer>()
 
         for (metric in metrics) {
             when (metric.name) {
@@ -74,69 +74,59 @@ public class ExperimentMetricExporter(
             val lastHostMetric = lastHostMetrics.getOrDefault(id, hostMetricsSingleton)
             val host = hosts[id] ?: continue
 
-            monitor.reportHostData(
-                clock.millis(),
-                hostMetric.totalWork - lastHostMetric.totalWork,
-                hostMetric.grantedWork - lastHostMetric.grantedWork,
-                hostMetric.overcommittedWork - lastHostMetric.overcommittedWork,
-                hostMetric.interferedWork - lastHostMetric.interferedWork,
-                hostMetric.cpuUsage,
-                hostMetric.cpuDemand,
-                hostMetric.powerDraw,
-                hostMetric.instanceCount,
-                hostMetric.uptime - lastHostMetric.uptime,
-                hostMetric.downtime - lastHostMetric.downtime,
-                host
+            monitor.record(
+                HostData(
+                    clock.millis(),
+                    host,
+                    hostMetric.totalWork - lastHostMetric.totalWork,
+                    hostMetric.grantedWork - lastHostMetric.grantedWork,
+                    hostMetric.overcommittedWork - lastHostMetric.overcommittedWork,
+                    hostMetric.interferedWork - lastHostMetric.interferedWork,
+                    hostMetric.cpuUsage,
+                    hostMetric.cpuDemand,
+                    hostMetric.instanceCount,
+                    hostMetric.powerDraw,
+                    hostMetric.uptime - lastHostMetric.uptime,
+                    hostMetric.downtime - lastHostMetric.downtime,
+                )
             )
         }
 
         lastHostMetrics = hostMetrics
     }
 
-    private fun mapDoubleSummary(data: MetricData, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
+    private fun mapDoubleSummary(data: MetricData, hostMetrics: MutableMap<String, HBuffer>, block: (HBuffer, Double) -> Unit) {
         val points = data.doubleSummaryData?.points ?: emptyList()
         for (point in points) {
             val uid = point.attributes[ResourceAttributes.HOST_ID] ?: continue
-            val hostMetric = hostMetrics.computeIfAbsent(uid) { HostMetrics() }
+            val hostMetric = hostMetrics.computeIfAbsent(uid) { HBuffer() }
             val avg = (point.percentileValues[0].value + point.percentileValues[1].value) / 2
             block(hostMetric, avg)
         }
     }
 
-    private fun mapLongSum(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Long) -> Unit) {
+    private fun mapLongSum(data: MetricData?, hostMetrics: MutableMap<String, HBuffer>, block: (HBuffer, Long) -> Unit) {
         val points = data?.longSumData?.points ?: emptyList()
         for (point in points) {
             val uid = point.attributes[ResourceAttributes.HOST_ID] ?: continue
-            val hostMetric = hostMetrics.computeIfAbsent(uid) { HostMetrics() }
+            val hostMetric = hostMetrics.computeIfAbsent(uid) { HBuffer() }
             block(hostMetric, point.value)
         }
     }
 
-    private fun mapDoubleSum(data: MetricData?, hostMetrics: MutableMap<String, HostMetrics>, block: (HostMetrics, Double) -> Unit) {
+    private fun mapDoubleSum(data: MetricData?, hostMetrics: MutableMap<String, HBuffer>, block: (HBuffer, Double) -> Unit) {
         val points = data?.doubleSumData?.points ?: emptyList()
         for (point in points) {
             val uid = point.attributes[ResourceAttributes.HOST_ID] ?: continue
-            val hostMetric = hostMetrics.computeIfAbsent(uid) { HostMetrics() }
+            val hostMetric = hostMetrics.computeIfAbsent(uid) { HBuffer() }
             block(hostMetric, point.value)
         }
     }
 
-    private fun reportProvisionerMetrics(metrics: Collection<MetricData>) {
-        val res = extractComputeMetrics(metrics)
-
-        monitor.reportServiceData(
-            clock.millis(),
-            res.hosts,
-            res.availableHosts,
-            res.submittedVms,
-            res.runningVms,
-            res.finishedVms,
-            res.queuedVms,
-            res.unscheduledVms
-        )
-    }
-
-    private class HostMetrics {
+    /**
+     * A buffer for host metrics before they are reported.
+     */
+    private class HBuffer {
         var totalWork: Double = 0.0
         var grantedWork: Double = 0.0
         var overcommittedWork: Double = 0.0
@@ -147,6 +137,10 @@ public class ExperimentMetricExporter(
         var powerDraw: Double = 0.0
         var uptime: Long = 0
         var downtime: Long = 0
+    }
+
+    private fun reportServiceMetrics(metrics: Collection<MetricData>) {
+        monitor.record(extractServiceMetrics(clock.millis(), metrics))
     }
 
     override fun flush(): CompletableResultCode = CompletableResultCode.ofSuccess()

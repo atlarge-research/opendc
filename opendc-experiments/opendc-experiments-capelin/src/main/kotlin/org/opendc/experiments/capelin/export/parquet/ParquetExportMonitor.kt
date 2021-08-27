@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,36 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.telemetry
+package org.opendc.experiments.capelin.export.parquet
 
-import org.opendc.compute.api.Server
+import org.opendc.telemetry.compute.ComputeMonitor
+import org.opendc.telemetry.compute.table.HostData
+import org.opendc.telemetry.compute.table.ServiceData
+import java.io.File
 
 /**
- * A periodic report of a virtual machine's metrics.
+ * A [ComputeMonitor] that logs the events to a Parquet file.
  */
-public data class VmEvent(
-    override val timestamp: Long,
-    public val duration: Long,
-    public val vm: Server,
-    public val host: Server,
-    public val requestedBurst: Long,
-    public val grantedBurst: Long,
-    public val overcommissionedBurst: Long,
-    public val interferedBurst: Long,
-    public val cpuUsage: Double,
-    public val cpuDemand: Double
-) : Event("vm-metrics")
+public class ParquetExportMonitor(base: File, partition: String, bufferSize: Int) : ComputeMonitor, AutoCloseable {
+    private val hostWriter = ParquetHostDataWriter(
+        File(base, "host/$partition/data.parquet").also { it.parentFile.mkdirs() },
+        bufferSize
+    )
+    private val serviceWriter = ParquetServiceDataWriter(
+        File(base, "service/$partition/data.parquet").also { it.parentFile.mkdirs() },
+        bufferSize
+    )
+
+    override fun record(data: HostData) {
+        hostWriter.write(data)
+    }
+
+    override fun record(data: ServiceData) {
+        serviceWriter.write(data)
+    }
+
+    override fun close() {
+        hostWriter.close()
+        serviceWriter.close()
+    }
+}

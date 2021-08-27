@@ -20,14 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.telemetry.parquet
+package org.opendc.experiments.capelin.export.parquet
 
 import mu.KotlinLogging
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.parquet.avro.AvroParquetWriter
+import org.apache.parquet.hadoop.ParquetFileWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.opendc.experiments.capelin.telemetry.Event
 import org.opendc.trace.util.parquet.LocalOutputFile
 import java.io.Closeable
 import java.io.File
@@ -36,19 +36,19 @@ import java.util.concurrent.BlockingQueue
 import kotlin.concurrent.thread
 
 /**
- * The logging instance to use.
+ * A writer that writes data in Parquet format.
  */
-private val logger = KotlinLogging.logger {}
-
-/**
- * A writer that writes events in Parquet format.
- */
-public open class ParquetEventWriter<in T : Event>(
+public open class ParquetDataWriter<in T>(
     private val path: File,
     private val schema: Schema,
     private val converter: (T, GenericData.Record) -> Unit,
     private val bufferSize: Int = 4096
 ) : Runnable, Closeable {
+    /**
+     * The logging instance to use.
+     */
+    private val logger = KotlinLogging.logger {}
+
     /**
      * The writer to write the Parquet file.
      */
@@ -57,6 +57,7 @@ public open class ParquetEventWriter<in T : Event>(
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .withPageSize(4 * 1024 * 1024) // For compression
         .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
+        .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
         .build()
 
     /**
@@ -67,7 +68,7 @@ public open class ParquetEventWriter<in T : Event>(
     /**
      * The thread that is responsible for writing the Parquet records.
      */
-    private val writerThread = thread(start = false, name = "parquet-writer") { run() }
+    private val writerThread = thread(start = false, name = this.toString()) { run() }
 
     /**
      * Write the specified metrics to the database.
@@ -100,7 +101,7 @@ public open class ParquetEventWriter<in T : Event>(
                     is Action.Write<*> -> {
                         val record = GenericData.Record(schema)
                         @Suppress("UNCHECKED_CAST")
-                        converter(action.event as T, record)
+                        converter(action.data as T, record)
                         writer.write(record)
                     }
                 }
@@ -121,6 +122,6 @@ public open class ParquetEventWriter<in T : Event>(
         /**
          * Write the specified metrics to the database.
          */
-        public data class Write<out T : Event>(val event: T) : Action()
+        public data class Write<out T>(val data: T) : Action()
     }
 }

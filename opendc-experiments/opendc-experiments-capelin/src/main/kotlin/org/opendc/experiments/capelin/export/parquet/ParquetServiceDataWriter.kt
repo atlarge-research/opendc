@@ -20,46 +20,46 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.telemetry.parquet
+package org.opendc.experiments.capelin.export.parquet
 
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
-import org.opendc.experiments.capelin.telemetry.ProvisionerEvent
+import org.opendc.telemetry.compute.table.ServiceData
 import java.io.File
 
 /**
- * A Parquet event writer for [ProvisionerEvent]s.
+ * A Parquet event writer for [ServiceData]s.
  */
-public class ParquetProvisionerEventWriter(path: File, bufferSize: Int) :
-    ParquetEventWriter<ProvisionerEvent>(path, schema, convert, bufferSize) {
+public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
+    ParquetDataWriter<ServiceData>(path, schema, convert, bufferSize) {
 
-    override fun toString(): String = "provisioner-writer"
+    override fun toString(): String = "service-writer"
 
     public companion object {
-        private val convert: (ProvisionerEvent, GenericData.Record) -> Unit = { event, record ->
-            record.put("timestamp", event.timestamp)
-            record.put("host_total_count", event.totalHostCount)
-            record.put("host_available_count", event.availableHostCount)
-            record.put("vm_total_count", event.totalVmCount)
-            record.put("vm_active_count", event.activeVmCount)
-            record.put("vm_inactive_count", event.inactiveVmCount)
-            record.put("vm_waiting_count", event.waitingVmCount)
-            record.put("vm_failed_count", event.failedVmCount)
+        private val convert: (ServiceData, GenericData.Record) -> Unit = { data, record ->
+            record.put("timestamp", data.timestamp)
+            record.put("host_total_count", data.hostCount)
+            record.put("host_available_count", data.activeHostCount)
+            record.put("instance_total_count", data.instanceCount)
+            record.put("instance_active_count", data.runningInstanceCount)
+            record.put("instance_inactive_count", data.finishedInstanceCount)
+            record.put("instance_waiting_count", data.queuedInstanceCount)
+            record.put("instance_failed_count", data.failedInstanceCount)
         }
 
         private val schema: Schema = SchemaBuilder
-            .record("provisioner_metrics")
-            .namespace("org.opendc.experiments.sc20")
+            .record("service")
+            .namespace("org.opendc.telemetry.compute")
             .fields()
             .name("timestamp").type().longType().noDefault()
             .name("host_total_count").type().intType().noDefault()
             .name("host_available_count").type().intType().noDefault()
-            .name("vm_total_count").type().intType().noDefault()
-            .name("vm_active_count").type().intType().noDefault()
-            .name("vm_inactive_count").type().intType().noDefault()
-            .name("vm_waiting_count").type().intType().noDefault()
-            .name("vm_failed_count").type().intType().noDefault()
+            .name("instance_total_count").type().intType().noDefault()
+            .name("instance_active_count").type().intType().noDefault()
+            .name("instance_inactive_count").type().intType().noDefault()
+            .name("instance_waiting_count").type().intType().noDefault()
+            .name("instance_failed_count").type().intType().noDefault()
             .endRecord()
     }
 }
