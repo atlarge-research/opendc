@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,27 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Capelin work"
+package org.opendc.trace.bitbrains
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import org.opendc.trace.*
+import java.nio.file.Path
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcSimulator.opendcSimulatorFailures)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.opentelemetry.semconv)
+/**
+ * [Trace] implementation for the Bitbrains format.
+ */
+public class BitbrainsTrace internal constructor(private val factory: CsvFactory, private val path: Path) : Trace {
+    override val tables: List<String> = listOf(TABLE_RESOURCE_STATES)
 
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
-    implementation(libs.progressbar)
-    implementation(libs.clikt)
+    override fun containsTable(name: String): Boolean = TABLE_RESOURCE_STATES == name
 
-    implementation(libs.parquet)
-    testImplementation(libs.log4j.slf4j)
+    override fun getTable(name: String): Table? {
+        if (!containsTable(name)) {
+            return null
+        }
+
+        return BitbrainsResourceStateTable(factory, path)
+    }
+
+    override fun toString(): String = "BitbrainsTrace[$path]"
 }

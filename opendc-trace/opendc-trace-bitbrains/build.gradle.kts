@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,17 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Capelin work"
+description = "Support for GWF traces in OpenDC"
 
 /* Build configuration */
 plugins {
-    `experiment-conventions`
+    `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {
     api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcSimulator.opendcSimulatorFailures)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.opentelemetry.semconv)
-
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
-    implementation(libs.progressbar)
-    implementation(libs.clikt)
-
-    implementation(libs.parquet)
-    testImplementation(libs.log4j.slf4j)
+    api(projects.opendcTrace.opendcTraceApi)
+    implementation(libs.jackson.dataformat.csv)
 }

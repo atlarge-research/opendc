@@ -20,26 +20,37 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace.bitbrains
+package org.opendc.trace.bitbrains
 
-import org.junit.jupiter.api.Assertions.assertAll
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import com.fasterxml.jackson.dataformat.csv.CsvParser
+import org.opendc.trace.spi.TraceFormat
+import java.net.URL
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
 /**
- * Test suite for the [BitbrainsTraceReader] class.
+ * A format implementation for the GWF trace format.
  */
-class BitbrainsTraceReaderTest {
-    @Test
-    fun testSmoke() {
-        val file = BitbrainsTraceReaderTest::class.java.getResourceAsStream("/bitbrains.csv")!!
-        BitbrainsRawTraceReader(file).use { reader ->
-            val entry = reader.next()
+public class BitbrainsTraceFormat : TraceFormat {
+    /**
+     * The name of this trace format.
+     */
+    override val name: String = "bitbrains"
 
-            assertAll(
-                { assertEquals(1376314846, entry.timestamp) },
-                { assertEquals(19.066, entry.cpuUsage, 0.01) }
-            )
-        }
+    /**
+     * The [CsvFactory] used to create the parser.
+     */
+    private val factory = CsvFactory()
+        .enable(CsvParser.Feature.ALLOW_COMMENTS)
+        .enable(CsvParser.Feature.TRIM_SPACES)
+
+    /**
+     * Open a Bitbrains trace.
+     */
+    override fun open(url: URL): BitbrainsTrace {
+        val path = Paths.get(url.toURI())
+        require(path.exists()) { "URL $url does not exist" }
+        return BitbrainsTrace(factory, path)
     }
 }
