@@ -19,27 +19,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-description = "Workflow orchestration service for OpenDC"
-
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
-
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcCompute.opendcComputeSimulator)
-    testImplementation(projects.opendcTrace.opendcTraceGwf)
-    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testRuntimeOnly(libs.log4j.slf4j)
-}

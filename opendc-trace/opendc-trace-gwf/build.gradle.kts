@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Workflow orchestration service for OpenDC"
+description = "Support for GWF traces in OpenDC"
 
 /* Build configuration */
 plugins {
@@ -31,15 +31,7 @@ plugins {
 
 dependencies {
     api(platform(projects.opendcPlatform))
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
+    api(projects.opendcTrace.opendcTraceApi)
 
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcCompute.opendcComputeSimulator)
-    testImplementation(projects.opendcTrace.opendcTraceGwf)
-    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testRuntimeOnly(libs.log4j.slf4j)
+    implementation(libs.jackson.dataformat.csv)
 }

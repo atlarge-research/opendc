@@ -20,26 +20,40 @@
  * SOFTWARE.
  */
 
-description = "Workflow orchestration service for OpenDC"
+package org.opendc.trace.gwf
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import org.opendc.trace.*
+import java.net.URL
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
+/**
+ * A [Table] containing the tasks in a GWF trace.
+ */
+internal class GwfTaskTable(private val factory: CsvFactory, private val url: URL) : Table {
+    override val name: String = TABLE_TASKS
 
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcCompute.opendcComputeSimulator)
-    testImplementation(projects.opendcTrace.opendcTraceGwf)
-    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testRuntimeOnly(libs.log4j.slf4j)
+    override val isSynthetic: Boolean = false
+
+    override fun isSupported(column: TableColumn<*>): Boolean {
+        return when (column) {
+            TASK_WORKFLOW_ID -> true
+            TASK_ID -> true
+            TASK_SUBMIT_TIME -> true
+            TASK_RUNTIME -> true
+            TASK_REQ_NCPUS -> true
+            TASK_ALLOC_NCPUS -> true
+            TASK_PARENTS -> true
+            else -> false
+        }
+    }
+
+    override fun newReader(): TableReader {
+        return GwfTaskTableReader(factory.createParser(url))
+    }
+
+    override fun newReader(partition: String): TableReader {
+        throw IllegalArgumentException("Invalid partition $partition")
+    }
+
+    override fun toString(): String = "GwfTaskTable"
 }

@@ -20,26 +20,37 @@
  * SOFTWARE.
  */
 
-description = "Workflow orchestration service for OpenDC"
+package org.opendc.trace.gwf
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import com.fasterxml.jackson.dataformat.csv.CsvParser
+import org.opendc.trace.spi.TraceFormat
+import java.net.URL
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
+/**
+ * A [TraceFormat] implementation for the GWF trace format.
+ */
+public class GwfTraceFormat : TraceFormat {
+    /**
+     * The name of this trace format.
+     */
+    override val name: String = "gwf"
 
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcCompute.opendcComputeSimulator)
-    testImplementation(projects.opendcTrace.opendcTraceGwf)
-    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testRuntimeOnly(libs.log4j.slf4j)
+    /**
+     * The [CsvFactory] used to create the parser.
+     */
+    private val factory = CsvFactory()
+        .enable(CsvParser.Feature.ALLOW_COMMENTS)
+        .enable(CsvParser.Feature.TRIM_SPACES)
+
+    /**
+     * Read the tasks in the GWF trace.
+     */
+    public override fun open(url: URL): GwfTrace {
+        val path = Paths.get(url.toURI())
+        require(path.exists()) { "URL $url does not exist" }
+        return GwfTrace(factory, url)
+    }
 }

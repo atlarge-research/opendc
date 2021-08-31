@@ -20,26 +20,27 @@
  * SOFTWARE.
  */
 
-description = "Workflow orchestration service for OpenDC"
+package org.opendc.trace.gwf
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import org.opendc.trace.*
+import java.net.URL
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
+/**
+ * [Trace] implementation for the GWF format.
+ */
+public class GwfTrace internal constructor(private val factory: CsvFactory, private val url: URL) : Trace {
+    override val tables: List<String> = listOf(TABLE_TASKS)
 
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcCompute.opendcComputeSimulator)
-    testImplementation(projects.opendcTrace.opendcTraceGwf)
-    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testRuntimeOnly(libs.log4j.slf4j)
+    override fun containsTable(name: String): Boolean = TABLE_TASKS == name
+
+    override fun getTable(name: String): Table? {
+        if (!containsTable(name)) {
+            return null
+        }
+
+        return GwfTaskTable(factory, url)
+    }
+
+    override fun toString(): String = "GwfTrace[$url]"
 }

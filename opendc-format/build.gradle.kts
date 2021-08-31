@@ -39,7 +39,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
     }
     implementation(libs.jackson.dataformat.csv)
-    implementation(kotlin("reflect"))
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
 
     /* This configuration is necessary for a slim dependency on Apache Parquet */
     implementation(libs.parquet) {

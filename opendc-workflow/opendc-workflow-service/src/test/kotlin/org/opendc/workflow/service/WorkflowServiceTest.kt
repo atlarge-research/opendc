@@ -25,9 +25,6 @@ package org.opendc.workflow.service
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -39,25 +36,28 @@ import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.SimHost
-import org.opendc.format.environment.sc18.Sc18EnvironmentReader
-import org.opendc.format.trace.gwf.GwfTraceReader
 import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisorProvider
+import org.opendc.simulator.compute.model.MachineModel
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.sdk.toOtelClock
+import org.opendc.trace.gwf.GwfTraceFormat
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
 import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.NullTaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.SubmissionTimeTaskOrderPolicy
-import kotlin.math.max
+import java.util.*
 
 /**
  * Integration test suite for the [WorkflowServiceImpl].
  */
 @DisplayName("WorkflowService")
-internal class WorkflowServiceIntegrationTest {
+internal class WorkflowServiceTest {
     /**
      * A large integration test where we check whether all tasks in some trace are executed correctly.
      */
@@ -69,20 +69,20 @@ internal class WorkflowServiceIntegrationTest {
             .build()
 
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val hosts = Sc18EnvironmentReader(checkNotNull(object {}.javaClass.getResourceAsStream("/environment.json")))
-            .use { it.read() }
-            .map { def ->
-                SimHost(
-                    def.uid,
-                    def.name,
-                    def.model,
-                    def.meta,
-                    coroutineContext,
-                    interpreter,
-                    MeterProvider.noop().get("opendc-compute-simulator"),
-                    SimSpaceSharedHypervisorProvider()
-                )
-            }
+        val machineModel = createMachineModel()
+        val hvProvider = SimSpaceSharedHypervisorProvider()
+        val hosts = List(4) { id ->
+            SimHost(
+                UUID(0, id.toLong()),
+                "node-$id",
+                machineModel,
+                emptyMap(),
+                coroutineContext,
+                interpreter,
+                meterProvider.get("opendc-compute-simulator"),
+                hvProvider,
+            )
+        }
 
         val meter = MeterProvider.noop().get("opendc-compute")
         val computeScheduler = FilterScheduler(
@@ -105,23 +105,10 @@ internal class WorkflowServiceIntegrationTest {
             taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
         )
 
-        val reader = GwfTraceReader(checkNotNull(object {}.javaClass.getResourceAsStream("/trace.gwf")))
-        var offset = Long.MIN_VALUE
+        val trace = GwfTraceFormat().open(checkNotNull(WorkflowServiceTest::class.java.getResource("/trace.gwf")))
+        val replayer = TraceReplayer(trace)
 
-        coroutineScope {
-            while (reader.hasNext()) {
-                val entry = reader.next()
-
-                if (offset < 0) {
-                    offset = entry.start - clock.millis()
-                }
-
-                delay(max(0, (entry.start - offset) - clock.millis()))
-                launch {
-                    scheduler.run(entry.workload)
-                }
-            }
-        }
+        replayer.replay(clock, scheduler)
 
         hosts.forEach(SimHost::close)
         scheduler.close()
@@ -134,8 +121,20 @@ internal class WorkflowServiceIntegrationTest {
             { assertEquals(0, metrics.jobsActive, "Not all submitted jobs started") },
             { assertEquals(metrics.jobsSubmitted, metrics.jobsFinished, "Not all started jobs finished") },
             { assertEquals(0, metrics.tasksActive, "Not all started tasks finished") },
-            { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") }
+            { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") },
+            { assertEquals(33213237L, clock.millis()) }
         )
+    }
+
+    /**
+     * The machine model based on: https://www.spec.org/power_ssj2008/results/res2020q1/power_ssj2008-20191125-01012.html
+     */
+    private fun createMachineModel(): MachineModel {
+        val node = ProcessingNode("AMD", "am64", "EPYC 7742", 32)
+        val cpus = List(node.coreCount) { id -> ProcessingUnit(node, id, 3400.0) }
+        val memory = List(8) { MemoryUnit("Samsung", "Unknown", 2933.0, 16_000) }
+
+        return MachineModel(cpus, memory)
     }
 
     class WorkflowMetrics {
