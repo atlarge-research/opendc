@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.environment
+package org.opendc.experiments.tf20.util
 
-import java.io.Closeable
+import org.opendc.simulator.compute.model.MachineModel
+import org.opendc.simulator.compute.power.PowerModel
+import java.util.*
 
 /**
- * An interface for reading descriptions of topology environments into memory.
+ * A definition of a machine in a cluster.
  */
-public interface EnvironmentReader : Closeable {
-    /**
-     * Read the environment into a list.
-     */
-    public fun read(): List<MachineDef>
-}
+public data class MachineDef(
+    val uid: UUID,
+    val name: String,
+    val meta: Map<String, Any>,
+    val model: MachineModel,
+    val powerModel: PowerModel
+)

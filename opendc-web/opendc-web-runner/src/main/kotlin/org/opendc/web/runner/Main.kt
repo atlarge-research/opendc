@@ -34,12 +34,12 @@ import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.opendc.compute.service.scheduler.weights.*
 import org.opendc.experiments.capelin.*
+import org.opendc.experiments.capelin.env.EnvironmentReader
+import org.opendc.experiments.capelin.env.MachineDef
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
-import org.opendc.format.environment.EnvironmentReader
-import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit

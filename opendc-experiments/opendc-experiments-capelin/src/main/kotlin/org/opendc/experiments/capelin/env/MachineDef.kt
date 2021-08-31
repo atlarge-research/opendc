@@ -20,25 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Experiments with the OpenDC TensorFlow model"
+package org.opendc.experiments.capelin.env
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.simulator.compute.model.MachineModel
+import org.opendc.simulator.compute.power.PowerModel
+import java.util.*
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcUtils)
-
-    implementation(libs.kotlin.logging)
-    implementation(libs.jackson.module.kotlin) {
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
-}
+/**
+ * A definition of a machine in a cluster.
+ */
+public data class MachineDef(
+    val uid: UUID,
+    val name: String,
+    val meta: Map<String, Any>,
+    val model: MachineModel,
+    val powerModel: PowerModel
+)

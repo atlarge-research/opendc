@@ -187,7 +187,7 @@ class StreamingParquetTraceReader(traceFile: File, selectedVms: List<String> = e
                 assert(uid !in takenIds)
                 takenIds += uid
 
-                logger.info("Processing VM $id")
+                logger.info { "Processing VM $id" }
 
                 val internalBuffer = mutableListOf<SimTraceWorkload.Fragment>()
                 val externalBuffer = mutableListOf<SimTraceWorkload.Fragment>()

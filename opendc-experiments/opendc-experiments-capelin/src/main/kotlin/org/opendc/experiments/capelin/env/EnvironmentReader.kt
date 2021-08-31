@@ -20,16 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.environment
+package org.opendc.experiments.capelin.env
 
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.power.PowerModel
-import java.util.*
+import java.io.Closeable
 
-public data class MachineDef(
-    val uid: UUID,
-    val name: String,
-    val meta: Map<String, Any>,
-    val model: MachineModel,
-    val powerModel: PowerModel
-)
+/**
+ * An interface for reading descriptions of topology environments into memory.
+ */
+public interface EnvironmentReader : Closeable {
+    /**
+     * Read the environment into a list.
+     */
+    public fun read(): List<MachineDef>
+}
