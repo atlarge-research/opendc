@@ -25,9 +25,9 @@ package org.opendc.experiments.capelin.trace
 import org.apache.avro.generic.GenericData
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
-import org.opendc.format.util.LocalParquetReader
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.trace.util.parquet.LocalParquetReader
 import java.io.File
 import java.util.UUID
 

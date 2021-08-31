@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.util
+package org.opendc.trace.util.parquet
 
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData

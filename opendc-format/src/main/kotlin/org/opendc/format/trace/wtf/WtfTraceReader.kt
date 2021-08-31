@@ -25,8 +25,8 @@ package org.opendc.format.trace.wtf
 import org.apache.avro.generic.GenericRecord
 import org.opendc.format.trace.TraceEntry
 import org.opendc.format.trace.TraceReader
-import org.opendc.format.util.LocalParquetReader
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
+import org.opendc.trace.util.parquet.LocalParquetReader
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.Task
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES

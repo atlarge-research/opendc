@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Library for reading common data formats for topology simulation"
+description = "Parquet helpers for traces in OpenDC"
 
 /* Build configuration */
 plugins {
@@ -31,17 +31,30 @@ plugins {
 
 dependencies {
     api(platform(projects.opendcPlatform))
-    api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    api(libs.jackson.module.kotlin) {
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    implementation(libs.jackson.dataformat.csv)
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
 
-    implementation(projects.opendcTrace.opendcTraceParquet)
+    /* This configuration is necessary for a slim dependency on Apache Parquet */
+    api(libs.parquet) {
+        exclude(group = "org.apache.hadoop")
+    }
+    runtimeOnly(libs.hadoop.common) {
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "log4j")
+        exclude(group = "org.apache.hadoop")
+        exclude(group = "org.apache.curator")
+        exclude(group = "org.apache.zookeeper")
+        exclude(group = "org.apache.kerby")
+        exclude(group = "org.apache.httpcomponents")
+        exclude(group = "org.apache.htrace")
+        exclude(group = "commons-cli")
+        exclude(group = "javax.servlet")
+        exclude(group = "org.eclipse.jetty")
+        exclude(group = "com.sun.jersey")
+        exclude(group = "com.jcraft")
+        exclude(group = "dnsjava")
+    }
+    runtimeOnly(libs.hadoop.mapreduce.client.core) {
+        isTransitive = false
+    }
 
     testRuntimeOnly(libs.slf4j.simple)
 }

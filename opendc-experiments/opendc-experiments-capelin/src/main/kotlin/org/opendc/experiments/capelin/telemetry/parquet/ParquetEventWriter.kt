@@ -28,7 +28,7 @@ import org.apache.avro.generic.GenericData
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.experiments.capelin.telemetry.Event
-import org.opendc.format.util.LocalOutputFile
+import org.opendc.trace.util.parquet.LocalOutputFile
 import java.io.Closeable
 import java.io.File
 import java.util.concurrent.ArrayBlockingQueue

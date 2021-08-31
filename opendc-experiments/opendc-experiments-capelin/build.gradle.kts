@@ -32,6 +32,7 @@ dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
     implementation(projects.opendcFormat)
+    implementation(projects.opendcTrace.opendcTraceParquet)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcSimulator.opendcSimulatorFailures)

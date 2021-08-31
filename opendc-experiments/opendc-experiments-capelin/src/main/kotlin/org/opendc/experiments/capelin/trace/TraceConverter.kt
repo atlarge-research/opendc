@@ -37,8 +37,8 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.format.trace.bitbrains.BitbrainsTraceReader
-import org.opendc.format.util.LocalOutputFile
 import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.trace.util.parquet.LocalOutputFile
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
