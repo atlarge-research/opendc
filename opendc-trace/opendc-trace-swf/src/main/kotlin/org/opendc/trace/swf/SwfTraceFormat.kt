@@ -20,26 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace.swf
+package org.opendc.trace.swf
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.opendc.simulator.compute.workload.SimTraceWorkload
-import java.io.File
+import org.opendc.trace.spi.TraceFormat
+import java.net.URL
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
-class SwfTraceReaderTest {
-    @Test
-    internal fun testParseSwf() {
-        val reader = SwfTraceReader(File(SwfTraceReaderTest::class.java.getResource("/swf_trace.txt").toURI()))
-        var entry = reader.next()
-        assertEquals(0, entry.start)
-        // 1961 slices for waiting, 3 full and 1 partial running slices
-        assertEquals(1965, (entry.workload as SimTraceWorkload).trace.toList().size)
+/**
+ * Support for the Standard Workload Format (SWF) in OpenDC.
+ *
+ * The standard is defined by the PWA, see here: https://www.cse.huji.ac.il/labs/parallel/workload/swf.html
+ */
+public class SwfTraceFormat : TraceFormat {
+    override val name: String = "swf"
 
-        entry = reader.next()
-        assertEquals(164472, entry.start)
-        // 1188 slices for waiting, 0 full and 1 partial running slices
-        assertEquals(1189, (entry.workload as SimTraceWorkload).trace.toList().size)
-        assertEquals(0.25, (entry.workload as SimTraceWorkload).trace.toList().last().usage)
+    override fun open(url: URL): SwfTrace {
+        val path = Paths.get(url.toURI())
+        require(path.exists()) { "URL $url does not exist" }
+        return SwfTrace(path)
     }
 }
