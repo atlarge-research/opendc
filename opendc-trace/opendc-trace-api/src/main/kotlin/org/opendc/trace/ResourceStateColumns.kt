@@ -23,6 +23,7 @@
 @file:JvmName("ResourceStateColumns")
 package org.opendc.trace
 
+import java.time.Duration
 import java.time.Instant
 
 /**
@@ -31,9 +32,24 @@ import java.time.Instant
 public val RESOURCE_STATE_ID: TableColumn<String> = stringColumn("resource_state:id")
 
 /**
+ * The cluster to which the resource belongs.
+ */
+public val RESOURCE_STATE_CLUSTER_ID: TableColumn<String> = stringColumn("resource_state:cluster_id")
+
+/**
  * Timestamp for the state.
  */
 public val RESOURCE_STATE_TIMESTAMP: TableColumn<Instant> = TableColumn("resource_state:timestamp", Instant::class.java)
+
+/**
+ * Duration for the state.
+ */
+public val RESOURCE_STATE_DURATION: TableColumn<Duration> = TableColumn("resource_state:duration", Duration::class.java)
+
+/**
+ * A flag to indicate that the resource is powered on.
+ */
+public val RESOURCE_STATE_POWERED_ON: TableColumn<Boolean> = booleanColumn("resource_state:powered_on")
 
 /**
  * Number of CPUs for the resource.
@@ -54,6 +70,16 @@ public val RESOURCE_STATE_CPU_USAGE: TableColumn<Double> = doubleColumn("resourc
  * Total CPU usage of the resource in percentage.
  */
 public val RESOURCE_STATE_CPU_USAGE_PCT: TableColumn<Double> = doubleColumn("resource_state:cpu_usage_pct")
+
+/**
+ * Total CPU demand of the resource in MHz.
+ */
+public val RESOURCE_STATE_CPU_DEMAND: TableColumn<Double> = doubleColumn("resource_state:cpu_demand")
+
+/**
+ * CPU ready percentage.
+ */
+public val RESOURCE_STATE_CPU_READY_PCT: TableColumn<Double> = doubleColumn("resource_state:cpu_ready_pct")
 
 /**
  * Memory capacity of the resource in KB.

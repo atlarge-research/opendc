@@ -20,32 +20,37 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ResourceColumns")
-package org.opendc.trace
+package org.opendc.experiments.capelin.trace.bp
 
-import java.time.Instant
-
-/**
- * Identifier of the resource.
- */
-public val RESOURCE_ID: TableColumn<String> = stringColumn("resource:id")
+import org.apache.avro.generic.GenericRecord
+import org.opendc.trace.*
+import org.opendc.trace.util.parquet.LocalParquetReader
+import java.nio.file.Path
 
 /**
- * Start time for the resource.
+ * The resource state [Table] in the Bitbrains Parquet format.
  */
-public val RESOURCE_START_TIME: TableColumn<Instant> = TableColumn("resource:start_time", Instant::class.java)
+internal class BPResourceStateTable(private val path: Path) : Table {
+    override val name: String = TABLE_RESOURCE_STATES
+    override val isSynthetic: Boolean = false
 
-/**
- * End time for the resource.
- */
-public val RESOURCE_END_TIME: TableColumn<Instant> = TableColumn("resource:end_time", Instant::class.java)
+    override fun isSupported(column: TableColumn<*>): Boolean {
+        return when (column) {
+            RESOURCE_STATE_ID -> true
+            RESOURCE_STATE_TIMESTAMP -> true
+            RESOURCE_STATE_DURATION -> true
+            RESOURCE_STATE_NCPUS -> true
+            RESOURCE_STATE_CPU_USAGE -> true
+            else -> false
+        }
+    }
 
-/**
- * Number of CPUs for the resource.
- */
-public val RESOURCE_NCPUS: TableColumn<Int> = intColumn("resource:num_cpus")
+    override fun newReader(): TableReader {
+        val reader = LocalParquetReader<GenericRecord>(path.resolve("trace.parquet"))
+        return BPResourceStateTableReader(reader)
+    }
 
-/**
- * Memory capacity for the resource.
- */
-public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = doubleColumn("resource:mem_capacity")
+    override fun newReader(partition: String): TableReader {
+        throw IllegalArgumentException("Unknown partition $partition")
+    }
+}

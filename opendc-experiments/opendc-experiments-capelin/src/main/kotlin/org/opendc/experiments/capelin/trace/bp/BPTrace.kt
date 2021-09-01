@@ -20,32 +20,30 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ResourceColumns")
-package org.opendc.trace
+package org.opendc.experiments.capelin.trace.bp
 
-import java.time.Instant
-
-/**
- * Identifier of the resource.
- */
-public val RESOURCE_ID: TableColumn<String> = stringColumn("resource:id")
+import org.opendc.trace.TABLE_RESOURCES
+import org.opendc.trace.TABLE_RESOURCE_STATES
+import org.opendc.trace.Table
+import org.opendc.trace.Trace
+import java.nio.file.Path
 
 /**
- * Start time for the resource.
+ * A [Trace] in the Bitbrains Parquet format.
  */
-public val RESOURCE_START_TIME: TableColumn<Instant> = TableColumn("resource:start_time", Instant::class.java)
+public class BPTrace internal constructor(private val path: Path) : Trace {
+    override val tables: List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
 
-/**
- * End time for the resource.
- */
-public val RESOURCE_END_TIME: TableColumn<Instant> = TableColumn("resource:end_time", Instant::class.java)
+    override fun containsTable(name: String): Boolean =
+        name == TABLE_RESOURCES || name == TABLE_RESOURCE_STATES
 
-/**
- * Number of CPUs for the resource.
- */
-public val RESOURCE_NCPUS: TableColumn<Int> = intColumn("resource:num_cpus")
+    override fun getTable(name: String): Table? {
+        return when (name) {
+            TABLE_RESOURCES -> BPResourceTable(path)
+            TABLE_RESOURCE_STATES -> BPResourceStateTable(path)
+            else -> null
+        }
+    }
 
-/**
- * Memory capacity for the resource.
- */
-public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = doubleColumn("resource:mem_capacity")
+    override fun toString(): String = "BPTrace[$path]"
+}

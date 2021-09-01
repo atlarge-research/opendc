@@ -36,8 +36,10 @@ import org.apache.avro.generic.GenericData
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import org.opendc.experiments.capelin.trace.sv.SvTraceFormat
 import org.opendc.trace.*
 import org.opendc.trace.bitbrains.BitbrainsTraceFormat
+import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalOutputFile
 import java.io.BufferedReader
 import java.io.File
@@ -156,189 +158,19 @@ sealed class TraceConversion(name: String) : OptionGroup(name) {
     ): MutableList<Fragment>
 }
 
-class SolvinityConversion : TraceConversion("Solvinity") {
-    private val clusters by option()
-        .split(",")
-
-    private val vmPlacements by option("--vm-placements", help = "file containing the VM placements")
-        .file(canBeDir = false)
-        .convert { VmPlacementReader(it.inputStream()).use { reader -> reader.read() } }
-        .required()
-
-    override fun read(
-        traceDirectory: File,
-        metaSchema: Schema,
-        metaWriter: ParquetWriter<GenericData.Record>
-    ): MutableList<Fragment> {
-        val clusters = clusters?.toSet() ?: emptySet()
-        val timestampCol = 0
-        val cpuUsageCol = 1
-        val coreCol = 12
-        val provisionedMemoryCol = 20
-        val traceInterval = 5 * 60 * 1000L
-
-        // Identify start time of the entire trace
-        var minTimestamp = Long.MAX_VALUE
-        traceDirectory.walk()
-            .filterNot { it.isDirectory }
-            .filter { it.extension == "csv" || it.extension == "txt" }
-            .toList()
-            .forEach file@{ vmFile ->
-                BufferedReader(FileReader(vmFile)).use { reader ->
-                    reader.lineSequence()
-                        .chunked(128)
-                        .forEach { lines ->
-                            for (line in lines) {
-                                // Ignore comments in the trace
-                                if (line.startsWith("#") || line.isBlank()) {
-                                    continue
-                                }
-
-                                val vmId = vmFile.name
-
-                                // Check if VM in topology
-                                val clusterName = vmPlacements[vmId]
-                                if (clusterName == null || !clusters.contains(clusterName)) {
-                                    continue
-                                }
-
-                                val values = line.split("\t")
-                                val timestamp = (values[timestampCol].trim().toLong() - 5 * 60) * 1000L
-
-                                if (timestamp < minTimestamp) {
-                                    minTimestamp = timestamp
-                                }
-                                return@file
-                            }
-                        }
-                }
-            }
-
-        println("Start of trace at $minTimestamp")
-
-        val allFragments = mutableListOf<Fragment>()
-
-        val begin = 15 * 24 * 60 * 60 * 1000L
-        val end = 45 * 24 * 60 * 60 * 1000L
-
-        traceDirectory.walk()
-            .filterNot { it.isDirectory }
-            .filter { it.extension == "csv" || it.extension == "txt" }
-            .toList()
-            .forEach { vmFile ->
-                println(vmFile)
-
-                var vmId = ""
-                var maxCores = -1
-                var requiredMemory = -1L
-                var cores: Int
-                var minTime = Long.MAX_VALUE
-
-                val flopsFragments = sequence {
-                    var last: Fragment? = null
-
-                    BufferedReader(FileReader(vmFile)).use { reader ->
-                        reader.lineSequence()
-                            .chunked(128)
-                            .forEach { lines ->
-                                for (line in lines) {
-                                    // Ignore comments in the trace
-                                    if (line.startsWith("#") || line.isBlank()) {
-                                        continue
-                                    }
-
-                                    val values = line.split("\t")
-
-                                    vmId = vmFile.name
-
-                                    // Check if VM in topology
-                                    val clusterName = vmPlacements[vmId]
-                                    if (clusterName == null || !clusters.contains(clusterName)) {
-                                        continue
-                                    }
-
-                                    val timestamp =
-                                        (values[timestampCol].trim().toLong() - 5 * 60) * 1000L - minTimestamp
-                                    if (begin > timestamp || timestamp > end) {
-                                        continue
-                                    }
-
-                                    cores = values[coreCol].trim().toInt()
-                                    requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
-                                    maxCores = max(maxCores, cores)
-                                    minTime = min(minTime, timestamp)
-                                    val cpuUsage = values[cpuUsageCol].trim().toDouble() // MHz
-                                    requiredMemory = max(requiredMemory, values[provisionedMemoryCol].trim().toLong())
-                                    maxCores = max(maxCores, cores)
-
-                                    val flops: Long = (cpuUsage * 5 * 60).toLong()
-
-                                    last = if (last != null && last!!.flops == 0L && flops == 0L) {
-                                        val oldFragment = last!!
-                                        Fragment(
-                                            vmId,
-                                            oldFragment.tick,
-                                            oldFragment.flops + flops,
-                                            oldFragment.duration + traceInterval,
-                                            cpuUsage,
-                                            cores
-                                        )
-                                    } else {
-                                        val fragment =
-                                            Fragment(
-                                                vmId,
-                                                timestamp,
-                                                flops,
-                                                traceInterval,
-                                                cpuUsage,
-                                                cores
-                                            )
-                                        if (last != null) {
-                                            yield(last!!)
-                                        }
-                                        fragment
-                                    }
-                                }
-                            }
-                    }
-
-                    if (last != null) {
-                        yield(last!!)
-                    }
-                }
-
-                var maxTime = Long.MIN_VALUE
-                flopsFragments.filter { it.tick in begin until end }.forEach { fragment ->
-                    allFragments.add(fragment)
-                    maxTime = max(maxTime, fragment.tick)
-                }
-
-                if (minTime in begin until end) {
-                    val metaRecord = GenericData.Record(metaSchema)
-                    metaRecord.put("id", vmId)
-                    metaRecord.put("submissionTime", minTime)
-                    metaRecord.put("endTime", maxTime)
-                    metaRecord.put("maxCores", maxCores)
-                    metaRecord.put("requiredMemory", requiredMemory)
-                    metaWriter.write(metaRecord)
-                }
-            }
-
-        return allFragments
-    }
-}
-
 /**
- * Conversion of the Bitbrains public trace.
+ * A [TraceConversion] that uses the Trace API to perform the conversion.
  */
-class BitbrainsConversion : TraceConversion("Bitbrains") {
+abstract class AbstractConversion(name: String) : TraceConversion(name) {
+    abstract val format: TraceFormat
+
     override fun read(
         traceDirectory: File,
         metaSchema: Schema,
         metaWriter: ParquetWriter<GenericData.Record>
     ): MutableList<Fragment> {
         val fragments = mutableListOf<Fragment>()
-        val trace = BitbrainsTraceFormat().open(traceDirectory.toURI().toURL())
+        val trace = format.open(traceDirectory.toURI().toURL())
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
 
         var lastId: String? = null
@@ -364,7 +196,7 @@ class BitbrainsConversion : TraceConversion("Bitbrains") {
 
             val timestamp = reader.get(RESOURCE_STATE_TIMESTAMP)
             val timestampMs = timestamp.toEpochMilli()
-            val cpuUsage = reader.getDouble(RESOURCE_STATE_MEM_USAGE)
+            val cpuUsage = reader.getDouble(RESOURCE_STATE_CPU_USAGE)
             val cores = reader.getInt(RESOURCE_STATE_NCPUS)
             val memCapacity = reader.getDouble(RESOURCE_STATE_MEM_CAPACITY)
 
@@ -408,6 +240,17 @@ class BitbrainsConversion : TraceConversion("Bitbrains") {
         }
         return fragments
     }
+}
+
+class SolvinityConversion : AbstractConversion("Solvinity") {
+    override val format: TraceFormat = SvTraceFormat()
+}
+
+/**
+ * Conversion of the Bitbrains public trace.
+ */
+class BitbrainsConversion : AbstractConversion("Bitbrains") {
+    override val format: TraceFormat = BitbrainsTraceFormat()
 }
 
 /**

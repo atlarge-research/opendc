@@ -20,32 +20,28 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ResourceColumns")
-package org.opendc.trace
+package org.opendc.experiments.capelin.trace.sv
 
-import java.time.Instant
-
-/**
- * Identifier of the resource.
- */
-public val RESOURCE_ID: TableColumn<String> = stringColumn("resource:id")
+import org.opendc.trace.spi.TraceFormat
+import java.net.URL
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
 /**
- * Start time for the resource.
+ * A format implementation for the extended Bitbrains trace format.
  */
-public val RESOURCE_START_TIME: TableColumn<Instant> = TableColumn("resource:start_time", Instant::class.java)
+public class SvTraceFormat : TraceFormat {
+    /**
+     * The name of this trace format.
+     */
+    override val name: String = "sv"
 
-/**
- * End time for the resource.
- */
-public val RESOURCE_END_TIME: TableColumn<Instant> = TableColumn("resource:end_time", Instant::class.java)
-
-/**
- * Number of CPUs for the resource.
- */
-public val RESOURCE_NCPUS: TableColumn<Int> = intColumn("resource:num_cpus")
-
-/**
- * Memory capacity for the resource.
- */
-public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = doubleColumn("resource:mem_capacity")
+    /**
+     * Open the trace file.
+     */
+    override fun open(url: URL): SvTrace {
+        val path = Paths.get(url.toURI())
+        require(path.exists()) { "URL $url does not exist" }
+        return SvTrace(path)
+    }
+}

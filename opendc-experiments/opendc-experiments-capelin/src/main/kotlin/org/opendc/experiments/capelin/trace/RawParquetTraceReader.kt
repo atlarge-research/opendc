@@ -22,10 +22,10 @@
 
 package org.opendc.experiments.capelin.trace
 
-import org.apache.avro.generic.GenericData
+import org.opendc.experiments.capelin.trace.bp.BPTraceFormat
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.trace.util.parquet.LocalParquetReader
+import org.opendc.trace.*
 import java.io.File
 import java.util.UUID
 
@@ -36,26 +36,29 @@ import java.util.UUID
  */
 class RawParquetTraceReader(private val path: File) {
     /**
+     * The [Trace] that represents this trace.
+     */
+    private val trace = BPTraceFormat().open(path.toURI().toURL())
+
+    /**
      * Read the fragments into memory.
      */
-    private fun parseFragments(path: File): Map<String, List<SimTraceWorkload.Fragment>> {
-        val reader = LocalParquetReader<GenericData.Record>(File(path, "trace.parquet"))
+    private fun parseFragments(): Map<String, List<SimTraceWorkload.Fragment>> {
+        val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
 
         val fragments = mutableMapOf<String, MutableList<SimTraceWorkload.Fragment>>()
 
         return try {
-            while (true) {
-                val record = reader.read() ?: break
-
-                val id = record["id"].toString()
-                val time = record["time"] as Long
-                val duration = record["duration"] as Long
-                val cores = record["cores"] as Int
-                val cpuUsage = record["cpuUsage"] as Double
+            while (reader.nextRow()) {
+                val id = reader.get(RESOURCE_STATE_ID)
+                val time = reader.get(RESOURCE_STATE_TIMESTAMP)
+                val duration = reader.get(RESOURCE_STATE_DURATION)
+                val cores = reader.getInt(RESOURCE_STATE_NCPUS)
+                val cpuUsage = reader.getDouble(RESOURCE_STATE_CPU_USAGE)
 
                 val fragment = SimTraceWorkload.Fragment(
-                    time,
-                    duration,
+                    time.toEpochMilli(),
+                    duration.toMillis(),
                     cpuUsage,
                     cores
                 )
@@ -72,25 +75,24 @@ class RawParquetTraceReader(private val path: File) {
     /**
      * Read the metadata into a workload.
      */
-    private fun parseMeta(path: File, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<TraceEntry<SimWorkload>> {
-        val metaReader = LocalParquetReader<GenericData.Record>(File(path, "meta.parquet"))
+    private fun parseMeta(fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<TraceEntry<SimWorkload>> {
+        val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
         var counter = 0
         val entries = mutableListOf<TraceEntry<SimWorkload>>()
 
         return try {
-            while (true) {
-                val record = metaReader.read() ?: break
+            while (reader.nextRow()) {
 
-                val id = record["id"].toString()
+                val id = reader.get(RESOURCE_ID)
                 if (!fragments.containsKey(id)) {
                     continue
                 }
 
-                val submissionTime = record["submissionTime"] as Long
-                val endTime = record["endTime"] as Long
-                val maxCores = record["maxCores"] as Int
-                val requiredMemory = record["requiredMemory"] as Long
+                val submissionTime = reader.get(RESOURCE_START_TIME)
+                val endTime = reader.get(RESOURCE_END_TIME)
+                val maxCores = reader.getInt(RESOURCE_NCPUS)
+                val requiredMemory = reader.getDouble(RESOURCE_MEM_CAPACITY)
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
                 val vmFragments = fragments.getValue(id).asSequence()
@@ -98,13 +100,13 @@ class RawParquetTraceReader(private val path: File) {
                 val workload = SimTraceWorkload(vmFragments)
                 entries.add(
                     TraceEntry(
-                        uid, id, submissionTime, workload,
+                        uid, id, submissionTime.toEpochMilli(), workload,
                         mapOf(
-                            "submit-time" to submissionTime,
-                            "end-time" to endTime,
+                            "submit-time" to submissionTime.toEpochMilli(),
+                            "end-time" to endTime.toEpochMilli(),
                             "total-load" to totalLoad,
                             "cores" to maxCores,
-                            "required-memory" to requiredMemory,
+                            "required-memory" to requiredMemory.toLong(),
                             "workload" to workload
                         )
                     )
@@ -116,7 +118,7 @@ class RawParquetTraceReader(private val path: File) {
             e.printStackTrace()
             throw e
         } finally {
-            metaReader.close()
+            reader.close()
         }
     }
 
@@ -126,8 +128,8 @@ class RawParquetTraceReader(private val path: File) {
     private val entries: List<TraceEntry<SimWorkload>>
 
     init {
-        val fragments = parseFragments(path)
-        entries = parseMeta(path, fragments)
+        val fragments = parseFragments()
+        entries = parseMeta(fragments)
     }
 
     /**

@@ -20,32 +20,26 @@
  * SOFTWARE.
  */
 
-@file:JvmName("ResourceColumns")
-package org.opendc.trace
+package org.opendc.experiments.capelin.trace.sv
 
-import java.time.Instant
-
-/**
- * Identifier of the resource.
- */
-public val RESOURCE_ID: TableColumn<String> = stringColumn("resource:id")
+import org.opendc.trace.*
+import java.nio.file.Path
 
 /**
- * Start time for the resource.
+ * [Trace] implementation for the extended Bitbrains format.
  */
-public val RESOURCE_START_TIME: TableColumn<Instant> = TableColumn("resource:start_time", Instant::class.java)
+public class SvTrace internal constructor(private val path: Path) : Trace {
+    override val tables: List<String> = listOf(TABLE_RESOURCE_STATES)
 
-/**
- * End time for the resource.
- */
-public val RESOURCE_END_TIME: TableColumn<Instant> = TableColumn("resource:end_time", Instant::class.java)
+    override fun containsTable(name: String): Boolean = TABLE_RESOURCE_STATES == name
 
-/**
- * Number of CPUs for the resource.
- */
-public val RESOURCE_NCPUS: TableColumn<Int> = intColumn("resource:num_cpus")
+    override fun getTable(name: String): Table? {
+        if (!containsTable(name)) {
+            return null
+        }
 
-/**
- * Memory capacity for the resource.
- */
-public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = doubleColumn("resource:mem_capacity")
+        return SvResourceStateTable(path)
+    }
+
+    override fun toString(): String = "SvTrace[$path]"
+}
