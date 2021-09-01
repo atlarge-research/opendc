@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace
+package org.opendc.experiments.capelin.trace
 
 import java.util.UUID
 

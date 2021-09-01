@@ -20,28 +20,28 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the OpenDC Energy work"
+package org.opendc.trace.wtf
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.trace.TABLE_TASKS
+import org.opendc.trace.Table
+import org.opendc.trace.Trace
+import java.nio.file.Path
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcSimulator.opendcSimulatorFailures)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcExperiments.opendcExperimentsCapelin)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+/**
+ * [Trace] implementation for the WTF format.
+ */
+public class WtfTrace internal constructor(private val path: Path) : Trace {
+    override val tables: List<String> = listOf(TABLE_TASKS)
 
-    implementation(libs.parquet) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
+    override fun containsTable(name: String): Boolean = TABLE_TASKS == name
+
+    override fun getTable(name: String): Table? {
+        if (!containsTable(name)) {
+            return null
+        }
+
+        return WtfTaskTable(path)
     }
+
+    override fun toString(): String = "SwfTrace[$path]"
 }

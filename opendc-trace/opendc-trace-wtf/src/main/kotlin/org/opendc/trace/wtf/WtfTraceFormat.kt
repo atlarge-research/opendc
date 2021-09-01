@@ -20,28 +20,22 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the OpenDC Energy work"
+package org.opendc.trace.wtf
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.trace.spi.TraceFormat
+import java.net.URL
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcSimulator.opendcSimulatorFailures)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcExperiments.opendcExperimentsCapelin)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
+/**
+ * A [TraceFormat] implementation for the Workflow Trace Format (WTF).
+ */
+public class WtfTraceFormat : TraceFormat {
+    override val name: String = "wtf"
 
-    implementation(libs.parquet) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
+    override fun open(url: URL): WtfTrace {
+        val path = Paths.get(url.toURI())
+        require(path.exists()) { "URL $url does not exist" }
+        return WtfTrace(path)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace.wtf
-
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import java.io.File
+package org.opendc.experiments.capelin.trace
 
 /**
- * Test suite for the [WtfTraceReader] class.
+ * An interface for reading workloads into memory.
+ *
+ * This interface must guarantee that the entries are delivered in order of submission time.
+ *
+ * @param T The shape of the workloads supported by this reader.
  */
-class WtfTraceReaderTest {
-    /**
-     * Smoke test for parsing WTF traces.
-     */
-    @Test
-    fun testParseWtf() {
-        val reader = WtfTraceReader(File("src/test/resources/wtf-trace"))
-        var entry = reader.next()
-        assertEquals(0, entry.start)
-        assertEquals(23, entry.workload.tasks.size)
-
-        entry = reader.next()
-        assertEquals(333387, entry.start)
-        assertEquals(23, entry.workload.tasks.size)
-    }
-}
+public interface TraceReader<T> : Iterator<TraceEntry<T>>, AutoCloseable

@@ -31,7 +31,6 @@ plugins {
 dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcFormat)
     implementation(projects.opendcTrace.opendcTraceParquet)
     implementation(projects.opendcTrace.opendcTraceBitbrains)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
@@ -45,6 +44,9 @@ dependencies {
     implementation(libs.config)
     implementation(libs.progressbar)
     implementation(libs.clikt)
+    implementation(libs.jackson.module.kotlin) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
 
     implementation(libs.parquet)
     testImplementation(libs.log4j.slf4j)

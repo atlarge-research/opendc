@@ -26,7 +26,6 @@ import mu.KotlinLogging
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.SamplingStrategy
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.format.trace.TraceEntry
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.util.*
 import kotlin.random.Random

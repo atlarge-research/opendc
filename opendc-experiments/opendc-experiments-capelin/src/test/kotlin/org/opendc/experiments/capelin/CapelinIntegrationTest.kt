@@ -42,7 +42,7 @@ import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
-import org.opendc.format.trace.TraceReader
+import org.opendc.experiments.capelin.trace.TraceReader
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation

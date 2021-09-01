@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.format.trace
+description = "Support for Workflow Trace Format (WTF) traces in OpenDC"
 
-/**
- * An interface for reading workloads into memory.
- *
- * This interface must guarantee that the entries are delivered in order of submission time.
- *
- * @param T The shape of the workloads supported by this reader.
- */
-public interface TraceReader<T> : Iterator<TraceEntry<T>>, AutoCloseable
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+    `testing-conventions`
+    `jacoco-conventions`
+}
+
+dependencies {
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcTrace.opendcTraceApi)
+
+    implementation(projects.opendcTrace.opendcTraceParquet)
+}
