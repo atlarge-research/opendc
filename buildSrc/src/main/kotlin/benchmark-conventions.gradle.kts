@@ -50,14 +50,14 @@ benchmark {
     targets {
         register("jmh") {
             this as JvmBenchmarkTarget
-            jmhVersion = "1.32"
+            jmhVersion = "1.33"
         }
     }
 }
 
 dependencies {
     val libs = Libs(project)
-    implementation(libs["kotlinx-benchmark-runtime-jvm"])
+    implementation(libs["kotlinx.benchmark.runtime.jvm"])
 }
 
 // Workaround for https://github.com/Kotlin/kotlinx-benchmark/issues/39

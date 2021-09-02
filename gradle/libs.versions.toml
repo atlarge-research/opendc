@@ -1,23 +1,35 @@
 [versions]
+classgraph = "4.8.115"
+clikt = "3.2.0"
+config = "1.4.1"
+hadoop = "3.3.1"
+jackson = "2.12.5"
 junit-jupiter = "5.7.2"
 junit-platform = "1.7.2"
-slf4j = "1.7.32"
+kotlin-logging = "2.0.11"
+kotlinx-benchmark = "0.3.1"
+kotlinx-coroutines = "1.5.1"
+ktor = "1.6.3"
 log4j = "2.14.1"
+mockk = "1.12.0"
 opentelemetry-main = "1.5.0"
 opentelemetry-metrics = "1.5.0-alpha"
 opentelemetry-semconv = "1.5.0-alpha"
-hadoop = "3.3.1"
-ktor = "1.6.3"
-jackson = "2.12.5"
+parquet = "1.12.0"
+progressbar = "0.9.0"
+sentry = "5.1.2"
+slf4j = "1.7.32"
+yaml = "1.29"
 
 [libraries]
-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.5.1" }
+# Kotlin
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 # Logging
-kotlin-logging = { module = "io.github.microutils:kotlin-logging", version = "2.0.11" }
+kotlin-logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin-logging" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
-sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version = "4.3.0" }
+sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version.ref = "sentry" }
 
 # Telemetry
 opentelemetry-api-main = { module = "io.opentelemetry:opentelemetry-api", version.ref = "opentelemetry-main" }
@@ -26,35 +38,36 @@ opentelemetry-api-metrics = { module = "io.opentelemetry:opentelemetry-api-metri
 opentelemetry-sdk-metrics = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version.ref = "opentelemetry-metrics" }
 opentelemetry-semconv = { module = "io.opentelemetry:opentelemetry-semconv", version.ref = "opentelemetry-semconv" }
 
-
 # Testing
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 junit-platform-commons = { module = "org.junit.platform:junit-platform-commons", version.ref = "junit-platform" }
 junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", version.ref = "junit-platform" }
-mockk = { module = "io.mockk:mockk", version = "1.12.0" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 # CLI
-clikt = { module = "com.github.ajalt.clikt:clikt", version = "3.2.0" }
-progressbar = { module = "me.tongfei:progressbar", version = "0.9.0" }
+clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+progressbar = { module = "me.tongfei:progressbar", version.ref = "progressbar" }
 
 # Format
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }
-parquet = { module = "org.apache.parquet:parquet-avro", version = "1.12.0" }
-yaml = { module = "org.yaml:snakeyaml", version = "1.29" }
-config = { module = "com.typesafe:config", version = "1.4.1" }
+parquet = { module = "org.apache.parquet:parquet-avro", version.ref = "parquet" }
+yaml = { module = "org.yaml:snakeyaml", version.ref = "yaml" }
+config = { module = "com.typesafe:config", version.ref = "config" }
 
-# Benchmark
-kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm", version = "0.3.1" }
-
-# Other
-classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.115" }
-hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
-hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }
+# HTTP client
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-jackson = { module = "io.ktor:ktor-client-jackson", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+
+# Benchmark
+kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm", version.ref = "kotlinx-benchmark" }
+
+# Other
+classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
+hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
+hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }
