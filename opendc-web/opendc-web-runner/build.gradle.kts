@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.ktor.client.auth)
     implementation(libs.ktor.client.jackson)
     implementation(libs.jackson.datatype.jsr310)
+    implementation(kotlin("reflect"))
 
     runtimeOnly(libs.log4j.slf4j)
 
