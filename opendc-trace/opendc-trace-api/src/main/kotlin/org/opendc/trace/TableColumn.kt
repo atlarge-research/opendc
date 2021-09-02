@@ -39,7 +39,7 @@ public class TableColumn<out T>(public val name: String, type: Class<T>) {
      * Determine whether the type of the column is a subtype of [column].
      */
     public fun isAssignableTo(column: TableColumn<*>): Boolean {
-        return type.isAssignableFrom(column.type)
+        return name == column.name && type.isAssignableFrom(column.type)
     }
 
     /**
@@ -50,7 +50,16 @@ public class TableColumn<out T>(public val name: String, type: Class<T>) {
     /**
      * Determine whether this column is equal to [other].
      */
-    public override fun equals(other: Any?): Boolean = other is TableColumn<*> && name == other.name && type == other.type
+    public override fun equals(other: Any?): Boolean {
+        // Fast-path: reference equality
+        if (this === other) {
+            return true
+        } else if (other == null || other !is TableColumn<*>) {
+            return false
+        }
+
+        return name == other.name && type == other.type
+    }
 
     /**
      * Return a string representation of this column.

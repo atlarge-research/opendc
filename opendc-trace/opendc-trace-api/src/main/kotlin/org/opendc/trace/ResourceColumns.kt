@@ -28,24 +28,29 @@ import java.time.Instant
 /**
  * Identifier of the resource.
  */
+@JvmField
 public val RESOURCE_ID: TableColumn<String> = stringColumn("resource:id")
 
 /**
  * Start time for the resource.
  */
+@JvmField
 public val RESOURCE_START_TIME: TableColumn<Instant> = TableColumn("resource:start_time", Instant::class.java)
 
 /**
  * End time for the resource.
  */
+@JvmField
 public val RESOURCE_END_TIME: TableColumn<Instant> = TableColumn("resource:end_time", Instant::class.java)
 
 /**
  * Number of CPUs for the resource.
  */
+@JvmField
 public val RESOURCE_NCPUS: TableColumn<Int> = intColumn("resource:num_cpus")
 
 /**
  * Memory capacity for the resource.
  */
+@JvmField
 public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = doubleColumn("resource:mem_capacity")

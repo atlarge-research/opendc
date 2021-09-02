@@ -26,61 +26,73 @@ package org.opendc.trace
 /**
  * A column containing the task identifier.
  */
+@JvmField
 public val TASK_ID: TableColumn<Long> = longColumn("task:id")
 
 /**
  * A column containing the identifier of the workflow.
  */
+@JvmField
 public val TASK_WORKFLOW_ID: TableColumn<Long> = longColumn("task:workflow_id")
 
 /**
  * A column containing the submit time of the task.
  */
+@JvmField
 public val TASK_SUBMIT_TIME: TableColumn<Long> = longColumn("task:submit_time")
 
 /**
  * A column containing the wait time of the task.
  */
+@JvmField
 public val TASK_WAIT_TIME: TableColumn<Long> = longColumn("task:wait_time")
 
 /**
  * A column containing the runtime time of the task.
  */
+@JvmField
 public val TASK_RUNTIME: TableColumn<Long> = longColumn("task:runtime")
 
 /**
  * A column containing the parents of a task.
  */
 @Suppress("UNCHECKED_CAST")
+@JvmField
 public val TASK_PARENTS: TableColumn<Set<Long>> = TableColumn("task:parents", type = Set::class.java as Class<Set<Long>>)
 
 /**
  * A column containing the children of a task.
  */
 @Suppress("UNCHECKED_CAST")
+@JvmField
 public val TASK_CHILDREN: TableColumn<Set<Long>> = TableColumn("task:children", type = Set::class.java as Class<Set<Long>>)
 
 /**
  * A column containing the requested CPUs of a task.
  */
+@JvmField
 public val TASK_REQ_NCPUS: TableColumn<Int> = intColumn("task:req_ncpus")
 
 /**
  * A column containing the allocated CPUs of a task.
  */
+@JvmField
 public val TASK_ALLOC_NCPUS: TableColumn<Int> = intColumn("task:alloc_ncpus")
 
 /**
  * A column containing the status of a task.
  */
+@JvmField
 public val TASK_STATUS: TableColumn<Int> = intColumn("task:status")
 
 /**
  * A column containing the group id of a task.
  */
+@JvmField
 public val TASK_GROUP_ID: TableColumn<Int> = intColumn("task:group_id")
 
 /**
  * A column containing the user id of a task.
  */
+@JvmField
 public val TASK_USER_ID: TableColumn<Int> = intColumn("task:user_id")
