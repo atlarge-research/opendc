@@ -36,13 +36,13 @@ import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
+import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
-import org.opendc.format.environment.EnvironmentReader
-import org.opendc.format.trace.TraceReader
+import org.opendc.experiments.capelin.trace.TraceReader
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation

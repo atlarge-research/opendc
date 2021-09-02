@@ -36,7 +36,6 @@ application {
 dependencies {
     api(platform(projects.opendcPlatform))
     implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcFormat)
     implementation(projects.opendcExperiments.opendcExperimentsCapelin)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)

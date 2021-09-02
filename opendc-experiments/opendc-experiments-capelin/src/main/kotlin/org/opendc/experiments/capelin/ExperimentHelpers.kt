@@ -45,10 +45,10 @@ import org.opendc.compute.service.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.SimHost
+import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.monitor.ExperimentMetricExporter
 import org.opendc.experiments.capelin.monitor.ExperimentMonitor
-import org.opendc.format.environment.EnvironmentReader
-import org.opendc.format.trace.TraceReader
+import org.opendc.experiments.capelin.trace.TraceReader
 import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.power.SimplePowerDriver

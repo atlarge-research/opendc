@@ -30,11 +30,9 @@ import org.apache.parquet.filter2.predicate.FilterApi
 import org.apache.parquet.filter2.predicate.Statistics
 import org.apache.parquet.filter2.predicate.UserDefinedPredicate
 import org.apache.parquet.io.api.Binary
-import org.opendc.format.trace.TraceEntry
-import org.opendc.format.trace.TraceReader
-import org.opendc.format.util.LocalInputFile
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.trace.util.parquet.LocalInputFile
 import java.io.File
 import java.io.Serializable
 import java.util.SortedSet
@@ -187,7 +185,7 @@ class StreamingParquetTraceReader(traceFile: File, selectedVms: List<String> = e
                 assert(uid !in takenIds)
                 takenIds += uid
 
-                logger.info("Processing VM $id")
+                logger.info { "Processing VM $id" }
 
                 val internalBuffer = mutableListOf<SimTraceWorkload.Fragment>()
                 val externalBuffer = mutableListOf<SimTraceWorkload.Fragment>()

@@ -22,8 +22,6 @@
 
 package org.opendc.experiments.capelin.env
 
-import org.opendc.format.environment.EnvironmentReader
-import org.opendc.format.environment.MachineDef
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode

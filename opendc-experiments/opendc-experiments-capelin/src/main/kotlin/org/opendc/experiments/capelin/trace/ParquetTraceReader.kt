@@ -24,8 +24,6 @@ package org.opendc.experiments.capelin.trace
 
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.format.trace.TraceEntry
-import org.opendc.format.trace.TraceReader
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**

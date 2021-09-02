@@ -39,31 +39,9 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
     }
     implementation(libs.jackson.dataformat.csv)
-    implementation(kotlin("reflect"))
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
 
-    /* This configuration is necessary for a slim dependency on Apache Parquet */
-    implementation(libs.parquet) {
-        exclude(group = "org.apache.hadoop")
-    }
-    runtimeOnly(libs.hadoop.common) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-        exclude(group = "org.apache.hadoop")
-        exclude(group = "org.apache.curator")
-        exclude(group = "org.apache.zookeeper")
-        exclude(group = "org.apache.kerby")
-        exclude(group = "org.apache.httpcomponents")
-        exclude(group = "org.apache.htrace")
-        exclude(group = "commons-cli")
-        exclude(group = "javax.servlet")
-        exclude(group = "org.eclipse.jetty")
-        exclude(group = "com.sun.jersey")
-        exclude(group = "com.jcraft")
-        exclude(group = "dnsjava")
-    }
-    runtimeOnly(libs.hadoop.mapreduce.client.core) {
-        isTransitive = false
-    }
+    implementation(projects.opendcTrace.opendcTraceParquet)
 
     testRuntimeOnly(libs.slf4j.simple)
 }

@@ -34,8 +34,11 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcFormat)
     implementation(projects.opendcUtils)
 
     implementation(libs.kotlin.logging)
+    implementation(libs.jackson.module.kotlin) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
 }
