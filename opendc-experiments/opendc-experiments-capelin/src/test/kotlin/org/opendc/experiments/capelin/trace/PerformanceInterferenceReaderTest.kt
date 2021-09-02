@@ -33,9 +33,7 @@ class PerformanceInterferenceReaderTest {
     @Test
     fun testSmoke() {
         val input = checkNotNull(PerformanceInterferenceReader::class.java.getResourceAsStream("/perf-interference.json"))
-        val reader = PerformanceInterferenceReader(input)
-
-        val result = reader.use { reader.read() }
+        val result = PerformanceInterferenceReader().read(input)
 
         assertAll(
             { assertEquals(2, result.size) },

@@ -197,7 +197,9 @@ class CapelinIntegrationTest {
 
         val perfInterferenceInput = checkNotNull(CapelinIntegrationTest::class.java.getResourceAsStream("/bitbrains-perf-interference.json"))
         val performanceInterferenceModel =
-            PerformanceInterferenceReader(perfInterferenceInput).use { VmInterferenceModel(it.read(), Random(seed.toLong())) }
+            PerformanceInterferenceReader()
+                .read(perfInterferenceInput)
+                .let { VmInterferenceModel(it, Random(seed.toLong())) }
 
         val meterProvider = createMeterProvider(clock)
 

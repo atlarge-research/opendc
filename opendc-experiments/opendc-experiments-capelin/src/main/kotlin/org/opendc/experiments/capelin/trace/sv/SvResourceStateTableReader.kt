@@ -29,7 +29,7 @@ import java.time.Instant
 /**
  * A [TableReader] for the Bitbrains resource state table.
  */
-internal class SvResourceStateTableReader(partition: String, private val reader: BufferedReader) : TableReader {
+internal class SvResourceStateTableReader(private val reader: BufferedReader) : TableReader {
     /**
      * The current parser state.
      */
@@ -57,7 +57,7 @@ internal class SvResourceStateTableReader(partition: String, private val reader:
 
         val length = line.length
         var col = 0
-        var start = 0
+        var start: Int
         var end = 0
 
         while (end < length) {

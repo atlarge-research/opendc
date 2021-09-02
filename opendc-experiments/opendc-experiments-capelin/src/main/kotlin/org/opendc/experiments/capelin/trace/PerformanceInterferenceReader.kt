@@ -31,14 +31,13 @@ import java.io.InputStream
 
 /**
  * A parser for the JSON performance interference setup files used for the TPDS article on Capelin.
- *
- * @param input The input stream to read from.
- * @param mapper The Jackson object mapper to use.
  */
-class PerformanceInterferenceReader(
-    private val input: InputStream,
-    private val mapper: ObjectMapper = jacksonObjectMapper()
-) : AutoCloseable {
+class PerformanceInterferenceReader {
+    /**
+     * The [ObjectMapper] to use.
+     */
+    private val mapper = jacksonObjectMapper()
+
     init {
         mapper.addMixIn(VmInterferenceGroup::class.java, GroupMixin::class.java)
     }
@@ -46,12 +45,8 @@ class PerformanceInterferenceReader(
     /**
      * Read the performance interface model from the input.
      */
-    fun read(): List<VmInterferenceGroup> {
-        return mapper.readValue(input)
-    }
-
-    override fun close() {
-        input.close()
+    fun read(input: InputStream): List<VmInterferenceGroup> {
+        return input.use { mapper.readValue(input) }
     }
 
     private data class GroupMixin(

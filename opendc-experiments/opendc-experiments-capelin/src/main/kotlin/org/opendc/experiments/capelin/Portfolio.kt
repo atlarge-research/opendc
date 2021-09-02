@@ -122,8 +122,9 @@ abstract class Portfolio(name: String) : Experiment(name) {
         }
 
         val performanceInterferenceModel = if (operationalPhenomena.hasInterference)
-            PerformanceInterferenceReader(FileInputStream(config.getString("interference-model")))
-                .use { VmInterferenceModel(it.read(), Random(seeder.nextLong())) }
+            PerformanceInterferenceReader()
+                .read(FileInputStream(config.getString("interference-model")))
+                .let { VmInterferenceModel(it, Random(seeder.nextLong())) }
         else
             null
 

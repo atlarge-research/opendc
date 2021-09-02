@@ -41,8 +41,6 @@ import java.util.UUID
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.concurrent.thread
 
-private val logger = KotlinLogging.logger {}
-
 /**
  * A [TraceReader] for the internal VM workload trace format that streams workloads on the fly.
  *
@@ -50,6 +48,8 @@ private val logger = KotlinLogging.logger {}
  * @param selectedVms The list of VMs to read from the trace.
  */
 class StreamingParquetTraceReader(traceFile: File, selectedVms: List<String> = emptyList()) : TraceReader<SimWorkload> {
+    private val logger = KotlinLogging.logger {}
+
     /**
      * The internal iterator to use for this reader.
      */

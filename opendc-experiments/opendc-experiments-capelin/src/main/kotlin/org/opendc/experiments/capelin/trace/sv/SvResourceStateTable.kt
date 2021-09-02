@@ -118,9 +118,9 @@ internal class SvResourceStateTable(path: Path) : Table {
 
             private fun nextDelegate(): TableReader? {
                 return if (it.hasNext()) {
-                    val (partition, path) = it.next()
+                    val (_, path) = it.next()
                     val reader = path.bufferedReader()
-                    return SvResourceStateTableReader(partition, reader)
+                    return SvResourceStateTableReader(reader)
                 } else {
                     null
                 }
@@ -133,7 +133,7 @@ internal class SvResourceStateTable(path: Path) : Table {
     override fun newReader(partition: String): TableReader {
         val path = requireNotNull(partitions[partition]) { "Invalid partition $partition" }
         val reader = path.bufferedReader()
-        return SvResourceStateTableReader(partition, reader)
+        return SvResourceStateTableReader(reader)
     }
 
     override fun toString(): String = "SvResourceStateTable"

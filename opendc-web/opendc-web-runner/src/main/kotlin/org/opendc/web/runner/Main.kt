@@ -32,7 +32,6 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
-import org.opendc.compute.service.scheduler.weights.*
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.env.MachineDef
@@ -152,7 +151,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                 return@let null
             }
 
-            PerformanceInterferenceReader(path.inputStream()).use { reader -> reader.read() }
+            PerformanceInterferenceReader().read(path.inputStream())
         }
 
         val targets = portfolio.targets

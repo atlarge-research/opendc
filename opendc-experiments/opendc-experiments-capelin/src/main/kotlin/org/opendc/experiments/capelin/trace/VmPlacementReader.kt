@@ -29,24 +29,19 @@ import java.io.InputStream
 
 /**
  * A parser for the JSON VM placement data files used for the TPDS article on Capelin.
- *
- * @param input The input stream to read from.
- * @param mapper The Jackson object mapper to use.
  */
-public class VmPlacementReader(
-    private val input: InputStream,
-    private val mapper: ObjectMapper = jacksonObjectMapper()
-) : AutoCloseable {
+class VmPlacementReader {
+    /**
+     * The [ObjectMapper] to parse the placement.
+     */
+    private val mapper = jacksonObjectMapper()
+
     /**
      * Read the VM placements from the input.
      */
-    public fun read(): Map<String, String> {
+    fun read(input: InputStream): Map<String, String> {
         return mapper.readValue<Map<String, String>>(input)
             .mapKeys { "vm__workload__${it.key}.txt" }
             .mapValues { it.value.split("/")[1] } // Clusters have format XX0 / X00
-    }
-
-    override fun close() {
-        input.close()
     }
 }
