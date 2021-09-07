@@ -102,7 +102,7 @@ class InternalServerTest {
         val image = mockk<InternalImage>()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
-        every { service.schedule(any()) } answers { ComputeServiceImpl.SchedulingRequest(it.invocation.args[0] as InternalServer) }
+        every { service.schedule(any()) } answers { ComputeServiceImpl.SchedulingRequest(it.invocation.args[0] as InternalServer, 0) }
 
         server.start()
 
@@ -160,7 +160,7 @@ class InternalServerTest {
         val flavor = mockk<InternalFlavor>()
         val image = mockk<InternalImage>()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
-        val request = ComputeServiceImpl.SchedulingRequest(server)
+        val request = ComputeServiceImpl.SchedulingRequest(server, 0)
 
         every { service.schedule(any()) } returns request
 
@@ -223,7 +223,7 @@ class InternalServerTest {
         val flavor = mockk<InternalFlavor>()
         val image = mockk<InternalImage>()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
-        val request = ComputeServiceImpl.SchedulingRequest(server)
+        val request = ComputeServiceImpl.SchedulingRequest(server, 0)
 
         every { service.schedule(any()) } returns request
 

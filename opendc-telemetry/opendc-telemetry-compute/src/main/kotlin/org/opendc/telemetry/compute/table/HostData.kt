@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.telemetry
+package org.opendc.telemetry.compute.table
 
 import org.opendc.compute.service.driver.Host
 
 /**
- * A periodic report of the host machine metrics.
+ * A trace entry for a particular host.
  */
-public data class HostEvent(
-    override val timestamp: Long,
-    public val duration: Long,
+public data class HostData(
+    public val timestamp: Long,
     public val host: Host,
-    public val vmCount: Int,
-    public val requestedBurst: Long,
-    public val grantedBurst: Long,
-    public val overcommissionedBurst: Long,
-    public val interferedBurst: Long,
+    public val totalWork: Double,
+    public val grantedWork: Double,
+    public val overcommittedWork: Double,
+    public val interferedWork: Double,
     public val cpuUsage: Double,
     public val cpuDemand: Double,
+    public val instanceCount: Int,
     public val powerDraw: Double,
-    public val cores: Int
-) : Event("host-metrics")
+    public val uptime: Long,
+    public val downtime: Long,
+)

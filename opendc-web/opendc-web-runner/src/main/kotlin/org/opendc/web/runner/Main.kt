@@ -32,7 +32,6 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
-import org.opendc.compute.service.scheduler.weights.*
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.env.MachineDef
@@ -47,6 +46,8 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.telemetry.compute.collectServiceMetrics
+import org.opendc.telemetry.compute.withMonitor
 import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.web.client.ApiClient
 import org.opendc.web.client.AuthConfiguration
@@ -131,7 +132,7 @@ class RunnerCli : CliktCommand(name = "runner") {
     /**
      * Run a single scenario.
      */
-    private suspend fun runScenario(portfolio: ClientPortfolio, scenario: Scenario, environment: EnvironmentReader): List<WebExperimentMonitor.Result> {
+    private suspend fun runScenario(portfolio: ClientPortfolio, scenario: Scenario, environment: EnvironmentReader): List<WebComputeMonitor.Result> {
         val id = scenario.id
 
         logger.info { "Constructing performance interference model" }
@@ -150,7 +151,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                 return@let null
             }
 
-            PerformanceInterferenceReader(path.inputStream()).use { reader -> reader.read() }
+            PerformanceInterferenceReader().read(path.inputStream())
         }
 
         val targets = portfolio.targets
@@ -176,8 +177,8 @@ class RunnerCli : CliktCommand(name = "runner") {
         environment: EnvironmentReader,
         traceReader: RawParquetTraceReader,
         interferenceModel: VmInterferenceModel?
-    ): WebExperimentMonitor.Result {
-        val monitor = WebExperimentMonitor()
+    ): WebComputeMonitor.Result {
+        val monitor = WebComputeMonitor()
 
         try {
             runBlockingSimulation {
@@ -220,7 +221,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                         null
                     }
 
-                    withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
+                    withMonitor(scheduler, clock, meterProvider as MetricProducer, monitor) {
                         processTrace(
                             clock,
                             trace,
@@ -233,8 +234,14 @@ class RunnerCli : CliktCommand(name = "runner") {
                     failureDomain?.cancel()
                 }
 
-                val monitorResults = collectMetrics(metricProducer)
-                logger.debug { "Finish SUBMIT=${monitorResults.submittedVms} FAIL=${monitorResults.unscheduledVms} QUEUE=${monitorResults.queuedVms} RUNNING=${monitorResults.runningVms}" }
+                val monitorResults = collectServiceMetrics(clock.millis(), metricProducer)
+                logger.debug {
+                    "Finish " +
+                        "SUBMIT=${monitorResults.instanceCount} " +
+                        "FAIL=${monitorResults.failedInstanceCount} " +
+                        "QUEUE=${monitorResults.queuedInstanceCount} " +
+                        "RUNNING=${monitorResults.runningInstanceCount}"
+                }
             }
         } catch (cause: Throwable) {
             logger.warn(cause) { "Experiment failed" }

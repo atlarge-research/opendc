@@ -22,7 +22,9 @@
 
 package org.opendc.compute.service.internal
 
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.compute.api.*
@@ -157,6 +159,15 @@ internal class ComputeServiceImpl(
     private val _availableHostCount = meter.upDownCounterBuilder("hosts.available")
         .setDescription("Number of available hosts")
         .setUnit("1")
+        .build()
+
+    /**
+     * The response time of the service.
+     */
+    private val _schedulerDuration = meter.histogramBuilder("scheduler.duration")
+        .setDescription("End to end latency for a server to be scheduled (in multiple attempts)")
+        .ofLongs()
+        .setUnit("ms")
         .build()
 
     /**
@@ -325,7 +336,7 @@ internal class ComputeServiceImpl(
     internal fun schedule(server: InternalServer): SchedulingRequest {
         logger.debug { "Enqueueing server ${server.uid} to be assigned to host." }
 
-        val request = SchedulingRequest(server)
+        val request = SchedulingRequest(server, clock.millis())
         queue.add(request)
         _submittedServers.add(1)
         _waitingServers.add(1)
@@ -368,6 +379,7 @@ internal class ComputeServiceImpl(
      * Run a single scheduling iteration.
      */
     private fun doSchedule() {
+        val now = clock.millis()
         while (queue.isNotEmpty()) {
             val request = queue.peek()
 
@@ -390,7 +402,7 @@ internal class ComputeServiceImpl(
 
                     logger.warn("Failed to spawn $server: does not fit [${clock.millis()}]")
 
-                    server.state = ServerState.ERROR
+                    server.state = ServerState.TERMINATED
                     continue
                 } else {
                     break
@@ -402,6 +414,7 @@ internal class ComputeServiceImpl(
             // Remove request from queue
             queue.poll()
             _waitingServers.add(-1)
+            _schedulerDuration.record(now - request.submitTime, Attributes.of(ResourceAttributes.HOST_ID, server.uid.toString()))
 
             logger.info { "Assigned server $server to host $host." }
 
@@ -430,7 +443,7 @@ internal class ComputeServiceImpl(
     /**
      * A request to schedule an [InternalServer] onto one of the [Host]s.
      */
-    internal data class SchedulingRequest(val server: InternalServer) {
+    internal data class SchedulingRequest(val server: InternalServer, val submitTime: Long) {
         /**
          * A flag to indicate that the request is cancelled.
          */

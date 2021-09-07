@@ -29,11 +29,11 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
+import org.opendc.experiments.capelin.export.parquet.ParquetExportMonitor
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
@@ -41,6 +41,8 @@ import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.telemetry.compute.collectServiceMetrics
+import org.opendc.telemetry.compute.withMonitor
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
@@ -120,14 +122,15 @@ abstract class Portfolio(name: String) : Experiment(name) {
         }
 
         val performanceInterferenceModel = if (operationalPhenomena.hasInterference)
-            PerformanceInterferenceReader(FileInputStream(config.getString("interference-model")))
-                .use { VmInterferenceModel(it.read(), Random(seeder.nextLong())) }
+            PerformanceInterferenceReader()
+                .read(FileInputStream(config.getString("interference-model")))
+                .let { VmInterferenceModel(it, Random(seeder.nextLong())) }
         else
             null
 
         val trace = ParquetTraceReader(rawReaders, workload, seeder.nextInt())
 
-        val monitor = ParquetExperimentMonitor(
+        val monitor = ParquetExportMonitor(
             File(config.getString("output-path")),
             "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
             4096
@@ -148,7 +151,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
                 null
             }
 
-            withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
+            withMonitor(scheduler, clock, meterProvider as MetricProducer, monitor) {
                 processTrace(
                     clock,
                     trace,
@@ -159,9 +162,16 @@ abstract class Portfolio(name: String) : Experiment(name) {
             }
 
             failureDomain?.cancel()
+            monitor.close()
         }
 
-        val monitorResults = collectMetrics(meterProvider as MetricProducer)
-        logger.debug { "Finish SUBMIT=${monitorResults.submittedVms} FAIL=${monitorResults.unscheduledVms} QUEUE=${monitorResults.queuedVms} RUNNING=${monitorResults.runningVms}" }
+        val monitorResults = collectServiceMetrics(clock.millis(), meterProvider as MetricProducer)
+        logger.debug {
+            "Finish " +
+                "SUBMIT=${monitorResults.instanceCount} " +
+                "FAIL=${monitorResults.failedInstanceCount} " +
+                "QUEUE=${monitorResults.queuedInstanceCount} " +
+                "RUNNING=${monitorResults.activeHostCount}"
+        }
     }
 }

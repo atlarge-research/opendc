@@ -37,7 +37,7 @@ import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.*
-import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
+import org.opendc.experiments.capelin.export.parquet.ParquetExportMonitor
 import org.opendc.experiments.capelin.trace.StreamingParquetTraceReader
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
@@ -50,6 +50,8 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.*
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.telemetry.compute.collectServiceMetrics
+import org.opendc.telemetry.compute.withMonitor
 import java.io.File
 import java.time.Clock
 import java.util.*
@@ -87,11 +89,11 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
         )
 
         val meterProvider: MeterProvider = createMeterProvider(clock)
-        val monitor = ParquetExperimentMonitor(File(config.getString("output-path")), "power_model=$powerModel/run_id=$repeat", 4096)
+        val monitor = ParquetExportMonitor(File(config.getString("output-path")), "power_model=$powerModel/run_id=$repeat", 4096)
         val trace = StreamingParquetTraceReader(File(config.getString("trace-path"), trace))
 
         withComputeService(clock, meterProvider, allocationPolicy) { scheduler ->
-            withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
+            withMonitor(scheduler, clock, meterProvider as MetricProducer, monitor) {
                 processTrace(
                     clock,
                     trace,
@@ -102,12 +104,12 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
             }
         }
 
-        val monitorResults = collectMetrics(meterProvider as MetricProducer)
+        val monitorResults = collectServiceMetrics(clock.millis(), meterProvider as MetricProducer)
         logger.debug {
-            "Finish SUBMIT=${monitorResults.submittedVms} " +
-                "FAIL=${monitorResults.unscheduledVms} " +
-                "QUEUE=${monitorResults.queuedVms} " +
-                "RUNNING=${monitorResults.runningVms}"
+            "Finish SUBMIT=${monitorResults.instanceCount} " +
+                "FAIL=${monitorResults.failedInstanceCount} " +
+                "QUEUE=${monitorResults.queuedInstanceCount} " +
+                "RUNNING=${monitorResults.runningInstanceCount}"
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,15 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.telemetry
+description = "Telemetry for OpenDC Compute"
 
-import org.opendc.experiments.capelin.Portfolio
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+}
 
-/**
- * A periodic report of the host machine metrics.
- */
-public data class RunEvent(
-    val portfolio: Portfolio,
-    val repeat: Int,
-    override val timestamp: Long
-) : Event("run")
+dependencies {
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcTelemetry.opendcTelemetrySdk)
+
+    implementation(projects.opendcCompute.opendcComputeSimulator)
+    implementation(libs.opentelemetry.semconv)
+    implementation(libs.kotlin.logging)
+}

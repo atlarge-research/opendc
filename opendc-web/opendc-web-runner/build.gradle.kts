@@ -39,6 +39,7 @@ dependencies {
     implementation(projects.opendcExperiments.opendcExperimentsCapelin)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
 
     implementation(libs.kotlin.logging)
     implementation(libs.clikt)
@@ -47,6 +48,7 @@ dependencies {
     implementation(libs.ktor.client.auth)
     implementation(libs.ktor.client.jackson)
     implementation(libs.jackson.datatype.jsr310)
+    implementation(kotlin("reflect"))
 
     runtimeOnly(libs.log4j.slf4j)
 

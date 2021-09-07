@@ -24,16 +24,10 @@ package org.opendc.experiments.capelin
 
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import mu.KotlinLogging
 import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.driver.Host
-import org.opendc.compute.service.driver.HostListener
-import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.ReplayScheduler
@@ -46,8 +40,6 @@ import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.env.EnvironmentReader
-import org.opendc.experiments.capelin.monitor.ExperimentMetricExporter
-import org.opendc.experiments.capelin.monitor.ExperimentMonitor
 import org.opendc.experiments.capelin.trace.TraceReader
 import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
@@ -57,18 +49,13 @@ import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.failures.CorrelatedFaultInjector
 import org.opendc.simulator.failures.FaultInjector
 import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
+import org.opendc.telemetry.compute.ComputeMonitor
 import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Clock
 import kotlin.coroutines.resume
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.random.Random
-
-/**
- * The logger for this experiment.
- */
-private val logger = KotlinLogging.logger {}
 
 /**
  * Construct the failure domain for the experiments.
@@ -169,85 +156,6 @@ suspend fun withComputeService(
 }
 
 /**
- * Attach the specified monitor to the VM provisioner.
- */
-suspend fun withMonitor(
-    monitor: ExperimentMonitor,
-    clock: Clock,
-    metricProducer: MetricProducer,
-    scheduler: ComputeService,
-    block: suspend CoroutineScope.() -> Unit
-): Unit = coroutineScope {
-    // Monitor host events
-    for (host in scheduler.hosts) {
-        monitor.reportHostStateChange(clock.millis(), host, HostState.UP)
-        host.addListener(object : HostListener {
-            override fun onStateChanged(host: Host, newState: HostState) {
-                monitor.reportHostStateChange(clock.millis(), host, newState)
-            }
-        })
-    }
-
-    val reader = CoroutineMetricReader(
-        this,
-        listOf(metricProducer),
-        ExperimentMetricExporter(monitor, clock, scheduler.hosts.associateBy { it.uid.toString() }),
-        exportInterval = 5L * 60 * 1000 /* Every 5 min (which is the granularity of the workload trace) */
-    )
-
-    try {
-        block(this)
-    } finally {
-        reader.close()
-        monitor.close()
-    }
-}
-
-class ComputeMetrics {
-    var submittedVms: Int = 0
-    var queuedVms: Int = 0
-    var runningVms: Int = 0
-    var unscheduledVms: Int = 0
-    var finishedVms: Int = 0
-    var hosts: Int = 0
-    var availableHosts = 0
-}
-
-/**
- * Collect the metrics of the compute service.
- */
-fun collectMetrics(metricProducer: MetricProducer): ComputeMetrics {
-    return extractComputeMetrics(metricProducer.collectAllMetrics())
-}
-
-/**
- * Extract an [ComputeMetrics] object from the specified list of metric data.
- */
-internal fun extractComputeMetrics(metrics: Collection<MetricData>): ComputeMetrics {
-    val res = ComputeMetrics()
-    for (metric in metrics) {
-        val points = metric.longSumData.points
-
-        if (points.isEmpty()) {
-            continue
-        }
-
-        val value = points.first().value.toInt()
-        when (metric.name) {
-            "servers.submitted" -> res.submittedVms = value
-            "servers.waiting" -> res.queuedVms = value
-            "servers.unscheduled" -> res.unscheduledVms = value
-            "servers.active" -> res.runningVms = value
-            "servers.finished" -> res.finishedVms = value
-            "hosts.total" -> res.hosts = value
-            "hosts.available" -> res.availableHosts = value
-        }
-    }
-
-    return res
-}
-
-/**
  * Process the trace.
  */
 suspend fun processTrace(
@@ -255,7 +163,7 @@ suspend fun processTrace(
     reader: TraceReader<SimWorkload>,
     scheduler: ComputeService,
     chan: Channel<Unit>,
-    monitor: ExperimentMonitor
+    monitor: ComputeMonitor? = null,
 ) {
     val client = scheduler.newClient()
     val image = client.newImage("vm-image")
@@ -289,7 +197,7 @@ suspend fun processTrace(
                     suspendCancellableCoroutine { cont ->
                         server.watch(object : ServerWatcher {
                             override fun onStateChanged(server: Server, newState: ServerState) {
-                                monitor.reportVmStateChange(clock.millis(), server, newState)
+                                monitor?.onStateChange(clock.millis(), server, newState)
 
                                 if (newState == ServerState.TERMINATED) {
                                     cont.resume(Unit)

@@ -38,15 +38,15 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorFailures)
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
     implementation(libs.opentelemetry.semconv)
 
     implementation(libs.kotlin.logging)
     implementation(libs.config)
     implementation(libs.progressbar)
     implementation(libs.clikt)
-    implementation(libs.jackson.module.kotlin) {
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
+    implementation(libs.jackson.module.kotlin)
+    implementation(kotlin("reflect"))
 
     implementation(libs.parquet)
     testImplementation(libs.log4j.slf4j)

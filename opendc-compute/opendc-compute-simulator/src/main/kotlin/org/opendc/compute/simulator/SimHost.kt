@@ -22,6 +22,7 @@
 
 package org.opendc.compute.simulator
 
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
@@ -59,7 +60,7 @@ public class SimHost(
     override val meta: Map<String, Any>,
     context: CoroutineContext,
     interpreter: SimResourceInterpreter,
-    meter: Meter,
+    private val meter: Meter,
     hypervisor: SimHypervisorProvider,
     scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
     powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
@@ -72,6 +73,11 @@ public class SimHost(
     override val scope: CoroutineScope = CoroutineScope(context + Job())
 
     /**
+     * The clock instance used by the host.
+     */
+    private val clock = interpreter.clock
+
+    /**
      * The logger instance of this server.
      */
     private val logger = KotlinLogging.logger {}
@@ -80,11 +86,6 @@ public class SimHost(
      * The event listeners registered with this host.
      */
     private val listeners = mutableListOf<HostListener>()
-
-    /**
-     * Current total memory use of the images on this hypervisor.
-     */
-    private var availableMemory: Long = model.memory.sumOf { it.size }
 
     /**
      * The machine to run on.
@@ -115,6 +116,8 @@ public class SimHost(
                 _cpuDemand.record(cpuDemand)
                 _cpuUsage.record(cpuUsage)
                 _powerUsage.record(machine.powerDraw)
+
+                reportTime()
             }
         }
     )
@@ -221,6 +224,33 @@ public class SimHost(
         .build()
         .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
+    /**
+     * The amount of time in the system.
+     */
+    private val _totalTime = meter.counterBuilder("host.time.total")
+        .setDescription("The amount of time in the system")
+        .setUnit("ms")
+        .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
+
+    /**
+     * The uptime of the host.
+     */
+    private val _upTime = meter.counterBuilder("host.time.up")
+        .setDescription("The uptime of the host")
+        .setUnit("ms")
+        .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
+
+    /**
+     * The downtime of the host.
+     */
+    private val _downTime = meter.counterBuilder("host.time.down")
+        .setDescription("The downtime of the host")
+        .setUnit("ms")
+        .build()
+        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
+
     init {
         // Launch hypervisor onto machine
         scope.launch {
@@ -238,24 +268,43 @@ public class SimHost(
         }
     }
 
+    private var _lastReport = clock.millis()
+
+    private fun reportTime() {
+        if (!scope.isActive)
+            return
+
+        val now = clock.millis()
+        val duration = now - _lastReport
+
+        _totalTime.add(duration)
+        when (_state) {
+            HostState.UP -> _upTime.add(duration)
+            HostState.DOWN -> _downTime.add(duration)
+        }
+
+        // Track time of guests
+        for (guest in guests.values) {
+            guest.reportTime()
+        }
+
+        _lastReport = now
+    }
+
     override fun canFit(server: Server): Boolean {
-        val sufficientMemory = availableMemory > server.flavor.memorySize
-        val enoughCpus = machine.model.cpus.size >= server.flavor.cpuCount
+        val sufficientMemory = model.memorySize >= server.flavor.memorySize
+        val enoughCpus = model.cpuCount >= server.flavor.cpuCount
         val canFit = hypervisor.canFit(server.flavor.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
     }
 
     override suspend fun spawn(server: Server, start: Boolean) {
-        // Return if the server already exists on this host
-        if (server in this) {
-            return
+        val guest = guests.computeIfAbsent(server) { key ->
+            require(canFit(key)) { "Server does not fit" }
+            _guests.add(1)
+            Guest(key, hypervisor.createMachine(key.flavor.toMachineModel(), key.name))
         }
-
-        require(canFit(server)) { "Server does not fit" }
-        val guest = Guest(server, hypervisor.createMachine(server.flavor.toMachineModel(), server.name))
-        guests[server] = guest
-        _guests.add(1)
 
         if (start) {
             guest.start()
@@ -291,6 +340,7 @@ public class SimHost(
     }
 
     override fun close() {
+        reportTime()
         scope.cancel()
         machine.close()
     }
@@ -320,6 +370,7 @@ public class SimHost(
     }
 
     override suspend fun fail() {
+        reportTime()
         _state = HostState.DOWN
         for (guest in guests.values) {
             guest.fail()
@@ -327,6 +378,7 @@ public class SimHost(
     }
 
     override suspend fun recover() {
+        reportTime()
         _state = HostState.UP
         for (guest in guests.values) {
             guest.start()
@@ -338,6 +390,33 @@ public class SimHost(
      */
     private inner class Guest(val server: Server, val machine: SimMachine) {
         var state: ServerState = ServerState.TERMINATED
+
+        /**
+         * The amount of time in the system.
+         */
+        private val _totalTime = meter.counterBuilder("guest.time.total")
+            .setDescription("The amount of time in the system")
+            .setUnit("ms")
+            .build()
+            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
+
+        /**
+         * The uptime of the guest.
+         */
+        private val _runningTime = meter.counterBuilder("guest.time.running")
+            .setDescription("The uptime of the guest")
+            .setUnit("ms")
+            .build()
+            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
+
+        /**
+         * The time the guest is in an error state.
+         */
+        private val _errorTime = meter.counterBuilder("guest.time.error")
+            .setDescription("The time the guest is in an error state")
+            .setUnit("ms")
+            .build()
+            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
 
         suspend fun start() {
             when (state) {
@@ -373,6 +452,9 @@ public class SimHost(
         }
 
         suspend fun fail() {
+            if (state != ServerState.RUNNING) {
+                return
+            }
             stop()
             state = ServerState.ERROR
         }
@@ -414,8 +496,26 @@ public class SimHost(
                 else
                     ServerState.ERROR
 
-            availableMemory += server.flavor.memorySize
             onGuestStop(this)
+        }
+
+        private var _lastReport = clock.millis()
+
+        fun reportTime() {
+            if (state == ServerState.DELETED)
+                return
+
+            val now = clock.millis()
+            val duration = now - _lastReport
+
+            _totalTime.add(duration)
+            when (state) {
+                ServerState.RUNNING -> _runningTime.add(duration)
+                ServerState.ERROR -> _errorTime.add(duration)
+                else -> {}
+            }
+
+            _lastReport = now
         }
     }
 }

@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.telemetry
+package org.opendc.telemetry.compute.table
+
+import org.opendc.compute.api.Server
 
 /**
- * A periodic report of the provisioner's metrics.
+ * A trace entry for a particular server.
  */
-public data class ProvisionerEvent(
-    override val timestamp: Long,
-    public val totalHostCount: Int,
-    public val availableHostCount: Int,
-    public val totalVmCount: Int,
-    public val activeVmCount: Int,
-    public val inactiveVmCount: Int,
-    public val waitingVmCount: Int,
-    public val failedVmCount: Int
-) : Event("provisioner-metrics")
+public data class ServerData(
+    public val timestamp: Long,
+    public val server: Server,
+    public val uptime: Long,
+    public val downtime: Long,
+)
