@@ -40,18 +40,31 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
     override fun buildWriter(builder: AvroParquetWriter.Builder<GenericData.Record>): ParquetWriter<GenericData.Record> {
         return builder
             .withDictionaryEncoding("server_id", true)
-            .withDictionaryEncoding("state", true)
+            .withDictionaryEncoding("host_id", true)
             .build()
     }
 
     override fun convert(builder: GenericRecordBuilder, data: ServerData) {
-        builder["timestamp"] = data.timestamp
-        builder["server_id"] = data.server
-        // builder["state"] = data.server.state
+        builder["timestamp"] = data.timestamp.toEpochMilli()
+
+        builder["server_id"] = data.server.id
+        builder["host_id"] = data.host?.id
+        builder["num_vcpus"] = data.server.cpuCount
+        builder["mem_capacity"] = data.server.memCapacity
+
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
-        // builder["num_vcpus"] = data.server.flavor.cpuCount
-        // builder["mem_capacity"] = data.server.flavor.memorySize
+        val bootTime = data.bootTime
+        if (bootTime != null) {
+            builder["boot_time"] = bootTime.toEpochMilli()
+        }
+        builder["scheduling_latency"] = data.schedulingLatency
+
+        builder["cpu_limit"] = data.cpuLimit
+        builder["cpu_time_active"] = data.cpuActiveTime
+        builder["cpu_time_idle"] = data.cpuIdleTime
+        builder["cpu_time_steal"] = data.cpuStealTime
+        builder["cpu_time_lost"] = data.cpuLostTime
     }
 
     override fun toString(): String = "server-writer"
@@ -63,11 +76,18 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             .fields()
             .requiredLong("timestamp")
             .requiredString("server_id")
-            .requiredString("state")
-            .requiredLong("uptime")
-            .requiredLong("downtime")
+            .optionalString("host_id")
             .requiredInt("num_vcpus")
             .requiredLong("mem_capacity")
+            .requiredLong("uptime")
+            .requiredLong("downtime")
+            .optionalLong("boot_time")
+            .requiredLong("scheduling_latency")
+            .requiredDouble("cpu_limit")
+            .requiredLong("cpu_time_active")
+            .requiredLong("cpu_time_idle")
+            .requiredLong("cpu_time_steal")
+            .requiredLong("cpu_time_lost")
             .endRecord()
     }
 }

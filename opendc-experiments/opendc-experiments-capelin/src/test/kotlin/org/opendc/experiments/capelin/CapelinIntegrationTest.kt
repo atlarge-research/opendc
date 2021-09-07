@@ -50,7 +50,6 @@ import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import java.io.File
 import java.time.Duration
 import java.util.*
-import kotlin.math.roundToLong
 
 /**
  * An integration test suite for the Capelin experiments.
@@ -102,7 +101,7 @@ class CapelinIntegrationTest {
             metricReader.close()
         }
 
-        val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
+        val serviceMetrics = collectServiceMetrics(clock.instant(), simulator.producers[0])
         println(
             "Scheduler " +
                 "Success=${serviceMetrics.attemptsSuccess} " +
@@ -118,11 +117,11 @@ class CapelinIntegrationTest {
             { assertEquals(0, serviceMetrics.serversActive, "All VMs should finish after a run") },
             { assertEquals(0, serviceMetrics.attemptsFailure, "No VM should be unscheduled") },
             { assertEquals(0, serviceMetrics.serversPending, "No VM should not be in the queue") },
-            { assertEquals(220346412191, monitor.totalWork) { "Incorrect requested burst" } },
-            { assertEquals(206667852689, monitor.totalGrantedWork) { "Incorrect granted burst" } },
-            { assertEquals(1151612221, monitor.totalOvercommittedWork) { "Incorrect overcommitted burst" } },
-            { assertEquals(0, monitor.totalInterferedWork) { "Incorrect interfered burst" } },
-            { assertEquals(9.088769763540529E7, monitor.totalPowerDraw, 0.01) { "Incorrect power draw" } },
+            { assertEquals(223856043, monitor.idleTime) { "Incorrect idle time" } },
+            { assertEquals(66481557, monitor.activeTime) { "Incorrect active time" } },
+            { assertEquals(360441, monitor.stealTime) { "Incorrect steal time" } },
+            { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
+            { assertEquals(5.418336360461193E9, monitor.energyUsage, 0.01) { "Incorrect power draw" } },
         )
     }
 
@@ -151,7 +150,7 @@ class CapelinIntegrationTest {
             metricReader.close()
         }
 
-        val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
+        val serviceMetrics = collectServiceMetrics(clock.instant(), simulator.producers[0])
         println(
             "Scheduler " +
                 "Success=${serviceMetrics.attemptsSuccess} " +
@@ -163,10 +162,10 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(39183965664, monitor.totalWork) { "Total work incorrect" } },
-            { assertEquals(35649907631, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(1043642275, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
-            { assertEquals(0, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
+            { assertEquals(9597804, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(11140596, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(326138, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } }
         )
     }
 
@@ -202,7 +201,7 @@ class CapelinIntegrationTest {
             metricReader.close()
         }
 
-        val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
+        val serviceMetrics = collectServiceMetrics(clock.instant(), simulator.producers[0])
         println(
             "Scheduler " +
                 "Success=${serviceMetrics.attemptsSuccess} " +
@@ -214,10 +213,10 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(39183965664, monitor.totalWork) { "Total work incorrect" } },
-            { assertEquals(35649907631, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(1043642275, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
-            { assertEquals(2960974524, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
+            { assertEquals(9597804, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(11140596, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(326138, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(925305, monitor.lostTime) { "Lost time incorrect" } }
         )
     }
 
@@ -247,7 +246,7 @@ class CapelinIntegrationTest {
             metricReader.close()
         }
 
-        val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
+        val serviceMetrics = collectServiceMetrics(clock.instant(), simulator.producers[0])
         println(
             "Scheduler " +
                 "Success=${serviceMetrics.attemptsSuccess} " +
@@ -259,10 +258,11 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(38385856700, monitor.totalWork) { "Total requested work incorrect" } },
-            { assertEquals(34886670127, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(979997628, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
-            { assertEquals(0, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
+            { assertEquals(9836315, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(10902085, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(306249, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
+            { assertEquals(2540877457, monitor.uptime) { "Uptime incorrect" } }
         )
     }
 
@@ -286,18 +286,20 @@ class CapelinIntegrationTest {
     }
 
     class TestExperimentReporter : ComputeMonitor {
-        var totalWork = 0L
-        var totalGrantedWork = 0L
-        var totalOvercommittedWork = 0L
-        var totalInterferedWork = 0L
-        var totalPowerDraw = 0.0
+        var idleTime = 0L
+        var activeTime = 0L
+        var stealTime = 0L
+        var lostTime = 0L
+        var energyUsage = 0.0
+        var uptime = 0L
 
         override fun record(data: HostData) {
-            this.totalWork += data.totalWork.roundToLong()
-            totalGrantedWork += data.grantedWork.roundToLong()
-            totalOvercommittedWork += data.overcommittedWork.roundToLong()
-            totalInterferedWork += data.interferedWork.roundToLong()
-            totalPowerDraw += data.powerDraw
+            idleTime += data.cpuIdleTime
+            activeTime += data.cpuActiveTime
+            stealTime += data.cpuStealTime
+            lostTime += data.cpuLostTime
+            energyUsage += data.powerTotal
+            uptime += data.uptime
         }
     }
 }

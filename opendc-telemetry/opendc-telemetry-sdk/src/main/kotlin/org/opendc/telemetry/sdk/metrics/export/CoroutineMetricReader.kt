@@ -44,7 +44,7 @@ public class CoroutineMetricReader(
     scope: CoroutineScope,
     private val producers: List<MetricProducer>,
     private val exporter: MetricExporter,
-    private val exportInterval: Duration = Duration.ofMinutes(1)
+    private val exportInterval: Duration = Duration.ofMinutes(5)
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
 

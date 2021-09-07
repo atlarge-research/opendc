@@ -22,20 +22,29 @@
 
 package org.opendc.telemetry.compute.table
 
+import java.time.Instant
+
 /**
  * A trace entry for a particular host.
  */
 public data class HostData(
-    public val timestamp: Long,
-    public val host: HostInfo,
-    public val totalWork: Double,
-    public val grantedWork: Double,
-    public val overcommittedWork: Double,
-    public val interferedWork: Double,
-    public val cpuUsage: Double,
-    public val cpuDemand: Double,
-    public val instanceCount: Int,
-    public val powerDraw: Double,
-    public val uptime: Long,
-    public val downtime: Long,
+    val timestamp: Instant,
+    val host: HostInfo,
+    val guestsTerminated: Int,
+    val guestsRunning: Int,
+    val guestsError: Int,
+    val guestsInvalid: Int,
+    val cpuLimit: Double,
+    val cpuUsage: Double,
+    val cpuDemand: Double,
+    val cpuUtilization: Double,
+    val cpuActiveTime: Long,
+    val cpuIdleTime: Long,
+    val cpuStealTime: Long,
+    val cpuLostTime: Long,
+    val powerUsage: Double,
+    val powerTotal: Double,
+    val uptime: Long,
+    val downtime: Long,
+    val bootTime: Instant?
 )

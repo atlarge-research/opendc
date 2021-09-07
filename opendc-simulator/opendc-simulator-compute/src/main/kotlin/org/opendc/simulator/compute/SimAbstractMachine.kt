@@ -49,22 +49,22 @@ public abstract class SimAbstractMachine(
     /**
      * The resources allocated for this machine.
      */
-    protected abstract val cpus: List<SimProcessingUnit>
+    public abstract val cpus: List<SimProcessingUnit>
 
     /**
      * The memory interface of the machine.
      */
-    protected val memory: SimMemory = Memory(SimResourceSource(model.memory.sumOf { it.size }.toDouble(), interpreter), model.memory)
+    public val memory: SimMemory = Memory(SimResourceSource(model.memory.sumOf { it.size }.toDouble(), interpreter), model.memory)
 
     /**
      * The network interfaces available to the machine.
      */
-    protected val net: List<SimNetworkInterface> = model.net.mapIndexed { i, adapter -> NetworkAdapterImpl(adapter, i) }
+    public val net: List<SimNetworkInterface> = model.net.mapIndexed { i, adapter -> NetworkAdapterImpl(adapter, i) }
 
     /**
      * The network interfaces available to the machine.
      */
-    protected val storage: List<SimStorageInterface> = model.storage.mapIndexed { i, device -> StorageDeviceImpl(interpreter, device, i) }
+    public val storage: List<SimStorageInterface> = model.storage.mapIndexed { i, device -> StorageDeviceImpl(interpreter, device, i) }
 
     /**
      * The peripherals of the machine.

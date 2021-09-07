@@ -40,5 +40,6 @@ dependencies {
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    testImplementation(projects.opendcTelemetry.opendcTelemetryCompute)
     testRuntimeOnly(libs.slf4j.simple)
 }

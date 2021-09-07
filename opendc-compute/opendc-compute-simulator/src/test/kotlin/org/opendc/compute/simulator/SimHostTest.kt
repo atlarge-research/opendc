@@ -23,11 +23,9 @@
 package org.opendc.compute.simulator
 
 import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.export.MetricExporter
 import io.opentelemetry.sdk.metrics.export.MetricProducer
+import io.opentelemetry.sdk.resources.Resource
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -44,17 +42,20 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.telemetry.compute.ComputeMetricExporter
+import org.opendc.telemetry.compute.ComputeMonitor
+import org.opendc.telemetry.compute.HOST_ID
+import org.opendc.telemetry.compute.table.HostData
+import org.opendc.telemetry.compute.table.ServerData
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Duration
 import java.util.*
 import kotlin.coroutines.resume
-import kotlin.math.roundToLong
 
 /**
  * Basic test-suite for the hypervisor.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimHostTest {
     private lateinit var machineModel: MachineModel
 
@@ -73,18 +74,23 @@ internal class SimHostTest {
      */
     @Test
     fun testOvercommitted() = runBlockingSimulation {
-        var totalWork = 0L
-        var grantedWork = 0L
-        var overcommittedWork = 0L
+        var idleTime = 0L
+        var activeTime = 0L
+        var stealTime = 0L
 
+        val hostId = UUID.randomUUID()
+        val hostResource = Resource.builder()
+            .put(HOST_ID, hostId.toString())
+            .build()
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
+            .setResource(hostResource)
             .setClock(clock.toOtelClock())
             .build()
 
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val virtDriver = SimHost(
-            uid = UUID.randomUUID(),
+            uid = hostId,
             name = "test",
             model = machineModel,
             meta = emptyMap(),
@@ -132,20 +138,16 @@ internal class SimHostTest {
         // Setup metric reader
         val reader = CoroutineMetricReader(
             this, listOf(meterProvider as MetricProducer),
-            object : MetricExporter {
-                override fun export(metrics: Collection<MetricData>): CompletableResultCode {
-                    val metricsByName = metrics.associateBy { it.name }
-
-                    totalWork = metricsByName.getValue("cpu.work.total").doubleSumData.points.first().value.roundToLong()
-                    grantedWork = metricsByName.getValue("cpu.work.granted").doubleSumData.points.first().value.roundToLong()
-                    overcommittedWork = metricsByName.getValue("cpu.work.overcommit").doubleSumData.points.first().value.roundToLong()
-                    return CompletableResultCode.ofSuccess()
+            ComputeMetricExporter(
+                clock,
+                object : ComputeMonitor {
+                    override fun record(data: HostData) {
+                        activeTime += data.cpuActiveTime
+                        idleTime += data.cpuIdleTime
+                        stealTime += data.cpuStealTime
+                    }
                 }
-
-                override fun flush(): CompletableResultCode = CompletableResultCode.ofSuccess()
-
-                override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
-            },
+            ),
             exportInterval = Duration.ofSeconds(duration)
         )
 
@@ -172,9 +174,9 @@ internal class SimHostTest {
         reader.close()
 
         assertAll(
-            { assertEquals(4147200, totalWork, "Requested work does not match") },
-            { assertEquals(2107200, grantedWork, "Granted work does not match") },
-            { assertEquals(2040000, overcommittedWork, "Overcommitted work does not match") },
+            { assertEquals(659, activeTime, "Active time does not match") },
+            { assertEquals(2342, idleTime, "Idle time does not match") },
+            { assertEquals(638, stealTime, "Steal time does not match") },
             { assertEquals(1500001, clock.millis()) }
         )
     }
@@ -184,21 +186,26 @@ internal class SimHostTest {
      */
     @Test
     fun testFailure() = runBlockingSimulation {
-        var totalWork = 0L
-        var grantedWork = 0L
-        var totalTime = 0L
-        var downTime = 0L
-        var guestTotalTime = 0L
-        var guestDownTime = 0L
+        var activeTime = 0L
+        var idleTime = 0L
+        var uptime = 0L
+        var downtime = 0L
+        var guestUptime = 0L
+        var guestDowntime = 0L
 
+        val hostId = UUID.randomUUID()
+        val hostResource = Resource.builder()
+            .put(HOST_ID, hostId.toString())
+            .build()
         val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
+            .setResource(hostResource)
             .setClock(clock.toOtelClock())
             .build()
 
         val interpreter = SimResourceInterpreter(coroutineContext, clock)
         val host = SimHost(
-            uid = UUID.randomUUID(),
+            uid = hostId,
             name = "test",
             model = machineModel,
             meta = emptyMap(),
@@ -230,24 +237,22 @@ internal class SimHostTest {
         // Setup metric reader
         val reader = CoroutineMetricReader(
             this, listOf(meterProvider as MetricProducer),
-            object : MetricExporter {
-                override fun export(metrics: Collection<MetricData>): CompletableResultCode {
-                    val metricsByName = metrics.associateBy { it.name }
+            ComputeMetricExporter(
+                clock,
+                object : ComputeMonitor {
+                    override fun record(data: HostData) {
+                        activeTime += data.cpuActiveTime
+                        idleTime += data.cpuIdleTime
+                        uptime += data.uptime
+                        downtime += data.downtime
+                    }
 
-                    totalWork = metricsByName.getValue("cpu.work.total").doubleSumData.points.first().value.roundToLong()
-                    grantedWork = metricsByName.getValue("cpu.work.granted").doubleSumData.points.first().value.roundToLong()
-                    totalTime = metricsByName.getValue("host.time.total").longSumData.points.first().value
-                    downTime = metricsByName.getValue("host.time.down").longSumData.points.first().value
-                    guestTotalTime = metricsByName.getValue("guest.time.total").longSumData.points.first().value
-                    guestDownTime = metricsByName.getValue("guest.time.error").longSumData.points.first().value
-
-                    return CompletableResultCode.ofSuccess()
+                    override fun record(data: ServerData) {
+                        guestUptime += data.uptime
+                        guestDowntime += data.downtime
+                    }
                 }
-
-                override fun flush(): CompletableResultCode = CompletableResultCode.ofSuccess()
-
-                override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
-            },
+            ),
             exportInterval = Duration.ofSeconds(duration)
         )
 
@@ -276,12 +281,12 @@ internal class SimHostTest {
         reader.close()
 
         assertAll(
-            { assertEquals(2226040, totalWork, "Total time does not match") },
-            { assertEquals(1086040, grantedWork, "Down time does not match") },
-            { assertEquals(1200001, totalTime, "Total time does not match") },
-            { assertEquals(1200001, guestTotalTime, "Guest total time does not match") },
-            { assertEquals(5000, downTime, "Down time does not match") },
-            { assertEquals(5000, guestDownTime, "Guest down time does not match") },
+            { assertEquals(2661, idleTime, "Idle time does not match") },
+            { assertEquals(339, activeTime, "Active time does not match") },
+            { assertEquals(1195001, uptime, "Uptime does not match") },
+            { assertEquals(5000, downtime, "Downtime does not match") },
+            { assertEquals(1195000, guestUptime, "Guest uptime does not match") },
+            { assertEquals(5000, guestDowntime, "Guest downtime does not match") },
         )
     }
 

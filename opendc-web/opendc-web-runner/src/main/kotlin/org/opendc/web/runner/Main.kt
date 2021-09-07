@@ -26,8 +26,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.long
-import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.experiments.capelin.*
@@ -49,7 +47,6 @@ import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.collectServiceMetrics
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
-import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.web.client.ApiClient
 import org.opendc.web.client.AuthConfiguration
 import org.opendc.web.client.model.Scenario
@@ -187,11 +184,6 @@ class RunnerCli : CliktCommand(name = "runner") {
 
                 val seeder = Random(repeat.toLong())
 
-                val meterProvider: MeterProvider = SdkMeterProvider
-                    .builder()
-                    .setClock(clock.toOtelClock())
-                    .build()
-
                 val operational = scenario.operationalPhenomena
                 val computeScheduler = createComputeScheduler(operational.schedulerName, seeder)
 
@@ -215,7 +207,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     interferenceModel.takeIf { operational.performanceInterferenceEnabled }
                 )
 
-                val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
+                val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor), exportInterval = Duration.ofHours(1))
 
                 try {
                     simulator.run(trace)
@@ -224,7 +216,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     metricReader.close()
                 }
 
-                val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
+                val serviceMetrics = collectServiceMetrics(clock.instant(), simulator.producers[0])
                 logger.debug {
                     "Scheduler " +
                         "Success=${serviceMetrics.attemptsSuccess} " +

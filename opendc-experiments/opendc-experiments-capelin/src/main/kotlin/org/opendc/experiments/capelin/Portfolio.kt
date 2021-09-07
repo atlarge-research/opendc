@@ -149,9 +149,10 @@ abstract class Portfolio(name: String) : Experiment(name) {
         } finally {
             simulator.close()
             metricReader.close()
+            monitor.close()
         }
 
-        val monitorResults = collectServiceMetrics(clock.millis(), simulator.producers[0])
+        val monitorResults = collectServiceMetrics(clock.instant(), simulator.producers[0])
         logger.debug {
             "Scheduler " +
                 "Success=${monitorResults.attemptsSuccess} " +

@@ -35,7 +35,7 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
     ParquetDataWriter<ServiceData>(path, SCHEMA, bufferSize) {
 
     override fun convert(builder: GenericRecordBuilder, data: ServiceData) {
-        builder["timestamp"] = data.timestamp
+        builder["timestamp"] = data.timestamp.toEpochMilli()
         builder["hosts_up"] = data.hostsUp
         builder["hosts_down"] = data.hostsDown
         builder["servers_pending"] = data.serversPending

@@ -44,20 +44,31 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
     }
 
     override fun convert(builder: GenericRecordBuilder, data: HostData) {
-        builder["timestamp"] = data.timestamp
+        builder["timestamp"] = data.timestamp.toEpochMilli()
+
         builder["host_id"] = data.host.id
-        builder["powered_on"] = true
+        builder["num_cpus"] = data.host.cpuCount
+        builder["mem_capacity"] = data.host.memCapacity
+
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
-        builder["total_work"] = data.totalWork
-        builder["granted_work"] = data.grantedWork
-        builder["overcommitted_work"] = data.overcommittedWork
-        builder["interfered_work"] = data.interferedWork
-        builder["cpu_usage"] = data.cpuUsage
-        builder["cpu_demand"] = data.cpuDemand
-        builder["power_draw"] = data.powerDraw
-        builder["num_instances"] = data.instanceCount
-        builder["num_cpus"] = data.host.cpuCount
+        val bootTime = data.bootTime
+        if (bootTime != null) {
+            builder["boot_time"] = bootTime.toEpochMilli()
+        }
+
+        builder["cpu_limit"] = data.cpuLimit
+        builder["cpu_time_active"] = data.cpuActiveTime
+        builder["cpu_time_idle"] = data.cpuIdleTime
+        builder["cpu_time_steal"] = data.cpuStealTime
+        builder["cpu_time_lost"] = data.cpuLostTime
+
+        builder["power_total"] = data.powerTotal
+
+        builder["guests_terminated"] = data.guestsTerminated
+        builder["guests_running"] = data.guestsRunning
+        builder["guests_error"] = data.guestsError
+        builder["guests_invalid"] = data.guestsInvalid
     }
 
     override fun toString(): String = "host-writer"
@@ -69,18 +80,21 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             .fields()
             .requiredLong("timestamp")
             .requiredString("host_id")
-            .requiredBoolean("powered_on")
+            .requiredInt("num_cpus")
+            .requiredLong("mem_capacity")
             .requiredLong("uptime")
             .requiredLong("downtime")
-            .requiredDouble("total_work")
-            .requiredDouble("granted_work")
-            .requiredDouble("overcommitted_work")
-            .requiredDouble("interfered_work")
-            .requiredDouble("cpu_usage")
-            .requiredDouble("cpu_demand")
-            .requiredDouble("power_draw")
-            .requiredInt("num_instances")
-            .requiredInt("num_cpus")
+            .optionalLong("boot_time")
+            .requiredDouble("cpu_limit")
+            .requiredLong("cpu_time_active")
+            .requiredLong("cpu_time_idle")
+            .requiredLong("cpu_time_steal")
+            .requiredLong("cpu_time_lost")
+            .requiredDouble("power_total")
+            .requiredInt("guests_terminated")
+            .requiredInt("guests_running")
+            .requiredInt("guests_error")
+            .requiredInt("guests_invalid")
             .endRecord()
     }
 }
