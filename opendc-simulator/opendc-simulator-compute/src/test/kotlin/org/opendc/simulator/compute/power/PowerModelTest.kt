@@ -61,7 +61,7 @@ internal class PowerModelTest {
 
     @Test
     fun `compute power draw by the SPEC benchmark model`() {
-        val ibm = listOf(58.4, 98.0, 109.0, 118.0, 128.0, 140.0, 153.0, 170.0, 189.0, 205.0, 222.0)
+        val ibm = doubleArrayOf(58.4, 98.0, 109.0, 118.0, 128.0, 140.0, 153.0, 170.0, 189.0, 205.0, 222.0)
         val powerModel = InterpolationPowerModel(ibm)
 
         assertAll(
