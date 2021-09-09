@@ -24,38 +24,47 @@ package org.opendc.simulator.failures
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.apache.commons.math3.distribution.RealDistribution
 import java.time.Clock
-import kotlin.math.ln1p
-import kotlin.math.pow
-import kotlin.random.Random
+import kotlin.math.roundToLong
 
 /**
  * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are
  * independent.
+ *
+ * @param clock The [Clock] to keep track of simulation time.
+ * @param iat The failure inter-arrival time distribution (in hours)
+ * @param duration The failure duration distribution (in seconds).
  */
 public class UncorrelatedFaultInjector(
     private val clock: Clock,
-    private val alpha: Double,
-    private val beta: Double,
-    private val random: Random = Random(0)
+    private val iat: RealDistribution,
+    private val duration: RealDistribution,
 ) : FaultInjector {
     /**
      * Enqueue the specified [FailureDomain] to fail some time in the future.
      */
     override fun enqueue(domain: FailureDomain) {
         domain.scope.launch {
-            val d = random.weibull(alpha, beta) * 1e3 // Make sure to convert delay to milliseconds
+            val d = (iat.sample() * 3.6e6).roundToLong() // Make sure to convert delay to milliseconds
 
             // Handle long overflow
             if (clock.millis() + d <= 0) {
                 return@launch
             }
 
-            delay(d.toLong())
+            delay(d)
             domain.fail()
+
+            val df = (duration.sample() * 1000).roundToLong() // seconds to milliseconds
+
+            // Handle long overflow
+            if (clock.millis() + df <= 0) {
+                return@launch
+            }
+
+            delay(df)
+            domain.recover()
         }
     }
-
-    // XXX We should extract this in some common package later on.
-    private fun Random.weibull(alpha: Double, beta: Double) = (beta * (-ln1p(-nextDouble())).pow(1.0 / alpha))
 }

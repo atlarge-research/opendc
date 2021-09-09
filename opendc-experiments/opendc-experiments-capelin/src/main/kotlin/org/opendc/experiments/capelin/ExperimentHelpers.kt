@@ -26,6 +26,8 @@ import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import org.apache.commons.math3.distribution.LogNormalDistribution
+import org.apache.commons.math3.random.Well19937c
 import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
@@ -98,15 +100,16 @@ fun createFaultInjector(
     random: Random,
     failureInterval: Double
 ): FaultInjector {
+    val rng = Well19937c(random.nextLong())
+
     // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
     // GRID'5000
     return CorrelatedFaultInjector(
         coroutineScope,
         clock,
-        iatScale = ln(failureInterval), iatShape = 1.03, // Hours
-        sizeScale = ln(2.0), sizeShape = ln(1.0), // Expect 2 machines, with variation of 1
-        dScale = ln(60.0), dShape = ln(60.0 * 8), // Minutes
-        random = random
+        iat = LogNormalDistribution(rng, ln(failureInterval), 1.03),
+        size = LogNormalDistribution(rng, 1.88, 1.25),
+        duration = LogNormalDistribution(rng, 8.89, 2.71)
     )
 }
 

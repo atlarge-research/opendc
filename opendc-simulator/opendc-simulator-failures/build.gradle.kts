@@ -29,4 +29,5 @@ plugins {
 dependencies {
     api(platform(projects.opendcPlatform))
     api(libs.kotlinx.coroutines)
+    api(libs.commons.math3)
 }

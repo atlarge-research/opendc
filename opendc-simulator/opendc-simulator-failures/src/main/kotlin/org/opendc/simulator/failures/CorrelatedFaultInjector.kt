@@ -23,26 +23,29 @@
 package org.opendc.simulator.failures
 
 import kotlinx.coroutines.*
+import org.apache.commons.math3.distribution.RealDistribution
 import java.time.Clock
-import kotlin.math.exp
-import kotlin.math.max
-import kotlin.random.Random
-import kotlin.random.asJavaRandom
+import java.util.*
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 /**
  * A [FaultInjector] that injects fault in the system which are correlated to each other. Failures do not occur in
  * isolation, but will trigger other faults.
+ *
+ * @param scope The scope to run the fault injector in.
+ * @param clock The [Clock] to keep track of simulation time.
+ * @param iat The inter-arrival time distribution of the failures (in hours).
+ * @param size The failure group size distribution.
+ * @param duration The failure duration (in seconds).
  */
 public class CorrelatedFaultInjector(
-    private val coroutineScope: CoroutineScope,
+    private val scope: CoroutineScope,
     private val clock: Clock,
-    private val iatScale: Double,
-    private val iatShape: Double,
-    private val sizeScale: Double,
-    private val sizeShape: Double,
-    private val dScale: Double,
-    private val dShape: Double,
-    random: Random = Random(0)
+    private val iat: RealDistribution,
+    private val size: RealDistribution,
+    private val duration: RealDistribution,
+    private val random: Random = Random(0)
 ) : FaultInjector {
     /**
      * The active failure domains that have been registered.
@@ -55,11 +58,6 @@ public class CorrelatedFaultInjector(
     private var job: Job? = null
 
     /**
-     * The [Random] instance to use.
-     */
-    private val random: java.util.Random = random.asJavaRandom()
-
-    /**
      * Enqueue the specified [FailureDomain] to fail some time in the future.
      */
     override fun enqueue(domain: FailureDomain) {
@@ -67,7 +65,7 @@ public class CorrelatedFaultInjector(
 
         // Clean up the domain if it finishes
         domain.scope.coroutineContext[Job]!!.invokeOnCompletion {
-            this@CorrelatedFaultInjector.coroutineScope.launch {
+            this@CorrelatedFaultInjector.scope.launch {
                 active -= domain
 
                 if (active.isEmpty()) {
@@ -81,21 +79,21 @@ public class CorrelatedFaultInjector(
             return
         }
 
-        job = this.coroutineScope.launch {
+        job = this.scope.launch {
             while (active.isNotEmpty()) {
                 ensureActive()
 
                 // Make sure to convert delay from hours to milliseconds
-                val d = lognvariate(iatScale, iatShape) * 3.6e6
+                val d = (iat.sample() * 3.6e6).roundToLong()
 
                 // Handle long overflow
                 if (clock.millis() + d <= 0) {
                     return@launch
                 }
 
-                delay(d.toLong())
+                delay(d)
 
-                val n = lognvariate(sizeScale, sizeShape).toInt()
+                val n = size.sample().roundToInt()
                 val targets = active.shuffled(random).take(n)
 
                 for (failureDomain in targets) {
@@ -103,14 +101,14 @@ public class CorrelatedFaultInjector(
                     failureDomain.fail()
                 }
 
-                val df = max(lognvariate(dScale, dShape) * 6e4, 15 * 6e4)
+                val df = (duration.sample() * 1000).roundToLong() // seconds to milliseconds
 
                 // Handle long overflow
                 if (clock.millis() + df <= 0) {
                     return@launch
                 }
 
-                delay(df.toLong())
+                delay(df)
 
                 for (failureDomain in targets) {
                     failureDomain.recover()
@@ -123,7 +121,4 @@ public class CorrelatedFaultInjector(
             job = null
         }
     }
-
-    // XXX We should extract this in some common package later on.
-    private fun lognvariate(scale: Double, shape: Double) = exp(scale + shape * random.nextGaussian())
 }
