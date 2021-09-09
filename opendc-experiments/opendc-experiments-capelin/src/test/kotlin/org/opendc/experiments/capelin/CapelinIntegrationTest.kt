@@ -52,7 +52,7 @@ import java.io.File
 import java.util.*
 
 /**
- * An integration test suite for the SC20 experiments.
+ * An integration test suite for the Capelin experiments.
  */
 class CapelinIntegrationTest {
     /**
@@ -146,7 +146,7 @@ class CapelinIntegrationTest {
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
         )
-        val traceReader = createTestTraceReader(0.5, seed)
+        val traceReader = createTestTraceReader(0.25, seed)
         val environmentReader = createTestEnvironmentReader("single")
 
         val meterProvider = createMeterProvider(clock)
@@ -174,9 +174,9 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(38051879552, monitor.totalWork) { "Total requested work incorrect" } },
-            { assertEquals(34888186408, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(971668973, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
+            { assertEquals(39183961335, monitor.totalWork) { "Total requested work incorrect" } },
+            { assertEquals(35649903197, monitor.totalGrantedWork) { "Total granted work incorrect" } },
+            { assertEquals(1043641877, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
         )
     }
@@ -226,10 +226,10 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(38051879552, monitor.totalWork) { "Total requested work incorrect" } },
-            { assertEquals(34888186408, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(971668973, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
-            { assertEquals(13910814, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
+            { assertEquals(39183961335, monitor.totalWork) { "Total requested work incorrect" } },
+            { assertEquals(35649903197, monitor.totalGrantedWork) { "Total granted work incorrect" } },
+            { assertEquals(1043641877, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
+            { assertEquals(2960970230, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
         )
     }
 
@@ -284,9 +284,9 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(25412073109, monitor.totalWork) { "Total requested work incorrect" } },
-            { assertEquals(23695061858, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(368502468, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
+            { assertEquals(38385852453, monitor.totalWork) { "Total requested work incorrect" } },
+            { assertEquals(34886665781, monitor.totalGrantedWork) { "Total granted work incorrect" } },
+            { assertEquals(979997253, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
         )
     }

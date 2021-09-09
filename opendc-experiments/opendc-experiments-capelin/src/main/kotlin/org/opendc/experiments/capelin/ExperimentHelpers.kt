@@ -54,7 +54,6 @@ import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.compute.ComputeMonitor
 import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Clock
-import kotlin.coroutines.resume
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.random.Random
@@ -169,10 +168,19 @@ suspend fun processTrace(
     monitor: ComputeMonitor? = null,
 ) {
     val client = scheduler.newClient()
+    val watcher = object : ServerWatcher {
+        override fun onStateChanged(server: Server, newState: ServerState) {
+            monitor?.onStateChange(clock.millis(), server, newState)
+        }
+    }
+
+    // Create new image for the virtual machine
     val image = client.newImage("vm-image")
-    var offset = Long.MIN_VALUE
+
     try {
         coroutineScope {
+            var offset = Long.MIN_VALUE
+
             while (reader.hasNext()) {
                 val entry = reader.next()
 
@@ -183,9 +191,12 @@ suspend fun processTrace(
                 // Make sure the trace entries are ordered by submission time
                 assert(entry.start - offset >= 0) { "Invalid trace order" }
                 delay(max(0, (entry.start - offset) - clock.millis()))
+
                 launch {
                     chan.send(Unit)
-                    val workload = SimTraceWorkload((entry.meta["workload"] as SimTraceWorkload).trace, offset = -offset + 300001)
+
+                    val workloadOffset = -offset + 300001
+                    val workload = SimTraceWorkload((entry.meta["workload"] as SimTraceWorkload).trace, workloadOffset)
                     val server = client.newServer(
                         entry.name,
                         image,
@@ -196,18 +207,14 @@ suspend fun processTrace(
                         ),
                         meta = entry.meta + mapOf("workload" to workload)
                     )
+                    server.watch(watcher)
 
-                    suspendCancellableCoroutine { cont ->
-                        server.watch(object : ServerWatcher {
-                            override fun onStateChanged(server: Server, newState: ServerState) {
-                                monitor?.onStateChange(clock.millis(), server, newState)
+                    // Wait for the server reach its end time
+                    val endTime = entry.meta["end-time"] as Long
+                    delay(endTime + workloadOffset - clock.millis() + 1)
 
-                                if (newState == ServerState.TERMINATED) {
-                                    cont.resume(Unit)
-                                }
-                            }
-                        })
-                    }
+                    // Delete the server after reaching the end-time of the virtual machine
+                    server.delete()
                 }
             }
         }
