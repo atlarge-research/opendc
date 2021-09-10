@@ -45,7 +45,7 @@ services:
     volumes:
       - type: bind
         source: ./traces
-        target: /app/traces
+        target: /opt/opendc/traces
     environment:
      - OPENDC_API_URL=${OPENDC_API_BASE_URL}
      - AUTH0_DOMAIN=${OPENDC_AUTH0_DOMAIN}
