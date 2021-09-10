@@ -29,6 +29,8 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.*
 import java.net.URL
+import java.time.Duration
+import java.time.Instant
 
 /**
  * Test suite for the [GwfTraceFormat] class.
@@ -90,11 +92,11 @@ internal class GwfTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(0L, reader.getLong(TASK_WORKFLOW_ID)) },
-            { assertEquals(1L, reader.getLong(TASK_ID)) },
-            { assertEquals(16, reader.getLong(TASK_SUBMIT_TIME)) },
-            { assertEquals(11, reader.getLong(TASK_RUNTIME)) },
-            { assertEquals(setOf<Long>(), reader.get(TASK_PARENTS)) },
+            { assertEquals("0", reader.get(TASK_WORKFLOW_ID)) },
+            { assertEquals("1", reader.get(TASK_ID)) },
+            { assertEquals(Instant.ofEpochSecond(16), reader.get(TASK_SUBMIT_TIME)) },
+            { assertEquals(Duration.ofSeconds(11), reader.get(TASK_RUNTIME)) },
+            { assertEquals(emptySet<String>(), reader.get(TASK_PARENTS)) },
         )
     }
 

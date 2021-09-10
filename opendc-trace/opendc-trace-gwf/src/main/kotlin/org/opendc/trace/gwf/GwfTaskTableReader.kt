@@ -26,6 +26,8 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import org.opendc.trace.*
+import java.time.Duration
+import java.time.Instant
 import java.util.regex.Pattern
 
 /**
@@ -52,10 +54,10 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
             }
 
             when (parser.currentName) {
-                "WorkflowID" -> workflowId = parser.longValue
-                "JobID" -> jobId = parser.longValue
-                "SubmitTime" -> submitTime = parser.longValue
-                "RunTime" -> runtime = parser.longValue
+                "WorkflowID" -> workflowId = parser.text
+                "JobID" -> jobId = parser.text
+                "SubmitTime" -> submitTime = Instant.ofEpochSecond(parser.longValue)
+                "RunTime" -> runtime = Duration.ofSeconds(parser.longValue)
                 "NProcs" -> nProcs = parser.intValue
                 "ReqNProcs" -> reqNProcs = parser.intValue
                 "Dependencies" -> parseParents(parser.valueAsString)
@@ -79,7 +81,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun <T> get(column: TableColumn<T>): T {
-        val res: Any = when (column) {
+        val res: Any? = when (column) {
             TASK_WORKFLOW_ID -> workflowId
             TASK_ID -> jobId
             TASK_SUBMIT_TIME -> submitTime
@@ -107,13 +109,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     override fun getLong(column: TableColumn<Long>): Long {
-        return when (column) {
-            TASK_WORKFLOW_ID -> workflowId
-            TASK_ID -> jobId
-            TASK_SUBMIT_TIME -> submitTime
-            TASK_RUNTIME -> runtime
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+        throw IllegalArgumentException("Invalid column")
     }
 
     override fun getDouble(column: TableColumn<Double>): Double {
@@ -163,10 +159,10 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     /**
      * Reader state fields.
      */
-    private var workflowId = -1L
-    private var jobId = -1L
-    private var submitTime = -1L
-    private var runtime = -1L
+    private var workflowId: String? = null
+    private var jobId: String? = null
+    private var submitTime: Instant? = null
+    private var runtime: Duration? = null
     private var nProcs = -1
     private var reqNProcs = -1
     private var dependencies = emptySet<Long>()
@@ -175,10 +171,10 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
      * Reset the state.
      */
     private fun reset() {
-        workflowId = -1
-        jobId = -1
-        submitTime = -1
-        runtime = -1
+        workflowId = null
+        jobId = null
+        submitTime = null
+        runtime = null
         nProcs = -1
         reqNProcs = -1
         dependencies = emptySet()

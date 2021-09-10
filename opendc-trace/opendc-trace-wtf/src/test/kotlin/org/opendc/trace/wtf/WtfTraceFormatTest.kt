@@ -28,6 +28,8 @@ import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.*
 import java.io.File
 import java.net.URL
+import java.time.Duration
+import java.time.Instant
 
 /**
  * Test suite for the [WtfTraceFormat] class.
@@ -91,20 +93,20 @@ class WtfTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(362334516345962206, reader.getLong(TASK_ID)) },
-            { assertEquals(1078341553348591493, reader.getLong(TASK_WORKFLOW_ID)) },
-            { assertEquals(245604, reader.getLong(TASK_SUBMIT_TIME)) },
-            { assertEquals(8163, reader.getLong(TASK_RUNTIME)) },
-            { assertEquals(setOf(584055316413447529, 133113685133695608, 1008582348422865408), reader.get(TASK_PARENTS)) },
+            { assertEquals("362334516345962206", reader.get(TASK_ID)) },
+            { assertEquals("1078341553348591493", reader.get(TASK_WORKFLOW_ID)) },
+            { assertEquals(Instant.ofEpochMilli(245604), reader.get(TASK_SUBMIT_TIME)) },
+            { assertEquals(Duration.ofMillis(8163), reader.get(TASK_RUNTIME)) },
+            { assertEquals(setOf("584055316413447529", "133113685133695608", "1008582348422865408"), reader.get(TASK_PARENTS)) },
         )
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals(502010169100446658, reader.getLong(TASK_ID)) },
-            { assertEquals(1078341553348591493, reader.getLong(TASK_WORKFLOW_ID)) },
-            { assertEquals(251325, reader.getLong(TASK_SUBMIT_TIME)) },
-            { assertEquals(8216, reader.getLong(TASK_RUNTIME)) },
-            { assertEquals(setOf(584055316413447529, 133113685133695608, 1008582348422865408), reader.get(TASK_PARENTS)) },
+            { assertEquals("502010169100446658", reader.get(TASK_ID)) },
+            { assertEquals("1078341553348591493", reader.get(TASK_WORKFLOW_ID)) },
+            { assertEquals(Instant.ofEpochMilli(251325), reader.get(TASK_SUBMIT_TIME)) },
+            { assertEquals(Duration.ofMillis(8216), reader.get(TASK_RUNTIME)) },
+            { assertEquals(setOf("584055316413447529", "133113685133695608", "1008582348422865408"), reader.get(TASK_PARENTS)) },
         )
 
         reader.close()

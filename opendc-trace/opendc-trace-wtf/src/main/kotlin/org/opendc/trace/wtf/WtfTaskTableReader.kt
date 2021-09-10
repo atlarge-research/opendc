@@ -25,6 +25,8 @@ package org.opendc.trace.wtf
 import org.apache.avro.generic.GenericRecord
 import org.opendc.trace.*
 import org.opendc.trace.util.parquet.LocalParquetReader
+import java.time.Duration
+import java.time.Instant
 
 /**
  * A [TableReader] implementation for the WTF format.
@@ -61,14 +63,14 @@ internal class WtfTaskTableReader(private val reader: LocalParquetReader<Generic
 
         @Suppress("UNCHECKED_CAST")
         val res: Any = when (column) {
-            TASK_ID -> record["id"]
-            TASK_WORKFLOW_ID -> record["workflow_id"]
-            TASK_SUBMIT_TIME -> record["ts_submit"]
-            TASK_WAIT_TIME -> record["wait_time"]
-            TASK_RUNTIME -> record["runtime"]
+            TASK_ID -> (record["id"] as Long).toString()
+            TASK_WORKFLOW_ID -> (record["workflow_id"] as Long).toString()
+            TASK_SUBMIT_TIME -> Instant.ofEpochMilli(record["ts_submit"] as Long)
+            TASK_WAIT_TIME -> Duration.ofMillis(record["wait_time"] as Long)
+            TASK_RUNTIME -> Duration.ofMillis(record["runtime"] as Long)
             TASK_REQ_NCPUS -> (record["resource_amount_requested"] as Double).toInt()
-            TASK_PARENTS -> (record["parents"] as ArrayList<GenericRecord>).map { it["item"] as Long }.toSet()
-            TASK_CHILDREN -> (record["children"] as ArrayList<GenericRecord>).map { it["item"] as Long }.toSet()
+            TASK_PARENTS -> (record["parents"] as ArrayList<GenericRecord>).map { it["item"].toString() }.toSet()
+            TASK_CHILDREN -> (record["children"] as ArrayList<GenericRecord>).map { it["item"].toString() }.toSet()
             TASK_GROUP_ID -> record["group_id"]
             TASK_USER_ID -> record["user_id"]
             else -> throw IllegalArgumentException("Invalid column")
@@ -94,16 +96,7 @@ internal class WtfTaskTableReader(private val reader: LocalParquetReader<Generic
     }
 
     override fun getLong(column: TableColumn<Long>): Long {
-        val record = checkNotNull(record) { "Reader in invalid state" }
-
-        return when (column) {
-            TASK_ID -> record["id"] as Long
-            TASK_WORKFLOW_ID -> record["workflow_id"] as Long
-            TASK_SUBMIT_TIME -> record["ts_submit"] as Long
-            TASK_WAIT_TIME -> record["wait_time"] as Long
-            TASK_RUNTIME -> record["runtime"] as Long
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+        throw IllegalArgumentException("Invalid column")
     }
 
     override fun getDouble(column: TableColumn<Double>): Double {

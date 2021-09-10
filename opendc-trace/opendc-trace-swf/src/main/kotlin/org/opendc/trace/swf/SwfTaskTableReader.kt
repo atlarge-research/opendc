@@ -24,6 +24,8 @@ package org.opendc.trace.swf
 
 import org.opendc.trace.*
 import java.io.BufferedReader
+import java.time.Duration
+import java.time.Instant
 
 /**
  * A [TableReader] implementation for the SWF format.
@@ -85,10 +87,10 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
 
     override fun <T> get(column: TableColumn<T>): T {
         val res: Any = when (column) {
-            TASK_ID -> getLong(TASK_ID)
-            TASK_SUBMIT_TIME -> getLong(TASK_SUBMIT_TIME)
-            TASK_WAIT_TIME -> getLong(TASK_WAIT_TIME)
-            TASK_RUNTIME -> getLong(TASK_RUNTIME)
+            TASK_ID -> fields[COL_JOB_ID]
+            TASK_SUBMIT_TIME -> Instant.ofEpochSecond(fields[COL_SUBMIT_TIME].toLong(10))
+            TASK_WAIT_TIME -> Duration.ofSeconds(fields[COL_WAIT_TIME].toLong(10))
+            TASK_RUNTIME -> Duration.ofSeconds(fields[COL_RUN_TIME].toLong(10))
             TASK_REQ_NCPUS -> getInt(TASK_REQ_NCPUS)
             TASK_ALLOC_NCPUS -> getInt(TASK_ALLOC_NCPUS)
             TASK_PARENTS -> {
@@ -121,13 +123,7 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
     }
 
     override fun getLong(column: TableColumn<Long>): Long {
-        return when (column) {
-            TASK_ID -> fields[COL_JOB_ID].toLong(10)
-            TASK_SUBMIT_TIME -> fields[COL_SUBMIT_TIME].toLong(10)
-            TASK_WAIT_TIME -> fields[COL_WAIT_TIME].toLong(10)
-            TASK_RUNTIME -> fields[COL_RUN_TIME].toLong(10)
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+        throw IllegalArgumentException("Invalid column")
     }
 
     override fun getDouble(column: TableColumn<Double>): Double {

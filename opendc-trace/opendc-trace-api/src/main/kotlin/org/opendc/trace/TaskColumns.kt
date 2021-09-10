@@ -23,49 +23,52 @@
 @file:JvmName("TaskColumns")
 package org.opendc.trace
 
+import java.time.Duration
+import java.time.Instant
+
 /**
  * A column containing the task identifier.
  */
 @JvmField
-public val TASK_ID: TableColumn<Long> = longColumn("task:id")
+public val TASK_ID: TableColumn<String> = stringColumn("task:id")
 
 /**
  * A column containing the identifier of the workflow.
  */
 @JvmField
-public val TASK_WORKFLOW_ID: TableColumn<Long> = longColumn("task:workflow_id")
+public val TASK_WORKFLOW_ID: TableColumn<String> = stringColumn("task:workflow_id")
 
 /**
  * A column containing the submit time of the task.
  */
 @JvmField
-public val TASK_SUBMIT_TIME: TableColumn<Long> = longColumn("task:submit_time")
+public val TASK_SUBMIT_TIME: TableColumn<Instant> = TableColumn("task:submit_time", type = Instant::class.java)
 
 /**
  * A column containing the wait time of the task.
  */
 @JvmField
-public val TASK_WAIT_TIME: TableColumn<Long> = longColumn("task:wait_time")
+public val TASK_WAIT_TIME: TableColumn<Instant> = TableColumn("task:wait_time", type = Instant::class.java)
 
 /**
  * A column containing the runtime time of the task.
  */
 @JvmField
-public val TASK_RUNTIME: TableColumn<Long> = longColumn("task:runtime")
+public val TASK_RUNTIME: TableColumn<Duration> = TableColumn("task:runtime", type = Duration::class.java)
 
 /**
  * A column containing the parents of a task.
  */
 @Suppress("UNCHECKED_CAST")
 @JvmField
-public val TASK_PARENTS: TableColumn<Set<Long>> = TableColumn("task:parents", type = Set::class.java as Class<Set<Long>>)
+public val TASK_PARENTS: TableColumn<Set<String>> = TableColumn("task:parents", type = Set::class.java as Class<Set<String>>)
 
 /**
  * A column containing the children of a task.
  */
 @Suppress("UNCHECKED_CAST")
 @JvmField
-public val TASK_CHILDREN: TableColumn<Set<Long>> = TableColumn("task:children", type = Set::class.java as Class<Set<Long>>)
+public val TASK_CHILDREN: TableColumn<Set<String>> = TableColumn("task:children", type = Set::class.java as Class<Set<String>>)
 
 /**
  * A column containing the requested CPUs of a task.
