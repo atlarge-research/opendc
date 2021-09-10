@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.failures
+package org.opendc.compute.simulator.failure
 
-import kotlinx.coroutines.CoroutineScope
+import org.opendc.compute.simulator.SimHost
 
 /**
- * A logical or physical component in a computing environment which may fail.
+ * Interface responsible for selecting the victim(s) for fault injection.
  */
-public interface FailureDomain {
+public interface VictimSelector {
     /**
-     * The lifecycle of the failure domain to which a [FaultInjector] will attach.
+     * Select the hosts from [hosts] where a fault will be injected.
      */
-    public val scope: CoroutineScope
-
-    /**
-     * Fail the domain externally.
-     */
-    public suspend fun fail()
-
-    /**
-     * Resume the failure domain.
-     */
-    public suspend fun recover()
+    public fun select(hosts: Set<SimHost>): List<SimHost>
 }

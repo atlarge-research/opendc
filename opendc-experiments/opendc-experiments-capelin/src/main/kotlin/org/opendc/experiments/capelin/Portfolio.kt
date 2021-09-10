@@ -25,9 +25,8 @@ package org.opendc.experiments.capelin
 import com.typesafe.config.ConfigFactory
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
+import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.export.parquet.ParquetExportMonitor
 import org.opendc.experiments.capelin.model.CompositeWorkload
@@ -103,7 +102,6 @@ abstract class Portfolio(name: String) : Experiment(name) {
         val seeder = Random(repeat.toLong())
         val environment = ClusterEnvironmentReader(File(config.getString("env-path"), "${topology.name}.txt"))
 
-        val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = createComputeScheduler(allocationPolicy, seeder.asKotlinRandom(), vmPlacements)
 
         val meterProvider = createMeterProvider(clock)
@@ -137,31 +135,30 @@ abstract class Portfolio(name: String) : Experiment(name) {
         )
 
         withComputeService(clock, meterProvider, environment, allocationPolicy, performanceInterferenceModel) { scheduler ->
-            val failureDomain = if (operationalPhenomena.failureFrequency > 0) {
+            val faultInjector = if (operationalPhenomena.failureFrequency > 0) {
                 logger.debug("ENABLING failures")
-                createFailureDomain(
-                    this,
+                createFaultInjector(
+                    coroutineContext,
                     clock,
+                    scheduler.hosts.map { it as SimHost }.toSet(),
                     seeder.nextInt(),
                     operationalPhenomena.failureFrequency,
-                    scheduler,
-                    chan
                 )
             } else {
                 null
             }
 
             withMonitor(scheduler, clock, meterProvider as MetricProducer, monitor) {
+                faultInjector?.start()
                 processTrace(
                     clock,
                     trace,
                     scheduler,
-                    chan,
                     monitor
                 )
             }
 
-            failureDomain?.cancel()
+            faultInjector?.close()
             monitor.close()
         }
 

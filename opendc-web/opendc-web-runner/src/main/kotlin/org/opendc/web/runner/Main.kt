@@ -30,8 +30,8 @@ import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
+import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.env.MachineDef
@@ -188,8 +188,6 @@ class RunnerCli : CliktCommand(name = "runner") {
 
                 val seeder = Random(seed)
 
-                val chan = Channel<Unit>(Channel.CONFLATED)
-
                 val meterProvider: MeterProvider = SdkMeterProvider
                     .builder()
                     .setClock(clock.toOtelClock())
@@ -207,31 +205,31 @@ class RunnerCli : CliktCommand(name = "runner") {
                 val failureFrequency = if (operational.failuresEnabled) 24.0 * 7 else 0.0
 
                 withComputeService(clock, meterProvider, environment, allocationPolicy, interferenceModel) { scheduler ->
-                    val failureDomain = if (failureFrequency > 0) {
+                    val faultInjector = if (failureFrequency > 0) {
                         logger.debug { "ENABLING failures" }
-                        createFailureDomain(
-                            this,
+                        createFaultInjector(
+                            coroutineContext,
                             clock,
+                            scheduler.hosts.map { it as SimHost }.toSet(),
                             seeder.nextInt(),
                             failureFrequency,
-                            scheduler,
-                            chan
                         )
                     } else {
                         null
                     }
 
                     withMonitor(scheduler, clock, meterProvider as MetricProducer, monitor) {
+                        faultInjector?.start()
+
                         processTrace(
                             clock,
                             trace,
                             scheduler,
-                            chan,
                             monitor
                         )
-                    }
 
-                    failureDomain?.cancel()
+                        faultInjector?.close()
+                    }
                 }
 
                 val monitorResults = collectServiceMetrics(clock.millis(), metricProducer)

@@ -43,7 +43,6 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.failures.FailureDomain
 import org.opendc.simulator.resources.SimResourceInterpreter
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -66,11 +65,11 @@ public class SimHost(
     powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
     interferenceDomain: VmInterferenceDomain? = null
-) : Host, FailureDomain, AutoCloseable {
+) : Host, AutoCloseable {
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
      */
-    override val scope: CoroutineScope = CoroutineScope(context + Job())
+    private val scope: CoroutineScope = CoroutineScope(context + Job())
 
     /**
      * The clock instance used by the host.
@@ -347,6 +346,22 @@ public class SimHost(
 
     override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
 
+    public suspend fun fail() {
+        reportTime()
+        _state = HostState.DOWN
+        for (guest in guests.values) {
+            guest.fail()
+        }
+    }
+
+    public suspend fun recover() {
+        reportTime()
+        _state = HostState.UP
+        for (guest in guests.values) {
+            guest.start()
+        }
+    }
+
     /**
      * Convert flavor to machine model.
      */
@@ -367,22 +382,6 @@ public class SimHost(
     private fun onGuestStop(vm: Guest) {
         _activeGuests.add(-1)
         listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
-    }
-
-    override suspend fun fail() {
-        reportTime()
-        _state = HostState.DOWN
-        for (guest in guests.values) {
-            guest.fail()
-        }
-    }
-
-    override suspend fun recover() {
-        reportTime()
-        _state = HostState.UP
-        for (guest in guests.values) {
-            guest.start()
-        }
     }
 
     /**

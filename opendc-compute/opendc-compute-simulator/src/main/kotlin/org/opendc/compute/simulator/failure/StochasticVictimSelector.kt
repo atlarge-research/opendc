@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.failures
+package org.opendc.compute.simulator.failure
+
+import org.apache.commons.math3.distribution.RealDistribution
+import org.opendc.compute.simulator.SimHost
+import kotlin.math.roundToInt
+import kotlin.random.Random
 
 /**
- * An interface for stochastically injecting faults into a running system.
+ * A [VictimSelector] that stochastically selects a set of hosts to be failed.
  */
-public interface FaultInjector {
-    /**
-     * Enqueue the specified [FailureDomain] into the queue as candidate for failure injection in the future.
-     */
-    public fun enqueue(domain: FailureDomain)
+public class StochasticVictimSelector(
+    private val size: RealDistribution,
+    private val random: Random = Random(0)
+) : VictimSelector {
+
+    override fun select(hosts: Set<SimHost>): List<SimHost> {
+        val n = size.sample().roundToInt()
+        return hosts.shuffled(random).take(n)
+    }
+
+    override fun toString(): String = "StochasticVictimSelector[$size]"
 }

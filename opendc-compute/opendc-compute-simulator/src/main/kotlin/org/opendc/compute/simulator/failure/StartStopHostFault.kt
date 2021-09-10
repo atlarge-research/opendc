@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,42 +20,36 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.failures
+package org.opendc.compute.simulator.failure
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import org.apache.commons.math3.distribution.RealDistribution
+import org.opendc.compute.simulator.SimHost
 import java.time.Clock
-import kotlin.math.ln1p
-import kotlin.math.pow
-import kotlin.random.Random
+import kotlin.math.roundToLong
 
 /**
- * A [FaultInjector] that injects uncorrelated faults into the system, meaning that failures of the subsystems are
- * independent.
+ * A type of [HostFault] where the hosts are stopped and recover after some random amount of time.
  */
-public class UncorrelatedFaultInjector(
-    private val clock: Clock,
-    private val alpha: Double,
-    private val beta: Double,
-    private val random: Random = Random(0)
-) : FaultInjector {
-    /**
-     * Enqueue the specified [FailureDomain] to fail some time in the future.
-     */
-    override fun enqueue(domain: FailureDomain) {
-        domain.scope.launch {
-            val d = random.weibull(alpha, beta) * 1e3 // Make sure to convert delay to milliseconds
+public class StartStopHostFault(private val duration: RealDistribution) : HostFault {
+    override suspend fun apply(clock: Clock, victims: List<SimHost>) {
+        for (host in victims) {
+            host.fail()
+        }
 
-            // Handle long overflow
-            if (clock.millis() + d <= 0) {
-                return@launch
-            }
+        val df = (duration.sample() * 1000).roundToLong() // seconds to milliseconds
 
-            delay(d.toLong())
-            domain.fail()
+        // Handle long overflow
+        if (clock.millis() + df <= 0) {
+            return
+        }
+
+        delay(df)
+
+        for (host in victims) {
+            host.recover()
         }
     }
 
-    // XXX We should extract this in some common package later on.
-    private fun Random.weibull(alpha: Double, beta: Double) = (beta * (-ln1p(-nextDouble())).pow(1.0 / alpha))
+    override fun toString(): String = "StartStopHostFault[$duration]"
 }

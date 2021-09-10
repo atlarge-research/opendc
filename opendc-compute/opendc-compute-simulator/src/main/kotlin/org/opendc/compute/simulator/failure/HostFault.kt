@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,17 @@
  * SOFTWARE.
  */
 
-description = "Failure models for OpenDC"
+package org.opendc.compute.simulator.failure
 
-plugins {
-    `kotlin-library-conventions`
-}
+import org.opendc.compute.simulator.SimHost
+import java.time.Clock
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(libs.kotlinx.coroutines)
+/**
+ * Interface responsible for applying the fault to a host.
+ */
+public interface HostFault {
+    /**
+     * Apply the fault to the specified [victims].
+     */
+    public suspend fun apply(clock: Clock, victims: List<SimHost>)
 }

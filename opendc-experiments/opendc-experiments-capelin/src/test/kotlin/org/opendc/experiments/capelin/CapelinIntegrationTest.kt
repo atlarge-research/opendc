@@ -23,8 +23,6 @@
 package org.opendc.experiments.capelin
 
 import io.opentelemetry.sdk.metrics.export.MetricProducer
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -34,6 +32,7 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
+import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.model.Workload
@@ -52,7 +51,7 @@ import java.io.File
 import java.util.*
 
 /**
- * An integration test suite for the SC20 experiments.
+ * An integration test suite for the Capelin experiments.
  */
 class CapelinIntegrationTest {
     /**
@@ -73,9 +72,6 @@ class CapelinIntegrationTest {
      */
     @Test
     fun testLarge() = runBlockingSimulation {
-        val failures = false
-        val seed = 0
-        val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
@@ -85,31 +81,14 @@ class CapelinIntegrationTest {
 
         val meterProvider = createMeterProvider(clock)
         withComputeService(clock, meterProvider, environmentReader, allocationPolicy) { scheduler ->
-            val failureDomain = if (failures) {
-                println("ENABLING failures")
-                createFailureDomain(
-                    this,
-                    clock,
-                    seed,
-                    24.0 * 7,
-                    scheduler,
-                    chan
-                )
-            } else {
-                null
-            }
-
             withMonitor(scheduler, clock, meterProvider as MetricProducer, monitor) {
                 processTrace(
                     clock,
                     traceReader,
                     scheduler,
-                    chan,
                     monitor
                 )
             }
-
-            failureDomain?.cancel()
         }
 
         val serviceMetrics = collectServiceMetrics(clock.millis(), meterProvider as MetricProducer)
@@ -141,12 +120,11 @@ class CapelinIntegrationTest {
     @Test
     fun testSmall() = runBlockingSimulation {
         val seed = 1
-        val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
         )
-        val traceReader = createTestTraceReader(0.5, seed)
+        val traceReader = createTestTraceReader(0.25, seed)
         val environmentReader = createTestEnvironmentReader("single")
 
         val meterProvider = createMeterProvider(clock)
@@ -157,7 +135,6 @@ class CapelinIntegrationTest {
                     clock,
                     traceReader,
                     scheduler,
-                    chan,
                     monitor
                 )
             }
@@ -174,9 +151,9 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(38051879552, monitor.totalWork) { "Total requested work incorrect" } },
-            { assertEquals(34888186408, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(971668973, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
+            { assertEquals(39183961335, monitor.totalWork) { "Total requested work incorrect" } },
+            { assertEquals(35649903197, monitor.totalGrantedWork) { "Total granted work incorrect" } },
+            { assertEquals(1043641877, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
         )
     }
@@ -187,7 +164,6 @@ class CapelinIntegrationTest {
     @Test
     fun testInterference() = runBlockingSimulation {
         val seed = 1
-        val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
@@ -209,7 +185,6 @@ class CapelinIntegrationTest {
                     clock,
                     traceReader,
                     scheduler,
-                    chan,
                     monitor
                 )
             }
@@ -226,10 +201,10 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(38051879552, monitor.totalWork) { "Total requested work incorrect" } },
-            { assertEquals(34888186408, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(971668973, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
-            { assertEquals(13910814, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
+            { assertEquals(39183961335, monitor.totalWork) { "Total requested work incorrect" } },
+            { assertEquals(35649903197, monitor.totalGrantedWork) { "Total granted work incorrect" } },
+            { assertEquals(1043641877, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
+            { assertEquals(2960970230, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
         )
     }
 
@@ -239,7 +214,6 @@ class CapelinIntegrationTest {
     @Test
     fun testFailures() = runBlockingSimulation {
         val seed = 1
-        val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
@@ -250,27 +224,26 @@ class CapelinIntegrationTest {
         val meterProvider = createMeterProvider(clock)
 
         withComputeService(clock, meterProvider, environmentReader, allocationPolicy) { scheduler ->
-            val failureDomain =
-                createFailureDomain(
-                    this,
+            val faultInjector =
+                createFaultInjector(
+                    coroutineContext,
                     clock,
+                    scheduler.hosts.map { it as SimHost }.toSet(),
                     seed,
                     24.0 * 7,
-                    scheduler,
-                    chan
                 )
 
             withMonitor(scheduler, clock, meterProvider as MetricProducer, monitor) {
+                faultInjector.start()
                 processTrace(
                     clock,
                     traceReader,
                     scheduler,
-                    chan,
                     monitor
                 )
             }
 
-            failureDomain.cancel()
+            faultInjector.close()
         }
 
         val serviceMetrics = collectServiceMetrics(clock.millis(), meterProvider as MetricProducer)
@@ -284,9 +257,9 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(25412073109, monitor.totalWork) { "Total requested work incorrect" } },
-            { assertEquals(23695061858, monitor.totalGrantedWork) { "Total granted work incorrect" } },
-            { assertEquals(368502468, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
+            { assertEquals(38385852453, monitor.totalWork) { "Total requested work incorrect" } },
+            { assertEquals(34886665781, monitor.totalGrantedWork) { "Total granted work incorrect" } },
+            { assertEquals(979997253, monitor.totalOvercommittedWork) { "Total overcommitted work incorrect" } },
             { assertEquals(0, monitor.totalInterferedWork) { "Total interfered work incorrect" } }
         )
     }
