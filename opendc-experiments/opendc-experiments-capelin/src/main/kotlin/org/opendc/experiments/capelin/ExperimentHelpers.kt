@@ -25,7 +25,6 @@ package org.opendc.experiments.capelin
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import org.apache.commons.math3.distribution.LogNormalDistribution
 import org.apache.commons.math3.random.Well19937c
 import org.opendc.compute.api.*
@@ -41,6 +40,9 @@ import org.opendc.compute.service.scheduler.weights.InstanceCountWeigher
 import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
 import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.simulator.failure.HostFaultInjector
+import org.opendc.compute.simulator.failure.StartStopHostFault
+import org.opendc.compute.simulator.failure.StochasticVictimSelector
 import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.trace.TraceReader
 import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
@@ -48,67 +50,36 @@ import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.failures.CorrelatedFaultInjector
-import org.opendc.simulator.failures.FaultInjector
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.compute.ComputeMonitor
 import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Clock
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.random.Random
 
 /**
- * Construct the failure domain for the experiments.
- */
-fun createFailureDomain(
-    coroutineScope: CoroutineScope,
-    clock: Clock,
-    seed: Int,
-    failureInterval: Double,
-    service: ComputeService,
-    chan: Channel<Unit>
-): CoroutineScope {
-    val job = coroutineScope.launch {
-        chan.receive()
-        val random = Random(seed)
-        val injectors = mutableMapOf<String, FaultInjector>()
-        for (host in service.hosts) {
-            val cluster = host.meta["cluster"] as String
-            val injector =
-                injectors.getOrPut(cluster) {
-                    createFaultInjector(
-                        this,
-                        clock,
-                        random,
-                        failureInterval
-                    )
-                }
-            injector.enqueue(host as SimHost)
-        }
-    }
-    return CoroutineScope(coroutineScope.coroutineContext + job)
-}
-
-/**
  * Obtain the [FaultInjector] to use for the experiments.
  */
 fun createFaultInjector(
-    coroutineScope: CoroutineScope,
+    context: CoroutineContext,
     clock: Clock,
-    random: Random,
+    hosts: Set<SimHost>,
+    seed: Int,
     failureInterval: Double
-): FaultInjector {
-    val rng = Well19937c(random.nextLong())
+): HostFaultInjector {
+    val rng = Well19937c(seed)
 
     // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
     // GRID'5000
-    return CorrelatedFaultInjector(
-        coroutineScope,
+    return HostFaultInjector(
+        context,
         clock,
+        hosts,
         iat = LogNormalDistribution(rng, ln(failureInterval), 1.03),
-        size = LogNormalDistribution(rng, 1.88, 1.25),
-        duration = LogNormalDistribution(rng, 8.89, 2.71)
+        selector = StochasticVictimSelector(LogNormalDistribution(rng, 1.88, 1.25), Random(seed)),
+        fault = StartStopHostFault(LogNormalDistribution(rng, 8.89, 2.71))
     )
 }
 
@@ -164,7 +135,6 @@ suspend fun processTrace(
     clock: Clock,
     reader: TraceReader<SimWorkload>,
     scheduler: ComputeService,
-    chan: Channel<Unit>,
     monitor: ComputeMonitor? = null,
 ) {
     val client = scheduler.newClient()
@@ -193,10 +163,9 @@ suspend fun processTrace(
                 delay(max(0, (entry.start - offset) - clock.millis()))
 
                 launch {
-                    chan.send(Unit)
-
                     val workloadOffset = -offset + 300001
                     val workload = SimTraceWorkload((entry.meta["workload"] as SimTraceWorkload).trace, workloadOffset)
+
                     val server = client.newServer(
                         entry.name,
                         image,

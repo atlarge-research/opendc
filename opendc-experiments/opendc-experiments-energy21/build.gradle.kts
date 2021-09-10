@@ -33,7 +33,6 @@ dependencies {
     api(projects.opendcHarness.opendcHarnessApi)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcSimulator.opendcSimulatorFailures)
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcExperiments.opendcExperimentsCapelin)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)

@@ -35,7 +35,6 @@ dependencies {
     implementation(projects.opendcTrace.opendcTraceBitbrains)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcSimulator.opendcSimulatorFailures)
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
     implementation(projects.opendcTelemetry.opendcTelemetryCompute)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.failures
+package org.opendc.compute.simulator.failure
+
+import org.opendc.compute.simulator.SimHost
+import java.time.Clock
 
 /**
- * An interface for stochastically injecting faults into a running system.
+ * Interface responsible for applying the fault to a host.
  */
-public interface FaultInjector {
+public interface HostFault {
     /**
-     * Enqueue the specified [FailureDomain] into the queue as candidate for failure injection in the future.
+     * Apply the fault to the specified [victims].
      */
-    public fun enqueue(domain: FailureDomain)
+    public suspend fun apply(clock: Clock, victims: List<SimHost>)
 }

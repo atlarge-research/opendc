@@ -26,7 +26,6 @@ import com.typesafe.config.ConfigFactory
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import mu.KotlinLogging
 import org.opendc.compute.service.ComputeService
@@ -81,7 +80,6 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
     private val powerModel by anyOf(PowerModelType.LINEAR, PowerModelType.CUBIC, PowerModelType.INTERPOLATION)
 
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
-        val chan = Channel<Unit>(Channel.CONFLATED)
         val allocationPolicy = FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
             weighers = listOf(),
@@ -98,7 +96,6 @@ public class EnergyExperiment : Experiment("Energy Modeling 2021") {
                     clock,
                     trace,
                     scheduler,
-                    chan,
                     monitor
                 )
             }

@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.failures
+package org.opendc.compute.simulator.failure
 
-import kotlinx.coroutines.CoroutineScope
+import org.apache.commons.math3.distribution.RealDistribution
+import org.opendc.compute.simulator.SimHost
+import kotlin.math.roundToInt
+import kotlin.random.Random
 
 /**
- * A logical or physical component in a computing environment which may fail.
+ * A [VictimSelector] that stochastically selects a set of hosts to be failed.
  */
-public interface FailureDomain {
-    /**
-     * The lifecycle of the failure domain to which a [FaultInjector] will attach.
-     */
-    public val scope: CoroutineScope
+public class StochasticVictimSelector(
+    private val size: RealDistribution,
+    private val random: Random = Random(0)
+) : VictimSelector {
 
-    /**
-     * Fail the domain externally.
-     */
-    public suspend fun fail()
+    override fun select(hosts: Set<SimHost>): List<SimHost> {
+        val n = size.sample().roundToInt()
+        return hosts.shuffled(random).take(n)
+    }
 
-    /**
-     * Resume the failure domain.
-     */
-    public suspend fun recover()
+    override fun toString(): String = "StochasticVictimSelector[$size]"
 }

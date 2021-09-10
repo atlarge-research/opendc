@@ -20,28 +20,36 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Risk Analysis work"
+package org.opendc.compute.simulator.failure
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import kotlinx.coroutines.delay
+import org.apache.commons.math3.distribution.RealDistribution
+import org.opendc.compute.simulator.SimHost
+import java.time.Clock
+import kotlin.math.roundToLong
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+/**
+ * A type of [HostFault] where the hosts are stopped and recover after some random amount of time.
+ */
+public class StartStopHostFault(private val duration: RealDistribution) : HostFault {
+    override suspend fun apply(clock: Clock, victims: List<SimHost>) {
+        for (host in victims) {
+            host.fail()
+        }
 
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
-    implementation(libs.progressbar)
-    implementation(libs.clikt)
+        val df = (duration.sample() * 1000).roundToLong() // seconds to milliseconds
 
-    implementation(libs.parquet)
-    testImplementation(libs.log4j.slf4j)
+        // Handle long overflow
+        if (clock.millis() + df <= 0) {
+            return
+        }
+
+        delay(df)
+
+        for (host in victims) {
+            host.recover()
+        }
+    }
+
+    override fun toString(): String = "StartStopHostFault[$duration]"
 }
