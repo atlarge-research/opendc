@@ -9,7 +9,7 @@ services:
       - backend
     environment:
       REACT_APP_OAUTH_CLIENT_ID: ${OPENDC_OAUTH_CLIENT_ID}
-      REACT_APP_SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN}
+      REACT_APP_SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN-}
 
   api:
     build: opendc-web/opendc-web-api
@@ -29,7 +29,7 @@ services:
       - OPENDC_DB_HOST=mongo
       - OPENDC_FLASK_SECRET
       - OPENDC_OAUTH_CLIENT_ID
-      - SENTRY_DSN=${OPENDC_API_SENTRY_DSN}
+      - SENTRY_DSN=${OPENDC_API_SENTRY_DSN-}
       - SENTRY_ENVIRONMENT
 
   simulator:
@@ -49,7 +49,7 @@ services:
      - OPENDC_DB_USERNAME
      - OPENDC_DB_PASSWORD
      - OPENDC_DB_HOST=mongo
-     - SENTRY_DSN=${OPENDC_SIMULATOR_SENTRY_DSN}
+     - SENTRY_DSN=${OPENDC_SIMULATOR_SENTRY_DSN-}
      - SENTRY_ENVIRONMENT
 
   mongo:
