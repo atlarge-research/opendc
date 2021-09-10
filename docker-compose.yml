@@ -43,7 +43,7 @@ services:
     volumes:
       - type: bind
         source: ./traces
-        target: /app/traces
+        target: /opt/opendc/traces
     environment:
      - OPENDC_DB
      - OPENDC_DB_USERNAME
