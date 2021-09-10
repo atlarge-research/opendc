@@ -1,9 +1,7 @@
 version: "3.8"
 services:
   frontend:
-    build:
-      context: opendc-web/opendc-web-ui
-    image: frontend
+    image: atlargeresearch/opendc-web-ui:v2.1
     restart: on-failure
     networks:
       - backend
@@ -11,11 +9,10 @@ services:
       NEXT_PUBLIC_AUTH0_DOMAIN: ${OPENDC_AUTH0_DOMAIN}
       NEXT_PUBLIC_AUTH0_CLIENT_ID: ${OPENDC_AUTH0_CLIENT_ID}
       NEXT_PUBLIC_AUTH0_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE}
-      NEXT_PUBLIC_SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN}
+      NEXT_PUBLIC_SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN-}
 
   api:
-    build: opendc-web/opendc-web-api
-    image: api
+    image: atlargeresearch/opendc-web-api:v2.1
     restart: on-failure
     networks:
       - backend
@@ -31,12 +28,11 @@ services:
       - OPENDC_DB_HOST=mongo
       - OPENDC_FLASK_SECRET
       - OPENDC_OAUTH_CLIENT_ID
-      - SENTRY_DSN=${OPENDC_API_SENTRY_DSN}
+      - SENTRY_DSN=${OPENDC_API_SENTRY_DSN-}
       - SENTRY_ENVIRONMENT
 
   simulator:
-    build: .
-    image: simulator
+    image: atlargeresearch/opendc:v2.1
     restart: on-failure
     networks:
       - backend
@@ -45,19 +41,18 @@ services:
     volumes:
       - type: bind
         source: ./traces
-        target: /app/traces
+        target: /opt/opendc/traces
     environment:
      - OPENDC_API_URL=${OPENDC_API_BASE_URL}
      - AUTH0_DOMAIN=${OPENDC_AUTH0_DOMAIN}
      - AUTH0_AUDIENCE=${OPENDC_AUTH0_AUDIENCE}
      - AUTH0_CLIENT_ID=${OPENDC_AUTH0_CLIENT_ID_RUNNER}
      - AUTH0_CLIENT_SECRET=${OPENDC_AUTH0_CLIENT_SECRET_RUNNER}
-     - SENTRY_DSN=${OPENDC_SIMULATOR_SENTRY_DSN}
+     - SENTRY_DSN=${OPENDC_SIMULATOR_SENTRY_DSN-}
      - SENTRY_ENVIRONMENT
 
   mongo:
-    build:
-      context: database
+    build: database
     restart: on-failure
     environment:
       - MONGO_INITDB_ROOT_USERNAME
