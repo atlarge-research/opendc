@@ -1,9 +1,7 @@
 version: "3.8"
 services:
   frontend:
-    build:
-      context: opendc-web/opendc-web-ui
-    image: frontend
+    image: atlargeresearch/opendc-web-ui:v2.1
     restart: on-failure
     networks:
       - backend
@@ -14,8 +12,7 @@ services:
       NEXT_PUBLIC_SENTRY_DSN: ${OPENDC_FRONTEND_SENTRY_DSN-}
 
   api:
-    build: opendc-web/opendc-web-api
-    image: api
+    image: atlargeresearch/opendc-web-api:v2.1
     restart: on-failure
     networks:
       - backend
@@ -35,8 +32,7 @@ services:
       - SENTRY_ENVIRONMENT
 
   simulator:
-    build: .
-    image: simulator
+    image: atlargeresearch/opendc:v2.1
     restart: on-failure
     networks:
       - backend
@@ -56,8 +52,7 @@ services:
      - SENTRY_ENVIRONMENT
 
   mongo:
-    build:
-      context: database
+    build: database
     restart: on-failure
     environment:
       - MONGO_INITDB_ROOT_USERNAME
