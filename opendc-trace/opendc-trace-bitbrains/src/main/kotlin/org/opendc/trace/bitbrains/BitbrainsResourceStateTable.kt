@@ -41,6 +41,7 @@ internal class BitbrainsResourceStateTable(private val factory: CsvFactory, priv
         Files.walk(path, 1)
             .filter { !Files.isDirectory(it) && it.extension == "csv" }
             .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
+            .toSortedMap()
 
     override val name: String = TABLE_RESOURCE_STATES
 
