@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.progressbar)
     implementation(libs.clikt)
     implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.dataformat.csv)
     implementation(kotlin("reflect"))
 
     implementation(libs.parquet)
