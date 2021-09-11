@@ -31,7 +31,7 @@ import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 
 /**
- * The resource state [Table] in the Bitbrains format.
+ * The resource state [Table] in the extended Bitbrains format.
  */
 internal class SvResourceStateTable(path: Path) : Table {
     /**
@@ -40,6 +40,7 @@ internal class SvResourceStateTable(path: Path) : Table {
     private val partitions = Files.walk(path, 1)
         .filter { !Files.isDirectory(it) && it.extension == "txt" }
         .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
+        .toSortedMap()
 
     override val name: String = TABLE_RESOURCE_STATES
 
@@ -126,7 +127,7 @@ internal class SvResourceStateTable(path: Path) : Table {
                 }
             }
 
-            override fun toString(): String = "BitbrainsCompositeTableReader"
+            override fun toString(): String = "SvCompositeTableReader"
         }
     }
 

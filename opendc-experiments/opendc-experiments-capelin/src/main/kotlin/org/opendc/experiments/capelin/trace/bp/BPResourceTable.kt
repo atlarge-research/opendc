@@ -38,7 +38,7 @@ internal class BPResourceTable(private val path: Path) : Table {
         return when (column) {
             RESOURCE_ID -> true
             RESOURCE_START_TIME -> true
-            RESOURCE_END_TIME -> true
+            RESOURCE_STOP_TIME -> true
             RESOURCE_NCPUS -> true
             RESOURCE_MEM_CAPACITY -> true
             else -> false

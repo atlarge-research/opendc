@@ -32,18 +32,13 @@ import java.util.regex.Pattern
  * A [TableReader] implementation for the GWF format.
  */
 internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
-    /**
-     * The current parser state.
-     */
-    private val state = RowState()
-
     init {
         parser.schema = schema
     }
 
     override fun nextRow(): Boolean {
         // Reset the row state
-        state.reset()
+        reset()
 
         if (!nextStart()) {
             return false
@@ -57,12 +52,12 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
             }
 
             when (parser.currentName) {
-                "WorkflowID" -> state.workflowId = parser.longValue
-                "JobID" -> state.jobId = parser.longValue
-                "SubmitTime" -> state.submitTime = parser.longValue
-                "RunTime" -> state.runtime = parser.longValue
-                "NProcs" -> state.nProcs = parser.intValue
-                "ReqNProcs" -> state.reqNProcs = parser.intValue
+                "WorkflowID" -> workflowId = parser.longValue
+                "JobID" -> jobId = parser.longValue
+                "SubmitTime" -> submitTime = parser.longValue
+                "RunTime" -> runtime = parser.longValue
+                "NProcs" -> nProcs = parser.intValue
+                "ReqNProcs" -> reqNProcs = parser.intValue
                 "Dependencies" -> parseParents(parser.valueAsString)
             }
         }
@@ -85,13 +80,13 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
 
     override fun <T> get(column: TableColumn<T>): T {
         val res: Any = when (column) {
-            TASK_WORKFLOW_ID -> state.workflowId
-            TASK_ID -> state.jobId
-            TASK_SUBMIT_TIME -> state.submitTime
-            TASK_RUNTIME -> state.runtime
-            TASK_REQ_NCPUS -> state.nProcs
-            TASK_ALLOC_NCPUS -> state.reqNProcs
-            TASK_PARENTS -> state.dependencies
+            TASK_WORKFLOW_ID -> workflowId
+            TASK_ID -> jobId
+            TASK_SUBMIT_TIME -> submitTime
+            TASK_RUNTIME -> runtime
+            TASK_REQ_NCPUS -> nProcs
+            TASK_ALLOC_NCPUS -> reqNProcs
+            TASK_PARENTS -> dependencies
             else -> throw IllegalArgumentException("Invalid column")
         }
 
@@ -105,18 +100,18 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
 
     override fun getInt(column: TableColumn<Int>): Int {
         return when (column) {
-            TASK_REQ_NCPUS -> state.nProcs
-            TASK_ALLOC_NCPUS -> state.reqNProcs
+            TASK_REQ_NCPUS -> nProcs
+            TASK_ALLOC_NCPUS -> reqNProcs
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
     override fun getLong(column: TableColumn<Long>): Long {
         return when (column) {
-            TASK_WORKFLOW_ID -> state.workflowId
-            TASK_ID -> state.jobId
-            TASK_SUBMIT_TIME -> state.submitTime
-            TASK_RUNTIME -> state.runtime
+            TASK_WORKFLOW_ID -> workflowId
+            TASK_ID -> jobId
+            TASK_SUBMIT_TIME -> submitTime
+            TASK_RUNTIME -> runtime
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -166,29 +161,27 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     }
 
     /**
-     * The current row state.
+     * Reader state fields.
      */
-    private class RowState {
-        var workflowId = -1L
-        var jobId = -1L
-        var submitTime = -1L
-        var runtime = -1L
-        var nProcs = -1
-        var reqNProcs = -1
-        var dependencies = emptySet<Long>()
+    private var workflowId = -1L
+    private var jobId = -1L
+    private var submitTime = -1L
+    private var runtime = -1L
+    private var nProcs = -1
+    private var reqNProcs = -1
+    private var dependencies = emptySet<Long>()
 
-        /**
-         * Reset the state.
-         */
-        fun reset() {
-            workflowId = -1
-            jobId = -1
-            submitTime = -1
-            runtime = -1
-            nProcs = -1
-            reqNProcs = -1
-            dependencies = emptySet()
-        }
+    /**
+     * Reset the state.
+     */
+    private fun reset() {
+        workflowId = -1
+        jobId = -1
+        submitTime = -1
+        runtime = -1
+        nProcs = -1
+        reqNProcs = -1
+        dependencies = emptySet()
     }
 
     companion object {

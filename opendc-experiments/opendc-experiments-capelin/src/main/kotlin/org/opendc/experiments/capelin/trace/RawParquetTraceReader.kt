@@ -90,9 +90,9 @@ class RawParquetTraceReader(private val path: File) {
                 }
 
                 val submissionTime = reader.get(RESOURCE_START_TIME)
-                val endTime = reader.get(RESOURCE_END_TIME)
+                val endTime = reader.get(RESOURCE_STOP_TIME)
                 val maxCores = reader.getInt(RESOURCE_NCPUS)
-                val requiredMemory = reader.getDouble(RESOURCE_MEM_CAPACITY)
+                val requiredMemory = reader.getDouble(RESOURCE_MEM_CAPACITY) / 1000.0 // Convert from KB to MB
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
                 val vmFragments = fragments.getValue(id).asSequence()

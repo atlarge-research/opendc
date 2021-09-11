@@ -43,5 +43,5 @@ public class WtfTrace internal constructor(private val path: Path) : Trace {
         return WtfTaskTable(path)
     }
 
-    override fun toString(): String = "SwfTrace[$path]"
+    override fun toString(): String = "WtfTrace[$path]"
 }
