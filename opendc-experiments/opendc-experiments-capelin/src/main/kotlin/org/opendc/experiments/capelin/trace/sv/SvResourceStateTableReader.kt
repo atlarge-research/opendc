@@ -65,7 +65,7 @@ internal class SvResourceStateTableReader(private val reader: BufferedReader) : 
             end = line.indexOf(' ', start)
 
             if (end < 0) {
-                break
+                end = length
             }
 
             val field = line.subSequence(start, end) as String
