@@ -34,17 +34,14 @@ internal class WfFormatTaskTable(private val factory: JsonFactory, private val p
 
     override val isSynthetic: Boolean = false
 
-    override fun isSupported(column: TableColumn<*>): Boolean {
-        return when (column) {
-            TASK_ID -> true
-            TASK_WORKFLOW_ID -> true
-            TASK_RUNTIME -> true
-            TASK_REQ_NCPUS -> true
-            TASK_PARENTS -> true
-            TASK_CHILDREN -> true
-            else -> false
-        }
-    }
+    override val columns: List<TableColumn<*>> = listOf(
+        TASK_ID,
+        TASK_WORKFLOW_ID,
+        TASK_RUNTIME,
+        TASK_REQ_NCPUS,
+        TASK_PARENTS,
+        TASK_CHILDREN
+    )
 
     override fun newReader(): TableReader {
         val parser = factory.createParser(path.toFile())

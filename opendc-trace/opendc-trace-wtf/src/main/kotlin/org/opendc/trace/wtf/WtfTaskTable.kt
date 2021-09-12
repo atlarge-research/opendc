@@ -35,21 +35,18 @@ internal class WtfTaskTable(private val path: Path) : Table {
 
     override val isSynthetic: Boolean = false
 
-    override fun isSupported(column: TableColumn<*>): Boolean {
-        return when (column) {
-            TASK_ID -> true
-            TASK_WORKFLOW_ID -> true
-            TASK_SUBMIT_TIME -> true
-            TASK_WAIT_TIME -> true
-            TASK_RUNTIME -> true
-            TASK_REQ_NCPUS -> true
-            TASK_PARENTS -> true
-            TASK_CHILDREN -> true
-            TASK_GROUP_ID -> true
-            TASK_USER_ID -> true
-            else -> false
-        }
-    }
+    override val columns: List<TableColumn<*>> = listOf(
+        TASK_ID,
+        TASK_WORKFLOW_ID,
+        TASK_SUBMIT_TIME,
+        TASK_WAIT_TIME,
+        TASK_RUNTIME,
+        TASK_REQ_NCPUS,
+        TASK_PARENTS,
+        TASK_CHILDREN,
+        TASK_GROUP_ID,
+        TASK_USER_ID
+    )
 
     override fun newReader(): TableReader {
         val reader = LocalParquetReader<GenericRecord>(path.resolve("tasks/schema-1.0"))

@@ -34,16 +34,13 @@ internal class AzureResourceTable(private val factory: CsvFactory, private val p
 
     override val isSynthetic: Boolean = false
 
-    override fun isSupported(column: TableColumn<*>): Boolean {
-        return when (column) {
-            RESOURCE_ID -> true
-            RESOURCE_START_TIME -> true
-            RESOURCE_STOP_TIME -> true
-            RESOURCE_NCPUS -> true
-            RESOURCE_MEM_CAPACITY -> true
-            else -> false
-        }
-    }
+    override val columns: List<TableColumn<*>> = listOf(
+        RESOURCE_ID,
+        RESOURCE_START_TIME,
+        RESOURCE_STOP_TIME,
+        RESOURCE_NCPUS,
+        RESOURCE_MEM_CAPACITY
+    )
 
     override fun newReader(): TableReader {
         return AzureResourceTableReader(factory.createParser(path.resolve("vmtable/vmtable.csv").toFile()))

@@ -34,18 +34,15 @@ internal class GwfTaskTable(private val factory: CsvFactory, private val url: UR
 
     override val isSynthetic: Boolean = false
 
-    override fun isSupported(column: TableColumn<*>): Boolean {
-        return when (column) {
-            TASK_WORKFLOW_ID -> true
-            TASK_ID -> true
-            TASK_SUBMIT_TIME -> true
-            TASK_RUNTIME -> true
-            TASK_REQ_NCPUS -> true
-            TASK_ALLOC_NCPUS -> true
-            TASK_PARENTS -> true
-            else -> false
-        }
-    }
+    override val columns: List<TableColumn<*>> = listOf(
+        TASK_WORKFLOW_ID,
+        TASK_ID,
+        TASK_SUBMIT_TIME,
+        TASK_RUNTIME,
+        TASK_REQ_NCPUS,
+        TASK_ALLOC_NCPUS,
+        TASK_PARENTS
+    )
 
     override fun newReader(): TableReader {
         return GwfTaskTableReader(factory.createParser(url))
