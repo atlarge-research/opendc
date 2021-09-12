@@ -22,6 +22,11 @@
 
 package org.opendc.trace
 
+import org.opendc.trace.spi.TraceFormat
+import java.io.File
+import java.net.URL
+import java.nio.file.Path
+
 /**
  * A trace is a collection of related tables that characterize a workload.
  */
@@ -40,4 +45,34 @@ public interface Trace {
      * Obtain a [Table] with the specified [name].
      */
     public fun getTable(name: String): Table?
+
+    public companion object {
+        /**
+         * Open a [Trace] at the specified [url] in the given [format].
+         *
+         * @throws IllegalArgumentException if [format] is not supported.
+         */
+        public fun open(url: URL, format: String): Trace {
+            val provider = requireNotNull(TraceFormat.byName(format)) { "Unknown format $format" }
+            return provider.open(url)
+        }
+
+        /**
+         * Open a [Trace] at the specified [path] in the given [format].
+         *
+         * @throws IllegalArgumentException if [format] is not supported.
+         */
+        public fun open(path: File, format: String): Trace {
+            return open(path.toURI().toURL(), format)
+        }
+
+        /**
+         * Open a [Trace] at the specified [path] in the given [format].
+         *
+         * @throws IllegalArgumentException if [format] is not supported.
+         */
+        public fun open(path: Path, format: String): Trace {
+            return open(path.toUri().toURL(), format)
+        }
+    }
 }
