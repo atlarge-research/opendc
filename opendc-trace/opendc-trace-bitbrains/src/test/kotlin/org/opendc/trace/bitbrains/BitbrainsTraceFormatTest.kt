@@ -25,9 +25,7 @@ package org.opendc.trace.bitbrains
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.trace.RESOURCE_STATE_CPU_USAGE
-import org.opendc.trace.RESOURCE_STATE_TIMESTAMP
-import org.opendc.trace.TABLE_RESOURCE_STATES
+import org.opendc.trace.*
 import java.net.URL
 
 /**
@@ -58,7 +56,7 @@ class BitbrainsTraceFormatTest {
         val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
         val trace = format.open(url)
 
-        assertEquals(listOf(TABLE_RESOURCE_STATES), trace.tables)
+        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES), trace.tables)
     }
 
     @Test
@@ -79,6 +77,23 @@ class BitbrainsTraceFormatTest {
 
         assertFalse(trace.containsTable("test"))
         assertNull(trace.getTable("test"))
+    }
+
+    @Test
+    fun testResources() {
+        val format = BitbrainsTraceFormat()
+        val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
+        val trace = format.open(url)
+
+        val reader = trace.getTable(TABLE_RESOURCES)!!.newReader()
+
+        assertAll(
+            { assertTrue(reader.nextRow()) },
+            { assertEquals("bitbrains", reader.get(RESOURCE_ID)) },
+            { assertFalse(reader.nextRow()) }
+        )
+
+        reader.close()
     }
 
     @Test

@@ -37,9 +37,9 @@ public interface Table {
     public val isSynthetic: Boolean
 
     /**
-     * Determine whether the specified [column] is supported by this table.
+     * The list of columns supported in this table.
      */
-    public fun isSupported(column: TableColumn<*>): Boolean
+    public val columns: List<TableColumn<*>>
 
     /**
      * Open a [TableReader] for this table.

@@ -41,7 +41,7 @@ public val RESOURCE_START_TIME: TableColumn<Instant> = TableColumn("resource:sta
  * End time for the resource.
  */
 @JvmField
-public val RESOURCE_END_TIME: TableColumn<Instant> = TableColumn("resource:end_time", Instant::class.java)
+public val RESOURCE_STOP_TIME: TableColumn<Instant> = TableColumn("resource:stop_time", Instant::class.java)
 
 /**
  * Number of CPUs for the resource.
@@ -50,7 +50,7 @@ public val RESOURCE_END_TIME: TableColumn<Instant> = TableColumn("resource:end_t
 public val RESOURCE_NCPUS: TableColumn<Int> = intColumn("resource:num_cpus")
 
 /**
- * Memory capacity for the resource.
+ * Memory capacity for the resource in KB.
  */
 @JvmField
 public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = doubleColumn("resource:mem_capacity")

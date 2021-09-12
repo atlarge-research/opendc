@@ -31,7 +31,7 @@ import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 
 /**
- * The resource state [Table] in the Bitbrains format.
+ * The resource state [Table] in the extended Bitbrains format.
  */
 internal class SvResourceStateTable(path: Path) : Table {
     /**
@@ -40,28 +40,26 @@ internal class SvResourceStateTable(path: Path) : Table {
     private val partitions = Files.walk(path, 1)
         .filter { !Files.isDirectory(it) && it.extension == "txt" }
         .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
+        .toSortedMap()
 
     override val name: String = TABLE_RESOURCE_STATES
 
     override val isSynthetic: Boolean = false
 
-    override fun isSupported(column: TableColumn<*>): Boolean {
-        return when (column) {
-            RESOURCE_STATE_ID -> true
-            RESOURCE_STATE_CLUSTER_ID -> true
-            RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_NCPUS -> true
-            RESOURCE_STATE_CPU_CAPACITY -> true
-            RESOURCE_STATE_CPU_USAGE -> true
-            RESOURCE_STATE_CPU_USAGE_PCT -> true
-            RESOURCE_STATE_CPU_DEMAND -> true
-            RESOURCE_STATE_CPU_READY_PCT -> true
-            RESOURCE_STATE_MEM_CAPACITY -> true
-            RESOURCE_STATE_DISK_READ -> true
-            RESOURCE_STATE_DISK_WRITE -> true
-            else -> false
-        }
-    }
+    override val columns: List<TableColumn<*>> = listOf(
+        RESOURCE_STATE_ID,
+        RESOURCE_STATE_CLUSTER_ID,
+        RESOURCE_STATE_TIMESTAMP,
+        RESOURCE_STATE_NCPUS,
+        RESOURCE_STATE_CPU_CAPACITY,
+        RESOURCE_STATE_CPU_USAGE,
+        RESOURCE_STATE_CPU_USAGE_PCT,
+        RESOURCE_STATE_CPU_DEMAND,
+        RESOURCE_STATE_CPU_READY_PCT,
+        RESOURCE_STATE_MEM_CAPACITY,
+        RESOURCE_STATE_DISK_READ,
+        RESOURCE_STATE_DISK_WRITE,
+    )
 
     override fun newReader(): TableReader {
         val it = partitions.iterator()
@@ -126,7 +124,7 @@ internal class SvResourceStateTable(path: Path) : Table {
                 }
             }
 
-            override fun toString(): String = "BitbrainsCompositeTableReader"
+            override fun toString(): String = "SvCompositeTableReader"
         }
     }
 

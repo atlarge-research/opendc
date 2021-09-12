@@ -45,7 +45,7 @@ internal class BPResourceTableReader(private val reader: LocalParquetReader<Gene
         return when (column) {
             RESOURCE_ID -> true
             RESOURCE_START_TIME -> true
-            RESOURCE_END_TIME -> true
+            RESOURCE_STOP_TIME -> true
             RESOURCE_NCPUS -> true
             RESOURCE_MEM_CAPACITY -> true
             else -> false
@@ -59,9 +59,9 @@ internal class BPResourceTableReader(private val reader: LocalParquetReader<Gene
         val res: Any = when (column) {
             RESOURCE_ID -> record["id"].toString()
             RESOURCE_START_TIME -> Instant.ofEpochMilli(record["submissionTime"] as Long)
-            RESOURCE_END_TIME -> Instant.ofEpochMilli(record["endTime"] as Long)
-            RESOURCE_NCPUS -> record["maxCores"]
-            RESOURCE_MEM_CAPACITY -> (record["requiredMemory"] as Number).toDouble()
+            RESOURCE_STOP_TIME -> Instant.ofEpochMilli(record["endTime"] as Long)
+            RESOURCE_NCPUS -> getInt(RESOURCE_NCPUS)
+            RESOURCE_MEM_CAPACITY -> getDouble(RESOURCE_MEM_CAPACITY)
             else -> throw IllegalArgumentException("Invalid column")
         }
 
@@ -90,7 +90,7 @@ internal class BPResourceTableReader(private val reader: LocalParquetReader<Gene
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (column) {
-            RESOURCE_MEM_CAPACITY -> (record["requiredMemory"] as Number).toDouble()
+            RESOURCE_MEM_CAPACITY -> (record["requiredMemory"] as Number).toDouble() * 1000.0 // MB to KB
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

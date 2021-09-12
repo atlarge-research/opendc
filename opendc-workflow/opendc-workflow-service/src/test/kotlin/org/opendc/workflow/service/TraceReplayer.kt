@@ -81,17 +81,17 @@ internal class TraceReplayer(private val trace: Trace) {
         try {
             while (reader.nextRow()) {
                 // Bag of tasks without workflow ID all share the same workflow
-                val workflowId = if (reader.hasColumn(TASK_WORKFLOW_ID)) reader.getLong(TASK_WORKFLOW_ID) else 0L
+                val workflowId = if (reader.hasColumn(TASK_WORKFLOW_ID)) reader.get(TASK_WORKFLOW_ID).toLong() else 0L
                 val workflow = jobs.computeIfAbsent(workflowId) { id -> Job(UUID(0L, id), "<unnamed>", HashSet(), HashMap()) }
 
-                val id = reader.getLong(TASK_ID)
+                val id = reader.get(TASK_ID).toLong()
                 val grantedCpus = if (reader.hasColumn(TASK_ALLOC_NCPUS))
                     reader.getInt(TASK_ALLOC_NCPUS)
                 else
                     reader.getInt(TASK_REQ_NCPUS)
-                val submitTime = reader.getLong(TASK_SUBMIT_TIME)
-                val runtime = reader.getLong(TASK_RUNTIME)
-                val flops: Long = 4000 * runtime * grantedCpus
+                val submitTime = reader.get(TASK_SUBMIT_TIME)
+                val runtime = reader.get(TASK_RUNTIME)
+                val flops: Long = 4000 * runtime.seconds * grantedCpus
                 val workload = SimFlopsWorkload(flops)
                 val task = Task(
                     UUID(0L, id),
@@ -100,14 +100,14 @@ internal class TraceReplayer(private val trace: Trace) {
                     mapOf(
                         "workload" to workload,
                         WORKFLOW_TASK_CORES to grantedCpus,
-                        WORKFLOW_TASK_DEADLINE to (runtime * 1000)
+                        WORKFLOW_TASK_DEADLINE to runtime.toMillis()
                     ),
                 )
 
                 tasks[id] = task
-                taskDependencies[task] = reader.get(TASK_PARENTS)
+                taskDependencies[task] = reader.get(TASK_PARENTS).map { it.toLong() }.toSet()
 
-                (workflow.metadata as MutableMap<String, Any>).merge("WORKFLOW_SUBMIT_TIME", submitTime) { a, b -> min(a as Long, b as Long) }
+                (workflow.metadata as MutableMap<String, Any>).merge("WORKFLOW_SUBMIT_TIME", submitTime.toEpochMilli()) { a, b -> min(a as Long, b as Long) }
                 (workflow.tasks as MutableSet<Task>).add(task)
             }
 

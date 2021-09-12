@@ -30,13 +30,8 @@ import java.time.Instant
  * A [TableReader] for the Bitbrains resource state table.
  */
 internal class SvResourceStateTableReader(private val reader: BufferedReader) : TableReader {
-    /**
-     * The current parser state.
-     */
-    private val state = RowState()
-
     override fun nextRow(): Boolean {
-        state.reset()
+        reset()
 
         var line: String
         var num = 0
@@ -70,23 +65,23 @@ internal class SvResourceStateTableReader(private val reader: BufferedReader) : 
             end = line.indexOf(' ', start)
 
             if (end < 0) {
-                break
+                end = length
             }
 
             val field = line.subSequence(start, end) as String
             when (col++) {
-                COL_TIMESTAMP -> state.timestamp = Instant.ofEpochSecond(field.toLong(10))
-                COL_CPU_USAGE -> state.cpuUsage = field.toDouble()
-                COL_CPU_DEMAND -> state.cpuDemand = field.toDouble()
-                COL_DISK_READ -> state.diskRead = field.toDouble()
-                COL_DISK_WRITE -> state.diskWrite = field.toDouble()
-                COL_CLUSTER_ID -> state.cluster = field.trim()
-                COL_NCPUS -> state.cpuCores = field.toInt(10)
-                COL_CPU_READY_PCT -> state.cpuReadyPct = field.toDouble()
-                COL_POWERED_ON -> state.poweredOn = field.toInt(10) == 1
-                COL_CPU_CAPACITY -> state.cpuCapacity = field.toDouble()
-                COL_ID -> state.id = field.trim()
-                COL_MEM_CAPACITY -> state.memCapacity = field.toDouble()
+                COL_TIMESTAMP -> timestamp = Instant.ofEpochSecond(field.toLong(10))
+                COL_CPU_USAGE -> cpuUsage = field.toDouble()
+                COL_CPU_DEMAND -> cpuDemand = field.toDouble()
+                COL_DISK_READ -> diskRead = field.toDouble()
+                COL_DISK_WRITE -> diskWrite = field.toDouble()
+                COL_CLUSTER_ID -> cluster = field.trim()
+                COL_NCPUS -> cpuCores = field.toInt(10)
+                COL_CPU_READY_PCT -> cpuReadyPct = field.toDouble()
+                COL_POWERED_ON -> poweredOn = field.toInt(10) == 1
+                COL_CPU_CAPACITY -> cpuCapacity = field.toDouble()
+                COL_ID -> id = field.trim()
+                COL_MEM_CAPACITY -> memCapacity = field.toDouble()
             }
         }
 
@@ -113,16 +108,16 @@ internal class SvResourceStateTableReader(private val reader: BufferedReader) : 
 
     override fun <T> get(column: TableColumn<T>): T {
         val res: Any? = when (column) {
-            RESOURCE_STATE_ID -> state.id
-            RESOURCE_STATE_CLUSTER_ID -> state.cluster
-            RESOURCE_STATE_TIMESTAMP -> state.timestamp
-            RESOURCE_STATE_NCPUS -> state.cpuCores
-            RESOURCE_STATE_CPU_CAPACITY -> state.cpuCapacity
-            RESOURCE_STATE_CPU_USAGE -> state.cpuUsage
-            RESOURCE_STATE_CPU_USAGE_PCT -> state.cpuUsage / state.cpuCapacity
-            RESOURCE_STATE_MEM_CAPACITY -> state.memCapacity
-            RESOURCE_STATE_DISK_READ -> state.diskRead
-            RESOURCE_STATE_DISK_WRITE -> state.diskWrite
+            RESOURCE_STATE_ID -> id
+            RESOURCE_STATE_CLUSTER_ID -> cluster
+            RESOURCE_STATE_TIMESTAMP -> timestamp
+            RESOURCE_STATE_NCPUS -> getInt(RESOURCE_STATE_NCPUS)
+            RESOURCE_STATE_CPU_CAPACITY -> getDouble(RESOURCE_STATE_CPU_CAPACITY)
+            RESOURCE_STATE_CPU_USAGE -> getDouble(RESOURCE_STATE_CPU_USAGE)
+            RESOURCE_STATE_CPU_USAGE_PCT -> getDouble(RESOURCE_STATE_CPU_USAGE_PCT)
+            RESOURCE_STATE_MEM_CAPACITY -> getDouble(RESOURCE_STATE_MEM_CAPACITY)
+            RESOURCE_STATE_DISK_READ -> getDouble(RESOURCE_STATE_DISK_READ)
+            RESOURCE_STATE_DISK_WRITE -> getDouble(RESOURCE_STATE_DISK_WRITE)
             else -> throw IllegalArgumentException("Invalid column")
         }
 
@@ -132,14 +127,14 @@ internal class SvResourceStateTableReader(private val reader: BufferedReader) : 
 
     override fun getBoolean(column: TableColumn<Boolean>): Boolean {
         return when (column) {
-            RESOURCE_STATE_POWERED_ON -> state.poweredOn
+            RESOURCE_STATE_POWERED_ON -> poweredOn
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
     override fun getInt(column: TableColumn<Int>): Int {
         return when (column) {
-            RESOURCE_STATE_NCPUS -> state.cpuCores
+            RESOURCE_STATE_NCPUS -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -150,12 +145,13 @@ internal class SvResourceStateTableReader(private val reader: BufferedReader) : 
 
     override fun getDouble(column: TableColumn<Double>): Double {
         return when (column) {
-            RESOURCE_STATE_CPU_CAPACITY -> state.cpuCapacity
-            RESOURCE_STATE_CPU_USAGE -> state.cpuUsage
-            RESOURCE_STATE_CPU_USAGE_PCT -> state.cpuUsage / state.cpuCapacity
-            RESOURCE_STATE_MEM_CAPACITY -> state.memCapacity
-            RESOURCE_STATE_DISK_READ -> state.diskRead
-            RESOURCE_STATE_DISK_WRITE -> state.diskWrite
+            RESOURCE_STATE_CPU_CAPACITY -> cpuCapacity
+            RESOURCE_STATE_CPU_USAGE -> cpuUsage
+            RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsage / cpuCapacity
+            RESOURCE_STATE_CPU_DEMAND -> cpuDemand
+            RESOURCE_STATE_MEM_CAPACITY -> memCapacity
+            RESOURCE_STATE_DISK_READ -> diskRead
+            RESOURCE_STATE_DISK_WRITE -> diskWrite
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -165,51 +161,37 @@ internal class SvResourceStateTableReader(private val reader: BufferedReader) : 
     }
 
     /**
-     * The current row state.
+     * State fields of the reader.
      */
-    private class RowState {
-        @JvmField
-        var id: String? = null
-        @JvmField
-        var cluster: String? = null
-        @JvmField
-        var timestamp: Instant? = null
-        @JvmField
-        var cpuCores = -1
-        @JvmField
-        var cpuCapacity = Double.NaN
-        @JvmField
-        var cpuUsage = Double.NaN
-        @JvmField
-        var cpuDemand = Double.NaN
-        @JvmField
-        var cpuReadyPct = Double.NaN
-        @JvmField
-        var memCapacity = Double.NaN
-        @JvmField
-        var diskRead = Double.NaN
-        @JvmField
-        var diskWrite = Double.NaN
-        @JvmField
-        var poweredOn: Boolean = false
+    private var id: String? = null
+    private var cluster: String? = null
+    private var timestamp: Instant? = null
+    private var cpuCores = -1
+    private var cpuCapacity = Double.NaN
+    private var cpuUsage = Double.NaN
+    private var cpuDemand = Double.NaN
+    private var cpuReadyPct = Double.NaN
+    private var memCapacity = Double.NaN
+    private var diskRead = Double.NaN
+    private var diskWrite = Double.NaN
+    private var poweredOn: Boolean = false
 
-        /**
-         * Reset the state.
-         */
-        fun reset() {
-            id = null
-            timestamp = null
-            cluster = null
-            cpuCores = -1
-            cpuCapacity = Double.NaN
-            cpuUsage = Double.NaN
-            cpuDemand = Double.NaN
-            cpuReadyPct = Double.NaN
-            memCapacity = Double.NaN
-            diskRead = Double.NaN
-            diskWrite = Double.NaN
-            poweredOn = false
-        }
+    /**
+     * Reset the state of the reader.
+     */
+    private fun reset() {
+        id = null
+        timestamp = null
+        cluster = null
+        cpuCores = -1
+        cpuCapacity = Double.NaN
+        cpuUsage = Double.NaN
+        cpuDemand = Double.NaN
+        cpuReadyPct = Double.NaN
+        memCapacity = Double.NaN
+        diskRead = Double.NaN
+        diskWrite = Double.NaN
+        poweredOn = false
     }
 
     /**

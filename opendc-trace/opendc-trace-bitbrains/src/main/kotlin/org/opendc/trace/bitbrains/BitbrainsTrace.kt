@@ -30,16 +30,16 @@ import java.nio.file.Path
  * [Trace] implementation for the Bitbrains format.
  */
 public class BitbrainsTrace internal constructor(private val factory: CsvFactory, private val path: Path) : Trace {
-    override val tables: List<String> = listOf(TABLE_RESOURCE_STATES)
+    override val tables: List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
 
-    override fun containsTable(name: String): Boolean = TABLE_RESOURCE_STATES == name
+    override fun containsTable(name: String): Boolean = tables.contains(name)
 
     override fun getTable(name: String): Table? {
-        if (!containsTable(name)) {
-            return null
+        return when (name) {
+            TABLE_RESOURCES -> BitbrainsResourceTable(factory, path)
+            TABLE_RESOURCE_STATES -> BitbrainsResourceStateTable(factory, path)
+            else -> null
         }
-
-        return BitbrainsResourceStateTable(factory, path)
     }
 
     override fun toString(): String = "BitbrainsTrace[$path]"

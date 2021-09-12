@@ -34,16 +34,13 @@ internal class BPResourceStateTable(private val path: Path) : Table {
     override val name: String = TABLE_RESOURCE_STATES
     override val isSynthetic: Boolean = false
 
-    override fun isSupported(column: TableColumn<*>): Boolean {
-        return when (column) {
-            RESOURCE_STATE_ID -> true
-            RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_DURATION -> true
-            RESOURCE_STATE_NCPUS -> true
-            RESOURCE_STATE_CPU_USAGE -> true
-            else -> false
-        }
-    }
+    override val columns: List<TableColumn<*>> = listOf(
+        RESOURCE_STATE_ID,
+        RESOURCE_STATE_TIMESTAMP,
+        RESOURCE_STATE_DURATION,
+        RESOURCE_STATE_NCPUS,
+        RESOURCE_STATE_CPU_USAGE,
+    )
 
     override fun newReader(): TableReader {
         val reader = LocalParquetReader<GenericRecord>(path.resolve("trace.parquet"))
