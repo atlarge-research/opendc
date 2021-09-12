@@ -33,7 +33,7 @@ import kotlin.io.path.nameWithoutExtension
 /**
  * The resource state [Table] in the Bitbrains format.
  */
-internal class BitbrainsResourceStateTable(private val factory: CsvFactory, private val path: Path) : Table {
+internal class BitbrainsResourceStateTable(private val factory: CsvFactory, path: Path) : Table {
     /**
      * The partitions that belong to the table.
      */

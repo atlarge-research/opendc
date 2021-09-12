@@ -24,23 +24,38 @@ package org.opendc.trace.bitbrains
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import org.opendc.trace.*
+import java.nio.file.Files
 import java.nio.file.Path
+import java.util.stream.Collectors
+import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
 
 /**
- * [Trace] implementation for the Bitbrains format.
+ * The resources [Table] in the Bitbrains format.
  */
-public class BitbrainsTrace internal constructor(private val factory: CsvFactory, private val path: Path) : Trace {
-    override val tables: List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
+internal class BitbrainsResourceTable(private val factory: CsvFactory, path: Path) : Table {
+    /**
+     * The VMs that belong to the table.
+     */
+    private val vms =
+        Files.walk(path, 1)
+            .filter { !Files.isDirectory(it) && it.extension == "csv" }
+            .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
+            .toSortedMap()
 
-    override fun containsTable(name: String): Boolean = tables.contains(name)
+    override val name: String = TABLE_RESOURCES
 
-    override fun getTable(name: String): Table? {
-        return when (name) {
-            TABLE_RESOURCES -> BitbrainsResourceTable(factory, path)
-            TABLE_RESOURCE_STATES -> BitbrainsResourceStateTable(factory, path)
-            else -> null
-        }
+    override val isSynthetic: Boolean = true
+
+    override val columns: List<TableColumn<*>> = listOf(RESOURCE_ID)
+
+    override fun newReader(): TableReader {
+        return BitbrainsResourceTableReader(factory, vms)
     }
 
-    override fun toString(): String = "BitbrainsTrace[$path]"
+    override fun newReader(partition: String): TableReader {
+        throw IllegalArgumentException("Unknown partition $partition")
+    }
+
+    override fun toString(): String = "BitbrainsResourceTable"
 }
