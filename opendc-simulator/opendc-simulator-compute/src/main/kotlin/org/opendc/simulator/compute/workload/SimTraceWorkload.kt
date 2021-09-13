@@ -27,6 +27,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
+import kotlin.math.min
 
 /**
  * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
@@ -89,15 +90,16 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
                 return SimResourceCommand.Idle(timestamp)
             }
 
+            val cores = min(cpu.node.coreCount, fragment.cores)
             val usage = if (fragment.cores > 0)
-                fragment.usage / fragment.cores
+                fragment.usage / cores
             else
                 0.0
             val deadline = timestamp + fragment.duration
             val duration = deadline - now
             val work = duration * usage / 1000
 
-            return if (cpu.id < fragment.cores && work > 0.0)
+            return if (cpu.id < cores && work > 0.0)
                 SimResourceCommand.Consume(work, usage, deadline)
             else
                 SimResourceCommand.Idle(deadline)
