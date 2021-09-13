@@ -59,7 +59,7 @@ public class ComputeMetricExporter(
             when (metric.name) {
                 "cpu.demand" -> mapDoubleSummary(metric, hostMetrics) { m, v -> m.cpuDemand = v }
                 "cpu.usage" -> mapDoubleSummary(metric, hostMetrics) { m, v -> m.cpuUsage = v }
-                "power.usage" -> mapDoubleSummary(metric, hostMetrics) { m, v -> m.powerDraw = v }
+                "power.usage" -> mapDoubleHistogram(metric, hostMetrics) { m, v -> m.powerDraw = v }
                 "cpu.work.total" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.totalWork = v }
                 "cpu.work.granted" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.grantedWork = v }
                 "cpu.work.overcommit" -> mapDoubleSum(metric, hostMetrics) { m, v -> m.overcommittedWork = v }
@@ -102,6 +102,15 @@ public class ComputeMetricExporter(
             val hostMetric = hostMetrics.computeIfAbsent(uid) { HBuffer() }
             val avg = (point.percentileValues[0].value + point.percentileValues[1].value) / 2
             block(hostMetric, avg)
+        }
+    }
+
+    private fun mapDoubleHistogram(data: MetricData, hostMetrics: MutableMap<String, HBuffer>, block: (HBuffer, Double) -> Unit) {
+        val points = data.doubleHistogramData?.points ?: emptyList()
+        for (point in points) {
+            val uid = point.attributes[ResourceAttributes.HOST_ID] ?: continue
+            val hostMetric = hostMetrics.computeIfAbsent(uid) { HBuffer() }
+            block(hostMetric, point.sum / point.count)
         }
     }
 

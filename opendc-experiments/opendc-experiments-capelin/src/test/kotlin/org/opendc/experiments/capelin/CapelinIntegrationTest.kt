@@ -110,7 +110,7 @@ class CapelinIntegrationTest {
             { assertEquals(206667809529, monitor.totalGrantedWork) { "Incorrect granted burst" } },
             { assertEquals(1151611104, monitor.totalOvercommittedWork) { "Incorrect overcommitted burst" } },
             { assertEquals(0, monitor.totalInterferedWork) { "Incorrect interfered burst" } },
-            { assertEquals(1.7671768767192196E7, monitor.totalPowerDraw, 0.01) { "Incorrect power draw" } },
+            { assertEquals(1.8175860403178412E7, monitor.totalPowerDraw, 0.01) { "Incorrect power draw" } },
         )
     }
 
