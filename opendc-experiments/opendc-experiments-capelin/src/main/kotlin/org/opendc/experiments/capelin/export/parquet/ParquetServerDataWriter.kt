@@ -28,60 +28,46 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
-import org.opendc.compute.service.driver.HostState
-import org.opendc.telemetry.compute.table.HostData
+import org.opendc.telemetry.compute.table.ServerData
 import java.io.File
 
 /**
- * A Parquet event writer for [HostData]s.
+ * A Parquet event writer for [ServerData]s.
  */
-public class ParquetHostDataWriter(path: File, bufferSize: Int) :
-    ParquetDataWriter<HostData>(path, SCHEMA, bufferSize) {
+public class ParquetServerDataWriter(path: File, bufferSize: Int) :
+    ParquetDataWriter<ServerData>(path, SCHEMA, bufferSize) {
 
     override fun buildWriter(builder: AvroParquetWriter.Builder<GenericData.Record>): ParquetWriter<GenericData.Record> {
         return builder
-            .withDictionaryEncoding("host_id", true)
+            .withDictionaryEncoding("server_id", true)
+            .withDictionaryEncoding("state", true)
             .build()
     }
 
-    override fun convert(builder: GenericRecordBuilder, data: HostData) {
+    override fun convert(builder: GenericRecordBuilder, data: ServerData) {
         builder["timestamp"] = data.timestamp
-        builder["host_id"] = data.host.name
-        builder["powered_on"] = data.host.state == HostState.UP
+        builder["server_id"] = data.server.uid.toString()
+        builder["state"] = data.server.state
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
-        builder["total_work"] = data.totalWork
-        builder["granted_work"] = data.grantedWork
-        builder["overcommitted_work"] = data.overcommittedWork
-        builder["interfered_work"] = data.interferedWork
-        builder["cpu_usage"] = data.cpuUsage
-        builder["cpu_demand"] = data.cpuDemand
-        builder["power_draw"] = data.powerDraw
-        builder["num_instances"] = data.instanceCount
-        builder["num_cpus"] = data.host.model.cpuCount
+        builder["num_vcpus"] = data.server.flavor.cpuCount
+        builder["mem_capacity"] = data.server.flavor.memorySize
     }
 
-    override fun toString(): String = "host-writer"
+    override fun toString(): String = "server-writer"
 
     companion object {
         private val SCHEMA: Schema = SchemaBuilder
-            .record("host")
+            .record("server")
             .namespace("org.opendc.telemetry.compute")
             .fields()
             .requiredLong("timestamp")
-            .requiredString("host_id")
-            .requiredBoolean("powered_on")
+            .requiredString("server_id")
+            .requiredString("state")
             .requiredLong("uptime")
             .requiredLong("downtime")
-            .requiredDouble("total_work")
-            .requiredDouble("granted_work")
-            .requiredDouble("overcommitted_work")
-            .requiredDouble("interfered_work")
-            .requiredDouble("cpu_usage")
-            .requiredDouble("cpu_demand")
-            .requiredDouble("power_draw")
-            .requiredInt("num_instances")
-            .requiredInt("num_cpus")
+            .requiredInt("num_vcpus")
+            .requiredLong("mem_capacity")
             .endRecord()
     }
 }

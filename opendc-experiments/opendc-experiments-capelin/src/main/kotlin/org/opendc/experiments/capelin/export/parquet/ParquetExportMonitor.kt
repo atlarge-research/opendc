@@ -24,21 +24,32 @@ package org.opendc.experiments.capelin.export.parquet
 
 import org.opendc.telemetry.compute.ComputeMonitor
 import org.opendc.telemetry.compute.table.HostData
+import org.opendc.telemetry.compute.table.ServerData
 import org.opendc.telemetry.compute.table.ServiceData
 import java.io.File
 
 /**
  * A [ComputeMonitor] that logs the events to a Parquet file.
  */
-public class ParquetExportMonitor(base: File, partition: String, bufferSize: Int) : ComputeMonitor, AutoCloseable {
+class ParquetExportMonitor(base: File, partition: String, bufferSize: Int) : ComputeMonitor, AutoCloseable {
+    private val serverWriter = ParquetServerDataWriter(
+        File(base, "server/$partition/data.parquet").also { it.parentFile.mkdirs() },
+        bufferSize
+    )
+
     private val hostWriter = ParquetHostDataWriter(
         File(base, "host/$partition/data.parquet").also { it.parentFile.mkdirs() },
         bufferSize
     )
+
     private val serviceWriter = ParquetServiceDataWriter(
         File(base, "service/$partition/data.parquet").also { it.parentFile.mkdirs() },
         bufferSize
     )
+
+    override fun record(data: ServerData) {
+        serverWriter.write(data)
+    }
 
     override fun record(data: HostData) {
         hostWriter.write(data)
@@ -51,5 +62,6 @@ public class ParquetExportMonitor(base: File, partition: String, bufferSize: Int
     override fun close() {
         hostWriter.close()
         serviceWriter.close()
+        serverWriter.close()
     }
 }
