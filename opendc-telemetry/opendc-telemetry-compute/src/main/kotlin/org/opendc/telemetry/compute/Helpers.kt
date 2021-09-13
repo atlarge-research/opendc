@@ -33,6 +33,7 @@ import org.opendc.compute.service.driver.HostState
 import org.opendc.telemetry.compute.table.ServiceData
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import java.time.Clock
+import java.time.Duration
 
 /**
  * Attach the specified monitor to the OpenDC Compute service.
@@ -42,7 +43,7 @@ public suspend fun withMonitor(
     clock: Clock,
     metricProducer: MetricProducer,
     monitor: ComputeMonitor,
-    exportInterval: Long = 5L * 60 * 1000, /* Every 5 min (which is the granularity of the workload trace) */
+    exportInterval: Duration = Duration.ofMinutes(5), /* Every 5 min (which is the granularity of the workload trace) */
     block: suspend CoroutineScope.() -> Unit
 ): Unit = coroutineScope {
     // Monitor host events

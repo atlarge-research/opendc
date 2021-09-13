@@ -46,6 +46,7 @@ import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.telemetry.sdk.toOtelClock
+import java.time.Duration
 import java.util.*
 import kotlin.coroutines.resume
 
@@ -149,7 +150,7 @@ internal class SimHostTest {
 
                 override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
             },
-            exportInterval = duration * 1000L
+            exportInterval = Duration.ofSeconds(duration)
         )
 
         coroutineScope {
@@ -261,7 +262,7 @@ internal class SimHostTest {
 
                 override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
             },
-            exportInterval = duration * 1000L
+            exportInterval = Duration.ofSeconds(duration)
         )
 
         coroutineScope {

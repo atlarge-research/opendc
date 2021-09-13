@@ -26,14 +26,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricExporter
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
-import java.util.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import java.time.Duration
 
 /**
  * A helper class to read the metrics from a list of [MetricProducer]s and automatically export the metrics every
@@ -44,56 +38,44 @@ import kotlin.coroutines.suspendCoroutine
  * @param scope The [CoroutineScope] to run the reader in.
  * @param producers The metric producers to gather metrics from.
  * @param exporter The export to export the metrics to.
- * @param exportInterval The export interval in milliseconds.
+ * @param exportInterval The export interval.
  */
 public class CoroutineMetricReader(
     scope: CoroutineScope,
     private val producers: List<MetricProducer>,
     private val exporter: MetricExporter,
-    private val exportInterval: Long = 60_000
+    private val exportInterval: Duration = Duration.ofMinutes(1)
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
-    private val chan = Channel<List<MetricData>>(Channel.RENDEZVOUS)
 
     /**
-     * The metric reader job.
+     * The background job that is responsible for collecting the metrics every cycle.
      */
-    private val readerJob = scope.launch {
+    private val job = scope.launch {
+        val intervalMs = exportInterval.toMillis()
+
         while (isActive) {
-            delay(exportInterval)
+            delay(intervalMs)
 
             val metrics = mutableListOf<MetricData>()
             for (producer in producers) {
                 metrics.addAll(producer.collectAllMetrics())
             }
-            chan.send(Collections.unmodifiableList(metrics))
+
+            try {
+                val result = exporter.export(metrics)
+                result.whenComplete {
+                    if (!result.isSuccess) {
+                        logger.trace { "Exporter failed" }
+                    }
+                }
+            } catch (cause: Throwable) {
+                logger.warn(cause) { "Exporter threw an Exception" }
+            }
         }
     }
 
-    /**
-     * The exporter job runs in the background to actually export the metrics.
-     */
-    private val exporterJob = chan.consumeAsFlow()
-        .onEach { metrics ->
-            suspendCoroutine<Unit> { cont ->
-                try {
-                    val result = exporter.export(metrics)
-                    result.whenComplete {
-                        if (!result.isSuccess) {
-                            logger.trace { "Exporter failed" }
-                        }
-                        cont.resume(Unit)
-                    }
-                } catch (cause: Throwable) {
-                    logger.warn(cause) { "Exporter threw an Exception" }
-                    cont.resume(Unit)
-                }
-            }
-        }
-        .launchIn(scope)
-
     override fun close() {
-        readerJob.cancel()
-        exporterJob.cancel()
+        job.cancel()
     }
 }
