@@ -68,7 +68,8 @@ public class SimHost(
     scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
     powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    interferenceDomain: VmInterferenceDomain? = null
+    interferenceDomain: VmInterferenceDomain? = null,
+    private val optimize: Boolean = false
 ) : Host, AutoCloseable {
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
@@ -98,7 +99,7 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model, powerDriver)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model.optimize(), powerDriver)
 
     /**
      * The hypervisor to run multiple workloads.
@@ -317,6 +318,25 @@ public class SimHost(
         val originalCpu = machine.model.cpus[0]
         val processingNode = originalCpu.node.copy(coreCount = cpuCount)
         val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
+        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
+
+        return MachineModel(processingUnits, memoryUnits).optimize()
+    }
+
+    /**
+     * Optimize the [MachineModel] for simulation.
+     */
+    private fun MachineModel.optimize(): MachineModel {
+        if (!optimize) {
+            return this
+        }
+
+        val originalCpu = cpus[0]
+        val freq = cpus.sumOf { it.frequency }
+        val processingNode = originalCpu.node.copy(coreCount = 1)
+        val processingUnits = listOf(originalCpu.copy(frequency = freq, node = processingNode))
+
+        val memorySize = memory.sumOf { it.size }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
         return MachineModel(processingUnits, memoryUnits)
