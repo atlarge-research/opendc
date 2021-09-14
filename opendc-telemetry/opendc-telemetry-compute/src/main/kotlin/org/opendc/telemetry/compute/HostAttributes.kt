@@ -20,23 +20,32 @@
  * SOFTWARE.
  */
 
-description = "FaaS service for OpenDC"
+@file:JvmName("HostAttributes")
+package org.opendc.telemetry.compute
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import io.opentelemetry.api.common.AttributeKey
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcFaas.opendcFaasApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
-    implementation(libs.opentelemetry.semconv)
+/**
+ * The identifier of the node hosting virtual machines.
+ */
+public val HOST_ID: AttributeKey<String> = AttributeKey.stringKey("node.id")
 
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.log4j.slf4j)
-}
+/**
+ * The name of the node hosting virtual machines.
+ */
+public val HOST_NAME: AttributeKey<String> = AttributeKey.stringKey("node.name")
+
+/**
+ * The CPU architecture of the host node.
+ */
+public val HOST_ARCH: AttributeKey<String> = AttributeKey.stringKey("node.arch")
+
+/**
+ * The number of CPUs in the host node.
+ */
+public val HOST_NCPUS: AttributeKey<Long> = AttributeKey.longKey("node.num_cpus")
+
+/**
+ * The amount of memory installed in the host node in MiB.
+ */
+public val HOST_MEM_CAPACITY: AttributeKey<Long> = AttributeKey.longKey("node.mem_capacity")

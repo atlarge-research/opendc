@@ -20,23 +20,19 @@
  * SOFTWARE.
  */
 
-description = "FaaS service for OpenDC"
+package org.opendc.experiments.capelin.util
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import org.opendc.compute.service.ComputeService
+import org.opendc.compute.simulator.failure.HostFaultInjector
+import java.time.Clock
+import kotlin.coroutines.CoroutineContext
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcFaas.opendcFaasApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
-    implementation(libs.opentelemetry.semconv)
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.log4j.slf4j)
+/**
+ * Factory interface for constructing [HostFaultInjector] for modeling failures of compute service hosts.
+ */
+interface FailureModel {
+    /**
+     * Construct a [HostFaultInjector] for the specified [service].
+     */
+    fun createInjector(context: CoroutineContext, clock: Clock, service: ComputeService): HostFaultInjector
 }

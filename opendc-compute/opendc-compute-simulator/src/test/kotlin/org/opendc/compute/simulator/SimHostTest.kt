@@ -49,6 +49,7 @@ import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Duration
 import java.util.*
 import kotlin.coroutines.resume
+import kotlin.math.roundToLong
 
 /**
  * Basic test-suite for the hypervisor.
@@ -72,7 +73,7 @@ internal class SimHostTest {
      */
     @Test
     fun testOvercommitted() = runBlockingSimulation {
-        var requestedWork = 0L
+        var totalWork = 0L
         var grantedWork = 0L
         var overcommittedWork = 0L
 
@@ -89,7 +90,7 @@ internal class SimHostTest {
             meta = emptyMap(),
             coroutineContext,
             interpreter,
-            meterProvider.get("opendc-compute-simulator"),
+            meterProvider,
             SimFairShareHypervisorProvider()
         )
         val duration = 5 * 60L
@@ -134,15 +135,10 @@ internal class SimHostTest {
             object : MetricExporter {
                 override fun export(metrics: Collection<MetricData>): CompletableResultCode {
                     val metricsByName = metrics.associateBy { it.name }
-                    metricsByName["cpu.work.total"]?.let {
-                        requestedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
-                    }
-                    metricsByName["cpu.work.granted"]?.let {
-                        grantedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
-                    }
-                    metricsByName["cpu.work.overcommit"]?.let {
-                        overcommittedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
-                    }
+
+                    totalWork = metricsByName.getValue("cpu.work.total").doubleSumData.points.first().value.roundToLong()
+                    grantedWork = metricsByName.getValue("cpu.work.granted").doubleSumData.points.first().value.roundToLong()
+                    overcommittedWork = metricsByName.getValue("cpu.work.overcommit").doubleSumData.points.first().value.roundToLong()
                     return CompletableResultCode.ofSuccess()
                 }
 
@@ -176,7 +172,7 @@ internal class SimHostTest {
         reader.close()
 
         assertAll(
-            { assertEquals(4147200, requestedWork, "Requested work does not match") },
+            { assertEquals(4147200, totalWork, "Requested work does not match") },
             { assertEquals(2107200, grantedWork, "Granted work does not match") },
             { assertEquals(2040000, overcommittedWork, "Overcommitted work does not match") },
             { assertEquals(1500001, clock.millis()) }
@@ -188,7 +184,7 @@ internal class SimHostTest {
      */
     @Test
     fun testFailure() = runBlockingSimulation {
-        var requestedWork = 0L
+        var totalWork = 0L
         var grantedWork = 0L
         var totalTime = 0L
         var downTime = 0L
@@ -208,7 +204,7 @@ internal class SimHostTest {
             meta = emptyMap(),
             coroutineContext,
             interpreter,
-            meterProvider.get("opendc-compute-simulator"),
+            meterProvider,
             SimFairShareHypervisorProvider()
         )
         val duration = 5 * 60L
@@ -237,24 +233,14 @@ internal class SimHostTest {
             object : MetricExporter {
                 override fun export(metrics: Collection<MetricData>): CompletableResultCode {
                     val metricsByName = metrics.associateBy { it.name }
-                    metricsByName["cpu.work.total"]?.let {
-                        requestedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
-                    }
-                    metricsByName["cpu.work.granted"]?.let {
-                        grantedWork = it.doubleSumData.points.sumOf { point -> point.value }.toLong()
-                    }
-                    metricsByName["host.time.total"]?.let {
-                        totalTime = it.longSumData.points.first().value
-                    }
-                    metricsByName["host.time.down"]?.let {
-                        downTime = it.longSumData.points.first().value
-                    }
-                    metricsByName["guest.time.total"]?.let {
-                        guestTotalTime = it.longSumData.points.first().value
-                    }
-                    metricsByName["guest.time.error"]?.let {
-                        guestDownTime = it.longSumData.points.first().value
-                    }
+
+                    totalWork = metricsByName.getValue("cpu.work.total").doubleSumData.points.first().value.roundToLong()
+                    grantedWork = metricsByName.getValue("cpu.work.granted").doubleSumData.points.first().value.roundToLong()
+                    totalTime = metricsByName.getValue("host.time.total").longSumData.points.first().value
+                    downTime = metricsByName.getValue("host.time.down").longSumData.points.first().value
+                    guestTotalTime = metricsByName.getValue("guest.time.total").longSumData.points.first().value
+                    guestDownTime = metricsByName.getValue("guest.time.error").longSumData.points.first().value
+
                     return CompletableResultCode.ofSuccess()
                 }
 
@@ -290,8 +276,8 @@ internal class SimHostTest {
         reader.close()
 
         assertAll(
-            { assertEquals(2226039, requestedWork, "Total time does not match") },
-            { assertEquals(1086039, grantedWork, "Down time does not match") },
+            { assertEquals(2226040, totalWork, "Total time does not match") },
+            { assertEquals(1086040, grantedWork, "Down time does not match") },
             { assertEquals(1200001, totalTime, "Total time does not match") },
             { assertEquals(1200001, guestTotalTime, "Guest total time does not match") },
             { assertEquals(5000, downTime, "Down time does not match") },

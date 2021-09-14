@@ -46,12 +46,12 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
 
     override fun convert(builder: GenericRecordBuilder, data: ServerData) {
         builder["timestamp"] = data.timestamp
-        builder["server_id"] = data.server.uid.toString()
-        builder["state"] = data.server.state
+        builder["server_id"] = data.server
+        // builder["state"] = data.server.state
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
-        builder["num_vcpus"] = data.server.flavor.cpuCount
-        builder["mem_capacity"] = data.server.flavor.memorySize
+        // builder["num_vcpus"] = data.server.flavor.cpuCount
+        // builder["mem_capacity"] = data.server.flavor.memorySize
     }
 
     override fun toString(): String = "server-writer"

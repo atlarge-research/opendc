@@ -26,6 +26,7 @@ import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceState
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
+import java.time.Duration
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -36,7 +37,7 @@ import kotlin.coroutines.CoroutineContext
 public class FunctionTerminationPolicyFixed(
     context: CoroutineContext,
     clock: Clock,
-    public val timeout: Long
+    public val timeout: Duration
 ) : FunctionTerminationPolicy {
     /**
      * The [TimerScheduler] used to schedule the function terminations.
@@ -60,6 +61,6 @@ public class FunctionTerminationPolicyFixed(
      * Schedule termination for the specified [instance].
      */
     private fun schedule(instance: FunctionInstance) {
-        scheduler.startSingleTimer(instance, delay = timeout) { instance.close() }
+        scheduler.startSingleTimer(instance, delay = timeout.toMillis()) { instance.close() }
     }
 }

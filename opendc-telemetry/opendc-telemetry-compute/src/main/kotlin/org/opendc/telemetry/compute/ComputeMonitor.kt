@@ -22,10 +22,6 @@
 
 package org.opendc.telemetry.compute
 
-import org.opendc.compute.api.Server
-import org.opendc.compute.api.ServerState
-import org.opendc.compute.service.driver.Host
-import org.opendc.compute.service.driver.HostState
 import org.opendc.telemetry.compute.table.HostData
 import org.opendc.telemetry.compute.table.ServerData
 import org.opendc.telemetry.compute.table.ServiceData
@@ -34,16 +30,6 @@ import org.opendc.telemetry.compute.table.ServiceData
  * A monitor that tracks the metrics and events of the OpenDC Compute service.
  */
 public interface ComputeMonitor {
-    /**
-     * This method is invoked when the state of a [Server] changes.
-     */
-    public fun onStateChange(timestamp: Long, server: Server, newState: ServerState) {}
-
-    /**
-     * This method is invoked when the state of a [Host] changes.
-     */
-    public fun onStateChange(time: Long, host: Host, newState: HostState) {}
-
     /**
      * Record the specified [data].
      */

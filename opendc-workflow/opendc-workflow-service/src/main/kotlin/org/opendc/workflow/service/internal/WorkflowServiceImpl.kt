@@ -23,6 +23,7 @@
 package org.opendc.workflow.service.internal
 
 import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.map
 import mu.KotlinLogging
@@ -48,7 +49,7 @@ import kotlin.coroutines.resume
 public class WorkflowServiceImpl(
     context: CoroutineContext,
     internal val clock: Clock,
-    private val meter: Meter,
+    meterProvider: MeterProvider,
     private val computeClient: ComputeClient,
     mode: WorkflowSchedulerMode,
     jobAdmissionPolicy: JobAdmissionPolicy,
@@ -65,6 +66,11 @@ public class WorkflowServiceImpl(
      * The logger instance to use.
      */
     private val logger = KotlinLogging.logger {}
+
+    /**
+     * The [Meter] to collect metrics of this service.
+     */
+    private val meter = meterProvider.get("org.opendc.workflow.service")
 
     /**
      * The incoming jobs ready to be processed by the scheduler.

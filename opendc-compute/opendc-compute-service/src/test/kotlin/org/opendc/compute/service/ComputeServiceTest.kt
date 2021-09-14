@@ -61,8 +61,7 @@ internal class ComputeServiceTest {
             filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
             weighers = listOf(RamWeigher())
         )
-        val meter = MeterProvider.noop().get("opendc-compute")
-        service = ComputeService(scope.coroutineContext, clock, meter, computeScheduler)
+        service = ComputeService(scope.coroutineContext, clock, MeterProvider.noop(), computeScheduler)
     }
 
     @Test

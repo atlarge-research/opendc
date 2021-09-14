@@ -24,51 +24,7 @@ package org.opendc.telemetry.compute
 
 import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricProducer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.driver.Host
-import org.opendc.compute.service.driver.HostListener
-import org.opendc.compute.service.driver.HostState
 import org.opendc.telemetry.compute.table.ServiceData
-import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
-import java.time.Clock
-import java.time.Duration
-
-/**
- * Attach the specified monitor to the OpenDC Compute service.
- */
-public suspend fun withMonitor(
-    scheduler: ComputeService,
-    clock: Clock,
-    metricProducer: MetricProducer,
-    monitor: ComputeMonitor,
-    exportInterval: Duration = Duration.ofMinutes(5), /* Every 5 min (which is the granularity of the workload trace) */
-    block: suspend CoroutineScope.() -> Unit
-): Unit = coroutineScope {
-    // Monitor host events
-    for (host in scheduler.hosts) {
-        monitor.onStateChange(clock.millis(), host, HostState.UP)
-        host.addListener(object : HostListener {
-            override fun onStateChanged(host: Host, newState: HostState) {
-                monitor.onStateChange(clock.millis(), host, newState)
-            }
-        })
-    }
-
-    val reader = CoroutineMetricReader(
-        this,
-        listOf(metricProducer),
-        ComputeMetricExporter(clock, scheduler.hosts.associateBy { it.uid.toString() }, monitor),
-        exportInterval
-    )
-
-    try {
-        block(this)
-    } finally {
-        reader.close()
-    }
-}
 
 /**
  * Collect the metrics of the compute service.

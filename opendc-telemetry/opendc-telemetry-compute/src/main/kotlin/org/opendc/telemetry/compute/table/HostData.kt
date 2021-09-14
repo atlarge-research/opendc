@@ -22,14 +22,12 @@
 
 package org.opendc.telemetry.compute.table
 
-import org.opendc.compute.service.driver.Host
-
 /**
  * A trace entry for a particular host.
  */
 public data class HostData(
     public val timestamp: Long,
-    public val host: Host,
+    public val host: HostInfo,
     public val totalWork: Double,
     public val grantedWork: Double,
     public val overcommittedWork: Double,

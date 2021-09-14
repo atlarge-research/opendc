@@ -22,14 +22,13 @@
 
 package org.opendc.telemetry.compute.table
 
-import org.opendc.compute.api.Server
-
 /**
  * A trace entry for a particular server.
  */
 public data class ServerData(
     public val timestamp: Long,
-    public val server: Server,
+    public val server: ServerInfo,
+    public val host: HostInfo?,
     public val uptime: Long,
     public val downtime: Long,
 )

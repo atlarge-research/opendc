@@ -22,9 +22,8 @@
 
 package org.opendc.compute.service.internal
 
-import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.compute.api.*
@@ -35,6 +34,7 @@ import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.utils.TimerScheduler
 import java.time.Clock
+import java.time.Duration
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
@@ -42,15 +42,18 @@ import kotlin.math.max
 /**
  * Internal implementation of the OpenDC Compute service.
  *
- * @param context The [CoroutineContext] to use.
- * @param clock The clock instance to keep track of time.
+ * @param context The [CoroutineContext] to use in the service.
+ * @param clock The clock instance to use.
+ * @param meterProvider The [MeterProvider] for creating a [Meter] for the service.
+ * @param scheduler The scheduler implementation to use.
+ * @param schedulingQuantum The interval between scheduling cycles.
  */
 internal class ComputeServiceImpl(
     private val context: CoroutineContext,
     private val clock: Clock,
-    private val meter: Meter,
+    meterProvider: MeterProvider,
     private val scheduler: ComputeScheduler,
-    private val schedulingQuantum: Long
+    private val schedulingQuantum: Duration
 ) : ComputeService, HostListener {
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
@@ -61,6 +64,11 @@ internal class ComputeServiceImpl(
      * The logger instance of this server.
      */
     private val logger = KotlinLogging.logger {}
+
+    /**
+     * The [Meter] to track metrics of the [ComputeService].
+     */
+    private val meter = meterProvider.get("org.opendc.compute.service")
 
     /**
      * The [Random] instance used to generate unique identifiers for the objects.
@@ -365,10 +373,12 @@ internal class ComputeServiceImpl(
             return
         }
 
+        val quantum = schedulingQuantum.toMillis()
+
         // We assume that the provisioner runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
         // This is important because the slices of the VMs need to be aligned.
         // We calculate here the delay until the next scheduling slot.
-        val delay = schedulingQuantum - (clock.millis() % schedulingQuantum)
+        val delay = quantum - (clock.millis() % quantum)
 
         timerScheduler.startSingleTimer(Unit, delay) {
             doSchedule()
@@ -414,7 +424,7 @@ internal class ComputeServiceImpl(
             // Remove request from queue
             queue.poll()
             _waitingServers.add(-1)
-            _schedulerDuration.record(now - request.submitTime, Attributes.of(ResourceAttributes.HOST_ID, server.uid.toString()))
+            _schedulerDuration.record(now - request.submitTime, server.attributes)
 
             logger.info { "Assigned server $server to host $host." }
 

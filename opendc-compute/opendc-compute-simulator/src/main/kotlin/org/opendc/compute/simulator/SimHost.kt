@@ -25,6 +25,7 @@ package org.opendc.compute.simulator
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import kotlinx.coroutines.*
 import mu.KotlinLogging
@@ -59,7 +60,7 @@ public class SimHost(
     override val meta: Map<String, Any>,
     context: CoroutineContext,
     interpreter: SimResourceInterpreter,
-    private val meter: Meter,
+    meterProvider: MeterProvider,
     hypervisor: SimHypervisorProvider,
     scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
     powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
@@ -80,6 +81,11 @@ public class SimHost(
      * The logger instance of this server.
      */
     private val logger = KotlinLogging.logger {}
+
+    /**
+     * The [Meter] to track metrics of the simulated host.
+     */
+    private val meter = meterProvider.get("org.opendc.compute.simulator")
 
     /**
      * The event listeners registered with this host.
@@ -142,10 +148,9 @@ public class SimHost(
      * The total number of guests.
      */
     private val _guests = meter.upDownCounterBuilder("guests.total")
-        .setDescription("Number of guests")
+        .setDescription("Total number of guests")
         .setUnit("1")
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The number of active guests on the host.
@@ -154,7 +159,6 @@ public class SimHost(
         .setDescription("Number of active guests")
         .setUnit("1")
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The CPU demand of the host.
@@ -163,7 +167,6 @@ public class SimHost(
         .setDescription("The amount of CPU resources the guests would use if there were no CPU contention or CPU limits")
         .setUnit("MHz")
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The CPU usage of the host.
@@ -172,7 +175,6 @@ public class SimHost(
         .setDescription("The amount of CPU resources used by the host")
         .setUnit("MHz")
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The power usage of the host.
@@ -181,7 +183,6 @@ public class SimHost(
         .setDescription("The amount of power used by the CPU")
         .setUnit("W")
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The total amount of work supplied to the CPU.
@@ -191,7 +192,6 @@ public class SimHost(
         .setUnit("1")
         .ofDoubles()
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The work performed by the CPU.
@@ -201,7 +201,6 @@ public class SimHost(
         .setUnit("1")
         .ofDoubles()
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The amount not performed by the CPU due to overcommitment.
@@ -211,7 +210,6 @@ public class SimHost(
         .setUnit("1")
         .ofDoubles()
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The amount of work not performed by the CPU due to interference.
@@ -221,7 +219,6 @@ public class SimHost(
         .setUnit("1")
         .ofDoubles()
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The amount of time in the system.
@@ -230,7 +227,6 @@ public class SimHost(
         .setDescription("The amount of time in the system")
         .setUnit("ms")
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The uptime of the host.
@@ -239,7 +235,6 @@ public class SimHost(
         .setDescription("The uptime of the host")
         .setUnit("ms")
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     /**
      * The downtime of the host.
@@ -248,7 +243,6 @@ public class SimHost(
         .setDescription("The downtime of the host")
         .setUnit("ms")
         .build()
-        .bind(Attributes.of(ResourceAttributes.HOST_ID, uid.toString()))
 
     init {
         // Launch hypervisor onto machine
@@ -391,13 +385,28 @@ public class SimHost(
         var state: ServerState = ServerState.TERMINATED
 
         /**
+         * The attributes of the guest.
+         */
+        val attributes: Attributes = Attributes.builder()
+            .put(ResourceAttributes.HOST_NAME, server.name)
+            .put(ResourceAttributes.HOST_ID, server.uid.toString())
+            .put(ResourceAttributes.HOST_TYPE, server.flavor.name)
+            .put(AttributeKey.longKey("host.num_cpus"), server.flavor.cpuCount.toLong())
+            .put(AttributeKey.longKey("host.mem_capacity"), server.flavor.memorySize)
+            .put(AttributeKey.stringArrayKey("host.labels"), server.labels.map { (k, v) -> "$k:$v" })
+            .put(ResourceAttributes.HOST_ARCH, ResourceAttributes.HostArchValues.AMD64)
+            .put(ResourceAttributes.HOST_IMAGE_NAME, server.image.name)
+            .put(ResourceAttributes.HOST_IMAGE_ID, server.image.uid.toString())
+            .build()
+
+        /**
          * The amount of time in the system.
          */
         private val _totalTime = meter.counterBuilder("guest.time.total")
             .setDescription("The amount of time in the system")
             .setUnit("ms")
             .build()
-            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
+            .bind(attributes)
 
         /**
          * The uptime of the guest.
@@ -406,7 +415,7 @@ public class SimHost(
             .setDescription("The uptime of the guest")
             .setUnit("ms")
             .build()
-            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
+            .bind(attributes)
 
         /**
          * The time the guest is in an error state.
@@ -415,7 +424,7 @@ public class SimHost(
             .setDescription("The time the guest is in an error state")
             .setUnit("ms")
             .build()
-            .bind(Attributes.of(AttributeKey.stringKey("server.id"), server.uid.toString()))
+            .bind(attributes)
 
         suspend fun start() {
             when (state) {

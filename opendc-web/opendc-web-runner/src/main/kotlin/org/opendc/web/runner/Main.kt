@@ -28,10 +28,8 @@ import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.long
 import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
 import mu.KotlinLogging
-import org.opendc.compute.simulator.SimHost
 import org.opendc.experiments.capelin.*
 import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.env.MachineDef
@@ -39,6 +37,8 @@ import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.trace.RawParquetTraceReader
+import org.opendc.experiments.capelin.util.ComputeServiceSimulator
+import org.opendc.experiments.capelin.util.createComputeScheduler
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -46,8 +46,9 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.collectServiceMetrics
-import org.opendc.telemetry.compute.withMonitor
+import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.web.client.ApiClient
 import org.opendc.web.client.AuthConfiguration
@@ -55,9 +56,8 @@ import org.opendc.web.client.model.Scenario
 import org.opendc.web.client.model.Topology
 import java.io.File
 import java.net.URI
+import java.time.Duration
 import java.util.*
-import kotlin.random.Random
-import kotlin.random.asJavaRandom
 import org.opendc.web.client.model.Portfolio as ClientPortfolio
 
 private val logger = KotlinLogging.logger {}
@@ -158,7 +158,7 @@ class RunnerCli : CliktCommand(name = "runner") {
         val results = (0 until targets.repeatsPerScenario).map { repeat ->
             logger.info { "Starting repeat $repeat" }
             withTimeout(runTimeout * 1000) {
-                val interferenceModel = interferenceGroups?.let { VmInterferenceModel(it, Random(repeat.toLong()).asJavaRandom()) }
+                val interferenceModel = interferenceGroups?.let { VmInterferenceModel(it, Random(repeat.toLong())) }
                 runRepeat(scenario, repeat, environment, traceReader, interferenceModel)
             }
         }
@@ -182,63 +182,55 @@ class RunnerCli : CliktCommand(name = "runner") {
 
         try {
             runBlockingSimulation {
-                val seed = repeat
                 val workloadName = scenario.trace.traceId
                 val workloadFraction = scenario.trace.loadSamplingFraction
 
-                val seeder = Random(seed)
+                val seeder = Random(repeat.toLong())
 
                 val meterProvider: MeterProvider = SdkMeterProvider
                     .builder()
                     .setClock(clock.toOtelClock())
                     .build()
-                val metricProducer = meterProvider as MetricProducer
 
                 val operational = scenario.operationalPhenomena
-                val allocationPolicy = createComputeScheduler(operational.schedulerName, seeder)
+                val computeScheduler = createComputeScheduler(operational.schedulerName, seeder)
 
                 val trace = ParquetTraceReader(
                     listOf(traceReader),
                     Workload(workloadName, workloadFraction),
-                    seed
+                    repeat
                 )
-                val failureFrequency = if (operational.failuresEnabled) 24.0 * 7 else 0.0
-
-                withComputeService(clock, meterProvider, environment, allocationPolicy, interferenceModel) { scheduler ->
-                    val faultInjector = if (failureFrequency > 0) {
-                        logger.debug { "ENABLING failures" }
-                        createFaultInjector(
-                            coroutineContext,
-                            clock,
-                            scheduler.hosts.map { it as SimHost }.toSet(),
-                            seeder.nextInt(),
-                            failureFrequency,
-                        )
-                    } else {
+                val failureModel =
+                    if (operational.failuresEnabled)
+                        grid5000(Duration.ofDays(7), repeat)
+                    else
                         null
-                    }
 
-                    withMonitor(scheduler, clock, meterProvider as MetricProducer, monitor) {
-                        faultInjector?.start()
+                val simulator = ComputeServiceSimulator(
+                    coroutineContext,
+                    clock,
+                    computeScheduler,
+                    environment.read(),
+                    failureModel,
+                    interferenceModel.takeIf { operational.performanceInterferenceEnabled }
+                )
 
-                        processTrace(
-                            clock,
-                            trace,
-                            scheduler,
-                            monitor
-                        )
+                val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
 
-                        faultInjector?.close()
-                    }
+                try {
+                    simulator.run(trace)
+                } finally {
+                    simulator.close()
+                    metricReader.close()
                 }
 
-                val monitorResults = collectServiceMetrics(clock.millis(), metricProducer)
+                val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
                 logger.debug {
                     "Finish " +
-                        "SUBMIT=${monitorResults.instanceCount} " +
-                        "FAIL=${monitorResults.failedInstanceCount} " +
-                        "QUEUE=${monitorResults.queuedInstanceCount} " +
-                        "RUNNING=${monitorResults.runningInstanceCount}"
+                        "SUBMIT=${serviceMetrics.instanceCount} " +
+                        "FAIL=${serviceMetrics.failedInstanceCount} " +
+                        "QUEUE=${serviceMetrics.queuedInstanceCount} " +
+                        "RUNNING=${serviceMetrics.runningInstanceCount}"
                 }
             }
         } catch (cause: Throwable) {

@@ -20,23 +20,9 @@
  * SOFTWARE.
  */
 
-description = "FaaS service for OpenDC"
+package org.opendc.telemetry.compute.table
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
-
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcFaas.opendcFaasApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
-    implementation(libs.opentelemetry.semconv)
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.log4j.slf4j)
-}
+/**
+ * Information about a host exposed to the telemetry service.
+ */
+public data class HostInfo(val id: String, val name: String, val arch: String, val cpuCount: Int, val memCapacity: Long)

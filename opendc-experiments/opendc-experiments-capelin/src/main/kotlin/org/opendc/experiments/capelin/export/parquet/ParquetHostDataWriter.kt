@@ -28,7 +28,6 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
-import org.opendc.compute.service.driver.HostState
 import org.opendc.telemetry.compute.table.HostData
 import java.io.File
 
@@ -46,8 +45,8 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
 
     override fun convert(builder: GenericRecordBuilder, data: HostData) {
         builder["timestamp"] = data.timestamp
-        builder["host_id"] = data.host.name
-        builder["powered_on"] = data.host.state == HostState.UP
+        builder["host_id"] = data.host.id
+        builder["powered_on"] = true
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
         builder["total_work"] = data.totalWork
@@ -58,7 +57,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
         builder["cpu_demand"] = data.cpuDemand
         builder["power_draw"] = data.powerDraw
         builder["num_instances"] = data.instanceCount
-        builder["num_cpus"] = data.host.model.cpuCount
+        builder["num_cpus"] = data.host.cpuCount
     }
 
     override fun toString(): String = "host-writer"
