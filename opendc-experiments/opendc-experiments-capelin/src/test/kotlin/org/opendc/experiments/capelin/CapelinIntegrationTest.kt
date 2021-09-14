@@ -104,19 +104,20 @@ class CapelinIntegrationTest {
 
         val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
         println(
-            "Finish " +
-                "SUBMIT=${serviceMetrics.instanceCount} " +
-                "FAIL=${serviceMetrics.failedInstanceCount} " +
-                "QUEUE=${serviceMetrics.queuedInstanceCount} " +
-                "RUNNING=${serviceMetrics.runningInstanceCount}"
+            "Scheduler " +
+                "Success=${serviceMetrics.attemptsSuccess} " +
+                "Failure=${serviceMetrics.attemptsFailure} " +
+                "Error=${serviceMetrics.attemptsError} " +
+                "Pending=${serviceMetrics.serversPending} " +
+                "Active=${serviceMetrics.serversActive}"
         )
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(50, serviceMetrics.instanceCount, "The trace contains 50 VMs") },
-            { assertEquals(0, serviceMetrics.runningInstanceCount, "All VMs should finish after a run") },
-            { assertEquals(0, serviceMetrics.failedInstanceCount, "No VM should not be unscheduled") },
-            { assertEquals(0, serviceMetrics.queuedInstanceCount, "No VM should not be in the queue") },
+            { assertEquals(50, serviceMetrics.attemptsSuccess, "The scheduler should schedule 50 VMs") },
+            { assertEquals(0, serviceMetrics.serversActive, "All VMs should finish after a run") },
+            { assertEquals(0, serviceMetrics.attemptsFailure, "No VM should be unscheduled") },
+            { assertEquals(0, serviceMetrics.serversPending, "No VM should not be in the queue") },
             { assertEquals(220346412191, monitor.totalWork) { "Incorrect requested burst" } },
             { assertEquals(206667852689, monitor.totalGrantedWork) { "Incorrect granted burst" } },
             { assertEquals(1151612221, monitor.totalOvercommittedWork) { "Incorrect overcommitted burst" } },
@@ -152,11 +153,12 @@ class CapelinIntegrationTest {
 
         val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
         println(
-            "Finish " +
-                "SUBMIT=${serviceMetrics.instanceCount} " +
-                "FAIL=${serviceMetrics.failedInstanceCount} " +
-                "QUEUE=${serviceMetrics.queuedInstanceCount} " +
-                "RUNNING=${serviceMetrics.runningInstanceCount}"
+            "Scheduler " +
+                "Success=${serviceMetrics.attemptsSuccess} " +
+                "Failure=${serviceMetrics.attemptsFailure} " +
+                "Error=${serviceMetrics.attemptsError} " +
+                "Pending=${serviceMetrics.serversPending} " +
+                "Active=${serviceMetrics.serversActive}"
         )
 
         // Note that these values have been verified beforehand
@@ -202,11 +204,12 @@ class CapelinIntegrationTest {
 
         val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
         println(
-            "Finish " +
-                "SUBMIT=${serviceMetrics.instanceCount} " +
-                "FAIL=${serviceMetrics.failedInstanceCount} " +
-                "QUEUE=${serviceMetrics.queuedInstanceCount} " +
-                "RUNNING=${serviceMetrics.runningInstanceCount}"
+            "Scheduler " +
+                "Success=${serviceMetrics.attemptsSuccess} " +
+                "Failure=${serviceMetrics.attemptsFailure} " +
+                "Error=${serviceMetrics.attemptsError} " +
+                "Pending=${serviceMetrics.serversPending} " +
+                "Active=${serviceMetrics.serversActive}"
         )
 
         // Note that these values have been verified beforehand
@@ -246,11 +249,12 @@ class CapelinIntegrationTest {
 
         val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
         println(
-            "Finish " +
-                "SUBMIT=${serviceMetrics.instanceCount} " +
-                "FAIL=${serviceMetrics.failedInstanceCount} " +
-                "QUEUE=${serviceMetrics.queuedInstanceCount} " +
-                "RUNNING=${serviceMetrics.runningInstanceCount}"
+            "Scheduler " +
+                "Success=${serviceMetrics.attemptsSuccess} " +
+                "Failure=${serviceMetrics.attemptsFailure} " +
+                "Error=${serviceMetrics.attemptsError} " +
+                "Pending=${serviceMetrics.serversPending} " +
+                "Active=${serviceMetrics.serversActive}"
         )
 
         // Note that these values have been verified beforehand

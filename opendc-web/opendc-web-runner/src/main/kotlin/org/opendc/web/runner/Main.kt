@@ -226,11 +226,12 @@ class RunnerCli : CliktCommand(name = "runner") {
 
                 val serviceMetrics = collectServiceMetrics(clock.millis(), simulator.producers[0])
                 logger.debug {
-                    "Finish " +
-                        "SUBMIT=${serviceMetrics.instanceCount} " +
-                        "FAIL=${serviceMetrics.failedInstanceCount} " +
-                        "QUEUE=${serviceMetrics.queuedInstanceCount} " +
-                        "RUNNING=${serviceMetrics.runningInstanceCount}"
+                    "Scheduler " +
+                        "Success=${serviceMetrics.attemptsSuccess} " +
+                        "Failure=${serviceMetrics.attemptsFailure} " +
+                        "Error=${serviceMetrics.attemptsError} " +
+                        "Pending=${serviceMetrics.serversPending} " +
+                        "Active=${serviceMetrics.serversActive}"
                 }
             }
         } catch (cause: Throwable) {

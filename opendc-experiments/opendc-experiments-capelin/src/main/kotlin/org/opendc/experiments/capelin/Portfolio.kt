@@ -153,11 +153,12 @@ abstract class Portfolio(name: String) : Experiment(name) {
 
         val monitorResults = collectServiceMetrics(clock.millis(), simulator.producers[0])
         logger.debug {
-            "Finish " +
-                "SUBMIT=${monitorResults.instanceCount} " +
-                "FAIL=${monitorResults.failedInstanceCount} " +
-                "QUEUE=${monitorResults.queuedInstanceCount} " +
-                "RUNNING=${monitorResults.activeHostCount}"
+            "Scheduler " +
+                "Success=${monitorResults.attemptsSuccess} " +
+                "Failure=${monitorResults.attemptsFailure} " +
+                "Error=${monitorResults.attemptsError} " +
+                "Pending=${monitorResults.serversPending} " +
+                "Active=${monitorResults.serversActive}"
         }
     }
 }

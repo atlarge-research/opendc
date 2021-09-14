@@ -27,11 +27,11 @@ package org.opendc.telemetry.compute.table
  */
 public data class ServiceData(
     public val timestamp: Long,
-    public val hostCount: Int,
-    public val activeHostCount: Int,
-    public val instanceCount: Int,
-    public val runningInstanceCount: Int,
-    public val finishedInstanceCount: Int,
-    public val queuedInstanceCount: Int,
-    public val failedInstanceCount: Int
+    public val hostsUp: Int,
+    public val hostsDown: Int,
+    public val serversPending: Int,
+    public val serversActive: Int,
+    public val attemptsSuccess: Int,
+    public val attemptsFailure: Int,
+    public val attemptsError: Int
 )

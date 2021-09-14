@@ -36,13 +36,13 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
 
     override fun convert(builder: GenericRecordBuilder, data: ServiceData) {
         builder["timestamp"] = data.timestamp
-        builder["host_total_count"] = data.hostCount
-        builder["host_available_count"] = data.activeHostCount
-        builder["instance_total_count"] = data.instanceCount
-        builder["instance_active_count"] = data.runningInstanceCount
-        builder["instance_inactive_count"] = data.finishedInstanceCount
-        builder["instance_waiting_count"] = data.queuedInstanceCount
-        builder["instance_failed_count"] = data.failedInstanceCount
+        builder["hosts_up"] = data.hostsUp
+        builder["hosts_down"] = data.hostsDown
+        builder["servers_pending"] = data.serversPending
+        builder["servers_active"] = data.serversActive
+        builder["attempts_success"] = data.attemptsSuccess
+        builder["attempts_failure"] = data.attemptsFailure
+        builder["attempts_error"] = data.attemptsError
     }
 
     override fun toString(): String = "service-writer"
@@ -53,13 +53,13 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
             .namespace("org.opendc.telemetry.compute")
             .fields()
             .requiredLong("timestamp")
-            .requiredInt("host_total_count")
-            .requiredInt("host_available_count")
-            .requiredInt("instance_total_count")
-            .requiredInt("instance_active_count")
-            .requiredInt("instance_inactive_count")
-            .requiredInt("instance_waiting_count")
-            .requiredInt("instance_failed_count")
+            .requiredInt("hosts_up")
+            .requiredInt("hosts_down")
+            .requiredInt("servers_pending")
+            .requiredInt("servers_active")
+            .requiredInt("attempts_success")
+            .requiredInt("attempts_failure")
+            .requiredInt("attempts_error")
             .endRecord()
     }
 }

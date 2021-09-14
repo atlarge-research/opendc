@@ -22,6 +22,7 @@
 
 package org.opendc.telemetry.compute
 
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import org.opendc.telemetry.compute.table.ServiceData
@@ -37,32 +38,48 @@ public fun collectServiceMetrics(timestamp: Long, metricProducer: MetricProducer
  * Extract a [ServiceData] object from the specified list of metric data.
  */
 public fun extractServiceMetrics(timestamp: Long, metrics: Collection<MetricData>): ServiceData {
-    var submittedVms = 0
-    var queuedVms = 0
-    var unscheduledVms = 0
-    var runningVms = 0
-    var finishedVms = 0
-    var hosts = 0
-    var availableHosts = 0
+    val resultKey = AttributeKey.stringKey("result")
+    val stateKey = AttributeKey.stringKey("state")
+
+    var hostsUp = 0
+    var hostsDown = 0
+
+    var serversPending = 0
+    var serversActive = 0
+
+    var attemptsSuccess = 0
+    var attemptsFailure = 0
+    var attemptsError = 0
 
     for (metric in metrics) {
-        val points = metric.longSumData.points
-
-        if (points.isEmpty()) {
-            continue
-        }
-
-        val value = points.first().value.toInt()
         when (metric.name) {
-            "servers.submitted" -> submittedVms = value
-            "servers.waiting" -> queuedVms = value
-            "servers.unscheduled" -> unscheduledVms = value
-            "servers.active" -> runningVms = value
-            "servers.finished" -> finishedVms = value
-            "hosts.total" -> hosts = value
-            "hosts.available" -> availableHosts = value
+            "scheduler.hosts" -> {
+                for (point in metric.longSumData.points) {
+                    when (point.attributes[stateKey]) {
+                        "up" -> hostsUp = point.value.toInt()
+                        "down" -> hostsDown = point.value.toInt()
+                    }
+                }
+            }
+            "scheduler.servers" -> {
+                for (point in metric.longSumData.points) {
+                    when (point.attributes[stateKey]) {
+                        "pending" -> serversPending = point.value.toInt()
+                        "active" -> serversActive = point.value.toInt()
+                    }
+                }
+            }
+            "scheduler.attempts" -> {
+                for (point in metric.longSumData.points) {
+                    when (point.attributes[resultKey]) {
+                        "success" -> attemptsSuccess = point.value.toInt()
+                        "failure" -> attemptsFailure = point.value.toInt()
+                        "error" -> attemptsError = point.value.toInt()
+                    }
+                }
+            }
         }
     }
 
-    return ServiceData(timestamp, hosts, availableHosts, submittedVms, runningVms, finishedVms, queuedVms, unscheduledVms)
+    return ServiceData(timestamp, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
 }

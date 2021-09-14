@@ -81,11 +81,11 @@ class WebComputeMonitor : ComputeMonitor {
 
     override fun record(data: ServiceData) {
         serviceMetrics = AggregateServiceMetrics(
-            max(data.instanceCount, serviceMetrics.vmTotalCount),
-            max(data.queuedInstanceCount, serviceMetrics.vmWaitingCount),
-            max(data.runningInstanceCount, serviceMetrics.vmActiveCount),
-            max(data.finishedInstanceCount, serviceMetrics.vmInactiveCount),
-            max(data.failedInstanceCount, serviceMetrics.vmFailedCount),
+            max(data.attemptsSuccess, serviceMetrics.vmTotalCount),
+            max(data.serversPending, serviceMetrics.vmWaitingCount),
+            max(data.serversActive, serviceMetrics.vmActiveCount),
+            max(0, serviceMetrics.vmInactiveCount),
+            max(data.attemptsFailure, serviceMetrics.vmFailedCount),
         )
     }
 
