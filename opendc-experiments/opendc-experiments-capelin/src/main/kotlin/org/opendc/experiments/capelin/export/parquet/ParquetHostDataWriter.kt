@@ -47,8 +47,6 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
         builder["timestamp"] = data.timestamp.toEpochMilli()
 
         builder["host_id"] = data.host.id
-        builder["num_cpus"] = data.host.cpuCount
-        builder["mem_capacity"] = data.host.memCapacity
 
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
@@ -57,11 +55,14 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             builder["boot_time"] = bootTime.toEpochMilli()
         }
 
+        builder["cpu_count"] = data.host.cpuCount
         builder["cpu_limit"] = data.cpuLimit
         builder["cpu_time_active"] = data.cpuActiveTime
         builder["cpu_time_idle"] = data.cpuIdleTime
         builder["cpu_time_steal"] = data.cpuStealTime
         builder["cpu_time_lost"] = data.cpuLostTime
+
+        builder["mem_limit"] = data.host.memCapacity
 
         builder["power_total"] = data.powerTotal
 
@@ -78,18 +79,18 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             .record("host")
             .namespace("org.opendc.telemetry.compute")
             .fields()
-            .requiredLong("timestamp")
-            .requiredString("host_id")
-            .requiredInt("num_cpus")
-            .requiredLong("mem_capacity")
+            .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
+            .name("host_id").type(UUID_SCHEMA).noDefault()
             .requiredLong("uptime")
             .requiredLong("downtime")
-            .optionalLong("boot_time")
+            .name("boot_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
+            .requiredInt("cpu_count")
             .requiredDouble("cpu_limit")
             .requiredLong("cpu_time_active")
             .requiredLong("cpu_time_idle")
             .requiredLong("cpu_time_steal")
             .requiredLong("cpu_time_lost")
+            .requiredLong("mem_limit")
             .requiredDouble("power_total")
             .requiredInt("guests_terminated")
             .requiredInt("guests_running")

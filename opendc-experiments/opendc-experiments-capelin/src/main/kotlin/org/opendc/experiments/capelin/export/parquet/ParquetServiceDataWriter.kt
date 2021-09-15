@@ -52,7 +52,7 @@ public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
             .record("service")
             .namespace("org.opendc.telemetry.compute")
             .fields()
-            .requiredLong("timestamp")
+            .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
             .requiredInt("hosts_up")
             .requiredInt("hosts_down")
             .requiredInt("servers_pending")

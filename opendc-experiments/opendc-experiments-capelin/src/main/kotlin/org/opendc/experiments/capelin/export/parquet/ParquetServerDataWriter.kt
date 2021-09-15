@@ -30,6 +30,7 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.telemetry.compute.table.ServerData
 import java.io.File
+import java.util.*
 
 /**
  * A Parquet event writer for [ServerData]s.
@@ -49,8 +50,6 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
 
         builder["server_id"] = data.server.id
         builder["host_id"] = data.host?.id
-        builder["num_vcpus"] = data.server.cpuCount
-        builder["mem_capacity"] = data.server.memCapacity
 
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
@@ -60,11 +59,14 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
         }
         builder["scheduling_latency"] = data.schedulingLatency
 
+        builder["cpu_count"] = data.server.cpuCount
         builder["cpu_limit"] = data.cpuLimit
         builder["cpu_time_active"] = data.cpuActiveTime
         builder["cpu_time_idle"] = data.cpuIdleTime
         builder["cpu_time_steal"] = data.cpuStealTime
         builder["cpu_time_lost"] = data.cpuLostTime
+
+        builder["mem_limit"] = data.server.memCapacity
     }
 
     override fun toString(): String = "server-writer"
@@ -74,20 +76,20 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             .record("server")
             .namespace("org.opendc.telemetry.compute")
             .fields()
-            .requiredLong("timestamp")
-            .requiredString("server_id")
-            .optionalString("host_id")
-            .requiredInt("num_vcpus")
-            .requiredLong("mem_capacity")
+            .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
+            .name("server_id").type(UUID_SCHEMA).noDefault()
+            .name("host_id").type(UUID_SCHEMA.optional()).noDefault()
             .requiredLong("uptime")
             .requiredLong("downtime")
-            .optionalLong("boot_time")
+            .name("boot_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
             .requiredLong("scheduling_latency")
+            .requiredInt("cpu_count")
             .requiredDouble("cpu_limit")
             .requiredLong("cpu_time_active")
             .requiredLong("cpu_time_idle")
             .requiredLong("cpu_time_steal")
             .requiredLong("cpu_time_lost")
+            .requiredLong("mem_limit")
             .endRecord()
     }
 }
