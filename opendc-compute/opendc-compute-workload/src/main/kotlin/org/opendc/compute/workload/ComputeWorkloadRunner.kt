@@ -33,12 +33,9 @@ import kotlinx.coroutines.yield
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.workload.env.MachineDef
+import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.compute.workload.trace.TraceReader
-import org.opendc.simulator.compute.kernel.SimFairShareHypervisorProvider
-import org.opendc.simulator.compute.kernel.SimHypervisorProvider
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
-import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.SimResourceInterpreter
@@ -50,15 +47,19 @@ import kotlin.math.max
 
 /**
  * Helper class to simulated VM-based workloads in OpenDC.
+ *
+ * @param context [CoroutineContext] to run the simulation in.
+ * @param clock [Clock] instance tracking simulation time.
+ * @param scheduler [ComputeScheduler] implementation to use for the service.
+ * @param failureModel A failure model to use for injecting failures.
+ * @param interferenceModel The model to use for performance interference.
  */
 public class ComputeWorkloadRunner(
     private val context: CoroutineContext,
     private val clock: Clock,
     scheduler: ComputeScheduler,
-    machines: List<MachineDef>,
     private val failureModel: FailureModel? = null,
-    interferenceModel: VmInterferenceModel? = null,
-    hypervisorProvider: SimHypervisorProvider = SimFairShareHypervisorProvider()
+    private val interferenceModel: VmInterferenceModel? = null,
 ) : AutoCloseable {
     /**
      * The [ComputeService] that has been configured by the manager.
@@ -86,13 +87,6 @@ public class ComputeWorkloadRunner(
         val (service, serviceMeterProvider) = createService(scheduler)
         this._metricProducers.add(serviceMeterProvider)
         this.service = service
-
-        for (def in machines) {
-            val (host, hostMeterProvider) = createHost(def, hypervisorProvider, interferenceModel)
-            this._metricProducers.add(hostMeterProvider)
-            hosts.add(host)
-            this.service.addHost(host)
-        }
     }
 
     /**
@@ -156,6 +150,46 @@ public class ComputeWorkloadRunner(
         }
     }
 
+    /**
+     * Register a host for this simulation.
+     *
+     * @param spec The definition of the host.
+     * @return The [SimHost] that has been constructed by the runner.
+     */
+    public fun registerHost(spec: HostSpec): SimHost {
+        val resource = Resource.builder()
+            .put(HOST_ID, spec.uid.toString())
+            .put(HOST_NAME, spec.name)
+            .put(HOST_ARCH, ResourceAttributes.HostArchValues.AMD64)
+            .put(HOST_NCPUS, spec.model.cpus.size)
+            .put(HOST_MEM_CAPACITY, spec.model.memory.sumOf { it.size })
+            .build()
+
+        val meterProvider = SdkMeterProvider.builder()
+            .setClock(clock.toOtelClock())
+            .setResource(resource)
+            .build()
+        _metricProducers.add(meterProvider)
+
+        val host = SimHost(
+            spec.uid,
+            spec.name,
+            spec.model,
+            spec.meta,
+            context,
+            interpreter,
+            meterProvider,
+            spec.hypervisor,
+            powerDriver = spec.powerDriver,
+            interferenceDomain = interferenceModel?.newDomain(),
+        )
+
+        hosts.add(host)
+        service.addHost(host)
+
+        return host
+    }
+
     override fun close() {
         service.close()
 
@@ -181,42 +215,5 @@ public class ComputeWorkloadRunner(
 
         val service = ComputeService(context, clock, meterProvider, scheduler)
         return service to meterProvider
-    }
-
-    /**
-     * Construct a [SimHost] instance for the specified [MachineDef].
-     */
-    private fun createHost(
-        def: MachineDef,
-        hypervisorProvider: SimHypervisorProvider,
-        interferenceModel: VmInterferenceModel? = null
-    ): Pair<SimHost, SdkMeterProvider> {
-        val resource = Resource.builder()
-            .put(HOST_ID, def.uid.toString())
-            .put(HOST_NAME, def.name)
-            .put(HOST_ARCH, ResourceAttributes.HostArchValues.AMD64)
-            .put(HOST_NCPUS, def.model.cpus.size)
-            .put(HOST_MEM_CAPACITY, def.model.memory.sumOf { it.size })
-            .build()
-
-        val meterProvider = SdkMeterProvider.builder()
-            .setClock(clock.toOtelClock())
-            .setResource(resource)
-            .build()
-
-        val host = SimHost(
-            def.uid,
-            def.name,
-            def.model,
-            def.meta,
-            context,
-            interpreter,
-            meterProvider,
-            hypervisorProvider,
-            powerDriver = SimplePowerDriver(def.powerModel),
-            interferenceDomain = interferenceModel?.newDomain()
-        )
-
-        return host to meterProvider
     }
 }

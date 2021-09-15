@@ -20,17 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.env
+@file:JvmName("TopologyHelpers")
+package org.opendc.compute.workload.topology
 
-import org.opendc.compute.workload.env.MachineDef
-import java.io.Closeable
+import org.opendc.compute.workload.ComputeWorkloadRunner
 
 /**
- * An interface for reading descriptions of topology environments into memory.
+ * Apply the specified [topology] to the given [ComputeWorkloadRunner].
  */
-public interface EnvironmentReader : Closeable {
-    /**
-     * Read the environment into a list.
-     */
-    public fun read(): List<MachineDef>
+public fun ComputeWorkloadRunner.apply(topology: Topology) {
+    val hosts = topology.resolve()
+    for (spec in hosts) {
+        registerHost(spec)
+    }
 }

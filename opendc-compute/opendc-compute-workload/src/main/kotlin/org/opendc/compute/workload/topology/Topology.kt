@@ -20,19 +20,14 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.env
-
-import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.compute.power.PowerModel
-import java.util.*
+package org.opendc.compute.workload.topology
 
 /**
- * A definition of a machine in a cluster.
+ * Representation of the environment of the compute service, describing the physical details of every host.
  */
-public data class MachineDef(
-    val uid: UUID,
-    val name: String,
-    val meta: Map<String, Any>,
-    val model: MachineModel,
-    val powerModel: PowerModel
-)
+public interface Topology {
+    /**
+     * Resolve the [Topology] into a list of [HostSpec]s.
+     */
+    public fun resolve(): List<HostSpec>
+}

@@ -33,12 +33,13 @@ import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.workload.ComputeWorkloadRunner
 import org.opendc.compute.workload.grid5000
+import org.opendc.compute.workload.topology.Topology
+import org.opendc.compute.workload.topology.apply
 import org.opendc.compute.workload.trace.RawParquetTraceReader
 import org.opendc.compute.workload.trace.TraceReader
 import org.opendc.compute.workload.util.PerformanceInterferenceReader
-import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
-import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.model.Workload
+import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
@@ -84,18 +85,16 @@ class CapelinIntegrationTest {
     @Test
     fun testLarge() = runBlockingSimulation {
         val traceReader = createTestTraceReader()
-        val environmentReader = createTestEnvironmentReader()
-
         val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
-            computeScheduler,
-            environmentReader.read(),
+            computeScheduler
         )
-
+        val topology = createTopology()
         val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
 
         try {
+            simulator.apply(topology)
             simulator.run(traceReader)
         } finally {
             simulator.close()
@@ -133,18 +132,17 @@ class CapelinIntegrationTest {
     fun testSmall() = runBlockingSimulation {
         val seed = 1
         val traceReader = createTestTraceReader(0.25, seed)
-        val environmentReader = createTestEnvironmentReader("single")
 
         val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
-            computeScheduler,
-            environmentReader.read(),
+            computeScheduler
         )
-
+        val topology = createTopology("single")
         val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
 
         try {
+            simulator.apply(topology)
             simulator.run(traceReader)
         } finally {
             simulator.close()
@@ -177,7 +175,6 @@ class CapelinIntegrationTest {
     fun testInterference() = runBlockingSimulation {
         val seed = 1
         val traceReader = createTestTraceReader(0.25, seed)
-        val environmentReader = createTestEnvironmentReader("single")
 
         val perfInterferenceInput = checkNotNull(CapelinIntegrationTest::class.java.getResourceAsStream("/bitbrains-perf-interference.json"))
         val performanceInterferenceModel =
@@ -189,13 +186,13 @@ class CapelinIntegrationTest {
             coroutineContext,
             clock,
             computeScheduler,
-            environmentReader.read(),
             interferenceModel = performanceInterferenceModel
         )
-
+        val topology = createTopology("single")
         val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
 
         try {
+            simulator.apply(topology)
             simulator.run(traceReader)
         } finally {
             simulator.close()
@@ -227,20 +224,18 @@ class CapelinIntegrationTest {
     @Test
     fun testFailures() = runBlockingSimulation {
         val seed = 1
-        val traceReader = createTestTraceReader(0.25, seed)
-        val environmentReader = createTestEnvironmentReader("single")
-
         val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,
-            environmentReader.read(),
             grid5000(Duration.ofDays(7), seed)
         )
-
+        val topology = createTopology("single")
+        val traceReader = createTestTraceReader(0.25, seed)
         val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
 
         try {
+            simulator.apply(topology)
             simulator.run(traceReader)
         } finally {
             simulator.close()
@@ -279,11 +274,11 @@ class CapelinIntegrationTest {
     }
 
     /**
-     * Obtain the environment reader for the test.
+     * Obtain the topology factory for the test.
      */
-    private fun createTestEnvironmentReader(name: String = "topology"): EnvironmentReader {
+    private fun createTopology(name: String = "topology"): Topology {
         val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/env/$name.txt"))
-        return ClusterEnvironmentReader(stream)
+        return stream.use { clusterTopology(stream) }
     }
 
     class TestExperimentReporter : ComputeMonitor {

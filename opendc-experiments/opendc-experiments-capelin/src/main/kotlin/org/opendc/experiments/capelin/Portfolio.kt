@@ -27,13 +27,14 @@ import mu.KotlinLogging
 import org.opendc.compute.workload.ComputeWorkloadRunner
 import org.opendc.compute.workload.export.parquet.ParquetExportMonitor
 import org.opendc.compute.workload.grid5000
+import org.opendc.compute.workload.topology.apply
 import org.opendc.compute.workload.trace.RawParquetTraceReader
 import org.opendc.compute.workload.util.PerformanceInterferenceReader
-import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
+import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.util.createComputeScheduler
 import org.opendc.harness.dsl.Experiment
@@ -100,12 +101,6 @@ abstract class Portfolio(name: String) : Experiment(name) {
      */
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val seeder = Random(repeat.toLong())
-        val environment = ClusterEnvironmentReader(
-            File(
-                config.getString("env-path"),
-                "${topology.name}.txt"
-            )
-        )
 
         val workload = workload
         val workloadNames = if (workload is CompositeWorkload) {
@@ -133,11 +128,10 @@ abstract class Portfolio(name: String) : Experiment(name) {
                 grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()), seeder.nextInt())
             else
                 null
-        val simulator = ComputeWorkloadRunner(
+        val runner = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,
-            environment.read(),
             failureModel,
             performanceInterferenceModel
         )
@@ -147,17 +141,22 @@ abstract class Portfolio(name: String) : Experiment(name) {
             "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
             4096
         )
-        val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
+        val metricReader = CoroutineMetricReader(this, runner.producers, ComputeMetricExporter(clock, monitor))
+        val topology = clusterTopology(File(config.getString("env-path"), "${topology.name}.txt"))
 
         try {
-            simulator.run(trace)
+            // Instantiate the desired topology
+            runner.apply(topology)
+
+            // Run the workload trace
+            runner.run(trace)
         } finally {
-            simulator.close()
+            runner.close()
             metricReader.close()
             monitor.close()
         }
 
-        val monitorResults = collectServiceMetrics(clock.instant(), simulator.producers[0])
+        val monitorResults = collectServiceMetrics(clock.instant(), runner.producers[0])
         logger.debug {
             "Scheduler " +
                 "Success=${monitorResults.attemptsSuccess} " +
