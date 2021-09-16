@@ -50,7 +50,7 @@ internal class BitbrainsExResourceStateTable(path: Path) : Table {
         RESOURCE_STATE_ID,
         RESOURCE_STATE_CLUSTER_ID,
         RESOURCE_STATE_TIMESTAMP,
-        RESOURCE_STATE_NCPUS,
+        RESOURCE_STATE_CPU_COUNT,
         RESOURCE_STATE_CPU_CAPACITY,
         RESOURCE_STATE_CPU_USAGE,
         RESOURCE_STATE_CPU_USAGE_PCT,
@@ -77,9 +77,9 @@ internal class BitbrainsExResourceStateTable(path: Path) : Table {
 
                     delegate.close()
                     delegate = nextDelegate()
+                    this.delegate = delegate
                 }
 
-                this.delegate = delegate
                 return delegate != null
             }
 

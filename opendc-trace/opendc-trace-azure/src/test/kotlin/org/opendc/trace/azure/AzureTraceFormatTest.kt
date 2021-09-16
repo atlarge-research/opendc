@@ -87,7 +87,7 @@ class AzureTraceFormatTest {
         assertAll(
             { assertTrue(reader.nextRow()) },
             { assertEquals("x/XsOfHO4ocsV99i4NluqKDuxctW2MMVmwqOPAlg4wp8mqbBOe3wxBlQo0+Qx+uf", reader.get(RESOURCE_ID)) },
-            { assertEquals(1, reader.getInt(RESOURCE_NCPUS)) },
+            { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
             { assertEquals(1750000.0, reader.getDouble(RESOURCE_MEM_CAPACITY)) },
         )
 

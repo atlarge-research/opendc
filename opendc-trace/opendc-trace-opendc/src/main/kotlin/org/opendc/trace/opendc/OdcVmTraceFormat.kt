@@ -25,6 +25,7 @@ package org.opendc.trace.opendc
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
 import org.opendc.trace.spi.TraceFormat
+import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
 import java.net.URL
 import java.nio.file.Paths
 import kotlin.io.path.exists
@@ -57,10 +58,10 @@ public class OdcVmTraceFormat : TraceFormat {
             .namespace("org.opendc.trace.opendc")
             .fields()
             .requiredString("id")
-            .requiredLong("submissionTime")
-            .requiredLong("endTime")
-            .requiredInt("maxCores")
-            .requiredLong("requiredMemory")
+            .name("start_time").type(TIMESTAMP_SCHEMA).noDefault()
+            .name("stop_time").type(TIMESTAMP_SCHEMA).noDefault()
+            .requiredInt("cpu_count")
+            .requiredLong("mem_capacity")
             .endRecord()
 
         /**
@@ -72,11 +73,10 @@ public class OdcVmTraceFormat : TraceFormat {
             .namespace("org.opendc.trace.opendc")
             .fields()
             .requiredString("id")
-            .requiredLong("time")
+            .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
             .requiredLong("duration")
-            .requiredInt("cores")
-            .requiredDouble("cpuUsage")
-            .requiredLong("flops")
+            .requiredInt("cpu_count")
+            .requiredDouble("cpu_usage")
             .endRecord()
     }
 }

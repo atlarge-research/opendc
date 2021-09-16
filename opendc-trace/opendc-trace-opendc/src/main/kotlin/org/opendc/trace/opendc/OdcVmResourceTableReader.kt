@@ -22,6 +22,7 @@
 
 package org.opendc.trace.opendc
 
+import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.opendc.trace.*
 import org.opendc.trace.util.parquet.LocalParquetReader
@@ -36,8 +37,20 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
      */
     private var record: GenericRecord? = null
 
+    /**
+     * A flag to indicate that the columns have been initialized.
+     */
+    private var hasInitializedColumns = false
+
     override fun nextRow(): Boolean {
-        record = reader.read()
+        val record = reader.read()
+        this.record = record
+
+        if (!hasInitializedColumns && record != null) {
+            initColumns(record.schema)
+            hasInitializedColumns = true
+        }
+
         return record != null
     }
 
@@ -46,7 +59,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
             RESOURCE_ID -> true
             RESOURCE_START_TIME -> true
             RESOURCE_STOP_TIME -> true
-            RESOURCE_NCPUS -> true
+            RESOURCE_CPU_COUNT -> true
             RESOURCE_MEM_CAPACITY -> true
             else -> false
         }
@@ -57,10 +70,10 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
 
         @Suppress("UNCHECKED_CAST")
         val res: Any = when (column) {
-            RESOURCE_ID -> record["id"].toString()
-            RESOURCE_START_TIME -> Instant.ofEpochMilli(record["submissionTime"] as Long)
-            RESOURCE_STOP_TIME -> Instant.ofEpochMilli(record["endTime"] as Long)
-            RESOURCE_NCPUS -> getInt(RESOURCE_NCPUS)
+            RESOURCE_ID -> record[COL_ID].toString()
+            RESOURCE_START_TIME -> Instant.ofEpochMilli(record[COL_START_TIME] as Long)
+            RESOURCE_STOP_TIME -> Instant.ofEpochMilli(record[COL_STOP_TIME] as Long)
+            RESOURCE_CPU_COUNT -> getInt(RESOURCE_CPU_COUNT)
             RESOURCE_MEM_CAPACITY -> getDouble(RESOURCE_MEM_CAPACITY)
             else -> throw IllegalArgumentException("Invalid column")
         }
@@ -77,7 +90,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (column) {
-            RESOURCE_NCPUS -> record["maxCores"] as Int
+            RESOURCE_CPU_COUNT -> record[COL_CPU_COUNT] as Int
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -90,7 +103,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (column) {
-            RESOURCE_MEM_CAPACITY -> (record["requiredMemory"] as Number).toDouble() * 1000.0 // MB to KB
+            RESOURCE_MEM_CAPACITY -> (record[COL_MEM_CAPACITY] as Number).toDouble()
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -100,4 +113,26 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
     }
 
     override fun toString(): String = "OdcVmResourceTableReader"
+
+    /**
+     * Initialize the columns for the reader based on [schema].
+     */
+    private fun initColumns(schema: Schema) {
+        try {
+            COL_ID = schema.getField("id").pos()
+            COL_START_TIME = (schema.getField("start_time") ?: schema.getField("submissionTime")).pos()
+            COL_STOP_TIME = (schema.getField("stop_time") ?: schema.getField("endTime")).pos()
+            COL_CPU_COUNT = (schema.getField("cpu_count") ?: schema.getField("maxCores")).pos()
+            COL_MEM_CAPACITY = (schema.getField("mem_capacity") ?: schema.getField("requiredMemory")).pos()
+        } catch (e: NullPointerException) {
+            // This happens when the field we are trying to access does not exist
+            throw IllegalArgumentException("Invalid schema")
+        }
+    }
+
+    private var COL_ID = -1
+    private var COL_START_TIME = -1
+    private var COL_STOP_TIME = -1
+    private var COL_CPU_COUNT = -1
+    private var COL_MEM_CAPACITY = -1
 }

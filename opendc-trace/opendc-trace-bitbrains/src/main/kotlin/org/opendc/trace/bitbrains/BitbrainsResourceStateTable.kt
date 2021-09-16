@@ -50,7 +50,7 @@ internal class BitbrainsResourceStateTable(private val factory: CsvFactory, path
     override val columns: List<TableColumn<*>> = listOf(
         RESOURCE_STATE_ID,
         RESOURCE_STATE_TIMESTAMP,
-        RESOURCE_STATE_NCPUS,
+        RESOURCE_STATE_CPU_COUNT,
         RESOURCE_STATE_CPU_CAPACITY,
         RESOURCE_STATE_CPU_USAGE,
         RESOURCE_STATE_CPU_USAGE_PCT,
@@ -78,9 +78,9 @@ internal class BitbrainsResourceStateTable(private val factory: CsvFactory, path
 
                     delegate.close()
                     delegate = nextDelegate()
+                    this.delegate = delegate
                 }
 
-                this.delegate = delegate
                 return delegate != null
             }
 

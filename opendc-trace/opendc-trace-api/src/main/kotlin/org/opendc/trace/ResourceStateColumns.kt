@@ -60,7 +60,7 @@ public val RESOURCE_STATE_POWERED_ON: TableColumn<Boolean> = booleanColumn("reso
  * Number of CPUs for the resource.
  */
 @JvmField
-public val RESOURCE_STATE_NCPUS: TableColumn<Int> = intColumn("resource_state:ncpus")
+public val RESOURCE_STATE_CPU_COUNT: TableColumn<Int> = intColumn("resource_state:cpu_count")
 
 /**
  * Total CPU capacity of the resource in MHz.

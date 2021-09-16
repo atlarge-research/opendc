@@ -67,7 +67,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
             RESOURCE_ID -> true
             RESOURCE_START_TIME -> true
             RESOURCE_STOP_TIME -> true
-            RESOURCE_NCPUS -> true
+            RESOURCE_CPU_COUNT -> true
             RESOURCE_MEM_CAPACITY -> true
             else -> false
         }
@@ -78,7 +78,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
             RESOURCE_ID -> id
             RESOURCE_START_TIME -> startTime
             RESOURCE_STOP_TIME -> stopTime
-            RESOURCE_NCPUS -> getInt(RESOURCE_NCPUS)
+            RESOURCE_CPU_COUNT -> getInt(RESOURCE_CPU_COUNT)
             RESOURCE_MEM_CAPACITY -> getDouble(RESOURCE_MEM_CAPACITY)
             else -> throw IllegalArgumentException("Invalid column")
         }
@@ -93,7 +93,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
 
     override fun getInt(column: TableColumn<Int>): Int {
         return when (column) {
-            RESOURCE_NCPUS -> cpuCores
+            RESOURCE_CPU_COUNT -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

@@ -68,9 +68,9 @@ internal class AzureResourceStateTable(private val factory: CsvFactory, path: Pa
 
                     delegate.close()
                     delegate = nextDelegate()
+                    this.delegate = delegate
                 }
 
-                this.delegate = delegate
                 return delegate != null
             }
 

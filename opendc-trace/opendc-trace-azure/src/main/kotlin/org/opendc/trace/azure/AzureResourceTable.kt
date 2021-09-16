@@ -38,7 +38,7 @@ internal class AzureResourceTable(private val factory: CsvFactory, private val p
         RESOURCE_ID,
         RESOURCE_START_TIME,
         RESOURCE_STOP_TIME,
-        RESOURCE_NCPUS,
+        RESOURCE_CPU_COUNT,
         RESOURCE_MEM_CAPACITY
     )
 

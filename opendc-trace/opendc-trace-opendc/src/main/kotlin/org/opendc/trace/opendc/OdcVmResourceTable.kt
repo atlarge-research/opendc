@@ -38,8 +38,8 @@ internal class OdcVmResourceTable(private val path: Path) : Table {
         RESOURCE_ID,
         RESOURCE_START_TIME,
         RESOURCE_STOP_TIME,
-        RESOURCE_NCPUS,
-        RESOURCE_MEM_CAPACITY
+        RESOURCE_CPU_COUNT,
+        RESOURCE_MEM_CAPACITY,
     )
 
     override fun newReader(): TableReader {

@@ -81,7 +81,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
                 COL_POWERED_ON -> poweredOn = field.toInt(10) == 1
                 COL_CPU_CAPACITY -> cpuCapacity = field.toDouble()
                 COL_ID -> id = field.trim()
-                COL_MEM_CAPACITY -> memCapacity = field.toDouble()
+                COL_MEM_CAPACITY -> memCapacity = field.toDouble() * 1000 // Convert from MB to KB
             }
         }
 
@@ -93,7 +93,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
             RESOURCE_STATE_ID -> true
             RESOURCE_STATE_CLUSTER_ID -> true
             RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_NCPUS -> true
+            RESOURCE_STATE_CPU_COUNT -> true
             RESOURCE_STATE_CPU_CAPACITY -> true
             RESOURCE_STATE_CPU_USAGE -> true
             RESOURCE_STATE_CPU_USAGE_PCT -> true
@@ -111,7 +111,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
             RESOURCE_STATE_ID -> id
             RESOURCE_STATE_CLUSTER_ID -> cluster
             RESOURCE_STATE_TIMESTAMP -> timestamp
-            RESOURCE_STATE_NCPUS -> getInt(RESOURCE_STATE_NCPUS)
+            RESOURCE_STATE_CPU_COUNT -> getInt(RESOURCE_STATE_CPU_COUNT)
             RESOURCE_STATE_CPU_CAPACITY -> getDouble(RESOURCE_STATE_CPU_CAPACITY)
             RESOURCE_STATE_CPU_USAGE -> getDouble(RESOURCE_STATE_CPU_USAGE)
             RESOURCE_STATE_CPU_USAGE_PCT -> getDouble(RESOURCE_STATE_CPU_USAGE_PCT)
@@ -134,7 +134,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
 
     override fun getInt(column: TableColumn<Int>): Int {
         return when (column) {
-            RESOURCE_STATE_NCPUS -> cpuCores
+            RESOURCE_STATE_CPU_COUNT -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

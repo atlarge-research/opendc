@@ -115,7 +115,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
         return when (column) {
             RESOURCE_STATE_ID -> true
             RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_NCPUS -> true
+            RESOURCE_STATE_CPU_COUNT -> true
             RESOURCE_STATE_CPU_CAPACITY -> true
             RESOURCE_STATE_CPU_USAGE -> true
             RESOURCE_STATE_CPU_USAGE_PCT -> true
@@ -133,7 +133,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
         val res: Any? = when (column) {
             RESOURCE_STATE_ID -> partition
             RESOURCE_STATE_TIMESTAMP -> timestamp
-            RESOURCE_STATE_NCPUS -> cpuCores
+            RESOURCE_STATE_CPU_COUNT -> cpuCores
             RESOURCE_STATE_CPU_CAPACITY -> cpuCapacity
             RESOURCE_STATE_CPU_USAGE -> cpuUsage
             RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
@@ -156,7 +156,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
 
     override fun getInt(column: TableColumn<Int>): Int {
         return when (column) {
-            RESOURCE_STATE_NCPUS -> cpuCores
+            RESOURCE_STATE_CPU_COUNT -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

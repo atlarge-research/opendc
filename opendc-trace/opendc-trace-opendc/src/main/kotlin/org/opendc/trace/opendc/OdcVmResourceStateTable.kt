@@ -38,7 +38,7 @@ internal class OdcVmResourceStateTable(private val path: Path) : Table {
         RESOURCE_STATE_ID,
         RESOURCE_STATE_TIMESTAMP,
         RESOURCE_STATE_DURATION,
-        RESOURCE_STATE_NCPUS,
+        RESOURCE_STATE_CPU_COUNT,
         RESOURCE_STATE_CPU_USAGE,
     )
 

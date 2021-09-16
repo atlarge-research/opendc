@@ -22,6 +22,7 @@
 
 package org.opendc.trace.opendc
 
+import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.opendc.trace.*
 import org.opendc.trace.util.parquet.LocalParquetReader
@@ -37,8 +38,20 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
      */
     private var record: GenericRecord? = null
 
+    /**
+     * A flag to indicate that the columns have been initialized.
+     */
+    private var hasInitializedColumns = false
+
     override fun nextRow(): Boolean {
-        record = reader.read()
+        val record = reader.read()
+        this.record = record
+
+        if (!hasInitializedColumns && record != null) {
+            initColumns(record.schema)
+            hasInitializedColumns = true
+        }
+
         return record != null
     }
 
@@ -47,7 +60,7 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
             RESOURCE_STATE_ID -> true
             RESOURCE_STATE_TIMESTAMP -> true
             RESOURCE_STATE_DURATION -> true
-            RESOURCE_STATE_NCPUS -> true
+            RESOURCE_STATE_CPU_COUNT -> true
             RESOURCE_STATE_CPU_USAGE -> true
             else -> false
         }
@@ -58,11 +71,11 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
 
         @Suppress("UNCHECKED_CAST")
         val res: Any = when (column) {
-            RESOURCE_STATE_ID -> record["id"].toString()
-            RESOURCE_STATE_TIMESTAMP -> Instant.ofEpochMilli(record["time"] as Long)
-            RESOURCE_STATE_DURATION -> Duration.ofMillis(record["duration"] as Long)
-            RESOURCE_STATE_NCPUS -> record["cores"]
-            RESOURCE_STATE_CPU_USAGE -> (record["cpuUsage"] as Number).toDouble()
+            RESOURCE_STATE_ID -> record[COL_ID].toString()
+            RESOURCE_STATE_TIMESTAMP -> Instant.ofEpochMilli(record[COL_TIMESTAMP] as Long)
+            RESOURCE_STATE_DURATION -> Duration.ofMillis(record[COL_DURATION] as Long)
+            RESOURCE_STATE_CPU_COUNT -> getInt(RESOURCE_STATE_CPU_COUNT)
+            RESOURCE_STATE_CPU_USAGE -> getDouble(RESOURCE_STATE_CPU_USAGE)
             else -> throw IllegalArgumentException("Invalid column")
         }
 
@@ -76,9 +89,8 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
 
     override fun getInt(column: TableColumn<Int>): Int {
         val record = checkNotNull(record) { "Reader in invalid state" }
-
         return when (column) {
-            RESOURCE_STATE_NCPUS -> record["cores"] as Int
+            RESOURCE_STATE_CPU_COUNT -> record[COL_CPU_COUNT] as Int
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -90,7 +102,7 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
     override fun getDouble(column: TableColumn<Double>): Double {
         val record = checkNotNull(record) { "Reader in invalid state" }
         return when (column) {
-            RESOURCE_STATE_CPU_USAGE -> (record["cpuUsage"] as Number).toDouble()
+            RESOURCE_STATE_CPU_USAGE -> (record[COL_CPU_USAGE] as Number).toDouble()
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -100,4 +112,26 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
     }
 
     override fun toString(): String = "OdcVmResourceStateTableReader"
+
+    /**
+     * Initialize the columns for the reader based on [schema].
+     */
+    private fun initColumns(schema: Schema) {
+        try {
+            COL_ID = schema.getField("id").pos()
+            COL_TIMESTAMP = (schema.getField("timestamp") ?: schema.getField("time")).pos()
+            COL_DURATION = schema.getField("duration").pos()
+            COL_CPU_COUNT = (schema.getField("cpu_count") ?: schema.getField("cores")).pos()
+            COL_CPU_USAGE = (schema.getField("cpu_usage") ?: schema.getField("cpuUsage")).pos()
+        } catch (e: NullPointerException) {
+            // This happens when the field we are trying to access does not exist
+            throw IllegalArgumentException("Invalid schema", e)
+        }
+    }
+
+    private var COL_ID = -1
+    private var COL_TIMESTAMP = -1
+    private var COL_DURATION = -1
+    private var COL_CPU_COUNT = -1
+    private var COL_CPU_USAGE = -1
 }

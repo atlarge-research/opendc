@@ -65,7 +65,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                 val id = reader.get(RESOURCE_STATE_ID)
                 val time = reader.get(RESOURCE_STATE_TIMESTAMP)
                 val duration = reader.get(RESOURCE_STATE_DURATION)
-                val cores = reader.getInt(RESOURCE_STATE_NCPUS)
+                val cores = reader.getInt(RESOURCE_STATE_CPU_COUNT)
                 val cpuUsage = reader.getDouble(RESOURCE_STATE_CPU_USAGE)
 
                 val fragment = SimTraceWorkload.Fragment(
@@ -75,7 +75,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                     cores
                 )
 
-                fragments.getOrPut(id) { mutableListOf() }.add(fragment)
+                fragments.computeIfAbsent(id) { mutableListOf() }.add(fragment)
             }
 
             fragments
@@ -103,7 +103,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
                 val submissionTime = reader.get(RESOURCE_START_TIME)
                 val endTime = reader.get(RESOURCE_STOP_TIME)
-                val maxCores = reader.getInt(RESOURCE_NCPUS)
+                val maxCores = reader.getInt(RESOURCE_CPU_COUNT)
                 val requiredMemory = reader.getDouble(RESOURCE_MEM_CAPACITY) / 1000.0 // Convert from KB to MB
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
