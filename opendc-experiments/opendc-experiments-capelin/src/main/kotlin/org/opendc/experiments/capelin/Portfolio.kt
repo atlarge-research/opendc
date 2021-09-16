@@ -24,18 +24,16 @@ package org.opendc.experiments.capelin
 
 import com.typesafe.config.ConfigFactory
 import mu.KotlinLogging
+import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.ComputeWorkloadRunner
 import org.opendc.compute.workload.export.parquet.ParquetExportMonitor
 import org.opendc.compute.workload.grid5000
 import org.opendc.compute.workload.topology.apply
-import org.opendc.compute.workload.trace.RawParquetTraceReader
 import org.opendc.compute.workload.util.PerformanceInterferenceReader
-import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.topology.clusterTopology
-import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.util.createComputeScheduler
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
@@ -47,7 +45,6 @@ import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import java.io.File
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.roundToLong
 
 /**
@@ -92,9 +89,9 @@ abstract class Portfolio(name: String) : Experiment(name) {
     abstract val allocationPolicy: String
 
     /**
-     * A map of trace readers.
+     * A helper class to load workload traces.
      */
-    private val traceReaders = ConcurrentHashMap<String, RawParquetTraceReader>()
+    private val workloadLoader = ComputeWorkloadLoader(File(config.getString("trace-path")))
 
     /**
      * Perform a single trial for this portfolio.
@@ -102,19 +99,6 @@ abstract class Portfolio(name: String) : Experiment(name) {
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val seeder = Random(repeat.toLong())
 
-        val workload = workload
-        val workloadNames = if (workload is CompositeWorkload) {
-            workload.workloads.map { it.name }
-        } else {
-            listOf(workload.name)
-        }
-        val rawReaders = workloadNames.map { workloadName ->
-            traceReaders.computeIfAbsent(workloadName) {
-                logger.info { "Loading trace $workloadName" }
-                RawParquetTraceReader(File(config.getString("trace-path"), workloadName))
-            }
-        }
-        val trace = ParquetTraceReader(rawReaders, workload, seeder.nextInt())
         val performanceInterferenceModel = if (operationalPhenomena.hasInterference)
             PerformanceInterferenceReader()
                 .read(File(config.getString("interference-model")))
@@ -125,7 +109,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
         val computeScheduler = createComputeScheduler(allocationPolicy, seeder, vmPlacements)
         val failureModel =
             if (operationalPhenomena.failureFrequency > 0)
-                grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()), seeder.nextInt())
+                grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
             else
                 null
         val runner = ComputeWorkloadRunner(
@@ -149,7 +133,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
             runner.apply(topology)
 
             // Run the workload trace
-            runner.run(trace)
+            runner.run(workload.source.resolve(workloadLoader, seeder), seeder.nextLong())
         } finally {
             runner.close()
             metricReader.close()

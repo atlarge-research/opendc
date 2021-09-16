@@ -32,9 +32,9 @@ import org.opendc.compute.simulator.failure.StartStopHostFault
 import org.opendc.compute.simulator.failure.StochasticVictimSelector
 import java.time.Clock
 import java.time.Duration
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ln
-import kotlin.random.Random
 
 /**
  * Obtain a [FailureModel] based on the GRID'5000 failure trace.
@@ -42,14 +42,15 @@ import kotlin.random.Random
  * This fault injector uses parameters from the GRID'5000 failure trace as described in
  * "A Framework for the Study of Grid Inter-Operation Mechanisms", A. Iosup, 2009.
  */
-public fun grid5000(failureInterval: Duration, seed: Int): FailureModel {
+public fun grid5000(failureInterval: Duration): FailureModel {
     return object : FailureModel {
         override fun createInjector(
             context: CoroutineContext,
             clock: Clock,
-            service: ComputeService
+            service: ComputeService,
+            random: Random
         ): HostFaultInjector {
-            val rng = Well19937c(seed)
+            val rng = Well19937c(random.nextLong())
             val hosts = service.hosts.map { it as SimHost }.toSet()
 
             // Parameters from A. Iosup, A Framework for the Study of Grid Inter-Operation Mechanisms, 2009
@@ -59,7 +60,7 @@ public fun grid5000(failureInterval: Duration, seed: Int): FailureModel {
                 clock,
                 hosts,
                 iat = LogNormalDistribution(rng, ln(failureInterval.toHours().toDouble()), 1.03),
-                selector = StochasticVictimSelector(LogNormalDistribution(rng, 1.88, 1.25), Random(seed)),
+                selector = StochasticVictimSelector(LogNormalDistribution(rng, 1.88, 1.25), random),
                 fault = StartStopHostFault(LogNormalDistribution(rng, 8.89, 2.71))
             )
         }

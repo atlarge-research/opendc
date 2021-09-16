@@ -28,15 +28,12 @@ import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.long
 import kotlinx.coroutines.*
 import mu.KotlinLogging
-import org.opendc.compute.workload.ComputeWorkloadRunner
-import org.opendc.compute.workload.grid5000
+import org.opendc.compute.workload.*
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
-import org.opendc.compute.workload.trace.RawParquetTraceReader
 import org.opendc.compute.workload.util.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.experiments.capelin.trace.ParquetTraceReader
 import org.opendc.experiments.capelin.util.createComputeScheduler
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
@@ -136,13 +133,9 @@ class RunnerCli : CliktCommand(name = "runner") {
 
         logger.info { "Constructing performance interference model" }
 
-        val traceDir = File(
-            tracePath,
-            scenario.trace.traceId
-        )
-        val traceReader = RawParquetTraceReader(traceDir)
+        val workloadLoader = ComputeWorkloadLoader(tracePath)
         val interferenceGroups = let {
-            val path = File(traceDir, "performance-interference-model.json")
+            val path = tracePath.resolve(scenario.trace.traceId).resolve("performance-interference-model.json")
             val operational = scenario.operationalPhenomena
             val enabled = operational.performanceInterferenceEnabled
 
@@ -158,7 +151,7 @@ class RunnerCli : CliktCommand(name = "runner") {
             logger.info { "Starting repeat $repeat" }
             withTimeout(runTimeout * 1000) {
                 val interferenceModel = interferenceGroups?.let { VmInterferenceModel(it, Random(repeat.toLong())) }
-                runRepeat(scenario, repeat, topology, traceReader, interferenceModel)
+                runRepeat(scenario, repeat, topology, workloadLoader, interferenceModel)
             }
         }
 
@@ -174,7 +167,7 @@ class RunnerCli : CliktCommand(name = "runner") {
         scenario: Scenario,
         repeat: Int,
         topology: Topology,
-        traceReader: RawParquetTraceReader,
+        workloadLoader: ComputeWorkloadLoader,
         interferenceModel: VmInterferenceModel?
     ): WebComputeMonitor.Result {
         val monitor = WebComputeMonitor()
@@ -188,15 +181,11 @@ class RunnerCli : CliktCommand(name = "runner") {
 
                 val operational = scenario.operationalPhenomena
                 val computeScheduler = createComputeScheduler(operational.schedulerName, seeder)
+                val workload = Workload(workloadName, trace(workloadName).sampleByLoad(workloadFraction))
 
-                val trace = ParquetTraceReader(
-                    listOf(traceReader),
-                    Workload(workloadName, workloadFraction),
-                    repeat
-                )
                 val failureModel =
                     if (operational.failuresEnabled)
-                        grid5000(Duration.ofDays(7), repeat)
+                        grid5000(Duration.ofDays(7))
                     else
                         null
 
@@ -214,7 +203,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     // Instantiate the topology onto the simulator
                     simulator.apply(topology)
                     // Run workload trace
-                    simulator.run(trace)
+                    simulator.run(workload.source.resolve(workloadLoader, seeder), seeder.nextLong())
                 } finally {
                     simulator.close()
                     metricReader.close()

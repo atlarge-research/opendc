@@ -34,14 +34,13 @@ import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.workload.topology.HostSpec
-import org.opendc.compute.workload.trace.TraceReader
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.compute.*
 import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Clock
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 
@@ -90,10 +89,11 @@ public class ComputeWorkloadRunner(
     }
 
     /**
-     * Run a simulation of the [ComputeService] by replaying the workload trace given by [reader].
+     * Run a simulation of the [ComputeService] by replaying the workload trace given by [trace].
      */
-    public suspend fun run(reader: TraceReader<SimWorkload>) {
-        val injector = failureModel?.createInjector(context, clock, service)
+    public suspend fun run(trace: List<VirtualMachine>, seed: Long) {
+        val random = Random(seed)
+        val injector = failureModel?.createInjector(context, clock, service, random)
         val client = service.newClient()
 
         // Create new image for the virtual machine
@@ -106,35 +106,36 @@ public class ComputeWorkloadRunner(
 
                 var offset = Long.MIN_VALUE
 
-                while (reader.hasNext()) {
-                    val entry = reader.next()
+                for (entry in trace.sortedBy { it.startTime }) {
+                    val now = clock.millis()
+                    val start = entry.startTime.toEpochMilli()
 
                     if (offset < 0) {
-                        offset = entry.start - clock.millis()
+                        offset = start - now
                     }
 
                     // Make sure the trace entries are ordered by submission time
-                    assert(entry.start - offset >= 0) { "Invalid trace order" }
-                    delay(max(0, (entry.start - offset) - clock.millis()))
+                    assert(start - offset >= 0) { "Invalid trace order" }
+                    delay(max(0, (start - offset) - now))
 
                     launch {
                         val workloadOffset = -offset + 300001
-                        val workload = SimTraceWorkload((entry.meta["workload"] as SimTraceWorkload).trace, workloadOffset)
+                        val workload = SimTraceWorkload(entry.trace, workloadOffset)
 
                         val server = client.newServer(
                             entry.name,
                             image,
                             client.newFlavor(
                                 entry.name,
-                                entry.meta["cores"] as Int,
-                                entry.meta["required-memory"] as Long
+                                entry.cpuCount,
+                                entry.memCapacity
                             ),
-                            meta = entry.meta + mapOf("workload" to workload)
+                            meta = mapOf("workload" to workload)
                         )
 
                         // Wait for the server reach its end time
-                        val endTime = entry.meta["end-time"] as Long
-                        delay(endTime + workloadOffset - clock.millis() + 1)
+                        val endTime = entry.stopTime.toEpochMilli()
+                        delay(endTime + workloadOffset - clock.millis() + 5 * 60 * 1000)
 
                         // Delete the server after reaching the end-time of the virtual machine
                         server.delete()
@@ -145,7 +146,6 @@ public class ComputeWorkloadRunner(
             yield()
         } finally {
             injector?.close()
-            reader.close()
             client.close()
         }
     }

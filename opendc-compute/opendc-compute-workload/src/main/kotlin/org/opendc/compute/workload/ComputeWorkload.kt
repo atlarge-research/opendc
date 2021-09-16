@@ -20,13 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace
+package org.opendc.compute.workload
+
+import java.util.*
 
 /**
- * An interface for reading workloads into memory.
- *
- * This interface must guarantee that the entries are delivered in order of submission time.
- *
- * @param T The shape of the workloads supported by this reader.
+ * An interface that describes how a workload is resolved.
  */
-public interface TraceReader<T> : Iterator<TraceEntry<T>>, AutoCloseable
+public interface ComputeWorkload {
+    /**
+     * Resolve the workload into a list of [VirtualMachine]s to simulate.
+     */
+    public fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine>
+}

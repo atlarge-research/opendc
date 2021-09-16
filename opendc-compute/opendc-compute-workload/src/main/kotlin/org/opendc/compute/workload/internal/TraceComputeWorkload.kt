@@ -20,23 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace
+package org.opendc.compute.workload.internal
 
-import java.util.UUID
+import org.opendc.compute.workload.ComputeWorkload
+import org.opendc.compute.workload.ComputeWorkloadLoader
+import org.opendc.compute.workload.VirtualMachine
+import java.util.*
 
 /**
- * An entry in a workload trace.
- *
- * @param uid The unique identifier of the entry.
- * @param name The name of the entry.
- * @param start The start time of the workload.
- * @param workload The workload of the entry.
- * @param meta The meta-data associated with the workload.
+ * A [ComputeWorkload] from a trace.
  */
-public data class TraceEntry<out T>(
-    val uid: UUID,
-    val name: String,
-    val start: Long,
-    val workload: T,
-    val meta: Map<String, Any>
-)
+internal class TraceComputeWorkload(val name: String) : ComputeWorkload {
+    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
+        return loader.get(name)
+    }
+}

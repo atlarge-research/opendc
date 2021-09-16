@@ -24,8 +24,8 @@ package org.opendc.compute.simulator.failure
 
 import org.apache.commons.math3.distribution.RealDistribution
 import org.opendc.compute.simulator.SimHost
+import java.util.*
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 /**
  * A [VictimSelector] that stochastically selects a set of hosts to be failed.

@@ -22,23 +22,12 @@
 
 package org.opendc.experiments.capelin.model
 
-public enum class SamplingStrategy {
-    REGULAR,
-    HPC,
-    HPC_LOAD
-}
+import org.opendc.compute.workload.ComputeWorkload
 
 /**
- * A workload that is considered for a scenario.
+ * A single workload originating from a trace.
+ *
+ * @param name the name of the workload.
+ * @param source The source of the workload data.
  */
-public open class Workload(
-    public open val name: String,
-    public val fraction: Double,
-    public val samplingStrategy: SamplingStrategy = SamplingStrategy.REGULAR
-)
-
-/**
- * A workload that is composed of multiple workloads.
- */
-public class CompositeWorkload(override val name: String, public val workloads: List<Workload>, public val totalLoad: Double) :
-    Workload(name, -1.0)
+data class Workload(val name: String, val source: ComputeWorkload)

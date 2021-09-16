@@ -20,28 +20,30 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Risk Analysis work"
+package org.opendc.compute.workload
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.opendc.simulator.compute.workload.SimTraceWorkload
+import java.time.Instant
+import java.util.*
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-
-    implementation(libs.kotlin.logging)
-    implementation(libs.config)
-    implementation(libs.progressbar)
-    implementation(libs.clikt)
-
-    implementation(libs.parquet)
-    testImplementation(libs.log4j.slf4j)
-}
+/**
+ * A virtual machine workload.
+ *
+ * @param uid The unique identifier of the virtual machine.
+ * @param name The name of the virtual machine.
+ * @param cpuCount The number of vCPUs in the VM.
+ * @param memCapacity The provisioned memory for the VM.
+ * @param startTime The start time of the VM.
+ * @param stopTime The stop time of the VM.
+ * @param trace The trace fragments that belong to this VM.
+ */
+public data class VirtualMachine(
+    val uid: UUID,
+    val name: String,
+    val cpuCount: Int,
+    val memCapacity: Long,
+    val totalLoad: Double,
+    val startTime: Instant,
+    val stopTime: Instant,
+    val trace: Sequence<SimTraceWorkload.Fragment>,
+)

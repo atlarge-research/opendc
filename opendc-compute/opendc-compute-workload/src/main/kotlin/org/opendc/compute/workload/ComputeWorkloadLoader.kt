@@ -20,30 +20,42 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace
+package org.opendc.compute.workload
 
+import mu.KotlinLogging
 import org.opendc.compute.workload.trace.bp.BPTraceFormat
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.trace.*
 import java.io.File
-import java.util.UUID
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.roundToLong
 
 /**
- * A [TraceReader] for the internal VM workload trace format.
+ * A helper class for loading compute workload traces into memory.
  *
- * @param path The directory of the traces.
+ * @param baseDir The directory containing the traces.
  */
-public class RawParquetTraceReader(private val path: File) {
+public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
-     * The [Trace] that represents this trace.
+     * The logger for this instance.
      */
-    private val trace = BPTraceFormat().open(path.toURI().toURL())
+    private val logger = KotlinLogging.logger {}
+
+    /**
+     * The [BPTraceFormat] instance to load the traces
+     */
+    private val format = BPTraceFormat()
+
+    /**
+     * The cache of workloads.
+     */
+    private val cache = ConcurrentHashMap<String, List<VirtualMachine>>()
 
     /**
      * Read the fragments into memory.
      */
-    private fun parseFragments(): Map<String, List<SimTraceWorkload.Fragment>> {
+    private fun parseFragments(trace: Trace): Map<String, List<SimTraceWorkload.Fragment>> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
 
         val fragments = mutableMapOf<String, MutableList<SimTraceWorkload.Fragment>>()
@@ -75,11 +87,11 @@ public class RawParquetTraceReader(private val path: File) {
     /**
      * Read the metadata into a workload.
      */
-    private fun parseMeta(fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<TraceEntry<SimWorkload>> {
+    private fun parseMeta(trace: Trace, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<VirtualMachine> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
         var counter = 0
-        val entries = mutableListOf<TraceEntry<SimWorkload>>()
+        val entries = mutableListOf<VirtualMachine>()
 
         return try {
             while (reader.nextRow()) {
@@ -96,22 +108,24 @@ public class RawParquetTraceReader(private val path: File) {
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
                 val vmFragments = fragments.getValue(id).asSequence()
-                val totalLoad = vmFragments.sumOf { it.usage } * 5 * 60 // avg MHz * duration = MFLOPs
-                val workload = SimTraceWorkload(vmFragments)
+                val totalLoad = vmFragments.sumOf { (it.usage * it.duration) / 1000.0 } // avg MHz * duration = MFLOPs
+
                 entries.add(
-                    TraceEntry(
-                        uid, id, submissionTime.toEpochMilli(), workload,
-                        mapOf(
-                            "submit-time" to submissionTime.toEpochMilli(),
-                            "end-time" to endTime.toEpochMilli(),
-                            "total-load" to totalLoad,
-                            "cores" to maxCores,
-                            "required-memory" to requiredMemory.toLong(),
-                            "workload" to workload
-                        )
+                    VirtualMachine(
+                        uid,
+                        id,
+                        maxCores,
+                        requiredMemory.roundToLong(),
+                        totalLoad,
+                        submissionTime,
+                        endTime,
+                        vmFragments
                     )
                 )
             }
+
+            // Make sure the virtual machines are ordered by start time
+            entries.sortBy { it.startTime }
 
             entries
         } catch (e: Exception) {
@@ -123,17 +137,24 @@ public class RawParquetTraceReader(private val path: File) {
     }
 
     /**
-     * The entries in the trace.
+     * Load the trace with the specified [name].
      */
-    private val entries: List<TraceEntry<SimWorkload>>
+    public fun get(name: String): List<VirtualMachine> {
+        return cache.computeIfAbsent(name) {
+            val path = baseDir.resolve(it)
 
-    init {
-        val fragments = parseFragments()
-        entries = parseMeta(fragments)
+            logger.info { "Loading trace $it at $path" }
+
+            val trace = format.open(path.toURI().toURL())
+            val fragments = parseFragments(trace)
+            parseMeta(trace, fragments)
+        }
     }
 
     /**
-     * Read the entries in the trace.
+     * Clear the workload cache.
      */
-    public fun read(): List<TraceEntry<SimWorkload>> = entries
+    public fun reset() {
+        cache.clear()
+    }
 }

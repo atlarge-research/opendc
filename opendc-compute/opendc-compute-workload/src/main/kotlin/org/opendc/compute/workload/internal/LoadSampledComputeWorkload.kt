@@ -20,20 +20,42 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload
+package org.opendc.compute.workload.internal
 
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.simulator.failure.HostFaultInjector
-import java.time.Clock
+import mu.KotlinLogging
+import org.opendc.compute.workload.ComputeWorkload
+import org.opendc.compute.workload.ComputeWorkloadLoader
+import org.opendc.compute.workload.VirtualMachine
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 
 /**
- * Factory interface for constructing [HostFaultInjector] for modeling failures of compute service hosts.
+ * A [ComputeWorkload] that is sampled based on total load.
  */
-public interface FailureModel {
+internal class LoadSampledComputeWorkload(val source: ComputeWorkload, val fraction: Double) : ComputeWorkload {
     /**
-     * Construct a [HostFaultInjector] for the specified [service].
+     * The logging instance of this class.
      */
-    public fun createInjector(context: CoroutineContext, clock: Clock, service: ComputeService, random: Random): HostFaultInjector
+    private val logger = KotlinLogging.logger {}
+
+    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
+        val vms = source.resolve(loader, random)
+        val res = mutableListOf<VirtualMachine>()
+
+        val totalLoad = vms.sumOf { it.totalLoad }
+        var currentLoad = 0.0
+
+        for (entry in vms) {
+            val entryLoad = entry.totalLoad
+            if ((currentLoad + entryLoad) / totalLoad > fraction) {
+                break
+            }
+
+            currentLoad += entryLoad
+            res += entry
+        }
+
+        logger.info { "Sampled ${vms.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
+
+        return res
+    }
 }

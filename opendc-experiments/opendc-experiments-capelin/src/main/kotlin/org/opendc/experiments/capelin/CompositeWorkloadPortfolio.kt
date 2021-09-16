@@ -22,7 +22,8 @@
 
 package org.opendc.experiments.capelin
 
-import org.opendc.experiments.capelin.model.CompositeWorkload
+import org.opendc.compute.workload.composite
+import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
@@ -42,30 +43,25 @@ public class CompositeWorkloadPortfolio : Portfolio("composite-workload") {
     )
 
     override val workload: Workload by anyOf(
-        CompositeWorkload(
+        Workload(
             "all-azure",
-            listOf(Workload("solvinity-short", 0.0), Workload("azure", 1.0)),
-            totalSampleLoad
+            composite(trace("solvinity-short") to 0.0, trace("azure") to 1.0)
         ),
-        CompositeWorkload(
+        Workload(
             "solvinity-25-azure-75",
-            listOf(Workload("solvinity-short", 0.25), Workload("azure", 0.75)),
-            totalSampleLoad
+            composite(trace("solvinity-short") to 0.25, trace("azure") to 0.75)
         ),
-        CompositeWorkload(
+        Workload(
             "solvinity-50-azure-50",
-            listOf(Workload("solvinity-short", 0.5), Workload("azure", 0.5)),
-            totalSampleLoad
+            composite(trace("solvinity-short") to 0.5, trace("azure") to 0.5)
         ),
-        CompositeWorkload(
+        Workload(
             "solvinity-75-azure-25",
-            listOf(Workload("solvinity-short", 0.75), Workload("azure", 0.25)),
-            totalSampleLoad
+            composite(trace("solvinity-short") to 0.75, trace("azure") to 0.25)
         ),
-        CompositeWorkload(
+        Workload(
             "all-solvinity",
-            listOf(Workload("solvinity-short", 1.0), Workload("azure", 0.0)),
-            totalSampleLoad
+            composite(trace("solvinity-short") to 1.0, trace("azure") to 0.0)
         )
     )
 
