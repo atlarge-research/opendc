@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.azure
+package org.opendc.trace.azure
 
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.dataformat.csv.CsvParser
@@ -29,9 +29,9 @@ import org.opendc.trace.*
 import java.time.Instant
 
 /**
- * A [TableReader] for the Azure v1 VM resources table.
+ * A [TableReader] for the Azure v1 VM resource state table.
  */
-internal class AzureResourceTableReader(private val parser: CsvParser) : TableReader {
+internal class AzureResourceStateTableReader(private val parser: CsvParser) : TableReader {
     init {
         parser.schema = schema
     }
@@ -51,11 +51,9 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
             }
 
             when (parser.currentName) {
+                "timestamp" -> timestamp = Instant.ofEpochSecond(parser.longValue)
                 "vm id" -> id = parser.text
-                "vm created" -> startTime = Instant.ofEpochSecond(parser.longValue)
-                "vm deleted" -> stopTime = Instant.ofEpochSecond(parser.longValue)
-                "vm virtual core count" -> cpuCores = parser.intValue
-                "vm memory" -> memCapacity = parser.doubleValue * 1e6 // GB to KB
+                "CPU avg cpu" -> cpuUsagePct = parser.doubleValue
             }
         }
 
@@ -64,22 +62,18 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
 
     override fun hasColumn(column: TableColumn<*>): Boolean {
         return when (column) {
-            RESOURCE_ID -> true
-            RESOURCE_START_TIME -> true
-            RESOURCE_STOP_TIME -> true
-            RESOURCE_NCPUS -> true
-            RESOURCE_MEM_CAPACITY -> true
+            RESOURCE_STATE_ID -> true
+            RESOURCE_STATE_TIMESTAMP -> true
+            RESOURCE_STATE_CPU_USAGE_PCT -> true
             else -> false
         }
     }
 
     override fun <T> get(column: TableColumn<T>): T {
         val res: Any? = when (column) {
-            RESOURCE_ID -> id
-            RESOURCE_START_TIME -> startTime
-            RESOURCE_STOP_TIME -> stopTime
-            RESOURCE_NCPUS -> getInt(RESOURCE_STATE_NCPUS)
-            RESOURCE_MEM_CAPACITY -> getDouble(RESOURCE_STATE_MEM_CAPACITY)
+            RESOURCE_STATE_ID -> id
+            RESOURCE_STATE_TIMESTAMP -> timestamp
+            RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
             else -> throw IllegalArgumentException("Invalid column")
         }
 
@@ -92,10 +86,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     }
 
     override fun getInt(column: TableColumn<Int>): Int {
-        return when (column) {
-            RESOURCE_NCPUS -> cpuCores
-            else -> throw IllegalArgumentException("Invalid column")
-        }
+        throw IllegalArgumentException("Invalid column")
     }
 
     override fun getLong(column: TableColumn<Long>): Long {
@@ -104,7 +95,7 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
 
     override fun getDouble(column: TableColumn<Double>): Double {
         return when (column) {
-            RESOURCE_MEM_CAPACITY -> memCapacity
+            RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -130,20 +121,16 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
      * State fields of the reader.
      */
     private var id: String? = null
-    private var startTime: Instant? = null
-    private var stopTime: Instant? = null
-    private var cpuCores = -1
-    private var memCapacity = Double.NaN
+    private var timestamp: Instant? = null
+    private var cpuUsagePct = Double.NaN
 
     /**
      * Reset the state.
      */
-    fun reset() {
+    private fun reset() {
         id = null
-        startTime = null
-        stopTime = null
-        cpuCores = -1
-        memCapacity = Double.NaN
+        timestamp = null
+        cpuUsagePct = Double.NaN
     }
 
     companion object {
@@ -151,17 +138,11 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
          * The [CsvSchema] that is used to parse the trace.
          */
         private val schema = CsvSchema.builder()
-            .addColumn("vm id", CsvSchema.ColumnType.NUMBER)
-            .addColumn("subscription id", CsvSchema.ColumnType.STRING)
-            .addColumn("deployment id", CsvSchema.ColumnType.NUMBER)
-            .addColumn("timestamp vm created", CsvSchema.ColumnType.NUMBER)
-            .addColumn("timestamp vm deleted", CsvSchema.ColumnType.NUMBER)
-            .addColumn("max cpu", CsvSchema.ColumnType.NUMBER)
-            .addColumn("avg cpu", CsvSchema.ColumnType.NUMBER)
-            .addColumn("p95 cpu", CsvSchema.ColumnType.NUMBER)
-            .addColumn("vm category", CsvSchema.ColumnType.NUMBER)
-            .addColumn("vm virtual core count", CsvSchema.ColumnType.NUMBER)
-            .addColumn("vm memory", CsvSchema.ColumnType.NUMBER)
+            .addColumn("timestamp", CsvSchema.ColumnType.NUMBER)
+            .addColumn("vm id", CsvSchema.ColumnType.STRING)
+            .addColumn("CPU min cpu", CsvSchema.ColumnType.NUMBER)
+            .addColumn("CPU max cpu", CsvSchema.ColumnType.NUMBER)
+            .addColumn("CPU avg cpu", CsvSchema.ColumnType.NUMBER)
             .setAllowComments(true)
             .build()
     }

@@ -20,30 +20,35 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+package org.opendc.trace.azure
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-}
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import org.opendc.trace.*
+import java.nio.file.Path
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcCompute.opendcComputeSimulator)
+/**
+ * The resource [Table] for the Azure v1 VM traces.
+ */
+internal class AzureResourceTable(private val factory: CsvFactory, private val path: Path) : Table {
+    override val name: String = TABLE_RESOURCES
 
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceAzure)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
-    implementation(libs.opentelemetry.semconv)
+    override val isSynthetic: Boolean = false
 
-    implementation(libs.kotlin.logging)
-    implementation(libs.clikt)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.module.kotlin)
-    implementation(kotlin("reflect"))
+    override val columns: List<TableColumn<*>> = listOf(
+        RESOURCE_ID,
+        RESOURCE_START_TIME,
+        RESOURCE_STOP_TIME,
+        RESOURCE_NCPUS,
+        RESOURCE_MEM_CAPACITY
+    )
+
+    override fun newReader(): TableReader {
+        return AzureResourceTableReader(factory.createParser(path.resolve("vmtable/vmtable.csv").toFile()))
+    }
+
+    override fun newReader(partition: String): TableReader {
+        throw IllegalArgumentException("No partition $partition")
+    }
+
+    override fun toString(): String = "AzureResourceTable"
 }

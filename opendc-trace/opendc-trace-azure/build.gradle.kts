@@ -20,27 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.azure
+description = "Support for Azure VM traces in OpenDC"
 
-import com.fasterxml.jackson.dataformat.csv.CsvFactory
-import org.opendc.trace.*
-import java.nio.file.Path
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+    `testing-conventions`
+    `jacoco-conventions`
+}
 
-/**
- * [Trace] implementation for the Azure v1 VM traces.
- */
-public class AzureTrace internal constructor(private val factory: CsvFactory, private val path: Path) : Trace {
-    override val tables: List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
-
-    override fun containsTable(name: String): Boolean = name in tables
-
-    override fun getTable(name: String): Table? {
-        return when (name) {
-            TABLE_RESOURCES -> AzureResourceTable(factory, path)
-            TABLE_RESOURCE_STATES -> AzureResourceStateTable(factory, path)
-            else -> null
-        }
-    }
-
-    override fun toString(): String = "AzureTrace[$path]"
+dependencies {
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcTrace.opendcTraceApi)
+    implementation(libs.jackson.dataformat.csv)
 }

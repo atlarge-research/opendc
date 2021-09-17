@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.azure
+package org.opendc.trace.azure
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import org.opendc.trace.*
@@ -37,7 +37,7 @@ internal class AzureResourceStateTable(private val factory: CsvFactory, path: Pa
     /**
      * The partitions that belong to the table.
      */
-    private val partitions = Files.walk(path, 1)
+    private val partitions = Files.walk(path.resolve("vm_cpu_readings"), 1)
         .filter { !Files.isDirectory(it) && it.extension == "csv" }
         .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
         .toSortedMap()

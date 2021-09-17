@@ -34,10 +34,10 @@ import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.opendc.compute.workload.trace.azure.AzureTraceFormat
 import org.opendc.compute.workload.trace.bp.BP_RESOURCES_SCHEMA
 import org.opendc.compute.workload.trace.bp.BP_RESOURCE_STATES_SCHEMA
 import org.opendc.trace.*
+import org.opendc.trace.azure.AzureTraceFormat
 import org.opendc.trace.bitbrains.BitbrainsExTraceFormat
 import org.opendc.trace.bitbrains.BitbrainsTraceFormat
 import org.opendc.trace.util.parquet.LocalOutputFile

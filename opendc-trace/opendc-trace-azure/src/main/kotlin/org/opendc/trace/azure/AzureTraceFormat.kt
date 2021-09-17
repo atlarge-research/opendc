@@ -20,35 +20,37 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.azure
+package org.opendc.trace.azure
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
-import org.opendc.trace.*
-import java.nio.file.Path
+import com.fasterxml.jackson.dataformat.csv.CsvParser
+import org.opendc.trace.spi.TraceFormat
+import java.net.URL
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
 /**
- * The resource [Table] for the Azure v1 VM traces.
+ * A format implementation for the Azure v1 format.
  */
-internal class AzureResourceTable(private val factory: CsvFactory, private val path: Path) : Table {
-    override val name: String = TABLE_RESOURCES
+public class AzureTraceFormat : TraceFormat {
+    /**
+     * The name of this trace format.
+     */
+    override val name: String = "azure"
 
-    override val isSynthetic: Boolean = false
+    /**
+     * The [CsvFactory] used to create the parser.
+     */
+    private val factory = CsvFactory()
+        .enable(CsvParser.Feature.ALLOW_COMMENTS)
+        .enable(CsvParser.Feature.TRIM_SPACES)
 
-    override val columns: List<TableColumn<*>> = listOf(
-        RESOURCE_ID,
-        RESOURCE_START_TIME,
-        RESOURCE_STOP_TIME,
-        RESOURCE_NCPUS,
-        RESOURCE_MEM_CAPACITY
-    )
-
-    override fun newReader(): TableReader {
-        return AzureResourceTableReader(factory.createParser(path.resolve("vmtable/vmtable.csv").toFile()))
+    /**
+     * Open the trace file.
+     */
+    override fun open(url: URL): AzureTrace {
+        val path = Paths.get(url.toURI())
+        require(path.exists()) { "URL $url does not exist" }
+        return AzureTrace(factory, path)
     }
-
-    override fun newReader(partition: String): TableReader {
-        throw IllegalArgumentException("No partition $partition")
-    }
-
-    override fun toString(): String = "AzureResourceTable"
 }
