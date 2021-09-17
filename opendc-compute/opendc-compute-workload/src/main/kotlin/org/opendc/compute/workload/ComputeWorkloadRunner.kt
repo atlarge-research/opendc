@@ -154,9 +154,10 @@ public class ComputeWorkloadRunner(
      * Register a host for this simulation.
      *
      * @param spec The definition of the host.
+     * @param optimize Merge the CPU resources of the host into a single CPU resource.
      * @return The [SimHost] that has been constructed by the runner.
      */
-    public fun registerHost(spec: HostSpec): SimHost {
+    public fun registerHost(spec: HostSpec, optimize: Boolean = false): SimHost {
         val resource = Resource.builder()
             .put(HOST_ID, spec.uid.toString())
             .put(HOST_NAME, spec.name)
@@ -182,6 +183,7 @@ public class ComputeWorkloadRunner(
             spec.hypervisor,
             powerDriver = spec.powerDriver,
             interferenceDomain = interferenceModel?.newDomain(),
+            optimize = optimize
         )
 
         hosts.add(host)

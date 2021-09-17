@@ -28,9 +28,9 @@ import org.opendc.compute.workload.ComputeWorkloadRunner
 /**
  * Apply the specified [topology] to the given [ComputeWorkloadRunner].
  */
-public fun ComputeWorkloadRunner.apply(topology: Topology) {
+public fun ComputeWorkloadRunner.apply(topology: Topology, optimize: Boolean = false) {
     val hosts = topology.resolve()
     for (spec in hosts) {
-        registerHost(spec)
+        registerHost(spec, optimize)
     }
 }
