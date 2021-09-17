@@ -37,8 +37,8 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.compute.workload.trace.azure.AzureTraceFormat
 import org.opendc.compute.workload.trace.bp.BP_RESOURCES_SCHEMA
 import org.opendc.compute.workload.trace.bp.BP_RESOURCE_STATES_SCHEMA
-import org.opendc.compute.workload.trace.sv.SvTraceFormat
 import org.opendc.trace.*
+import org.opendc.trace.bitbrains.BitbrainsExTraceFormat
 import org.opendc.trace.bitbrains.BitbrainsTraceFormat
 import org.opendc.trace.util.parquet.LocalOutputFile
 import java.io.File
@@ -79,7 +79,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
      */
     private val format by option("-f", "--format", help = "input format of trace")
         .choice(
-            "solvinity" to SvTraceFormat(),
+            "solvinity" to BitbrainsExTraceFormat(),
             "bitbrains" to BitbrainsTraceFormat(),
             "azure" to AzureTraceFormat()
         )

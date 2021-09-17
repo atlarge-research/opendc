@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.sv
+package org.opendc.trace.bitbrains
 
 import org.opendc.trace.*
 import java.io.BufferedReader
@@ -29,7 +29,7 @@ import java.time.Instant
 /**
  * A [TableReader] for the Bitbrains resource state table.
  */
-internal class SvResourceStateTableReader(private val reader: BufferedReader) : TableReader {
+internal class BitbrainsExResourceStateTableReader(private val reader: BufferedReader) : TableReader {
     override fun nextRow(): Boolean {
         reset()
 

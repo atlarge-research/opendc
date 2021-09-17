@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.sv
+package org.opendc.trace.bitbrains
 
 import org.opendc.trace.*
 import java.nio.file.Files
@@ -33,7 +33,7 @@ import kotlin.io.path.nameWithoutExtension
 /**
  * The resource state [Table] in the extended Bitbrains format.
  */
-internal class SvResourceStateTable(path: Path) : Table {
+internal class BitbrainsExResourceStateTable(path: Path) : Table {
     /**
      * The partitions that belong to the table.
      */
@@ -118,7 +118,7 @@ internal class SvResourceStateTable(path: Path) : Table {
                 return if (it.hasNext()) {
                     val (_, path) = it.next()
                     val reader = path.bufferedReader()
-                    return SvResourceStateTableReader(reader)
+                    return BitbrainsExResourceStateTableReader(reader)
                 } else {
                     null
                 }
@@ -131,8 +131,8 @@ internal class SvResourceStateTable(path: Path) : Table {
     override fun newReader(partition: String): TableReader {
         val path = requireNotNull(partitions[partition]) { "Invalid partition $partition" }
         val reader = path.bufferedReader()
-        return SvResourceStateTableReader(reader)
+        return BitbrainsExResourceStateTableReader(reader)
     }
 
-    override fun toString(): String = "SvResourceStateTable"
+    override fun toString(): String = "BitbrainsExResourceStateTable"
 }

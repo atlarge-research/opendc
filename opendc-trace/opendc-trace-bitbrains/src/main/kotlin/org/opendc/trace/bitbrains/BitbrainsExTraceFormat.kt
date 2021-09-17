@@ -20,26 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.sv
+package org.opendc.trace.bitbrains
 
-import org.opendc.trace.*
-import java.nio.file.Path
+import org.opendc.trace.spi.TraceFormat
+import java.net.URL
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
 /**
- * [Trace] implementation for the extended Bitbrains format.
+ * A format implementation for the extended Bitbrains trace format.
  */
-public class SvTrace internal constructor(private val path: Path) : Trace {
-    override val tables: List<String> = listOf(TABLE_RESOURCE_STATES)
+public class BitbrainsExTraceFormat : TraceFormat {
+    /**
+     * The name of this trace format.
+     */
+    override val name: String = "bitbrains-ex"
 
-    override fun containsTable(name: String): Boolean = TABLE_RESOURCE_STATES == name
-
-    override fun getTable(name: String): Table? {
-        if (!containsTable(name)) {
-            return null
-        }
-
-        return SvResourceStateTable(path)
+    /**
+     * Open the trace file.
+     */
+    override fun open(url: URL): BitbrainsExTrace {
+        val path = Paths.get(url.toURI())
+        require(path.exists()) { "URL $url does not exist" }
+        return BitbrainsExTrace(path)
     }
-
-    override fun toString(): String = "SvTrace[$path]"
 }
