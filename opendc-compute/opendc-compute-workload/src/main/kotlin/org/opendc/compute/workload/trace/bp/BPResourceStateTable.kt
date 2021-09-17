@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,33 +20,34 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Capelin work"
+package org.opendc.compute.workload.trace.bp
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.apache.avro.generic.GenericRecord
+import org.opendc.trace.*
+import org.opendc.trace.util.parquet.LocalParquetReader
+import java.nio.file.Path
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    api(projects.opendcCompute.opendcComputeWorkload)
+/**
+ * The resource state [Table] in the Bitbrains Parquet format.
+ */
+internal class BPResourceStateTable(private val path: Path) : Table {
+    override val name: String = TABLE_RESOURCE_STATES
+    override val isSynthetic: Boolean = false
 
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
+    override val columns: List<TableColumn<*>> = listOf(
+        RESOURCE_STATE_ID,
+        RESOURCE_STATE_TIMESTAMP,
+        RESOURCE_STATE_DURATION,
+        RESOURCE_STATE_NCPUS,
+        RESOURCE_STATE_CPU_USAGE,
+    )
 
-    implementation(libs.config)
-    implementation(libs.kotlin.logging)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.module.kotlin)
-    implementation(kotlin("reflect"))
-    implementation(libs.opentelemetry.semconv)
+    override fun newReader(): TableReader {
+        val reader = LocalParquetReader<GenericRecord>(path.resolve("trace.parquet"))
+        return BPResourceStateTableReader(reader)
+    }
 
-    testImplementation(libs.log4j.slf4j)
+    override fun newReader(partition: String): TableReader {
+        throw IllegalArgumentException("Unknown partition $partition")
+    }
 }

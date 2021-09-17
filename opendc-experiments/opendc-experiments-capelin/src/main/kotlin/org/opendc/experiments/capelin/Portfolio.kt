@@ -24,16 +24,17 @@ package org.opendc.experiments.capelin
 
 import com.typesafe.config.ConfigFactory
 import mu.KotlinLogging
+import org.opendc.compute.workload.ComputeWorkloadRunner
+import org.opendc.compute.workload.export.parquet.ParquetExportMonitor
+import org.opendc.compute.workload.grid5000
+import org.opendc.compute.workload.trace.RawParquetTraceReader
+import org.opendc.compute.workload.util.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
-import org.opendc.experiments.capelin.export.parquet.ParquetExportMonitor
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
-import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
-import org.opendc.experiments.capelin.trace.RawParquetTraceReader
-import org.opendc.experiments.capelin.util.ComputeServiceSimulator
 import org.opendc.experiments.capelin.util.createComputeScheduler
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
@@ -43,7 +44,6 @@ import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.collectServiceMetrics
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import java.io.File
-import java.io.FileInputStream
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -100,7 +100,12 @@ abstract class Portfolio(name: String) : Experiment(name) {
      */
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val seeder = Random(repeat.toLong())
-        val environment = ClusterEnvironmentReader(File(config.getString("env-path"), "${topology.name}.txt"))
+        val environment = ClusterEnvironmentReader(
+            File(
+                config.getString("env-path"),
+                "${topology.name}.txt"
+            )
+        )
 
         val workload = workload
         val workloadNames = if (workload is CompositeWorkload) {
@@ -117,7 +122,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
         val trace = ParquetTraceReader(rawReaders, workload, seeder.nextInt())
         val performanceInterferenceModel = if (operationalPhenomena.hasInterference)
             PerformanceInterferenceReader()
-                .read(FileInputStream(config.getString("interference-model")))
+                .read(File(config.getString("interference-model")))
                 .let { VmInterferenceModel(it, Random(seeder.nextLong())) }
         else
             null
@@ -128,7 +133,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
                 grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()), seeder.nextInt())
             else
                 null
-        val simulator = ComputeServiceSimulator(
+        val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,

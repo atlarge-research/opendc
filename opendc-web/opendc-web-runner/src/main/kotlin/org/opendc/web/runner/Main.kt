@@ -28,14 +28,14 @@ import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.long
 import kotlinx.coroutines.*
 import mu.KotlinLogging
-import org.opendc.experiments.capelin.*
+import org.opendc.compute.workload.ComputeWorkloadRunner
+import org.opendc.compute.workload.env.MachineDef
+import org.opendc.compute.workload.grid5000
+import org.opendc.compute.workload.trace.RawParquetTraceReader
+import org.opendc.compute.workload.util.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.env.EnvironmentReader
-import org.opendc.experiments.capelin.env.MachineDef
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
-import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
-import org.opendc.experiments.capelin.trace.RawParquetTraceReader
-import org.opendc.experiments.capelin.util.ComputeServiceSimulator
 import org.opendc.experiments.capelin.util.createComputeScheduler
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
@@ -198,7 +198,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     else
                         null
 
-                val simulator = ComputeServiceSimulator(
+                val simulator = ComputeWorkloadRunner(
                     coroutineContext,
                     clock,
                     computeScheduler,

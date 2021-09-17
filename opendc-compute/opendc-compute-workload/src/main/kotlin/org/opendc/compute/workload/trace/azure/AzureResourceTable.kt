@@ -20,17 +20,35 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.env
+package org.opendc.compute.workload.trace.azure
 
-import org.opendc.compute.workload.env.MachineDef
-import java.io.Closeable
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import org.opendc.trace.*
+import java.nio.file.Path
 
 /**
- * An interface for reading descriptions of topology environments into memory.
+ * The resource [Table] for the Azure v1 VM traces.
  */
-public interface EnvironmentReader : Closeable {
-    /**
-     * Read the environment into a list.
-     */
-    public fun read(): List<MachineDef>
+internal class AzureResourceTable(private val factory: CsvFactory, private val path: Path) : Table {
+    override val name: String = TABLE_RESOURCES
+
+    override val isSynthetic: Boolean = false
+
+    override val columns: List<TableColumn<*>> = listOf(
+        RESOURCE_ID,
+        RESOURCE_START_TIME,
+        RESOURCE_STOP_TIME,
+        RESOURCE_NCPUS,
+        RESOURCE_MEM_CAPACITY
+    )
+
+    override fun newReader(): TableReader {
+        return AzureResourceTableReader(factory.createParser(path.resolve("vmtable/vmtable.csv").toFile()))
+    }
+
+    override fun newReader(partition: String): TableReader {
+        throw IllegalArgumentException("No partition $partition")
+    }
+
+    override fun toString(): String = "AzureResourceTable"
 }

@@ -31,14 +31,15 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
+import org.opendc.compute.workload.ComputeWorkloadRunner
+import org.opendc.compute.workload.grid5000
+import org.opendc.compute.workload.trace.RawParquetTraceReader
+import org.opendc.compute.workload.trace.TraceReader
+import org.opendc.compute.workload.util.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
 import org.opendc.experiments.capelin.env.EnvironmentReader
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.trace.ParquetTraceReader
-import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
-import org.opendc.experiments.capelin.trace.RawParquetTraceReader
-import org.opendc.experiments.capelin.trace.TraceReader
-import org.opendc.experiments.capelin.util.ComputeServiceSimulator
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
@@ -85,7 +86,7 @@ class CapelinIntegrationTest {
         val traceReader = createTestTraceReader()
         val environmentReader = createTestEnvironmentReader()
 
-        val simulator = ComputeServiceSimulator(
+        val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,
@@ -134,7 +135,7 @@ class CapelinIntegrationTest {
         val traceReader = createTestTraceReader(0.25, seed)
         val environmentReader = createTestEnvironmentReader("single")
 
-        val simulator = ComputeServiceSimulator(
+        val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,
@@ -184,7 +185,7 @@ class CapelinIntegrationTest {
                 .read(perfInterferenceInput)
                 .let { VmInterferenceModel(it, Random(seed.toLong())) }
 
-        val simulator = ComputeServiceSimulator(
+        val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,
@@ -229,7 +230,7 @@ class CapelinIntegrationTest {
         val traceReader = createTestTraceReader(0.25, seed)
         val environmentReader = createTestEnvironmentReader("single")
 
-        val simulator = ComputeServiceSimulator(
+        val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,

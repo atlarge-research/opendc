@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,33 +20,27 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Capelin work"
+package org.opendc.compute.workload.trace.azure
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import com.fasterxml.jackson.dataformat.csv.CsvFactory
+import org.opendc.trace.*
+import java.nio.file.Path
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    api(projects.opendcCompute.opendcComputeWorkload)
+/**
+ * [Trace] implementation for the Azure v1 VM traces.
+ */
+public class AzureTrace internal constructor(private val factory: CsvFactory, private val path: Path) : Trace {
+    override val tables: List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
 
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
+    override fun containsTable(name: String): Boolean = name in tables
 
-    implementation(libs.config)
-    implementation(libs.kotlin.logging)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.module.kotlin)
-    implementation(kotlin("reflect"))
-    implementation(libs.opentelemetry.semconv)
+    override fun getTable(name: String): Table? {
+        return when (name) {
+            TABLE_RESOURCES -> AzureResourceTable(factory, path)
+            TABLE_RESOURCE_STATES -> AzureResourceStateTable(factory, path)
+            else -> null
+        }
+    }
 
-    testImplementation(libs.log4j.slf4j)
+    override fun toString(): String = "AzureTrace[$path]"
 }

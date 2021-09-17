@@ -20,17 +20,13 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.env
-
-import org.opendc.compute.workload.env.MachineDef
-import java.io.Closeable
+package org.opendc.compute.workload.trace
 
 /**
- * An interface for reading descriptions of topology environments into memory.
+ * An interface for reading workloads into memory.
+ *
+ * This interface must guarantee that the entries are delivered in order of submission time.
+ *
+ * @param T The shape of the workloads supported by this reader.
  */
-public interface EnvironmentReader : Closeable {
-    /**
-     * Read the environment into a list.
-     */
-    public fun read(): List<MachineDef>
-}
+public interface TraceReader<T> : Iterator<TraceEntry<T>>, AutoCloseable

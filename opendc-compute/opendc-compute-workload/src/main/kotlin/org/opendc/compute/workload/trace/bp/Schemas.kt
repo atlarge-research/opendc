@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,33 +20,36 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Capelin work"
+package org.opendc.compute.workload.trace.bp
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.apache.avro.Schema
+import org.apache.avro.SchemaBuilder
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    api(projects.opendcCompute.opendcComputeWorkload)
+/**
+ * Schema for the resources table in the trace.
+ */
+public val BP_RESOURCES_SCHEMA: Schema = SchemaBuilder
+    .record("meta")
+    .namespace("org.opendc.trace.capelin")
+    .fields()
+    .requiredString("id")
+    .requiredLong("submissionTime")
+    .requiredLong("endTime")
+    .requiredInt("maxCores")
+    .requiredLong("requiredMemory")
+    .endRecord()
 
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
-
-    implementation(libs.config)
-    implementation(libs.kotlin.logging)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.module.kotlin)
-    implementation(kotlin("reflect"))
-    implementation(libs.opentelemetry.semconv)
-
-    testImplementation(libs.log4j.slf4j)
-}
+/**
+ * Schema for the resource states table in the trace.
+ */
+public val BP_RESOURCE_STATES_SCHEMA: Schema = SchemaBuilder
+    .record("meta")
+    .namespace("org.opendc.trace.capelin")
+    .fields()
+    .requiredString("id")
+    .requiredLong("time")
+    .requiredLong("duration")
+    .requiredInt("cores")
+    .requiredDouble("cpuUsage")
+    .requiredLong("flops")
+    .endRecord()

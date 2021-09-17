@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 package org.opendc.experiments.capelin.trace
 
 import mu.KotlinLogging
+import org.opendc.compute.workload.trace.TraceEntry
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.SamplingStrategy
 import org.opendc.experiments.capelin.model.Workload

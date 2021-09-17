@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.capelin.env
 
+import org.opendc.compute.workload.env.MachineDef
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,33 +20,25 @@
  * SOFTWARE.
  */
 
-description = "Experiments for the Capelin work"
+@file:JvmName("AvroUtils")
+package org.opendc.trace.util.parquet
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
+import org.apache.avro.LogicalTypes
+import org.apache.avro.Schema
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcHarness.opendcHarnessApi)
-    api(projects.opendcCompute.opendcComputeWorkload)
+/**
+ * Schema for UUID type.
+ */
+public val UUID_SCHEMA: Schema = LogicalTypes.uuid().addToSchema(Schema.create(Schema.Type.STRING))
 
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
+/**
+ * Schema for timestamp type.
+ */
+public val TIMESTAMP_SCHEMA: Schema = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG))
 
-    implementation(libs.config)
-    implementation(libs.kotlin.logging)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.module.kotlin)
-    implementation(kotlin("reflect"))
-    implementation(libs.opentelemetry.semconv)
-
-    testImplementation(libs.log4j.slf4j)
+/**
+ * Helper function to make a [Schema] field optional.
+ */
+public fun Schema.optional(): Schema {
+    return Schema.createUnion(Schema.create(Schema.Type.NULL), this)
 }

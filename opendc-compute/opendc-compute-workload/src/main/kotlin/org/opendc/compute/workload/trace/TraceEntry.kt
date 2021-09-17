@@ -20,17 +20,23 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.env
+package org.opendc.compute.workload.trace
 
-import org.opendc.compute.workload.env.MachineDef
-import java.io.Closeable
+import java.util.UUID
 
 /**
- * An interface for reading descriptions of topology environments into memory.
+ * An entry in a workload trace.
+ *
+ * @param uid The unique identifier of the entry.
+ * @param name The name of the entry.
+ * @param start The start time of the workload.
+ * @param workload The workload of the entry.
+ * @param meta The meta-data associated with the workload.
  */
-public interface EnvironmentReader : Closeable {
-    /**
-     * Read the environment into a list.
-     */
-    public fun read(): List<MachineDef>
-}
+public data class TraceEntry<out T>(
+    val uid: UUID,
+    val name: String,
+    val start: Long,
+    val workload: T,
+    val meta: Map<String, Any>
+)

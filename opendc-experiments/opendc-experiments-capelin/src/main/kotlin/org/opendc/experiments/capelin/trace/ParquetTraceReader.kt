@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,9 @@
 
 package org.opendc.experiments.capelin.trace
 
+import org.opendc.compute.workload.trace.RawParquetTraceReader
+import org.opendc.compute.workload.trace.TraceEntry
+import org.opendc.compute.workload.trace.TraceReader
 import org.opendc.experiments.capelin.model.CompositeWorkload
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.simulator.compute.workload.SimWorkload
@@ -51,7 +54,10 @@ public class ParquetTraceReader(
                     this.zip(listOf(workload))
                 }
             }
-            .flatMap { sampleWorkload(it.first, workload, it.second, seed).sortedBy(TraceEntry<SimWorkload>::start) }
+            .flatMap {
+                sampleWorkload(it.first, workload, it.second, seed)
+                    .sortedBy(TraceEntry<SimWorkload>::start)
+            }
             .iterator()
 
     override fun hasNext(): Boolean = iterator.hasNext()
