@@ -22,60 +22,51 @@
 
 package org.opendc.web.runner
 
-import mu.KotlinLogging
-import org.opendc.compute.service.driver.Host
-import org.opendc.compute.service.driver.HostState
 import org.opendc.telemetry.compute.ComputeMonitor
 import org.opendc.telemetry.compute.table.HostData
 import org.opendc.telemetry.compute.table.ServiceData
 import kotlin.math.max
+import kotlin.math.roundToLong
 
 /**
  * A [ComputeMonitor] that tracks the aggregate metrics for each repeat.
  */
-public class WebComputeMonitor : ComputeMonitor {
-    private val logger = KotlinLogging.logger {}
-
-    override fun onStateChange(time: Long, host: Host, newState: HostState) {
-        logger.debug { "Host ${host.uid} changed state $newState [$time]" }
-    }
-
+class WebComputeMonitor : ComputeMonitor {
     override fun record(data: HostData) {
-        val duration = 5 * 60 * 1000L
-        val slices = duration / SLICE_LENGTH
+        val slices = data.downtime / SLICE_LENGTH
 
         hostAggregateMetrics = AggregateHostMetrics(
-            hostAggregateMetrics.totalWork + data.totalWork,
-            hostAggregateMetrics.totalGrantedWork + data.grantedWork,
-            hostAggregateMetrics.totalOvercommittedWork + data.overcommittedWork,
-            hostAggregateMetrics.totalInterferedWork + data.overcommittedWork,
-            hostAggregateMetrics.totalPowerDraw + (duration * data.powerDraw) / 3600,
-            hostAggregateMetrics.totalFailureSlices + if (data.host.state != HostState.UP) slices else 0,
-            hostAggregateMetrics.totalFailureVmSlices + if (data.host.state != HostState.UP) data.instanceCount * slices else 0
+            hostAggregateMetrics.totalActiveTime + data.cpuActiveTime,
+            hostAggregateMetrics.totalIdleTime + data.cpuIdleTime,
+            hostAggregateMetrics.totalStealTime + data.cpuStealTime,
+            hostAggregateMetrics.totalLostTime + data.cpuLostTime,
+            hostAggregateMetrics.totalPowerDraw + data.powerTotal,
+            hostAggregateMetrics.totalFailureSlices + slices,
+            hostAggregateMetrics.totalFailureVmSlices + data.guestsRunning * slices
         )
 
-        hostMetrics.compute(data.host) { _, prev ->
+        hostMetrics.compute(data.host.id) { _, prev ->
             HostMetrics(
-                (data.cpuUsage.takeIf { data.host.state == HostState.UP } ?: 0.0) + (prev?.cpuUsage ?: 0.0),
-                (data.cpuDemand.takeIf { data.host.state == HostState.UP } ?: 0.0) + (prev?.cpuDemand ?: 0.0),
-                data.instanceCount + (prev?.instanceCount ?: 0),
+                data.cpuUsage + (prev?.cpuUsage ?: 0.0),
+                data.cpuDemand + (prev?.cpuDemand ?: 0.0),
+                data.guestsRunning + (prev?.instanceCount ?: 0),
                 1 + (prev?.count ?: 0)
             )
         }
     }
 
     private var hostAggregateMetrics: AggregateHostMetrics = AggregateHostMetrics()
-    private val hostMetrics: MutableMap<Host, HostMetrics> = mutableMapOf()
-    private val SLICE_LENGTH: Long = 5 * 60 * 1000
+    private val hostMetrics: MutableMap<String, HostMetrics> = mutableMapOf()
+    private val SLICE_LENGTH: Long = 5 * 60
 
     data class AggregateHostMetrics(
-        val totalWork: Double = 0.0,
-        val totalGrantedWork: Double = 0.0,
-        val totalOvercommittedWork: Double = 0.0,
-        val totalInterferedWork: Double = 0.0,
+        val totalActiveTime: Long = 0L,
+        val totalIdleTime: Long = 0L,
+        val totalStealTime: Long = 0L,
+        val totalLostTime: Long = 0L,
         val totalPowerDraw: Double = 0.0,
-        val totalFailureSlices: Long = 0,
-        val totalFailureVmSlices: Long = 0,
+        val totalFailureSlices: Double = 0.0,
+        val totalFailureVmSlices: Double = 0.0,
     )
 
     data class HostMetrics(
@@ -89,15 +80,15 @@ public class WebComputeMonitor : ComputeMonitor {
 
     override fun record(data: ServiceData) {
         serviceMetrics = AggregateServiceMetrics(
-            max(data.instanceCount, serviceMetrics.vmTotalCount),
-            max(data.queuedInstanceCount, serviceMetrics.vmWaitingCount),
-            max(data.runningInstanceCount, serviceMetrics.vmActiveCount),
-            max(data.finishedInstanceCount, serviceMetrics.vmInactiveCount),
-            max(data.failedInstanceCount, serviceMetrics.vmFailedCount),
+            max(data.attemptsSuccess, serviceMetrics.vmTotalCount),
+            max(data.serversPending, serviceMetrics.vmWaitingCount),
+            max(data.serversActive, serviceMetrics.vmActiveCount),
+            max(0, serviceMetrics.vmInactiveCount),
+            max(data.attemptsFailure, serviceMetrics.vmFailedCount),
         )
     }
 
-    public data class AggregateServiceMetrics(
+    data class AggregateServiceMetrics(
         val vmTotalCount: Int = 0,
         val vmWaitingCount: Int = 0,
         val vmActiveCount: Int = 0,
@@ -105,19 +96,19 @@ public class WebComputeMonitor : ComputeMonitor {
         val vmFailedCount: Int = 0
     )
 
-    public fun getResult(): Result {
+    fun getResult(): Result {
         return Result(
-            hostAggregateMetrics.totalWork,
-            hostAggregateMetrics.totalGrantedWork,
-            hostAggregateMetrics.totalOvercommittedWork,
-            hostAggregateMetrics.totalInterferedWork,
+            hostAggregateMetrics.totalActiveTime,
+            hostAggregateMetrics.totalIdleTime,
+            hostAggregateMetrics.totalStealTime,
+            hostAggregateMetrics.totalLostTime,
             hostMetrics.map { it.value.cpuUsage / it.value.count }.average(),
             hostMetrics.map { it.value.cpuDemand / it.value.count }.average(),
             hostMetrics.map { it.value.instanceCount.toDouble() / it.value.count }.average(),
             hostMetrics.map { it.value.instanceCount.toDouble() / it.value.count }.maxOrNull() ?: 0.0,
             hostAggregateMetrics.totalPowerDraw,
-            hostAggregateMetrics.totalFailureSlices,
-            hostAggregateMetrics.totalFailureVmSlices,
+            hostAggregateMetrics.totalFailureSlices.roundToLong(),
+            hostAggregateMetrics.totalFailureVmSlices.roundToLong(),
             serviceMetrics.vmTotalCount,
             serviceMetrics.vmWaitingCount,
             serviceMetrics.vmInactiveCount,
@@ -126,10 +117,10 @@ public class WebComputeMonitor : ComputeMonitor {
     }
 
     data class Result(
-        val totalWork: Double,
-        val totalGrantedWork: Double,
-        val totalOvercommittedWork: Double,
-        val totalInterferedWork: Double,
+        val totalActiveTime: Long,
+        val totalIdleTime: Long,
+        val totalStealTime: Long,
+        val totalLostTime: Long,
         val meanCpuUsage: Double,
         val meanCpuDemand: Double,
         val meanNumDeployedImages: Double,

@@ -1,0 +1,305 @@
+/*
+ * Copyright (c) 2021 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package org.opendc.compute.simulator.internal
+
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
+import io.opentelemetry.api.metrics.ObservableLongMeasurement
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
+import kotlinx.coroutines.*
+import mu.KotlinLogging
+import org.opendc.compute.api.Server
+import org.opendc.compute.api.ServerState
+import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.simulator.SimWorkloadMapper
+import org.opendc.simulator.compute.SimAbstractMachine
+import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.workload.SimWorkload
+import java.time.Clock
+import kotlin.coroutines.CoroutineContext
+import kotlin.math.roundToLong
+
+/**
+ * A virtual machine instance that is managed by a [SimHost].
+ */
+internal class Guest(
+    context: CoroutineContext,
+    private val clock: Clock,
+    val host: SimHost,
+    private val mapper: SimWorkloadMapper,
+    private val listener: GuestListener,
+    val server: Server,
+    val machine: SimMachine
+) {
+    /**
+     * The [CoroutineScope] of the guest.
+     */
+    private val scope: CoroutineScope = CoroutineScope(context + Job())
+
+    /**
+     * The logger instance of this guest.
+     */
+    private val logger = KotlinLogging.logger {}
+
+    /**
+     * The state of the [Guest].
+     *
+     * [ServerState.PROVISIONING] is an invalid value for a guest, since it applies before the host is selected for
+     * a server.
+     */
+    var state: ServerState = ServerState.TERMINATED
+
+    /**
+     * The attributes of the guest.
+     */
+    val attributes: Attributes = Attributes.builder()
+        .put(ResourceAttributes.HOST_NAME, server.name)
+        .put(ResourceAttributes.HOST_ID, server.uid.toString())
+        .put(ResourceAttributes.HOST_TYPE, server.flavor.name)
+        .put(AttributeKey.longKey("host.num_cpus"), server.flavor.cpuCount.toLong())
+        .put(AttributeKey.longKey("host.mem_capacity"), server.flavor.memorySize)
+        .put(AttributeKey.stringArrayKey("host.labels"), server.labels.map { (k, v) -> "$k:$v" })
+        .put(ResourceAttributes.HOST_ARCH, ResourceAttributes.HostArchValues.AMD64)
+        .put(ResourceAttributes.HOST_IMAGE_NAME, server.image.name)
+        .put(ResourceAttributes.HOST_IMAGE_ID, server.image.uid.toString())
+        .build()
+
+    /**
+     * Start the guest.
+     */
+    suspend fun start() {
+        when (state) {
+            ServerState.TERMINATED, ServerState.ERROR -> {
+                logger.info { "User requested to start server ${server.uid}" }
+                doStart()
+            }
+            ServerState.RUNNING -> return
+            ServerState.DELETED -> {
+                logger.warn { "User tried to start terminated server" }
+                throw IllegalArgumentException("Server is terminated")
+            }
+            else -> assert(false) { "Invalid state transition" }
+        }
+    }
+
+    /**
+     * Stop the guest.
+     */
+    suspend fun stop() {
+        when (state) {
+            ServerState.RUNNING -> doStop(ServerState.TERMINATED)
+            ServerState.ERROR -> doRecover()
+            ServerState.TERMINATED, ServerState.DELETED -> return
+            else -> assert(false) { "Invalid state transition" }
+        }
+    }
+
+    /**
+     * Terminate the guest.
+     *
+     * This operation will stop the guest if it is running on the host and remove all resources associated with the
+     * guest.
+     */
+    suspend fun terminate() {
+        stop()
+
+        state = ServerState.DELETED
+
+        machine.close()
+        scope.cancel()
+    }
+
+    /**
+     * Fail the guest if it is active.
+     *
+     * This operation forcibly stops the guest and puts the server into an error state.
+     */
+    suspend fun fail() {
+        if (state != ServerState.RUNNING) {
+            return
+        }
+
+        doStop(ServerState.ERROR)
+    }
+
+    /**
+     * The [Job] representing the current active virtual machine instance or `null` if no virtual machine is active.
+     */
+    private var job: Job? = null
+
+    /**
+     * Launch the guest on the simulated
+     */
+    private suspend fun doStart() {
+        assert(job == null) { "Concurrent job running" }
+        val workload = mapper.createWorkload(server)
+
+        val job = scope.launch { runMachine(workload) }
+        this.job = job
+
+        state = ServerState.RUNNING
+        onStart()
+
+        job.invokeOnCompletion { cause ->
+            this.job = null
+            onStop(if (cause != null && cause !is CancellationException) ServerState.ERROR else ServerState.TERMINATED)
+        }
+    }
+
+    /**
+     * Attempt to stop the server and put it into [target] state.
+     */
+    private suspend fun doStop(target: ServerState) {
+        assert(job != null) { "Invalid job state" }
+        val job = job ?: return
+        job.cancel()
+        job.join()
+
+        state = target
+    }
+
+    /**
+     * Attempt to recover from an error state.
+     */
+    private fun doRecover() {
+        state = ServerState.TERMINATED
+    }
+
+    /**
+     * Run the process that models the virtual machine lifecycle as a coroutine.
+     */
+    private suspend fun runMachine(workload: SimWorkload) {
+        delay(1) // TODO Introduce model for boot time
+        machine.run(workload, mapOf("driver" to host, "server" to server))
+    }
+
+    /**
+     * This method is invoked when the guest was started on the host and has booted into a running state.
+     */
+    private fun onStart() {
+        _bootTime = clock.millis()
+        state = ServerState.RUNNING
+        listener.onStart(this)
+    }
+
+    /**
+     * This method is invoked when the guest stopped.
+     */
+    private fun onStop(target: ServerState) {
+        state = target
+        listener.onStop(this)
+    }
+
+    private val STATE_KEY = AttributeKey.stringKey("state")
+
+    private var _uptime = 0L
+    private var _downtime = 0L
+    private val _upState = Attributes.builder()
+        .putAll(attributes)
+        .put(STATE_KEY, "up")
+        .build()
+    private val _downState = Attributes.builder()
+        .putAll(attributes)
+        .put(STATE_KEY, "down")
+        .build()
+
+    /**
+     * Helper function to track the uptime of the guest.
+     */
+    fun collectUptime(duration: Long, result: ObservableLongMeasurement? = null) {
+        if (state == ServerState.RUNNING) {
+            _uptime += duration
+        } else if (state == ServerState.ERROR) {
+            _downtime += duration
+        }
+
+        result?.observe(_uptime, _upState)
+        result?.observe(_downtime, _downState)
+    }
+
+    private var _bootTime = Long.MIN_VALUE
+
+    /**
+     * Helper function to track the boot time of the guest.
+     */
+    fun collectBootTime(result: ObservableLongMeasurement? = null) {
+        if (_bootTime != Long.MIN_VALUE) {
+            result?.observe(_bootTime)
+        }
+    }
+
+    private val _activeState = Attributes.builder()
+        .putAll(attributes)
+        .put(STATE_KEY, "active")
+        .build()
+    private val _stealState = Attributes.builder()
+        .putAll(attributes)
+        .put(STATE_KEY, "steal")
+        .build()
+    private val _lostState = Attributes.builder()
+        .putAll(attributes)
+        .put(STATE_KEY, "lost")
+        .build()
+    private val _idleState = Attributes.builder()
+        .putAll(attributes)
+        .put(STATE_KEY, "idle")
+        .build()
+    private var _totalTime = 0.0
+
+    /**
+     * Helper function to track the CPU time of a machine.
+     */
+    fun collectCpuTime(duration: Long, result: ObservableLongMeasurement) {
+        val coreCount = server.flavor.cpuCount
+        val d = coreCount / _cpuLimit
+
+        var grantedWork = 0.0
+        var overcommittedWork = 0.0
+
+        for (cpu in (machine as SimAbstractMachine).cpus) {
+            val counters = cpu.counters
+            grantedWork += counters.actual
+            overcommittedWork += counters.overcommit
+        }
+
+        _totalTime += (duration / 1000.0) * coreCount
+        val activeTime = (grantedWork * d).roundToLong()
+        val idleTime = (_totalTime - grantedWork * d).roundToLong()
+        val stealTime = (overcommittedWork * d).roundToLong()
+
+        result.observe(activeTime, _activeState)
+        result.observe(idleTime, _idleState)
+        result.observe(stealTime, _stealState)
+        result.observe(0, _lostState)
+    }
+
+    private val _cpuLimit = machine.model.cpus.sumOf { it.frequency }
+
+    /**
+     * Helper function to collect the CPU limits of a machine.
+     */
+    fun collectCpuLimit(result: ObservableDoubleMeasurement) {
+        result.observe(_cpuLimit, attributes)
+    }
+}

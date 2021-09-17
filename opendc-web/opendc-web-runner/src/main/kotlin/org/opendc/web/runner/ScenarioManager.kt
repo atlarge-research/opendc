@@ -65,10 +65,10 @@ public class ScenarioManager(private val client: ApiClient) {
         client.updateJob(
             id, SimulationState.FINISHED,
             mapOf(
-                "total_requested_burst" to results.map { it.totalWork },
-                "total_granted_burst" to results.map { it.totalGrantedWork },
-                "total_overcommitted_burst" to results.map { it.totalOvercommittedWork },
-                "total_interfered_burst" to results.map { it.totalInterferedWork },
+                "total_requested_burst" to results.map { it.totalActiveTime + it.totalIdleTime },
+                "total_granted_burst" to results.map { it.totalActiveTime },
+                "total_overcommitted_burst" to results.map { it.totalStealTime },
+                "total_interfered_burst" to results.map { it.totalLostTime },
                 "mean_cpu_usage" to results.map { it.meanCpuUsage },
                 "mean_cpu_demand" to results.map { it.meanCpuDemand },
                 "mean_num_deployed_images" to results.map { it.meanNumDeployedImages },

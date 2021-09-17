@@ -22,6 +22,9 @@
 
 package org.opendc.compute.service.internal
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import mu.KotlinLogging
 import org.opendc.compute.api.*
 import org.opendc.compute.service.driver.Host
@@ -48,6 +51,21 @@ internal class InternalServer(
      * The watchers of this server object.
      */
     private val watchers = mutableListOf<ServerWatcher>()
+
+    /**
+     * The attributes of a server.
+     */
+    internal val attributes: Attributes = Attributes.builder()
+        .put(ResourceAttributes.HOST_NAME, name)
+        .put(ResourceAttributes.HOST_ID, uid.toString())
+        .put(ResourceAttributes.HOST_TYPE, flavor.name)
+        .put(AttributeKey.longKey("host.num_cpus"), flavor.cpuCount.toLong())
+        .put(AttributeKey.longKey("host.mem_capacity"), flavor.memorySize)
+        .put(AttributeKey.stringArrayKey("host.labels"), labels.map { (k, v) -> "$k:$v" })
+        .put(ResourceAttributes.HOST_ARCH, ResourceAttributes.HostArchValues.AMD64)
+        .put(ResourceAttributes.HOST_IMAGE_NAME, image.name)
+        .put(ResourceAttributes.HOST_IMAGE_ID, image.uid.toString())
+        .build()
 
     /**
      * The [Host] that has been assigned to host the server.

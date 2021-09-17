@@ -20,33 +20,25 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute
+@file:JvmName("AvroUtils")
+package org.opendc.experiments.capelin.export.parquet
 
-import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.export.MetricProducer
-import org.opendc.telemetry.compute.table.ServiceData
-import java.time.Instant
-
-/**
- * Collect the metrics of the compute service.
- */
-public fun collectServiceMetrics(timestamp: Instant, metricProducer: MetricProducer): ServiceData {
-    return extractServiceMetrics(timestamp, metricProducer.collectAllMetrics())
-}
+import org.apache.avro.LogicalTypes
+import org.apache.avro.Schema
 
 /**
- * Extract a [ServiceData] object from the specified list of metric data.
+ * Schema for UUID type.
  */
-public fun extractServiceMetrics(timestamp: Instant, metrics: Collection<MetricData>): ServiceData {
-    lateinit var serviceData: ServiceData
-    val agg = ComputeMetricAggregator()
-    val monitor = object : ComputeMonitor {
-        override fun record(data: ServiceData) {
-            serviceData = data
-        }
-    }
+internal val UUID_SCHEMA = LogicalTypes.uuid().addToSchema(Schema.create(Schema.Type.STRING))
 
-    agg.process(metrics)
-    agg.collect(timestamp, monitor)
-    return serviceData
+/**
+ * Schema for timestamp type.
+ */
+internal val TIMESTAMP_SCHEMA = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG))
+
+/**
+ * Helper function to make a [Schema] field optional.
+ */
+internal fun Schema.optional(): Schema {
+    return Schema.createUnion(Schema.create(Schema.Type.NULL), this)
 }

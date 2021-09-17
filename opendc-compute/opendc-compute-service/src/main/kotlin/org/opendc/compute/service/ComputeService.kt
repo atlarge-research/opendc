@@ -23,11 +23,13 @@
 package org.opendc.compute.service
 
 import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.api.metrics.MeterProvider
 import org.opendc.compute.api.ComputeClient
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import java.time.Clock
+import java.time.Duration
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -70,16 +72,18 @@ public interface ComputeService : AutoCloseable {
          *
          * @param context The [CoroutineContext] to use in the service.
          * @param clock The clock instance to use.
+         * @param meterProvider The [MeterProvider] for creating a [Meter] for the service.
          * @param scheduler The scheduler implementation to use.
+         * @param schedulingQuantum The interval between scheduling cycles.
          */
         public operator fun invoke(
             context: CoroutineContext,
             clock: Clock,
-            meter: Meter,
+            meterProvider: MeterProvider,
             scheduler: ComputeScheduler,
-            schedulingQuantum: Long = 300000,
+            schedulingQuantum: Duration = Duration.ofMinutes(5),
         ): ComputeService {
-            return ComputeServiceImpl(context, clock, meter, scheduler, schedulingQuantum)
+            return ComputeServiceImpl(context, clock, meterProvider, scheduler, schedulingQuantum)
         }
     }
 }

@@ -22,14 +22,22 @@
 
 package org.opendc.telemetry.compute.table
 
-import org.opendc.compute.api.Server
+import java.time.Instant
 
 /**
  * A trace entry for a particular server.
  */
 public data class ServerData(
-    public val timestamp: Long,
-    public val server: Server,
-    public val uptime: Long,
-    public val downtime: Long,
+    val timestamp: Instant,
+    val server: ServerInfo,
+    val host: HostInfo?,
+    val uptime: Long,
+    val downtime: Long,
+    val bootTime: Instant?,
+    val schedulingLatency: Long,
+    val cpuLimit: Double,
+    val cpuActiveTime: Long,
+    val cpuIdleTime: Long,
+    val cpuStealTime: Long,
+    val cpuLostTime: Long,
 )

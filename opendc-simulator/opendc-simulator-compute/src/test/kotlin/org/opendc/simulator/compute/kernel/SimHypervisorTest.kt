@@ -70,14 +70,14 @@ internal class SimHypervisorTest {
 
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
-                requestedWork: Double,
+                totalWork: Double,
                 grantedWork: Double,
                 overcommittedWork: Double,
                 interferedWork: Double,
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
-                totalRequestedWork += requestedWork
+                totalRequestedWork += totalWork
                 totalGrantedWork += grantedWork
                 totalOvercommittedWork += overcommittedWork
             }
@@ -128,14 +128,14 @@ internal class SimHypervisorTest {
 
             override fun onSliceFinish(
                 hypervisor: SimHypervisor,
-                requestedWork: Double,
+                totalWork: Double,
                 grantedWork: Double,
                 overcommittedWork: Double,
                 interferedWork: Double,
                 cpuUsage: Double,
                 cpuDemand: Double
             ) {
-                totalRequestedWork += requestedWork
+                totalRequestedWork += totalWork
                 totalGrantedWork += grantedWork
                 totalOvercommittedWork += overcommittedWork
             }

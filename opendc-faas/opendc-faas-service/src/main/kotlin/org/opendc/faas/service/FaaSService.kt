@@ -23,6 +23,7 @@
 package org.opendc.faas.service
 
 import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.api.metrics.MeterProvider
 import org.opendc.faas.api.FaaSClient
 import org.opendc.faas.service.autoscaler.FunctionTerminationPolicy
 import org.opendc.faas.service.deployer.FunctionDeployer
@@ -51,7 +52,7 @@ public interface FaaSService : AutoCloseable {
          *
          * @param context The [CoroutineContext] to use in the service.
          * @param clock The clock instance to use.
-         * @param meter The meter to report metrics to.
+         * @param meterProvider The [MeterProvider] to create a [Meter] with.
          * @param deployer the [FunctionDeployer] to use for deploying function instances.
          * @param routingPolicy The policy to route function invocations.
          * @param terminationPolicy The policy for terminating function instances.
@@ -59,12 +60,12 @@ public interface FaaSService : AutoCloseable {
         public operator fun invoke(
             context: CoroutineContext,
             clock: Clock,
-            meter: Meter,
+            meterProvider: MeterProvider,
             deployer: FunctionDeployer,
             routingPolicy: RoutingPolicy,
             terminationPolicy: FunctionTerminationPolicy,
         ): FaaSService {
-            return FaaSServiceImpl(context, clock, meter, deployer, routingPolicy, terminationPolicy)
+            return FaaSServiceImpl(context, clock, meterProvider, deployer, routingPolicy, terminationPolicy)
         }
     }
 }

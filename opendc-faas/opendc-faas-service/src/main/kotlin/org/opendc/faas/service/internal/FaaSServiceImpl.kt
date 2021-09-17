@@ -23,6 +23,7 @@
 package org.opendc.faas.service.internal
 
 import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import mu.KotlinLogging
@@ -54,7 +55,7 @@ import kotlin.coroutines.resumeWithException
 internal class FaaSServiceImpl(
     context: CoroutineContext,
     private val clock: Clock,
-    private val meter: Meter,
+    private val meterProvider: MeterProvider,
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy,
     private val terminationPolicy: FunctionTerminationPolicy
@@ -68,6 +69,11 @@ internal class FaaSServiceImpl(
      * The logger instance of this server.
      */
     private val logger = KotlinLogging.logger {}
+
+    /**
+     * The [Meter] that collects the metrics of this service.
+     */
+    private val meter = meterProvider.get("org.opendc.faas.service")
 
     /**
      * The [TimerScheduler] to use for scheduling the scheduler cycles.

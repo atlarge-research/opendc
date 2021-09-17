@@ -51,6 +51,7 @@ import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.NullTaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.SubmissionTimeTaskOrderPolicy
+import java.time.Duration
 import java.util.*
 
 /**
@@ -79,24 +80,23 @@ internal class WorkflowServiceTest {
                 emptyMap(),
                 coroutineContext,
                 interpreter,
-                meterProvider.get("opendc-compute-simulator"),
+                MeterProvider.noop(),
                 hvProvider,
             )
         }
 
-        val meter = MeterProvider.noop().get("opendc-compute")
         val computeScheduler = FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
             weighers = listOf(VCpuWeigher(1.0, multiplier = 1.0))
         )
-        val compute = ComputeService(coroutineContext, clock, meter, computeScheduler, schedulingQuantum = 1000)
+        val compute = ComputeService(coroutineContext, clock, MeterProvider.noop(), computeScheduler, schedulingQuantum = Duration.ofSeconds(1))
 
         hosts.forEach { compute.addHost(it) }
 
         val scheduler = WorkflowService(
             coroutineContext,
             clock,
-            meterProvider.get("opendc-workflow"),
+            meterProvider,
             compute.newClient(),
             mode = WorkflowSchedulerMode.Batch(100),
             jobAdmissionPolicy = NullJobAdmissionPolicy,

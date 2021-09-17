@@ -25,11 +25,12 @@ package org.opendc.experiments.capelin.export.parquet
 import mu.KotlinLogging
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
+import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetFileWriter
+import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.trace.util.parquet.LocalOutputFile
-import java.io.Closeable
 import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
@@ -38,50 +39,94 @@ import kotlin.concurrent.thread
 /**
  * A writer that writes data in Parquet format.
  */
-public open class ParquetDataWriter<in T>(
-    private val path: File,
+abstract class ParquetDataWriter<in T>(
+    path: File,
     private val schema: Schema,
-    private val converter: (T, GenericData.Record) -> Unit,
-    private val bufferSize: Int = 4096
-) : Runnable, Closeable {
+    bufferSize: Int = 4096
+) : AutoCloseable {
     /**
      * The logging instance to use.
      */
     private val logger = KotlinLogging.logger {}
 
     /**
-     * The writer to write the Parquet file.
-     */
-    private val writer = AvroParquetWriter.builder<GenericData.Record>(LocalOutputFile(path))
-        .withSchema(schema)
-        .withCompressionCodec(CompressionCodecName.SNAPPY)
-        .withPageSize(4 * 1024 * 1024) // For compression
-        .withRowGroupSize(16 * 1024 * 1024) // For write buffering (Page size)
-        .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
-        .build()
-
-    /**
      * The queue of commands to process.
      */
-    private val queue: BlockingQueue<Action> = ArrayBlockingQueue(bufferSize)
+    private val queue: BlockingQueue<T> = ArrayBlockingQueue(bufferSize)
+
+    /**
+     * An exception to be propagated to the actual writer.
+     */
+    private var exception: Throwable? = null
 
     /**
      * The thread that is responsible for writing the Parquet records.
      */
-    private val writerThread = thread(start = false, name = this.toString()) { run() }
+    private val writerThread = thread(start = false, name = this.toString()) {
+        val writer = let {
+            val builder = AvroParquetWriter.builder<GenericData.Record>(LocalOutputFile(path))
+                .withSchema(schema)
+                .withCompressionCodec(CompressionCodecName.ZSTD)
+                .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
+            buildWriter(builder)
+        }
+
+        val queue = queue
+        val buf = mutableListOf<T>()
+        var shouldStop = false
+
+        try {
+            while (!shouldStop) {
+                try {
+                    process(writer, queue.take())
+                } catch (e: InterruptedException) {
+                    shouldStop = true
+                }
+
+                if (queue.drainTo(buf) > 0) {
+                    for (data in buf) {
+                        process(writer, data)
+                    }
+                    buf.clear()
+                }
+            }
+        } catch (e: Throwable) {
+            logger.error(e) { "Failure in Parquet data writer" }
+            exception = e
+        } finally {
+            writer.close()
+        }
+    }
+
+    /**
+     * Build the [ParquetWriter] used to write the Parquet files.
+     */
+    protected open fun buildWriter(builder: AvroParquetWriter.Builder<GenericData.Record>): ParquetWriter<GenericData.Record> {
+        return builder.build()
+    }
+
+    /**
+     * Convert the specified [data] into a Parquet record.
+     */
+    protected abstract fun convert(builder: GenericRecordBuilder, data: T)
 
     /**
      * Write the specified metrics to the database.
      */
-    public fun write(event: T) {
-        queue.put(Action.Write(event))
+    fun write(data: T) {
+        val exception = exception
+        if (exception != null) {
+            throw IllegalStateException("Writer thread failed", exception)
+        }
+
+        queue.put(data)
     }
 
     /**
      * Signal the writer to stop.
      */
-    public override fun close() {
-        queue.put(Action.Stop)
+    override fun close() {
+        writerThread.interrupt()
         writerThread.join()
     }
 
@@ -90,38 +135,11 @@ public open class ParquetDataWriter<in T>(
     }
 
     /**
-     * Start the writer thread.
+     * Process the specified [data] to be written to the Parquet file.
      */
-    override fun run() {
-        try {
-            loop@ while (true) {
-                val action = queue.take()
-                when (action) {
-                    is Action.Stop -> break@loop
-                    is Action.Write<*> -> {
-                        val record = GenericData.Record(schema)
-                        @Suppress("UNCHECKED_CAST")
-                        converter(action.data as T, record)
-                        writer.write(record)
-                    }
-                }
-            }
-        } catch (e: Throwable) {
-            logger.error("Writer failed", e)
-        } finally {
-            writer.close()
-        }
-    }
-
-    public sealed class Action {
-        /**
-         * A poison pill that will stop the writer thread.
-         */
-        public object Stop : Action()
-
-        /**
-         * Write the specified metrics to the database.
-         */
-        public data class Write<out T>(val data: T) : Action()
+    private fun process(writer: ParquetWriter<GenericData.Record>, data: T) {
+        val builder = GenericRecordBuilder(schema)
+        convert(builder, data)
+        writer.write(builder.build())
     }
 }

@@ -35,6 +35,7 @@ dependencies {
     api(projects.opendcTelemetry.opendcTelemetryApi)
     implementation(projects.opendcUtils)
     implementation(libs.kotlin.logging)
+    implementation(libs.opentelemetry.semconv)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly(libs.log4j.slf4j)

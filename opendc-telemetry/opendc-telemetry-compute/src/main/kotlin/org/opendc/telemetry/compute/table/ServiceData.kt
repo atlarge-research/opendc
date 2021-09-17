@@ -22,16 +22,18 @@
 
 package org.opendc.telemetry.compute.table
 
+import java.time.Instant
+
 /**
  * A trace entry for the compute service.
  */
 public data class ServiceData(
-    public val timestamp: Long,
-    public val hostCount: Int,
-    public val activeHostCount: Int,
-    public val instanceCount: Int,
-    public val runningInstanceCount: Int,
-    public val finishedInstanceCount: Int,
-    public val queuedInstanceCount: Int,
-    public val failedInstanceCount: Int
+    val timestamp: Instant,
+    val hostsUp: Int,
+    val hostsDown: Int,
+    val serversPending: Int,
+    val serversActive: Int,
+    val attemptsSuccess: Int,
+    val attemptsFailure: Int,
+    val attemptsError: Int
 )

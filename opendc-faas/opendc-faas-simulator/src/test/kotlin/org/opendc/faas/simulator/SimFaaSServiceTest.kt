@@ -43,6 +43,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
+import java.time.Duration
 
 /**
  * A test suite for the [FaaSService] implementation under simulated conditions.
@@ -64,14 +65,13 @@ internal class SimFaaSServiceTest {
 
     @Test
     fun testSmoke() = runBlockingSimulation {
-        val meter = MeterProvider.noop().get("opendc-faas")
         val workload = spyk(object : SimFaaSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {}
         })
         val deployer = SimFunctionDeployer(clock, this, machineModel, ZeroDelayInjector) { workload }
         val service = FaaSService(
-            coroutineContext, clock, meter, deployer, RandomRoutingPolicy(),
-            FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = 10000)
+            coroutineContext, clock, MeterProvider.noop(), deployer, RandomRoutingPolicy(),
+            FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = Duration.ofMillis(10000))
         )
 
         val client = service.newClient()

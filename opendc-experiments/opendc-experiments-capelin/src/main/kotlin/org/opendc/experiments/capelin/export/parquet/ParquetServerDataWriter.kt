@@ -28,25 +28,28 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
-import org.opendc.telemetry.compute.table.HostData
+import org.opendc.telemetry.compute.table.ServerData
 import java.io.File
+import java.util.*
 
 /**
- * A Parquet event writer for [HostData]s.
+ * A Parquet event writer for [ServerData]s.
  */
-public class ParquetHostDataWriter(path: File, bufferSize: Int) :
-    ParquetDataWriter<HostData>(path, SCHEMA, bufferSize) {
+public class ParquetServerDataWriter(path: File, bufferSize: Int) :
+    ParquetDataWriter<ServerData>(path, SCHEMA, bufferSize) {
 
     override fun buildWriter(builder: AvroParquetWriter.Builder<GenericData.Record>): ParquetWriter<GenericData.Record> {
         return builder
+            .withDictionaryEncoding("server_id", true)
             .withDictionaryEncoding("host_id", true)
             .build()
     }
 
-    override fun convert(builder: GenericRecordBuilder, data: HostData) {
+    override fun convert(builder: GenericRecordBuilder, data: ServerData) {
         builder["timestamp"] = data.timestamp.toEpochMilli()
 
-        builder["host_id"] = data.host.id
+        builder["server_id"] = data.server.id
+        builder["host_id"] = data.host?.id
 
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
@@ -54,36 +57,32 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
         if (bootTime != null) {
             builder["boot_time"] = bootTime.toEpochMilli()
         }
+        builder["scheduling_latency"] = data.schedulingLatency
 
-        builder["cpu_count"] = data.host.cpuCount
+        builder["cpu_count"] = data.server.cpuCount
         builder["cpu_limit"] = data.cpuLimit
         builder["cpu_time_active"] = data.cpuActiveTime
         builder["cpu_time_idle"] = data.cpuIdleTime
         builder["cpu_time_steal"] = data.cpuStealTime
         builder["cpu_time_lost"] = data.cpuLostTime
 
-        builder["mem_limit"] = data.host.memCapacity
-
-        builder["power_total"] = data.powerTotal
-
-        builder["guests_terminated"] = data.guestsTerminated
-        builder["guests_running"] = data.guestsRunning
-        builder["guests_error"] = data.guestsError
-        builder["guests_invalid"] = data.guestsInvalid
+        builder["mem_limit"] = data.server.memCapacity
     }
 
-    override fun toString(): String = "host-writer"
+    override fun toString(): String = "server-writer"
 
     companion object {
         private val SCHEMA: Schema = SchemaBuilder
-            .record("host")
+            .record("server")
             .namespace("org.opendc.telemetry.compute")
             .fields()
             .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
-            .name("host_id").type(UUID_SCHEMA).noDefault()
+            .name("server_id").type(UUID_SCHEMA).noDefault()
+            .name("host_id").type(UUID_SCHEMA.optional()).noDefault()
             .requiredLong("uptime")
             .requiredLong("downtime")
             .name("boot_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
+            .requiredLong("scheduling_latency")
             .requiredInt("cpu_count")
             .requiredDouble("cpu_limit")
             .requiredLong("cpu_time_active")
@@ -91,11 +90,6 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
             .requiredLong("cpu_time_steal")
             .requiredLong("cpu_time_lost")
             .requiredLong("mem_limit")
-            .requiredDouble("power_total")
-            .requiredInt("guests_terminated")
-            .requiredInt("guests_running")
-            .requiredInt("guests_error")
-            .requiredInt("guests_invalid")
             .endRecord()
     }
 }

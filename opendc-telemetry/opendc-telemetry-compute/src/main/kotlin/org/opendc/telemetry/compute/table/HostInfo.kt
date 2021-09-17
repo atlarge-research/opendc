@@ -20,33 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute
-
-import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.export.MetricProducer
-import org.opendc.telemetry.compute.table.ServiceData
-import java.time.Instant
+package org.opendc.telemetry.compute.table
 
 /**
- * Collect the metrics of the compute service.
+ * Information about a host exposed to the telemetry service.
  */
-public fun collectServiceMetrics(timestamp: Instant, metricProducer: MetricProducer): ServiceData {
-    return extractServiceMetrics(timestamp, metricProducer.collectAllMetrics())
-}
-
-/**
- * Extract a [ServiceData] object from the specified list of metric data.
- */
-public fun extractServiceMetrics(timestamp: Instant, metrics: Collection<MetricData>): ServiceData {
-    lateinit var serviceData: ServiceData
-    val agg = ComputeMetricAggregator()
-    val monitor = object : ComputeMonitor {
-        override fun record(data: ServiceData) {
-            serviceData = data
-        }
-    }
-
-    agg.process(metrics)
-    agg.collect(timestamp, monitor)
-    return serviceData
-}
+public data class HostInfo(val id: String, val name: String, val arch: String, val cpuCount: Int, val memCapacity: Long)

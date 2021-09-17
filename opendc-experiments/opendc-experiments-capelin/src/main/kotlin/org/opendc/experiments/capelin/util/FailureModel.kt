@@ -20,33 +20,19 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute
+package org.opendc.experiments.capelin.util
 
-import io.opentelemetry.sdk.metrics.data.MetricData
-import io.opentelemetry.sdk.metrics.export.MetricProducer
-import org.opendc.telemetry.compute.table.ServiceData
-import java.time.Instant
-
-/**
- * Collect the metrics of the compute service.
- */
-public fun collectServiceMetrics(timestamp: Instant, metricProducer: MetricProducer): ServiceData {
-    return extractServiceMetrics(timestamp, metricProducer.collectAllMetrics())
-}
+import org.opendc.compute.service.ComputeService
+import org.opendc.compute.simulator.failure.HostFaultInjector
+import java.time.Clock
+import kotlin.coroutines.CoroutineContext
 
 /**
- * Extract a [ServiceData] object from the specified list of metric data.
+ * Factory interface for constructing [HostFaultInjector] for modeling failures of compute service hosts.
  */
-public fun extractServiceMetrics(timestamp: Instant, metrics: Collection<MetricData>): ServiceData {
-    lateinit var serviceData: ServiceData
-    val agg = ComputeMetricAggregator()
-    val monitor = object : ComputeMonitor {
-        override fun record(data: ServiceData) {
-            serviceData = data
-        }
-    }
-
-    agg.process(metrics)
-    agg.collect(timestamp, monitor)
-    return serviceData
+interface FailureModel {
+    /**
+     * Construct a [HostFaultInjector] for the specified [service].
+     */
+    fun createInjector(context: CoroutineContext, clock: Clock, service: ComputeService): HostFaultInjector
 }

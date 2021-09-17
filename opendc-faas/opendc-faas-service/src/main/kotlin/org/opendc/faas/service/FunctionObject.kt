@@ -28,6 +28,7 @@ import io.opentelemetry.api.metrics.BoundLongCounter
 import io.opentelemetry.api.metrics.BoundLongHistogram
 import io.opentelemetry.api.metrics.BoundLongUpDownCounter
 import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import org.opendc.faas.service.deployer.FunctionInstance
 import java.util.*
 
@@ -43,9 +44,14 @@ public class FunctionObject(
     meta: Map<String, Any>
 ) : AutoCloseable {
     /**
-     * The function identifier attached to the metrics.
+     * The attributes of this function.
      */
-    private val functionId = AttributeKey.stringKey("function")
+    public val attributes: Attributes = Attributes.builder()
+        .put(ResourceAttributes.FAAS_ID, uid.toString())
+        .put(ResourceAttributes.FAAS_NAME, name)
+        .put(ResourceAttributes.FAAS_MAX_MEMORY, allocatedMemory)
+        .put(AttributeKey.stringArrayKey("faas.labels"), labels.map { (k, v) -> "$k:$v" })
+        .build()
 
     /**
      * The total amount of function invocations received by the function.
@@ -54,7 +60,7 @@ public class FunctionObject(
         .setDescription("Number of function invocations")
         .setUnit("1")
         .build()
-        .bind(Attributes.of(functionId, uid.toString()))
+        .bind(attributes)
 
     /**
      * The amount of function invocations that could be handled directly.
@@ -63,7 +69,7 @@ public class FunctionObject(
         .setDescription("Number of function invocations handled directly")
         .setUnit("1")
         .build()
-        .bind(Attributes.of(functionId, uid.toString()))
+        .bind(attributes)
 
     /**
      * The amount of function invocations that were delayed due to function deployment.
@@ -72,7 +78,7 @@ public class FunctionObject(
         .setDescription("Number of function invocations that are delayed")
         .setUnit("1")
         .build()
-        .bind(Attributes.of(functionId, uid.toString()))
+        .bind(attributes)
 
     /**
      * The amount of function invocations that failed.
@@ -81,7 +87,7 @@ public class FunctionObject(
         .setDescription("Number of function invocations that failed")
         .setUnit("1")
         .build()
-        .bind(Attributes.of(functionId, uid.toString()))
+        .bind(attributes)
 
     /**
      * The amount of instances for this function.
@@ -90,7 +96,7 @@ public class FunctionObject(
         .setDescription("Number of active function instances")
         .setUnit("1")
         .build()
-        .bind(Attributes.of(functionId, uid.toString()))
+        .bind(attributes)
 
     /**
      * The amount of idle instances for this function.
@@ -99,7 +105,7 @@ public class FunctionObject(
         .setDescription("Number of idle function instances")
         .setUnit("1")
         .build()
-        .bind(Attributes.of(functionId, uid.toString()))
+        .bind(attributes)
 
     /**
      * The time that the function waited.
@@ -109,7 +115,7 @@ public class FunctionObject(
         .setDescription("Time the function has to wait before being started")
         .setUnit("ms")
         .build()
-        .bind(Attributes.of(functionId, uid.toString()))
+        .bind(attributes)
 
     /**
      * The time that the function was running.
@@ -119,7 +125,7 @@ public class FunctionObject(
         .setDescription("Time the function was running")
         .setUnit("ms")
         .build()
-        .bind(Attributes.of(functionId, uid.toString()))
+        .bind(attributes)
 
     /**
      * The instances associated with this function.

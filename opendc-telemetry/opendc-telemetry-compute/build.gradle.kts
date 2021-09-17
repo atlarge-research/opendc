@@ -31,7 +31,6 @@ dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcTelemetry.opendcTelemetrySdk)
 
-    implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(libs.opentelemetry.semconv)
     implementation(libs.kotlin.logging)
 }
