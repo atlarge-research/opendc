@@ -20,18 +20,17 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.bp
+package org.opendc.trace.opendc
 
 import org.apache.avro.generic.GenericRecord
 import org.opendc.trace.*
 import org.opendc.trace.util.parquet.LocalParquetReader
-import java.time.Duration
 import java.time.Instant
 
 /**
- * A [TableReader] implementation for the Bitbrains Parquet format.
+ * A [TableReader] implementation for the resources table in the OpenDC virtual machine trace format.
  */
-internal class BPResourceStateTableReader(private val reader: LocalParquetReader<GenericRecord>) : TableReader {
+internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<GenericRecord>) : TableReader {
     /**
      * The current record.
      */
@@ -44,11 +43,11 @@ internal class BPResourceStateTableReader(private val reader: LocalParquetReader
 
     override fun hasColumn(column: TableColumn<*>): Boolean {
         return when (column) {
-            RESOURCE_STATE_ID -> true
-            RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_DURATION -> true
-            RESOURCE_STATE_NCPUS -> true
-            RESOURCE_STATE_CPU_USAGE -> true
+            RESOURCE_ID -> true
+            RESOURCE_START_TIME -> true
+            RESOURCE_STOP_TIME -> true
+            RESOURCE_NCPUS -> true
+            RESOURCE_MEM_CAPACITY -> true
             else -> false
         }
     }
@@ -58,11 +57,11 @@ internal class BPResourceStateTableReader(private val reader: LocalParquetReader
 
         @Suppress("UNCHECKED_CAST")
         val res: Any = when (column) {
-            RESOURCE_STATE_ID -> record["id"].toString()
-            RESOURCE_STATE_TIMESTAMP -> Instant.ofEpochMilli(record["time"] as Long)
-            RESOURCE_STATE_DURATION -> Duration.ofMillis(record["duration"] as Long)
-            RESOURCE_STATE_NCPUS -> record["cores"]
-            RESOURCE_STATE_CPU_USAGE -> (record["cpuUsage"] as Number).toDouble()
+            RESOURCE_ID -> record["id"].toString()
+            RESOURCE_START_TIME -> Instant.ofEpochMilli(record["submissionTime"] as Long)
+            RESOURCE_STOP_TIME -> Instant.ofEpochMilli(record["endTime"] as Long)
+            RESOURCE_NCPUS -> getInt(RESOURCE_NCPUS)
+            RESOURCE_MEM_CAPACITY -> getDouble(RESOURCE_MEM_CAPACITY)
             else -> throw IllegalArgumentException("Invalid column")
         }
 
@@ -78,7 +77,7 @@ internal class BPResourceStateTableReader(private val reader: LocalParquetReader
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (column) {
-            RESOURCE_STATE_NCPUS -> record["cores"] as Int
+            RESOURCE_NCPUS -> record["maxCores"] as Int
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -89,8 +88,9 @@ internal class BPResourceStateTableReader(private val reader: LocalParquetReader
 
     override fun getDouble(column: TableColumn<Double>): Double {
         val record = checkNotNull(record) { "Reader in invalid state" }
+
         return when (column) {
-            RESOURCE_STATE_CPU_USAGE -> (record["cpuUsage"] as Number).toDouble()
+            RESOURCE_MEM_CAPACITY -> (record["requiredMemory"] as Number).toDouble() * 1000.0 // MB to KB
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -99,5 +99,5 @@ internal class BPResourceStateTableReader(private val reader: LocalParquetReader
         reader.close()
     }
 
-    override fun toString(): String = "BPResourceStateTableReader"
+    override fun toString(): String = "OdcVmResourceTableReader"
 }

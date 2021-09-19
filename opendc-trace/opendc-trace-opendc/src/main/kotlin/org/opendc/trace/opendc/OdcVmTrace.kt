@@ -20,34 +20,30 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.bp
+package org.opendc.trace.opendc
 
-import org.apache.avro.generic.GenericRecord
-import org.opendc.trace.*
-import org.opendc.trace.util.parquet.LocalParquetReader
+import org.opendc.trace.TABLE_RESOURCES
+import org.opendc.trace.TABLE_RESOURCE_STATES
+import org.opendc.trace.Table
+import org.opendc.trace.Trace
 import java.nio.file.Path
 
 /**
- * The resource [Table] in the Bitbrains Parquet format.
+ * A [Trace] in the OpenDC virtual machine trace format.
  */
-internal class BPResourceTable(private val path: Path) : Table {
-    override val name: String = TABLE_RESOURCES
-    override val isSynthetic: Boolean = false
+public class OdcVmTrace internal constructor(private val path: Path) : Trace {
+    override val tables: List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
 
-    override val columns: List<TableColumn<*>> = listOf(
-        RESOURCE_ID,
-        RESOURCE_START_TIME,
-        RESOURCE_STOP_TIME,
-        RESOURCE_NCPUS,
-        RESOURCE_MEM_CAPACITY
-    )
+    override fun containsTable(name: String): Boolean =
+        name == TABLE_RESOURCES || name == TABLE_RESOURCE_STATES
 
-    override fun newReader(): TableReader {
-        val reader = LocalParquetReader<GenericRecord>(path.resolve("meta.parquet"))
-        return BPResourceTableReader(reader)
+    override fun getTable(name: String): Table? {
+        return when (name) {
+            TABLE_RESOURCES -> OdcVmResourceTable(path)
+            TABLE_RESOURCE_STATES -> OdcVmResourceStateTable(path)
+            else -> null
+        }
     }
 
-    override fun newReader(partition: String): TableReader {
-        throw IllegalArgumentException("Unknown partition $partition")
-    }
+    override fun toString(): String = "OdcVmTrace[$path]"
 }

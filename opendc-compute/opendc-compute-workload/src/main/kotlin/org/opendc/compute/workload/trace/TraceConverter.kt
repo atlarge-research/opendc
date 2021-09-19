@@ -34,12 +34,11 @@ import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.opendc.compute.workload.trace.bp.BP_RESOURCES_SCHEMA
-import org.opendc.compute.workload.trace.bp.BP_RESOURCE_STATES_SCHEMA
 import org.opendc.trace.*
 import org.opendc.trace.azure.AzureTraceFormat
 import org.opendc.trace.bitbrains.BitbrainsExTraceFormat
 import org.opendc.trace.bitbrains.BitbrainsTraceFormat
+import org.opendc.trace.opendc.OdcVmTraceFormat
 import org.opendc.trace.util.parquet.LocalOutputFile
 import java.io.File
 import java.util.*
@@ -106,7 +105,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
         logger.info { "Building resources table" }
 
         val metaWriter = AvroParquetWriter.builder<GenericData.Record>(LocalOutputFile(metaParquet))
-            .withSchema(BP_RESOURCES_SCHEMA)
+            .withSchema(OdcVmTraceFormat.RESOURCES_SCHEMA)
             .withCompressionCodec(CompressionCodecName.ZSTD)
             .enablePageWriteChecksum()
             .build()
@@ -117,7 +116,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
         logger.info { "Building resource states table" }
 
         val writer = AvroParquetWriter.builder<GenericData.Record>(LocalOutputFile(traceParquet))
-            .withSchema(BP_RESOURCE_STATES_SCHEMA)
+            .withSchema(OdcVmTraceFormat.RESOURCE_STATES_SCHEMA)
             .withCompressionCodec(CompressionCodecName.ZSTD)
             .enableDictionaryEncoding()
             .enablePageWriteChecksum()
@@ -170,7 +169,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
                 continue
             }
 
-            val builder = GenericRecordBuilder(BP_RESOURCES_SCHEMA)
+            val builder = GenericRecordBuilder(OdcVmTraceFormat.RESOURCES_SCHEMA)
 
             builder["id"] = id
             builder["submissionTime"] = startTime
@@ -207,7 +206,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
                     continue
                 }
 
-                val builder = GenericRecordBuilder(BP_RESOURCE_STATES_SCHEMA)
+                val builder = GenericRecordBuilder(OdcVmTraceFormat.RESOURCE_STATES_SCHEMA)
                 builder["id"] = id
 
                 val timestamp = reader.get(RESOURCE_STATE_TIMESTAMP).toEpochMilli()

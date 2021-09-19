@@ -23,9 +23,9 @@
 package org.opendc.compute.workload
 
 import mu.KotlinLogging
-import org.opendc.compute.workload.trace.bp.BPTraceFormat
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.trace.*
+import org.opendc.trace.opendc.OdcVmTraceFormat
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -43,9 +43,9 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     private val logger = KotlinLogging.logger {}
 
     /**
-     * The [BPTraceFormat] instance to load the traces
+     * The [OdcVmTraceFormat] instance to load the traces
      */
-    private val format = BPTraceFormat()
+    private val format = OdcVmTraceFormat()
 
     /**
      * The cache of workloads.

@@ -20,36 +20,34 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.bp
+package org.opendc.trace.opendc
 
-import org.apache.avro.Schema
-import org.apache.avro.SchemaBuilder
-
-/**
- * Schema for the resources table in the trace.
- */
-public val BP_RESOURCES_SCHEMA: Schema = SchemaBuilder
-    .record("meta")
-    .namespace("org.opendc.trace.capelin")
-    .fields()
-    .requiredString("id")
-    .requiredLong("submissionTime")
-    .requiredLong("endTime")
-    .requiredInt("maxCores")
-    .requiredLong("requiredMemory")
-    .endRecord()
+import org.apache.avro.generic.GenericRecord
+import org.opendc.trace.*
+import org.opendc.trace.util.parquet.LocalParquetReader
+import java.nio.file.Path
 
 /**
- * Schema for the resource states table in the trace.
+ * The resource state [Table] in the OpenDC virtual machine trace format.
  */
-public val BP_RESOURCE_STATES_SCHEMA: Schema = SchemaBuilder
-    .record("meta")
-    .namespace("org.opendc.trace.capelin")
-    .fields()
-    .requiredString("id")
-    .requiredLong("time")
-    .requiredLong("duration")
-    .requiredInt("cores")
-    .requiredDouble("cpuUsage")
-    .requiredLong("flops")
-    .endRecord()
+internal class OdcVmResourceStateTable(private val path: Path) : Table {
+    override val name: String = TABLE_RESOURCE_STATES
+    override val isSynthetic: Boolean = false
+
+    override val columns: List<TableColumn<*>> = listOf(
+        RESOURCE_STATE_ID,
+        RESOURCE_STATE_TIMESTAMP,
+        RESOURCE_STATE_DURATION,
+        RESOURCE_STATE_NCPUS,
+        RESOURCE_STATE_CPU_USAGE,
+    )
+
+    override fun newReader(): TableReader {
+        val reader = LocalParquetReader<GenericRecord>(path.resolve("trace.parquet"))
+        return OdcVmResourceStateTableReader(reader)
+    }
+
+    override fun newReader(partition: String): TableReader {
+        throw IllegalArgumentException("Unknown partition $partition")
+    }
+}

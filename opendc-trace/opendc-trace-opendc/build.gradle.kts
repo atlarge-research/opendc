@@ -20,30 +20,20 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.bp
+description = "Support for OpenDC-specific trace formats"
 
-import org.opendc.trace.TABLE_RESOURCES
-import org.opendc.trace.TABLE_RESOURCE_STATES
-import org.opendc.trace.Table
-import org.opendc.trace.Trace
-import java.nio.file.Path
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+    `testing-conventions`
+    `jacoco-conventions`
+}
 
-/**
- * A [Trace] in the Bitbrains Parquet format.
- */
-public class BPTrace internal constructor(private val path: Path) : Trace {
-    override val tables: List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
+dependencies {
+    api(platform(projects.opendcPlatform))
+    api(projects.opendcTrace.opendcTraceApi)
 
-    override fun containsTable(name: String): Boolean =
-        name == TABLE_RESOURCES || name == TABLE_RESOURCE_STATES
+    implementation(projects.opendcTrace.opendcTraceParquet)
 
-    override fun getTable(name: String): Table? {
-        return when (name) {
-            TABLE_RESOURCES -> BPResourceTable(path)
-            TABLE_RESOURCE_STATES -> BPResourceStateTable(path)
-            else -> null
-        }
-    }
-
-    override fun toString(): String = "BPTrace[$path]"
+    testRuntimeOnly(libs.slf4j.simple)
 }

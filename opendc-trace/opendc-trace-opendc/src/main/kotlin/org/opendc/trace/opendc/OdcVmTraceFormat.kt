@@ -20,28 +20,63 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.trace.bp
+package org.opendc.trace.opendc
 
+import org.apache.avro.Schema
+import org.apache.avro.SchemaBuilder
 import org.opendc.trace.spi.TraceFormat
 import java.net.URL
 import java.nio.file.Paths
 import kotlin.io.path.exists
 
 /**
- * A format implementation for the GWF trace format.
+ * A [TraceFormat] implementation of the OpenDC virtual machine trace format.
  */
-public class BPTraceFormat : TraceFormat {
+public class OdcVmTraceFormat : TraceFormat {
     /**
      * The name of this trace format.
      */
-    override val name: String = "bitbrains-parquet"
+    override val name: String = "opendc-vm"
 
     /**
      * Open a Bitbrains Parquet trace.
      */
-    override fun open(url: URL): BPTrace {
+    override fun open(url: URL): OdcVmTrace {
         val path = Paths.get(url.toURI())
         require(path.exists()) { "URL $url does not exist" }
-        return BPTrace(path)
+        return OdcVmTrace(path)
+    }
+
+    public companion object {
+        /**
+         * Schema for the resources table in the trace.
+         */
+        @JvmStatic
+        public val RESOURCES_SCHEMA: Schema = SchemaBuilder
+            .record("resource")
+            .namespace("org.opendc.trace.opendc")
+            .fields()
+            .requiredString("id")
+            .requiredLong("submissionTime")
+            .requiredLong("endTime")
+            .requiredInt("maxCores")
+            .requiredLong("requiredMemory")
+            .endRecord()
+
+        /**
+         * Schema for the resource states table in the trace.
+         */
+        @JvmStatic
+        public val RESOURCE_STATES_SCHEMA: Schema = SchemaBuilder
+            .record("resource_state")
+            .namespace("org.opendc.trace.opendc")
+            .fields()
+            .requiredString("id")
+            .requiredLong("time")
+            .requiredLong("duration")
+            .requiredInt("cores")
+            .requiredDouble("cpuUsage")
+            .requiredLong("flops")
+            .endRecord()
     }
 }

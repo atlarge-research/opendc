@@ -33,6 +33,7 @@ dependencies {
     api(projects.opendcCompute.opendcComputeSimulator)
 
     implementation(projects.opendcTrace.opendcTraceParquet)
+    implementation(projects.opendcTrace.opendcTraceOpendc)
     implementation(projects.opendcTrace.opendcTraceAzure)
     implementation(projects.opendcTrace.opendcTraceBitbrains)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
