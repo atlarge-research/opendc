@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute.power
 
-import org.yaml.snakeyaml.Yaml
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
@@ -37,8 +36,6 @@ import kotlin.math.min
  * @see <a href="http://www.spec.org/power_ssj2008/results/res2011q1/">Machines used in the SPEC benchmark</a>
  */
 public class InterpolationPowerModel(private val powerValues: List<Double>) : PowerModel {
-    public constructor(hardwareName: String) : this(loadAveragePowerValue(hardwareName))
-
     public override fun computePower(utilization: Double): Double {
         val clampedUtilization = min(1.0, max(0.0, utilization))
         val utilizationFlr = floor(clampedUtilization * 10).toInt()
@@ -63,14 +60,4 @@ public class InterpolationPowerModel(private val powerValues: List<Double>) : Po
      * @return the power consumption for the given utilization percentage
      */
     private fun getAveragePowerValue(index: Int): Double = powerValues[index]
-
-    private companion object {
-        private fun loadAveragePowerValue(hardwareName: String, path: String = "spec_machines.yml"): List<Double> {
-            val content = this::class
-                .java.classLoader
-                .getResourceAsStream(path)
-            val hardwareToAveragePowerValues: Map<String, List<Double>> = Yaml().load(content)
-            return hardwareToAveragePowerValues.getOrDefault(hardwareName, listOf())
-        }
-    }
 }

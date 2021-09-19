@@ -36,5 +36,4 @@ dependencies {
     api(projects.opendcSimulator.opendcSimulatorNetwork)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcUtils)
-    implementation(libs.yaml)
 }
