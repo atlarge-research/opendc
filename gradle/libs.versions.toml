@@ -20,7 +20,6 @@ parquet = "1.12.0"
 progressbar = "0.9.0"
 sentry = "5.1.2"
 slf4j = "1.7.32"
-yaml = "1.29"
 
 [libraries]
 # Kotlin
@@ -53,11 +52,11 @@ progressbar = { module = "me.tongfei:progressbar", version.ref = "progressbar" }
 
 # Format
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }
 parquet = { module = "org.apache.parquet:parquet-avro", version.ref = "parquet" }
-yaml = { module = "org.yaml:snakeyaml", version.ref = "yaml" }
 config = { module = "com.typesafe:config", version.ref = "config" }
 
 # HTTP client

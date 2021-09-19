@@ -47,7 +47,7 @@ public val RESOURCE_STOP_TIME: TableColumn<Instant> = TableColumn("resource:stop
  * Number of CPUs for the resource.
  */
 @JvmField
-public val RESOURCE_NCPUS: TableColumn<Int> = intColumn("resource:num_cpus")
+public val RESOURCE_CPU_COUNT: TableColumn<Int> = intColumn("resource:cpu_count")
 
 /**
  * Memory capacity for the resource in KB.

@@ -31,6 +31,8 @@ plugins {
 dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
+    api(projects.opendcCompute.opendcComputeWorkload)
+
     implementation(projects.opendcTrace.opendcTraceParquet)
     implementation(projects.opendcTrace.opendcTraceBitbrains)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
@@ -38,16 +40,14 @@ dependencies {
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
     implementation(projects.opendcTelemetry.opendcTelemetryCompute)
-    implementation(libs.opentelemetry.semconv)
 
-    implementation(libs.kotlin.logging)
     implementation(libs.config)
-    implementation(libs.progressbar)
-    implementation(libs.clikt)
+    implementation(libs.kotlin.logging)
+    implementation(libs.jackson.databind)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.dataformat.csv)
     implementation(kotlin("reflect"))
+    implementation(libs.opentelemetry.semconv)
 
-    implementation(libs.parquet)
     testImplementation(libs.log4j.slf4j)
 }

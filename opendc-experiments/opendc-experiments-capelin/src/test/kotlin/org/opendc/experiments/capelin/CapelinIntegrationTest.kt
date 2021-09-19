@@ -31,16 +31,12 @@ import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
-import org.opendc.experiments.capelin.env.ClusterEnvironmentReader
-import org.opendc.experiments.capelin.env.EnvironmentReader
-import org.opendc.experiments.capelin.model.Workload
-import org.opendc.experiments.capelin.trace.ParquetTraceReader
-import org.opendc.experiments.capelin.trace.PerformanceInterferenceReader
-import org.opendc.experiments.capelin.trace.RawParquetTraceReader
-import org.opendc.experiments.capelin.trace.TraceReader
-import org.opendc.experiments.capelin.util.ComputeServiceSimulator
+import org.opendc.compute.workload.*
+import org.opendc.compute.workload.topology.Topology
+import org.opendc.compute.workload.topology.apply
+import org.opendc.compute.workload.util.PerformanceInterferenceReader
+import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.ComputeMonitor
@@ -66,6 +62,11 @@ class CapelinIntegrationTest {
     private lateinit var computeScheduler: FilterScheduler
 
     /**
+     * The [ComputeWorkloadLoader] responsible for loading the traces.
+     */
+    private lateinit var workloadLoader: ComputeWorkloadLoader
+
+    /**
      * Setup the experimental environment.
      */
     @BeforeEach
@@ -75,6 +76,7 @@ class CapelinIntegrationTest {
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
         )
+        workloadLoader = ComputeWorkloadLoader(File("src/test/resources/trace"))
     }
 
     /**
@@ -82,26 +84,24 @@ class CapelinIntegrationTest {
      */
     @Test
     fun testLarge() = runBlockingSimulation {
-        val traceReader = createTestTraceReader()
-        val environmentReader = createTestEnvironmentReader()
-
-        val simulator = ComputeServiceSimulator(
+        val workload = createTestWorkload(1.0)
+        val runner = ComputeWorkloadRunner(
             coroutineContext,
             clock,
-            computeScheduler,
-            environmentReader.read(),
+            computeScheduler
         )
-
-        val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
+        val topology = createTopology()
+        val metricReader = CoroutineMetricReader(this, runner.producers, ComputeMetricExporter(clock, monitor))
 
         try {
-            simulator.run(traceReader)
+            runner.apply(topology)
+            runner.run(workload, 0)
         } finally {
-            simulator.close()
+            runner.close()
             metricReader.close()
         }
 
-        val serviceMetrics = collectServiceMetrics(clock.instant(), simulator.producers[0])
+        val serviceMetrics = collectServiceMetrics(clock.instant(), runner.producers[0])
         println(
             "Scheduler " +
                 "Success=${serviceMetrics.attemptsSuccess} " +
@@ -117,11 +117,11 @@ class CapelinIntegrationTest {
             { assertEquals(0, serviceMetrics.serversActive, "All VMs should finish after a run") },
             { assertEquals(0, serviceMetrics.attemptsFailure, "No VM should be unscheduled") },
             { assertEquals(0, serviceMetrics.serversPending, "No VM should not be in the queue") },
-            { assertEquals(223856043, monitor.idleTime) { "Incorrect idle time" } },
-            { assertEquals(66481557, monitor.activeTime) { "Incorrect active time" } },
-            { assertEquals(360441, monitor.stealTime) { "Incorrect steal time" } },
+            { assertEquals(223331032, monitor.idleTime) { "Incorrect idle time" } },
+            { assertEquals(67006568, monitor.activeTime) { "Incorrect active time" } },
+            { assertEquals(3159379, monitor.stealTime) { "Incorrect steal time" } },
             { assertEquals(0, monitor.lostTime) { "Incorrect lost time" } },
-            { assertEquals(5.418336360461193E9, monitor.energyUsage, 0.01) { "Incorrect power draw" } },
+            { assertEquals(5.841120890240688E9, monitor.energyUsage, 0.01) { "Incorrect power draw" } },
         )
     }
 
@@ -131,20 +131,19 @@ class CapelinIntegrationTest {
     @Test
     fun testSmall() = runBlockingSimulation {
         val seed = 1
-        val traceReader = createTestTraceReader(0.25, seed)
-        val environmentReader = createTestEnvironmentReader("single")
+        val workload = createTestWorkload(0.25, seed)
 
-        val simulator = ComputeServiceSimulator(
+        val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
-            computeScheduler,
-            environmentReader.read(),
+            computeScheduler
         )
-
+        val topology = createTopology("single")
         val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
 
         try {
-            simulator.run(traceReader)
+            simulator.apply(topology)
+            simulator.run(workload, seed.toLong())
         } finally {
             simulator.close()
             metricReader.close()
@@ -162,9 +161,9 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(9597804, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(11140596, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(326138, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(10998110, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(9740290, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } }
         )
     }
@@ -174,28 +173,26 @@ class CapelinIntegrationTest {
      */
     @Test
     fun testInterference() = runBlockingSimulation {
-        val seed = 1
-        val traceReader = createTestTraceReader(0.25, seed)
-        val environmentReader = createTestEnvironmentReader("single")
-
+        val seed = 0
+        val workload = createTestWorkload(1.0, seed)
         val perfInterferenceInput = checkNotNull(CapelinIntegrationTest::class.java.getResourceAsStream("/bitbrains-perf-interference.json"))
         val performanceInterferenceModel =
             PerformanceInterferenceReader()
                 .read(perfInterferenceInput)
                 .let { VmInterferenceModel(it, Random(seed.toLong())) }
 
-        val simulator = ComputeServiceSimulator(
+        val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,
-            environmentReader.read(),
             interferenceModel = performanceInterferenceModel
         )
-
+        val topology = createTopology("single")
         val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
 
         try {
-            simulator.run(traceReader)
+            simulator.apply(topology)
+            simulator.run(workload, seed.toLong())
         } finally {
             simulator.close()
             metricReader.close()
@@ -213,10 +210,10 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(9597804, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(11140596, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(326138, monitor.stealTime) { "Steal time incorrect" } },
-            { assertEquals(925305, monitor.lostTime) { "Lost time incorrect" } }
+            { assertEquals(6013899, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(14724501, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(12530742, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(473394, monitor.lostTime) { "Lost time incorrect" } }
         )
     }
 
@@ -226,21 +223,19 @@ class CapelinIntegrationTest {
     @Test
     fun testFailures() = runBlockingSimulation {
         val seed = 1
-        val traceReader = createTestTraceReader(0.25, seed)
-        val environmentReader = createTestEnvironmentReader("single")
-
-        val simulator = ComputeServiceSimulator(
+        val simulator = ComputeWorkloadRunner(
             coroutineContext,
             clock,
             computeScheduler,
-            environmentReader.read(),
-            grid5000(Duration.ofDays(7), seed)
+            grid5000(Duration.ofDays(7))
         )
-
+        val topology = createTopology("single")
+        val workload = createTestWorkload(0.25, seed)
         val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor))
 
         try {
-            simulator.run(traceReader)
+            simulator.apply(topology)
+            simulator.run(workload, seed.toLong())
         } finally {
             simulator.close()
             metricReader.close()
@@ -258,31 +253,28 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(9836315, monitor.idleTime) { "Idle time incorrect" } },
-            { assertEquals(10902085, monitor.activeTime) { "Active time incorrect" } },
-            { assertEquals(306249, monitor.stealTime) { "Steal time incorrect" } },
+            { assertEquals(11134319, monitor.idleTime) { "Idle time incorrect" } },
+            { assertEquals(9604081, monitor.activeTime) { "Active time incorrect" } },
+            { assertEquals(0, monitor.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, monitor.lostTime) { "Lost time incorrect" } },
-            { assertEquals(2540877457, monitor.uptime) { "Uptime incorrect" } }
+            { assertEquals(2559005056, monitor.uptime) { "Uptime incorrect" } }
         )
     }
 
     /**
      * Obtain the trace reader for the test.
      */
-    private fun createTestTraceReader(fraction: Double = 1.0, seed: Int = 0): TraceReader<SimWorkload> {
-        return ParquetTraceReader(
-            listOf(RawParquetTraceReader(File("src/test/resources/trace"))),
-            Workload("test", fraction),
-            seed
-        )
+    private fun createTestWorkload(fraction: Double, seed: Int = 0): List<VirtualMachine> {
+        val source = trace("bitbrains-small").sampleByLoad(fraction)
+        return source.resolve(workloadLoader, Random(seed.toLong()))
     }
 
     /**
-     * Obtain the environment reader for the test.
+     * Obtain the topology factory for the test.
      */
-    private fun createTestEnvironmentReader(name: String = "topology"): EnvironmentReader {
+    private fun createTopology(name: String = "topology"): Topology {
         val stream = checkNotNull(object {}.javaClass.getResourceAsStream("/env/$name.txt"))
-        return ClusterEnvironmentReader(stream)
+        return stream.use { clusterTopology(stream) }
     }
 
     class TestExperimentReporter : ComputeMonitor {

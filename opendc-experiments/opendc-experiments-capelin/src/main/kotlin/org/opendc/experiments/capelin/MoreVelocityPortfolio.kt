@@ -22,6 +22,8 @@
 
 package org.opendc.experiments.capelin
 
+import org.opendc.compute.workload.sampleByLoad
+import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
@@ -40,10 +42,10 @@ public class MoreVelocityPortfolio : Portfolio("more_velocity") {
     )
 
     override val workload: Workload by anyOf(
-        Workload("solvinity", 0.1),
-        Workload("solvinity", 0.25),
-        Workload("solvinity", 0.5),
-        Workload("solvinity", 1.0)
+        Workload("solvinity", trace("solvinity").sampleByLoad(0.1)),
+        Workload("solvinity", trace("solvinity").sampleByLoad(0.25)),
+        Workload("solvinity", trace("solvinity").sampleByLoad(0.5)),
+        Workload("solvinity", trace("solvinity").sampleByLoad(1.0))
     )
 
     override val operationalPhenomena: OperationalPhenomena by anyOf(

@@ -22,8 +22,10 @@
 
 package org.opendc.experiments.capelin
 
+import org.opendc.compute.workload.sampleByHpc
+import org.opendc.compute.workload.sampleByHpcLoad
+import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
-import org.opendc.experiments.capelin.model.SamplingStrategy
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.harness.dsl.anyOf
@@ -40,13 +42,13 @@ public class MoreHpcPortfolio : Portfolio("more_hpc") {
     )
 
     override val workload: Workload by anyOf(
-        Workload("solvinity", 0.0, samplingStrategy = SamplingStrategy.HPC),
-        Workload("solvinity", 0.25, samplingStrategy = SamplingStrategy.HPC),
-        Workload("solvinity", 0.5, samplingStrategy = SamplingStrategy.HPC),
-        Workload("solvinity", 1.0, samplingStrategy = SamplingStrategy.HPC),
-        Workload("solvinity", 0.25, samplingStrategy = SamplingStrategy.HPC_LOAD),
-        Workload("solvinity", 0.5, samplingStrategy = SamplingStrategy.HPC_LOAD),
-        Workload("solvinity", 1.0, samplingStrategy = SamplingStrategy.HPC_LOAD)
+        Workload("solvinity", trace("solvinity").sampleByHpc(0.0)),
+        Workload("solvinity", trace("solvinity").sampleByHpc(0.25)),
+        Workload("solvinity", trace("solvinity").sampleByHpc(0.5)),
+        Workload("solvinity", trace("solvinity").sampleByHpc(1.0)),
+        Workload("solvinity", trace("solvinity").sampleByHpcLoad(0.25)),
+        Workload("solvinity", trace("solvinity").sampleByHpcLoad(0.5)),
+        Workload("solvinity", trace("solvinity").sampleByHpcLoad(1.0))
     )
 
     override val operationalPhenomena: OperationalPhenomena by anyOf(

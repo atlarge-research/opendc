@@ -1,0 +1,82 @@
+/*
+ * Copyright (c) 2021 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package org.opendc.trace.opendc
+
+import org.apache.avro.Schema
+import org.apache.avro.SchemaBuilder
+import org.opendc.trace.spi.TraceFormat
+import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
+import java.net.URL
+import java.nio.file.Paths
+import kotlin.io.path.exists
+
+/**
+ * A [TraceFormat] implementation of the OpenDC virtual machine trace format.
+ */
+public class OdcVmTraceFormat : TraceFormat {
+    /**
+     * The name of this trace format.
+     */
+    override val name: String = "opendc-vm"
+
+    /**
+     * Open a Bitbrains Parquet trace.
+     */
+    override fun open(url: URL): OdcVmTrace {
+        val path = Paths.get(url.toURI())
+        require(path.exists()) { "URL $url does not exist" }
+        return OdcVmTrace(path)
+    }
+
+    public companion object {
+        /**
+         * Schema for the resources table in the trace.
+         */
+        @JvmStatic
+        public val RESOURCES_SCHEMA: Schema = SchemaBuilder
+            .record("resource")
+            .namespace("org.opendc.trace.opendc")
+            .fields()
+            .requiredString("id")
+            .name("start_time").type(TIMESTAMP_SCHEMA).noDefault()
+            .name("stop_time").type(TIMESTAMP_SCHEMA).noDefault()
+            .requiredInt("cpu_count")
+            .requiredLong("mem_capacity")
+            .endRecord()
+
+        /**
+         * Schema for the resource states table in the trace.
+         */
+        @JvmStatic
+        public val RESOURCE_STATES_SCHEMA: Schema = SchemaBuilder
+            .record("resource_state")
+            .namespace("org.opendc.trace.opendc")
+            .fields()
+            .requiredString("id")
+            .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
+            .requiredLong("duration")
+            .requiredInt("cpu_count")
+            .requiredDouble("cpu_usage")
+            .endRecord()
+    }
+}
