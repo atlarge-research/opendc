@@ -20,28 +20,28 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+description = "Tools for working with workload traces"
 
 /* Build configuration */
 plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
+    `kotlin-conventions`
+    application
+}
+
+application {
+    mainClass.set("org.opendc.trace.tools.TraceConverterKt")
 }
 
 dependencies {
     api(platform(projects.opendcPlatform))
-    api(projects.opendcCompute.opendcComputeSimulator)
 
-    implementation(projects.opendcTrace.opendcTraceOpendc)
     implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
-    implementation(libs.opentelemetry.semconv)
+    implementation(projects.opendcTrace.opendcTraceOpendc)
+    implementation(projects.opendcTrace.opendcTraceAzure)
+    implementation(projects.opendcTrace.opendcTraceBitbrains)
 
     implementation(libs.kotlin.logging)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.module.kotlin)
-    implementation(kotlin("reflect"))
+    implementation(libs.clikt)
+
+    runtimeOnly(libs.log4j.slf4j)
 }
