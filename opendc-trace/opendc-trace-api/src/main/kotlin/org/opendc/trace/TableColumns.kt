@@ -24,36 +24,11 @@
 package org.opendc.trace
 
 /**
- * Construct a [TableColumn] with [Any] type.
+ * Construct a [TableColumn] with the specified [name] and type [T].
  */
-public fun objectColumn(name: String): TableColumn<Any> = TableColumn(name, Any::class.java)
+public inline fun <reified T> column(name: String): TableColumn<T> = column(name, T::class.java)
 
 /**
- * Construct a [TableColumn] with a [String] type.
+ * Construct a [TableColumn] with the specified [name] and [type].
  */
-public fun stringColumn(name: String): TableColumn<String> = TableColumn(name, String::class.java)
-
-/**
- * Construct a [TableColumn] with a [Number] type.
- */
-public fun numberColumn(name: String): TableColumn<Number> = TableColumn(name, Number::class.java)
-
-/**
- * Construct a [TableColumn] with an [Int] type.
- */
-public fun intColumn(name: String): TableColumn<Int> = TableColumn(name, Int::class.java)
-
-/**
- * Construct a [TableColumn] with a [Long] type.
- */
-public fun longColumn(name: String): TableColumn<Long> = TableColumn(name, Long::class.java)
-
-/**
- * Construct a [TableColumn] with a [Double] type.
- */
-public fun doubleColumn(name: String): TableColumn<Double> = TableColumn(name, Double::class.java)
-
-/**
- * Construct a [TableColumn] with a [Boolean] type.
- */
-public fun booleanColumn(name: String): TableColumn<Boolean> = TableColumn(name, Boolean::class.java)
+public fun <T> column(name: String, type: Class<T>): TableColumn<T> = TableColumn(name, type)

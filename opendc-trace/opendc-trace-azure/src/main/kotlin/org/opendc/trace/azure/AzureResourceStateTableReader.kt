@@ -62,7 +62,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
 
     override fun hasColumn(column: TableColumn<*>): Boolean {
         return when (column) {
-            RESOURCE_STATE_ID -> true
+            RESOURCE_ID -> true
             RESOURCE_STATE_TIMESTAMP -> true
             RESOURCE_STATE_CPU_USAGE_PCT -> true
             else -> false
@@ -71,7 +71,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
 
     override fun <T> get(column: TableColumn<T>): T {
         val res: Any? = when (column) {
-            RESOURCE_STATE_ID -> id
+            RESOURCE_ID -> id
             RESOURCE_STATE_TIMESTAMP -> timestamp
             RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
             else -> throw IllegalArgumentException("Invalid column")

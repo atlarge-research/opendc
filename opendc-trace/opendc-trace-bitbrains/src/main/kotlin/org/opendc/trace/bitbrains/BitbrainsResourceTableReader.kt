@@ -49,7 +49,7 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
                     continue
                 }
 
-                id = reader.get(RESOURCE_STATE_ID)
+                id = reader.get(RESOURCE_ID)
                 return true
             } finally {
                 reader.close()

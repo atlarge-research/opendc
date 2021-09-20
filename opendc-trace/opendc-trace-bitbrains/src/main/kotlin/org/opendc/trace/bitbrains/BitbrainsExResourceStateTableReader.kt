@@ -90,16 +90,16 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
 
     override fun hasColumn(column: TableColumn<*>): Boolean {
         return when (column) {
-            RESOURCE_STATE_ID -> true
-            RESOURCE_STATE_CLUSTER_ID -> true
+            RESOURCE_ID -> true
+            RESOURCE_CLUSTER_ID -> true
             RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_CPU_COUNT -> true
-            RESOURCE_STATE_CPU_CAPACITY -> true
+            RESOURCE_CPU_COUNT -> true
+            RESOURCE_CPU_CAPACITY -> true
             RESOURCE_STATE_CPU_USAGE -> true
             RESOURCE_STATE_CPU_USAGE_PCT -> true
             RESOURCE_STATE_CPU_DEMAND -> true
             RESOURCE_STATE_CPU_READY_PCT -> true
-            RESOURCE_STATE_MEM_CAPACITY -> true
+            RESOURCE_MEM_CAPACITY -> true
             RESOURCE_STATE_DISK_READ -> true
             RESOURCE_STATE_DISK_WRITE -> true
             else -> false
@@ -108,14 +108,14 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
 
     override fun <T> get(column: TableColumn<T>): T {
         val res: Any? = when (column) {
-            RESOURCE_STATE_ID -> id
-            RESOURCE_STATE_CLUSTER_ID -> cluster
+            RESOURCE_ID -> id
+            RESOURCE_CLUSTER_ID -> cluster
             RESOURCE_STATE_TIMESTAMP -> timestamp
-            RESOURCE_STATE_CPU_COUNT -> getInt(RESOURCE_STATE_CPU_COUNT)
-            RESOURCE_STATE_CPU_CAPACITY -> getDouble(RESOURCE_STATE_CPU_CAPACITY)
+            RESOURCE_CPU_COUNT -> getInt(RESOURCE_CPU_COUNT)
+            RESOURCE_CPU_CAPACITY -> getDouble(RESOURCE_CPU_CAPACITY)
             RESOURCE_STATE_CPU_USAGE -> getDouble(RESOURCE_STATE_CPU_USAGE)
             RESOURCE_STATE_CPU_USAGE_PCT -> getDouble(RESOURCE_STATE_CPU_USAGE_PCT)
-            RESOURCE_STATE_MEM_CAPACITY -> getDouble(RESOURCE_STATE_MEM_CAPACITY)
+            RESOURCE_MEM_CAPACITY -> getDouble(RESOURCE_MEM_CAPACITY)
             RESOURCE_STATE_DISK_READ -> getDouble(RESOURCE_STATE_DISK_READ)
             RESOURCE_STATE_DISK_WRITE -> getDouble(RESOURCE_STATE_DISK_WRITE)
             else -> throw IllegalArgumentException("Invalid column")
@@ -134,7 +134,7 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
 
     override fun getInt(column: TableColumn<Int>): Int {
         return when (column) {
-            RESOURCE_STATE_CPU_COUNT -> cpuCores
+            RESOURCE_CPU_COUNT -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -145,11 +145,11 @@ internal class BitbrainsExResourceStateTableReader(private val reader: BufferedR
 
     override fun getDouble(column: TableColumn<Double>): Double {
         return when (column) {
-            RESOURCE_STATE_CPU_CAPACITY -> cpuCapacity
+            RESOURCE_CPU_CAPACITY -> cpuCapacity
             RESOURCE_STATE_CPU_USAGE -> cpuUsage
             RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsage / cpuCapacity
             RESOURCE_STATE_CPU_DEMAND -> cpuDemand
-            RESOURCE_STATE_MEM_CAPACITY -> memCapacity
+            RESOURCE_MEM_CAPACITY -> memCapacity
             RESOURCE_STATE_DISK_READ -> diskRead
             RESOURCE_STATE_DISK_WRITE -> diskWrite
             else -> throw IllegalArgumentException("Invalid column")

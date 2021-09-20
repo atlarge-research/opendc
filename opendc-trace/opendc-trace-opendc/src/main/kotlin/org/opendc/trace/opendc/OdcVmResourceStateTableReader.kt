@@ -57,10 +57,10 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
 
     override fun hasColumn(column: TableColumn<*>): Boolean {
         return when (column) {
-            RESOURCE_STATE_ID -> true
+            RESOURCE_ID -> true
             RESOURCE_STATE_TIMESTAMP -> true
             RESOURCE_STATE_DURATION -> true
-            RESOURCE_STATE_CPU_COUNT -> true
+            RESOURCE_CPU_COUNT -> true
             RESOURCE_STATE_CPU_USAGE -> true
             else -> false
         }
@@ -71,10 +71,10 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
 
         @Suppress("UNCHECKED_CAST")
         val res: Any = when (column) {
-            RESOURCE_STATE_ID -> record[COL_ID].toString()
+            RESOURCE_ID -> record[COL_ID].toString()
             RESOURCE_STATE_TIMESTAMP -> Instant.ofEpochMilli(record[COL_TIMESTAMP] as Long)
             RESOURCE_STATE_DURATION -> Duration.ofMillis(record[COL_DURATION] as Long)
-            RESOURCE_STATE_CPU_COUNT -> getInt(RESOURCE_STATE_CPU_COUNT)
+            RESOURCE_CPU_COUNT -> getInt(RESOURCE_CPU_COUNT)
             RESOURCE_STATE_CPU_USAGE -> getDouble(RESOURCE_STATE_CPU_USAGE)
             else -> throw IllegalArgumentException("Invalid column")
         }
@@ -90,7 +90,7 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
     override fun getInt(column: TableColumn<Int>): Int {
         val record = checkNotNull(record) { "Reader in invalid state" }
         return when (column) {
-            RESOURCE_STATE_CPU_COUNT -> record[COL_CPU_COUNT] as Int
+            RESOURCE_CPU_COUNT -> record[COL_CPU_COUNT] as Int
             else -> throw IllegalArgumentException("Invalid column")
         }
     }

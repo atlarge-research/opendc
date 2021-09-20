@@ -30,72 +30,70 @@ import java.time.Instant
  * A column containing the task identifier.
  */
 @JvmField
-public val TASK_ID: TableColumn<String> = stringColumn("task:id")
+public val TASK_ID: TableColumn<String> = column("task:id")
 
 /**
  * A column containing the identifier of the workflow.
  */
 @JvmField
-public val TASK_WORKFLOW_ID: TableColumn<String> = stringColumn("task:workflow_id")
+public val TASK_WORKFLOW_ID: TableColumn<String> = column("task:workflow_id")
 
 /**
- * A column containing the submit time of the task.
+ * A column containing the submission time of the task.
  */
 @JvmField
-public val TASK_SUBMIT_TIME: TableColumn<Instant> = TableColumn("task:submit_time", type = Instant::class.java)
+public val TASK_SUBMIT_TIME: TableColumn<Instant> = column("task:submit_time")
 
 /**
  * A column containing the wait time of the task.
  */
 @JvmField
-public val TASK_WAIT_TIME: TableColumn<Instant> = TableColumn("task:wait_time", type = Instant::class.java)
+public val TASK_WAIT_TIME: TableColumn<Instant> = column("task:wait_time")
 
 /**
  * A column containing the runtime time of the task.
  */
 @JvmField
-public val TASK_RUNTIME: TableColumn<Duration> = TableColumn("task:runtime", type = Duration::class.java)
+public val TASK_RUNTIME: TableColumn<Duration> = column("task:runtime")
 
 /**
  * A column containing the parents of a task.
  */
-@Suppress("UNCHECKED_CAST")
 @JvmField
-public val TASK_PARENTS: TableColumn<Set<String>> = TableColumn("task:parents", type = Set::class.java as Class<Set<String>>)
+public val TASK_PARENTS: TableColumn<Set<String>> = column("task:parents")
 
 /**
  * A column containing the children of a task.
  */
-@Suppress("UNCHECKED_CAST")
 @JvmField
-public val TASK_CHILDREN: TableColumn<Set<String>> = TableColumn("task:children", type = Set::class.java as Class<Set<String>>)
+public val TASK_CHILDREN: TableColumn<Set<String>> = column("task:children")
 
 /**
  * A column containing the requested CPUs of a task.
  */
 @JvmField
-public val TASK_REQ_NCPUS: TableColumn<Int> = intColumn("task:req_ncpus")
+public val TASK_REQ_NCPUS: TableColumn<Int> = column("task:req_ncpus")
 
 /**
  * A column containing the allocated CPUs of a task.
  */
 @JvmField
-public val TASK_ALLOC_NCPUS: TableColumn<Int> = intColumn("task:alloc_ncpus")
+public val TASK_ALLOC_NCPUS: TableColumn<Int> = column("task:alloc_ncpus")
 
 /**
  * A column containing the status of a task.
  */
 @JvmField
-public val TASK_STATUS: TableColumn<Int> = intColumn("task:status")
+public val TASK_STATUS: TableColumn<Int> = column("task:status")
 
 /**
  * A column containing the group id of a task.
  */
 @JvmField
-public val TASK_GROUP_ID: TableColumn<Int> = intColumn("task:group_id")
+public val TASK_GROUP_ID: TableColumn<Int> = column("task:group_id")
 
 /**
  * A column containing the user id of a task.
  */
 @JvmField
-public val TASK_USER_ID: TableColumn<Int> = intColumn("task:user_id")
+public val TASK_USER_ID: TableColumn<Int> = column("task:user_id")

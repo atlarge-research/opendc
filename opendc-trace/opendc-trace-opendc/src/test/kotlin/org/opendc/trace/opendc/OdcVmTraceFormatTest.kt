@@ -111,7 +111,7 @@ internal class OdcVmTraceFormatTest {
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.get(RESOURCE_STATE_ID)) },
+            { assertEquals("1019", reader.get(RESOURCE_ID)) },
             { assertEquals(1376314846, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
             { assertEquals(0.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
         )

@@ -62,10 +62,10 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
         return try {
             while (reader.nextRow()) {
-                val id = reader.get(RESOURCE_STATE_ID)
+                val id = reader.get(RESOURCE_ID)
                 val time = reader.get(RESOURCE_STATE_TIMESTAMP)
                 val duration = reader.get(RESOURCE_STATE_DURATION)
-                val cores = reader.getInt(RESOURCE_STATE_CPU_COUNT)
+                val cores = reader.getInt(RESOURCE_CPU_COUNT)
                 val cpuUsage = reader.getDouble(RESOURCE_STATE_CPU_USAGE)
 
                 val fragment = SimTraceWorkload.Fragment(

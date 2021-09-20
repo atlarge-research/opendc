@@ -48,13 +48,13 @@ internal class BitbrainsResourceStateTable(private val factory: CsvFactory, path
     override val isSynthetic: Boolean = false
 
     override val columns: List<TableColumn<*>> = listOf(
-        RESOURCE_STATE_ID,
+        RESOURCE_ID,
         RESOURCE_STATE_TIMESTAMP,
-        RESOURCE_STATE_CPU_COUNT,
-        RESOURCE_STATE_CPU_CAPACITY,
+        RESOURCE_CPU_COUNT,
+        RESOURCE_CPU_CAPACITY,
         RESOURCE_STATE_CPU_USAGE,
         RESOURCE_STATE_CPU_USAGE_PCT,
-        RESOURCE_STATE_MEM_CAPACITY,
+        RESOURCE_MEM_CAPACITY,
         RESOURCE_STATE_MEM_USAGE,
         RESOURCE_STATE_DISK_READ,
         RESOURCE_STATE_DISK_WRITE,

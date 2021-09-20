@@ -113,13 +113,13 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
 
     override fun hasColumn(column: TableColumn<*>): Boolean {
         return when (column) {
-            RESOURCE_STATE_ID -> true
+            RESOURCE_ID -> true
             RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_CPU_COUNT -> true
-            RESOURCE_STATE_CPU_CAPACITY -> true
+            RESOURCE_CPU_COUNT -> true
+            RESOURCE_CPU_CAPACITY -> true
             RESOURCE_STATE_CPU_USAGE -> true
             RESOURCE_STATE_CPU_USAGE_PCT -> true
-            RESOURCE_STATE_MEM_CAPACITY -> true
+            RESOURCE_MEM_CAPACITY -> true
             RESOURCE_STATE_MEM_USAGE -> true
             RESOURCE_STATE_DISK_READ -> true
             RESOURCE_STATE_DISK_WRITE -> true
@@ -131,13 +131,13 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
 
     override fun <T> get(column: TableColumn<T>): T {
         val res: Any? = when (column) {
-            RESOURCE_STATE_ID -> partition
+            RESOURCE_ID -> partition
             RESOURCE_STATE_TIMESTAMP -> timestamp
-            RESOURCE_STATE_CPU_COUNT -> cpuCores
-            RESOURCE_STATE_CPU_CAPACITY -> cpuCapacity
+            RESOURCE_CPU_COUNT -> cpuCores
+            RESOURCE_CPU_CAPACITY -> cpuCapacity
             RESOURCE_STATE_CPU_USAGE -> cpuUsage
             RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
-            RESOURCE_STATE_MEM_CAPACITY -> memCapacity
+            RESOURCE_MEM_CAPACITY -> memCapacity
             RESOURCE_STATE_MEM_USAGE -> memUsage
             RESOURCE_STATE_DISK_READ -> diskRead
             RESOURCE_STATE_DISK_WRITE -> diskWrite
@@ -156,7 +156,7 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
 
     override fun getInt(column: TableColumn<Int>): Int {
         return when (column) {
-            RESOURCE_STATE_CPU_COUNT -> cpuCores
+            RESOURCE_CPU_COUNT -> cpuCores
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -167,10 +167,10 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
 
     override fun getDouble(column: TableColumn<Double>): Double {
         return when (column) {
-            RESOURCE_STATE_CPU_CAPACITY -> cpuCapacity
+            RESOURCE_CPU_CAPACITY -> cpuCapacity
             RESOURCE_STATE_CPU_USAGE -> cpuUsage
             RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
-            RESOURCE_STATE_MEM_CAPACITY -> memCapacity
+            RESOURCE_MEM_CAPACITY -> memCapacity
             RESOURCE_STATE_MEM_USAGE -> memUsage
             RESOURCE_STATE_DISK_READ -> diskRead
             RESOURCE_STATE_DISK_WRITE -> diskWrite

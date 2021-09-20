@@ -154,21 +154,21 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
             var stopTime = Long.MIN_VALUE
 
             do {
-                id = reader.get(RESOURCE_STATE_ID)
+                id = reader.get(RESOURCE_ID)
 
                 val timestamp = reader.get(RESOURCE_STATE_TIMESTAMP).toEpochMilli()
                 startTime = min(startTime, timestamp)
                 stopTime = max(stopTime, timestamp)
 
-                numCpus = max(numCpus, reader.getInt(RESOURCE_STATE_CPU_COUNT))
+                numCpus = max(numCpus, reader.getInt(RESOURCE_CPU_COUNT))
 
-                memCapacity = max(memCapacity, reader.getDouble(RESOURCE_STATE_MEM_CAPACITY))
+                memCapacity = max(memCapacity, reader.getDouble(RESOURCE_MEM_CAPACITY))
                 if (reader.hasColumn(RESOURCE_STATE_MEM_USAGE)) {
                     memUsage = max(memUsage, reader.getDouble(RESOURCE_STATE_MEM_USAGE))
                 }
 
                 hasNextRow = reader.nextRow()
-            } while (hasNextRow && id == reader.get(RESOURCE_STATE_ID))
+            } while (hasNextRow && id == reader.get(RESOURCE_ID))
 
             // Sample only a fraction of the VMs
             if (random != null && random.nextDouble() > samplingFraction) {
@@ -204,14 +204,14 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
         var lastTimestamp = 0L
 
         while (hasNextRow) {
-            val id = reader.get(RESOURCE_STATE_ID)
+            val id = reader.get(RESOURCE_ID)
 
             if (id !in selectedVms) {
                 hasNextRow = reader.nextRow()
                 continue
             }
 
-            val cpuCount = reader.getInt(RESOURCE_STATE_CPU_COUNT)
+            val cpuCount = reader.getInt(RESOURCE_CPU_COUNT)
             val cpuUsage = reader.getDouble(RESOURCE_STATE_CPU_USAGE)
 
             val startTimestamp = reader.get(RESOURCE_STATE_TIMESTAMP).toEpochMilli()
@@ -233,9 +233,9 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
                     break
                 }
 
-                val shouldContinue = id == reader.get(RESOURCE_STATE_ID) &&
+                val shouldContinue = id == reader.get(RESOURCE_ID) &&
                     abs(cpuUsage - reader.getDouble(RESOURCE_STATE_CPU_USAGE)) < 0.01 &&
-                    cpuCount == reader.getInt(RESOURCE_STATE_CPU_COUNT)
+                    cpuCount == reader.getInt(RESOURCE_CPU_COUNT)
             } while (shouldContinue)
 
             val builder = GenericRecordBuilder(OdcVmTraceFormat.RESOURCE_STATES_SCHEMA)

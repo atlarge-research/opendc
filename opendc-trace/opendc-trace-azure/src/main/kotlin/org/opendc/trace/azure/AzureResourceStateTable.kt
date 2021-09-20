@@ -47,7 +47,7 @@ internal class AzureResourceStateTable(private val factory: CsvFactory, path: Pa
     override val isSynthetic: Boolean = false
 
     override val columns: List<TableColumn<*>> = listOf(
-        RESOURCE_STATE_ID,
+        RESOURCE_ID,
         RESOURCE_STATE_TIMESTAMP,
         RESOURCE_STATE_CPU_USAGE_PCT
     )

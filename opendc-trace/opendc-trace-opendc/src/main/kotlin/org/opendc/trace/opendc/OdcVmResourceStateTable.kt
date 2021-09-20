@@ -35,10 +35,10 @@ internal class OdcVmResourceStateTable(private val path: Path) : Table {
     override val isSynthetic: Boolean = false
 
     override val columns: List<TableColumn<*>> = listOf(
-        RESOURCE_STATE_ID,
+        RESOURCE_ID,
         RESOURCE_STATE_TIMESTAMP,
         RESOURCE_STATE_DURATION,
-        RESOURCE_STATE_CPU_COUNT,
+        RESOURCE_CPU_COUNT,
         RESOURCE_STATE_CPU_USAGE,
     )
 
