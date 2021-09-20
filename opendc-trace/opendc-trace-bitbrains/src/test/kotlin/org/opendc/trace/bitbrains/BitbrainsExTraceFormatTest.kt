@@ -26,62 +26,38 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.*
-import java.net.URL
+import java.nio.file.Paths
 
 /**
  * Test suite for the [BitbrainsExTraceFormat] class.
  */
-class BitbrainsExTraceFormatTest {
+internal class BitbrainsExTraceFormatTest {
     private val format = BitbrainsExTraceFormat()
 
     @Test
-    fun testTraceExists() {
-        val url = checkNotNull(BitbrainsExTraceFormatTest::class.java.getResource("/vm.txt"))
-        assertDoesNotThrow {
-            format.open(url)
-        }
-    }
-
-    @Test
-    fun testTraceDoesNotExists() {
-        val url = checkNotNull(BitbrainsExTraceFormatTest::class.java.getResource("/vm.txt"))
-        assertThrows<IllegalArgumentException> {
-            format.open(URL(url.toString() + "help"))
-        }
-    }
-
-    @Test
     fun testTables() {
-        val url = checkNotNull(BitbrainsExTraceFormatTest::class.java.getResource("/vm.txt"))
-        val trace = format.open(url)
+        val path = Paths.get("src/test/resources/vm.txt")
 
-        assertEquals(listOf(TABLE_RESOURCE_STATES), trace.tables)
+        assertEquals(listOf(TABLE_RESOURCE_STATES), format.getTables(path))
     }
 
     @Test
     fun testTableExists() {
-        val url = checkNotNull(BitbrainsExTraceFormatTest::class.java.getResource("/vm.txt"))
-        val table = format.open(url).getTable(TABLE_RESOURCE_STATES)
+        val path = Paths.get("src/test/resources/vm.txt")
 
-        assertNotNull(table)
-        assertDoesNotThrow { table!!.newReader() }
+        assertDoesNotThrow { format.getDetails(path, TABLE_RESOURCE_STATES) }
     }
 
     @Test
     fun testTableDoesNotExist() {
-        val url = checkNotNull(BitbrainsExTraceFormatTest::class.java.getResource("/vm.txt"))
-        val trace = format.open(url)
-
-        assertFalse(trace.containsTable("test"))
-        assertNull(trace.getTable("test"))
+        val path = Paths.get("src/test/resources/vm.txt")
+        assertThrows<IllegalArgumentException> { format.getDetails(path, "test") }
     }
 
     @Test
     fun testSmoke() {
-        val url = checkNotNull(BitbrainsExTraceFormatTest::class.java.getResource("/vm.txt"))
-        val trace = format.open(url)
-
-        val reader = trace.getTable(TABLE_RESOURCE_STATES)!!.newReader()
+        val path = Paths.get("src/test/resources/vm.txt")
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
 
         assertAll(
             { assertTrue(reader.nextRow()) },

@@ -22,9 +22,9 @@
 
 package org.opendc.trace
 
+import org.opendc.trace.internal.TraceImpl
 import org.opendc.trace.spi.TraceFormat
 import java.io.File
-import java.net.URL
 import java.nio.file.Path
 
 /**
@@ -48,31 +48,24 @@ public interface Trace {
 
     public companion object {
         /**
-         * Open a [Trace] at the specified [url] in the given [format].
-         *
-         * @throws IllegalArgumentException if [format] is not supported.
-         */
-        public fun open(url: URL, format: String): Trace {
-            val provider = requireNotNull(TraceFormat.byName(format)) { "Unknown format $format" }
-            return provider.open(url)
-        }
-
-        /**
          * Open a [Trace] at the specified [path] in the given [format].
          *
+         * @param path The path to the trace.
          * @throws IllegalArgumentException if [format] is not supported.
          */
         public fun open(path: File, format: String): Trace {
-            return open(path.toURI().toURL(), format)
+            return open(path.toPath(), format)
         }
 
         /**
          * Open a [Trace] at the specified [path] in the given [format].
          *
+         * @param path The [Path] to the trace.
          * @throws IllegalArgumentException if [format] is not supported.
          */
         public fun open(path: Path, format: String): Trace {
-            return open(path.toUri().toURL(), format)
+            val provider = requireNotNull(TraceFormat.byName(format)) { "Unknown format $format" }
+            return TraceImpl(provider, path)
         }
     }
 }

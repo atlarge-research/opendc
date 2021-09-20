@@ -27,61 +27,38 @@ import org.junit.jupiter.api.Assertions.*
 import org.opendc.trace.TABLE_TASKS
 import org.opendc.trace.TASK_ALLOC_NCPUS
 import org.opendc.trace.TASK_ID
-import java.net.URL
+import java.nio.file.Paths
 
 /**
  * Test suite for the [SwfTraceFormat] class.
  */
 internal class SwfTraceFormatTest {
-    @Test
-    fun testTraceExists() {
-        val input = checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf"))
-        val format = SwfTraceFormat()
-        assertDoesNotThrow {
-            format.open(input)
-        }
-    }
-
-    @Test
-    fun testTraceDoesNotExists() {
-        val input = checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf"))
-        val format = SwfTraceFormat()
-        assertThrows<IllegalArgumentException> {
-            format.open(URL(input.toString() + "help"))
-        }
-    }
+    private val format = SwfTraceFormat()
 
     @Test
     fun testTables() {
-        val input = checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf"))
-        val trace = SwfTraceFormat().open(input)
+        val path = Paths.get(checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf")).toURI())
 
-        assertEquals(listOf(TABLE_TASKS), trace.tables)
+        assertEquals(listOf(TABLE_TASKS), format.getTables(path))
     }
 
     @Test
     fun testTableExists() {
-        val input = checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf"))
-        val table = SwfTraceFormat().open(input).getTable(TABLE_TASKS)
-
-        assertNotNull(table)
-        assertDoesNotThrow { table!!.newReader() }
+        val path = Paths.get(checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf")).toURI())
+        assertDoesNotThrow { format.getDetails(path, TABLE_TASKS) }
     }
 
     @Test
     fun testTableDoesNotExist() {
-        val input = checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf"))
-        val trace = SwfTraceFormat().open(input)
+        val path = Paths.get(checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf")).toURI())
 
-        assertFalse(trace.containsTable("test"))
-        assertNull(trace.getTable("test"))
+        assertThrows<IllegalArgumentException> { format.getDetails(path, "test") }
     }
 
     @Test
     fun testReader() {
-        val input = checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf"))
-        val trace = SwfTraceFormat().open(input)
-        val reader = trace.getTable(TABLE_TASKS)!!.newReader()
+        val path = Paths.get(checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf")).toURI())
+        val reader = format.newReader(path, TABLE_TASKS)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -93,15 +70,5 @@ internal class SwfTraceFormatTest {
         )
 
         reader.close()
-    }
-
-    @Test
-    fun testReaderPartition() {
-        val input = checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf"))
-        val trace = SwfTraceFormat().open(input)
-
-        assertThrows<IllegalArgumentException> {
-            trace.getTable(TABLE_TASKS)!!.newReader("test")
-        }
     }
 }

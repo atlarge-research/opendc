@@ -44,13 +44,14 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.sdk.toOtelClock
-import org.opendc.trace.gwf.GwfTraceFormat
+import org.opendc.trace.Trace
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
 import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.NullTaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.SubmissionTimeTaskOrderPolicy
+import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
 
@@ -105,7 +106,10 @@ internal class WorkflowServiceTest {
             taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
         )
 
-        val trace = GwfTraceFormat().open(checkNotNull(WorkflowServiceTest::class.java.getResource("/trace.gwf")))
+        val trace = Trace.open(
+            Paths.get(checkNotNull(WorkflowServiceTest::class.java.getResource("/trace.gwf")).toURI()),
+            format = "gwf"
+        )
         val replayer = TraceReplayer(trace)
 
         replayer.replay(clock, scheduler)

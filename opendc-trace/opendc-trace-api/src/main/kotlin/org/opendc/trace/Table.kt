@@ -32,11 +32,6 @@ public interface Table {
     public val name: String
 
     /**
-     * A flag to indicate that the table is synthetic (derived from another table).
-     */
-    public val isSynthetic: Boolean
-
-    /**
      * The list of columns supported in this table.
      */
     public val columns: List<TableColumn<*>>
@@ -50,9 +45,4 @@ public interface Table {
      * Open a [TableReader] for this table.
      */
     public fun newReader(): TableReader
-
-    /**
-     * Open a [TableReader] for [partition] of the table.
-     */
-    public fun newReader(partition: String): TableReader
 }

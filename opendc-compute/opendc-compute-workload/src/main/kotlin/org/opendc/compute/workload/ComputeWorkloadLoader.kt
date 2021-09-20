@@ -25,7 +25,6 @@ package org.opendc.compute.workload
 import mu.KotlinLogging
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.trace.*
-import org.opendc.trace.opendc.OdcVmTraceFormat
 import java.io.File
 import java.time.Duration
 import java.time.Instant
@@ -43,11 +42,6 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
      * The logger for this instance.
      */
     private val logger = KotlinLogging.logger {}
-
-    /**
-     * The [OdcVmTraceFormat] instance to load the traces
-     */
-    private val format = OdcVmTraceFormat()
 
     /**
      * The cache of workloads.
@@ -159,7 +153,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
             logger.info { "Loading trace $it at $path" }
 
-            val trace = format.open(path.toURI().toURL())
+            val trace = Trace.open(path, format = "opendc-vm")
             val fragments = parseFragments(trace)
             parseMeta(trace, fragments)
         }

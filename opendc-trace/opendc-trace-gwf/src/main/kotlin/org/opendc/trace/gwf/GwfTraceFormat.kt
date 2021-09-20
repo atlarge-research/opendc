@@ -24,10 +24,10 @@ package org.opendc.trace.gwf
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import com.fasterxml.jackson.dataformat.csv.CsvParser
+import org.opendc.trace.*
+import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import java.net.URL
-import java.nio.file.Paths
-import kotlin.io.path.exists
+import java.nio.file.Path
 
 /**
  * A [TraceFormat] implementation for the GWF trace format.
@@ -45,12 +45,30 @@ public class GwfTraceFormat : TraceFormat {
         .enable(CsvParser.Feature.ALLOW_COMMENTS)
         .enable(CsvParser.Feature.TRIM_SPACES)
 
-    /**
-     * Read the tasks in the GWF trace.
-     */
-    public override fun open(url: URL): GwfTrace {
-        val path = Paths.get(url.toURI())
-        require(path.exists()) { "URL $url does not exist" }
-        return GwfTrace(factory, url)
+    override fun getTables(path: Path): List<String> = listOf(TABLE_TASKS)
+
+    override fun getDetails(path: Path, table: String): TableDetails {
+        return when (table) {
+            TABLE_TASKS -> TableDetails(
+                listOf(
+                    TASK_WORKFLOW_ID,
+                    TASK_ID,
+                    TASK_SUBMIT_TIME,
+                    TASK_RUNTIME,
+                    TASK_REQ_NCPUS,
+                    TASK_ALLOC_NCPUS,
+                    TASK_PARENTS,
+                ),
+                listOf(TASK_WORKFLOW_ID)
+            )
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
+    }
+
+    override fun newReader(path: Path, table: String): TableReader {
+        return when (table) {
+            TABLE_TASKS -> GwfTaskTableReader(factory.createParser(path.toFile()))
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
     }
 }

@@ -35,9 +35,6 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.trace.*
-import org.opendc.trace.azure.AzureTraceFormat
-import org.opendc.trace.bitbrains.BitbrainsExTraceFormat
-import org.opendc.trace.bitbrains.BitbrainsTraceFormat
 import org.opendc.trace.opendc.OdcVmTraceFormat
 import org.opendc.trace.util.parquet.LocalOutputFile
 import java.io.File
@@ -78,11 +75,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
      * The input format of the trace.
      */
     private val format by option("-f", "--format", help = "input format of trace")
-        .choice(
-            "solvinity" to BitbrainsExTraceFormat(),
-            "bitbrains" to BitbrainsTraceFormat(),
-            "azure" to AzureTraceFormat()
-        )
+        .choice("bitbrains-ex", "bitbrains", "azure")
         .required()
 
     /**
@@ -101,7 +94,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
             traceParquet.delete()
         }
 
-        val trace = format.open(input.toURI().toURL())
+        val trace = Trace.open(input, format = format)
 
         logger.info { "Building resources table" }
 

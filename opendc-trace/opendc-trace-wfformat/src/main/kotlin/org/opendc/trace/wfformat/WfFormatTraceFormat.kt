@@ -23,10 +23,10 @@
 package org.opendc.trace.wfformat
 
 import com.fasterxml.jackson.core.JsonFactory
+import org.opendc.trace.*
+import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import java.net.URL
-import java.nio.file.Paths
-import kotlin.io.path.exists
+import java.nio.file.Path
 
 /**
  * A [TraceFormat] implementation for the WfCommons workload trace format.
@@ -39,9 +39,29 @@ public class WfFormatTraceFormat : TraceFormat {
 
     override val name: String = "wfformat"
 
-    override fun open(url: URL): WfFormatTrace {
-        val path = Paths.get(url.toURI())
-        require(path.exists()) { "URL $url does not exist" }
-        return WfFormatTrace(factory, path)
+    override fun getTables(path: Path): List<String> = listOf(TABLE_TASKS)
+
+    override fun getDetails(path: Path, table: String): TableDetails {
+        return when (table) {
+            TABLE_TASKS -> TableDetails(
+                listOf(
+                    TASK_ID,
+                    TASK_WORKFLOW_ID,
+                    TASK_RUNTIME,
+                    TASK_REQ_NCPUS,
+                    TASK_PARENTS,
+                    TASK_CHILDREN
+                ),
+                emptyList()
+            )
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
+    }
+
+    override fun newReader(path: Path, table: String): TableReader {
+        return when (table) {
+            TABLE_TASKS -> WfFormatTaskTableReader(factory.createParser(path.toFile()))
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
     }
 }

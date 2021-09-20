@@ -20,39 +20,33 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.wfformat
+package org.opendc.trace.internal
 
-import com.fasterxml.jackson.core.JsonFactory
-import org.opendc.trace.*
-import java.nio.file.Path
+import org.opendc.trace.Table
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
+import java.util.*
 
 /**
- * A [Table] containing the tasks in a WfCommons workload trace.
+ * Internal implementation of [Table].
  */
-internal class WfFormatTaskTable(private val factory: JsonFactory, private val path: Path) : Table {
-    override val name: String = TABLE_TASKS
+internal class TableImpl(val trace: TraceImpl, override val name: String) : Table {
+    /**
+     * The details of this table.
+     */
+    private val details = trace.format.getDetails(trace.path, name)
 
-    override val isSynthetic: Boolean = false
+    override val columns: List<TableColumn<*>>
+        get() = details.columns
 
-    override val columns: List<TableColumn<*>> = listOf(
-        TASK_ID,
-        TASK_WORKFLOW_ID,
-        TASK_RUNTIME,
-        TASK_REQ_NCPUS,
-        TASK_PARENTS,
-        TASK_CHILDREN
-    )
+    override val partitionKeys: List<TableColumn<*>>
+        get() = details.partitionKeys
 
-    override val partitionKeys: List<TableColumn<*>> = emptyList()
+    override fun newReader(): TableReader = trace.format.newReader(trace.path, name)
 
-    override fun newReader(): TableReader {
-        val parser = factory.createParser(path.toFile())
-        return WfFormatTaskTableReader(parser)
-    }
+    override fun toString(): String = "Table[name=$name]"
 
-    override fun newReader(partition: String): TableReader {
-        throw IllegalArgumentException("Invalid partition $partition")
-    }
+    override fun hashCode(): Int = Objects.hash(trace, name)
 
-    override fun toString(): String = "WfFormatTaskTable"
+    override fun equals(other: Any?): Boolean = other is TableImpl && trace == other.trace && name == other.name
 }

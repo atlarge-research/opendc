@@ -22,8 +22,8 @@
 
 package org.opendc.trace.spi
 
-import org.opendc.trace.Trace
-import java.net.URL
+import org.opendc.trace.TableReader
+import java.nio.file.Path
 import java.util.*
 
 /**
@@ -36,11 +36,32 @@ public interface TraceFormat {
     public val name: String
 
     /**
-     * Open a new [Trace] with this provider.
+     * Return the name of the tables available in the trace at the specified [path].
      *
-     * @param url A reference to the trace.
+     * @param path The path to the trace.
+     * @return The list of tables available in the trace.
      */
-    public fun open(url: URL): Trace
+    public fun getTables(path: Path): List<String>
+
+    /**
+     * Return the details of [table] in the trace at the specified [path].
+     *
+     * @param path The path to the trace.
+     * @param table The name of the table to obtain the details for.
+     * @throws IllegalArgumentException If [table] does not exist.
+     * @return The [TableDetails] for the specified [table].
+     */
+    public fun getDetails(path: Path, table: String): TableDetails
+
+    /**
+     * Open a [TableReader] for the specified [table].
+     *
+     * @param path The path to the trace to open.
+     * @param table The name of the table to open a [TableReader] for.
+     * @throws IllegalArgumentException If [table] does not exist.
+     * @return A [TableReader] instance for the table.
+     */
+    public fun newReader(path: Path, table: String): TableReader
 
     /**
      * A helper object for resolving providers.
@@ -49,6 +70,7 @@ public interface TraceFormat {
         /**
          * A list of [TraceFormat] that are available on this system.
          */
+        @JvmStatic
         public val installedProviders: List<TraceFormat> by lazy {
             val loader = ServiceLoader.load(TraceFormat::class.java)
             loader.toList()
@@ -57,6 +79,7 @@ public interface TraceFormat {
         /**
          * Obtain a [TraceFormat] implementation by [name].
          */
+        @JvmStatic
         public fun byName(name: String): TraceFormat? = installedProviders.find { it.name == name }
     }
 }

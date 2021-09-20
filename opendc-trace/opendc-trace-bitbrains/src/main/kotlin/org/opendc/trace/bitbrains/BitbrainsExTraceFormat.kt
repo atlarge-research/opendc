@@ -22,10 +22,16 @@
 
 package org.opendc.trace.bitbrains
 
+import org.opendc.trace.*
+import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import java.net.URL
-import java.nio.file.Paths
-import kotlin.io.path.exists
+import org.opendc.trace.util.CompositeTableReader
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.stream.Collectors
+import kotlin.io.path.bufferedReader
+import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
 
 /**
  * A format implementation for the extended Bitbrains trace format.
@@ -36,12 +42,59 @@ public class BitbrainsExTraceFormat : TraceFormat {
      */
     override val name: String = "bitbrains-ex"
 
+    override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCE_STATES)
+
+    override fun getDetails(path: Path, table: String): TableDetails {
+        return when (table) {
+            TABLE_RESOURCE_STATES -> TableDetails(
+                listOf(
+                    RESOURCE_ID,
+                    RESOURCE_CLUSTER_ID,
+                    RESOURCE_STATE_TIMESTAMP,
+                    RESOURCE_CPU_COUNT,
+                    RESOURCE_CPU_CAPACITY,
+                    RESOURCE_STATE_CPU_USAGE,
+                    RESOURCE_STATE_CPU_USAGE_PCT,
+                    RESOURCE_STATE_CPU_DEMAND,
+                    RESOURCE_STATE_CPU_READY_PCT,
+                    RESOURCE_MEM_CAPACITY,
+                    RESOURCE_STATE_DISK_READ,
+                    RESOURCE_STATE_DISK_WRITE
+                ),
+                listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP)
+            )
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
+    }
+
+    override fun newReader(path: Path, table: String): TableReader {
+        return when (table) {
+            TABLE_RESOURCE_STATES -> newResourceStateReader(path)
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
+    }
+
     /**
-     * Open the trace file.
+     * Construct a [TableReader] for reading over all resource state partitions.
      */
-    override fun open(url: URL): BitbrainsExTrace {
-        val path = Paths.get(url.toURI())
-        require(path.exists()) { "URL $url does not exist" }
-        return BitbrainsExTrace(path)
+    private fun newResourceStateReader(path: Path): TableReader {
+        val partitions = Files.walk(path, 1)
+            .filter { !Files.isDirectory(it) && it.extension == "txt" }
+            .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
+            .toSortedMap()
+        val it = partitions.iterator()
+
+        return object : CompositeTableReader() {
+            override fun nextReader(): TableReader? {
+                return if (it.hasNext()) {
+                    val (_, partPath) = it.next()
+                    return BitbrainsExResourceStateTableReader(partPath.bufferedReader())
+                } else {
+                    null
+                }
+            }
+
+            override fun toString(): String = "BitbrainsExCompositeTableReader"
+        }
     }
 }

@@ -20,27 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.gwf
+package org.opendc.trace.spi
 
-import com.fasterxml.jackson.dataformat.csv.CsvFactory
-import org.opendc.trace.*
-import java.net.URL
+import org.opendc.trace.Table
+import org.opendc.trace.TableColumn
 
 /**
- * [Trace] implementation for the GWF format.
+ * A class used by the [TraceFormat] interface for describing the metadata of a [Table].
+ *
+ * @param columns The available columns in the table.
+ * @param partitionKeys The table columns that act as partition keys for the table.
  */
-public class GwfTrace internal constructor(private val factory: CsvFactory, private val url: URL) : Trace {
-    override val tables: List<String> = listOf(TABLE_TASKS)
-
-    override fun containsTable(name: String): Boolean = TABLE_TASKS == name
-
-    override fun getTable(name: String): Table? {
-        if (!containsTable(name)) {
-            return null
-        }
-
-        return GwfTaskTable(factory, url)
-    }
-
-    override fun toString(): String = "GwfTrace[$url]"
-}
+public data class TableDetails(
+    val columns: List<TableColumn<*>>,
+    val partitionKeys: List<TableColumn<*>> = emptyList()
+)

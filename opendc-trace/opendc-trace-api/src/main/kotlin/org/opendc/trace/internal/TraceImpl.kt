@@ -20,28 +20,37 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.wfformat
+package org.opendc.trace.internal
 
-import com.fasterxml.jackson.core.JsonFactory
-import org.opendc.trace.TABLE_TASKS
 import org.opendc.trace.Table
 import org.opendc.trace.Trace
+import org.opendc.trace.spi.TraceFormat
 import java.nio.file.Path
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [Trace] implementation for the WfCommons workload trace format.
+ * Internal implementation of the [Trace] interface.
  */
-public class WfFormatTrace internal constructor(private val factory: JsonFactory, private val path: Path) : Trace {
-    override val tables: List<String> = listOf(TABLE_TASKS)
+internal class TraceImpl(val format: TraceFormat, val path: Path) : Trace {
+    /**
+     * A map containing the [TableImpl] instances associated with the trace.
+     */
+    private val tableMap = ConcurrentHashMap<String, TableImpl>()
 
-    override fun containsTable(name: String): Boolean = TABLE_TASKS == name
+    override val tables: List<String> = format.getTables(path)
 
-    override fun getTable(name: String): Table? {
-        return when (name) {
-            TABLE_TASKS -> WfFormatTaskTable(factory, path)
-            else -> null
+    init {
+        for (table in tables) {
+            tableMap.computeIfAbsent(table) { TableImpl(this, it) }
         }
     }
 
-    override fun toString(): String = "WfFormatTrace[$path]"
+    override fun containsTable(name: String): Boolean = tableMap.containsKey(name)
+
+    override fun getTable(name: String): Table? = tableMap[name]
+
+    override fun hashCode(): Int = Objects.hash(format, path)
+
+    override fun equals(other: Any?): Boolean = other is TraceImpl && format == other.format && path == other.path
 }
