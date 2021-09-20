@@ -43,13 +43,14 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
 
             val parser = factory.createParser(path.toFile())
             val reader = BitbrainsResourceStateTableReader(name, parser)
+            val idCol = reader.resolve(RESOURCE_ID)
 
             try {
                 if (!reader.nextRow()) {
                     continue
                 }
 
-                id = reader.get(RESOURCE_ID)
+                id = reader.get(idCol) as String
                 return true
             } finally {
                 reader.close()
@@ -59,36 +60,33 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
         return false
     }
 
-    override fun hasColumn(column: TableColumn<*>): Boolean {
-        return when (column) {
-            RESOURCE_ID -> true
-            else -> false
-        }
+    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+
+    override fun isNull(index: Int): Boolean {
+        check(index in 0..columns.size) { "Invalid column index" }
+        return false
     }
 
-    override fun <T> get(column: TableColumn<T>): T {
-        val res: Any? = when (column) {
-            RESOURCE_ID -> id
+    override fun get(index: Int): Any? {
+        return when (index) {
+            COL_ID -> id
             else -> throw IllegalArgumentException("Invalid column")
         }
-
-        @Suppress("UNCHECKED_CAST")
-        return res as T
     }
 
-    override fun getBoolean(column: TableColumn<Boolean>): Boolean {
+    override fun getBoolean(index: Int): Boolean {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getInt(column: TableColumn<Int>): Int {
+    override fun getInt(index: Int): Int {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getLong(column: TableColumn<Long>): Long {
+    override fun getLong(index: Int): Long {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getDouble(column: TableColumn<Double>): Double {
+    override fun getDouble(index: Int): Double {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -105,4 +103,7 @@ internal class BitbrainsResourceTableReader(private val factory: CsvFactory, vms
     private fun reset() {
         id = null
     }
+
+    private val COL_ID = 0
+    private val columns = mapOf(RESOURCE_ID to COL_ID)
 }

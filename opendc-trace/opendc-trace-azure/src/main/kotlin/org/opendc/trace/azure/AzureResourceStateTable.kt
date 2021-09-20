@@ -24,6 +24,7 @@ package org.opendc.trace.azure
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import org.opendc.trace.*
+import org.opendc.trace.util.CompositeTableReader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
@@ -55,57 +56,8 @@ internal class AzureResourceStateTable(private val factory: CsvFactory, path: Pa
     override fun newReader(): TableReader {
         val it = partitions.iterator()
 
-        return object : TableReader {
-            var delegate: TableReader? = nextDelegate()
-
-            override fun nextRow(): Boolean {
-                var delegate = delegate
-
-                while (delegate != null) {
-                    if (delegate.nextRow()) {
-                        break
-                    }
-
-                    delegate.close()
-                    delegate = nextDelegate()
-                    this.delegate = delegate
-                }
-
-                return delegate != null
-            }
-
-            override fun hasColumn(column: TableColumn<*>): Boolean = delegate?.hasColumn(column) ?: false
-
-            override fun <T> get(column: TableColumn<T>): T {
-                val delegate = checkNotNull(delegate) { "Invalid reader state" }
-                return delegate.get(column)
-            }
-
-            override fun getBoolean(column: TableColumn<Boolean>): Boolean {
-                val delegate = checkNotNull(delegate) { "Invalid reader state" }
-                return delegate.getBoolean(column)
-            }
-
-            override fun getInt(column: TableColumn<Int>): Int {
-                val delegate = checkNotNull(delegate) { "Invalid reader state" }
-                return delegate.getInt(column)
-            }
-
-            override fun getLong(column: TableColumn<Long>): Long {
-                val delegate = checkNotNull(delegate) { "Invalid reader state" }
-                return delegate.getLong(column)
-            }
-
-            override fun getDouble(column: TableColumn<Double>): Double {
-                val delegate = checkNotNull(delegate) { "Invalid reader state" }
-                return delegate.getDouble(column)
-            }
-
-            override fun close() {
-                delegate?.close()
-            }
-
-            private fun nextDelegate(): TableReader? {
+        return object : CompositeTableReader() {
+            override fun nextReader(): TableReader? {
                 return if (it.hasNext()) {
                     val (_, path) = it.next()
                     return AzureResourceStateTableReader(factory.createParser(path.toFile()))

@@ -62,49 +62,42 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
         return true
     }
 
-    override fun hasColumn(column: TableColumn<*>): Boolean {
-        return when (column) {
-            RESOURCE_ID -> true
-            RESOURCE_START_TIME -> true
-            RESOURCE_STOP_TIME -> true
-            RESOURCE_CPU_COUNT -> true
-            RESOURCE_MEM_CAPACITY -> true
-            else -> false
-        }
+    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+
+    override fun isNull(index: Int): Boolean {
+        require(index in 0..columns.size) { "Invalid column index" }
+        return false
     }
 
-    override fun <T> get(column: TableColumn<T>): T {
-        val res: Any? = when (column) {
-            RESOURCE_ID -> id
-            RESOURCE_START_TIME -> startTime
-            RESOURCE_STOP_TIME -> stopTime
-            RESOURCE_CPU_COUNT -> getInt(RESOURCE_CPU_COUNT)
-            RESOURCE_MEM_CAPACITY -> getDouble(RESOURCE_MEM_CAPACITY)
-            else -> throw IllegalArgumentException("Invalid column")
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        return res as T
-    }
-
-    override fun getBoolean(column: TableColumn<Boolean>): Boolean {
-        throw IllegalArgumentException("Invalid column")
-    }
-
-    override fun getInt(column: TableColumn<Int>): Int {
-        return when (column) {
-            RESOURCE_CPU_COUNT -> cpuCores
+    override fun get(index: Int): Any? {
+        return when (index) {
+            COL_ID -> id
+            COL_START_TIME -> startTime
+            COL_STOP_TIME -> stopTime
+            COL_CPU_COUNT -> getInt(index)
+            COL_MEM_CAPACITY -> getDouble(index)
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
-    override fun getLong(column: TableColumn<Long>): Long {
+    override fun getBoolean(index: Int): Boolean {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getDouble(column: TableColumn<Double>): Double {
-        return when (column) {
-            RESOURCE_MEM_CAPACITY -> memCapacity
+    override fun getInt(index: Int): Int {
+        return when (index) {
+            COL_CPU_COUNT -> cpuCores
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getLong(index: Int): Long {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getDouble(index: Int): Double {
+        return when (index) {
+            COL_MEM_CAPACITY -> memCapacity
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -138,13 +131,26 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
     /**
      * Reset the state.
      */
-    fun reset() {
+    private fun reset() {
         id = null
         startTime = null
         stopTime = null
         cpuCores = -1
         memCapacity = Double.NaN
     }
+
+    private val COL_ID = 0
+    private val COL_START_TIME = 1
+    private val COL_STOP_TIME = 2
+    private val COL_CPU_COUNT = 3
+    private val COL_MEM_CAPACITY = 4
+    private val columns = mapOf(
+        RESOURCE_ID to COL_ID,
+        RESOURCE_START_TIME to COL_START_TIME,
+        RESOURCE_STOP_TIME to COL_STOP_TIME,
+        RESOURCE_CPU_COUNT to COL_CPU_COUNT,
+        RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY
+    )
 
     companion object {
         /**

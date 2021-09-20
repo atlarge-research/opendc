@@ -55,54 +55,46 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
         return record != null
     }
 
-    override fun hasColumn(column: TableColumn<*>): Boolean {
-        return when (column) {
-            RESOURCE_ID -> true
-            RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_DURATION -> true
-            RESOURCE_CPU_COUNT -> true
-            RESOURCE_STATE_CPU_USAGE -> true
-            else -> false
-        }
+    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+
+    override fun isNull(index: Int): Boolean {
+        check(index in 0..columns.size) { "Invalid column index" }
+        return get(index) == null
     }
 
-    override fun <T> get(column: TableColumn<T>): T {
+    override fun get(index: Int): Any? {
         val record = checkNotNull(record) { "Reader in invalid state" }
 
-        @Suppress("UNCHECKED_CAST")
-        val res: Any = when (column) {
-            RESOURCE_ID -> record[COL_ID].toString()
-            RESOURCE_STATE_TIMESTAMP -> Instant.ofEpochMilli(record[COL_TIMESTAMP] as Long)
-            RESOURCE_STATE_DURATION -> Duration.ofMillis(record[COL_DURATION] as Long)
-            RESOURCE_CPU_COUNT -> getInt(RESOURCE_CPU_COUNT)
-            RESOURCE_STATE_CPU_USAGE -> getDouble(RESOURCE_STATE_CPU_USAGE)
-            else -> throw IllegalArgumentException("Invalid column")
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        return res as T
-    }
-
-    override fun getBoolean(column: TableColumn<Boolean>): Boolean {
-        throw IllegalArgumentException("Invalid column")
-    }
-
-    override fun getInt(column: TableColumn<Int>): Int {
-        val record = checkNotNull(record) { "Reader in invalid state" }
-        return when (column) {
-            RESOURCE_CPU_COUNT -> record[COL_CPU_COUNT] as Int
+        return when (index) {
+            COL_ID -> record[AVRO_COL_ID].toString()
+            COL_TIMESTAMP -> Instant.ofEpochMilli(record[AVRO_COL_TIMESTAMP] as Long)
+            COL_DURATION -> Duration.ofMillis(record[AVRO_COL_DURATION] as Long)
+            COL_CPU_COUNT -> getInt(index)
+            COL_CPU_USAGE -> getDouble(index)
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
-    override fun getLong(column: TableColumn<Long>): Long {
+    override fun getBoolean(index: Int): Boolean {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getDouble(column: TableColumn<Double>): Double {
+    override fun getInt(index: Int): Int {
         val record = checkNotNull(record) { "Reader in invalid state" }
-        return when (column) {
-            RESOURCE_STATE_CPU_USAGE -> (record[COL_CPU_USAGE] as Number).toDouble()
+        return when (index) {
+            COL_CPU_COUNT -> record[AVRO_COL_CPU_COUNT] as Int
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getLong(index: Int): Long {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getDouble(index: Int): Double {
+        val record = checkNotNull(record) { "Reader in invalid state" }
+        return when (index) {
+            COL_CPU_USAGE -> (record[AVRO_COL_CPU_USAGE] as Number).toDouble()
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -118,20 +110,34 @@ internal class OdcVmResourceStateTableReader(private val reader: LocalParquetRea
      */
     private fun initColumns(schema: Schema) {
         try {
-            COL_ID = schema.getField("id").pos()
-            COL_TIMESTAMP = (schema.getField("timestamp") ?: schema.getField("time")).pos()
-            COL_DURATION = schema.getField("duration").pos()
-            COL_CPU_COUNT = (schema.getField("cpu_count") ?: schema.getField("cores")).pos()
-            COL_CPU_USAGE = (schema.getField("cpu_usage") ?: schema.getField("cpuUsage")).pos()
+            AVRO_COL_ID = schema.getField("id").pos()
+            AVRO_COL_TIMESTAMP = (schema.getField("timestamp") ?: schema.getField("time")).pos()
+            AVRO_COL_DURATION = schema.getField("duration").pos()
+            AVRO_COL_CPU_COUNT = (schema.getField("cpu_count") ?: schema.getField("cores")).pos()
+            AVRO_COL_CPU_USAGE = (schema.getField("cpu_usage") ?: schema.getField("cpuUsage")).pos()
         } catch (e: NullPointerException) {
             // This happens when the field we are trying to access does not exist
             throw IllegalArgumentException("Invalid schema", e)
         }
     }
 
-    private var COL_ID = -1
-    private var COL_TIMESTAMP = -1
-    private var COL_DURATION = -1
-    private var COL_CPU_COUNT = -1
-    private var COL_CPU_USAGE = -1
+    private var AVRO_COL_ID = -1
+    private var AVRO_COL_TIMESTAMP = -1
+    private var AVRO_COL_DURATION = -1
+    private var AVRO_COL_CPU_COUNT = -1
+    private var AVRO_COL_CPU_USAGE = -1
+
+    private val COL_ID = 0
+    private val COL_TIMESTAMP = 1
+    private val COL_DURATION = 2
+    private val COL_CPU_COUNT = 3
+    private val COL_CPU_USAGE = 4
+
+    private val columns = mapOf(
+        RESOURCE_ID to COL_ID,
+        RESOURCE_STATE_TIMESTAMP to COL_TIMESTAMP,
+        RESOURCE_STATE_DURATION to COL_DURATION,
+        RESOURCE_CPU_COUNT to COL_CPU_COUNT,
+        RESOURCE_STATE_CPU_USAGE to COL_CPU_USAGE,
+    )
 }
