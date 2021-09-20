@@ -49,6 +49,8 @@ internal class BitbrainsResourceTable(private val factory: CsvFactory, path: Pat
 
     override val columns: List<TableColumn<*>> = listOf(RESOURCE_ID)
 
+    override val partitionKeys: List<TableColumn<*>> = emptyList()
+
     override fun newReader(): TableReader {
         return BitbrainsResourceTableReader(factory, vms)
     }

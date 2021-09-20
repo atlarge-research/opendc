@@ -53,6 +53,8 @@ internal class AzureResourceStateTable(private val factory: CsvFactory, path: Pa
         RESOURCE_STATE_CPU_USAGE_PCT
     )
 
+    override val partitionKeys: List<TableColumn<*>> = listOf(RESOURCE_STATE_TIMESTAMP)
+
     override fun newReader(): TableReader {
         val it = partitions.iterator()
 

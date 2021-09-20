@@ -42,6 +42,8 @@ internal class AzureResourceTable(private val factory: CsvFactory, private val p
         RESOURCE_MEM_CAPACITY
     )
 
+    override val partitionKeys: List<TableColumn<*>> = emptyList()
+
     override fun newReader(): TableReader {
         return AzureResourceTableReader(factory.createParser(path.resolve("vmtable/vmtable.csv").toFile()))
     }

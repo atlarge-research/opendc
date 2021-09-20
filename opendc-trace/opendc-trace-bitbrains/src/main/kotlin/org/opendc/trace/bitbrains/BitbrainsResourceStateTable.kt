@@ -63,6 +63,8 @@ internal class BitbrainsResourceStateTable(private val factory: CsvFactory, path
         RESOURCE_STATE_NET_TX,
     )
 
+    override val partitionKeys: List<TableColumn<*>> = listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP)
+
     override fun newReader(): TableReader {
         val it = partitions.iterator()
 

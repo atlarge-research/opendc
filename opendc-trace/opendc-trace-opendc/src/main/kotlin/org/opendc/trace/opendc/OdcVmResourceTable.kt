@@ -42,6 +42,8 @@ internal class OdcVmResourceTable(private val path: Path) : Table {
         RESOURCE_MEM_CAPACITY,
     )
 
+    override val partitionKeys: List<TableColumn<*>> = emptyList()
+
     override fun newReader(): TableReader {
         val reader = LocalParquetReader<GenericRecord>(path.resolve("meta.parquet"))
         return OdcVmResourceTableReader(reader)

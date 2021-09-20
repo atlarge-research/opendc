@@ -48,6 +48,8 @@ internal class WtfTaskTable(private val path: Path) : Table {
         TASK_USER_ID
     )
 
+    override val partitionKeys: List<TableColumn<*>> = listOf(TASK_SUBMIT_TIME)
+
     override fun newReader(): TableReader {
         val reader = LocalParquetReader<GenericRecord>(path.resolve("tasks/schema-1.0"))
         return WtfTaskTableReader(reader)

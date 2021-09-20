@@ -62,6 +62,8 @@ internal class BitbrainsExResourceStateTable(path: Path) : Table {
         RESOURCE_STATE_DISK_WRITE,
     )
 
+    override val partitionKeys: List<TableColumn<*>> = listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP)
+
     override fun newReader(): TableReader {
         val it = partitions.iterator()
 

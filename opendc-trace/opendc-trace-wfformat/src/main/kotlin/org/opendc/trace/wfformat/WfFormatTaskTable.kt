@@ -43,6 +43,8 @@ internal class WfFormatTaskTable(private val factory: JsonFactory, private val p
         TASK_CHILDREN
     )
 
+    override val partitionKeys: List<TableColumn<*>> = emptyList()
+
     override fun newReader(): TableReader {
         val parser = factory.createParser(path.toFile())
         return WfFormatTaskTableReader(parser)

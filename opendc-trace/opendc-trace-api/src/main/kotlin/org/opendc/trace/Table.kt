@@ -42,6 +42,11 @@ public interface Table {
     public val columns: List<TableColumn<*>>
 
     /**
+     * The columns by which the table is partitioned.
+     */
+    public val partitionKeys: List<TableColumn<*>>
+
+    /**
      * Open a [TableReader] for this table.
      */
     public fun newReader(): TableReader

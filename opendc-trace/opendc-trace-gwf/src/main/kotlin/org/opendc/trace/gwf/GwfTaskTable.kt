@@ -44,6 +44,8 @@ internal class GwfTaskTable(private val factory: CsvFactory, private val url: UR
         TASK_PARENTS
     )
 
+    override val partitionKeys: List<TableColumn<*>> = listOf(TASK_WORKFLOW_ID)
+
     override fun newReader(): TableReader {
         return GwfTaskTableReader(factory.createParser(url))
     }

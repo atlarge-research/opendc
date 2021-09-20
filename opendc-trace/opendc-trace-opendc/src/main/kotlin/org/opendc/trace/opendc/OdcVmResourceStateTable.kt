@@ -42,6 +42,8 @@ internal class OdcVmResourceStateTable(private val path: Path) : Table {
         RESOURCE_STATE_CPU_USAGE,
     )
 
+    override val partitionKeys: List<TableColumn<*>> = listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP)
+
     override fun newReader(): TableReader {
         val reader = LocalParquetReader<GenericRecord>(path.resolve("trace.parquet"))
         return OdcVmResourceStateTableReader(reader)

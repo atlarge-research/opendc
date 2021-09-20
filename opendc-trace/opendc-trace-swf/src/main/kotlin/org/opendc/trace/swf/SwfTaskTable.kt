@@ -47,6 +47,8 @@ internal class SwfTaskTable(private val path: Path) : Table {
         TASK_USER_ID
     )
 
+    override val partitionKeys: List<TableColumn<*>> = emptyList()
+
     override fun newReader(): TableReader {
         val reader = path.bufferedReader()
         return SwfTaskTableReader(reader)
