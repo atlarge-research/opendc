@@ -60,42 +60,37 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
         return true
     }
 
-    override fun hasColumn(column: TableColumn<*>): Boolean {
-        return when (column) {
-            RESOURCE_STATE_ID -> true
-            RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_CPU_USAGE_PCT -> true
-            else -> false
+    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+
+    override fun isNull(index: Int): Boolean {
+        require(index in 0..columns.size) { "Invalid column index" }
+        return false
+    }
+
+    override fun get(index: Int): Any? {
+        return when (index) {
+            COL_ID -> id
+            COL_TIMESTAMP -> timestamp
+            COL_CPU_USAGE_PCT -> cpuUsagePct
+            else -> throw IllegalArgumentException("Invalid column index")
         }
     }
 
-    override fun <T> get(column: TableColumn<T>): T {
-        val res: Any? = when (column) {
-            RESOURCE_STATE_ID -> id
-            RESOURCE_STATE_TIMESTAMP -> timestamp
-            RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
-            else -> throw IllegalArgumentException("Invalid column")
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        return res as T
-    }
-
-    override fun getBoolean(column: TableColumn<Boolean>): Boolean {
+    override fun getBoolean(index: Int): Boolean {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getInt(column: TableColumn<Int>): Int {
+    override fun getInt(index: Int): Int {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getLong(column: TableColumn<Long>): Long {
+    override fun getLong(index: Int): Long {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getDouble(column: TableColumn<Double>): Double {
-        return when (column) {
-            RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
+    override fun getDouble(index: Int): Double {
+        return when (index) {
+            COL_CPU_USAGE_PCT -> cpuUsagePct
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -132,6 +127,15 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
         timestamp = null
         cpuUsagePct = Double.NaN
     }
+
+    private val COL_ID = 0
+    private val COL_TIMESTAMP = 1
+    private val COL_CPU_USAGE_PCT = 2
+    private val columns = mapOf(
+        RESOURCE_ID to COL_ID,
+        RESOURCE_STATE_TIMESTAMP to COL_TIMESTAMP,
+        RESOURCE_STATE_CPU_USAGE_PCT to COL_CPU_USAGE_PCT
+    )
 
     companion object {
         /**

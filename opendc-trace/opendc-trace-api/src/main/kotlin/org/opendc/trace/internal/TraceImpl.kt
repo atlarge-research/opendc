@@ -20,30 +20,37 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.opendc
+package org.opendc.trace.internal
 
-import org.opendc.trace.TABLE_RESOURCES
-import org.opendc.trace.TABLE_RESOURCE_STATES
 import org.opendc.trace.Table
 import org.opendc.trace.Trace
+import org.opendc.trace.spi.TraceFormat
 import java.nio.file.Path
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
- * A [Trace] in the OpenDC virtual machine trace format.
+ * Internal implementation of the [Trace] interface.
  */
-public class OdcVmTrace internal constructor(private val path: Path) : Trace {
-    override val tables: List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
+internal class TraceImpl(val format: TraceFormat, val path: Path) : Trace {
+    /**
+     * A map containing the [TableImpl] instances associated with the trace.
+     */
+    private val tableMap = ConcurrentHashMap<String, TableImpl>()
 
-    override fun containsTable(name: String): Boolean =
-        name == TABLE_RESOURCES || name == TABLE_RESOURCE_STATES
+    override val tables: List<String> = format.getTables(path)
 
-    override fun getTable(name: String): Table? {
-        return when (name) {
-            TABLE_RESOURCES -> OdcVmResourceTable(path)
-            TABLE_RESOURCE_STATES -> OdcVmResourceStateTable(path)
-            else -> null
+    init {
+        for (table in tables) {
+            tableMap.computeIfAbsent(table) { TableImpl(this, it) }
         }
     }
 
-    override fun toString(): String = "OdcVmTrace[$path]"
+    override fun containsTable(name: String): Boolean = tableMap.containsKey(name)
+
+    override fun getTable(name: String): Table? = tableMap[name]
+
+    override fun hashCode(): Int = Objects.hash(format, path)
+
+    override fun equals(other: Any?): Boolean = other is TraceImpl && format == other.format && path == other.path
 }

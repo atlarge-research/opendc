@@ -25,8 +25,9 @@ package org.opendc.compute.workload
 import mu.KotlinLogging
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.trace.*
-import org.opendc.trace.opendc.OdcVmTraceFormat
 import java.io.File
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.roundToLong
@@ -43,11 +44,6 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     private val logger = KotlinLogging.logger {}
 
     /**
-     * The [OdcVmTraceFormat] instance to load the traces
-     */
-    private val format = OdcVmTraceFormat()
-
-    /**
      * The cache of workloads.
      */
     private val cache = ConcurrentHashMap<String, List<VirtualMachine>>()
@@ -58,15 +54,21 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     private fun parseFragments(trace: Trace): Map<String, List<SimTraceWorkload.Fragment>> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
 
+        val idCol = reader.resolve(RESOURCE_ID)
+        val timestampCol = reader.resolve(RESOURCE_STATE_TIMESTAMP)
+        val durationCol = reader.resolve(RESOURCE_STATE_DURATION)
+        val coresCol = reader.resolve(RESOURCE_CPU_COUNT)
+        val usageCol = reader.resolve(RESOURCE_STATE_CPU_USAGE)
+
         val fragments = mutableMapOf<String, MutableList<SimTraceWorkload.Fragment>>()
 
         return try {
             while (reader.nextRow()) {
-                val id = reader.get(RESOURCE_STATE_ID)
-                val time = reader.get(RESOURCE_STATE_TIMESTAMP)
-                val duration = reader.get(RESOURCE_STATE_DURATION)
-                val cores = reader.getInt(RESOURCE_STATE_CPU_COUNT)
-                val cpuUsage = reader.getDouble(RESOURCE_STATE_CPU_USAGE)
+                val id = reader.get(idCol) as String
+                val time = reader.get(timestampCol) as Instant
+                val duration = reader.get(durationCol) as Duration
+                val cores = reader.getInt(coresCol)
+                val cpuUsage = reader.getDouble(usageCol)
 
                 val fragment = SimTraceWorkload.Fragment(
                     time.toEpochMilli(),
@@ -90,21 +92,27 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     private fun parseMeta(trace: Trace, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<VirtualMachine> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
+        val idCol = reader.resolve(RESOURCE_ID)
+        val startTimeCol = reader.resolve(RESOURCE_START_TIME)
+        val stopTimeCol = reader.resolve(RESOURCE_STOP_TIME)
+        val coresCol = reader.resolve(RESOURCE_CPU_COUNT)
+        val memCol = reader.resolve(RESOURCE_MEM_CAPACITY)
+
         var counter = 0
         val entries = mutableListOf<VirtualMachine>()
 
         return try {
             while (reader.nextRow()) {
 
-                val id = reader.get(RESOURCE_ID)
+                val id = reader.get(idCol) as String
                 if (!fragments.containsKey(id)) {
                     continue
                 }
 
-                val submissionTime = reader.get(RESOURCE_START_TIME)
-                val endTime = reader.get(RESOURCE_STOP_TIME)
-                val maxCores = reader.getInt(RESOURCE_CPU_COUNT)
-                val requiredMemory = reader.getDouble(RESOURCE_MEM_CAPACITY) / 1000.0 // Convert from KB to MB
+                val submissionTime = reader.get(startTimeCol) as Instant
+                val endTime = reader.get(stopTimeCol) as Instant
+                val maxCores = reader.getInt(coresCol)
+                val requiredMemory = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
                 val vmFragments = fragments.getValue(id).asSequence()
@@ -137,15 +145,15 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     }
 
     /**
-     * Load the trace with the specified [name].
+     * Load the trace with the specified [name] and [format].
      */
-    public fun get(name: String): List<VirtualMachine> {
+    public fun get(name: String, format: String): List<VirtualMachine> {
         return cache.computeIfAbsent(name) {
             val path = baseDir.resolve(it)
 
             logger.info { "Loading trace $it at $path" }
 
-            val trace = format.open(path.toURI().toURL())
+            val trace = Trace.open(path, format)
             val fragments = parseFragments(trace)
             parseMeta(trace, fragments)
         }

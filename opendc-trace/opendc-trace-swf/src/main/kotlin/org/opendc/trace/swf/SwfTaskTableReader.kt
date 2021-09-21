@@ -69,64 +69,43 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
         return true
     }
 
-    override fun hasColumn(column: TableColumn<*>): Boolean {
-        return when (column) {
-            TASK_ID -> true
-            TASK_SUBMIT_TIME -> true
-            TASK_WAIT_TIME -> true
-            TASK_RUNTIME -> true
-            TASK_REQ_NCPUS -> true
-            TASK_ALLOC_NCPUS -> true
-            TASK_PARENTS -> true
-            TASK_STATUS -> true
-            TASK_GROUP_ID -> true
-            TASK_USER_ID -> true
-            else -> false
-        }
+    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+
+    override fun isNull(index: Int): Boolean {
+        require(index in columns.values) { "Invalid column index" }
+        return false
     }
 
-    override fun <T> get(column: TableColumn<T>): T {
-        val res: Any = when (column) {
-            TASK_ID -> fields[COL_JOB_ID]
-            TASK_SUBMIT_TIME -> Instant.ofEpochSecond(fields[COL_SUBMIT_TIME].toLong(10))
-            TASK_WAIT_TIME -> Duration.ofSeconds(fields[COL_WAIT_TIME].toLong(10))
-            TASK_RUNTIME -> Duration.ofSeconds(fields[COL_RUN_TIME].toLong(10))
-            TASK_REQ_NCPUS -> getInt(TASK_REQ_NCPUS)
-            TASK_ALLOC_NCPUS -> getInt(TASK_ALLOC_NCPUS)
-            TASK_PARENTS -> {
-                val parent = fields[COL_PARENT_JOB].toLong(10)
+    override fun get(index: Int): Any? {
+        return when (index) {
+            COL_JOB_ID -> fields[index]
+            COL_SUBMIT_TIME -> Instant.ofEpochSecond(fields[index].toLong(10))
+            COL_WAIT_TIME, COL_RUN_TIME -> Duration.ofSeconds(fields[index].toLong(10))
+            COL_REQ_NCPUS, COL_ALLOC_NCPUS, COL_STATUS, COL_GROUP_ID, COL_USER_ID -> getInt(index)
+            COL_PARENT_JOB -> {
+                val parent = fields[index].toLong(10)
                 if (parent < 0) emptySet() else setOf(parent)
             }
-            TASK_STATUS -> getInt(TASK_STATUS)
-            TASK_GROUP_ID -> getInt(TASK_GROUP_ID)
-            TASK_USER_ID -> getInt(TASK_USER_ID)
-            else -> throw IllegalArgumentException("Invalid column")
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        return res as T
-    }
-
-    override fun getBoolean(column: TableColumn<Boolean>): Boolean {
-        throw IllegalArgumentException("Invalid column")
-    }
-
-    override fun getInt(column: TableColumn<Int>): Int {
-        return when (column) {
-            TASK_REQ_NCPUS -> fields[COL_REQ_NCPUS].toInt(10)
-            TASK_ALLOC_NCPUS -> fields[COL_ALLOC_NCPUS].toInt(10)
-            TASK_STATUS -> fields[COL_STATUS].toInt(10)
-            TASK_GROUP_ID -> fields[COL_GROUP_ID].toInt(10)
-            TASK_USER_ID -> fields[COL_USER_ID].toInt(10)
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
-    override fun getLong(column: TableColumn<Long>): Long {
+    override fun getBoolean(index: Int): Boolean {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getDouble(column: TableColumn<Double>): Double {
+    override fun getInt(index: Int): Int {
+        return when (index) {
+            COL_REQ_NCPUS, COL_ALLOC_NCPUS, COL_STATUS, COL_GROUP_ID, COL_USER_ID -> fields[index].toInt(10)
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getLong(index: Int): Long {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getDouble(index: Int): Double {
         throw IllegalArgumentException("Invalid column")
     }
 
@@ -155,4 +134,17 @@ internal class SwfTaskTableReader(private val reader: BufferedReader) : TableRea
     private val COL_PART_NUM = 15
     private val COL_PARENT_JOB = 16
     private val COL_PARENT_THINK_TIME = 17
+
+    private val columns = mapOf(
+        TASK_ID to COL_JOB_ID,
+        TASK_SUBMIT_TIME to COL_SUBMIT_TIME,
+        TASK_WAIT_TIME to COL_WAIT_TIME,
+        TASK_RUNTIME to COL_RUN_TIME,
+        TASK_ALLOC_NCPUS to COL_ALLOC_NCPUS,
+        TASK_REQ_NCPUS to COL_REQ_NCPUS,
+        TASK_STATUS to COL_STATUS,
+        TASK_USER_ID to COL_USER_ID,
+        TASK_GROUP_ID to COL_GROUP_ID,
+        TASK_PARENTS to COL_PARENT_JOB
+    )
 }

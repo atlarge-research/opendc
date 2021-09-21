@@ -32,14 +32,14 @@ public interface Table {
     public val name: String
 
     /**
-     * A flag to indicate that the table is synthetic (derived from another table).
-     */
-    public val isSynthetic: Boolean
-
-    /**
      * The list of columns supported in this table.
      */
     public val columns: List<TableColumn<*>>
+
+    /**
+     * The columns by which the table is partitioned.
+     */
+    public val partitionKeys: List<TableColumn<*>>
 
     /**
      * Open a [TableReader] for this table.
@@ -47,7 +47,9 @@ public interface Table {
     public fun newReader(): TableReader
 
     /**
-     * Open a [TableReader] for [partition] of the table.
+     * Open a [TableWriter] for this table.
+     *
+     * @throws UnsupportedOperationException if writing is not supported by the table.
      */
-    public fun newReader(partition: String): TableReader
+    public fun newWriter(): TableWriter
 }

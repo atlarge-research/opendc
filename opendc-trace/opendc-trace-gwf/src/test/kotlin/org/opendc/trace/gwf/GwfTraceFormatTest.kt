@@ -22,13 +22,10 @@
 
 package org.opendc.trace.gwf
 
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.*
-import java.net.URL
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 
@@ -36,59 +33,32 @@ import java.time.Instant
  * Test suite for the [GwfTraceFormat] class.
  */
 internal class GwfTraceFormatTest {
-    @Test
-    fun testTraceExists() {
-        val input = checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf"))
-        val format = GwfTraceFormat()
-        assertDoesNotThrow {
-            format.open(input)
-        }
-    }
-
-    @Test
-    fun testTraceDoesNotExists() {
-        val input = checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf"))
-        val format = GwfTraceFormat()
-        assertThrows<IllegalArgumentException> {
-            format.open(URL(input.toString() + "help"))
-        }
-    }
+    private val format = GwfTraceFormat()
 
     @Test
     fun testTables() {
-        val input = checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf"))
-        val format = GwfTraceFormat()
-        val trace = format.open(input)
+        val path = Paths.get(checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf")).toURI())
 
-        assertEquals(listOf(TABLE_TASKS), trace.tables)
+        assertEquals(listOf(TABLE_TASKS), format.getTables(path))
     }
 
     @Test
     fun testTableExists() {
-        val input = checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf"))
-        val format = GwfTraceFormat()
-        val table = format.open(input).getTable(TABLE_TASKS)
-
-        assertNotNull(table)
-        assertDoesNotThrow { table!!.newReader() }
+        val path = Paths.get(checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf")).toURI())
+        assertDoesNotThrow { format.getDetails(path, TABLE_TASKS) }
     }
 
     @Test
     fun testTableDoesNotExist() {
-        val input = checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf"))
-        val format = GwfTraceFormat()
-        val trace = format.open(input)
+        val path = Paths.get(checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf")).toURI())
 
-        assertFalse(trace.containsTable("test"))
-        assertNull(trace.getTable("test"))
+        assertThrows<IllegalArgumentException> { format.getDetails(path, "test") }
     }
 
     @Test
     fun testTableReader() {
-        val input = checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf"))
-        val format = GwfTraceFormat()
-        val table = format.open(input).getTable(TABLE_TASKS)!!
-        val reader = table.newReader()
+        val path = Paths.get(checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf")).toURI())
+        val reader = format.newReader(path, TABLE_TASKS)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -98,14 +68,5 @@ internal class GwfTraceFormatTest {
             { assertEquals(Duration.ofSeconds(11), reader.get(TASK_RUNTIME)) },
             { assertEquals(emptySet<String>(), reader.get(TASK_PARENTS)) },
         )
-    }
-
-    @Test
-    fun testTableReaderPartition() {
-        val input = checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf"))
-        val format = GwfTraceFormat()
-        val table = format.open(input).getTable(TABLE_TASKS)!!
-
-        assertThrows<IllegalArgumentException> { table.newReader("test") }
     }
 }

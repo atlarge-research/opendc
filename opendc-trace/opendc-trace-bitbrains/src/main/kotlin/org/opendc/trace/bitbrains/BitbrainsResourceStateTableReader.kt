@@ -111,71 +111,49 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
         return true
     }
 
-    override fun hasColumn(column: TableColumn<*>): Boolean {
-        return when (column) {
-            RESOURCE_STATE_ID -> true
-            RESOURCE_STATE_TIMESTAMP -> true
-            RESOURCE_STATE_CPU_COUNT -> true
-            RESOURCE_STATE_CPU_CAPACITY -> true
-            RESOURCE_STATE_CPU_USAGE -> true
-            RESOURCE_STATE_CPU_USAGE_PCT -> true
-            RESOURCE_STATE_MEM_CAPACITY -> true
-            RESOURCE_STATE_MEM_USAGE -> true
-            RESOURCE_STATE_DISK_READ -> true
-            RESOURCE_STATE_DISK_WRITE -> true
-            RESOURCE_STATE_NET_RX -> true
-            RESOURCE_STATE_NET_TX -> true
-            else -> false
-        }
+    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+
+    override fun isNull(index: Int): Boolean {
+        check(index in 0..columns.size) { "Invalid column index" }
+        return false
     }
 
-    override fun <T> get(column: TableColumn<T>): T {
-        val res: Any? = when (column) {
-            RESOURCE_STATE_ID -> partition
-            RESOURCE_STATE_TIMESTAMP -> timestamp
-            RESOURCE_STATE_CPU_COUNT -> cpuCores
-            RESOURCE_STATE_CPU_CAPACITY -> cpuCapacity
-            RESOURCE_STATE_CPU_USAGE -> cpuUsage
-            RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
-            RESOURCE_STATE_MEM_CAPACITY -> memCapacity
-            RESOURCE_STATE_MEM_USAGE -> memUsage
-            RESOURCE_STATE_DISK_READ -> diskRead
-            RESOURCE_STATE_DISK_WRITE -> diskWrite
-            RESOURCE_STATE_NET_RX -> netReceived
-            RESOURCE_STATE_NET_TX -> netTransmitted
-            else -> throw IllegalArgumentException("Invalid column")
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        return res as T
-    }
-
-    override fun getBoolean(column: TableColumn<Boolean>): Boolean {
-        throw IllegalArgumentException("Invalid column")
-    }
-
-    override fun getInt(column: TableColumn<Int>): Int {
-        return when (column) {
-            RESOURCE_STATE_CPU_COUNT -> cpuCores
+    override fun get(index: Int): Any? {
+        return when (index) {
+            COL_ID -> partition
+            COL_TIMESTAMP -> timestamp
+            COL_CPU_COUNT -> getInt(index)
+            COL_CPU_CAPACITY, COL_CPU_USAGE, COL_CPU_USAGE_PCT, COL_MEM_CAPACITY, COL_MEM_USAGE, COL_DISK_READ, COL_DISK_WRITE, COL_NET_RX, COL_NET_TX -> getDouble(index)
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
 
-    override fun getLong(column: TableColumn<Long>): Long {
+    override fun getBoolean(index: Int): Boolean {
         throw IllegalArgumentException("Invalid column")
     }
 
-    override fun getDouble(column: TableColumn<Double>): Double {
-        return when (column) {
-            RESOURCE_STATE_CPU_CAPACITY -> cpuCapacity
-            RESOURCE_STATE_CPU_USAGE -> cpuUsage
-            RESOURCE_STATE_CPU_USAGE_PCT -> cpuUsagePct
-            RESOURCE_STATE_MEM_CAPACITY -> memCapacity
-            RESOURCE_STATE_MEM_USAGE -> memUsage
-            RESOURCE_STATE_DISK_READ -> diskRead
-            RESOURCE_STATE_DISK_WRITE -> diskWrite
-            RESOURCE_STATE_NET_RX -> netReceived
-            RESOURCE_STATE_NET_TX -> netTransmitted
+    override fun getInt(index: Int): Int {
+        return when (index) {
+            COL_CPU_COUNT -> cpuCores
+            else -> throw IllegalArgumentException("Invalid column")
+        }
+    }
+
+    override fun getLong(index: Int): Long {
+        throw IllegalArgumentException("Invalid column")
+    }
+
+    override fun getDouble(index: Int): Double {
+        return when (index) {
+            COL_CPU_CAPACITY -> cpuCapacity
+            COL_CPU_USAGE -> cpuUsage
+            COL_CPU_USAGE_PCT -> cpuUsagePct
+            COL_MEM_CAPACITY -> memCapacity
+            COL_MEM_USAGE -> memUsage
+            COL_DISK_READ -> diskRead
+            COL_DISK_WRITE -> diskWrite
+            COL_NET_RX -> netReceived
+            COL_NET_TX -> netTransmitted
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -248,6 +226,34 @@ internal class BitbrainsResourceStateTableReader(private val partition: String, 
         netReceived = Double.NaN
         netTransmitted = Double.NaN
     }
+
+    private val COL_TIMESTAMP = 0
+    private val COL_CPU_COUNT = 1
+    private val COL_CPU_CAPACITY = 2
+    private val COL_CPU_USAGE = 3
+    private val COL_CPU_USAGE_PCT = 4
+    private val COL_MEM_CAPACITY = 5
+    private val COL_MEM_USAGE = 6
+    private val COL_DISK_READ = 7
+    private val COL_DISK_WRITE = 8
+    private val COL_NET_RX = 9
+    private val COL_NET_TX = 10
+    private val COL_ID = 11
+
+    private val columns = mapOf(
+        RESOURCE_ID to COL_ID,
+        RESOURCE_STATE_TIMESTAMP to COL_TIMESTAMP,
+        RESOURCE_CPU_COUNT to COL_CPU_COUNT,
+        RESOURCE_CPU_CAPACITY to COL_CPU_CAPACITY,
+        RESOURCE_STATE_CPU_USAGE to COL_CPU_USAGE,
+        RESOURCE_STATE_CPU_USAGE_PCT to COL_CPU_USAGE_PCT,
+        RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY,
+        RESOURCE_STATE_MEM_USAGE to COL_MEM_USAGE,
+        RESOURCE_STATE_DISK_READ to COL_DISK_READ,
+        RESOURCE_STATE_DISK_WRITE to COL_DISK_WRITE,
+        RESOURCE_STATE_NET_RX to COL_NET_RX,
+        RESOURCE_STATE_NET_TX to COL_NET_TX
+    )
 
     /**
      * The type of the timestamp in the trace.

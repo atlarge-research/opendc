@@ -27,103 +27,73 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * Identifier of the resource.
- */
-@JvmField
-public val RESOURCE_STATE_ID: TableColumn<String> = stringColumn("resource_state:id")
-
-/**
- * The cluster to which the resource belongs.
- */
-@JvmField
-public val RESOURCE_STATE_CLUSTER_ID: TableColumn<String> = stringColumn("resource_state:cluster_id")
-
-/**
  * Timestamp for the state.
  */
 @JvmField
-public val RESOURCE_STATE_TIMESTAMP: TableColumn<Instant> = TableColumn("resource_state:timestamp", Instant::class.java)
+public val RESOURCE_STATE_TIMESTAMP: TableColumn<Instant> = column("resource_state:timestamp")
 
 /**
  * Duration for the state.
  */
 @JvmField
-public val RESOURCE_STATE_DURATION: TableColumn<Duration> = TableColumn("resource_state:duration", Duration::class.java)
+public val RESOURCE_STATE_DURATION: TableColumn<Duration> = column("resource_state:duration")
 
 /**
  * A flag to indicate that the resource is powered on.
  */
 @JvmField
-public val RESOURCE_STATE_POWERED_ON: TableColumn<Boolean> = booleanColumn("resource_state:powered_on")
-
-/**
- * Number of CPUs for the resource.
- */
-@JvmField
-public val RESOURCE_STATE_CPU_COUNT: TableColumn<Int> = intColumn("resource_state:cpu_count")
-
-/**
- * Total CPU capacity of the resource in MHz.
- */
-@JvmField
-public val RESOURCE_STATE_CPU_CAPACITY: TableColumn<Double> = doubleColumn("resource_state:cpu_capacity")
+public val RESOURCE_STATE_POWERED_ON: TableColumn<Boolean> = column("resource_state:powered_on")
 
 /**
  * Total CPU usage of the resource in MHz.
  */
 @JvmField
-public val RESOURCE_STATE_CPU_USAGE: TableColumn<Double> = doubleColumn("resource_state:cpu_usage")
+public val RESOURCE_STATE_CPU_USAGE: TableColumn<Double> = column("resource_state:cpu_usage")
 
 /**
  * Total CPU usage of the resource in percentage.
  */
 @JvmField
-public val RESOURCE_STATE_CPU_USAGE_PCT: TableColumn<Double> = doubleColumn("resource_state:cpu_usage_pct")
+public val RESOURCE_STATE_CPU_USAGE_PCT: TableColumn<Double> = column("resource_state:cpu_usage_pct")
 
 /**
  * Total CPU demand of the resource in MHz.
  */
 @JvmField
-public val RESOURCE_STATE_CPU_DEMAND: TableColumn<Double> = doubleColumn("resource_state:cpu_demand")
+public val RESOURCE_STATE_CPU_DEMAND: TableColumn<Double> = column("resource_state:cpu_demand")
 
 /**
  * CPU ready percentage.
  */
 @JvmField
-public val RESOURCE_STATE_CPU_READY_PCT: TableColumn<Double> = doubleColumn("resource_state:cpu_ready_pct")
-
-/**
- * Memory capacity of the resource in KB.
- */
-@JvmField
-public val RESOURCE_STATE_MEM_CAPACITY: TableColumn<Double> = doubleColumn("resource_state:mem_capacity")
+public val RESOURCE_STATE_CPU_READY_PCT: TableColumn<Double> = column("resource_state:cpu_ready_pct")
 
 /**
  * Memory usage of the resource in KB.
  */
 @JvmField
-public val RESOURCE_STATE_MEM_USAGE: TableColumn<Double> = doubleColumn("resource_state:mem_usage")
+public val RESOURCE_STATE_MEM_USAGE: TableColumn<Double> = column("resource_state:mem_usage")
 
 /**
  * Disk read throughput of the resource in KB/s.
  */
 @JvmField
-public val RESOURCE_STATE_DISK_READ: TableColumn<Double> = doubleColumn("resource_state:disk_read")
+public val RESOURCE_STATE_DISK_READ: TableColumn<Double> = column("resource_state:disk_read")
 
 /**
  * Disk write throughput of the resource in KB/s.
  */
 @JvmField
-public val RESOURCE_STATE_DISK_WRITE: TableColumn<Double> = doubleColumn("resource_state:disk_write")
+public val RESOURCE_STATE_DISK_WRITE: TableColumn<Double> = column("resource_state:disk_write")
 
 /**
  * Network receive throughput of the resource in KB/s.
  */
 @JvmField
-public val RESOURCE_STATE_NET_RX: TableColumn<Double> = doubleColumn("resource_state:net_rx")
+public val RESOURCE_STATE_NET_RX: TableColumn<Double> = column("resource_state:net_rx")
 
 /**
  * Network transmit throughput of the resource in KB/s.
  */
 @JvmField
-public val RESOURCE_STATE_NET_TX: TableColumn<Double> = doubleColumn("resource_state:net_tx")
+public val RESOURCE_STATE_NET_TX: TableColumn<Double> = column("resource_state:net_tx")

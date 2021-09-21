@@ -29,8 +29,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.opendc.trace.*
-import java.io.File
-import java.net.URL
+import java.nio.file.Paths
 
 /**
  * Test suite for the [OdcVmTraceFormat] implementation.
@@ -39,52 +38,30 @@ internal class OdcVmTraceFormatTest {
     private val format = OdcVmTraceFormat()
 
     @Test
-    fun testTraceExists() {
-        val url = File("src/test/resources/trace-v2.1").toURI().toURL()
-        assertDoesNotThrow { format.open(url) }
-    }
-
-    @Test
-    fun testTraceDoesNotExists() {
-        val url = File("src/test/resources/trace-v2.1").toURI().toURL()
-        assertThrows<IllegalArgumentException> {
-            format.open(URL(url.toString() + "help"))
-        }
-    }
-
-    @Test
     fun testTables() {
-        val url = File("src/test/resources/trace-v2.1").toURI().toURL()
-        val trace = format.open(url)
+        val path = Paths.get("src/test/resources/trace-v2.1")
 
-        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES), trace.tables)
+        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES), format.getTables(path))
     }
 
     @Test
     fun testTableExists() {
-        val url = File("src/test/resources/trace-v2.1").toURI().toURL()
-        val table = format.open(url).getTable(TABLE_RESOURCE_STATES)
+        val path = Paths.get("src/test/resources/trace-v2.1")
 
-        assertNotNull(table)
-        assertDoesNotThrow { table!!.newReader() }
+        assertDoesNotThrow { format.getDetails(path, TABLE_RESOURCE_STATES) }
     }
 
     @Test
     fun testTableDoesNotExist() {
-        val url = File("src/test/resources/trace-v2.1").toURI().toURL()
-        val trace = format.open(url)
-
-        assertFalse(trace.containsTable("test"))
-        assertNull(trace.getTable("test"))
+        val path = Paths.get("src/test/resources/trace-v2.1")
+        assertThrows<IllegalArgumentException> { format.getDetails(path, "test") }
     }
 
     @ParameterizedTest
     @ValueSource(strings = ["trace-v2.0", "trace-v2.1"])
     fun testResources(name: String) {
-        val url = File("src/test/resources/$name").toURI().toURL()
-        val trace = format.open(url)
-
-        val reader = trace.getTable(TABLE_RESOURCES)!!.newReader()
+        val path = Paths.get("src/test/resources/$name")
+        val reader = format.newReader(path, TABLE_RESOURCES)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -104,14 +81,12 @@ internal class OdcVmTraceFormatTest {
     @ParameterizedTest
     @ValueSource(strings = ["trace-v2.0", "trace-v2.1"])
     fun testSmoke(name: String) {
-        val url = File("src/test/resources/$name").toURI().toURL()
-        val trace = format.open(url)
-
-        val reader = trace.getTable(TABLE_RESOURCE_STATES)!!.newReader()
+        val path = Paths.get("src/test/resources/$name")
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("1019", reader.get(RESOURCE_STATE_ID)) },
+            { assertEquals("1019", reader.get(RESOURCE_ID)) },
             { assertEquals(1376314846, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
             { assertEquals(0.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
         )

@@ -21,7 +21,7 @@
  */
 
 @file:JvmName("ComputeSchedulers")
-package org.opendc.experiments.capelin.util
+package org.opendc.compute.workload
 
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.service.scheduler.FilterScheduler
@@ -38,10 +38,10 @@ import java.util.*
 /**
  * Create a [ComputeScheduler] for the experiment.
  */
-fun createComputeScheduler(allocationPolicy: String, seeder: Random, vmPlacements: Map<String, String> = emptyMap()): ComputeScheduler {
+public fun createComputeScheduler(name: String, seeder: Random, placements: Map<String, String> = emptyMap()): ComputeScheduler {
     val cpuAllocationRatio = 16.0
     val ramAllocationRatio = 1.5
-    return when (allocationPolicy) {
+    return when (name) {
         "mem" -> FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(cpuAllocationRatio), RamFilter(ramAllocationRatio)),
             weighers = listOf(RamWeigher(multiplier = 1.0))
@@ -80,7 +80,7 @@ fun createComputeScheduler(allocationPolicy: String, seeder: Random, vmPlacement
             subsetSize = Int.MAX_VALUE,
             random = Random(seeder.nextLong())
         )
-        "replay" -> ReplayScheduler(vmPlacements)
-        else -> throw IllegalArgumentException("Unknown policy $allocationPolicy")
+        "replay" -> ReplayScheduler(placements)
+        else -> throw IllegalArgumentException("Unknown policy $name")
     }
 }

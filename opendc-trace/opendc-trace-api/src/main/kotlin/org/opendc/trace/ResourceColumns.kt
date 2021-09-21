@@ -29,28 +29,40 @@ import java.time.Instant
  * Identifier of the resource.
  */
 @JvmField
-public val RESOURCE_ID: TableColumn<String> = stringColumn("resource:id")
+public val RESOURCE_ID: TableColumn<String> = column("resource:id")
+
+/**
+ * The cluster to which the resource belongs.
+ */
+@JvmField
+public val RESOURCE_CLUSTER_ID: TableColumn<String> = column("resource:cluster_id")
 
 /**
  * Start time for the resource.
  */
 @JvmField
-public val RESOURCE_START_TIME: TableColumn<Instant> = TableColumn("resource:start_time", Instant::class.java)
+public val RESOURCE_START_TIME: TableColumn<Instant> = column("resource:start_time")
 
 /**
  * End time for the resource.
  */
 @JvmField
-public val RESOURCE_STOP_TIME: TableColumn<Instant> = TableColumn("resource:stop_time", Instant::class.java)
+public val RESOURCE_STOP_TIME: TableColumn<Instant> = column("resource:stop_time")
 
 /**
  * Number of CPUs for the resource.
  */
 @JvmField
-public val RESOURCE_CPU_COUNT: TableColumn<Int> = intColumn("resource:cpu_count")
+public val RESOURCE_CPU_COUNT: TableColumn<Int> = column("resource:cpu_count")
+
+/**
+ * Total CPU capacity of the resource in MHz.
+ */
+@JvmField
+public val RESOURCE_CPU_CAPACITY: TableColumn<Double> = column("resource:cpu_capacity")
 
 /**
  * Memory capacity for the resource in KB.
  */
 @JvmField
-public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = doubleColumn("resource:mem_capacity")
+public val RESOURCE_MEM_CAPACITY: TableColumn<Double> = column("resource:mem_capacity")

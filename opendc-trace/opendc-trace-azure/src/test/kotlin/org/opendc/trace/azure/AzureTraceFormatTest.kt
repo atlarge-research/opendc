@@ -26,8 +26,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.*
-import java.io.File
-import java.net.URL
+import java.nio.file.Paths
 
 /**
  * Test suite for the [AzureTraceFormat] class.
@@ -36,54 +35,29 @@ class AzureTraceFormatTest {
     private val format = AzureTraceFormat()
 
     @Test
-    fun testTraceExists() {
-        val url = File("src/test/resources/trace").toURI().toURL()
-        assertDoesNotThrow {
-            format.open(url)
-        }
-    }
-
-    @Test
-    fun testTraceDoesNotExists() {
-        val url = File("src/test/resources/trace").toURI().toURL()
-        assertThrows<IllegalArgumentException> {
-            format.open(URL(url.toString() + "help"))
-        }
-    }
-
-    @Test
     fun testTables() {
-        val url = File("src/test/resources/trace").toURI().toURL()
-        val trace = format.open(url)
+        val path = Paths.get("src/test/resources/trace")
 
-        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES), trace.tables)
+        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES), format.getTables(path))
     }
 
     @Test
     fun testTableExists() {
-        val url = File("src/test/resources/trace").toURI().toURL()
-        val table = format.open(url).getTable(TABLE_RESOURCE_STATES)
+        val path = Paths.get("src/test/resources/trace")
 
-        assertNotNull(table)
-        assertDoesNotThrow { table!!.newReader() }
+        assertDoesNotThrow { format.getDetails(path, TABLE_RESOURCE_STATES) }
     }
 
     @Test
     fun testTableDoesNotExist() {
-        val url = File("src/test/resources/trace").toURI().toURL()
-        val trace = format.open(url)
-
-        assertFalse(trace.containsTable("test"))
-        assertNull(trace.getTable("test"))
+        val path = Paths.get("src/test/resources/trace")
+        assertThrows<IllegalArgumentException> { format.getDetails(path, "test") }
     }
 
     @Test
     fun testResources() {
-        val url = File("src/test/resources/trace").toURI().toURL()
-        val trace = format.open(url)
-
-        val reader = trace.getTable(TABLE_RESOURCES)!!.newReader()
-
+        val path = Paths.get("src/test/resources/trace")
+        val reader = format.newReader(path, TABLE_RESOURCES)
         assertAll(
             { assertTrue(reader.nextRow()) },
             { assertEquals("x/XsOfHO4ocsV99i4NluqKDuxctW2MMVmwqOPAlg4wp8mqbBOe3wxBlQo0+Qx+uf", reader.get(RESOURCE_ID)) },
@@ -96,14 +70,12 @@ class AzureTraceFormatTest {
 
     @Test
     fun testSmoke() {
-        val url = File("src/test/resources/trace").toURI().toURL()
-        val trace = format.open(url)
-
-        val reader = trace.getTable(TABLE_RESOURCE_STATES)!!.newReader()
+        val path = Paths.get("src/test/resources/trace")
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
-            { assertEquals("+ZcrOp5/c/fJ6mVgP5qMZlOAGDwyjaaDNM0WoWOt2IDb47gT0UwK9lFwkPQv3C7Q", reader.get(RESOURCE_STATE_ID)) },
+            { assertEquals("+ZcrOp5/c/fJ6mVgP5qMZlOAGDwyjaaDNM0WoWOt2IDb47gT0UwK9lFwkPQv3C7Q", reader.get(RESOURCE_ID)) },
             { assertEquals(0, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
             { assertEquals(2.86979, reader.getDouble(RESOURCE_STATE_CPU_USAGE_PCT), 0.01) }
         )

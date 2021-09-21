@@ -29,19 +29,18 @@ plugins {
 }
 
 application {
-    mainClass.set("org.opendc.trace.tools.TraceConverterKt")
+    mainClass.set("org.opendc.trace.tools.TraceConverter")
 }
 
 dependencies {
     api(platform(projects.opendcPlatform))
 
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceOpendc)
-    implementation(projects.opendcTrace.opendcTraceAzure)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
-
+    implementation(projects.opendcTrace.opendcTraceApi)
     implementation(libs.kotlin.logging)
     implementation(libs.clikt)
 
+    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
+    runtimeOnly(projects.opendcTrace.opendcTraceBitbrains)
+    runtimeOnly(projects.opendcTrace.opendcTraceAzure)
     runtimeOnly(libs.log4j.slf4j)
 }

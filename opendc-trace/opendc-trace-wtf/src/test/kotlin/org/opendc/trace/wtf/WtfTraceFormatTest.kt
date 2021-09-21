@@ -26,8 +26,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.*
-import java.io.File
-import java.net.URL
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 
@@ -35,51 +34,25 @@ import java.time.Instant
  * Test suite for the [WtfTraceFormat] class.
  */
 class WtfTraceFormatTest {
-    @Test
-    fun testTraceExists() {
-        val input = File("src/test/resources/wtf-trace").toURI().toURL()
-        val format = WtfTraceFormat()
-        org.junit.jupiter.api.assertDoesNotThrow {
-            format.open(input)
-        }
-    }
-
-    @Test
-    fun testTraceDoesNotExists() {
-        val input = File("src/test/resources/wtf-trace").toURI().toURL()
-        val format = WtfTraceFormat()
-        assertThrows<IllegalArgumentException> {
-            format.open(URL(input.toString() + "help"))
-        }
-    }
+    private val format = WtfTraceFormat()
 
     @Test
     fun testTables() {
-        val input = File("src/test/resources/wtf-trace").toURI().toURL()
-        val format = WtfTraceFormat()
-        val trace = format.open(input)
-
-        assertEquals(listOf(TABLE_TASKS), trace.tables)
+        val path = Paths.get("src/test/resources/wtf-trace")
+        assertEquals(listOf(TABLE_TASKS), format.getTables(path))
     }
 
     @Test
     fun testTableExists() {
-        val input = File("src/test/resources/wtf-trace").toURI().toURL()
-        val format = WtfTraceFormat()
-        val table = format.open(input).getTable(TABLE_TASKS)
-
-        assertNotNull(table)
-        org.junit.jupiter.api.assertDoesNotThrow { table!!.newReader() }
+        val path = Paths.get("src/test/resources/wtf-trace")
+        assertDoesNotThrow { format.getDetails(path, TABLE_TASKS) }
     }
 
     @Test
     fun testTableDoesNotExist() {
-        val input = File("src/test/resources/wtf-trace").toURI().toURL()
-        val format = WtfTraceFormat()
-        val trace = format.open(input)
+        val path = Paths.get("src/test/resources/wtf-trace")
 
-        assertFalse(trace.containsTable("test"))
-        assertNull(trace.getTable("test"))
+        assertThrows<IllegalArgumentException> { format.getDetails(path, "test") }
     }
 
     /**
@@ -87,9 +60,8 @@ class WtfTraceFormatTest {
      */
     @Test
     fun testTableReader() {
-        val input = File("src/test/resources/wtf-trace")
-        val trace = WtfTraceFormat().open(input.toURI().toURL())
-        val reader = trace.getTable(TABLE_TASKS)!!.newReader()
+        val path = Paths.get("src/test/resources/wtf-trace")
+        val reader = format.newReader(path, TABLE_TASKS)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -110,14 +82,5 @@ class WtfTraceFormatTest {
         )
 
         reader.close()
-    }
-
-    @Test
-    fun testTableReaderPartition() {
-        val input = File("src/test/resources/wtf-trace").toURI().toURL()
-        val format = WtfTraceFormat()
-        val table = format.open(input).getTable(TABLE_TASKS)!!
-
-        assertThrows<IllegalArgumentException> { table.newReader("test") }
     }
 }

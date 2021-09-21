@@ -20,28 +20,36 @@
  * SOFTWARE.
  */
 
-package org.opendc.trace.wfformat
+package org.opendc.trace.internal
 
-import com.fasterxml.jackson.core.JsonFactory
-import org.opendc.trace.TABLE_TASKS
 import org.opendc.trace.Table
-import org.opendc.trace.Trace
-import java.nio.file.Path
+import org.opendc.trace.TableColumn
+import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
+import java.util.*
 
 /**
- * [Trace] implementation for the WfCommons workload trace format.
+ * Internal implementation of [Table].
  */
-public class WfFormatTrace internal constructor(private val factory: JsonFactory, private val path: Path) : Trace {
-    override val tables: List<String> = listOf(TABLE_TASKS)
+internal class TableImpl(val trace: TraceImpl, override val name: String) : Table {
+    /**
+     * The details of this table.
+     */
+    private val details = trace.format.getDetails(trace.path, name)
 
-    override fun containsTable(name: String): Boolean = TABLE_TASKS == name
+    override val columns: List<TableColumn<*>>
+        get() = details.columns
 
-    override fun getTable(name: String): Table? {
-        return when (name) {
-            TABLE_TASKS -> WfFormatTaskTable(factory, path)
-            else -> null
-        }
-    }
+    override val partitionKeys: List<TableColumn<*>>
+        get() = details.partitionKeys
 
-    override fun toString(): String = "WfFormatTrace[$path]"
+    override fun newReader(): TableReader = trace.format.newReader(trace.path, name)
+
+    override fun newWriter(): TableWriter = trace.format.newWriter(trace.path, name)
+
+    override fun toString(): String = "Table[name=$name]"
+
+    override fun hashCode(): Int = Objects.hash(trace, name)
+
+    override fun equals(other: Any?): Boolean = other is TableImpl && trace == other.trace && name == other.name
 }

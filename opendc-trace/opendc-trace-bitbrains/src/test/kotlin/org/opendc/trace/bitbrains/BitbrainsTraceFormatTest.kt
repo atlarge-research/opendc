@@ -26,66 +26,38 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.trace.*
-import java.net.URL
+import java.nio.file.Paths
 
 /**
  * Test suite for the [BitbrainsTraceFormat] class.
  */
 class BitbrainsTraceFormatTest {
-    @Test
-    fun testTraceExists() {
-        val format = BitbrainsTraceFormat()
-        val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
-        assertDoesNotThrow {
-            format.open(url)
-        }
-    }
-
-    @Test
-    fun testTraceDoesNotExists() {
-        val format = BitbrainsTraceFormat()
-        val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
-        assertThrows<IllegalArgumentException> {
-            format.open(URL(url.toString() + "help"))
-        }
-    }
+    private val format = BitbrainsTraceFormat()
 
     @Test
     fun testTables() {
-        val format = BitbrainsTraceFormat()
-        val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
-        val trace = format.open(url)
+        val path = Paths.get("src/test/resources/bitbrains.csv")
 
-        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES), trace.tables)
+        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES), format.getTables(path))
     }
 
     @Test
     fun testTableExists() {
-        val format = BitbrainsTraceFormat()
-        val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
-        val table = format.open(url).getTable(TABLE_RESOURCE_STATES)
+        val path = Paths.get("src/test/resources/bitbrains.csv")
 
-        assertNotNull(table)
-        assertDoesNotThrow { table!!.newReader() }
+        assertDoesNotThrow { format.getDetails(path, TABLE_RESOURCE_STATES) }
     }
 
     @Test
     fun testTableDoesNotExist() {
-        val format = BitbrainsTraceFormat()
-        val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
-        val trace = format.open(url)
-
-        assertFalse(trace.containsTable("test"))
-        assertNull(trace.getTable("test"))
+        val path = Paths.get("src/test/resources/bitbrains.csv")
+        assertThrows<IllegalArgumentException> { format.getDetails(path, "test") }
     }
 
     @Test
     fun testResources() {
-        val format = BitbrainsTraceFormat()
-        val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
-        val trace = format.open(url)
-
-        val reader = trace.getTable(TABLE_RESOURCES)!!.newReader()
+        val path = Paths.get("src/test/resources/bitbrains.csv")
+        val reader = format.newReader(path, TABLE_RESOURCES)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -98,11 +70,8 @@ class BitbrainsTraceFormatTest {
 
     @Test
     fun testSmoke() {
-        val format = BitbrainsTraceFormat()
-        val url = checkNotNull(BitbrainsTraceFormatTest::class.java.getResource("/bitbrains.csv"))
-        val trace = format.open(url)
-
-        val reader = trace.getTable(TABLE_RESOURCE_STATES)!!.newReader()
+        val path = Paths.get("src/test/resources/bitbrains.csv")
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
 
         assertAll(
             { assertTrue(reader.nextRow()) },

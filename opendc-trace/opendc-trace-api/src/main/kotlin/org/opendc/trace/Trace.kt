@@ -22,9 +22,9 @@
 
 package org.opendc.trace
 
+import org.opendc.trace.internal.TraceImpl
 import org.opendc.trace.spi.TraceFormat
 import java.io.File
-import java.net.URL
 import java.nio.file.Path
 
 /**
@@ -48,31 +48,48 @@ public interface Trace {
 
     public companion object {
         /**
-         * Open a [Trace] at the specified [url] in the given [format].
+         * Open a [Trace] at the specified [path] in the given [format].
          *
+         * @param path The path to the trace.
+         * @param format The format of the trace to open.
          * @throws IllegalArgumentException if [format] is not supported.
          */
-        public fun open(url: URL, format: String): Trace {
-            val provider = requireNotNull(TraceFormat.byName(format)) { "Unknown format $format" }
-            return provider.open(url)
-        }
+        @JvmStatic
+        public fun open(path: File, format: String): Trace = open(path.toPath(), format)
 
         /**
          * Open a [Trace] at the specified [path] in the given [format].
          *
+         * @param path The [Path] to the trace.
+         * @param format The format of the trace to open.
          * @throws IllegalArgumentException if [format] is not supported.
          */
-        public fun open(path: File, format: String): Trace {
-            return open(path.toURI().toURL(), format)
-        }
-
-        /**
-         * Open a [Trace] at the specified [path] in the given [format].
-         *
-         * @throws IllegalArgumentException if [format] is not supported.
-         */
+        @JvmStatic
         public fun open(path: Path, format: String): Trace {
-            return open(path.toUri().toURL(), format)
+            val provider = requireNotNull(TraceFormat.byName(format)) { "Unknown format $format" }
+            return TraceImpl(provider, path)
+        }
+
+        /**
+         * Create a [Trace] at the specified [path] in the given [format].
+         *
+         * @param path The [Path] to the trace.
+         * @param format The format of the trace to create.
+         */
+        @JvmStatic
+        public fun create(path: File, format: String): Trace = create(path.toPath(), format)
+
+        /**
+         * Create a [Trace] at the specified [path] in the given [format].
+         *
+         * @param path The [Path] to the trace.
+         * @param format The format of the trace to create.
+         */
+        @JvmStatic
+        public fun create(path: Path, format: String): Trace {
+            val provider = requireNotNull(TraceFormat.byName(format)) { "Unknown format $format" }
+            provider.create(path)
+            return TraceImpl(provider, path)
         }
     }
 }

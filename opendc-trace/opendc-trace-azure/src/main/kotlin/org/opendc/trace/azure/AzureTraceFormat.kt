@@ -24,10 +24,15 @@ package org.opendc.trace.azure
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import com.fasterxml.jackson.dataformat.csv.CsvParser
+import org.opendc.trace.*
+import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import java.net.URL
-import java.nio.file.Paths
-import kotlin.io.path.exists
+import org.opendc.trace.util.CompositeTableReader
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.stream.Collectors
+import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
 
 /**
  * A format implementation for the Azure v1 format.
@@ -45,12 +50,68 @@ public class AzureTraceFormat : TraceFormat {
         .enable(CsvParser.Feature.ALLOW_COMMENTS)
         .enable(CsvParser.Feature.TRIM_SPACES)
 
+    override fun create(path: Path) {
+        throw UnsupportedOperationException("Writing not supported for this format")
+    }
+
+    override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
+
+    override fun getDetails(path: Path, table: String): TableDetails {
+        return when (table) {
+            TABLE_RESOURCES -> TableDetails(
+                listOf(
+                    RESOURCE_ID,
+                    RESOURCE_START_TIME,
+                    RESOURCE_STOP_TIME,
+                    RESOURCE_CPU_COUNT,
+                    RESOURCE_MEM_CAPACITY
+                )
+            )
+            TABLE_RESOURCE_STATES -> TableDetails(
+                listOf(
+                    RESOURCE_ID,
+                    RESOURCE_STATE_TIMESTAMP,
+                    RESOURCE_STATE_CPU_USAGE_PCT
+                ),
+                listOf(RESOURCE_STATE_TIMESTAMP)
+            )
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
+    }
+
+    override fun newReader(path: Path, table: String): TableReader {
+        return when (table) {
+            TABLE_RESOURCES -> AzureResourceTableReader(factory.createParser(path.resolve("vmtable/vmtable.csv").toFile()))
+            TABLE_RESOURCE_STATES -> newResourceStateReader(path)
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
+    }
+
+    override fun newWriter(path: Path, table: String): TableWriter {
+        throw UnsupportedOperationException("Writing not supported for this format")
+    }
+
     /**
-     * Open the trace file.
+     * Construct a [TableReader] for reading over all VM CPU readings.
      */
-    override fun open(url: URL): AzureTrace {
-        val path = Paths.get(url.toURI())
-        require(path.exists()) { "URL $url does not exist" }
-        return AzureTrace(factory, path)
+    private fun newResourceStateReader(path: Path): TableReader {
+        val partitions = Files.walk(path.resolve("vm_cpu_readings"), 1)
+            .filter { !Files.isDirectory(it) && it.extension == "csv" }
+            .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
+            .toSortedMap()
+        val it = partitions.iterator()
+
+        return object : CompositeTableReader() {
+            override fun nextReader(): TableReader? {
+                return if (it.hasNext()) {
+                    val (_, partPath) = it.next()
+                    return AzureResourceStateTableReader(factory.createParser(partPath.toFile()))
+                } else {
+                    null
+                }
+            }
+
+            override fun toString(): String = "AzureCompositeTableReader"
+        }
     }
 }

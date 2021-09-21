@@ -22,10 +22,11 @@
 
 package org.opendc.trace.swf
 
+import org.opendc.trace.*
+import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import java.net.URL
-import java.nio.file.Paths
-import kotlin.io.path.exists
+import java.nio.file.Path
+import kotlin.io.path.bufferedReader
 
 /**
  * Support for the Standard Workload Format (SWF) in OpenDC.
@@ -35,9 +36,41 @@ import kotlin.io.path.exists
 public class SwfTraceFormat : TraceFormat {
     override val name: String = "swf"
 
-    override fun open(url: URL): SwfTrace {
-        val path = Paths.get(url.toURI())
-        require(path.exists()) { "URL $url does not exist" }
-        return SwfTrace(path)
+    override fun create(path: Path) {
+        throw UnsupportedOperationException("Writing not supported for this format")
+    }
+
+    override fun getTables(path: Path): List<String> = listOf(TABLE_TASKS)
+
+    override fun getDetails(path: Path, table: String): TableDetails {
+        return when (table) {
+            TABLE_TASKS -> TableDetails(
+                listOf(
+                    TASK_ID,
+                    TASK_SUBMIT_TIME,
+                    TASK_WAIT_TIME,
+                    TASK_RUNTIME,
+                    TASK_REQ_NCPUS,
+                    TASK_ALLOC_NCPUS,
+                    TASK_PARENTS,
+                    TASK_STATUS,
+                    TASK_GROUP_ID,
+                    TASK_USER_ID
+                ),
+                emptyList()
+            )
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
+    }
+
+    override fun newReader(path: Path, table: String): TableReader {
+        return when (table) {
+            TABLE_TASKS -> SwfTaskTableReader(path.bufferedReader())
+            else -> throw IllegalArgumentException("Table $table not supported")
+        }
+    }
+
+    override fun newWriter(path: Path, table: String): TableWriter {
+        throw UnsupportedOperationException("Writing not supported for this format")
     }
 }
