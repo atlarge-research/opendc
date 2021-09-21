@@ -25,6 +25,7 @@ package org.opendc.trace.internal
 import org.opendc.trace.Table
 import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
 import java.util.*
 
 /**
@@ -43,6 +44,8 @@ internal class TableImpl(val trace: TraceImpl, override val name: String) : Tabl
         get() = details.partitionKeys
 
     override fun newReader(): TableReader = trace.format.newReader(trace.path, name)
+
+    override fun newWriter(): TableWriter = trace.format.newWriter(trace.path, name)
 
     override fun toString(): String = "Table[name=$name]"
 

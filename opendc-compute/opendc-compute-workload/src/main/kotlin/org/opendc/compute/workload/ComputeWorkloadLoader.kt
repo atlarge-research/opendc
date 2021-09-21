@@ -145,15 +145,15 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     }
 
     /**
-     * Load the trace with the specified [name].
+     * Load the trace with the specified [name] and [format].
      */
-    public fun get(name: String): List<VirtualMachine> {
+    public fun get(name: String, format: String): List<VirtualMachine> {
         return cache.computeIfAbsent(name) {
             val path = baseDir.resolve(it)
 
             logger.info { "Loading trace $it at $path" }
 
-            val trace = Trace.open(path, format = "opendc-vm")
+            val trace = Trace.open(path, format)
             val fragments = parseFragments(trace)
             parseMeta(trace, fragments)
         }

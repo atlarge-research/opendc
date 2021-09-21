@@ -35,6 +35,10 @@ import java.nio.file.Path
 public class WtfTraceFormat : TraceFormat {
     override val name: String = "wtf"
 
+    override fun create(path: Path) {
+        throw UnsupportedOperationException("Writing not supported for this format")
+    }
+
     override fun getTables(path: Path): List<String> = listOf(TABLE_TASKS)
 
     override fun getDetails(path: Path, table: String): TableDetails {
@@ -66,5 +70,9 @@ public class WtfTraceFormat : TraceFormat {
             }
             else -> throw IllegalArgumentException("Table $table not supported")
         }
+    }
+
+    override fun newWriter(path: Path, table: String): TableWriter {
+        throw UnsupportedOperationException("Writing not supported for this format")
     }
 }

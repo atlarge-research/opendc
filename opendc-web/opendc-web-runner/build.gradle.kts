@@ -36,10 +36,11 @@ application {
 dependencies {
     api(platform(projects.opendcPlatform))
     implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcExperiments.opendcExperimentsCapelin)
+    implementation(projects.opendcCompute.opendcComputeWorkload)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
     implementation(projects.opendcTelemetry.opendcTelemetryCompute)
+    implementation(projects.opendcTrace.opendcTraceApi)
 
     implementation(libs.kotlin.logging)
     implementation(libs.clikt)
@@ -50,6 +51,7 @@ dependencies {
     implementation(libs.jackson.datatype.jsr310)
     implementation(kotlin("reflect"))
 
+    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
     runtimeOnly(libs.log4j.slf4j)
 
     testImplementation(libs.ktor.client.mock)

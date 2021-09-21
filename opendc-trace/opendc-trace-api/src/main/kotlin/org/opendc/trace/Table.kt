@@ -45,4 +45,11 @@ public interface Table {
      * Open a [TableReader] for this table.
      */
     public fun newReader(): TableReader
+
+    /**
+     * Open a [TableWriter] for this table.
+     *
+     * @throws UnsupportedOperationException if writing is not supported by the table.
+     */
+    public fun newWriter(): TableWriter
 }

@@ -39,6 +39,10 @@ public class WfFormatTraceFormat : TraceFormat {
 
     override val name: String = "wfformat"
 
+    override fun create(path: Path) {
+        throw UnsupportedOperationException("Writing not supported for this format")
+    }
+
     override fun getTables(path: Path): List<String> = listOf(TABLE_TASKS)
 
     override fun getDetails(path: Path, table: String): TableDetails {
@@ -63,5 +67,9 @@ public class WfFormatTraceFormat : TraceFormat {
             TABLE_TASKS -> WfFormatTaskTableReader(factory.createParser(path.toFile()))
             else -> throw IllegalArgumentException("Table $table not supported")
         }
+    }
+
+    override fun newWriter(path: Path, table: String): TableWriter {
+        throw UnsupportedOperationException("Writing not supported for this format")
     }
 }

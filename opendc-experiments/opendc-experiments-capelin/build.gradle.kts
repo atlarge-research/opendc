@@ -33,8 +33,6 @@ dependencies {
     api(projects.opendcHarness.opendcHarnessApi)
     api(projects.opendcCompute.opendcComputeWorkload)
 
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcTrace.opendcTraceBitbrains)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcCompute.opendcComputeSimulator)
@@ -48,6 +46,8 @@ dependencies {
     implementation(libs.jackson.dataformat.csv)
     implementation(kotlin("reflect"))
     implementation(libs.opentelemetry.semconv)
+
+    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
 
     testImplementation(libs.log4j.slf4j)
 }

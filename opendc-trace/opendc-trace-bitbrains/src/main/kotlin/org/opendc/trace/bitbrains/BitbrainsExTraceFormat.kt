@@ -42,6 +42,10 @@ public class BitbrainsExTraceFormat : TraceFormat {
      */
     override val name: String = "bitbrains-ex"
 
+    override fun create(path: Path) {
+        throw UnsupportedOperationException("Writing not supported for this format")
+    }
+
     override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCE_STATES)
 
     override fun getDetails(path: Path, table: String): TableDetails {
@@ -72,6 +76,10 @@ public class BitbrainsExTraceFormat : TraceFormat {
             TABLE_RESOURCE_STATES -> newResourceStateReader(path)
             else -> throw IllegalArgumentException("Table $table not supported")
         }
+    }
+
+    override fun newWriter(path: Path, table: String): TableWriter {
+        throw UnsupportedOperationException("Writing not supported for this format")
     }
 
     /**

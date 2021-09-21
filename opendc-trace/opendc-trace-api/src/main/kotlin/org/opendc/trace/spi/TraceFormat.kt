@@ -23,6 +23,7 @@
 package org.opendc.trace.spi
 
 import org.opendc.trace.TableReader
+import org.opendc.trace.TableWriter
 import java.nio.file.Path
 import java.util.*
 
@@ -34,6 +35,15 @@ public interface TraceFormat {
      * The name of the trace format.
      */
     public val name: String
+
+    /**
+     * Construct an empty trace at [path].
+     *
+     * @param path The path where to create the empty trace.
+     * @throws IllegalArgumentException If [path] is invalid.
+     * @throws UnsupportedOperationException If the table does not support trace creation.
+     */
+    public fun create(path: Path)
 
     /**
      * Return the name of the tables available in the trace at the specified [path].
@@ -62,6 +72,17 @@ public interface TraceFormat {
      * @return A [TableReader] instance for the table.
      */
     public fun newReader(path: Path, table: String): TableReader
+
+    /**
+     * Open a [TableWriter] for the specified [table].
+     *
+     * @param path The path to the trace to open.
+     * @param table The name of the table to open a [TableWriter] for.
+     * @throws IllegalArgumentException If [table] does not exist.
+     * @throws UnsupportedOperationException If the format does not support writing.
+     * @return A [TableWriter] instance for the table.
+     */
+    public fun newWriter(path: Path, table: String): TableWriter
 
     /**
      * A helper object for resolving providers.

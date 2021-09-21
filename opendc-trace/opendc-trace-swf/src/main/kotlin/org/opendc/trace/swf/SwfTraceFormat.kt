@@ -36,6 +36,10 @@ import kotlin.io.path.bufferedReader
 public class SwfTraceFormat : TraceFormat {
     override val name: String = "swf"
 
+    override fun create(path: Path) {
+        throw UnsupportedOperationException("Writing not supported for this format")
+    }
+
     override fun getTables(path: Path): List<String> = listOf(TABLE_TASKS)
 
     override fun getDetails(path: Path, table: String): TableDetails {
@@ -64,5 +68,9 @@ public class SwfTraceFormat : TraceFormat {
             TABLE_TASKS -> SwfTaskTableReader(path.bufferedReader())
             else -> throw IllegalArgumentException("Table $table not supported")
         }
+    }
+
+    override fun newWriter(path: Path, table: String): TableWriter {
+        throw UnsupportedOperationException("Writing not supported for this format")
     }
 }

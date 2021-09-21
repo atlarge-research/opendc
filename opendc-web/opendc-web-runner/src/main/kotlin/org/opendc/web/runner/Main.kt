@@ -33,8 +33,6 @@ import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
 import org.opendc.compute.workload.util.PerformanceInterferenceReader
-import org.opendc.experiments.capelin.model.Workload
-import org.opendc.experiments.capelin.util.createComputeScheduler
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -181,7 +179,7 @@ class RunnerCli : CliktCommand(name = "runner") {
 
                 val operational = scenario.operationalPhenomena
                 val computeScheduler = createComputeScheduler(operational.schedulerName, seeder)
-                val workload = Workload(workloadName, trace(workloadName).sampleByLoad(workloadFraction))
+                val workload = trace(workloadName).sampleByLoad(workloadFraction)
 
                 val failureModel =
                     if (operational.failuresEnabled)
@@ -203,7 +201,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     // Instantiate the topology onto the simulator
                     simulator.apply(topology)
                     // Run workload trace
-                    simulator.run(workload.source.resolve(workloadLoader, seeder), seeder.nextLong())
+                    simulator.run(workload.resolve(workloadLoader, seeder), seeder.nextLong())
                 } finally {
                     simulator.close()
                     metricReader.close()

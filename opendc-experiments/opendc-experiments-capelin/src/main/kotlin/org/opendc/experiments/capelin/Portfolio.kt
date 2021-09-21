@@ -26,6 +26,7 @@ import com.typesafe.config.ConfigFactory
 import mu.KotlinLogging
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.ComputeWorkloadRunner
+import org.opendc.compute.workload.createComputeScheduler
 import org.opendc.compute.workload.export.parquet.ParquetExportMonitor
 import org.opendc.compute.workload.grid5000
 import org.opendc.compute.workload.topology.apply
@@ -34,7 +35,6 @@ import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.topology.clusterTopology
-import org.opendc.experiments.capelin.util.createComputeScheduler
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel

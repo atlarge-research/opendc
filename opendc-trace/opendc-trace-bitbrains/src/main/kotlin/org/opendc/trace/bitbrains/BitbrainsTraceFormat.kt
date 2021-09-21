@@ -50,6 +50,10 @@ public class BitbrainsTraceFormat : TraceFormat {
         .enable(CsvParser.Feature.ALLOW_COMMENTS)
         .enable(CsvParser.Feature.TRIM_SPACES)
 
+    override fun create(path: Path) {
+        throw UnsupportedOperationException("Writing not supported for this format")
+    }
+
     override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
 
     override fun getDetails(path: Path, table: String): TableDetails {
@@ -88,6 +92,10 @@ public class BitbrainsTraceFormat : TraceFormat {
             TABLE_RESOURCE_STATES -> newResourceStateReader(path)
             else -> throw IllegalArgumentException("Table $table not supported")
         }
+    }
+
+    override fun newWriter(path: Path, table: String): TableWriter {
+        throw UnsupportedOperationException("Writing not supported for this format")
     }
 
     /**

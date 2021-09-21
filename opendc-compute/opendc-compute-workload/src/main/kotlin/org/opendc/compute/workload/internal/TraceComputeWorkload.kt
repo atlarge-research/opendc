@@ -30,8 +30,8 @@ import java.util.*
 /**
  * A [ComputeWorkload] from a trace.
  */
-internal class TraceComputeWorkload(val name: String) : ComputeWorkload {
+internal class TraceComputeWorkload(val name: String, val format: String) : ComputeWorkload {
     override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
-        return loader.get(name)
+        return loader.get(name, format)
     }
 }

@@ -32,7 +32,7 @@ dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcCompute.opendcComputeSimulator)
 
-    implementation(projects.opendcTrace.opendcTraceOpendc)
+    implementation(projects.opendcTrace.opendcTraceApi)
     implementation(projects.opendcTrace.opendcTraceParquet)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
