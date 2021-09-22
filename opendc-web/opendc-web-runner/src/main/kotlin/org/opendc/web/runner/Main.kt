@@ -41,7 +41,6 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.collectServiceMetrics
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.web.client.ApiClient
@@ -126,7 +125,7 @@ class RunnerCli : CliktCommand(name = "runner") {
     /**
      * Run a single scenario.
      */
-    private suspend fun runScenario(portfolio: ClientPortfolio, scenario: Scenario, topology: Topology): List<WebComputeMonitor.Result> {
+    private suspend fun runScenario(portfolio: ClientPortfolio, scenario: Scenario, topology: Topology): List<WebComputeMetricExporter.Result> {
         val id = scenario.id
 
         logger.info { "Constructing performance interference model" }
@@ -167,8 +166,8 @@ class RunnerCli : CliktCommand(name = "runner") {
         topology: Topology,
         workloadLoader: ComputeWorkloadLoader,
         interferenceModel: VmInterferenceModel?
-    ): WebComputeMonitor.Result {
-        val monitor = WebComputeMonitor()
+    ): WebComputeMetricExporter.Result {
+        val exporter = WebComputeMetricExporter()
 
         try {
             runBlockingSimulation {
@@ -195,7 +194,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     interferenceModel.takeIf { operational.performanceInterferenceEnabled }
                 )
 
-                val metricReader = CoroutineMetricReader(this, simulator.producers, ComputeMetricExporter(clock, monitor), exportInterval = Duration.ofHours(1))
+                val metricReader = CoroutineMetricReader(this, simulator.producers, exporter, exportInterval = Duration.ofHours(1))
 
                 try {
                     // Instantiate the topology onto the simulator
@@ -207,7 +206,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     metricReader.close()
                 }
 
-                val serviceMetrics = collectServiceMetrics(clock.instant(), simulator.producers[0])
+                val serviceMetrics = collectServiceMetrics(simulator.producers[0])
                 logger.debug {
                     "Scheduler " +
                         "Success=${serviceMetrics.attemptsSuccess} " +
@@ -221,7 +220,7 @@ class RunnerCli : CliktCommand(name = "runner") {
             logger.warn(cause) { "Experiment failed" }
         }
 
-        return monitor.getResult()
+        return exporter.getResult()
     }
 
     private val POLL_INTERVAL = 30000L // ms = 30 s

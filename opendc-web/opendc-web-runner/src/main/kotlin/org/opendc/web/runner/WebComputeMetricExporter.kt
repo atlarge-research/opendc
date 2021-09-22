@@ -22,6 +22,7 @@
 
 package org.opendc.web.runner
 
+import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.ComputeMonitor
 import org.opendc.telemetry.compute.table.HostData
 import org.opendc.telemetry.compute.table.ServiceData
@@ -31,7 +32,7 @@ import kotlin.math.roundToLong
 /**
  * A [ComputeMonitor] that tracks the aggregate metrics for each repeat.
  */
-class WebComputeMonitor : ComputeMonitor {
+class WebComputeMetricExporter : ComputeMetricExporter() {
     override fun record(data: HostData) {
         val slices = data.downtime / SLICE_LENGTH
 
@@ -57,7 +58,7 @@ class WebComputeMonitor : ComputeMonitor {
 
     private var hostAggregateMetrics: AggregateHostMetrics = AggregateHostMetrics()
     private val hostMetrics: MutableMap<String, HostMetrics> = mutableMapOf()
-    private val SLICE_LENGTH: Long = 5 * 60
+    private val SLICE_LENGTH: Long = 5 * 60L
 
     data class AggregateHostMetrics(
         val totalActiveTime: Long = 0L,

@@ -22,6 +22,8 @@
 
 package org.opendc.compute.workload.export.parquet
 
+import io.opentelemetry.sdk.common.CompletableResultCode
+import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.ComputeMonitor
 import org.opendc.telemetry.compute.table.HostData
 import org.opendc.telemetry.compute.table.ServerData
@@ -31,7 +33,7 @@ import java.io.File
 /**
  * A [ComputeMonitor] that logs the events to a Parquet file.
  */
-public class ParquetExportMonitor(base: File, partition: String, bufferSize: Int) : ComputeMonitor, AutoCloseable {
+public class ParquetComputeMetricExporter(base: File, partition: String, bufferSize: Int) : ComputeMetricExporter() {
     private val serverWriter = ParquetServerDataWriter(
         File(base, "server/$partition/data.parquet").also { it.parentFile.mkdirs() },
         bufferSize
@@ -59,9 +61,11 @@ public class ParquetExportMonitor(base: File, partition: String, bufferSize: Int
         serviceWriter.write(data)
     }
 
-    override fun close() {
+    override fun shutdown(): CompletableResultCode {
         hostWriter.close()
         serviceWriter.close()
         serverWriter.close()
+
+        return CompletableResultCode.ofSuccess()
     }
 }

@@ -27,7 +27,7 @@ import mu.KotlinLogging
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.ComputeWorkloadRunner
 import org.opendc.compute.workload.createComputeScheduler
-import org.opendc.compute.workload.export.parquet.ParquetExportMonitor
+import org.opendc.compute.workload.export.parquet.ParquetComputeMetricExporter
 import org.opendc.compute.workload.grid5000
 import org.opendc.compute.workload.topology.apply
 import org.opendc.compute.workload.util.PerformanceInterferenceReader
@@ -39,7 +39,6 @@ import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.collectServiceMetrics
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import java.io.File
@@ -120,12 +119,12 @@ abstract class Portfolio(name: String) : Experiment(name) {
             performanceInterferenceModel
         )
 
-        val monitor = ParquetExportMonitor(
+        val exporter = ParquetComputeMetricExporter(
             File(config.getString("output-path")),
             "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
             4096
         )
-        val metricReader = CoroutineMetricReader(this, runner.producers, ComputeMetricExporter(clock, monitor))
+        val metricReader = CoroutineMetricReader(this, runner.producers, exporter)
         val topology = clusterTopology(File(config.getString("env-path"), "${topology.name}.txt"))
 
         try {
@@ -137,10 +136,9 @@ abstract class Portfolio(name: String) : Experiment(name) {
         } finally {
             runner.close()
             metricReader.close()
-            monitor.close()
         }
 
-        val monitorResults = collectServiceMetrics(clock.instant(), runner.producers[0])
+        val monitorResults = collectServiceMetrics(runner.producers[0])
         logger.debug {
             "Scheduler " +
                 "Success=${monitorResults.attemptsSuccess} " +

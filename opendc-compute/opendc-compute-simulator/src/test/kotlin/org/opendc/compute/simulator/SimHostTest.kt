@@ -43,7 +43,6 @@ import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.opendc.telemetry.compute.ComputeMetricExporter
-import org.opendc.telemetry.compute.ComputeMonitor
 import org.opendc.telemetry.compute.HOST_ID
 import org.opendc.telemetry.compute.table.HostData
 import org.opendc.telemetry.compute.table.ServerData
@@ -138,16 +137,13 @@ internal class SimHostTest {
         // Setup metric reader
         val reader = CoroutineMetricReader(
             this, listOf(meterProvider as MetricProducer),
-            ComputeMetricExporter(
-                clock,
-                object : ComputeMonitor {
-                    override fun record(data: HostData) {
-                        activeTime += data.cpuActiveTime
-                        idleTime += data.cpuIdleTime
-                        stealTime += data.cpuStealTime
-                    }
+            object : ComputeMetricExporter() {
+                override fun record(data: HostData) {
+                    activeTime += data.cpuActiveTime
+                    idleTime += data.cpuIdleTime
+                    stealTime += data.cpuStealTime
                 }
-            ),
+            },
             exportInterval = Duration.ofSeconds(duration)
         )
 
@@ -237,22 +233,19 @@ internal class SimHostTest {
         // Setup metric reader
         val reader = CoroutineMetricReader(
             this, listOf(meterProvider as MetricProducer),
-            ComputeMetricExporter(
-                clock,
-                object : ComputeMonitor {
-                    override fun record(data: HostData) {
-                        activeTime += data.cpuActiveTime
-                        idleTime += data.cpuIdleTime
-                        uptime += data.uptime
-                        downtime += data.downtime
-                    }
-
-                    override fun record(data: ServerData) {
-                        guestUptime += data.uptime
-                        guestDowntime += data.downtime
-                    }
+            object : ComputeMetricExporter() {
+                override fun record(data: HostData) {
+                    activeTime += data.cpuActiveTime
+                    idleTime += data.cpuIdleTime
+                    uptime += data.uptime
+                    downtime += data.downtime
                 }
-            ),
+
+                override fun record(data: ServerData) {
+                    guestUptime += data.uptime
+                    guestDowntime += data.downtime
+                }
+            },
             exportInterval = Duration.ofSeconds(duration)
         )
 
