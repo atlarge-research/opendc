@@ -96,8 +96,8 @@ internal class Guest(
             }
             ServerState.RUNNING -> return
             ServerState.DELETED -> {
-                logger.warn { "User tried to start terminated server" }
-                throw IllegalArgumentException("Server is terminated")
+                logger.warn { "User tried to start deleted server" }
+                throw IllegalArgumentException("Server is deleted")
             }
             else -> assert(false) { "Invalid state transition" }
         }
@@ -141,6 +141,17 @@ internal class Guest(
         }
 
         doStop(ServerState.ERROR)
+    }
+
+    /**
+     * Recover the guest if it is in an error state.
+     */
+    suspend fun recover() {
+        if (state != ServerState.ERROR) {
+            return
+        }
+
+        doStart()
     }
 
     /**
