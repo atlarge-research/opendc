@@ -162,6 +162,8 @@ public class SimResourceDistributorMaxMin(
             return SimResourceCommand.Idle()
         }
 
+        val now = interpreter.clock.millis()
+
         val capacity = ctx.capacity
         var duration: Double = Double.MAX_VALUE
         var deadline: Long = Long.MAX_VALUE
@@ -171,7 +173,7 @@ public class SimResourceDistributorMaxMin(
         // Pull in the work of the outputs
         val outputIterator = activeOutputs.listIterator()
         for (output in outputIterator) {
-            output.pull()
+            output.pull(now)
 
             // Remove outputs that have finished
             if (!output.isActive) {
@@ -206,7 +208,7 @@ public class SimResourceDistributorMaxMin(
             duration = min(duration, output.work / grantedSpeed)
         }
 
-        val targetDuration = min(duration, (deadline - interpreter.clock.millis()) / 1000.0)
+        val targetDuration = min(duration, (deadline - now) / 1000.0)
         var totalRequestedWork = 0.0
         var totalAllocatedWork = 0.0
         for (output in activeOutputs) {
@@ -219,7 +221,7 @@ public class SimResourceDistributorMaxMin(
             }
         }
 
-        assert(deadline >= interpreter.clock.millis()) { "Deadline already passed" }
+        assert(deadline >= now) { "Deadline already passed" }
 
         this.totalRequestedSpeed = totalRequestedSpeed
         this.totalAllocatedWork = totalAllocatedWork
@@ -254,27 +256,27 @@ public class SimResourceDistributorMaxMin(
         /**
          * The current requested work.
          */
-        var work: Double = 0.0
+        @JvmField var work: Double = 0.0
 
         /**
          * The requested limit.
          */
-        var limit: Double = 0.0
+        @JvmField var limit: Double = 0.0
 
         /**
          * The current deadline.
          */
-        var deadline: Long = Long.MAX_VALUE
+        @JvmField var deadline: Long = Long.MAX_VALUE
 
         /**
          * The processing speed that is allowed by the model constraints.
          */
-        var allowedSpeed: Double = 0.0
+        @JvmField var allowedSpeed: Double = 0.0
 
         /**
          * The actual processing speed.
          */
-        var actualSpeed: Double = 0.0
+        @JvmField var actualSpeed: Double = 0.0
 
         /**
          * The timestamp at which we received the last command.
@@ -363,9 +365,9 @@ public class SimResourceDistributorMaxMin(
         /**
          * Pull the next command if necessary.
          */
-        fun pull() {
+        fun pull(now: Long) {
             val ctx = ctx
-            if (ctx != null && lastCommandTimestamp < ctx.clock.millis()) {
+            if (ctx != null && lastCommandTimestamp < now) {
                 ctx.flush()
             }
         }
