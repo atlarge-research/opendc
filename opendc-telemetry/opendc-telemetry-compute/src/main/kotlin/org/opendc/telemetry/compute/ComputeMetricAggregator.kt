@@ -412,7 +412,7 @@ public class ComputeMetricAggregator {
         /**
          * The [HostInfo] of the host on which the server is hosted.
          */
-        var host: HostInfo? = null
+        @JvmField var host: HostInfo? = null
 
         private var timestamp = Long.MIN_VALUE
         @JvmField var uptime: Long = 0
