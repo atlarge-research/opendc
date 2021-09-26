@@ -83,13 +83,13 @@ public class SimPsu(
     }
 
     override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer {
-        override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
             val powerDraw = computePowerDraw(_driver?.computePower() ?: 0.0)
 
             return if (powerDraw > 0.0)
-                SimResourceCommand.Consume(Double.POSITIVE_INFINITY, powerDraw, Long.MAX_VALUE)
+                SimResourceCommand.Consume(powerDraw, Long.MAX_VALUE)
             else
-                SimResourceCommand.Idle()
+                SimResourceCommand.Consume(0.0)
         }
 
         override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {

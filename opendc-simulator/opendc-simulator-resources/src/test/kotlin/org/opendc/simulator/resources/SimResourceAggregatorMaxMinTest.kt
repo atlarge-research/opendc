@@ -38,7 +38,6 @@ import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 /**
  * Test suite for the [SimResourceAggregatorMaxMin] class.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceAggregatorMaxMinTest {
     @Test
     fun testSingleCapacity() = runBlockingSimulation {
@@ -102,15 +101,15 @@ internal class SimResourceAggregatorMaxMinTest {
         sources.forEach(aggregator::addInput)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) }
-            .returns(SimResourceCommand.Consume(4.0, 4.0, 1000))
+        every { consumer.onNext(any(), any(), any()) }
+            .returns(SimResourceCommand.Consume(4.0, 1000))
             .andThen(SimResourceCommand.Exit)
 
         aggregator.consume(consumer)
         yield()
         assertEquals(1000, clock.millis())
 
-        verify(exactly = 2) { consumer.onNext(any()) }
+        verify(exactly = 2) { consumer.onNext(any(), any(), any()) }
     }
 
     @Test
@@ -125,8 +124,8 @@ internal class SimResourceAggregatorMaxMinTest {
         sources.forEach(aggregator::addInput)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) }
-            .returns(SimResourceCommand.Consume(1.0, 1.0))
+        every { consumer.onNext(any(), any(), any()) }
+            .returns(SimResourceCommand.Consume(1.0, duration = 1000))
             .andThenThrows(IllegalStateException("Test Exception"))
 
         assertThrows<IllegalStateException> { aggregator.consume(consumer) }
@@ -152,7 +151,7 @@ internal class SimResourceAggregatorMaxMinTest {
             sources[0].capacity = 0.5
         }
         yield()
-        assertEquals(2334, clock.millis())
+        assertEquals(2333, clock.millis())
     }
 
     @Test
@@ -173,7 +172,7 @@ internal class SimResourceAggregatorMaxMinTest {
             sources[0].capacity = 0.5
         }
         yield()
-        assertEquals(1000, clock.millis())
+        assertEquals(1167, clock.millis())
     }
 
     @Test
@@ -188,8 +187,8 @@ internal class SimResourceAggregatorMaxMinTest {
         sources.forEach(aggregator::addInput)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) }
-            .returns(SimResourceCommand.Consume(4.0, 4.0, 1000))
+        every { consumer.onNext(any(), any(), any()) }
+            .returns(SimResourceCommand.Consume(4.0, 1000))
             .andThen(SimResourceCommand.Exit)
 
         aggregator.consume(consumer)

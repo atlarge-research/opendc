@@ -22,9 +22,6 @@
 
 package org.opendc.simulator.resources
 
-import kotlin.math.ceil
-import kotlin.math.min
-
 /**
  * A [SimResourceSource] represents a source for some resource that provides bounded processing capacity.
  *
@@ -39,20 +36,13 @@ public class SimResourceSource(
 ) : SimAbstractResourceProvider(interpreter, parent, initialCapacity) {
     override fun createLogic(): SimResourceProviderLogic {
         return object : SimResourceProviderLogic {
-            override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
-                return deadline
-            }
-
-            override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
-                return if (work.isInfinite()) {
-                    Long.MAX_VALUE
-                } else {
-                    min(deadline, ctx.clock.millis() + getDuration(work, speed))
-                }
-            }
-
-            override fun onUpdate(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {
-                updateCounters(ctx, work, willOvercommit)
+            override fun onUpdate(
+                ctx: SimResourceControllableContext,
+                delta: Long,
+                limit: Double,
+                willOvercommit: Boolean
+            ) {
+                updateCounters(ctx, delta, limit, willOvercommit)
             }
 
             override fun onFinish(ctx: SimResourceControllableContext) {
@@ -62,11 +52,4 @@ public class SimResourceSource(
     }
 
     override fun toString(): String = "SimResourceSource[capacity=$capacity]"
-
-    /**
-     * Compute the duration that a resource consumption will take with the specified [speed].
-     */
-    private fun getDuration(work: Double, speed: Double): Long {
-        return ceil(work / speed * 1000).toLong()
-    }
 }

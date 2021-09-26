@@ -25,6 +25,7 @@ package org.opendc.simulator.resources.consumer
 import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
+import kotlin.math.roundToLong
 
 /**
  * A [SimResourceConsumer] that consumes the specified amount of work at the specified utilization.
@@ -39,18 +40,19 @@ public class SimWorkConsumer(
         require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
 
-    private var isFirst = true
+    private var remainingWork = work
 
-    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+        val actualWork = ctx.speed * delta / 1000.0
         val limit = ctx.capacity * utilization
-        val work = if (isFirst) {
-            isFirst = false
-            work
-        } else {
-            ctx.remainingWork
-        }
-        return if (work > 0.0) {
-            SimResourceCommand.Consume(work, limit)
+
+        remainingWork -= actualWork
+
+        val remainingWork = remainingWork
+        val duration = (remainingWork / limit * 1000).roundToLong()
+
+        return if (duration > 0) {
+            SimResourceCommand.Consume(limit, duration)
         } else {
             SimResourceCommand.Exit
         }

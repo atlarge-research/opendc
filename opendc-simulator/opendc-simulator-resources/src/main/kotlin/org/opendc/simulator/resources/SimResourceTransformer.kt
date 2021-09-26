@@ -100,19 +100,19 @@ public class SimResourceTransformer(
         }
     }
 
-    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
         val delegate = delegate
 
         if (!hasDelegateStarted) {
             start()
         }
 
-        updateCounters(ctx)
+        updateCounters(ctx, delta)
 
         return if (delegate != null) {
-            val command = transform(ctx, delegate.onNext(ctx))
+            val command = transform(ctx, delegate.onNext(ctx, now, delta))
 
-            _work = if (command is SimResourceCommand.Consume) command.work else 0.0
+            _limit = if (command is SimResourceCommand.Consume) command.limit else 0.0
 
             if (command == SimResourceCommand.Exit) {
                 // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
@@ -124,12 +124,12 @@ public class SimResourceTransformer(
                 if (isCoupled)
                     SimResourceCommand.Exit
                 else
-                    onNext(ctx)
+                    onNext(ctx, now, delta)
             } else {
                 command
             }
         } else {
-            SimResourceCommand.Idle()
+            SimResourceCommand.Consume(0.0)
         }
     }
 
@@ -180,19 +180,21 @@ public class SimResourceTransformer(
     }
 
     /**
-     * Counter to track the current submitted work.
+     * The requested speed.
      */
-    private var _work = 0.0
+    private var _limit: Double = 0.0
 
     /**
      * Update the resource counters for the transformer.
      */
-    private fun updateCounters(ctx: SimResourceContext) {
+    private fun updateCounters(ctx: SimResourceContext, delta: Long) {
         val counters = _counters
-        val remainingWork = ctx.remainingWork
-        counters.demand += _work
-        counters.actual += _work - remainingWork
-        counters.overcommit += remainingWork
+        val deltaS = delta / 1000.0
+        val work = _limit * deltaS
+        val actualWork = ctx.speed * deltaS
+        counters.demand += work
+        counters.actual += actualWork
+        counters.overcommit += (work - actualWork)
     }
 }
 

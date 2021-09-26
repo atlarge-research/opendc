@@ -24,7 +24,6 @@ package org.opendc.simulator.resources
 
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -38,7 +37,6 @@ import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 /**
  * Test suite for the [SimResourceSwitchExclusive] class.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceSwitchExclusiveTest {
     /**
      * Test a trace workload.
@@ -91,7 +89,7 @@ internal class SimResourceSwitchExclusiveTest {
 
         val duration = 5 * 60L * 1000
         val workload = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { workload.onNext(any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
+        every { workload.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0, duration = duration) andThen SimResourceCommand.Exit
 
         val switch = SimResourceSwitchExclusive()
         val source = SimResourceSource(3200.0, scheduler)
@@ -127,10 +125,10 @@ internal class SimResourceSwitchExclusiveTest {
                 }
             }
 
-            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
                 return if (isFirst) {
                     isFirst = false
-                    SimResourceCommand.Consume(duration / 1000.0, 1.0)
+                    SimResourceCommand.Consume(1.0, duration = duration)
                 } else {
                     SimResourceCommand.Exit
                 }
@@ -161,9 +159,8 @@ internal class SimResourceSwitchExclusiveTest {
     fun testConcurrentWorkloadFails() = runBlockingSimulation {
         val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
 
-        val duration = 5 * 60L * 1000
         val workload = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { workload.onNext(any()) } returns SimResourceCommand.Consume(duration / 1000.0, 1.0) andThen SimResourceCommand.Exit
+        every { workload.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0) andThen SimResourceCommand.Exit
 
         val switch = SimResourceSwitchExclusive()
         val source = SimResourceSource(3200.0, scheduler)

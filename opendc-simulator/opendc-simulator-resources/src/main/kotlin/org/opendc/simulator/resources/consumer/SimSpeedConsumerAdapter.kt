@@ -50,8 +50,8 @@ public class SimSpeedConsumerAdapter(
         callback(0.0)
     }
 
-    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-        return delegate.onNext(ctx)
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+        return delegate.onNext(ctx, now, delta)
     }
 
     override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {

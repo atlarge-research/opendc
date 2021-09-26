@@ -32,12 +32,7 @@ public abstract class SimAbstractResourceAggregator(
     /**
      * This method is invoked when the resource consumer consumes resources.
      */
-    protected abstract fun doConsume(work: Double, limit: Double, deadline: Long)
-
-    /**
-     * This method is invoked when the resource consumer enters an idle state.
-     */
-    protected abstract fun doIdle(deadline: Long)
+    protected abstract fun doConsume(limit: Double, duration: Long)
 
     /**
      * This method is invoked when the resource consumer finishes processing.
@@ -98,26 +93,23 @@ public abstract class SimAbstractResourceAggregator(
     private val _output = object : SimAbstractResourceProvider(interpreter, parent, initialCapacity = 0.0) {
         override fun createLogic(): SimResourceProviderLogic {
             return object : SimResourceProviderLogic {
-                override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
-                    doIdle(deadline)
-                    return Long.MAX_VALUE
-                }
 
-                override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
-                    doConsume(work, limit, deadline)
-                    return Long.MAX_VALUE
+                override fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long {
+                    doConsume(limit, duration)
+                    return super.onConsume(ctx, now, limit, duration)
                 }
 
                 override fun onFinish(ctx: SimResourceControllableContext) {
                     doFinish()
                 }
 
-                override fun onUpdate(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {
-                    updateCounters(ctx, work, willOvercommit)
-                }
-
-                override fun getConsumedWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
-                    return work - _inputConsumers.sumOf { it.remainingWork }
+                override fun onUpdate(
+                    ctx: SimResourceControllableContext,
+                    delta: Long,
+                    limit: Double,
+                    willOvercommit: Boolean
+                ) {
+                    updateCounters(ctx, delta, limit, willOvercommit)
                 }
             }
         }
@@ -157,12 +149,6 @@ public abstract class SimAbstractResourceAggregator(
         private var _ctx: SimResourceContext? = null
 
         /**
-         * The remaining work of the consumer.
-         */
-        val remainingWork: Double
-            get() = _ctx?.remainingWork ?: 0.0
-
-        /**
          * The resource command to run next.
          */
         private var command: SimResourceCommand? = null
@@ -179,7 +165,7 @@ public abstract class SimAbstractResourceAggregator(
         }
 
         /* SimResourceConsumer */
-        override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
             var next = command
 
             return if (next != null) {
@@ -190,7 +176,7 @@ public abstract class SimAbstractResourceAggregator(
 
                 next = command
                 this.command = null
-                next ?: SimResourceCommand.Idle()
+                next ?: SimResourceCommand.Consume(0.0)
             }
         }
 

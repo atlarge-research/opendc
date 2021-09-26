@@ -34,20 +34,11 @@ import org.opendc.simulator.resources.SimResourceEvent
 public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResourceConsumer {
     private var iterator: Iterator<Fragment>? = null
 
-    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
         val iterator = checkNotNull(iterator)
         return if (iterator.hasNext()) {
-            val now = ctx.clock.millis()
             val fragment = iterator.next()
-            val work = (fragment.duration / 1000) * fragment.usage
-            val deadline = now + fragment.duration
-
-            assert(deadline >= now) { "Deadline already passed" }
-
-            if (work > 0.0)
-                SimResourceCommand.Consume(work, fragment.usage, deadline)
-            else
-                SimResourceCommand.Idle(deadline)
+            SimResourceCommand.Consume(fragment.usage, fragment.duration)
         } else {
             SimResourceCommand.Exit
         }

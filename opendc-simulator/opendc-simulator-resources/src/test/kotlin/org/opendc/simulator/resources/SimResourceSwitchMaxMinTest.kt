@@ -24,7 +24,6 @@ package org.opendc.simulator.resources
 
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -37,7 +36,6 @@ import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 /**
  * Test suite for the [SimResourceSwitch] implementations
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceSwitchMaxMinTest {
     @Test
     fun testSmoke() = runBlockingSimulation {
@@ -50,7 +48,7 @@ internal class SimResourceSwitchMaxMinTest {
         val provider = switch.newOutput()
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) } returns SimResourceCommand.Consume(1.0, 1.0) andThen SimResourceCommand.Exit
+        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0, duration = 1000) andThen SimResourceCommand.Exit
 
         try {
             provider.consume(consumer)

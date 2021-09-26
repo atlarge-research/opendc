@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.resources
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.simulator.core.runBlockingSimulation
@@ -32,7 +31,6 @@ import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 /**
  * A test suite for the [SimWorkConsumer] class.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimWorkConsumerTest {
     @Test
     fun testSmoke() = runBlockingSimulation {

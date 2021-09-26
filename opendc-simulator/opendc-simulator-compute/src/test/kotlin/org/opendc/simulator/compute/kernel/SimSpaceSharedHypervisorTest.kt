@@ -155,6 +155,8 @@ internal class SimSpaceSharedHypervisorTest {
         vm.run(SimRuntimeWorkload(duration))
         vm.close()
 
+        yield()
+
         val vm2 = hypervisor.createMachine(machineModel)
         vm2.run(SimRuntimeWorkload(duration))
         vm2.close()

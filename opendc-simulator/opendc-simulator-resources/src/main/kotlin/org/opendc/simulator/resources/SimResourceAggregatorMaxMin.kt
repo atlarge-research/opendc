@@ -31,7 +31,7 @@ public class SimResourceAggregatorMaxMin(
 ) : SimAbstractResourceAggregator(interpreter, parent) {
     private val consumers = mutableListOf<Input>()
 
-    override fun doConsume(work: Double, limit: Double, deadline: Long) {
+    override fun doConsume(limit: Double, duration: Long) {
         // Sort all consumers by their capacity
         consumers.sortWith(compareBy { it.ctx.capacity })
 
@@ -40,19 +40,12 @@ public class SimResourceAggregatorMaxMin(
             val inputCapacity = input.ctx.capacity
             val fraction = inputCapacity / capacity
             val grantedSpeed = limit * fraction
-            val grantedWork = fraction * work
 
-            val command = if (grantedWork > 0.0 && grantedSpeed > 0.0)
-                SimResourceCommand.Consume(grantedWork, grantedSpeed, deadline)
+            val command = if (grantedSpeed > 0.0)
+                SimResourceCommand.Consume(grantedSpeed, duration)
             else
-                SimResourceCommand.Idle()
+                SimResourceCommand.Consume(0.0, duration)
             input.push(command)
-        }
-    }
-
-    override fun doIdle(deadline: Long) {
-        for (input in consumers) {
-            input.push(SimResourceCommand.Idle(deadline))
         }
     }
 

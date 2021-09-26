@@ -31,44 +31,23 @@ import org.junit.jupiter.api.assertThrows
  */
 class SimResourceCommandTest {
     @Test
-    fun testZeroWork() {
-        assertThrows<IllegalArgumentException> {
-            SimResourceCommand.Consume(0.0, 1.0)
-        }
-    }
-
-    @Test
-    fun testNegativeWork() {
-        assertThrows<IllegalArgumentException> {
-            SimResourceCommand.Consume(-1.0, 1.0)
-        }
-    }
-
-    @Test
-    fun testZeroLimit() {
-        assertThrows<IllegalArgumentException> {
-            SimResourceCommand.Consume(1.0, 0.0)
-        }
-    }
-
-    @Test
     fun testNegativeLimit() {
         assertThrows<IllegalArgumentException> {
-            SimResourceCommand.Consume(1.0, -1.0, 1)
+            SimResourceCommand.Consume(-1.0, 1)
+        }
+    }
+
+    @Test
+    fun testNegativeDuration() {
+        assertThrows<IllegalArgumentException> {
+            SimResourceCommand.Consume(1.0, -1)
         }
     }
 
     @Test
     fun testConsumeCorrect() {
         assertDoesNotThrow {
-            SimResourceCommand.Consume(1.0, 1.0)
-        }
-    }
-
-    @Test
-    fun testIdleCorrect() {
-        assertDoesNotThrow {
-            SimResourceCommand.Idle(1)
+            SimResourceCommand.Consume(1.0)
         }
     }
 }

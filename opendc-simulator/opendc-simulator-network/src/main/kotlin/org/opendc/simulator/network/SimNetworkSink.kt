@@ -32,7 +32,7 @@ public class SimNetworkSink(
     public val capacity: Double
 ) : SimNetworkPort() {
     override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer {
-        override fun onNext(ctx: SimResourceContext): SimResourceCommand = SimResourceCommand.Idle()
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand = SimResourceCommand.Consume(0.0)
 
         override fun toString(): String = "SimNetworkSink.Consumer"
     }

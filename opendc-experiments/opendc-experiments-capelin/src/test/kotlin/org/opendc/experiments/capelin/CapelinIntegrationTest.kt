@@ -118,7 +118,7 @@ class CapelinIntegrationTest {
             { assertEquals(0, serviceMetrics.serversPending, "No VM should not be in the queue") },
             { assertEquals(223331032, this@CapelinIntegrationTest.exporter.idleTime) { "Incorrect idle time" } },
             { assertEquals(67006568, this@CapelinIntegrationTest.exporter.activeTime) { "Incorrect active time" } },
-            { assertEquals(3159379, this@CapelinIntegrationTest.exporter.stealTime) { "Incorrect steal time" } },
+            { assertEquals(3088047, this@CapelinIntegrationTest.exporter.stealTime) { "Incorrect steal time" } },
             { assertEquals(0, this@CapelinIntegrationTest.exporter.lostTime) { "Incorrect lost time" } },
             { assertEquals(5.841120890240688E9, this@CapelinIntegrationTest.exporter.energyUsage, 0.01) { "Incorrect power draw" } },
         )
@@ -211,8 +211,8 @@ class CapelinIntegrationTest {
         assertAll(
             { assertEquals(6013899, this@CapelinIntegrationTest.exporter.idleTime) { "Idle time incorrect" } },
             { assertEquals(14724501, this@CapelinIntegrationTest.exporter.activeTime) { "Active time incorrect" } },
-            { assertEquals(12530742, this@CapelinIntegrationTest.exporter.stealTime) { "Steal time incorrect" } },
-            { assertEquals(473394, this@CapelinIntegrationTest.exporter.lostTime) { "Lost time incorrect" } }
+            { assertEquals(12027839, this@CapelinIntegrationTest.exporter.stealTime) { "Steal time incorrect" } },
+            { assertEquals(477664, this@CapelinIntegrationTest.exporter.lostTime) { "Lost time incorrect" } }
         )
     }
 

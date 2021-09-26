@@ -37,7 +37,6 @@ import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 /**
  * A test suite for the [SimResourceTransformer] class.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SimResourceTransformerTest {
     @Test
     fun testCancelImmediately() = runBlockingSimulation {
@@ -48,7 +47,7 @@ internal class SimResourceTransformerTest {
         launch { source.consume(forwarder) }
 
         forwarder.consume(object : SimResourceConsumer {
-            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
                 return SimResourceCommand.Exit
             }
         })
@@ -68,10 +67,10 @@ internal class SimResourceTransformerTest {
         forwarder.consume(object : SimResourceConsumer {
             var isFirst = true
 
-            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
                 return if (isFirst) {
                     isFirst = false
-                    SimResourceCommand.Consume(10.0, 1.0)
+                    SimResourceCommand.Consume(1.0, duration = 10 * 1000L)
                 } else {
                     SimResourceCommand.Exit
                 }
@@ -86,7 +85,7 @@ internal class SimResourceTransformerTest {
     fun testState() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
         val consumer = object : SimResourceConsumer {
-            override fun onNext(ctx: SimResourceContext): SimResourceCommand = SimResourceCommand.Exit
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand = SimResourceCommand.Exit
         }
 
         assertFalse(forwarder.isActive)
@@ -108,7 +107,7 @@ internal class SimResourceTransformerTest {
         val forwarder = SimResourceForwarder()
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) } returns SimResourceCommand.Exit
+        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Exit
 
         forwarder.startConsumer(consumer)
         forwarder.cancel()
@@ -123,7 +122,7 @@ internal class SimResourceTransformerTest {
         val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10)
+        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(0.0, 10)
 
         source.startConsumer(forwarder)
         yield()
@@ -142,7 +141,7 @@ internal class SimResourceTransformerTest {
         val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) } returns SimResourceCommand.Idle(10)
+        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(0.0, 10)
 
         source.startConsumer(forwarder)
         yield()
@@ -161,7 +160,7 @@ internal class SimResourceTransformerTest {
         val source = SimResourceSource(2000.0, scheduler)
 
         val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any()) } returns SimResourceCommand.Exit
+        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Exit
 
         source.startConsumer(forwarder)
         forwarder.consume(consumer)
@@ -200,7 +199,7 @@ internal class SimResourceTransformerTest {
         forwarder.consume(consumer)
 
         assertEquals(0, clock.millis())
-        verify(exactly = 1) { consumer.onNext(any()) }
+        verify(exactly = 1) { consumer.onNext(any(), any(), any()) }
     }
 
     @Test

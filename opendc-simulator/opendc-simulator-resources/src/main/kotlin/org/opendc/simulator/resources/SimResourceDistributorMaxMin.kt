@@ -97,8 +97,8 @@ public class SimResourceDistributorMaxMin(
     }
 
     /* SimResourceConsumer */
-    override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-        return doNext(ctx)
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+        return doNext(ctx, now)
     }
 
     override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
@@ -135,38 +135,16 @@ public class SimResourceDistributorMaxMin(
     }
 
     /**
-     * Update the counters of the distributor.
-     */
-    private fun updateCounters(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {
-        if (work <= 0.0) {
-            return
-        }
-
-        val counters = _counters
-        val remainingWork = ctx.remainingWork
-
-        counters.demand += work
-        counters.actual += work - remainingWork
-
-        if (willOvercommit && remainingWork > 0.0) {
-            counters.overcommit += remainingWork
-        }
-    }
-
-    /**
      * Schedule the work of the outputs.
      */
-    private fun doNext(ctx: SimResourceContext): SimResourceCommand {
+    private fun doNext(ctx: SimResourceContext, now: Long): SimResourceCommand {
         // If there is no work yet, mark the input as idle.
         if (activeOutputs.isEmpty()) {
-            return SimResourceCommand.Idle()
+            return SimResourceCommand.Consume(0.0)
         }
 
-        val now = interpreter.clock.millis()
-
         val capacity = ctx.capacity
-        var duration: Double = Double.MAX_VALUE
-        var deadline: Long = Long.MAX_VALUE
+        var duration: Long = Long.MAX_VALUE
         var availableSpeed = capacity
         var totalRequestedSpeed = 0.0
 
@@ -191,10 +169,10 @@ public class SimResourceDistributorMaxMin(
             val availableShare = availableSpeed / remaining--
             val grantedSpeed = min(output.allowedSpeed, availableShare)
 
-            deadline = min(deadline, output.deadline)
+            duration = min(duration, output.duration)
 
             // Ignore idle computation
-            if (grantedSpeed <= 0.0 || output.work <= 0.0) {
+            if (grantedSpeed <= 0.0) {
                 output.actualSpeed = 0.0
                 continue
             }
@@ -203,25 +181,19 @@ public class SimResourceDistributorMaxMin(
 
             output.actualSpeed = grantedSpeed
             availableSpeed -= grantedSpeed
-
-            // The duration that we want to run is that of the shortest request of an output
-            duration = min(duration, output.work / grantedSpeed)
         }
 
-        val targetDuration = min(duration, (deadline - now) / 1000.0)
+        val durationS = duration / 1000.0
         var totalRequestedWork = 0.0
         var totalAllocatedWork = 0.0
         for (output in activeOutputs) {
-            val work = output.work
+            val limit = output.limit
             val speed = output.actualSpeed
             if (speed > 0.0) {
-                val outputDuration = work / speed
-                totalRequestedWork += work * (duration / outputDuration)
-                totalAllocatedWork += work * (targetDuration / outputDuration)
+                totalRequestedWork += limit * durationS
+                totalAllocatedWork += speed * durationS
             }
         }
-
-        assert(deadline >= now) { "Deadline already passed" }
 
         this.totalRequestedSpeed = totalRequestedSpeed
         this.totalAllocatedWork = totalAllocatedWork
@@ -229,9 +201,9 @@ public class SimResourceDistributorMaxMin(
         this.totalAllocatedSpeed = totalAllocatedSpeed
 
         return if (totalAllocatedWork > 0.0 && totalAllocatedSpeed > 0.0)
-            SimResourceCommand.Consume(totalAllocatedWork, totalAllocatedSpeed, deadline)
+            SimResourceCommand.Consume(totalAllocatedSpeed, duration)
         else
-            SimResourceCommand.Idle(deadline)
+            SimResourceCommand.Consume(0.0, duration)
     }
 
     private fun updateCapacity(ctx: SimResourceContext) {
@@ -243,7 +215,7 @@ public class SimResourceDistributorMaxMin(
     /**
      * An internal [SimResourceProvider] implementation for switch outputs.
      */
-    private inner class Output(capacity: Double, private val key: InterferenceKey?) :
+    private inner class Output(capacity: Double, val key: InterferenceKey?) :
         SimAbstractResourceProvider(interpreter, parent, capacity),
         SimResourceCloseableProvider,
         SimResourceProviderLogic,
@@ -254,11 +226,6 @@ public class SimResourceDistributorMaxMin(
         private var isClosed: Boolean = false
 
         /**
-         * The current requested work.
-         */
-        @JvmField var work: Double = 0.0
-
-        /**
          * The requested limit.
          */
         @JvmField var limit: Double = 0.0
@@ -266,7 +233,7 @@ public class SimResourceDistributorMaxMin(
         /**
          * The current deadline.
          */
-        @JvmField var deadline: Long = Long.MAX_VALUE
+        @JvmField var duration: Long = Long.MAX_VALUE
 
         /**
          * The processing speed that is allowed by the model constraints.
@@ -304,44 +271,19 @@ public class SimResourceDistributorMaxMin(
         }
 
         /* SimResourceProviderLogic */
-        override fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long {
-            allowedSpeed = 0.0
-            this.deadline = deadline
-            work = 0.0
-            limit = 0.0
-            lastCommandTimestamp = ctx.clock.millis()
-
-            return Long.MAX_VALUE
-        }
-
-        override fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long {
+        override fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long {
             allowedSpeed = min(ctx.capacity, limit)
-            this.work = work
             this.limit = limit
-            this.deadline = deadline
-            lastCommandTimestamp = ctx.clock.millis()
+            this.duration = duration
+            lastCommandTimestamp = now
 
-            return Long.MAX_VALUE
+            return super.onConsume(ctx, now, limit, duration)
         }
 
-        override fun onUpdate(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {
-            updateCounters(ctx, work, willOvercommit)
-
-            this@SimResourceDistributorMaxMin.updateCounters(ctx, work, willOvercommit)
-        }
-
-        override fun onFinish(ctx: SimResourceControllableContext) {
-            work = 0.0
-            limit = 0.0
-            deadline = Long.MAX_VALUE
-            lastCommandTimestamp = ctx.clock.millis()
-        }
-
-        override fun getConsumedWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
-            val totalRemainingWork = this@SimResourceDistributorMaxMin.ctx?.remainingWork ?: 0.0
-
-            // Compute the fraction of compute time allocated to the output
-            val fraction = actualSpeed / totalAllocatedSpeed
+        override fun onUpdate(ctx: SimResourceControllableContext, delta: Long, limit: Double, willOvercommit: Boolean) {
+            if (delta <= 0.0) {
+                return
+            }
 
             // Compute the performance penalty due to resource interference
             val perfScore = if (interferenceDomain != null) {
@@ -351,12 +293,29 @@ public class SimResourceDistributorMaxMin(
                 1.0
             }
 
-            // Compute the work that was actually granted to the output.
-            val potentialConsumedWork = (totalAllocatedWork - totalRemainingWork) * fraction
+            val deltaS = delta / 1000.0
+            val work = limit * deltaS
+            val actualWork = actualSpeed * deltaS
+            val remainingWork = work - actualWork
+            val overcommit = if (willOvercommit && remainingWork > 0.0) {
+                remainingWork
+            } else {
+                0.0
+            }
 
-            _counters.interference += potentialConsumedWork * max(0.0, 1 - perfScore)
+            updateCounters(work, actualWork, overcommit)
 
-            return potentialConsumedWork
+            val distCounters = _counters
+            distCounters.demand += work
+            distCounters.actual += actualWork
+            distCounters.overcommit += overcommit
+            distCounters.interference += actualWork * max(0.0, 1 - perfScore)
+        }
+
+        override fun onFinish(ctx: SimResourceControllableContext) {
+            limit = 0.0
+            duration = Long.MAX_VALUE
+            lastCommandTimestamp = ctx.clock.millis()
         }
 
         /* Comparable */

@@ -50,11 +50,6 @@ public interface SimResourceContext {
     public val demand: Double
 
     /**
-     * The amount of work still remaining at this instant.
-     */
-    public val remainingWork: Double
-
-    /**
      * Ask the resource provider to interrupt its resource.
      */
     public fun interrupt()

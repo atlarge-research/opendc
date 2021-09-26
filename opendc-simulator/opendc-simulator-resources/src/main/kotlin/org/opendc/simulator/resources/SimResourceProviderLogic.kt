@@ -27,53 +27,33 @@ package org.opendc.simulator.resources
  */
 public interface SimResourceProviderLogic {
     /**
-     * This method is invoked when the resource is reported to idle until the specified [deadline].
+     * This method is invoked when the consumer ask to consume the resource for the specified [duration].
      *
      * @param ctx The context in which the provider runs.
-     * @param deadline The deadline that was requested by the resource consumer.
-     * @return The instant at which to resume the consumer.
-     */
-    public fun onIdle(ctx: SimResourceControllableContext, deadline: Long): Long
-
-    /**
-     * This method is invoked when the resource will be consumed until the specified amount of [work] was processed
-     * or [deadline] is reached.
-     *
-     * @param ctx The context in which the provider runs.
-     * @param work The amount of work that was requested by the resource consumer.
+     * @param now The virtual timestamp in milliseconds at which the update is occurring.
      * @param limit The limit on the work rate of the resource consumer.
-     * @param deadline The deadline that was requested by the resource consumer.
-     * @return The instant at which to resume the consumer.
+     * @param duration The duration of the consumption in milliseconds.
+     * @return The deadline of the resource consumption.
      */
-    public fun onConsume(ctx: SimResourceControllableContext, work: Double, limit: Double, deadline: Long): Long
+    public fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long {
+        return if (duration == Long.MAX_VALUE) {
+            return Long.MAX_VALUE
+        } else {
+            now + duration
+        }
+    }
 
     /**
      * This method is invoked when the progress of the resource consumer is materialized.
      *
      * @param ctx The context in which the provider runs.
-     * @param work The amount of work that was requested by the resource consumer.
+     * @param limit The limit on the work rate of the resource consumer.
      * @param willOvercommit A flag to indicate that the remaining work is overcommitted.
      */
-    public fun onUpdate(ctx: SimResourceControllableContext, work: Double, willOvercommit: Boolean) {}
+    public fun onUpdate(ctx: SimResourceControllableContext, delta: Long, limit: Double, willOvercommit: Boolean) {}
 
     /**
      * This method is invoked when the resource consumer has finished.
      */
-    public fun onFinish(ctx: SimResourceControllableContext)
-
-    /**
-     * Compute the amount of work that was consumed over the specified [duration].
-     *
-     * @param work The total size of the resource consumption.
-     * @param speed The speed of the resource provider.
-     * @param duration The duration from the start of the consumption until now.
-     * @return The amount of work that was consumed by the resource provider.
-     */
-    public fun getConsumedWork(ctx: SimResourceControllableContext, work: Double, speed: Double, duration: Long): Double {
-        return if (duration > 0L) {
-            return (duration / 1000.0) * speed
-        } else {
-            work
-        }
-    }
+    public fun onFinish(ctx: SimResourceControllableContext) {}
 }

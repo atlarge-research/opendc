@@ -27,23 +27,17 @@ package org.opendc.simulator.resources
  */
 public sealed class SimResourceCommand {
     /**
-     * A request to the resource to perform the specified amount of work before the given [deadline].
+     * A request to the resource to perform work for the specified [duration].
      *
-     * @param work The amount of work to process.
      * @param limit The maximum amount of work to be processed per second.
-     * @param deadline The instant at which the work needs to be fulfilled.
+     * @param duration The duration of the resource consumption in milliseconds.
      */
-    public data class Consume(val work: Double, val limit: Double, val deadline: Long = Long.MAX_VALUE) : SimResourceCommand() {
+    public data class Consume(val limit: Double, val duration: Long = Long.MAX_VALUE) : SimResourceCommand() {
         init {
-            require(work > 0) { "Amount of work must be positive" }
-            require(limit > 0) { "Limit must be positive" }
+            require(limit >= 0.0) { "Negative limit is not allowed" }
+            require(duration >= 0) { "Duration must be positive" }
         }
     }
-
-    /**
-     * An indication to the resource that the consumer will idle until the specified [deadline] or if it is interrupted.
-     */
-    public data class Idle(val deadline: Long = Long.MAX_VALUE) : SimResourceCommand()
 
     /**
      * An indication to the resource that the consumer has finished.

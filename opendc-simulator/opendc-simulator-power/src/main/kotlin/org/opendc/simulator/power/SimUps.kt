@@ -55,21 +55,13 @@ public class SimUps(
     override fun onConnect(inlet: SimPowerInlet) {
         val consumer = inlet.createConsumer()
         aggregator.startConsumer(object : SimResourceConsumer by consumer {
-            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-                return when (val cmd = consumer.onNext(ctx)) {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+                return when (val cmd = consumer.onNext(ctx, now, delta)) {
                     is SimResourceCommand.Consume -> {
-                        val duration = cmd.work / cmd.limit
                         val loss = computePowerLoss(cmd.limit)
                         val newLimit = cmd.limit + loss
 
-                        SimResourceCommand.Consume(duration * newLimit, newLimit, cmd.deadline)
-                    }
-                    is SimResourceCommand.Idle -> {
-                        val loss = computePowerLoss(0.0)
-                        if (loss > 0.0)
-                            SimResourceCommand.Consume(Double.POSITIVE_INFINITY, loss, cmd.deadline)
-                        else
-                            cmd
+                        SimResourceCommand.Consume(newLimit, cmd.duration)
                     }
                     else -> cmd
                 }

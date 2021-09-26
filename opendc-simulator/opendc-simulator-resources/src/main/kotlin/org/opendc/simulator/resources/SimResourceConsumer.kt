@@ -34,9 +34,11 @@ public interface SimResourceConsumer {
      * the resource finished processing, reached its deadline or was interrupted.
      *
      * @param ctx The execution context in which the consumer runs.
+     * @param now The virtual timestamp in milliseconds at which the update is occurring.
+     * @param delta The virtual duration between this call and the last call in milliseconds.
      * @return The next command that the resource should execute.
      */
-    public fun onNext(ctx: SimResourceContext): SimResourceCommand
+    public fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand
 
     /**
      * This method is invoked when an event has occurred.

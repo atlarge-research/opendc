@@ -41,6 +41,7 @@ import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
+import kotlin.math.roundToLong
 
 /**
  * A [TFDevice] implementation using simulated components.
@@ -127,13 +128,16 @@ public class SimTFDevice(
             }
         }
 
-        override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+            val consumedWork = ctx.speed * delta / 1000.0
+
             val activeWork = activeWork
             if (activeWork != null) {
-                if (activeWork.consume(activeWork.flops - ctx.remainingWork)) {
+                if (activeWork.consume(consumedWork)) {
                     this.activeWork = null
                 } else {
-                    return SimResourceCommand.Consume(activeWork.flops, ctx.capacity)
+                    val duration = (activeWork.flops / ctx.capacity * 1000).roundToLong()
+                    return SimResourceCommand.Consume(ctx.capacity, duration)
                 }
             }
 
@@ -141,9 +145,10 @@ public class SimTFDevice(
             val head = queue.poll()
             return if (head != null) {
                 this.activeWork = head
-                SimResourceCommand.Consume(head.flops, ctx.capacity)
+                val duration = (head.flops / ctx.capacity * 1000).roundToLong()
+                SimResourceCommand.Consume(ctx.capacity, duration)
             } else {
-                SimResourceCommand.Idle()
+                SimResourceCommand.Consume(0.0)
             }
         }
 

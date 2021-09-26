@@ -58,12 +58,6 @@ internal class SimResourceContextImpl(
         }
 
     /**
-     * The amount of work still remaining at this instant.
-     */
-    override val remainingWork: Double
-        get() = getRemainingWork(_clock.millis())
-
-    /**
      * A flag to indicate the state of the context.
      */
     override val state: SimResourceState
@@ -87,8 +81,8 @@ internal class SimResourceContextImpl(
      * The current state of the resource context.
      */
     private var _timestamp: Long = Long.MIN_VALUE
-    private var _work: Double = 0.0
     private var _limit: Double = 0.0
+    private var _duration: Long = Long.MAX_VALUE
     private var _deadline: Long = Long.MAX_VALUE
 
     /**
@@ -178,7 +172,6 @@ internal class SimResourceContextImpl(
         } catch (cause: Throwable) {
             doFail(cause)
         } finally {
-            _remainingWorkFlush = Long.MIN_VALUE
             _timestamp = timestamp
         }
     }
@@ -200,29 +193,25 @@ internal class SimResourceContextImpl(
             SimResourceState.Pending, SimResourceState.Stopped -> state
             SimResourceState.Active -> {
                 val isInterrupted = _flag and FLAG_INTERRUPT != 0
-                val remainingWork = getRemainingWork(timestamp)
-                val isConsume = _limit > 0.0
                 val reachedDeadline = _deadline <= timestamp
+                val delta = max(0, timestamp - _timestamp)
 
                 // Update the resource counters only if there is some progress
                 if (timestamp > _timestamp) {
-                    logic.onUpdate(this, _work, reachedDeadline)
+                    logic.onUpdate(this, delta, _limit, reachedDeadline)
                 }
 
                 // We should only continue processing the next command if:
                 // 1. The resource consumption was finished.
                 // 2. The resource capacity cannot satisfy the demand.
                 // 3. The resource consumer should be interrupted (e.g., someone called .interrupt())
-                if ((isConsume && remainingWork == 0.0) || reachedDeadline || isInterrupted) {
-                    when (val command = consumer.onNext(this)) {
-                        is SimResourceCommand.Idle -> interpretIdle(timestamp, command.deadline)
-                        is SimResourceCommand.Consume -> interpretConsume(timestamp, command.work, command.limit, command.deadline)
+                if (reachedDeadline || isInterrupted) {
+                    when (val command = consumer.onNext(this, timestamp, delta)) {
+                        is SimResourceCommand.Consume -> interpretConsume(timestamp, command.limit, command.duration)
                         is SimResourceCommand.Exit -> interpretExit()
                     }
-                } else if (isConsume) {
-                    interpretConsume(timestamp, remainingWork, _limit, _deadline)
                 } else {
-                    interpretIdle(timestamp, _deadline)
+                    interpretConsume(timestamp, _limit, _duration - delta)
                 }
             }
         }
@@ -257,32 +246,15 @@ internal class SimResourceContextImpl(
     /**
      * Interpret the [SimResourceCommand.Consume] command.
      */
-    private fun interpretConsume(now: Long, work: Double, limit: Double, deadline: Long): SimResourceState {
-        require(deadline >= now) { "Deadline already passed" }
-
+    private fun interpretConsume(now: Long, limit: Double, duration: Long): SimResourceState {
         _speed = min(capacity, limit)
-        _work = work
         _limit = limit
-        _deadline = deadline
+        _duration = duration
 
-        val timestamp = logic.onConsume(this, work, limit, deadline)
-        scheduleUpdate(timestamp)
+        val timestamp = logic.onConsume(this, now, limit, duration)
 
-        return SimResourceState.Active
-    }
+        _deadline = timestamp
 
-    /**
-     * Interpret the [SimResourceCommand.Idle] command.
-     */
-    private fun interpretIdle(now: Long, deadline: Long): SimResourceState {
-        require(deadline >= now) { "Deadline already passed" }
-
-        _speed = 0.0
-        _work = 0.0
-        _limit = 0.0
-        _deadline = deadline
-
-        val timestamp = logic.onIdle(this, deadline)
         scheduleUpdate(timestamp)
 
         return SimResourceState.Active
@@ -293,35 +265,11 @@ internal class SimResourceContextImpl(
      */
     private fun interpretExit(): SimResourceState {
         _speed = 0.0
-        _work = 0.0
         _limit = 0.0
+        _duration = Long.MAX_VALUE
         _deadline = Long.MAX_VALUE
 
         return SimResourceState.Stopped
-    }
-
-    private var _remainingWork: Double = 0.0
-    private var _remainingWorkFlush: Long = Long.MIN_VALUE
-
-    /**
-     * Obtain the remaining work at the given timestamp.
-     */
-    private fun getRemainingWork(now: Long): Double {
-        return if (_remainingWorkFlush < now) {
-            _remainingWorkFlush = now
-            computeRemainingWork(now).also { _remainingWork = it }
-        } else {
-            _remainingWork
-        }
-    }
-
-    /**
-     * Compute the remaining work based on the current state.
-     */
-    private fun computeRemainingWork(now: Long): Double {
-        return if (_work > 0.0)
-            max(0.0, _work - logic.getConsumedWork(this, _work, speed, now - _timestamp))
-        else 0.0
     }
 
     /**
@@ -333,16 +281,11 @@ internal class SimResourceContextImpl(
             return
         }
 
-        val isThrottled = speed > capacity
-
         interpreter.batch {
             // Inform the consumer of the capacity change. This might already trigger an interrupt.
             consumer.onEvent(this, SimResourceEvent.Capacity)
 
-            // Optimization: only invalidate context if the new capacity cannot satisfy the active resource command.
-            if (isThrottled) {
-                invalidate()
-            }
+            interrupt()
         }
     }
 

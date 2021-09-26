@@ -80,14 +80,13 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
     }
 
     private inner class Consumer(val cpu: ProcessingUnit) : SimResourceConsumer {
-        override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-            val now = ctx.clock.millis()
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
             val fragment = pullFragment(now) ?: return SimResourceCommand.Exit
             val timestamp = fragment.timestamp + offset
 
             // Fragment is in the future
             if (timestamp > now) {
-                return SimResourceCommand.Idle(timestamp)
+                return SimResourceCommand.Consume(0.0, timestamp - now)
             }
 
             val cores = min(cpu.node.coreCount, fragment.cores)
@@ -97,12 +96,11 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
                 0.0
             val deadline = timestamp + fragment.duration
             val duration = deadline - now
-            val work = duration * usage / 1000
 
-            return if (cpu.id < cores && work > 0.0)
-                SimResourceCommand.Consume(work, usage, deadline)
+            return if (cpu.id < cores && usage > 0.0)
+                SimResourceCommand.Consume(usage, duration)
             else
-                SimResourceCommand.Idle(deadline)
+                SimResourceCommand.Consume(0.0, duration)
         }
     }
 
