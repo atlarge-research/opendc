@@ -63,7 +63,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
     /**
      * The systems that have been visited during the interpreter cycle.
      */
-    private val visited = linkedSetOf<SimResourceSystem>()
+    private val visited = linkedSetOf<SimResourceContextImpl>()
 
     /**
      * The index in the batch stack.
@@ -81,10 +81,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
      */
     fun scheduleSync(now: Long, ctx: SimResourceContextImpl) {
         ctx.doUpdate(now)
-
-        if (visited.add(ctx)) {
-            collectAncestors(ctx, visited)
-        }
+        visited.add(ctx)
 
         // In-case the interpreter is already running in the call-stack, return immediately. The changes will be picked
         // up by the active interpreter.
@@ -143,11 +140,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
         return timer
     }
 
-    override fun newContext(
-        consumer: SimResourceConsumer,
-        provider: SimResourceProviderLogic,
-        parent: SimResourceSystem?
-    ): SimResourceControllableContext = SimResourceContextImpl(parent, this, consumer, provider)
+    override fun newContext(consumer: SimResourceConsumer, provider: SimResourceProviderLogic): SimResourceControllableContext = SimResourceContextImpl(this, consumer, provider)
 
     override fun pushBatch() {
         batchIndex++
@@ -200,10 +193,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
 
             if (ctx.shouldUpdate(now)) {
                 ctx.doUpdate(now)
-
-                if (visited.add(ctx)) {
-                    collectAncestors(ctx, visited)
-                }
+                visited.add(ctx)
             } else {
                 ctx.tryReschedule(now)
             }
@@ -218,10 +208,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
 
                 if (ctx.shouldUpdate(now)) {
                     ctx.doUpdate(now)
-
-                    if (visited.add(ctx)) {
-                        collectAncestors(ctx, visited)
-                    }
+                    visited.add(ctx)
                 }
             }
 
@@ -236,17 +223,6 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
         val headTimer = futureQueue.peek()
         if (headTimer != null) {
             trySchedule(now, futureInvocations, headTimer.target)
-        }
-    }
-
-    /**
-     * Collect all the ancestors of the specified [system].
-     */
-    private tailrec fun collectAncestors(system: SimResourceSystem, systems: MutableSet<SimResourceSystem>) {
-        val parent = system.parent
-        if (parent != null) {
-            systems.add(parent)
-            collectAncestors(parent, systems)
         }
     }
 

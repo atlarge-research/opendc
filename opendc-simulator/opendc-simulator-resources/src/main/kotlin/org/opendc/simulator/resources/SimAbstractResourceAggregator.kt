@@ -90,26 +90,22 @@ public abstract class SimAbstractResourceAggregator(
         _output.interrupt()
     }
 
-    private val _output = object : SimAbstractResourceProvider(interpreter, parent, initialCapacity = 0.0) {
+    private val _output = object : SimAbstractResourceProvider(interpreter, initialCapacity = 0.0) {
         override fun createLogic(): SimResourceProviderLogic {
             return object : SimResourceProviderLogic {
 
-                override fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long {
+                override fun onConsume(ctx: SimResourceControllableContext, now: Long, delta: Long, limit: Double, duration: Long) {
+                    updateCounters(ctx, delta)
                     doConsume(limit)
-                    return super.onConsume(ctx, now, limit, duration)
                 }
 
-                override fun onFinish(ctx: SimResourceControllableContext) {
+                override fun onFinish(ctx: SimResourceControllableContext, now: Long, delta: Long) {
+                    updateCounters(ctx, delta)
                     doFinish()
                 }
 
-                override fun onUpdate(
-                    ctx: SimResourceControllableContext,
-                    delta: Long,
-                    limit: Double,
-                    willOvercommit: Boolean
-                ) {
-                    updateCounters(ctx, delta, limit, willOvercommit)
+                override fun onConverge(ctx: SimResourceControllableContext, now: Long, delta: Long) {
+                    parent?.onConverge(now)
                 }
             }
         }

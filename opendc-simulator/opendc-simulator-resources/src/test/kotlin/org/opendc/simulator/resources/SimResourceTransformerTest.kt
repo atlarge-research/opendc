@@ -223,6 +223,9 @@ internal class SimResourceTransformerTest {
 
         forwarder.consume(consumer)
 
+        yield()
+
+        assertEquals(2.0, source.counters.actual)
         assertEquals(source.counters.actual, forwarder.counters.actual) { "Actual work" }
         assertEquals(source.counters.demand, forwarder.counters.demand) { "Work demand" }
         assertEquals(source.counters.overcommit, forwarder.counters.overcommit) { "Overcommitted work" }

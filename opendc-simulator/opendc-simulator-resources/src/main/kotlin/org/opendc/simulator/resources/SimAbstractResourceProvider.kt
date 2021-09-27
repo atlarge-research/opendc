@@ -29,7 +29,6 @@ import org.opendc.simulator.resources.impl.SimResourceCountersImpl
  */
 public abstract class SimAbstractResourceProvider(
     private val interpreter: SimResourceInterpreter,
-    private val parent: SimResourceSystem?,
     initialCapacity: Double
 ) : SimResourceProvider {
     /**
@@ -85,25 +84,30 @@ public abstract class SimAbstractResourceProvider(
     }
 
     /**
+     * The previous demand for the resource.
+     */
+    private var previousDemand = 0.0
+
+    /**
      * Update the counters of the resource provider.
      */
-    protected fun updateCounters(ctx: SimResourceContext, delta: Long, limit: Double, willOvercommit: Boolean) {
-        if (delta <= 0.0) {
+    protected fun updateCounters(ctx: SimResourceContext, delta: Long) {
+        val demand = previousDemand
+        previousDemand = ctx.demand
+
+        if (delta <= 0) {
             return
         }
 
         val counters = _counters
         val deltaS = delta / 1000.0
-        val work = limit * deltaS
+        val work = demand * deltaS
         val actualWork = ctx.speed * deltaS
         val remainingWork = work - actualWork
 
         counters.demand += work
         counters.actual += actualWork
-
-        if (willOvercommit && remainingWork > 0.0) {
-            counters.overcommit += remainingWork
-        }
+        counters.overcommit += remainingWork
     }
 
     /**
@@ -118,7 +122,7 @@ public abstract class SimAbstractResourceProvider(
 
     final override fun startConsumer(consumer: SimResourceConsumer) {
         check(ctx == null) { "Resource is in invalid state" }
-        val ctx = interpreter.newContext(consumer, createLogic(), parent)
+        val ctx = interpreter.newContext(consumer, createLogic())
 
         ctx.capacity = capacity
         this.ctx = ctx

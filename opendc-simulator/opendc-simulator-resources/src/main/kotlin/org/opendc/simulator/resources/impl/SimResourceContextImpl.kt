@@ -32,11 +32,10 @@ import kotlin.math.min
  * Implementation of a [SimResourceContext] managing the communication between resources and resource consumers.
  */
 internal class SimResourceContextImpl(
-    override val parent: SimResourceSystem?,
     private val interpreter: SimResourceInterpreterImpl,
     private val consumer: SimResourceConsumer,
     private val logic: SimResourceProviderLogic
-) : SimResourceControllableContext, SimResourceSystem {
+) : SimResourceControllableContext {
     /**
      * The clock of the context.
      */
@@ -84,7 +83,6 @@ internal class SimResourceContextImpl(
     private var _limit: Double = 0.0
     private var _activeLimit: Double = 0.0
     private var _deadline: Long = Long.MIN_VALUE
-    private var _lastUpdate: Long = Long.MIN_VALUE
 
     /**
      * A flag to indicate that an update is active.
@@ -95,6 +93,12 @@ internal class SimResourceContextImpl(
      * The update flag indicating why the update was triggered.
      */
     private var _flag: Int = 0
+
+    /**
+     * The timestamp of calls to the callbacks.
+     */
+    private var _lastUpdate: Long = Long.MIN_VALUE
+    private var _lastConvergence: Long = Long.MAX_VALUE
 
     /**
      * The timers at which the context is scheduled to be interrupted.
@@ -111,12 +115,20 @@ internal class SimResourceContextImpl(
     }
 
     override fun close() {
-        if (_state != SimResourceState.Stopped) {
-            interpreter.batch {
-                _state = SimResourceState.Stopped
-                if (!_updateActive) {
-                    doStop()
-                }
+        if (_state == SimResourceState.Stopped) {
+            return
+        }
+
+        interpreter.batch {
+            _state = SimResourceState.Stopped
+            if (!_updateActive) {
+                val now = clock.millis()
+                val delta = max(0, now - _lastUpdate)
+                doStop(now, delta)
+
+                // FIX: Make sure the context converges
+                _flag = _flag or FLAG_INVALIDATE
+                scheduleUpdate(clock.millis())
             }
         }
     }
@@ -166,7 +178,7 @@ internal class SimResourceContextImpl(
      */
     fun shouldUpdate(timestamp: Long): Boolean {
         // Either the resource context is flagged or there is a pending update at this timestamp
-        return _flag != 0 || _deadline == timestamp
+        return _flag != 0 || _limit != _activeLimit || _deadline == timestamp
     }
 
     /**
@@ -179,18 +191,13 @@ internal class SimResourceContextImpl(
         }
 
         val lastUpdate = _lastUpdate
+
         _lastUpdate = now
         _updateActive = true
 
-        val reachedDeadline = _deadline <= now
         val delta = max(0, now - lastUpdate)
 
         try {
-            // Update the resource counters only if there is some progress
-            if (now > lastUpdate) {
-                logic.onUpdate(this, delta, _activeLimit, reachedDeadline)
-            }
-
             val duration = consumer.onNext(this, now, delta)
             val newDeadline = if (duration != Long.MAX_VALUE) now + duration else duration
 
@@ -200,12 +207,12 @@ internal class SimResourceContextImpl(
             // Check whether the state has changed after [consumer.onNext]
             when (_state) {
                 SimResourceState.Active -> {
-                    logic.onConsume(this, now, _limit, duration)
+                    logic.onConsume(this, now, delta, _limit, duration)
 
                     // Schedule an update at the new deadline
                     scheduleUpdate(now, newDeadline)
                 }
-                SimResourceState.Stopped -> doStop()
+                SimResourceState.Stopped -> doStop(now, delta)
                 SimResourceState.Pending -> throw IllegalStateException("Illegal transition to pending state")
             }
 
@@ -217,15 +224,9 @@ internal class SimResourceContextImpl(
             _deadline = newDeadline
             _rate = min(capacity, newLimit)
         } catch (cause: Throwable) {
-            doFail(cause)
+            doFail(now, delta, cause)
         } finally {
             _updateActive = false
-        }
-    }
-
-    override fun onConverge(timestamp: Long) {
-        if (_state == SimResourceState.Active) {
-            consumer.onEvent(this, SimResourceEvent.Run)
         }
     }
 
@@ -253,17 +254,35 @@ internal class SimResourceContextImpl(
         }
     }
 
+    /**
+     * This method is invoked when the system converges into a steady state.
+     */
+    fun onConverge(timestamp: Long) {
+        val delta = max(0, timestamp - _lastConvergence)
+        _lastConvergence = timestamp
+
+        try {
+            if (_state == SimResourceState.Active) {
+                consumer.onEvent(this, SimResourceEvent.Run)
+            }
+
+            logic.onConverge(this, timestamp, delta)
+        } catch (cause: Throwable) {
+            doFail(timestamp, max(0, timestamp - _lastUpdate), cause)
+        }
+    }
+
     override fun toString(): String = "SimResourceContextImpl[capacity=$capacity,rate=$_rate]"
 
     /**
      * Stop the resource context.
      */
-    private fun doStop() {
+    private fun doStop(now: Long, delta: Long) {
         try {
             consumer.onEvent(this, SimResourceEvent.Exit)
-            logic.onFinish(this)
+            logic.onFinish(this, now, delta)
         } catch (cause: Throwable) {
-            doFail(cause)
+            doFail(now, delta, cause)
         } finally {
             _deadline = Long.MAX_VALUE
             _limit = 0.0
@@ -273,7 +292,7 @@ internal class SimResourceContextImpl(
     /**
      * Fail the resource consumer.
      */
-    private fun doFail(cause: Throwable) {
+    private fun doFail(now: Long, delta: Long, cause: Throwable) {
         try {
             consumer.onFailure(this, cause)
         } catch (e: Throwable) {
@@ -281,7 +300,7 @@ internal class SimResourceContextImpl(
             e.printStackTrace()
         }
 
-        logic.onFinish(this)
+        logic.onFinish(this, now, delta)
     }
 
     /**

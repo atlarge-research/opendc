@@ -73,16 +73,16 @@ public class SimResourceTransformer(
         override fun close() {
             val delegate = checkNotNull(delegate) { "Delegate not active" }
 
+            if (isCoupled)
+                _ctx?.close()
+            else
+                _ctx?.push(0.0)
+
             // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
             // reset beforehand the existing state and check whether it has been updated afterwards
             reset()
 
             delegate.onEvent(this, SimResourceEvent.Exit)
-
-            if (isCoupled)
-                _ctx?.close()
-            else
-                _ctx?.push(0.0)
         }
     }
 
@@ -213,6 +213,10 @@ public class SimResourceTransformer(
      * Update the resource counters for the transformer.
      */
     private fun updateCounters(ctx: SimResourceContext, delta: Long) {
+        if (delta <= 0) {
+            return
+        }
+
         val counters = _counters
         val deltaS = delta / 1000.0
         val work = _limit * deltaS

@@ -93,46 +93,6 @@ public class SimResourceDistributorMaxMin(
 
     /* SimResourceConsumer */
     override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
-        return doNext(ctx, now)
-    }
-
-    override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
-        when (event) {
-            SimResourceEvent.Start -> {
-                this.ctx = ctx
-                updateCapacity(ctx)
-            }
-            SimResourceEvent.Exit -> {
-                val iterator = _outputs.iterator()
-                while (iterator.hasNext()) {
-                    val output = iterator.next()
-
-                    // Remove the output from the outputs to prevent ConcurrentModificationException when removing it
-                    // during the call to output.close()
-                    iterator.remove()
-
-                    output.close()
-                }
-            }
-            SimResourceEvent.Capacity -> updateCapacity(ctx)
-            else -> {}
-        }
-    }
-
-    /**
-     * Extended [SimResourceCounters] interface for the distributor.
-     */
-    public interface Counters : SimResourceCounters {
-        /**
-         * The amount of work lost due to interference.
-         */
-        public val interference: Double
-    }
-
-    /**
-     * Schedule the work of the outputs.
-     */
-    private fun doNext(ctx: SimResourceContext, now: Long): Long {
         // If there is no work yet, mark the input as idle.
         if (activeOutputs.isEmpty()) {
             return Long.MAX_VALUE
@@ -198,6 +158,39 @@ public class SimResourceDistributorMaxMin(
         return duration
     }
 
+    override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+        when (event) {
+            SimResourceEvent.Start -> {
+                this.ctx = ctx
+                updateCapacity(ctx)
+            }
+            SimResourceEvent.Exit -> {
+                val iterator = _outputs.iterator()
+                while (iterator.hasNext()) {
+                    val output = iterator.next()
+
+                    // Remove the output from the outputs to prevent ConcurrentModificationException when removing it
+                    // during the call to output.close()
+                    iterator.remove()
+
+                    output.close()
+                }
+            }
+            SimResourceEvent.Capacity -> updateCapacity(ctx)
+            else -> {}
+        }
+    }
+
+    /**
+     * Extended [SimResourceCounters] interface for the distributor.
+     */
+    public interface Counters : SimResourceCounters {
+        /**
+         * The amount of work lost due to interference.
+         */
+        public val interference: Double
+    }
+
     private fun updateCapacity(ctx: SimResourceContext) {
         for (output in _outputs) {
             output.capacity = ctx.capacity
@@ -208,7 +201,7 @@ public class SimResourceDistributorMaxMin(
      * An internal [SimResourceProvider] implementation for switch outputs.
      */
     private inner class Output(capacity: Double, val key: InterferenceKey?) :
-        SimAbstractResourceProvider(interpreter, parent, capacity),
+        SimAbstractResourceProvider(interpreter, capacity),
         SimResourceCloseableProvider,
         SimResourceProviderLogic,
         Comparable<Output> {
@@ -263,17 +256,54 @@ public class SimResourceDistributorMaxMin(
         }
 
         /* SimResourceProviderLogic */
-        override fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long {
+        override fun onConsume(
+            ctx: SimResourceControllableContext,
+            now: Long,
+            delta: Long,
+            limit: Double,
+            duration: Long
+        ) {
+            doUpdateCounters(delta)
+
             allowedSpeed = min(ctx.capacity, limit)
+            actualSpeed = 0.0
             this.limit = limit
             this.duration = duration
             lastCommandTimestamp = now
-
-            return super.onConsume(ctx, now, limit, duration)
         }
 
-        override fun onUpdate(ctx: SimResourceControllableContext, delta: Long, limit: Double, willOvercommit: Boolean) {
-            if (delta <= 0.0) {
+        override fun onConverge(ctx: SimResourceControllableContext, now: Long, delta: Long) {
+            parent?.onConverge(now)
+        }
+
+        override fun onFinish(ctx: SimResourceControllableContext, now: Long, delta: Long) {
+            doUpdateCounters(delta)
+
+            limit = 0.0
+            duration = Long.MAX_VALUE
+            actualSpeed = 0.0
+            allowedSpeed = 0.0
+            lastCommandTimestamp = now
+        }
+
+        /* Comparable */
+        override fun compareTo(other: Output): Int = allowedSpeed.compareTo(other.allowedSpeed)
+
+        /**
+         * Pull the next command if necessary.
+         */
+        fun pull(now: Long) {
+            val ctx = ctx
+            if (ctx != null && lastCommandTimestamp < now) {
+                ctx.flush()
+            }
+        }
+
+        /**
+         * Helper method to update the resource counters of the distributor.
+         */
+        private fun doUpdateCounters(delta: Long) {
+            if (delta <= 0L) {
                 return
             }
 
@@ -289,38 +319,14 @@ public class SimResourceDistributorMaxMin(
             val work = limit * deltaS
             val actualWork = actualSpeed * deltaS
             val remainingWork = work - actualWork
-            val overcommit = if (willOvercommit && remainingWork > 0.0) {
-                remainingWork
-            } else {
-                0.0
-            }
 
-            updateCounters(work, actualWork, overcommit)
+            updateCounters(work, actualWork, remainingWork)
 
             val distCounters = _counters
             distCounters.demand += work
             distCounters.actual += actualWork
-            distCounters.overcommit += overcommit
+            distCounters.overcommit += remainingWork
             distCounters.interference += actualWork * max(0.0, 1 - perfScore)
-        }
-
-        override fun onFinish(ctx: SimResourceControllableContext) {
-            limit = 0.0
-            duration = Long.MAX_VALUE
-            lastCommandTimestamp = ctx.clock.millis()
-        }
-
-        /* Comparable */
-        override fun compareTo(other: Output): Int = allowedSpeed.compareTo(other.allowedSpeed)
-
-        /**
-         * Pull the next command if necessary.
-         */
-        fun pull(now: Long) {
-            val ctx = ctx
-            if (ctx != null && lastCommandTimestamp < now) {
-                ctx.flush()
-            }
         }
     }
 }

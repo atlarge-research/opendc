@@ -50,7 +50,7 @@ class SimResourceContextTest {
         }
 
         val logic = object : SimResourceProviderLogic {}
-        val context = SimResourceContextImpl(null, interpreter, consumer, logic)
+        val context = SimResourceContextImpl(interpreter, consumer, logic)
 
         interpreter.scheduleSync(interpreter.clock.millis(), context)
     }
@@ -60,18 +60,15 @@ class SimResourceContextTest {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
         val consumer = SimWorkConsumer(1.0, 1.0)
 
-        val logic = spyk(object : SimResourceProviderLogic {
-            override fun onFinish(ctx: SimResourceControllableContext) {}
-            override fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long = duration
-        })
-        val context = SimResourceContextImpl(null, interpreter, consumer, logic)
+        val logic = spyk(object : SimResourceProviderLogic {})
+        val context = SimResourceContextImpl(interpreter, consumer, logic)
         context.capacity = 1.0
 
         context.start()
         delay(1) // Delay 1 ms to prevent hitting the fast path
         interpreter.scheduleSync(interpreter.clock.millis(), context)
 
-        verify(exactly = 2) { logic.onConsume(any(), any(), any(), any()) }
+        verify(exactly = 2) { logic.onConsume(any(), any(), any(), any(), any()) }
     }
 
     @Test
@@ -80,7 +77,7 @@ class SimResourceContextTest {
         val consumer = SimWorkConsumer(1.0, 1.0)
 
         val logic = spyk(object : SimResourceProviderLogic {})
-        val context = SimResourceContextImpl(null, interpreter, consumer, logic)
+        val context = SimResourceContextImpl(interpreter, consumer, logic)
         context.capacity = 1.0
 
         context.start()
@@ -90,8 +87,8 @@ class SimResourceContextTest {
         context.invalidate()
 
         assertAll(
-            { verify(exactly = 2) { logic.onConsume(any(), any(), any(), any()) } },
-            { verify(exactly = 1) { logic.onFinish(any()) } }
+            { verify(exactly = 2) { logic.onConsume(any(), any(), any(), any(), any()) } },
+            { verify(exactly = 1) { logic.onFinish(any(), any(), any()) } }
         )
     }
 
@@ -111,7 +108,7 @@ class SimResourceContextTest {
         }
 
         val logic = object : SimResourceProviderLogic {}
-        val context = SimResourceContextImpl(null, interpreter, consumer, logic)
+        val context = SimResourceContextImpl(interpreter, consumer, logic)
 
         context.start()
 
@@ -136,8 +133,7 @@ class SimResourceContextTest {
         })
 
         val logic = object : SimResourceProviderLogic {}
-
-        val context = SimResourceContextImpl(null, interpreter, consumer, logic)
+        val context = SimResourceContextImpl(interpreter, consumer, logic)
         context.capacity = 4200.0
         context.start()
         context.capacity = 4200.0
@@ -166,7 +162,7 @@ class SimResourceContextTest {
 
         val logic = object : SimResourceProviderLogic {}
 
-        val context = SimResourceContextImpl(null, interpreter, consumer, logic)
+        val context = SimResourceContextImpl(interpreter, consumer, logic)
 
         context.start()
 

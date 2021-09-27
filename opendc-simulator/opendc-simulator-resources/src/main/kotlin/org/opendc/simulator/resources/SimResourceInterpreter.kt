@@ -43,13 +43,8 @@ public interface SimResourceInterpreter {
      *
      * @param consumer The consumer logic.
      * @param provider The logic of the resource provider.
-     * @param parent The system to which the resource context belongs.
      */
-    public fun newContext(
-        consumer: SimResourceConsumer,
-        provider: SimResourceProviderLogic,
-        parent: SimResourceSystem? = null
-    ): SimResourceControllableContext
+    public fun newContext(consumer: SimResourceConsumer, provider: SimResourceProviderLogic): SimResourceControllableContext
 
     /**
      * Start batching the execution of resource updates until [popBatch] is called.

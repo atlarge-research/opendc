@@ -23,7 +23,7 @@
 package org.opendc.simulator.resources
 
 /**
- * The logic of a resource provider.
+ * A collection of callbacks associated with a flow stage.
  */
 public interface SimResourceProviderLogic {
     /**
@@ -31,29 +31,28 @@ public interface SimResourceProviderLogic {
      *
      * @param ctx The context in which the provider runs.
      * @param now The virtual timestamp in milliseconds at which the update is occurring.
+     * @param delta The virtual duration between this call and the last call to [onConsume] in milliseconds.
      * @param limit The limit on the work rate of the resource consumer.
      * @param duration The duration of the consumption in milliseconds.
      * @return The deadline of the resource consumption.
      */
-    public fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long {
-        return if (duration == Long.MAX_VALUE) {
-            return Long.MAX_VALUE
-        } else {
-            now + duration
-        }
-    }
+    public fun onConsume(ctx: SimResourceControllableContext, now: Long, delta: Long, limit: Double, duration: Long) {}
 
     /**
-     * This method is invoked when the progress of the resource consumer is materialized.
+     * This method is invoked when the flow graph has converged into a steady-state system.
      *
      * @param ctx The context in which the provider runs.
-     * @param limit The limit on the work rate of the resource consumer.
-     * @param willOvercommit A flag to indicate that the remaining work is overcommitted.
+     * @param now The virtual timestamp in milliseconds at which the system converged.
+     * @param delta The virtual duration between this call and the last call to [onConverge] in milliseconds.
      */
-    public fun onUpdate(ctx: SimResourceControllableContext, delta: Long, limit: Double, willOvercommit: Boolean) {}
+    public fun onConverge(ctx: SimResourceControllableContext, now: Long, delta: Long) {}
 
     /**
      * This method is invoked when the resource consumer has finished.
+     *
+     * @param ctx The context in which the provider runs.
+     * @param now The virtual timestamp in milliseconds at which the provider finished.
+     * @param delta The virtual duration between this call and the last call to [onConsume] in milliseconds.
      */
-    public fun onFinish(ctx: SimResourceControllableContext) {}
+    public fun onFinish(ctx: SimResourceControllableContext, now: Long, delta: Long) {}
 }

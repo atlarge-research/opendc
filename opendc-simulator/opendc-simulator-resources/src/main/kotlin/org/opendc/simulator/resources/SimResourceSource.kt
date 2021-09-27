@@ -33,20 +33,26 @@ public class SimResourceSource(
     initialCapacity: Double,
     private val interpreter: SimResourceInterpreter,
     private val parent: SimResourceSystem? = null
-) : SimAbstractResourceProvider(interpreter, parent, initialCapacity) {
+) : SimAbstractResourceProvider(interpreter, initialCapacity) {
     override fun createLogic(): SimResourceProviderLogic {
         return object : SimResourceProviderLogic {
-            override fun onUpdate(
+            override fun onConsume(
                 ctx: SimResourceControllableContext,
+                now: Long,
                 delta: Long,
                 limit: Double,
-                willOvercommit: Boolean
+                duration: Long
             ) {
-                updateCounters(ctx, delta, limit, willOvercommit)
+                updateCounters(ctx, delta)
             }
 
-            override fun onFinish(ctx: SimResourceControllableContext) {
+            override fun onFinish(ctx: SimResourceControllableContext, now: Long, delta: Long) {
+                updateCounters(ctx, delta)
                 cancel()
+            }
+
+            override fun onConverge(ctx: SimResourceControllableContext, now: Long, delta: Long) {
+                parent?.onConverge(now)
             }
         }
     }
