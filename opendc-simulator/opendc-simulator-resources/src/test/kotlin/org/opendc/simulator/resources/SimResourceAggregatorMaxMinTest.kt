@@ -22,14 +22,12 @@
 
 package org.opendc.simulator.resources
 
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimSpeedConsumerAdapter
 import org.opendc.simulator.resources.consumer.SimWorkConsumer
@@ -100,37 +98,23 @@ internal class SimResourceAggregatorMaxMinTest {
         )
         sources.forEach(aggregator::addInput)
 
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(4.0, 1000))
-            .andThen(SimResourceCommand.Exit)
+        val consumer = spyk(object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                return if (now == 0L) {
+                    ctx.push(4.0)
+                    1000
+                } else {
+                    ctx.close()
+                    Long.MAX_VALUE
+                }
+            }
+        })
 
         aggregator.consume(consumer)
         yield()
         assertEquals(1000, clock.millis())
 
         verify(exactly = 2) { consumer.onNext(any(), any(), any()) }
-    }
-
-    @Test
-    fun testException() = runBlockingSimulation {
-        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
-
-        val aggregator = SimResourceAggregatorMaxMin(scheduler)
-        val sources = listOf(
-            SimResourceSource(1.0, scheduler),
-            SimResourceSource(1.0, scheduler)
-        )
-        sources.forEach(aggregator::addInput)
-
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(1.0, duration = 1000))
-            .andThenThrows(IllegalStateException("Test Exception"))
-
-        assertThrows<IllegalStateException> { aggregator.consume(consumer) }
-        yield()
-        assertFalse(sources[0].isActive)
     }
 
     @Test
@@ -186,10 +170,17 @@ internal class SimResourceAggregatorMaxMinTest {
         )
         sources.forEach(aggregator::addInput)
 
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(4.0, 1000))
-            .andThen(SimResourceCommand.Exit)
+        val consumer = object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                return if (now == 0L) {
+                    ctx.push(4.0)
+                    1000
+                } else {
+                    ctx.close()
+                    Long.MAX_VALUE
+                }
+            }
+        }
 
         aggregator.consume(consumer)
         yield()

@@ -54,11 +54,6 @@ public class SimResourceDistributorMaxMin(
     private val activeOutputs: MutableList<Output> = mutableListOf()
 
     /**
-     * The total amount of work allocated to be executed.
-     */
-    private var totalAllocatedWork = 0.0
-
-    /**
      * The total allocated speed for the output resources.
      */
     private var totalAllocatedSpeed = 0.0
@@ -97,7 +92,7 @@ public class SimResourceDistributorMaxMin(
     }
 
     /* SimResourceConsumer */
-    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
         return doNext(ctx, now)
     }
 
@@ -137,10 +132,10 @@ public class SimResourceDistributorMaxMin(
     /**
      * Schedule the work of the outputs.
      */
-    private fun doNext(ctx: SimResourceContext, now: Long): SimResourceCommand {
+    private fun doNext(ctx: SimResourceContext, now: Long): Long {
         // If there is no work yet, mark the input as idle.
         if (activeOutputs.isEmpty()) {
-            return SimResourceCommand.Consume(0.0)
+            return Long.MAX_VALUE
         }
 
         val capacity = ctx.capacity
@@ -196,14 +191,11 @@ public class SimResourceDistributorMaxMin(
         }
 
         this.totalRequestedSpeed = totalRequestedSpeed
-        this.totalAllocatedWork = totalAllocatedWork
         val totalAllocatedSpeed = capacity - availableSpeed
         this.totalAllocatedSpeed = totalAllocatedSpeed
 
-        return if (totalAllocatedWork > 0.0 && totalAllocatedSpeed > 0.0)
-            SimResourceCommand.Consume(totalAllocatedSpeed, duration)
-        else
-            SimResourceCommand.Consume(0.0, duration)
+        ctx.push(totalAllocatedSpeed)
+        return duration
     }
 
     private fun updateCapacity(ctx: SimResourceContext) {

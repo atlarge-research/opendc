@@ -47,16 +47,13 @@ public class SimPdu(
     public fun newOutlet(): Outlet = Outlet(distributor.newOutput())
 
     override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer by distributor {
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
-            return when (val cmd = distributor.onNext(ctx, now, delta)) {
-                is SimResourceCommand.Consume -> {
-                    val loss = computePowerLoss(cmd.limit)
-                    val newLimit = cmd.limit + loss
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+            val duration = distributor.onNext(ctx, now, delta)
+            val loss = computePowerLoss(ctx.demand)
+            val newLimit = ctx.demand + loss
 
-                    SimResourceCommand.Consume(newLimit, cmd.duration)
-                }
-                else -> cmd
-            }
+            ctx.push(newLimit)
+            return duration
         }
 
         override fun toString(): String = "SimPdu.Consumer"

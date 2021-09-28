@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.resources.consumer
 
-import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
 import org.opendc.simulator.resources.SimResourceEvent
@@ -34,13 +33,15 @@ import org.opendc.simulator.resources.SimResourceEvent
 public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResourceConsumer {
     private var iterator: Iterator<Fragment>? = null
 
-    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
         val iterator = checkNotNull(iterator)
         return if (iterator.hasNext()) {
             val fragment = iterator.next()
-            SimResourceCommand.Consume(fragment.usage, fragment.duration)
+            ctx.push(fragment.usage)
+            fragment.duration
         } else {
-            SimResourceCommand.Exit
+            ctx.close()
+            Long.MAX_VALUE
         }
     }
 

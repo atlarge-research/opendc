@@ -36,8 +36,17 @@ class SimResourceContextTest {
     @Test
     fun testFlushWithoutCommand() = runBlockingSimulation {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0) andThen SimResourceCommand.Exit
+        val consumer = object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                return if (now == 0L) {
+                    ctx.push(1.0)
+                    1000
+                } else {
+                    ctx.close()
+                    Long.MAX_VALUE
+                }
+            }
+        }
 
         val logic = object : SimResourceProviderLogic {}
         val context = SimResourceContextImpl(null, interpreter, consumer, logic)
@@ -48,14 +57,23 @@ class SimResourceContextTest {
     @Test
     fun testIntermediateFlush() = runBlockingSimulation {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0) andThen SimResourceCommand.Exit
+        val consumer = object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                return if (now == 0L) {
+                    ctx.push(4.0)
+                    1000
+                } else {
+                    ctx.close()
+                    Long.MAX_VALUE
+                }
+            }
+        }
 
         val logic = spyk(object : SimResourceProviderLogic {
             override fun onFinish(ctx: SimResourceControllableContext) {}
             override fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long = duration
         })
-        val context = spyk(SimResourceContextImpl(null, interpreter, consumer, logic))
+        val context = SimResourceContextImpl(null, interpreter, consumer, logic)
 
         context.start()
         delay(1) // Delay 1 ms to prevent hitting the fast path
@@ -67,11 +85,20 @@ class SimResourceContextTest {
     @Test
     fun testIntermediateFlushIdle() = runBlockingSimulation {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(0.0, 10) andThen SimResourceCommand.Exit
+        val consumer = object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                return if (now == 0L) {
+                    ctx.push(0.0)
+                    10
+                } else {
+                    ctx.close()
+                    Long.MAX_VALUE
+                }
+            }
+        }
 
         val logic = spyk(object : SimResourceProviderLogic {})
-        val context = spyk(SimResourceContextImpl(null, interpreter, consumer, logic))
+        val context = SimResourceContextImpl(null, interpreter, consumer, logic)
 
         context.start()
         delay(5)
@@ -88,8 +115,17 @@ class SimResourceContextTest {
     @Test
     fun testDoubleStart() = runBlockingSimulation {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(0.0, 10) andThen SimResourceCommand.Exit
+        val consumer = object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                return if (now == 0L) {
+                    ctx.push(0.0)
+                    1000
+                } else {
+                    ctx.close()
+                    Long.MAX_VALUE
+                }
+            }
+        }
 
         val logic = object : SimResourceProviderLogic {}
         val context = SimResourceContextImpl(null, interpreter, consumer, logic)
@@ -104,8 +140,17 @@ class SimResourceContextTest {
     @Test
     fun testIdempotentCapacityChange() = runBlockingSimulation {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0) andThen SimResourceCommand.Exit
+        val consumer = spyk(object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                return if (now == 0L) {
+                    ctx.push(1.0)
+                    1000
+                } else {
+                    ctx.close()
+                    Long.MAX_VALUE
+                }
+            }
+        })
 
         val logic = object : SimResourceProviderLogic {}
 
@@ -120,12 +165,23 @@ class SimResourceContextTest {
     @Test
     fun testFailureNoInfiniteLoop() = runBlockingSimulation {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Exit
-        every { consumer.onEvent(any(), SimResourceEvent.Exit) } throws IllegalStateException("onEvent")
-        every { consumer.onFailure(any(), any()) } throws IllegalStateException("onFailure")
 
-        val logic = spyk(object : SimResourceProviderLogic {})
+        val consumer = spyk(object : SimResourceConsumer {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                ctx.close()
+                return Long.MAX_VALUE
+            }
+
+            override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+                if (event == SimResourceEvent.Exit) throw IllegalStateException("onEvent")
+            }
+
+            override fun onFailure(ctx: SimResourceContext, cause: Throwable) {
+                throw IllegalStateException("onFailure")
+            }
+        })
+
+        val logic = object : SimResourceProviderLogic {}
 
         val context = SimResourceContextImpl(null, interpreter, consumer, logic)
 

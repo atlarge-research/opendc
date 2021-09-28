@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
 import kotlin.math.min
@@ -80,13 +79,20 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
     }
 
     private inner class Consumer(val cpu: ProcessingUnit) : SimResourceConsumer {
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
-            val fragment = pullFragment(now) ?: return SimResourceCommand.Exit
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+            val fragment = pullFragment(now)
+
+            if (fragment == null) {
+                ctx.close()
+                return Long.MAX_VALUE
+            }
+
             val timestamp = fragment.timestamp + offset
 
             // Fragment is in the future
             if (timestamp > now) {
-                return SimResourceCommand.Consume(0.0, timestamp - now)
+                ctx.push(0.0)
+                return timestamp - now
             }
 
             val cores = min(cpu.node.coreCount, fragment.cores)
@@ -97,10 +103,9 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
             val deadline = timestamp + fragment.duration
             val duration = deadline - now
 
-            return if (cpu.id < cores && usage > 0.0)
-                SimResourceCommand.Consume(usage, duration)
-            else
-                SimResourceCommand.Consume(0.0, duration)
+            ctx.push(if (cpu.id < cores && usage > 0.0) usage else 0.0)
+
+            return duration
         }
     }
 

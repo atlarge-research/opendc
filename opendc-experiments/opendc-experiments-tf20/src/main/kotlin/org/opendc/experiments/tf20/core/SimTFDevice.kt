@@ -128,7 +128,7 @@ public class SimTFDevice(
             }
         }
 
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
             val consumedWork = ctx.speed * delta / 1000.0
 
             val activeWork = activeWork
@@ -137,7 +137,8 @@ public class SimTFDevice(
                     this.activeWork = null
                 } else {
                     val duration = (activeWork.flops / ctx.capacity * 1000).roundToLong()
-                    return SimResourceCommand.Consume(ctx.capacity, duration)
+                    ctx.push(ctx.capacity)
+                    return duration
                 }
             }
 
@@ -146,9 +147,11 @@ public class SimTFDevice(
             return if (head != null) {
                 this.activeWork = head
                 val duration = (head.flops / ctx.capacity * 1000).roundToLong()
-                SimResourceCommand.Consume(ctx.capacity, duration)
+                ctx.push(ctx.capacity)
+                duration
             } else {
-                SimResourceCommand.Consume(0.0)
+                ctx.push(0.0)
+                Long.MAX_VALUE
             }
         }
 

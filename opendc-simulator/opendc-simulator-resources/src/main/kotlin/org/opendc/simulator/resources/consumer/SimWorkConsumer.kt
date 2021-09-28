@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.resources.consumer
 
-import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
 import kotlin.math.roundToLong
@@ -37,12 +36,12 @@ public class SimWorkConsumer(
 
     init {
         require(work >= 0.0) { "Work must be positive" }
-        require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
+        require(utilization > 0.0) { "Utilization must be positive" }
     }
 
     private var remainingWork = work
 
-    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
         val actualWork = ctx.speed * delta / 1000.0
         val limit = ctx.capacity * utilization
 
@@ -52,9 +51,11 @@ public class SimWorkConsumer(
         val duration = (remainingWork / limit * 1000).roundToLong()
 
         return if (duration > 0) {
-            SimResourceCommand.Consume(limit, duration)
+            ctx.push(limit)
+            duration
         } else {
-            SimResourceCommand.Exit
+            ctx.close()
+            Long.MAX_VALUE
         }
     }
 }

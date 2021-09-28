@@ -28,7 +28,7 @@ import java.time.Clock
  * The execution context in which a [SimResourceConsumer] runs. It facilitates the communication and control between a
  * resource and a resource consumer.
  */
-public interface SimResourceContext {
+public interface SimResourceContext : AutoCloseable {
     /**
      * The virtual clock tracking simulation time.
      */
@@ -53,4 +53,16 @@ public interface SimResourceContext {
      * Ask the resource provider to interrupt its resource.
      */
     public fun interrupt()
+
+    /**
+     * Push the given flow to this context.
+     *
+     * @param rate The rate of the flow to push.
+     */
+    public fun push(rate: Double)
+
+    /**
+     * Stop the resource context.
+     */
+    public override fun close()
 }

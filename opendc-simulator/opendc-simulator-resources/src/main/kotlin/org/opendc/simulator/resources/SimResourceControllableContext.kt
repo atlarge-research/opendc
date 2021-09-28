@@ -27,7 +27,7 @@ package org.opendc.simulator.resources
  *
  * This interface is used by resource providers to control the resource context.
  */
-public interface SimResourceControllableContext : SimResourceContext, AutoCloseable {
+public interface SimResourceControllableContext : SimResourceContext {
     /**
      * The state of the resource context.
      */
@@ -42,11 +42,6 @@ public interface SimResourceControllableContext : SimResourceContext, AutoClosea
      * Start the resource context.
      */
     public fun start()
-
-    /**
-     * Stop the resource context.
-     */
-    public override fun close()
 
     /**
      * Invalidate the resource context's state.

@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.resources.consumer
 
-import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
 import org.opendc.simulator.resources.SimResourceEvent
@@ -50,7 +49,7 @@ public class SimSpeedConsumerAdapter(
         callback(0.0)
     }
 
-    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
         return delegate.onNext(ctx, now, delta)
     }
 

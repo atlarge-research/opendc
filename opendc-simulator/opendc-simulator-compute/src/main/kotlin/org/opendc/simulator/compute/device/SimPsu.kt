@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.device
 
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.power.SimPowerInlet
-import org.opendc.simulator.resources.SimResourceCommand
 import org.opendc.simulator.resources.SimResourceConsumer
 import org.opendc.simulator.resources.SimResourceContext
 import org.opendc.simulator.resources.SimResourceEvent
@@ -83,13 +82,10 @@ public class SimPsu(
     }
 
     override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer {
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
             val powerDraw = computePowerDraw(_driver?.computePower() ?: 0.0)
-
-            return if (powerDraw > 0.0)
-                SimResourceCommand.Consume(powerDraw, Long.MAX_VALUE)
-            else
-                SimResourceCommand.Consume(0.0)
+            ctx.push(powerDraw)
+            return Long.MAX_VALUE
         }
 
         override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {

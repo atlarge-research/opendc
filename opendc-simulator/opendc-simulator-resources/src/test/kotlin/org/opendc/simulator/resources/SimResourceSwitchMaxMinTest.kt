@@ -22,8 +22,6 @@
 
 package org.opendc.simulator.resources
 
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -31,6 +29,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
+import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
@@ -46,9 +45,7 @@ internal class SimResourceSwitchMaxMinTest {
         sources.forEach { switch.addInput(it) }
 
         val provider = switch.newOutput()
-
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) } returns SimResourceCommand.Consume(1.0, duration = 1000) andThen SimResourceCommand.Exit
+        val consumer = SimWorkConsumer(2000.0, 1.0)
 
         try {
             provider.consume(consumer)

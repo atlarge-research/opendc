@@ -125,16 +125,21 @@ public abstract class SimAbstractResourceAggregator(
     /**
      * An input for the resource aggregator.
      */
-    public interface Input {
+    public interface Input : AutoCloseable {
         /**
          * The [SimResourceContext] associated with the input.
          */
         public val ctx: SimResourceContext
 
         /**
-         * Push the specified [SimResourceCommand] to the input.
+         * Push to this input with the specified [limit] and [duration].
          */
-        public fun push(command: SimResourceCommand)
+        public fun push(limit: Double, duration: Long)
+
+        /**
+         * Close the input for further input.
+         */
+        public override fun close()
     }
 
     /**
@@ -151,7 +156,12 @@ public abstract class SimAbstractResourceAggregator(
         /**
          * The resource command to run next.
          */
-        private var command: SimResourceCommand? = null
+        private var _duration: Long = Long.MAX_VALUE
+
+        /**
+         * A flag to indicate that the consumer should flush.
+         */
+        private var _isPushed = false
 
         private fun updateCapacity() {
             // Adjust capacity of output resource
@@ -159,25 +169,34 @@ public abstract class SimAbstractResourceAggregator(
         }
 
         /* Input */
-        override fun push(command: SimResourceCommand) {
-            this.command = command
-            _ctx?.interrupt()
+        override fun push(limit: Double, duration: Long) {
+            _duration = duration
+            val ctx = _ctx
+            if (ctx != null) {
+                ctx.push(limit)
+                ctx.interrupt()
+            }
+            _isPushed = true
+        }
+
+        override fun close() {
+            _duration = Long.MAX_VALUE
+            _isPushed = true
+            _ctx?.close()
         }
 
         /* SimResourceConsumer */
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
-            var next = command
+        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+            var next = _duration
 
-            return if (next != null) {
-                this.command = null
-                next
-            } else {
+            if (!_isPushed) {
                 _output.flush()
-
-                next = command
-                this.command = null
-                next ?: SimResourceCommand.Consume(0.0)
+                next = _duration
             }
+
+            _isPushed = false
+            _duration = Long.MAX_VALUE
+            return next
         }
 
         override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {

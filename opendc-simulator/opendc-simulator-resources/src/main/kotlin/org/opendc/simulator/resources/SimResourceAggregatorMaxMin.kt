@@ -41,11 +41,7 @@ public class SimResourceAggregatorMaxMin(
             val fraction = inputCapacity / capacity
             val grantedSpeed = limit * fraction
 
-            val command = if (grantedSpeed > 0.0)
-                SimResourceCommand.Consume(grantedSpeed, duration)
-            else
-                SimResourceCommand.Consume(0.0, duration)
-            input.push(command)
+            input.push(grantedSpeed, duration)
         }
     }
 
@@ -53,7 +49,7 @@ public class SimResourceAggregatorMaxMin(
         val iterator = consumers.iterator()
         for (input in iterator) {
             iterator.remove()
-            input.push(SimResourceCommand.Exit)
+            input.close()
         }
     }
 

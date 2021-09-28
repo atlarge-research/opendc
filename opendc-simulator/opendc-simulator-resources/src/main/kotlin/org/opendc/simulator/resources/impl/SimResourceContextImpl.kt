@@ -86,6 +86,11 @@ internal class SimResourceContextImpl(
     private var _deadline: Long = Long.MAX_VALUE
 
     /**
+     * A flag to indicate that an update is active.
+     */
+    private var _updateActive = false
+
+    /**
      * The update flag indicating why the update was triggered.
      */
     private var _flag: Int = 0
@@ -108,7 +113,9 @@ internal class SimResourceContextImpl(
         if (_state != SimResourceState.Stopped) {
             interpreter.batch {
                 _state = SimResourceState.Stopped
-                doStop()
+                if (!_updateActive) {
+                    doStop()
+                }
             }
         }
     }
@@ -139,6 +146,11 @@ internal class SimResourceContextImpl(
         interpreter.scheduleSync(this)
     }
 
+    override fun push(rate: Double) {
+        _speed = min(capacity, rate)
+        _limit = rate
+    }
+
     /**
      * Determine whether the state of the resource context should be updated.
      */
@@ -151,14 +163,49 @@ internal class SimResourceContextImpl(
      * Update the state of the resource context.
      */
     fun doUpdate(timestamp: Long) {
-        try {
-            val oldState = _state
-            val newState = doUpdate(timestamp, oldState)
+        val oldState = _state
+        if (oldState != SimResourceState.Active) {
+            return
+        }
 
-            _state = newState
+        _updateActive = true
+
+        val flag = _flag
+        val isInterrupted = flag and FLAG_INTERRUPT != 0
+        val reachedDeadline = _deadline <= timestamp
+        val delta = max(0, timestamp - _timestamp)
+
+        try {
+
+            // Update the resource counters only if there is some progress
+            if (timestamp > _timestamp) {
+                logic.onUpdate(this, delta, _limit, reachedDeadline)
+            }
+
+            // We should only continue processing the next command if:
+            // 1. The resource consumption was finished.
+            // 2. The resource consumer should be interrupted (e.g., someone called .interrupt())
+            val duration = if (reachedDeadline || isInterrupted) {
+                consumer.onNext(this, timestamp, delta)
+            } else {
+                _deadline - timestamp
+            }
+
+            // Reset update flags
             _flag = 0
 
-            when (newState) {
+            when (_state) {
+                SimResourceState.Active -> {
+                    val limit = _limit
+                    push(limit)
+                    _duration = duration
+
+                    val target = logic.onConsume(this, timestamp, limit, duration)
+
+                    _deadline = target
+
+                    scheduleUpdate(target)
+                }
                 SimResourceState.Pending ->
                     if (oldState != SimResourceState.Pending) {
                         throw IllegalStateException("Illegal transition to pending state")
@@ -167,12 +214,12 @@ internal class SimResourceContextImpl(
                     if (oldState != SimResourceState.Stopped) {
                         doStop()
                     }
-                else -> {}
             }
         } catch (cause: Throwable) {
             doFail(cause)
         } finally {
             _timestamp = timestamp
+            _updateActive = false
         }
     }
 
@@ -185,39 +232,6 @@ internal class SimResourceContextImpl(
     override fun toString(): String = "SimResourceContextImpl[capacity=$capacity]"
 
     /**
-     * Update the state of the resource context.
-     */
-    private fun doUpdate(timestamp: Long, state: SimResourceState): SimResourceState {
-        return when (state) {
-            // Resource context is not active, so its state will not update
-            SimResourceState.Pending, SimResourceState.Stopped -> state
-            SimResourceState.Active -> {
-                val isInterrupted = _flag and FLAG_INTERRUPT != 0
-                val reachedDeadline = _deadline <= timestamp
-                val delta = max(0, timestamp - _timestamp)
-
-                // Update the resource counters only if there is some progress
-                if (timestamp > _timestamp) {
-                    logic.onUpdate(this, delta, _limit, reachedDeadline)
-                }
-
-                // We should only continue processing the next command if:
-                // 1. The resource consumption was finished.
-                // 2. The resource capacity cannot satisfy the demand.
-                // 3. The resource consumer should be interrupted (e.g., someone called .interrupt())
-                if (reachedDeadline || isInterrupted) {
-                    when (val command = consumer.onNext(this, timestamp, delta)) {
-                        is SimResourceCommand.Consume -> interpretConsume(timestamp, command.limit, command.duration)
-                        is SimResourceCommand.Exit -> interpretExit()
-                    }
-                } else {
-                    interpretConsume(timestamp, _limit, _duration - delta)
-                }
-            }
-        }
-    }
-
-    /**
      * Stop the resource context.
      */
     private fun doStop() {
@@ -226,6 +240,8 @@ internal class SimResourceContextImpl(
             logic.onFinish(this)
         } catch (cause: Throwable) {
             doFail(cause)
+        } finally {
+            _deadline = Long.MAX_VALUE
         }
     }
 
@@ -241,35 +257,6 @@ internal class SimResourceContextImpl(
         }
 
         logic.onFinish(this)
-    }
-
-    /**
-     * Interpret the [SimResourceCommand.Consume] command.
-     */
-    private fun interpretConsume(now: Long, limit: Double, duration: Long): SimResourceState {
-        _speed = min(capacity, limit)
-        _limit = limit
-        _duration = duration
-
-        val timestamp = logic.onConsume(this, now, limit, duration)
-
-        _deadline = timestamp
-
-        scheduleUpdate(timestamp)
-
-        return SimResourceState.Active
-    }
-
-    /**
-     * Interpret the [SimResourceCommand.Exit] command.
-     */
-    private fun interpretExit(): SimResourceState {
-        _speed = 0.0
-        _limit = 0.0
-        _duration = Long.MAX_VALUE
-        _deadline = Long.MAX_VALUE
-
-        return SimResourceState.Stopped
     }
 
     /**

@@ -44,10 +44,7 @@ internal class SimResourceSourceTest {
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(capacity, duration = 1000))
-            .andThen(SimResourceCommand.Exit)
+        val consumer = SimWorkConsumer(4200.0, 1.0)
 
         val res = mutableListOf<Double>()
         val adapter = SimSpeedConsumerAdapter(consumer, res::add)
@@ -79,10 +76,7 @@ internal class SimResourceSourceTest {
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(2 * capacity, duration = 1000))
-            .andThen(SimResourceCommand.Exit)
+        val consumer = SimWorkConsumer(capacity, 2.0)
 
         val res = mutableListOf<Double>()
         val adapter = SimSpeedConsumerAdapter(consumer, res::add)
@@ -103,8 +97,9 @@ internal class SimResourceSourceTest {
         val provider = SimResourceSource(capacity, scheduler)
 
         val consumer = object : SimResourceConsumer {
-            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
-                return SimResourceCommand.Exit
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                ctx.close()
+                return Long.MAX_VALUE
             }
 
             override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
@@ -132,12 +127,14 @@ internal class SimResourceSourceTest {
                 }
             }
 
-            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
                 return if (isFirst) {
                     isFirst = false
-                    SimResourceCommand.Consume(1.0, duration = 4000)
+                    ctx.push(1.0)
+                    4000
                 } else {
-                    SimResourceCommand.Exit
+                    ctx.close()
+                    Long.MAX_VALUE
                 }
             }
         }
@@ -172,10 +169,19 @@ internal class SimResourceSourceTest {
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(1.0, duration = 1000))
-            .andThenThrows(IllegalStateException())
+        val consumer = object : SimResourceConsumer {
+            var isFirst = true
+
+            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+                return if (isFirst) {
+                    isFirst = false
+                    ctx.push(1.0)
+                    1000
+                } else {
+                    throw IllegalStateException()
+                }
+            }
+        }
 
         assertThrows<IllegalStateException> {
             provider.consume(consumer)
@@ -188,10 +194,7 @@ internal class SimResourceSourceTest {
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(1.0))
-            .andThenThrows(IllegalStateException())
+        val consumer = SimWorkConsumer(capacity, 1.0)
 
         assertThrows<IllegalStateException> {
             coroutineScope {
@@ -207,30 +210,13 @@ internal class SimResourceSourceTest {
         val capacity = 4200.0
         val provider = SimResourceSource(capacity, scheduler)
 
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(1.0))
-            .andThenThrows(IllegalStateException())
+        val consumer = SimWorkConsumer(capacity, 1.0)
 
         launch { provider.consume(consumer) }
         delay(500)
         provider.cancel()
 
-        assertEquals(500, clock.millis())
-    }
-
-    @Test
-    fun testIdle() = runBlockingSimulation {
-        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
-        val capacity = 4200.0
-        val provider = SimResourceSource(capacity, scheduler)
-
-        val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-        every { consumer.onNext(any(), any(), any()) }
-            .returns(SimResourceCommand.Consume(0.0, 500))
-            .andThen(SimResourceCommand.Exit)
-
-        provider.consume(consumer)
+        yield()
 
         assertEquals(500, clock.millis())
     }
@@ -243,10 +229,9 @@ internal class SimResourceSourceTest {
                 val capacity = 4200.0
                 val provider = SimResourceSource(capacity, scheduler)
 
-                val consumer = mockk<SimResourceConsumer>(relaxUnitFun = true)
-                every { consumer.onNext(any(), any(), any()) }
-                    .returns(SimResourceCommand.Consume(0.0))
-                    .andThenThrows(IllegalStateException())
+                val consumer = object : SimResourceConsumer {
+                    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long = Long.MAX_VALUE
+                }
 
                 provider.consume(consumer)
             }

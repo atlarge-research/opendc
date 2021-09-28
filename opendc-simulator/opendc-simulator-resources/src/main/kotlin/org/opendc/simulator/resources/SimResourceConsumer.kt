@@ -30,15 +30,14 @@ package org.opendc.simulator.resources
  */
 public interface SimResourceConsumer {
     /**
-     * This method is invoked when a resource asks for the next [command][SimResourceCommand] to process, either because
-     * the resource finished processing, reached its deadline or was interrupted.
+     * This method is invoked when the resource provider is pulling this resource consumer.
      *
      * @param ctx The execution context in which the consumer runs.
      * @param now The virtual timestamp in milliseconds at which the update is occurring.
      * @param delta The virtual duration between this call and the last call in milliseconds.
-     * @return The next command that the resource should execute.
+     * @return The duration after which the resource consumer should be pulled again.
      */
-    public fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand
+    public fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long
 
     /**
      * This method is invoked when an event has occurred.

@@ -23,6 +23,7 @@
 package org.opendc.simulator.resources
 
 import org.opendc.simulator.resources.impl.SimResourceCountersImpl
+import java.time.Clock
 
 /**
  * A [SimResourceFlow] that transforms the resource commands emitted by the resource commands to the resource provider.
@@ -32,13 +33,8 @@ import org.opendc.simulator.resources.impl.SimResourceCountersImpl
  */
 public class SimResourceTransformer(
     private val isCoupled: Boolean = false,
-    private val transform: (SimResourceContext, SimResourceCommand) -> SimResourceCommand
+    private val transform: (SimResourceContext, Long) -> Long
 ) : SimResourceFlow, AutoCloseable {
-    /**
-     * The [SimResourceContext] in which the forwarder runs.
-     */
-    private var ctx: SimResourceContext? = null
-
     /**
      * The delegate [SimResourceConsumer].
      */
@@ -49,17 +45,63 @@ public class SimResourceTransformer(
      */
     private var hasDelegateStarted: Boolean = false
 
+    /**
+     * The exposed [SimResourceContext].
+     */
+    private val ctx = object : SimResourceContext {
+        override val clock: Clock
+            get() = _ctx!!.clock
+
+        override val capacity: Double
+            get() = _ctx?.capacity ?: 0.0
+
+        override val demand: Double
+            get() = _ctx?.demand ?: 0.0
+
+        override val speed: Double
+            get() = _ctx?.speed ?: 0.0
+
+        override fun interrupt() {
+            _ctx?.interrupt()
+        }
+
+        override fun push(rate: Double) {
+            _ctx?.push(rate)
+            _limit = rate
+        }
+
+        override fun close() {
+            val delegate = checkNotNull(delegate) { "Delegate not active" }
+
+            // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
+            // reset beforehand the existing state and check whether it has been updated afterwards
+            reset()
+
+            delegate.onEvent(this, SimResourceEvent.Exit)
+
+            if (isCoupled)
+                _ctx?.close()
+            else
+                _ctx?.push(0.0)
+        }
+    }
+
+    /**
+     * The [SimResourceContext] in which the forwarder runs.
+     */
+    private var _ctx: SimResourceContext? = null
+
     override val isActive: Boolean
         get() = delegate != null
 
     override val capacity: Double
-        get() = ctx?.capacity ?: 0.0
+        get() = ctx.capacity
 
     override val speed: Double
-        get() = ctx?.speed ?: 0.0
+        get() = ctx.speed
 
     override val demand: Double
-        get() = ctx?.demand ?: 0.0
+        get() = ctx.demand
 
     override val counters: SimResourceCounters
         get() = _counters
@@ -75,32 +117,32 @@ public class SimResourceTransformer(
     }
 
     override fun interrupt() {
-        ctx?.interrupt()
+        ctx.interrupt()
     }
 
     override fun cancel() {
         val delegate = delegate
-        val ctx = ctx
+        val ctx = _ctx
 
         if (delegate != null) {
             this.delegate = null
 
             if (ctx != null) {
-                delegate.onEvent(ctx, SimResourceEvent.Exit)
+                delegate.onEvent(this.ctx, SimResourceEvent.Exit)
             }
         }
     }
 
     override fun close() {
-        val ctx = ctx
+        val ctx = _ctx
 
         if (ctx != null) {
-            this.ctx = null
+            this._ctx = null
             ctx.interrupt()
         }
     }
 
-    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): SimResourceCommand {
+    override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
         val delegate = delegate
 
         if (!hasDelegateStarted) {
@@ -110,54 +152,39 @@ public class SimResourceTransformer(
         updateCounters(ctx, delta)
 
         return if (delegate != null) {
-            val command = transform(ctx, delegate.onNext(ctx, now, delta))
-
-            _limit = if (command is SimResourceCommand.Consume) command.limit else 0.0
-
-            if (command == SimResourceCommand.Exit) {
-                // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
-                // reset beforehand the existing state and check whether it has been updated afterwards
-                reset()
-
-                delegate.onEvent(ctx, SimResourceEvent.Exit)
-
-                if (isCoupled)
-                    SimResourceCommand.Exit
-                else
-                    onNext(ctx, now, delta)
-            } else {
-                command
-            }
+            val duration = transform(ctx, delegate.onNext(this.ctx, now, delta))
+            _limit = ctx.demand
+            duration
         } else {
-            SimResourceCommand.Consume(0.0)
+            Long.MAX_VALUE
         }
     }
 
     override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
         when (event) {
             SimResourceEvent.Start -> {
-                this.ctx = ctx
+                _ctx = ctx
             }
             SimResourceEvent.Exit -> {
-                this.ctx = null
+                _ctx = null
 
                 val delegate = delegate
                 if (delegate != null) {
                     reset()
-                    delegate.onEvent(ctx, SimResourceEvent.Exit)
+                    delegate.onEvent(this.ctx, SimResourceEvent.Exit)
                 }
             }
-            else -> delegate?.onEvent(ctx, event)
+            else -> delegate?.onEvent(this.ctx, event)
         }
     }
 
     override fun onFailure(ctx: SimResourceContext, cause: Throwable) {
-        this.ctx = null
+        _ctx = null
 
         val delegate = delegate
         if (delegate != null) {
             reset()
-            delegate.onFailure(ctx, cause)
+            delegate.onFailure(this.ctx, cause)
         }
     }
 
@@ -166,7 +193,7 @@ public class SimResourceTransformer(
      */
     private fun start() {
         val delegate = delegate ?: return
-        delegate.onEvent(checkNotNull(ctx), SimResourceEvent.Start)
+        delegate.onEvent(checkNotNull(_ctx), SimResourceEvent.Start)
 
         hasDelegateStarted = true
     }
