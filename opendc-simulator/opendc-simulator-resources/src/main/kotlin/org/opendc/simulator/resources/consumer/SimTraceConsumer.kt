@@ -31,12 +31,20 @@ import org.opendc.simulator.resources.SimResourceEvent
  * consumption for some period of time.
  */
 public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResourceConsumer {
-    private var iterator: Iterator<Fragment>? = null
+    private var _iterator: Iterator<Fragment>? = null
+    private var _nextTarget = Long.MIN_VALUE
 
     override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
-        val iterator = checkNotNull(iterator)
+        // Check whether the trace fragment was fully consumed, otherwise wait until we have done so
+        val nextTarget = _nextTarget
+        if (nextTarget > now) {
+            return now - nextTarget
+        }
+
+        val iterator = checkNotNull(_iterator)
         return if (iterator.hasNext()) {
             val fragment = iterator.next()
+            _nextTarget = now + fragment.duration
             ctx.push(fragment.usage)
             fragment.duration
         } else {
@@ -48,11 +56,11 @@ public class SimTraceConsumer(private val trace: Sequence<Fragment>) : SimResour
     override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
         when (event) {
             SimResourceEvent.Start -> {
-                check(iterator == null) { "Consumer already running" }
-                iterator = trace.iterator()
+                check(_iterator == null) { "Consumer already running" }
+                _iterator = trace.iterator()
             }
             SimResourceEvent.Exit -> {
-                iterator = null
+                _iterator = null
             }
             else -> {}
         }

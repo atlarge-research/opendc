@@ -26,6 +26,7 @@ import io.mockk.*
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.*
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.simulator.resources.impl.SimResourceContextImpl
 import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
@@ -57,23 +58,14 @@ class SimResourceContextTest {
     @Test
     fun testIntermediateFlush() = runBlockingSimulation {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
-        val consumer = object : SimResourceConsumer {
-            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
-                return if (now == 0L) {
-                    ctx.push(4.0)
-                    1000
-                } else {
-                    ctx.close()
-                    Long.MAX_VALUE
-                }
-            }
-        }
+        val consumer = SimWorkConsumer(1.0, 1.0)
 
         val logic = spyk(object : SimResourceProviderLogic {
             override fun onFinish(ctx: SimResourceControllableContext) {}
             override fun onConsume(ctx: SimResourceControllableContext, now: Long, limit: Double, duration: Long): Long = duration
         })
         val context = SimResourceContextImpl(null, interpreter, consumer, logic)
+        context.capacity = 1.0
 
         context.start()
         delay(1) // Delay 1 ms to prevent hitting the fast path
@@ -85,29 +77,20 @@ class SimResourceContextTest {
     @Test
     fun testIntermediateFlushIdle() = runBlockingSimulation {
         val interpreter = SimResourceInterpreterImpl(coroutineContext, clock)
-        val consumer = object : SimResourceConsumer {
-            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
-                return if (now == 0L) {
-                    ctx.push(0.0)
-                    10
-                } else {
-                    ctx.close()
-                    Long.MAX_VALUE
-                }
-            }
-        }
+        val consumer = SimWorkConsumer(1.0, 1.0)
 
         val logic = spyk(object : SimResourceProviderLogic {})
         val context = SimResourceContextImpl(null, interpreter, consumer, logic)
+        context.capacity = 1.0
 
         context.start()
-        delay(5)
+        delay(500)
         context.invalidate()
-        delay(5)
+        delay(500)
         context.invalidate()
 
         assertAll(
-            { verify(exactly = 2) { logic.onConsume(any(), any(), 0.0, any()) } },
+            { verify(exactly = 2) { logic.onConsume(any(), any(), any(), any()) } },
             { verify(exactly = 1) { logic.onFinish(any()) } }
         )
     }

@@ -148,6 +148,10 @@ internal class SimResourceContextImpl(
     }
 
     override fun push(rate: Double) {
+        if (_limit == rate) {
+            return
+        }
+
         _speed = min(capacity, rate)
         _limit = rate
     }
@@ -163,7 +167,7 @@ internal class SimResourceContextImpl(
     /**
      * Update the state of the resource context.
      */
-    fun doUpdate(timestamp: Long) {
+    fun doUpdate(now: Long) {
         val oldState = _state
         if (oldState != SimResourceState.Active) {
             return
@@ -171,41 +175,29 @@ internal class SimResourceContextImpl(
 
         _updateActive = true
 
-        val flag = _flag
-        val isInterrupted = flag and FLAG_INTERRUPT != 0
-        val reachedDeadline = _deadline <= timestamp
-        val delta = max(0, timestamp - _timestamp)
+        val reachedDeadline = _deadline <= now
+        val delta = max(0, now - _timestamp)
 
         try {
-
             // Update the resource counters only if there is some progress
-            if (timestamp > _timestamp) {
+            if (now > _timestamp) {
                 logic.onUpdate(this, delta, _limit, reachedDeadline)
             }
 
-            // We should only continue processing the next command if:
-            // 1. The resource consumption was finished.
-            // 2. The resource consumer should be interrupted (e.g., someone called .interrupt())
-            val duration = if (reachedDeadline || isInterrupted) {
-                consumer.onNext(this, timestamp, delta)
-            } else {
-                _deadline - timestamp
-            }
+            val duration = consumer.onNext(this, now, delta)
 
             // Reset update flags
             _flag = 0
 
             when (_state) {
                 SimResourceState.Active -> {
-                    val limit = _limit
-                    push(limit)
+                    val target = logic.onConsume(this, now, _limit, duration)
+
+                    _speed = min(capacity, _limit)
                     _duration = duration
-
-                    val target = logic.onConsume(this, timestamp, limit, duration)
-
                     _deadline = target
 
-                    scheduleUpdate(timestamp, target)
+                    scheduleUpdate(now, target)
                 }
                 SimResourceState.Pending ->
                     if (oldState != SimResourceState.Pending) {
@@ -219,7 +211,7 @@ internal class SimResourceContextImpl(
         } catch (cause: Throwable) {
             doFail(cause)
         } finally {
-            _timestamp = timestamp
+            _timestamp = now
             _updateActive = false
         }
     }
