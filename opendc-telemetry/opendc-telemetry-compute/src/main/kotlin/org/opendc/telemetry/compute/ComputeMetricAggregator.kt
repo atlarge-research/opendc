@@ -55,6 +55,9 @@ public class ComputeMetricAggregator {
                 // ComputeService
                 "scheduler.hosts" -> {
                     for (point in metric.longSumData.points) {
+                        // Record the timestamp for the service
+                        service.recordTimestamp(point)
+
                         when (point.attributes[STATE_KEY]) {
                             "up" -> service.hostsUp = point.value.toInt()
                             "down" -> service.hostsDown = point.value.toInt()
@@ -163,12 +166,16 @@ public class ComputeMetricAggregator {
                         val server = getServer(servers, point)
 
                         if (server != null) {
+                            server.recordTimestamp(point)
+
                             when (point.attributes[STATE_KEY]) {
                                 "up" -> server.uptime = point.value
                                 "down" -> server.downtime = point.value
                             }
                             server.host = agg.host
                         } else {
+                            agg.recordTimestamp(point)
+
                             when (point.attributes[STATE_KEY]) {
                                 "up" -> agg.uptime = point.value
                                 "down" -> agg.downtime = point.value
@@ -197,15 +204,15 @@ public class ComputeMetricAggregator {
     /**
      * Collect the data via the [monitor].
      */
-    public fun collect(now: Instant, monitor: ComputeMonitor) {
-        monitor.record(_service.collect(now))
+    public fun collect(monitor: ComputeMonitor) {
+        monitor.record(_service.collect())
 
         for (host in _hosts.values) {
-            monitor.record(host.collect(now))
+            monitor.record(host.collect())
         }
 
         for (server in _servers.values) {
-            monitor.record(server.collect(now))
+            monitor.record(server.collect())
         }
     }
 
@@ -237,6 +244,8 @@ public class ComputeMetricAggregator {
      * An aggregator for service metrics before they are reported.
      */
     internal class ServiceAggregator {
+        private var timestamp = Long.MIN_VALUE
+
         @JvmField var hostsUp = 0
         @JvmField var hostsDown = 0
 
@@ -250,13 +259,23 @@ public class ComputeMetricAggregator {
         /**
          * Finish the aggregation for this cycle.
          */
-        fun collect(now: Instant): ServiceData = toServiceData(now)
+        fun collect(): ServiceData {
+            val now = Instant.ofEpochMilli(timestamp)
+            return toServiceData(now)
+        }
 
         /**
          * Convert the aggregator state to an immutable [ServiceData].
          */
         private fun toServiceData(now: Instant): ServiceData {
             return ServiceData(now, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
+        }
+
+        /**
+         * Record the timestamp of a [point] for this aggregator.
+         */
+        fun recordTimestamp(point: PointData) {
+            timestamp = point.epochNanos / 1_000_000L // ns to ms
         }
     }
 
@@ -274,6 +293,8 @@ public class ComputeMetricAggregator {
             resource.attributes[HOST_NCPUS]?.toInt() ?: 0,
             resource.attributes[HOST_MEM_CAPACITY] ?: 0,
         )
+
+        private var timestamp = Long.MIN_VALUE
 
         @JvmField var guestsTerminated = 0
         @JvmField var guestsRunning = 0
@@ -307,7 +328,8 @@ public class ComputeMetricAggregator {
         /**
          * Finish the aggregation for this cycle.
          */
-        fun collect(now: Instant): HostData {
+        fun collect(): HostData {
+            val now = Instant.ofEpochMilli(timestamp)
             val data = toHostData(now)
 
             // Reset intermediate state for next aggregation
@@ -360,6 +382,13 @@ public class ComputeMetricAggregator {
                 if (bootTime != Long.MIN_VALUE) Instant.ofEpochMilli(bootTime) else null
             )
         }
+
+        /**
+         * Record the timestamp of a [point] for this aggregator.
+         */
+        fun recordTimestamp(point: PointData) {
+            timestamp = point.epochNanos / 1_000_000L // ns to ms
+        }
     }
 
     /**
@@ -383,8 +412,9 @@ public class ComputeMetricAggregator {
         /**
          * The [HostInfo] of the host on which the server is hosted.
          */
-        var host: HostInfo? = null
+        @JvmField var host: HostInfo? = null
 
+        private var timestamp = Long.MIN_VALUE
         @JvmField var uptime: Long = 0
         private var previousUptime = 0L
         @JvmField var downtime: Long = 0
@@ -404,7 +434,8 @@ public class ComputeMetricAggregator {
         /**
          * Finish the aggregation for this cycle.
          */
-        fun collect(now: Instant): ServerData {
+        fun collect(): ServerData {
+            val now = Instant.ofEpochMilli(timestamp)
             val data = toServerData(now)
 
             previousUptime = uptime
@@ -438,6 +469,13 @@ public class ComputeMetricAggregator {
                 cpuStealTime - previousCpuStealTime,
                 cpuLostTime - previousCpuLostTime
             )
+        }
+
+        /**
+         * Record the timestamp of a [point] for this aggregator.
+         */
+        fun recordTimestamp(point: PointData) {
+            timestamp = point.epochNanos / 1_000_000L // ns to ms
         }
     }
 

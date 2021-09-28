@@ -22,7 +22,6 @@
 
 package org.opendc.telemetry.sdk.metrics.export
 
-import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricExporter
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import kotlinx.coroutines.*
@@ -54,24 +53,25 @@ public class CoroutineMetricReader(
     private val job = scope.launch {
         val intervalMs = exportInterval.toMillis()
 
-        while (isActive) {
-            delay(intervalMs)
+        try {
+            while (isActive) {
+                delay(intervalMs)
 
-            val metrics = mutableListOf<MetricData>()
-            for (producer in producers) {
-                metrics.addAll(producer.collectAllMetrics())
-            }
+                val metrics = producers.flatMap(MetricProducer::collectAllMetrics)
 
-            try {
-                val result = exporter.export(metrics)
-                result.whenComplete {
-                    if (!result.isSuccess) {
-                        logger.trace { "Exporter failed" }
+                try {
+                    val result = exporter.export(metrics)
+                    result.whenComplete {
+                        if (!result.isSuccess) {
+                            logger.warn { "Exporter failed" }
+                        }
                     }
+                } catch (cause: Throwable) {
+                    logger.warn(cause) { "Exporter threw an Exception" }
                 }
-            } catch (cause: Throwable) {
-                logger.warn(cause) { "Exporter threw an Exception" }
             }
+        } finally {
+            exporter.shutdown()
         }
     }
 

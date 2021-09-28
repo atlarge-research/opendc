@@ -54,9 +54,7 @@ public class ParquetHostDataWriter(path: File, bufferSize: Int) :
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
         val bootTime = data.bootTime
-        if (bootTime != null) {
-            builder["boot_time"] = bootTime.toEpochMilli()
-        }
+        builder["boot_time"] = bootTime?.toEpochMilli()
 
         builder["cpu_count"] = data.host.cpuCount
         builder["cpu_limit"] = data.cpuLimit

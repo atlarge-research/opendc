@@ -22,22 +22,13 @@
 
 package org.opendc.telemetry.compute
 
-import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import org.opendc.telemetry.compute.table.ServiceData
-import java.time.Instant
 
 /**
  * Collect the metrics of the compute service.
  */
-public fun collectServiceMetrics(timestamp: Instant, metricProducer: MetricProducer): ServiceData {
-    return extractServiceMetrics(timestamp, metricProducer.collectAllMetrics())
-}
-
-/**
- * Extract a [ServiceData] object from the specified list of metric data.
- */
-public fun extractServiceMetrics(timestamp: Instant, metrics: Collection<MetricData>): ServiceData {
+public fun collectServiceMetrics(metricProducer: MetricProducer): ServiceData {
     lateinit var serviceData: ServiceData
     val agg = ComputeMetricAggregator()
     val monitor = object : ComputeMonitor {
@@ -46,7 +37,7 @@ public fun extractServiceMetrics(timestamp: Instant, metrics: Collection<MetricD
         }
     }
 
-    agg.process(metrics)
-    agg.collect(timestamp, monitor)
+    agg.process(metricProducer.collectAllMetrics())
+    agg.collect(monitor)
     return serviceData
 }

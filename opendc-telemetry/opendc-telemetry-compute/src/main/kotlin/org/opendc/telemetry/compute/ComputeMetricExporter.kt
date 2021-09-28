@@ -25,12 +25,17 @@ package org.opendc.telemetry.compute
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.metrics.data.*
 import io.opentelemetry.sdk.metrics.export.MetricExporter
-import java.time.Clock
+import mu.KotlinLogging
 
 /**
  * A [MetricExporter] that redirects data to a [ComputeMonitor] implementation.
  */
-public class ComputeMetricExporter(private val clock: Clock, private val monitor: ComputeMonitor) : MetricExporter {
+public abstract class ComputeMetricExporter : MetricExporter, ComputeMonitor {
+    /**
+     * The logging instance for this exporter.
+     */
+    private val logger = KotlinLogging.logger {}
+
     /**
      * A [ComputeMetricAggregator] that actually performs the aggregation.
      */
@@ -39,9 +44,11 @@ public class ComputeMetricExporter(private val clock: Clock, private val monitor
     override fun export(metrics: Collection<MetricData>): CompletableResultCode {
         return try {
             agg.process(metrics)
-            agg.collect(clock.instant(), monitor)
+            agg.collect(this)
+
             CompletableResultCode.ofSuccess()
         } catch (e: Throwable) {
+            logger.warn(e) { "Failed to export results" }
             CompletableResultCode.ofFailure()
         }
     }

@@ -61,7 +61,7 @@ public class ScenarioManager(private val client: ApiClient) {
     /**
      * Persist the specified results.
      */
-    public suspend fun finish(id: String, results: List<WebComputeMonitor.Result>) {
+    public suspend fun finish(id: String, results: List<WebComputeMetricExporter.Result>) {
         client.updateJob(
             id, SimulationState.FINISHED,
             mapOf(

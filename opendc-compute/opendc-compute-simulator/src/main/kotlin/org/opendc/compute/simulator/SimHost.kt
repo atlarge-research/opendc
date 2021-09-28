@@ -262,7 +262,7 @@ public class SimHost(
     }
 
     override suspend fun delete(server: Server) {
-        val guest = guests.remove(server) ?: return
+        val guest = guests[server] ?: return
         guest.terminate()
     }
 
@@ -296,7 +296,7 @@ public class SimHost(
         _bootTime = clock.millis()
 
         for (guest in guests.values) {
-            guest.start()
+            guest.recover()
         }
     }
 
