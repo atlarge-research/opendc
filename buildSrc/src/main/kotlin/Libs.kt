@@ -58,6 +58,6 @@ public class Libs(project: Project) {
         /**
          * The JVM version to target.
          */
-        val jvmTarget = JavaVersion.VERSION_1_8
+        val jvmTarget = JavaVersion.VERSION_11
     }
 }
