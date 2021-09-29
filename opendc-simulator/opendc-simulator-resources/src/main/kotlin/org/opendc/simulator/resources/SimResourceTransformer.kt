@@ -152,9 +152,7 @@ public class SimResourceTransformer(
         updateCounters(ctx, delta)
 
         return if (delegate != null) {
-            val duration = transform(ctx, delegate.onNext(this.ctx, now, delta))
-            _limit = ctx.demand
-            duration
+            transform(ctx, delegate.onNext(this.ctx, now, delta))
         } else {
             Long.MAX_VALUE
         }
