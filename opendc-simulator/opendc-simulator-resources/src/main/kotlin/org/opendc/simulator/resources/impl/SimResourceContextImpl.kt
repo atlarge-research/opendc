@@ -24,6 +24,7 @@ package org.opendc.simulator.resources.impl
 
 import org.opendc.simulator.resources.*
 import java.time.Clock
+import java.util.ArrayDeque
 import kotlin.math.max
 import kotlin.math.min
 
@@ -96,9 +97,9 @@ internal class SimResourceContextImpl(
     private var _flag: Int = 0
 
     /**
-     * The current pending update.
+     * The timers at which the context is scheduled to be interrupted.
      */
-    private var _pendingUpdate: SimResourceInterpreterImpl.Update? = null
+    private val _timers: ArrayDeque<SimResourceInterpreterImpl.Timer> = ArrayDeque()
 
     override fun start() {
         check(_state == SimResourceState.Pending) { "Consumer is already started" }
@@ -126,7 +127,7 @@ internal class SimResourceContextImpl(
         }
 
         _flag = _flag or FLAG_INTERRUPT
-        scheduleUpdate()
+        scheduleUpdate(clock.millis())
     }
 
     override fun invalidate() {
@@ -135,7 +136,7 @@ internal class SimResourceContextImpl(
         }
 
         _flag = _flag or FLAG_INVALIDATE
-        scheduleUpdate()
+        scheduleUpdate(clock.millis())
     }
 
     override fun flush() {
@@ -143,7 +144,7 @@ internal class SimResourceContextImpl(
             return
         }
 
-        interpreter.scheduleSync(this)
+        interpreter.scheduleSync(clock.millis(), this)
     }
 
     override fun push(rate: Double) {
@@ -154,9 +155,9 @@ internal class SimResourceContextImpl(
     /**
      * Determine whether the state of the resource context should be updated.
      */
-    fun requiresUpdate(timestamp: Long): Boolean {
+    fun shouldUpdate(timestamp: Long): Boolean {
         // Either the resource context is flagged or there is a pending update at this timestamp
-        return _flag != 0 || _pendingUpdate?.timestamp == timestamp
+        return _flag != 0 || _deadline == timestamp
     }
 
     /**
@@ -204,7 +205,7 @@ internal class SimResourceContextImpl(
 
                     _deadline = target
 
-                    scheduleUpdate(target)
+                    scheduleUpdate(timestamp, target)
                 }
                 SimResourceState.Pending ->
                     if (oldState != SimResourceState.Pending) {
@@ -226,6 +227,30 @@ internal class SimResourceContextImpl(
     override fun onConverge(timestamp: Long) {
         if (_state == SimResourceState.Active) {
             consumer.onEvent(this, SimResourceEvent.Run)
+        }
+    }
+
+    /**
+     * Prune the elapsed timers from this context.
+     */
+    fun pruneTimers(now: Long) {
+        val timers = _timers
+        while (true) {
+            val head = timers.peek()
+            if (head == null || head.target > now) {
+                break
+            }
+            timers.poll()
+        }
+    }
+
+    /**
+     * Try to re-schedule the resource context in case it was skipped.
+     */
+    fun tryReschedule(now: Long) {
+        val deadline = _deadline
+        if (deadline > now && deadline != Long.MAX_VALUE) {
+            scheduleUpdate(now, deadline)
         }
     }
 
@@ -279,35 +304,17 @@ internal class SimResourceContextImpl(
     /**
      * Schedule an update for this resource context.
      */
-    private fun scheduleUpdate() {
-        // Cancel the pending update
-        val pendingUpdate = _pendingUpdate
-        if (pendingUpdate != null) {
-            _pendingUpdate = null
-            pendingUpdate.cancel()
-        }
-
-        interpreter.scheduleImmediate(this)
+    private fun scheduleUpdate(now: Long) {
+        interpreter.scheduleImmediate(now, this)
     }
 
     /**
      * Schedule a delayed update for this resource context.
      */
-    private fun scheduleUpdate(timestamp: Long) {
-        val pendingUpdate = _pendingUpdate
-        if (pendingUpdate != null) {
-            if (pendingUpdate.timestamp == timestamp) {
-                // Fast-path: A pending update for the same timestamp already exists
-                return
-            } else {
-                // Cancel the old pending update
-                _pendingUpdate = null
-                pendingUpdate.cancel()
-            }
-        }
-
-        if (timestamp != Long.MAX_VALUE) {
-            _pendingUpdate = interpreter.scheduleDelayed(this, timestamp)
+    private fun scheduleUpdate(now: Long, target: Long) {
+        val timers = _timers
+        if (target != Long.MAX_VALUE && (timers.isEmpty() || target < timers.peek().target)) {
+            timers.addFirst(interpreter.scheduleDelayed(now, this, target))
         }
     }
 

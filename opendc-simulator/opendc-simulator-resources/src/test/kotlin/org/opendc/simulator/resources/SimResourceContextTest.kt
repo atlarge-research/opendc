@@ -51,7 +51,7 @@ class SimResourceContextTest {
         val logic = object : SimResourceProviderLogic {}
         val context = SimResourceContextImpl(null, interpreter, consumer, logic)
 
-        context.doUpdate(interpreter.clock.millis())
+        interpreter.scheduleSync(interpreter.clock.millis(), context)
     }
 
     @Test
@@ -77,7 +77,7 @@ class SimResourceContextTest {
 
         context.start()
         delay(1) // Delay 1 ms to prevent hitting the fast path
-        context.doUpdate(interpreter.clock.millis())
+        interpreter.scheduleSync(interpreter.clock.millis(), context)
 
         verify(exactly = 2) { logic.onConsume(any(), any(), any(), any()) }
     }

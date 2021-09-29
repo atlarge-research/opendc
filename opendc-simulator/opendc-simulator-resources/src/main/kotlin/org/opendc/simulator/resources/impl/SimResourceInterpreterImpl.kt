@@ -53,7 +53,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
     /**
      * A priority queue containing the resource updates to be scheduled in the future.
      */
-    private val futureQueue = PriorityQueue<Update>(compareBy { it.timestamp })
+    private val futureQueue = PriorityQueue<Timer>()
 
     /**
      * The stack of interpreter invocations to occur in the future.
@@ -77,33 +77,10 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
         get() = batchIndex > 0
 
     /**
-     * Enqueue the specified [ctx] to be updated immediately during the active interpreter cycle.
-     *
-     * This method should be used when the state of a resource context is invalidated/interrupted and needs to be
-     * re-computed. In case no interpreter is currently active, the interpreter will be started.
-     */
-    fun scheduleImmediate(ctx: SimResourceContextImpl) {
-        queue.add(ctx)
-
-        // In-case the interpreter is already running in the call-stack, return immediately. The changes will be picked
-        // up by the active interpreter.
-        if (isRunning) {
-            return
-        }
-
-        try {
-            batchIndex++
-            runInterpreter()
-        } finally {
-            batchIndex--
-        }
-    }
-
-    /**
      * Update the specified [ctx] synchronously.
      */
-    fun scheduleSync(ctx: SimResourceContextImpl) {
-        ctx.doUpdate(clock.millis())
+    fun scheduleSync(now: Long, ctx: SimResourceContextImpl) {
+        ctx.doUpdate(now)
 
         if (visited.add(ctx)) {
             collectAncestors(ctx, visited)
@@ -117,35 +94,53 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
 
         try {
             batchIndex++
-            runInterpreter()
+            runInterpreter(now)
         } finally {
             batchIndex--
         }
     }
 
     /**
-     * Schedule the interpreter to run at [timestamp] to update the resource contexts.
+     * Enqueue the specified [ctx] to be updated immediately during the active interpreter cycle.
+     *
+     * This method should be used when the state of a resource context is invalidated/interrupted and needs to be
+     * re-computed. In case no interpreter is currently active, the interpreter will be started.
+     */
+    fun scheduleImmediate(now: Long, ctx: SimResourceContextImpl) {
+        queue.add(ctx)
+
+        // In-case the interpreter is already running in the call-stack, return immediately. The changes will be picked
+        // up by the active interpreter.
+        if (isRunning) {
+            return
+        }
+
+        try {
+            batchIndex++
+            runInterpreter(now)
+        } finally {
+            batchIndex--
+        }
+    }
+
+    /**
+     * Schedule the interpreter to run at [target] to update the resource contexts.
      *
      * This method will override earlier calls to this method for the same [ctx].
      *
+     * @param now The current virtual timestamp.
      * @param ctx The resource context to which the event applies.
-     * @param timestamp The timestamp when the interrupt should happen.
+     * @param target The timestamp when the interrupt should happen.
      */
-    fun scheduleDelayed(ctx: SimResourceContextImpl, timestamp: Long): Update {
-        val now = clock.millis()
+    fun scheduleDelayed(now: Long, ctx: SimResourceContextImpl, target: Long): Timer {
         val futureQueue = futureQueue
 
-        require(timestamp >= now) { "Timestamp must be in the future" }
+        require(target >= now) { "Timestamp must be in the future" }
 
-        val update = allocUpdate(ctx, timestamp)
-        futureQueue.add(update)
+        val timer = Timer(ctx, target)
+        futureQueue.add(timer)
 
-        // Optimization: Check if we need to push the interruption forward. Note that we check by timer reference.
-        if (futureQueue.peek() === update) {
-            trySchedule(futureQueue, futureInvocations)
-        }
-
-        return update
+        return timer
     }
 
     override fun newContext(
@@ -162,7 +157,7 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
         try {
             // Flush the work if the platform is not already running
             if (batchIndex == 1 && queue.isNotEmpty()) {
-                runInterpreter()
+                runInterpreter(clock.millis())
             }
         } finally {
             batchIndex--
@@ -172,37 +167,46 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
     /**
      * Interpret all actions that are scheduled for the current timestamp.
      */
-    private fun runInterpreter() {
-        val now = clock.millis()
+    private fun runInterpreter(now: Long) {
         val queue = queue
         val futureQueue = futureQueue
         val futureInvocations = futureInvocations
         val visited = visited
 
+        // Remove any entries in the `futureInvocations` queue from the past
+        while (true) {
+            val head = futureInvocations.peek()
+            if (head == null || head.timestamp > now) {
+                break
+            }
+            futureInvocations.poll()
+        }
+
         // Execute all scheduled updates at current timestamp
         while (true) {
-            val update = futureQueue.peek() ?: break
+            val timer = futureQueue.peek() ?: break
+            val ctx = timer.ctx
+            val target = timer.target
 
-            assert(update.timestamp >= now) { "Internal inconsistency: found update of the past" }
+            assert(target >= now) { "Internal inconsistency: found update of the past" }
 
-            if (update.timestamp > now && !update.isCancelled) {
-                // Schedule a task for the next event to occur.
-                trySchedule(futureQueue, futureInvocations)
+            if (target > now) {
                 break
             }
 
             futureQueue.poll()
 
-            val shouldExecute = !update.isCancelled && update.ctx.requiresUpdate(now)
-            if (shouldExecute) {
-                update.ctx.doUpdate(now)
+            ctx.pruneTimers(now)
 
-                if (visited.add(update.ctx)) {
-                    collectAncestors(update.ctx, visited)
+            if (ctx.shouldUpdate(now)) {
+                ctx.doUpdate(now)
+
+                if (visited.add(ctx)) {
+                    collectAncestors(ctx, visited)
                 }
+            } else {
+                ctx.tryReschedule(now)
             }
-
-            updatePool.add(update)
         }
 
         // Repeat execution of all immediate updates until the system has converged to a steady-state
@@ -211,9 +215,8 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
             // Execute all immediate updates
             while (true) {
                 val ctx = queue.poll() ?: break
-                val shouldExecute = ctx.requiresUpdate(now)
 
-                if (shouldExecute) {
+                if (ctx.shouldUpdate(now)) {
                     ctx.doUpdate(now)
 
                     if (visited.add(ctx)) {
@@ -228,54 +231,11 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
 
             visited.clear()
         } while (queue.isNotEmpty())
-    }
 
-    /**
-     * Try to schedule the next interpreter event.
-     */
-    private fun trySchedule(queue: PriorityQueue<Update>, scheduled: ArrayDeque<Invocation>) {
-        val nextTimer = queue.peek()
-        val now = clock.millis()
-
-        // Check whether we need to update our schedule:
-        if (nextTimer == null) {
-            // Case 1: all timers are cancelled
-            for (invocation in scheduled) {
-                invocation.cancel()
-            }
-            scheduled.clear()
-            return
-        }
-
-        while (true) {
-            val invocation = scheduled.peekFirst()
-            if (invocation == null || invocation.timestamp > nextTimer.timestamp) {
-                // Case 2: A new timer was registered ahead of the other timers.
-                // Solution: Schedule a new scheduler invocation
-                val nextTimestamp = nextTimer.timestamp
-                @OptIn(InternalCoroutinesApi::class)
-                val handle = delay.invokeOnTimeout(
-                    nextTimestamp - now,
-                    {
-                        try {
-                            batchIndex++
-                            runInterpreter()
-                        } finally {
-                            batchIndex--
-                        }
-                    },
-                    context
-                )
-                scheduled.addFirst(Invocation(nextTimestamp, handle))
-                break
-            } else if (invocation.timestamp < nextTimer.timestamp) {
-                // Case 2: A timer was cancelled and the head of the timer queue is now later than excepted
-                // Solution: Cancel the next scheduler invocation
-                invocation.cancel()
-                scheduled.pollFirst()
-            } else {
-                break
-            }
+        // Schedule an interpreter invocation for the next update to occur.
+        val headTimer = futureQueue.peek()
+        if (headTimer != null) {
+            trySchedule(now, futureInvocations, headTimer.target)
         }
     }
 
@@ -291,22 +251,42 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
     }
 
     /**
-     * The pool of existing updates.
+     * Try to schedule an interpreter invocation at the specified [target].
+     *
+     * @param now The current virtual timestamp.
+     * @param target The virtual timestamp at which the interpreter invocation should happen.
+     * @param scheduled The queue of scheduled invocations.
      */
-    private val updatePool = ArrayDeque<Update>()
+    private fun trySchedule(now: Long, scheduled: ArrayDeque<Invocation>, target: Long) {
+        while (true) {
+            val invocation = scheduled.peekFirst()
+            if (invocation == null || invocation.timestamp > target) {
+                // Case 2: A new timer was registered ahead of the other timers.
+                // Solution: Schedule a new scheduler invocation
+                @OptIn(InternalCoroutinesApi::class)
+                val handle = delay.invokeOnTimeout(
+                    target - now,
+                    {
+                        try {
+                            batchIndex++
+                            runInterpreter(target)
+                        } finally {
+                            batchIndex--
+                        }
+                    },
+                    context
+                )
+                scheduled.addFirst(Invocation(target, handle))
+                break
+            } else if (invocation.timestamp < target) {
+                // Case 2: A timer was cancelled and the head of the timer queue is now later than excepted
+                // Solution: Cancel the next scheduler invocation
+                scheduled.pollFirst()
 
-    /**
-     * Allocate an [Update] object.
-     */
-    private fun allocUpdate(ctx: SimResourceContextImpl, timestamp: Long): Update {
-        val update = updatePool.poll()
-        return if (update != null) {
-            update.ctx = ctx
-            update.timestamp = timestamp
-            update.isCancelled = false
-            update
-        } else {
-            Update(ctx, timestamp)
+                invocation.cancel()
+            } else {
+                break
+            }
         }
     }
 
@@ -318,34 +298,25 @@ internal class SimResourceInterpreterImpl(private val context: CoroutineContext,
      */
     private data class Invocation(
         @JvmField val timestamp: Long,
-        private val disposableHandle: DisposableHandle
+        @JvmField val handle: DisposableHandle
     ) {
         /**
          * Cancel the interpreter invocation.
          */
-        fun cancel() = disposableHandle.dispose()
+        fun cancel() = handle.dispose()
     }
 
     /**
-     * An update call for [ctx] that is scheduled for [timestamp].
+     * An update call for [ctx] that is scheduled for [target].
      *
-     * This class represents an update in the future at [timestamp] requested by [ctx]. A deferred update might be
+     * This class represents an update in the future at [target] requested by [ctx]. A deferred update might be
      * cancelled if the resource context was invalidated in the meantime.
      */
-    class Update(@JvmField var ctx: SimResourceContextImpl, @JvmField var timestamp: Long) {
-        /**
-         * A flag to indicate that the task has been cancelled.
-         */
-        @JvmField
-        var isCancelled: Boolean = false
-
-        /**
-         * Cancel the update.
-         */
-        fun cancel() {
-            isCancelled = true
+    class Timer(@JvmField val ctx: SimResourceContextImpl, @JvmField val target: Long) : Comparable<Timer> {
+        override fun compareTo(other: Timer): Int {
+            return target.compareTo(other.target)
         }
 
-        override fun toString(): String = "Update[ctx=$ctx,timestamp=$timestamp]"
+        override fun toString(): String = "Timer[ctx=$ctx,timestamp=$target]"
     }
 }
