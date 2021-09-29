@@ -26,16 +26,11 @@ import org.opendc.simulator.resources.impl.SimResourceCountersImpl
 import java.time.Clock
 
 /**
- * A [SimResourceConsumer] and [SimResourceProvider] that transforms the resource commands emitted by the resource
- * commands to the resource provider.
+ * A class that acts as a [SimResourceConsumer] and [SimResourceProvider] at the same time.
  *
  * @param isCoupled A flag to indicate that the transformer will exit when the resource consumer exits.
- * @param transform The function to transform the received resource command.
  */
-public class SimResourceTransformer(
-    private val isCoupled: Boolean = false,
-    private val transform: (SimResourceContext, Long) -> Long
-) : SimResourceConsumer, SimResourceProvider, AutoCloseable {
+public class SimResourceForwarder(private val isCoupled: Boolean = false) : SimResourceConsumer, SimResourceProvider, AutoCloseable {
     /**
      * The delegate [SimResourceConsumer].
      */
@@ -49,25 +44,25 @@ public class SimResourceTransformer(
     /**
      * The exposed [SimResourceContext].
      */
-    private val ctx = object : SimResourceContext {
+    private val _ctx = object : SimResourceContext {
         override val clock: Clock
-            get() = _ctx!!.clock
+            get() = _innerCtx!!.clock
 
         override val capacity: Double
-            get() = _ctx?.capacity ?: 0.0
+            get() = _innerCtx?.capacity ?: 0.0
 
         override val demand: Double
-            get() = _ctx?.demand ?: 0.0
+            get() = _innerCtx?.demand ?: 0.0
 
         override val speed: Double
-            get() = _ctx?.speed ?: 0.0
+            get() = _innerCtx?.speed ?: 0.0
 
         override fun interrupt() {
-            _ctx?.interrupt()
+            _innerCtx?.interrupt()
         }
 
         override fun push(rate: Double) {
-            _ctx?.push(rate)
+            _innerCtx?.push(rate)
             _limit = rate
         }
 
@@ -75,9 +70,9 @@ public class SimResourceTransformer(
             val delegate = checkNotNull(delegate) { "Delegate not active" }
 
             if (isCoupled)
-                _ctx?.close()
+                _innerCtx?.close()
             else
-                _ctx?.push(0.0)
+                _innerCtx?.push(0.0)
 
             // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
             // reset beforehand the existing state and check whether it has been updated afterwards
@@ -90,19 +85,19 @@ public class SimResourceTransformer(
     /**
      * The [SimResourceContext] in which the forwarder runs.
      */
-    private var _ctx: SimResourceContext? = null
+    private var _innerCtx: SimResourceContext? = null
 
     override val isActive: Boolean
         get() = delegate != null
 
     override val capacity: Double
-        get() = ctx.capacity
+        get() = _ctx.capacity
 
     override val speed: Double
-        get() = ctx.speed
+        get() = _ctx.speed
 
     override val demand: Double
-        get() = ctx.demand
+        get() = _ctx.demand
 
     override val counters: SimResourceCounters
         get() = _counters
@@ -118,27 +113,27 @@ public class SimResourceTransformer(
     }
 
     override fun interrupt() {
-        ctx.interrupt()
+        _ctx.interrupt()
     }
 
     override fun cancel() {
         val delegate = delegate
-        val ctx = _ctx
+        val ctx = _innerCtx
 
         if (delegate != null) {
             this.delegate = null
 
             if (ctx != null) {
-                delegate.onEvent(this.ctx, SimResourceEvent.Exit)
+                delegate.onEvent(this._ctx, SimResourceEvent.Exit)
             }
         }
     }
 
     override fun close() {
-        val ctx = _ctx
+        val ctx = _innerCtx
 
         if (ctx != null) {
-            this._ctx = null
+            this._innerCtx = null
             ctx.interrupt()
         }
     }
@@ -152,38 +147,34 @@ public class SimResourceTransformer(
 
         updateCounters(ctx, delta)
 
-        return if (delegate != null) {
-            transform(ctx, delegate.onNext(this.ctx, now, delta))
-        } else {
-            Long.MAX_VALUE
-        }
+        return delegate?.onNext(this._ctx, now, delta) ?: Long.MAX_VALUE
     }
 
     override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
         when (event) {
             SimResourceEvent.Start -> {
-                _ctx = ctx
+                _innerCtx = ctx
             }
             SimResourceEvent.Exit -> {
-                _ctx = null
+                _innerCtx = null
 
                 val delegate = delegate
                 if (delegate != null) {
                     reset()
-                    delegate.onEvent(this.ctx, SimResourceEvent.Exit)
+                    delegate.onEvent(this._ctx, SimResourceEvent.Exit)
                 }
             }
-            else -> delegate?.onEvent(this.ctx, event)
+            else -> delegate?.onEvent(this._ctx, event)
         }
     }
 
     override fun onFailure(ctx: SimResourceContext, cause: Throwable) {
-        _ctx = null
+        _innerCtx = null
 
         val delegate = delegate
         if (delegate != null) {
             reset()
-            delegate.onFailure(this.ctx, cause)
+            delegate.onFailure(this._ctx, cause)
         }
     }
 
@@ -192,7 +183,7 @@ public class SimResourceTransformer(
      */
     private fun start() {
         val delegate = delegate ?: return
-        delegate.onEvent(checkNotNull(_ctx), SimResourceEvent.Start)
+        delegate.onEvent(checkNotNull(_innerCtx), SimResourceEvent.Start)
 
         hasDelegateStarted = true
     }
@@ -226,13 +217,4 @@ public class SimResourceTransformer(
         counters.actual += actualWork
         counters.overcommit += (work - actualWork)
     }
-}
-
-/**
- * Constructs a [SimResourceTransformer] that forwards the received resource command with an identity transform.
- *
- * @param isCoupled A flag to indicate that the transformer will exit when the resource consumer exits.
- */
-public fun SimResourceForwarder(isCoupled: Boolean = false): SimResourceTransformer {
-    return SimResourceTransformer(isCoupled) { _, command -> command }
 }

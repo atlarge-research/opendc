@@ -33,9 +33,9 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 import org.opendc.simulator.resources.impl.SimResourceInterpreterImpl
 
 /**
- * A test suite for the [SimResourceTransformer] class.
+ * A test suite for the [SimResourceForwarder] class.
  */
-internal class SimResourceTransformerTest {
+internal class SimResourceForwarderTest {
     @Test
     fun testCancelImmediately() = runBlockingSimulation {
         val forwarder = SimResourceForwarder()
@@ -196,20 +196,6 @@ internal class SimResourceTransformerTest {
 
         assertEquals(3000, clock.millis())
         verify(exactly = 1) { consumer.onEvent(any(), SimResourceEvent.Capacity) }
-    }
-
-    @Test
-    fun testTransformExit() = runBlockingSimulation {
-        val forwarder = SimResourceTransformer { ctx, _ -> ctx.close(); Long.MAX_VALUE }
-        val scheduler = SimResourceInterpreterImpl(coroutineContext, clock)
-        val source = SimResourceSource(1.0, scheduler)
-
-        val consumer = spyk(SimWorkConsumer(2.0, 1.0))
-        source.startConsumer(forwarder)
-        forwarder.consume(consumer)
-
-        assertEquals(0, clock.millis())
-        verify(exactly = 1) { consumer.onNext(any(), any(), any()) }
     }
 
     @Test

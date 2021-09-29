@@ -86,7 +86,7 @@ public class SimUps(
     /**
      * A UPS inlet.
      */
-    public inner class Inlet(private val forwarder: SimResourceTransformer) : SimPowerInlet(), AutoCloseable {
+    public inner class Inlet(private val forwarder: SimResourceForwarder) : SimPowerInlet(), AutoCloseable {
         override fun createConsumer(): SimResourceConsumer = forwarder
 
         /**

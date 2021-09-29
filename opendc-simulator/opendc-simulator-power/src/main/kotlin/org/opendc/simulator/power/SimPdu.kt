@@ -42,7 +42,7 @@ public class SimPdu(
     private val switch = SimResourceSwitchMaxMin(interpreter)
 
     /**
-     * The [SimResourceTransformer] that represents the input of the PDU.
+     * The [SimResourceForwarder] that represents the input of the PDU.
      */
     private val forwarder = SimResourceForwarder()
 

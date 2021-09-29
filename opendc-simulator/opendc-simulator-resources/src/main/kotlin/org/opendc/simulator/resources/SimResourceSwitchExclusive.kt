@@ -37,7 +37,7 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
     private val _inputs = mutableSetOf<SimResourceProvider>()
     override val inputs: Set<SimResourceProvider>
         get() = _inputs
-    private val _availableInputs = ArrayDeque<SimResourceTransformer>()
+    private val _availableInputs = ArrayDeque<SimResourceForwarder>()
 
     override val counters: SimResourceCounters = object : SimResourceCounters {
         override val demand: Double
@@ -114,7 +114,7 @@ public class SimResourceSwitchExclusive : SimResourceSwitch {
     /**
      * An output of the resource switch.
      */
-    private inner class Output(private val forwarder: SimResourceTransformer) : SimResourceProvider by forwarder {
+    private inner class Output(private val forwarder: SimResourceForwarder) : SimResourceProvider by forwarder {
         /**
          * Close the output.
          */
