@@ -37,18 +37,27 @@ public class SimPdu(
     private val lossCoefficient: Double = 0.0,
 ) : SimPowerInlet() {
     /**
-     * The [SimResourceDistributor] that distributes the electricity over the PDU outlets.
+     * The [SimResourceSwitch] that distributes the electricity over the PDU outlets.
      */
-    private val distributor = SimResourceDistributorMaxMin(interpreter)
+    private val switch = SimResourceSwitchMaxMin(interpreter)
+
+    /**
+     * The [SimResourceTransformer] that represents the input of the PDU.
+     */
+    private val forwarder = SimResourceForwarder()
 
     /**
      * Create a new PDU outlet.
      */
-    public fun newOutlet(): Outlet = Outlet(distributor.newOutput())
+    public fun newOutlet(): Outlet = Outlet(switch.newOutput())
 
-    override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer by distributor {
+    init {
+        switch.addInput(forwarder)
+    }
+
+    override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer by forwarder {
         override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
-            val duration = distributor.onNext(ctx, now, delta)
+            val duration = forwarder.onNext(ctx, now, delta)
             val loss = computePowerLoss(ctx.demand)
             val newLimit = ctx.demand + loss
 

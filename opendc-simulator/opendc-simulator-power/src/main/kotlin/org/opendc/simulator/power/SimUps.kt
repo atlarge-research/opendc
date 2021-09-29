@@ -41,20 +41,25 @@ public class SimUps(
     /**
      * The resource aggregator used to combine the input sources.
      */
-    private val aggregator = SimResourceAggregatorMaxMin(interpreter)
+    private val switch = SimResourceSwitchMaxMin(interpreter)
+
+    /**
+     * The [SimResourceProvider] that represents the output of the UPS.
+     */
+    private val provider = switch.newOutput()
 
     /**
      * Create a new UPS outlet.
      */
     public fun newInlet(): SimPowerInlet {
         val forward = SimResourceForwarder(isCoupled = true)
-        aggregator.addInput(forward)
+        switch.addInput(forward)
         return Inlet(forward)
     }
 
     override fun onConnect(inlet: SimPowerInlet) {
         val consumer = inlet.createConsumer()
-        aggregator.startConsumer(object : SimResourceConsumer by consumer {
+        provider.startConsumer(object : SimResourceConsumer by consumer {
             override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
                 val duration = consumer.onNext(ctx, now, delta)
                 val loss = computePowerLoss(ctx.demand)
@@ -67,7 +72,7 @@ public class SimUps(
     }
 
     override fun onDisconnect(inlet: SimPowerInlet) {
-        aggregator.cancel()
+        provider.cancel()
     }
 
     /**
