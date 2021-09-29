@@ -29,19 +29,20 @@ public class SimResourceAggregatorMaxMin(
     interpreter: SimResourceInterpreter,
     parent: SimResourceSystem? = null
 ) : SimAbstractResourceAggregator(interpreter, parent) {
-    private val consumers = mutableListOf<Input>()
+    private val consumers = mutableListOf<SimResourceContext>()
 
-    override fun doConsume(limit: Double, duration: Long) {
+    override fun doConsume(limit: Double) {
         // Sort all consumers by their capacity
-        consumers.sortWith(compareBy { it.ctx.capacity })
+        consumers.sortWith(compareBy { it.capacity })
 
         // Divide the requests over the available capacity of the input resources fairly
         for (input in consumers) {
-            val inputCapacity = input.ctx.capacity
+            val inputCapacity = input.capacity
             val fraction = inputCapacity / capacity
             val grantedSpeed = limit * fraction
 
-            input.push(grantedSpeed, duration)
+            input.push(grantedSpeed)
+            input.interrupt()
         }
     }
 
@@ -53,11 +54,11 @@ public class SimResourceAggregatorMaxMin(
         }
     }
 
-    override fun onInputStarted(input: Input) {
+    override fun onInputStarted(input: SimResourceContext) {
         consumers.add(input)
     }
 
-    override fun onInputFinished(input: Input) {
+    override fun onInputFinished(input: SimResourceContext) {
         consumers.remove(input)
     }
 }
