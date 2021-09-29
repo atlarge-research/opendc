@@ -47,7 +47,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToLong
@@ -61,7 +61,7 @@ public class SimHost(
     model: MachineModel,
     override val meta: Map<String, Any>,
     context: CoroutineContext,
-    interpreter: SimResourceInterpreter,
+    engine: FlowEngine,
     meterProvider: MeterProvider,
     hypervisor: SimHypervisorProvider,
     scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
@@ -78,7 +78,7 @@ public class SimHost(
     /**
      * The clock instance used by the host.
      */
-    private val clock = interpreter.clock
+    private val clock = engine.clock
 
     /**
      * The logger instance of this server.
@@ -98,13 +98,13 @@ public class SimHost(
     /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(interpreter, model.optimize(), powerDriver)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(engine, model.optimize(), powerDriver)
 
     /**
      * The hypervisor to run multiple workloads.
      */
     private val hypervisor: SimHypervisor = hypervisor.create(
-        interpreter,
+        engine,
         scalingGovernor = scalingGovernor,
         interferenceDomain = interferenceDomain,
         listener = object : SimHypervisor.Listener {

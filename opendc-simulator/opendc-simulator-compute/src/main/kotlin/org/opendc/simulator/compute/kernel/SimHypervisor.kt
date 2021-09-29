@@ -25,7 +25,7 @@ package org.opendc.simulator.compute.kernel
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.SimResourceCounters
+import org.opendc.simulator.flow.FlowCounters
 
 /**
  * A SimHypervisor facilitates the execution of multiple concurrent [SimWorkload]s, while acting as a single workload
@@ -40,7 +40,7 @@ public interface SimHypervisor : SimWorkload {
     /**
      * The resource counters associated with the hypervisor.
      */
-    public val counters: SimResourceCounters
+    public val counters: FlowCounters
 
     /**
      * Determine whether the specified machine characterized by [model] can fit on this hypervisor at this moment.

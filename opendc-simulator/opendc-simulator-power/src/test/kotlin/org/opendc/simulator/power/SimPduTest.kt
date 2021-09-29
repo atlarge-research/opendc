@@ -28,10 +28,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceEvent
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowEvent
+import org.opendc.simulator.flow.FlowSource
+import org.opendc.simulator.flow.source.FixedFlowSource
 
 /**
  * Test suite for the [SimPdu] class.
@@ -39,9 +39,9 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 internal class SimPduTest {
     @Test
     fun testZeroOutlets() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
+        val pdu = SimPdu(engine)
         source.connect(pdu)
 
         assertEquals(0.0, source.powerDraw)
@@ -49,9 +49,9 @@ internal class SimPduTest {
 
     @Test
     fun testSingleOutlet() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
+        val pdu = SimPdu(engine)
         source.connect(pdu)
         pdu.newOutlet().connect(SimpleInlet())
 
@@ -60,9 +60,9 @@ internal class SimPduTest {
 
     @Test
     fun testDoubleOutlet() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
+        val pdu = SimPdu(engine)
         source.connect(pdu)
 
         pdu.newOutlet().connect(SimpleInlet())
@@ -73,28 +73,28 @@ internal class SimPduTest {
 
     @Test
     fun testDisconnect() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
+        val pdu = SimPdu(engine)
         source.connect(pdu)
-        val consumer = spyk(SimWorkConsumer(100.0, utilization = 1.0))
+        val consumer = spyk(FixedFlowSource(100.0, utilization = 1.0))
         val inlet = object : SimPowerInlet() {
-            override fun createConsumer(): SimResourceConsumer = consumer
+            override fun createConsumer(): FlowSource = consumer
         }
 
         val outlet = pdu.newOutlet()
         outlet.connect(inlet)
         outlet.disconnect()
 
-        verify { consumer.onEvent(any(), SimResourceEvent.Exit) }
+        verify { consumer.onEvent(any(), any(), FlowEvent.Exit) }
     }
 
     @Test
     fun testLoss() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
-        val pdu = SimPdu(interpreter, idlePower = 1.5, lossCoefficient = 0.015)
+        val pdu = SimPdu(engine, idlePower = 1.5, lossCoefficient = 0.015)
         source.connect(pdu)
         pdu.newOutlet().connect(SimpleInlet())
         assertEquals(89.0, source.powerDraw, 0.01)
@@ -102,9 +102,9 @@ internal class SimPduTest {
 
     @Test
     fun testOutletClose() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val pdu = SimPdu(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
+        val pdu = SimPdu(engine)
         source.connect(pdu)
         val outlet = pdu.newOutlet()
         outlet.close()
@@ -115,6 +115,6 @@ internal class SimPduTest {
     }
 
     class SimpleInlet : SimPowerInlet() {
-        override fun createConsumer(): SimResourceConsumer = SimWorkConsumer(100.0, utilization = 0.5)
+        override fun createConsumer(): FlowSource = FixedFlowSource(100.0, utilization = 0.5)
     }
 }

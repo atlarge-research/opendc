@@ -24,8 +24,8 @@ package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceContext
+import org.opendc.simulator.flow.FlowConnection
+import org.opendc.simulator.flow.FlowSource
 import kotlin.math.min
 
 /**
@@ -78,12 +78,12 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
         return now >= timestamp + duration
     }
 
-    private inner class Consumer(val cpu: ProcessingUnit) : SimResourceConsumer {
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+    private inner class Consumer(val cpu: ProcessingUnit) : FlowSource {
+        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
             val fragment = pullFragment(now)
 
             if (fragment == null) {
-                ctx.close()
+                conn.close()
                 return Long.MAX_VALUE
             }
 
@@ -91,7 +91,7 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
 
             // Fragment is in the future
             if (timestamp > now) {
-                ctx.push(0.0)
+                conn.push(0.0)
                 return timestamp - now
             }
 
@@ -103,7 +103,7 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
             val deadline = timestamp + fragment.duration
             val duration = deadline - now
 
-            ctx.push(if (cpu.id < cores && usage > 0.0) usage else 0.0)
+            conn.push(if (cpu.id < cores && usage > 0.0) usage else 0.0)
 
             return duration
         }

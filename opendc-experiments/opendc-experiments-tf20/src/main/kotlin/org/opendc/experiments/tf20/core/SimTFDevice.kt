@@ -35,7 +35,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.*
+import org.opendc.simulator.flow.*
 import java.time.Clock
 import java.util.*
 import kotlin.coroutines.Continuation
@@ -65,7 +65,7 @@ public class SimTFDevice(
      * The [SimMachine] representing the device.
      */
     private val machine = SimBareMetalMachine(
-        SimResourceInterpreter(scope.coroutineContext, clock), MachineModel(listOf(pu), listOf(memory)),
+        FlowEngine(scope.coroutineContext, clock), MachineModel(listOf(pu), listOf(memory)),
         SimplePowerDriver(powerModel)
     )
 
@@ -95,11 +95,11 @@ public class SimTFDevice(
     /**
      * The workload that will be run by the device.
      */
-    private val workload = object : SimWorkload, SimResourceConsumer {
+    private val workload = object : SimWorkload, FlowSource {
         /**
          * The resource context to interrupt the workload with.
          */
-        var ctx: SimResourceContext? = null
+        var ctx: FlowConnection? = null
 
         /**
          * The capacity of the device.
@@ -128,16 +128,16 @@ public class SimTFDevice(
             }
         }
 
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
-            val consumedWork = ctx.speed * delta / 1000.0
+        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            val consumedWork = conn.rate * delta / 1000.0
 
             val activeWork = activeWork
             if (activeWork != null) {
                 if (activeWork.consume(consumedWork)) {
                     this.activeWork = null
                 } else {
-                    val duration = (activeWork.flops / ctx.capacity * 1000).roundToLong()
-                    ctx.push(ctx.capacity)
+                    val duration = (activeWork.flops / conn.capacity * 1000).roundToLong()
+                    conn.push(conn.capacity)
                     return duration
                 }
             }
@@ -146,27 +146,27 @@ public class SimTFDevice(
             val head = queue.poll()
             return if (head != null) {
                 this.activeWork = head
-                val duration = (head.flops / ctx.capacity * 1000).roundToLong()
-                ctx.push(ctx.capacity)
+                val duration = (head.flops / conn.capacity * 1000).roundToLong()
+                conn.push(conn.capacity)
                 duration
             } else {
-                ctx.push(0.0)
+                conn.push(0.0)
                 Long.MAX_VALUE
             }
         }
 
-        override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+        override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
             when (event) {
-                SimResourceEvent.Start -> {
-                    this.ctx = ctx
-                    this.capacity = ctx.capacity
+                FlowEvent.Start -> {
+                    this.ctx = conn
+                    this.capacity = conn.capacity
                 }
-                SimResourceEvent.Capacity -> {
-                    this.capacity = ctx.capacity
-                    ctx.interrupt()
+                FlowEvent.Capacity -> {
+                    this.capacity = conn.capacity
+                    conn.pull()
                 }
-                SimResourceEvent.Run -> {
-                    _usage.record(ctx.speed)
+                FlowEvent.Converge -> {
+                    _usage.record(conn.rate)
                     _power.record(machine.psu.powerDraw)
                 }
                 else -> {}
@@ -188,7 +188,7 @@ public class SimTFDevice(
     override suspend fun compute(flops: Double) = suspendCancellableCoroutine<Unit> { cont ->
         workload.queue.add(Work(flops, cont))
         if (workload.isIdle) {
-            workload.ctx?.interrupt()
+            workload.ctx?.pull()
         }
     }
 

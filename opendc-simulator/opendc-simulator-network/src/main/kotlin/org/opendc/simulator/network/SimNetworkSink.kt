@@ -22,22 +22,22 @@
 
 package org.opendc.simulator.network
 
-import org.opendc.simulator.resources.*
+import org.opendc.simulator.flow.*
 
 /**
  * A network sink which discards all received traffic and does not generate any traffic itself.
  */
 public class SimNetworkSink(
-    interpreter: SimResourceInterpreter,
+    engine: FlowEngine,
     public val capacity: Double
 ) : SimNetworkPort() {
-    override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer {
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long = Long.MAX_VALUE
+    override fun createConsumer(): FlowSource = object : FlowSource {
+        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long = Long.MAX_VALUE
 
         override fun toString(): String = "SimNetworkSink.Consumer"
     }
 
-    override val provider: SimResourceProvider = SimResourceSource(capacity, interpreter)
+    override val provider: FlowConsumer = FlowSink(engine, capacity)
 
     override fun toString(): String = "SimNetworkSink[capacity=$capacity]"
 }

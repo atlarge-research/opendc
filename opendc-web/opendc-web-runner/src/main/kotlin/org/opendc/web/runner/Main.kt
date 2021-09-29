@@ -123,7 +123,7 @@ class RunnerCli : CliktCommand(name = "runner") {
         .default(60L * 3) // Experiment may run for a maximum of three minutes
 
     /**
-     * Run a single scenario.
+     * Converge a single scenario.
      */
     private suspend fun runScenario(portfolio: ClientPortfolio, scenario: Scenario, topology: Topology): List<WebComputeMetricExporter.Result> {
         val id = scenario.id
@@ -158,7 +158,7 @@ class RunnerCli : CliktCommand(name = "runner") {
     }
 
     /**
-     * Run a single repeat.
+     * Converge a single repeat.
      */
     private suspend fun runRepeat(
         scenario: Scenario,
@@ -199,7 +199,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                 try {
                     // Instantiate the topology onto the simulator
                     simulator.apply(topology)
-                    // Run workload trace
+                    // Converge workload trace
                     simulator.run(workload.resolve(workloadLoader, seeder), seeder.nextLong())
                 } finally {
                     simulator.close()

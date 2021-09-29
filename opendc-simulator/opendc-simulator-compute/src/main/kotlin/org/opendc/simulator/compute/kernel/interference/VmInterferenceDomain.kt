@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.compute.kernel.interference
 
-import org.opendc.simulator.resources.interference.InterferenceDomain
-import org.opendc.simulator.resources.interference.InterferenceKey
+import org.opendc.simulator.flow.interference.InterferenceDomain
+import org.opendc.simulator.flow.interference.InterferenceKey
 
 /**
  * The interference domain of a hypervisor.

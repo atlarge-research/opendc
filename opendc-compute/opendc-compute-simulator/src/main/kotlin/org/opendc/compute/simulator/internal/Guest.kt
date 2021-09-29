@@ -198,7 +198,7 @@ internal class Guest(
     }
 
     /**
-     * Run the process that models the virtual machine lifecycle as a coroutine.
+     * Converge the process that models the virtual machine lifecycle as a coroutine.
      */
     private suspend fun runMachine(workload: SimWorkload) {
         delay(1) // TODO Introduce model for boot time

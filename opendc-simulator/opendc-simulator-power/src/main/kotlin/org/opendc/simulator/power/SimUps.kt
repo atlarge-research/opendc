@@ -22,50 +22,51 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.resources.*
+import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
 /**
  * A model of an Uninterruptible Power Supply (UPS).
  *
  * This model aggregates multiple power sources into a single source in order to ensure that power is always available.
  *
- * @param interpreter The underlying [SimResourceInterpreter] to drive the simulation under the hood.
+ * @param engine The underlying [FlowEngine] to drive the simulation under the hood.
  * @param idlePower The idle power consumption of the UPS independent of the load.
  * @param lossCoefficient The coefficient for the power loss of the UPS proportional to the load.
  */
 public class SimUps(
-    interpreter: SimResourceInterpreter,
+    private val engine: FlowEngine,
     private val idlePower: Double = 0.0,
     private val lossCoefficient: Double = 0.0,
 ) : SimPowerOutlet() {
     /**
      * The resource aggregator used to combine the input sources.
      */
-    private val switch = SimResourceSwitchMaxMin(interpreter)
+    private val switch = MaxMinFlowMultiplexer(engine)
 
     /**
-     * The [SimResourceProvider] that represents the output of the UPS.
+     * The [FlowConsumer] that represents the output of the UPS.
      */
-    private val provider = switch.newOutput()
+    private val provider = switch.newInput()
 
     /**
      * Create a new UPS outlet.
      */
     public fun newInlet(): SimPowerInlet {
-        val forward = SimResourceForwarder(isCoupled = true)
-        switch.addInput(forward)
+        val forward = FlowForwarder(engine, isCoupled = true)
+        switch.addOutput(forward)
         return Inlet(forward)
     }
 
     override fun onConnect(inlet: SimPowerInlet) {
         val consumer = inlet.createConsumer()
-        provider.startConsumer(object : SimResourceConsumer by consumer {
-            override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
-                val duration = consumer.onNext(ctx, now, delta)
-                val loss = computePowerLoss(ctx.demand)
-                val newLimit = ctx.demand + loss
+        provider.startConsumer(object : FlowSource by consumer {
+            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                val duration = consumer.onPull(conn, now, delta)
+                val loss = computePowerLoss(conn.demand)
+                val newLimit = conn.demand + loss
 
-                ctx.push(newLimit)
+                conn.push(newLimit)
                 return duration
             }
         })
@@ -86,8 +87,8 @@ public class SimUps(
     /**
      * A UPS inlet.
      */
-    public inner class Inlet(private val forwarder: SimResourceForwarder) : SimPowerInlet(), AutoCloseable {
-        override fun createConsumer(): SimResourceConsumer = forwarder
+    public inner class Inlet(private val forwarder: FlowForwarder) : SimPowerInlet(), AutoCloseable {
+        override fun createConsumer(): FlowSource = forwarder
 
         /**
          * Remove the inlet from the PSU.

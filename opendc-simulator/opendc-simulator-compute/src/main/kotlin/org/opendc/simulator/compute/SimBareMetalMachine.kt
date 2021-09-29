@@ -26,8 +26,8 @@ import org.opendc.simulator.compute.device.SimPsu
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerDriver
-import org.opendc.simulator.resources.*
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.FlowEngine
 
 /**
  * A simulated bare-metal machine that is able to run a single workload.
@@ -35,19 +35,19 @@ import org.opendc.simulator.resources.SimResourceInterpreter
  * A [SimBareMetalMachine] is a stateful object, and you should be careful when operating this object concurrently. For
  * example, the class expects only a single concurrent call to [run].
  *
- * @param interpreter The [SimResourceInterpreter] to drive the simulation.
+ * @param engine The [FlowEngine] to drive the simulation.
  * @param model The machine model to simulate.
  * @param powerDriver The power driver to use.
  * @param psu The power supply of the machine.
  * @param parent The parent simulation system.
  */
 public class SimBareMetalMachine(
-    interpreter: SimResourceInterpreter,
+    engine: FlowEngine,
     model: MachineModel,
     powerDriver: PowerDriver,
     public val psu: SimPsu = SimPsu(500.0, mapOf(1.0 to 1.0)),
-    parent: SimResourceSystem? = null,
-) : SimAbstractMachine(interpreter, parent, model) {
+    parent: FlowSystem? = null,
+) : SimAbstractMachine(engine, parent, model) {
     /**
      * The power draw of the machine onto the PSU.
      */
@@ -58,7 +58,7 @@ public class SimBareMetalMachine(
      * The processing units of the machine.
      */
     override val cpus: List<SimProcessingUnit> = model.cpus.map { cpu ->
-        Cpu(SimResourceSource(cpu.frequency, interpreter, this@SimBareMetalMachine), cpu)
+        Cpu(FlowSink(engine, cpu.frequency, this@SimBareMetalMachine), cpu)
     }
 
     /**
@@ -78,9 +78,9 @@ public class SimBareMetalMachine(
      * A [SimProcessingUnit] of a bare-metal machine.
      */
     private class Cpu(
-        private val source: SimResourceSource,
+        private val source: FlowSink,
         override val model: ProcessingUnit
-    ) : SimProcessingUnit, SimResourceProvider by source {
+    ) : SimProcessingUnit, FlowConsumer by source {
         override var capacity: Double
             get() = source.capacity
             set(value) {

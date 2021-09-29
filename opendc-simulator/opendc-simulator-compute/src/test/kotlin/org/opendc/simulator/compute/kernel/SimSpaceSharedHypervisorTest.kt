@@ -40,7 +40,7 @@ import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 
 /**
  * A test suite for the [SimSpaceSharedHypervisor].
@@ -74,11 +74,11 @@ internal class SimSpaceSharedHypervisorTest {
                 ),
             )
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock), machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+            FlowEngine(coroutineContext, clock), machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimSpaceSharedHypervisor(interpreter)
+        val hypervisor = SimSpaceSharedHypervisor(engine)
 
         launch { machine.run(hypervisor) }
         val vm = hypervisor.createMachine(machineModel)
@@ -98,11 +98,11 @@ internal class SimSpaceSharedHypervisorTest {
     fun testRuntimeWorkload() = runBlockingSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimRuntimeWorkload(duration)
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+            engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimSpaceSharedHypervisor(interpreter)
+        val hypervisor = SimSpaceSharedHypervisor(engine)
 
         launch { machine.run(hypervisor) }
         yield()
@@ -121,11 +121,11 @@ internal class SimSpaceSharedHypervisorTest {
     fun testFlopsWorkload() = runBlockingSimulation {
         val duration = 5 * 60L * 1000
         val workload = SimFlopsWorkload((duration * 3.2).toLong(), 1.0)
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+            engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimSpaceSharedHypervisor(interpreter)
+        val hypervisor = SimSpaceSharedHypervisor(engine)
 
         launch { machine.run(hypervisor) }
         yield()
@@ -142,11 +142,11 @@ internal class SimSpaceSharedHypervisorTest {
     @Test
     fun testTwoWorkloads() = runBlockingSimulation {
         val duration = 5 * 60L * 1000
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+            engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimSpaceSharedHypervisor(interpreter)
+        val hypervisor = SimSpaceSharedHypervisor(engine)
 
         launch { machine.run(hypervisor) }
         yield()
@@ -170,11 +170,9 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testConcurrentWorkloadFails() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-        val hypervisor = SimSpaceSharedHypervisor(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimSpaceSharedHypervisor(engine)
 
         launch { machine.run(hypervisor) }
         yield()
@@ -194,7 +192,7 @@ internal class SimSpaceSharedHypervisorTest {
      */
     @Test
     fun testConcurrentWorkloadSucceeds() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val interpreter = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
         )

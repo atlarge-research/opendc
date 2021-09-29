@@ -40,7 +40,7 @@ import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 
 /**
  * Test suite for the [SimHypervisor] class.
@@ -94,7 +94,7 @@ internal class SimHypervisorTest {
                 ),
             )
 
-        val platform = SimResourceInterpreter(coroutineContext, clock)
+        val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
         val hypervisor = SimFairShareHypervisor(platform, scalingGovernor = PerformanceScalingGovernor(), listener = listener)
 
@@ -163,7 +163,7 @@ internal class SimHypervisorTest {
                 )
             )
 
-        val platform = SimResourceInterpreter(coroutineContext, clock)
+        val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -204,7 +204,7 @@ internal class SimHypervisorTest {
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
 
-        val platform = SimResourceInterpreter(coroutineContext, clock)
+        val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -234,7 +234,7 @@ internal class SimHypervisorTest {
         )
         val interferenceModel = VmInterferenceModel(groups)
 
-        val platform = SimResourceInterpreter(coroutineContext, clock)
+        val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )

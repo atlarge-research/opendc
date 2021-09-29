@@ -46,7 +46,7 @@ public class PStatePowerDriver(states: Map<Double, PowerModel>) : PowerDriver {
 
             for (cpu in cpus) {
                 targetFreq = max(cpu.capacity, targetFreq)
-                totalSpeed += cpu.speed
+                totalSpeed += cpu.rate
             }
 
             val maxFreq = states.lastKey()

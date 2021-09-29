@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.network
 
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceProvider
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowSource
 
 /**
  * A network port allows network devices to be connected to network through links.
@@ -78,14 +78,14 @@ public abstract class SimNetworkPort {
     }
 
     /**
-     * Create a [SimResourceConsumer] which generates the outgoing traffic of this port.
+     * Create a [FlowSource] which generates the outgoing traffic of this port.
      */
-    protected abstract fun createConsumer(): SimResourceConsumer
+    protected abstract fun createConsumer(): FlowSource
 
     /**
-     * The [SimResourceProvider] which processes the ingoing traffic of this port.
+     * The [FlowConsumer] which processes the ingoing traffic of this port.
      */
-    protected abstract val provider: SimResourceProvider
+    protected abstract val provider: FlowConsumer
 
     override fun toString(): String = "SimNetworkPort[isConnected=$isConnected]"
 }

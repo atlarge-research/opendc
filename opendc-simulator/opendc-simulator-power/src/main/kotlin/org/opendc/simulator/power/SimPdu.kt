@@ -22,46 +22,48 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.resources.*
+import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.mux.FlowMultiplexer
+import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
 /**
  * A model of a Power Distribution Unit (PDU).
  *
- * @param interpreter The underlying [SimResourceInterpreter] to drive the simulation under the hood.
+ * @param engine The underlying [FlowEngine] to drive the simulation under the hood.
  * @param idlePower The idle power consumption of the PDU independent of the load on the PDU.
  * @param lossCoefficient The coefficient for the power loss of the PDU proportional to the square load.
  */
 public class SimPdu(
-    interpreter: SimResourceInterpreter,
+    engine: FlowEngine,
     private val idlePower: Double = 0.0,
     private val lossCoefficient: Double = 0.0,
 ) : SimPowerInlet() {
     /**
-     * The [SimResourceSwitch] that distributes the electricity over the PDU outlets.
+     * The [FlowMultiplexer] that distributes the electricity over the PDU outlets.
      */
-    private val switch = SimResourceSwitchMaxMin(interpreter)
+    private val mux = MaxMinFlowMultiplexer(engine)
 
     /**
-     * The [SimResourceForwarder] that represents the input of the PDU.
+     * The [FlowForwarder] that represents the input of the PDU.
      */
-    private val forwarder = SimResourceForwarder()
+    private val forwarder = FlowForwarder(engine)
 
     /**
      * Create a new PDU outlet.
      */
-    public fun newOutlet(): Outlet = Outlet(switch, switch.newOutput())
+    public fun newOutlet(): Outlet = Outlet(mux, mux.newInput())
 
     init {
-        switch.addInput(forwarder)
+        mux.addOutput(forwarder)
     }
 
-    override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer by forwarder {
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
-            val duration = forwarder.onNext(ctx, now, delta)
-            val loss = computePowerLoss(ctx.demand)
-            val newLimit = ctx.demand + loss
+    override fun createConsumer(): FlowSource = object : FlowSource by forwarder {
+        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            val duration = forwarder.onPull(conn, now, delta)
+            val loss = computePowerLoss(conn.demand)
+            val newLimit = conn.demand + loss
 
-            ctx.push(newLimit)
+            conn.push(newLimit)
             return duration
         }
 
@@ -81,7 +83,7 @@ public class SimPdu(
     /**
      * A PDU outlet.
      */
-    public class Outlet(private val switch: SimResourceSwitch, private val provider: SimResourceProvider) : SimPowerOutlet(), AutoCloseable {
+    public class Outlet(private val switch: FlowMultiplexer, private val provider: FlowConsumer) : SimPowerOutlet(), AutoCloseable {
         override fun onConnect(inlet: SimPowerInlet) {
             provider.startConsumer(inlet.createConsumer())
         }
@@ -94,7 +96,7 @@ public class SimPdu(
          * Remove the outlet from the PDU.
          */
         override fun close() {
-            switch.removeOutput(provider)
+            switch.removeInput(provider)
         }
 
         override fun toString(): String = "SimPdu.Outlet"

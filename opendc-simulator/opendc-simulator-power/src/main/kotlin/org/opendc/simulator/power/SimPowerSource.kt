@@ -22,25 +22,25 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSource
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSink
 
 /**
  * A [SimPowerOutlet] that represents a source of electricity.
  *
- * @param interpreter The underlying [SimResourceInterpreter] to drive the simulation under the hood.
+ * @param engine The underlying [FlowEngine] to drive the simulation under the hood.
  */
-public class SimPowerSource(interpreter: SimResourceInterpreter, public val capacity: Double) : SimPowerOutlet() {
+public class SimPowerSource(engine: FlowEngine, public val capacity: Double) : SimPowerOutlet() {
     /**
      * The resource source that drives this power source.
      */
-    private val source = SimResourceSource(capacity, interpreter)
+    private val source = FlowSink(engine, capacity)
 
     /**
      * The power draw at this instant.
      */
     public val powerDraw: Double
-        get() = source.speed
+        get() = source.rate
 
     override fun onConnect(inlet: SimPowerInlet) {
         source.startConsumer(inlet.createConsumer())

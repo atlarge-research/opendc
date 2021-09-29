@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.resources.SimResourceProvider
+import org.opendc.simulator.flow.FlowConsumer
 
 /**
  * A firmware interface to a storage device.
@@ -41,10 +41,10 @@ public interface SimStorageInterface {
     /**
      * The resource provider for the read operations of the storage device.
      */
-    public val read: SimResourceProvider
+    public val read: FlowConsumer
 
     /**
      * The resource consumer for the write operation of the storage device.
      */
-    public val write: SimResourceProvider
+    public val write: FlowConsumer
 }

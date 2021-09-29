@@ -34,10 +34,10 @@ import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.compute.workload.SimWorkloadLifecycle
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.source.FixedFlowSource
 import org.opendc.simulator.network.SimNetworkSink
 import org.opendc.simulator.power.SimPowerSource
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
 
 /**
  * Test suite for the [SimBareMetalMachine] class.
@@ -60,7 +60,7 @@ class SimMachineTest {
     @Test
     fun testFlopsWorkload() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            FlowEngine(coroutineContext, clock),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -83,7 +83,7 @@ class SimMachineTest {
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            FlowEngine(coroutineContext, clock),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -100,13 +100,13 @@ class SimMachineTest {
 
     @Test
     fun testPower() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter,
+            engine,
             machineModel,
             SimplePowerDriver(LinearPowerModel(100.0, 50.0))
         )
-        val source = SimPowerSource(interpreter, capacity = 1000.0)
+        val source = SimPowerSource(engine, capacity = 1000.0)
         source.connect(machine.psu)
 
         try {
@@ -125,7 +125,7 @@ class SimMachineTest {
     @Test
     fun testCapacityClamp() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            FlowEngine(coroutineContext, clock),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -151,7 +151,7 @@ class SimMachineTest {
     @Test
     fun testMemory() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            FlowEngine(coroutineContext, clock),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -171,7 +171,7 @@ class SimMachineTest {
     @Test
     fun testMemoryUsage() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            FlowEngine(coroutineContext, clock),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -180,7 +180,7 @@ class SimMachineTest {
             machine.run(object : SimWorkload {
                 override fun onStart(ctx: SimMachineContext) {
                     val lifecycle = SimWorkloadLifecycle(ctx)
-                    ctx.memory.startConsumer(lifecycle.waitFor(SimWorkConsumer(ctx.memory.capacity, utilization = 0.8)))
+                    ctx.memory.startConsumer(lifecycle.waitFor(FixedFlowSource(ctx.memory.capacity, utilization = 0.8)))
                 }
             })
 
@@ -192,22 +192,22 @@ class SimMachineTest {
 
     @Test
     fun testNetUsage() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter,
+            engine,
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
         val adapter = (machine.peripherals[0] as SimNetworkAdapter)
-        adapter.connect(SimNetworkSink(interpreter, adapter.bandwidth))
+        adapter.connect(SimNetworkSink(engine, adapter.bandwidth))
 
         try {
             machine.run(object : SimWorkload {
                 override fun onStart(ctx: SimMachineContext) {
                     val lifecycle = SimWorkloadLifecycle(ctx)
                     val iface = ctx.net[0]
-                    iface.tx.startConsumer(lifecycle.waitFor(SimWorkConsumer(iface.bandwidth, utilization = 0.8)))
+                    iface.tx.startConsumer(lifecycle.waitFor(FixedFlowSource(iface.bandwidth, utilization = 0.8)))
                 }
             })
 
@@ -219,9 +219,9 @@ class SimMachineTest {
 
     @Test
     fun testDiskReadUsage() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter,
+            engine,
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -231,7 +231,7 @@ class SimMachineTest {
                 override fun onStart(ctx: SimMachineContext) {
                     val lifecycle = SimWorkloadLifecycle(ctx)
                     val disk = ctx.storage[0]
-                    disk.read.startConsumer(lifecycle.waitFor(SimWorkConsumer(disk.read.capacity, utilization = 0.8)))
+                    disk.read.startConsumer(lifecycle.waitFor(FixedFlowSource(disk.read.capacity, utilization = 0.8)))
                 }
             })
 
@@ -243,9 +243,9 @@ class SimMachineTest {
 
     @Test
     fun testDiskWriteUsage() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
-            interpreter,
+            engine,
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -255,7 +255,7 @@ class SimMachineTest {
                 override fun onStart(ctx: SimMachineContext) {
                     val lifecycle = SimWorkloadLifecycle(ctx)
                     val disk = ctx.storage[0]
-                    disk.write.startConsumer(lifecycle.waitFor(SimWorkConsumer(disk.write.capacity, utilization = 0.8)))
+                    disk.write.startConsumer(lifecycle.waitFor(FixedFlowSource(disk.write.capacity, utilization = 0.8)))
                 }
             })
 
@@ -268,7 +268,7 @@ class SimMachineTest {
     @Test
     fun testCancellation() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            FlowEngine(coroutineContext, clock),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -290,7 +290,7 @@ class SimMachineTest {
     @Test
     fun testConcurrentRuns() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            FlowEngine(coroutineContext, clock),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
@@ -313,7 +313,7 @@ class SimMachineTest {
     @Test
     fun testClose() = runBlockingSimulation {
         val machine = SimBareMetalMachine(
-            SimResourceInterpreter(coroutineContext, clock),
+            FlowEngine(coroutineContext, clock),
             machineModel,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )

@@ -41,7 +41,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.HOST_ID
 import org.opendc.telemetry.compute.table.HostData
@@ -87,14 +87,14 @@ internal class SimHostTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val virtDriver = SimHost(
             uid = hostId,
             name = "test",
             model = machineModel,
             meta = emptyMap(),
             coroutineContext,
-            interpreter,
+            engine,
             meterProvider,
             SimFairShareHypervisorProvider()
         )
@@ -199,14 +199,14 @@ internal class SimHostTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val host = SimHost(
             uid = hostId,
             name = "test",
             model = machineModel,
             meta = emptyMap(),
             coroutineContext,
-            interpreter,
+            engine,
             meterProvider,
             SimFairShareHypervisorProvider()
         )

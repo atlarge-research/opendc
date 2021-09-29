@@ -36,7 +36,7 @@ import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 import org.opendc.telemetry.compute.*
 import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Clock
@@ -73,9 +73,9 @@ public class ComputeWorkloadRunner(
     private val _metricProducers = mutableListOf<MetricProducer>()
 
     /**
-     * The [SimResourceInterpreter] to simulate the hosts.
+     * The [FlowEngine] to simulate the hosts.
      */
-    private val interpreter = SimResourceInterpreter(context, clock)
+    private val engine = FlowEngine(context, clock)
 
     /**
      * The hosts that belong to this class.
@@ -89,7 +89,7 @@ public class ComputeWorkloadRunner(
     }
 
     /**
-     * Run a simulation of the [ComputeService] by replaying the workload trace given by [trace].
+     * Converge a simulation of the [ComputeService] by replaying the workload trace given by [trace].
      */
     public suspend fun run(trace: List<VirtualMachine>, seed: Long) {
         val random = Random(seed)
@@ -178,7 +178,7 @@ public class ComputeWorkloadRunner(
             spec.model,
             spec.meta,
             context,
-            interpreter,
+            engine,
             meterProvider,
             spec.hypervisor,
             powerDriver = spec.powerDriver,

@@ -75,7 +75,7 @@ internal class HostFaultInjectorImpl(
     }
 
     /**
-     * Run the injection process.
+     * Converge the injection process.
      */
     private suspend fun runInjector() {
         while (true) {

@@ -55,7 +55,7 @@ internal class PStatePowerDriverTest {
         val cpu = mockk<SimProcessingUnit>(relaxUnitFun = true)
 
         every { cpu.capacity } returns 3200.0
-        every { cpu.speed } returns 1200.0
+        every { cpu.rate } returns 1200.0
 
         val driver = PStatePowerDriver(
             sortedMapOf(
@@ -77,10 +77,10 @@ internal class PStatePowerDriverTest {
         val cpus = listOf(cpu, cpu)
 
         every { cpus[0].capacity } returns 1000.0
-        every { cpus[0].speed } returns 1200.0
+        every { cpus[0].rate } returns 1200.0
 
         every { cpus[1].capacity } returns 3500.0
-        every { cpus[1].speed } returns 1200.0
+        every { cpus[1].rate } returns 1200.0
 
         val driver = PStatePowerDriver(
             sortedMapOf(
@@ -112,11 +112,11 @@ internal class PStatePowerDriverTest {
 
         val logic = driver.createLogic(machine, listOf(cpu))
 
-        every { cpu.speed } returns 1400.0
+        every { cpu.rate } returns 1400.0
         every { cpu.capacity } returns 1400.0
         assertEquals(150.0, logic.computePower())
 
-        every { cpu.speed } returns 1400.0
+        every { cpu.rate } returns 1400.0
         every { cpu.capacity } returns 4000.0
         assertEquals(235.0, logic.computePower())
     }

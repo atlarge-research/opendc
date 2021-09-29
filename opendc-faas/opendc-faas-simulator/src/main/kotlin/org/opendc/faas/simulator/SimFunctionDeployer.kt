@@ -36,7 +36,7 @@ import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
 import java.util.ArrayDeque
 import kotlin.coroutines.Continuation
@@ -74,7 +74,7 @@ public class SimFunctionDeployer(
          * The machine that will execute the workloads.
          */
         public val machine: SimMachine = SimBareMetalMachine(
-            SimResourceInterpreter(scope.coroutineContext, clock),
+            FlowEngine(scope.coroutineContext, clock),
             model,
             SimplePowerDriver(ConstantPowerModel(0.0))
         )

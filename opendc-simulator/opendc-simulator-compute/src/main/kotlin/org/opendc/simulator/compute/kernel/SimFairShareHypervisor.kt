@@ -28,39 +28,39 @@ import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSwitch
-import org.opendc.simulator.resources.SimResourceSwitchMaxMin
-import org.opendc.simulator.resources.SimResourceSystem
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSystem
+import org.opendc.simulator.flow.mux.FlowMultiplexer
+import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
 /**
  * A [SimHypervisor] that distributes the computing requirements of multiple [SimWorkload]s on a single [SimMachine]
  * concurrently using weighted fair sharing.
  *
- * @param interpreter The interpreter to manage the machine's resources.
+ * @param engine The [FlowEngine] to manage the machine's resources.
  * @param parent The parent simulation system.
  * @param scalingGovernor The CPU frequency scaling governor to use for the hypervisor.
  * @param interferenceDomain The resource interference domain to which the hypervisor belongs.
  * @param listener The hypervisor listener to use.
  */
 public class SimFairShareHypervisor(
-    private val interpreter: SimResourceInterpreter,
-    private val parent: SimResourceSystem? = null,
+    engine: FlowEngine,
+    private val parent: FlowSystem? = null,
     scalingGovernor: ScalingGovernor? = null,
     interferenceDomain: VmInterferenceDomain? = null,
     private val listener: SimHypervisor.Listener? = null
-) : SimAbstractHypervisor(interpreter, scalingGovernor, interferenceDomain) {
+) : SimAbstractHypervisor(engine, scalingGovernor, interferenceDomain) {
 
-    override fun canFit(model: MachineModel, switch: SimResourceSwitch): Boolean = true
+    override fun canFit(model: MachineModel, switch: FlowMultiplexer): Boolean = true
 
-    override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch {
+    override fun createMultiplexer(ctx: SimMachineContext): FlowMultiplexer {
         return SwitchSystem(ctx).switch
     }
 
-    private inner class SwitchSystem(private val ctx: SimMachineContext) : SimResourceSystem {
-        val switch = SimResourceSwitchMaxMin(interpreter, this, interferenceDomain)
+    private inner class SwitchSystem(private val ctx: SimMachineContext) : FlowSystem {
+        val switch = MaxMinFlowMultiplexer(engine, this, interferenceDomain)
 
-        override val parent: SimResourceSystem? = this@SimFairShareHypervisor.parent
+        override val parent: FlowSystem? = this@SimFairShareHypervisor.parent
 
         private var lastCpuUsage = 0.0
         private var lastCpuDemand = 0.0
@@ -87,8 +87,8 @@ public class SimFairShareHypervisor(
             }
             lastReport = timestamp
 
-            lastCpuDemand = switch.inputs.sumOf { it.demand }
-            lastCpuUsage = switch.inputs.sumOf { it.speed }
+            lastCpuDemand = switch.outputs.sumOf { it.demand }
+            lastCpuUsage = switch.outputs.sumOf { it.rate }
             lastDemand = counters.demand
             lastActual = counters.actual
             lastOvercommit = counters.overcommit

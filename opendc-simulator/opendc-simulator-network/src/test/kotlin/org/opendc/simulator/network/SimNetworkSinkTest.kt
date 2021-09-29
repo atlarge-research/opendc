@@ -31,8 +31,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.*
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.source.FixedFlowSource
 
 /**
  * Test suite for the [SimNetworkSink] class.
@@ -40,8 +40,8 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 class SimNetworkSinkTest {
     @Test
     fun testInitialState() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
 
         assertFalse(sink.isConnected)
         assertNull(sink.link)
@@ -50,8 +50,8 @@ class SimNetworkSinkTest {
 
     @Test
     fun testDisconnectIdempotent() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
 
         assertDoesNotThrow { sink.disconnect() }
         assertFalse(sink.isConnected)
@@ -59,8 +59,8 @@ class SimNetworkSinkTest {
 
     @Test
     fun testConnectCircular() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
 
         assertThrows<IllegalArgumentException> {
             sink.connect(sink)
@@ -69,8 +69,8 @@ class SimNetworkSinkTest {
 
     @Test
     fun testConnectAlreadyConnectedTarget() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
         val source = mockk<SimNetworkPort>(relaxUnitFun = true)
         every { source.isConnected } returns true
 
@@ -81,9 +81,9 @@ class SimNetworkSinkTest {
 
     @Test
     fun testConnectAlreadyConnected() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
-        val source1 = Source(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
+        val source1 = Source(engine)
 
         val source2 = mockk<SimNetworkPort>(relaxUnitFun = true)
 
@@ -97,9 +97,9 @@ class SimNetworkSinkTest {
 
     @Test
     fun testConnect() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
-        val source = spyk(Source(interpreter))
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
+        val source = spyk(Source(engine))
         val consumer = source.consumer
 
         sink.connect(source)
@@ -108,14 +108,14 @@ class SimNetworkSinkTest {
         assertTrue(source.isConnected)
 
         verify { source.createConsumer() }
-        verify { consumer.onEvent(any(), SimResourceEvent.Start) }
+        verify { consumer.onEvent(any(), any(), FlowEvent.Start) }
     }
 
     @Test
     fun testDisconnect() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
-        val source = spyk(Source(interpreter))
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
+        val source = spyk(Source(engine))
         val consumer = source.consumer
 
         sink.connect(source)
@@ -124,14 +124,14 @@ class SimNetworkSinkTest {
         assertFalse(sink.isConnected)
         assertFalse(source.isConnected)
 
-        verify { consumer.onEvent(any(), SimResourceEvent.Exit) }
+        verify { consumer.onEvent(any(), any(), FlowEvent.Exit) }
     }
 
-    private class Source(interpreter: SimResourceInterpreter) : SimNetworkPort() {
-        val consumer = spyk(SimWorkConsumer(Double.POSITIVE_INFINITY, utilization = 0.8))
+    private class Source(engine: FlowEngine) : SimNetworkPort() {
+        val consumer = spyk(FixedFlowSource(Double.POSITIVE_INFINITY, utilization = 0.8))
 
-        public override fun createConsumer(): SimResourceConsumer = consumer
+        public override fun createConsumer(): FlowSource = consumer
 
-        override val provider: SimResourceProvider = SimResourceSource(0.0, interpreter)
+        override val provider: FlowConsumer = FlowSink(engine, 0.0)
     }
 }

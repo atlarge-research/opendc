@@ -28,17 +28,17 @@ import org.opendc.simulator.compute.kernel.cpufreq.ScalingPolicy
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.resources.*
-import org.opendc.simulator.resources.SimResourceSwitch
+import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.mux.FlowMultiplexer
 
 /**
  * Abstract implementation of the [SimHypervisor] interface.
  *
- * @param interpreter The resource interpreter to use.
+ * @param engine The [FlowEngine] to drive the simulation.
  * @param scalingGovernor The scaling governor to use for scaling the CPU frequency of the underlying hardware.
  */
 public abstract class SimAbstractHypervisor(
-    private val interpreter: SimResourceInterpreter,
+    protected val engine: FlowEngine,
     private val scalingGovernor: ScalingGovernor? = null,
     protected val interferenceDomain: VmInterferenceDomain? = null
 ) : SimHypervisor {
@@ -50,7 +50,7 @@ public abstract class SimAbstractHypervisor(
     /**
      * The resource switch to use.
      */
-    private lateinit var switch: SimResourceSwitch
+    private lateinit var mux: FlowMultiplexer
 
     /**
      * The virtual machines running on this hypervisor.
@@ -62,8 +62,8 @@ public abstract class SimAbstractHypervisor(
     /**
      * The resource counters associated with the hypervisor.
      */
-    public override val counters: SimResourceCounters
-        get() = switch.counters
+    public override val counters: FlowCounters
+        get() = mux.counters
 
     /**
      * The scaling governors attached to the physical CPUs backing this hypervisor.
@@ -71,14 +71,14 @@ public abstract class SimAbstractHypervisor(
     private val governors = mutableListOf<ScalingGovernor.Logic>()
 
     /**
-     * Construct the [SimResourceSwitch] implementation that performs the actual scheduling of the CPUs.
+     * Construct the [FlowMultiplexer] implementation that performs the actual scheduling of the CPUs.
      */
-    public abstract fun createSwitch(ctx: SimMachineContext): SimResourceSwitch
+    public abstract fun createMultiplexer(ctx: SimMachineContext): FlowMultiplexer
 
     /**
      * Check whether the specified machine model fits on this hypervisor.
      */
-    public abstract fun canFit(model: MachineModel, switch: SimResourceSwitch): Boolean
+    public abstract fun canFit(model: MachineModel, switch: FlowMultiplexer): Boolean
 
     /**
      * Trigger the governors to recompute the scaling limits.
@@ -91,7 +91,7 @@ public abstract class SimAbstractHypervisor(
 
     /* SimHypervisor */
     override fun canFit(model: MachineModel): Boolean {
-        return canFit(model, switch)
+        return canFit(model, mux)
     }
 
     override fun createMachine(model: MachineModel, interferenceId: String?): SimMachine {
@@ -104,7 +104,7 @@ public abstract class SimAbstractHypervisor(
     /* SimWorkload */
     override fun onStart(ctx: SimMachineContext) {
         context = ctx
-        switch = createSwitch(ctx)
+        mux = createMultiplexer(ctx)
 
         for (cpu in ctx.cpus) {
             val governor = scalingGovernor?.createLogic(ScalingPolicyImpl(cpu))
@@ -113,7 +113,7 @@ public abstract class SimAbstractHypervisor(
                 governor.onStart()
             }
 
-            switch.addInput(cpu)
+            mux.addOutput(cpu)
         }
     }
 
@@ -122,7 +122,7 @@ public abstract class SimAbstractHypervisor(
      *
      * @param model The machine model of the virtual machine.
      */
-    private inner class VirtualMachine(model: MachineModel, interferenceId: String? = null) : SimAbstractMachine(interpreter, parent = null, model) {
+    private inner class VirtualMachine(model: MachineModel, interferenceId: String? = null) : SimAbstractMachine(engine, parent = null, model) {
         /**
          * The interference key of this virtual machine.
          */
@@ -131,7 +131,7 @@ public abstract class SimAbstractHypervisor(
         /**
          * The vCPUs of the machine.
          */
-        override val cpus = model.cpus.map { VCpu(switch, switch.newOutput(interferenceKey), it) }
+        override val cpus = model.cpus.map { VCpu(mux, mux.newInput(interferenceKey), it) }
 
         override fun close() {
             super.close()
@@ -153,10 +153,10 @@ public abstract class SimAbstractHypervisor(
      * A [SimProcessingUnit] of a virtual machine.
      */
     private class VCpu(
-        private val switch: SimResourceSwitch,
-        private val source: SimResourceProvider,
+        private val switch: FlowMultiplexer,
+        private val source: FlowConsumer,
         override val model: ProcessingUnit
-    ) : SimProcessingUnit, SimResourceProvider by source {
+    ) : SimProcessingUnit, FlowConsumer by source {
         override var capacity: Double
             get() = source.capacity
             set(_) {
@@ -169,7 +169,7 @@ public abstract class SimAbstractHypervisor(
          * Close the CPU
          */
         fun close() {
-            switch.removeOutput(source)
+            switch.removeInput(source)
         }
     }
 

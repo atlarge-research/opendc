@@ -22,8 +22,8 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceProvider
+import org.opendc.simulator.flow.FlowConsumer
+import org.opendc.simulator.flow.FlowSource
 
 /**
  * A firmware interface to a network adapter.
@@ -42,10 +42,10 @@ public interface SimNetworkInterface {
     /**
      * The resource provider for the transmit channel of the network interface.
      */
-    public val tx: SimResourceProvider
+    public val tx: FlowConsumer
 
     /**
      * The resource consumer for the receive channel of the network interface.
      */
-    public val rx: SimResourceConsumer
+    public val rx: FlowSource
 }

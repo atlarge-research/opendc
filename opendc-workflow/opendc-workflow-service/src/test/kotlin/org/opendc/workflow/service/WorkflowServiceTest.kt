@@ -42,7 +42,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.trace.Trace
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
@@ -70,7 +70,7 @@ internal class WorkflowServiceTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val interpreter = FlowEngine(coroutineContext, clock)
         val machineModel = createMachineModel()
         val hvProvider = SimSpaceSharedHypervisorProvider()
         val hosts = List(4) { id ->

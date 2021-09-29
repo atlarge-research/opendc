@@ -23,10 +23,10 @@
 package org.opendc.simulator.compute.device
 
 import org.opendc.simulator.compute.power.PowerDriver
+import org.opendc.simulator.flow.FlowConnection
+import org.opendc.simulator.flow.FlowEvent
+import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.power.SimPowerInlet
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceContext
-import org.opendc.simulator.resources.SimResourceEvent
 import java.util.*
 
 /**
@@ -54,7 +54,7 @@ public class SimPsu(
     /**
      * The consumer context.
      */
-    private var _ctx: SimResourceContext? = null
+    private var _ctx: FlowConnection? = null
 
     /**
      * The driver that is connected to the PSU.
@@ -69,7 +69,7 @@ public class SimPsu(
      * Update the power draw of the PSU.
      */
     public fun update() {
-        _ctx?.interrupt()
+        _ctx?.pull()
     }
 
     /**
@@ -81,18 +81,18 @@ public class SimPsu(
         update()
     }
 
-    override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer {
-        override fun onNext(ctx: SimResourceContext, now: Long, delta: Long): Long {
+    override fun createConsumer(): FlowSource = object : FlowSource {
+        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
             val powerDraw = computePowerDraw(_driver?.computePower() ?: 0.0)
-            ctx.push(powerDraw)
+            conn.push(powerDraw)
             return Long.MAX_VALUE
         }
 
-        override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+        override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
             when (event) {
-                SimResourceEvent.Start -> _ctx = ctx
-                SimResourceEvent.Run -> _powerDraw = ctx.speed
-                SimResourceEvent.Exit -> _ctx = null
+                FlowEvent.Start -> _ctx = conn
+                FlowEvent.Converge -> _powerDraw = conn.rate
+                FlowEvent.Exit -> _ctx = null
                 else -> {}
             }
         }
