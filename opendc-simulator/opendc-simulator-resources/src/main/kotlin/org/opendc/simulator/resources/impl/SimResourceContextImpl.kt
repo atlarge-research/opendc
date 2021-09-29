@@ -60,9 +60,7 @@ internal class SimResourceContextImpl(
     /**
      * A flag to indicate the state of the context.
      */
-    override val state: SimResourceState
-        get() = _state
-    private var _state = SimResourceState.Pending
+    private var _state = State.Pending
 
     /**
      * The current processing speed of the resource.
@@ -106,21 +104,21 @@ internal class SimResourceContextImpl(
     private val _timers: ArrayDeque<SimResourceInterpreterImpl.Timer> = ArrayDeque()
 
     override fun start() {
-        check(_state == SimResourceState.Pending) { "Consumer is already started" }
+        check(_state == State.Pending) { "Consumer is already started" }
         interpreter.batch {
             consumer.onEvent(this, SimResourceEvent.Start)
-            _state = SimResourceState.Active
+            _state = State.Active
             interrupt()
         }
     }
 
     override fun close() {
-        if (_state == SimResourceState.Stopped) {
+        if (_state == State.Stopped) {
             return
         }
 
         interpreter.batch {
-            _state = SimResourceState.Stopped
+            _state = State.Stopped
             if (!_updateActive) {
                 val now = clock.millis()
                 val delta = max(0, now - _lastUpdate)
@@ -134,7 +132,7 @@ internal class SimResourceContextImpl(
     }
 
     override fun interrupt() {
-        if (_state == SimResourceState.Stopped) {
+        if (_state == State.Stopped) {
             return
         }
 
@@ -143,7 +141,7 @@ internal class SimResourceContextImpl(
     }
 
     override fun invalidate() {
-        if (_state == SimResourceState.Stopped) {
+        if (_state == State.Stopped) {
             return
         }
 
@@ -152,7 +150,7 @@ internal class SimResourceContextImpl(
     }
 
     override fun flush() {
-        if (_state == SimResourceState.Stopped) {
+        if (_state == State.Stopped) {
             return
         }
 
@@ -186,7 +184,7 @@ internal class SimResourceContextImpl(
      */
     fun doUpdate(now: Long) {
         val oldState = _state
-        if (oldState != SimResourceState.Active) {
+        if (oldState != State.Active) {
             return
         }
 
@@ -206,14 +204,14 @@ internal class SimResourceContextImpl(
 
             // Check whether the state has changed after [consumer.onNext]
             when (_state) {
-                SimResourceState.Active -> {
+                State.Active -> {
                     logic.onConsume(this, now, delta, _limit, duration)
 
                     // Schedule an update at the new deadline
                     scheduleUpdate(now, newDeadline)
                 }
-                SimResourceState.Stopped -> doStop(now, delta)
-                SimResourceState.Pending -> throw IllegalStateException("Illegal transition to pending state")
+                State.Stopped -> doStop(now, delta)
+                State.Pending -> throw IllegalStateException("Illegal transition to pending state")
             }
 
             // Note: pending limit might be changed by [logic.onConsume], so re-fetch the value
@@ -262,7 +260,7 @@ internal class SimResourceContextImpl(
         _lastConvergence = timestamp
 
         try {
-            if (_state == SimResourceState.Active) {
+            if (_state == State.Active) {
                 consumer.onEvent(this, SimResourceEvent.Run)
             }
 
@@ -308,7 +306,7 @@ internal class SimResourceContextImpl(
      */
     private fun onCapacityChange() {
         // Do not inform the consumer if it has not been started yet
-        if (state != SimResourceState.Active) {
+        if (_state != State.Active) {
             return
         }
 
@@ -335,6 +333,26 @@ internal class SimResourceContextImpl(
         if (target != Long.MAX_VALUE && (timers.isEmpty() || target < timers.peek().target)) {
             timers.addFirst(interpreter.scheduleDelayed(now, this, target))
         }
+    }
+
+    /**
+     * The state of a resource context.
+     */
+    private enum class State {
+        /**
+         * The resource context is pending and the resource is waiting to be consumed.
+         */
+        Pending,
+
+        /**
+         * The resource context is active and the resource is currently being consumed.
+         */
+        Active,
+
+        /**
+         * The resource context is stopped and the resource cannot be consumed anymore.
+         */
+        Stopped
     }
 
     /**

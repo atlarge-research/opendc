@@ -29,11 +29,6 @@ package org.opendc.simulator.resources
  */
 public interface SimResourceControllableContext : SimResourceContext {
     /**
-     * The state of the resource context.
-     */
-    public val state: SimResourceState
-
-    /**
      * The capacity of the resource.
      */
     public override var capacity: Double
