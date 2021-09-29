@@ -42,6 +42,11 @@ public interface SimResourceCounters {
     public val overcommit: Double
 
     /**
+     * The amount of work lost due to interference.
+     */
+    public val interference: Double
+
+    /**
      * Reset the resource counters.
      */
     public fun reset()

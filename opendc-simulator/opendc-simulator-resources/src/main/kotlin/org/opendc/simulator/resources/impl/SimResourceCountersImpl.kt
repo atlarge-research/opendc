@@ -31,12 +31,16 @@ internal class SimResourceCountersImpl : SimResourceCounters {
     override var demand: Double = 0.0
     override var actual: Double = 0.0
     override var overcommit: Double = 0.0
+    override var interference: Double = 0.0
 
     override fun reset() {
         demand = 0.0
         actual = 0.0
         overcommit = 0.0
+        interference = 0.0
     }
 
-    override fun toString(): String = "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
+    override fun toString(): String {
+        return "SimResourceCounters[demand=$demand,actual=$actual,overcommit=$overcommit,interference=$interference]"
+    }
 }

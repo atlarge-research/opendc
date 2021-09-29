@@ -70,7 +70,7 @@ public class SimNetworkSwitchVirtual(interpreter: SimResourceInterpreter) : SimN
 
         override fun close() {
             isClosed = true
-            _provider.close()
+            switch.removeOutput(_provider)
             _ports.remove(this)
         }
     }

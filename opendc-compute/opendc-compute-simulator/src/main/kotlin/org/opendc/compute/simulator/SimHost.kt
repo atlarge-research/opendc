@@ -47,7 +47,6 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.resources.SimResourceDistributorMaxMin
 import org.opendc.simulator.resources.SimResourceInterpreter
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -418,7 +417,7 @@ public class SimHost(
         val counters = hypervisor.counters
         val grantedWork = counters.actual
         val overcommittedWork = counters.overcommit
-        val interferedWork = (counters as? SimResourceDistributorMaxMin.Counters)?.interference ?: 0.0
+        val interferedWork = counters.interference
 
         _totalTime += (duration / 1000.0) * coreCount
         val activeTime = (grantedWork * d).roundToLong()

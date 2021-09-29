@@ -65,13 +65,8 @@ internal class SimResourceSwitchExclusiveTest {
         switch.addInput(forwarder)
 
         val provider = switch.newOutput()
-
-        try {
-            provider.consume(workload)
-            yield()
-        } finally {
-            provider.close()
-        }
+        provider.consume(workload)
+        yield()
 
         assertAll(
             { assertEquals(listOf(0.0, 28.0, 3200.0, 0.0, 183.0, 0.0), speed) { "Correct speed" } },
@@ -95,13 +90,9 @@ internal class SimResourceSwitchExclusiveTest {
         switch.addInput(source)
 
         val provider = switch.newOutput()
+        provider.consume(workload)
+        yield()
 
-        try {
-            provider.consume(workload)
-            yield()
-        } finally {
-            provider.close()
-        }
         assertEquals(duration, clock.millis()) { "Took enough time" }
     }
 
@@ -141,14 +132,9 @@ internal class SimResourceSwitchExclusiveTest {
         switch.addInput(source)
 
         val provider = switch.newOutput()
-
-        try {
-            provider.consume(workload)
-            yield()
-            provider.consume(workload)
-        } finally {
-            provider.close()
-        }
+        provider.consume(workload)
+        yield()
+        provider.consume(workload)
         assertEquals(duration * 2, clock.millis()) { "Took enough time" }
     }
 

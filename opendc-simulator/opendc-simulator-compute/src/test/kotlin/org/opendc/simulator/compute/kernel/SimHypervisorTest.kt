@@ -103,8 +103,10 @@ internal class SimHypervisorTest {
             println("Hypervisor finished")
         }
         yield()
+
         val vm = hypervisor.createMachine(model)
         vm.run(workloadA)
+
         yield()
         machine.close()
 

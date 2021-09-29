@@ -49,7 +49,7 @@ public class SimPdu(
     /**
      * Create a new PDU outlet.
      */
-    public fun newOutlet(): Outlet = Outlet(switch.newOutput())
+    public fun newOutlet(): Outlet = Outlet(switch, switch.newOutput())
 
     init {
         switch.addInput(forwarder)
@@ -81,7 +81,7 @@ public class SimPdu(
     /**
      * A PDU outlet.
      */
-    public class Outlet(private val provider: SimResourceCloseableProvider) : SimPowerOutlet(), AutoCloseable {
+    public class Outlet(private val switch: SimResourceSwitch, private val provider: SimResourceProvider) : SimPowerOutlet(), AutoCloseable {
         override fun onConnect(inlet: SimPowerInlet) {
             provider.startConsumer(inlet.createConsumer())
         }
@@ -94,7 +94,7 @@ public class SimPdu(
          * Remove the outlet from the PDU.
          */
         override fun close() {
-            provider.close()
+            switch.removeOutput(provider)
         }
 
         override fun toString(): String = "SimPdu.Outlet"

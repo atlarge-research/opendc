@@ -51,7 +51,7 @@ internal class SimResourceSwitchMaxMinTest {
             provider.consume(consumer)
             yield()
         } finally {
-            switch.close()
+            switch.clear()
         }
     }
 
@@ -81,7 +81,7 @@ internal class SimResourceSwitchMaxMinTest {
             provider.consume(workload)
             yield()
         } finally {
-            switch.close()
+            switch.clear()
         }
 
         assertAll(
@@ -133,7 +133,7 @@ internal class SimResourceSwitchMaxMinTest {
 
             yield()
         } finally {
-            switch.close()
+            switch.clear()
         }
         assertAll(
             { assertEquals(2073600.0, switch.counters.demand, "Requested work does not match") },
