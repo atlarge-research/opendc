@@ -26,7 +26,8 @@ import org.opendc.simulator.resources.impl.SimResourceCountersImpl
 import java.time.Clock
 
 /**
- * A [SimResourceFlow] that transforms the resource commands emitted by the resource commands to the resource provider.
+ * A [SimResourceConsumer] and [SimResourceProvider] that transforms the resource commands emitted by the resource
+ * commands to the resource provider.
  *
  * @param isCoupled A flag to indicate that the transformer will exit when the resource consumer exits.
  * @param transform The function to transform the received resource command.
@@ -34,7 +35,7 @@ import java.time.Clock
 public class SimResourceTransformer(
     private val isCoupled: Boolean = false,
     private val transform: (SimResourceContext, Long) -> Long
-) : SimResourceFlow, AutoCloseable {
+) : SimResourceConsumer, SimResourceProvider, AutoCloseable {
     /**
      * The delegate [SimResourceConsumer].
      */
