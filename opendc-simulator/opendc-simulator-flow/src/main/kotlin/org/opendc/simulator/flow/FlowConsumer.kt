@@ -82,22 +82,26 @@ public interface FlowConsumer {
  */
 public suspend fun FlowConsumer.consume(source: FlowSource) {
     return suspendCancellableCoroutine { cont ->
-        startConsumer(object : FlowSource by source {
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-                source.onEvent(conn, now, event)
-
-                if (event == FlowEvent.Exit && !cont.isCompleted) {
-                    cont.resume(Unit)
+        startConsumer(object : FlowSource {
+            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                return try {
+                    source.onPull(conn, now, delta)
+                } catch (cause: Throwable) {
+                    cont.resumeWithException(cause)
+                    throw cause
                 }
             }
 
-            override fun onFailure(conn: FlowConnection, cause: Throwable) {
+            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
                 try {
-                    source.onFailure(conn, cause)
+                    source.onEvent(conn, now, event)
+
+                    if (event == FlowEvent.Exit && !cont.isCompleted) {
+                        cont.resume(Unit)
+                    }
+                } catch (cause: Throwable) {
                     cont.resumeWithException(cause)
-                } catch (e: Throwable) {
-                    e.addSuppressed(cause)
-                    cont.resumeWithException(e)
+                    throw cause
                 }
             }
 

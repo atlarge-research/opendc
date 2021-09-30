@@ -28,7 +28,7 @@ import org.opendc.simulator.flow.FlowSource
 import kotlin.math.min
 
 /**
- * Helper class to expose an observable [speed] field describing the speed of the consumer.
+ * Helper class to expose an observable [rate] field describing the flow rate of the source.
  */
 public class FlowSourceRateAdapter(
     private val delegate: FlowSource,
@@ -37,7 +37,7 @@ public class FlowSourceRateAdapter(
     /**
      * The resource processing speed at this instant.
      */
-    public var speed: Double = 0.0
+    public var rate: Double = 0.0
         private set(value) {
             if (field != value) {
                 callback(value)
@@ -50,32 +50,36 @@ public class FlowSourceRateAdapter(
     }
 
     override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
-        return delegate.onPull(conn, now, delta)
-    }
-
-    override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-        val oldSpeed = speed
-
-        delegate.onEvent(conn, now, event)
-
-        when (event) {
-            FlowEvent.Converge -> speed = conn.rate
-            FlowEvent.Capacity -> {
-                // Check if the consumer interrupted the consumer and updated the resource consumption. If not, we might
-                // need to update the current speed.
-                if (oldSpeed == speed) {
-                    speed = min(conn.capacity, speed)
-                }
-            }
-            FlowEvent.Exit -> speed = 0.0
-            else -> {}
+        return try {
+            delegate.onPull(conn, now, delta)
+        } catch (cause: Throwable) {
+            rate = 0.0
+            throw cause
         }
     }
 
-    override fun onFailure(conn: FlowConnection, cause: Throwable) {
-        speed = 0.0
+    override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
+        val oldSpeed = rate
 
-        delegate.onFailure(conn, cause)
+        try {
+            delegate.onEvent(conn, now, event)
+
+            when (event) {
+                FlowEvent.Converge -> rate = conn.rate
+                FlowEvent.Capacity -> {
+                    // Check if the consumer interrupted the consumer and updated the resource consumption. If not, we might
+                    // need to update the current speed.
+                    if (oldSpeed == rate) {
+                        rate = min(conn.capacity, rate)
+                    }
+                }
+                FlowEvent.Exit -> rate = 0.0
+                else -> {}
+            }
+        } catch (cause: Throwable) {
+            rate = 0.0
+            throw cause
+        }
     }
 
     override fun toString(): String = "FlowSourceRateAdapter[delegate=$delegate]"

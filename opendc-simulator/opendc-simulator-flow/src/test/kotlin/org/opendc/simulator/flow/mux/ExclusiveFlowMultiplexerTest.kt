@@ -37,7 +37,7 @@ import org.opendc.simulator.flow.source.TraceFlowSource
 /**
  * Test suite for the [ForwardingFlowMultiplexer] class.
  */
-internal class SimResourceSwitchExclusiveTest {
+internal class ExclusiveFlowMultiplexerTest {
     /**
      * Test a trace workload.
      */

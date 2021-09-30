@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.flow.internal
 
+import mu.KotlinLogging
 import org.opendc.simulator.flow.*
 import java.util.ArrayDeque
 import kotlin.math.max
@@ -35,6 +36,11 @@ internal class FlowConsumerContextImpl(
     private val source: FlowSource,
     private val logic: FlowConsumerLogic
 ) : FlowConsumerContext {
+    /**
+     * The logging instance of this connection.
+     */
+    private val logger = KotlinLogging.logger {}
+
     /**
      * The capacity of the connection.
      */
@@ -131,7 +137,7 @@ internal class FlowConsumerContextImpl(
             if (!_isUpdateActive) {
                 val now = _clock.millis()
                 val delta = max(0, now - _lastPull)
-                doStop(now, delta)
+                doStopSource(now, delta)
 
                 // FIX: Make sure the context converges
                 pull()
@@ -231,7 +237,7 @@ internal class FlowConsumerContextImpl(
                         logic.onPush(this, now, pushDelta, demand)
                     }
                 }
-                State.Closed -> doStop(now, pushDelta)
+                State.Closed -> doStopSource(now, pushDelta)
                 State.Pending -> throw IllegalStateException("Illegal transition to pending state")
             }
 
@@ -246,7 +252,7 @@ internal class FlowConsumerContextImpl(
             // Schedule an update at the new deadline
             scheduleDelayed(now, deadline)
         } catch (cause: Throwable) {
-            doFail(now, pushDelta, cause)
+            doFailSource(now, pushDelta, cause)
         } finally {
             _isUpdateActive = false
         }
@@ -288,21 +294,21 @@ internal class FlowConsumerContextImpl(
 
             logic.onConverge(this, timestamp, delta)
         } catch (cause: Throwable) {
-            doFail(timestamp, max(0, timestamp - _lastPull), cause)
+            doFailSource(timestamp, max(0, timestamp - _lastPull), cause)
         }
     }
 
     override fun toString(): String = "FlowConsumerContextImpl[capacity=$capacity,rate=$_rate]"
 
     /**
-     * Stop the resource context.
+     * Stop the [FlowSource].
      */
-    private fun doStop(now: Long, delta: Long) {
+    private fun doStopSource(now: Long, delta: Long) {
         try {
             source.onEvent(this, now, FlowEvent.Exit)
-            logic.onFinish(this, now, delta)
+            logic.onFinish(this, now, delta, null)
         } catch (cause: Throwable) {
-            doFail(now, delta, cause)
+            doFailSource(now, delta, cause)
         } finally {
             _deadline = Long.MAX_VALUE
             _demand = 0.0
@@ -310,17 +316,15 @@ internal class FlowConsumerContextImpl(
     }
 
     /**
-     * Fail the resource consumer.
+     * Fail the [FlowSource].
      */
-    private fun doFail(now: Long, delta: Long, cause: Throwable) {
+    private fun doFailSource(now: Long, delta: Long, cause: Throwable) {
         try {
-            source.onFailure(this, cause)
+            logic.onFinish(this, now, delta, cause)
         } catch (e: Throwable) {
             e.addSuppressed(cause)
-            e.printStackTrace()
+            logger.error(e) { "Uncaught exception" }
         }
-
-        logic.onFinish(this, now, delta)
     }
 
     /**

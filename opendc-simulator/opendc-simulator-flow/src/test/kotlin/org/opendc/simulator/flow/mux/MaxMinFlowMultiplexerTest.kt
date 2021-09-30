@@ -37,7 +37,7 @@ import org.opendc.simulator.flow.source.TraceFlowSource
 /**
  * Test suite for the [FlowMultiplexer] implementations
  */
-internal class SimResourceSwitchMaxMinTest {
+internal class MaxMinFlowMultiplexerTest {
     @Test
     fun testSmoke() = runBlockingSimulation {
         val scheduler = FlowEngineImpl(coroutineContext, clock)

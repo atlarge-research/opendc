@@ -47,12 +47,4 @@ public interface FlowSource {
      * @param event The event that has occurred.
      */
     public fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {}
-
-    /**
-     * This method is invoked when the source throws an exception.
-     *
-     * @param conn The connection between the source and consumer.
-     * @param cause The cause of the failure.
-     */
-    public fun onFailure(conn: FlowConnection, cause: Throwable) {}
 }

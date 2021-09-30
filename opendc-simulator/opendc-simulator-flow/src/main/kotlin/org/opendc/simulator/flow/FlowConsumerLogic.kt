@@ -46,11 +46,12 @@ public interface FlowConsumerLogic {
     public fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {}
 
     /**
-     * This method is invoked when the [FlowSource] is completed.
+     * This method is invoked when the [FlowSource] completed or failed.
      *
      * @param ctx The context in which the provider runs.
      * @param now The virtual timestamp in milliseconds at which the provider finished.
      * @param delta The virtual duration between this call and the last call to [onPush] in milliseconds.
+     * @param cause The cause of the failure or `null` if the source completed.
      */
-    public fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long) {}
+    public fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {}
 }

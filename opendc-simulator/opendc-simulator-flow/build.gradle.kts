@@ -32,7 +32,8 @@ plugins {
 dependencies {
     api(platform(projects.opendcPlatform))
     api(libs.kotlinx.coroutines)
-    implementation(projects.opendcUtils)
+    implementation(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
+    testImplementation(libs.slf4j.simple)
 }

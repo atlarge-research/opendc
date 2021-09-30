@@ -46,7 +46,7 @@ public class FlowSink(
                 updateCounters(ctx, delta)
             }
 
-            override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long) {
+            override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {
                 updateCounters(ctx, delta)
                 cancel()
             }

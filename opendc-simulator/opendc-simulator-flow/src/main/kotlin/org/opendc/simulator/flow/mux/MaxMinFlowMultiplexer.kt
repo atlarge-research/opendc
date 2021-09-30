@@ -292,7 +292,7 @@ public class MaxMinFlowMultiplexer(
             parent?.onConverge(now)
         }
 
-        override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long) {
+        override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {
             doUpdateCounters(delta)
 
             limit = 0.0

@@ -23,7 +23,6 @@
 package org.opendc.simulator.flow
 
 import io.mockk.*
-import kotlinx.coroutines.*
 import org.junit.jupiter.api.*
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.internal.FlowConsumerContextImpl
@@ -101,35 +100,5 @@ class FlowConsumerContextTest {
         context.capacity = 4200.0
 
         verify(exactly = 0) { consumer.onEvent(any(), any(), FlowEvent.Capacity) }
-    }
-
-    @Test
-    fun testFailureNoInfiniteLoop() = runBlockingSimulation {
-        val engine = FlowEngineImpl(coroutineContext, clock)
-
-        val consumer = spyk(object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
-                conn.close()
-                return Long.MAX_VALUE
-            }
-
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-                if (event == FlowEvent.Exit) throw IllegalStateException("onEvent")
-            }
-
-            override fun onFailure(conn: FlowConnection, cause: Throwable) {
-                throw IllegalStateException("onFailure")
-            }
-        })
-
-        val logic = object : FlowConsumerLogic {}
-
-        val context = FlowConsumerContextImpl(engine, consumer, logic)
-
-        context.start()
-
-        delay(1)
-
-        verify(exactly = 1) { consumer.onFailure(any(), any()) }
     }
 }

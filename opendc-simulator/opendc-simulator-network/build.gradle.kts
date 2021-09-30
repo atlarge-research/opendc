@@ -32,4 +32,6 @@ dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcSimulator.opendcSimulatorFlow)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
+
+    testImplementation(libs.slf4j.simple)
 }

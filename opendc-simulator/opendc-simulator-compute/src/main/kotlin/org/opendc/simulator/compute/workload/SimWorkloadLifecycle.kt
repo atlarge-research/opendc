@@ -41,22 +41,26 @@ public class SimWorkloadLifecycle(private val ctx: SimMachineContext) {
      */
     public fun waitFor(consumer: FlowSource): FlowSource {
         waiting.add(consumer)
-        return object : FlowSource by consumer {
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-                try {
-                    consumer.onEvent(conn, now, event)
-                } finally {
-                    if (event == FlowEvent.Exit) {
-                        complete(consumer)
-                    }
+        return object : FlowSource {
+            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                return try {
+                    consumer.onPull(conn, now, delta)
+                } catch (cause: Throwable) {
+                    complete(consumer)
+                    throw cause
                 }
             }
 
-            override fun onFailure(conn: FlowConnection, cause: Throwable) {
+            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
                 try {
-                    consumer.onFailure(conn, cause)
-                } finally {
+                    consumer.onEvent(conn, now, event)
+
+                    if (event == FlowEvent.Exit) {
+                        complete(consumer)
+                    }
+                } catch (cause: Throwable) {
                     complete(consumer)
+                    throw cause
                 }
             }
 

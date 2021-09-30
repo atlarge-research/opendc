@@ -219,4 +219,100 @@ internal class FlowForwarderTest {
         assertEquals(source.counters.overcommit, forwarder.counters.overcommit) { "Overcommitted work" }
         assertEquals(2000, clock.millis())
     }
+
+    @Test
+    fun testCoupledExit() = runBlockingSimulation {
+        val engine = FlowEngineImpl(coroutineContext, clock)
+        val forwarder = FlowForwarder(engine, isCoupled = true)
+        val source = FlowSink(engine, 2000.0)
+
+        launch { source.consume(forwarder) }
+
+        forwarder.consume(FixedFlowSource(2000.0, 1.0))
+
+        yield()
+
+        assertFalse(source.isActive)
+    }
+
+    @Test
+    fun testPullFailureCoupled() = runBlockingSimulation {
+        val engine = FlowEngineImpl(coroutineContext, clock)
+        val forwarder = FlowForwarder(engine, isCoupled = true)
+        val source = FlowSink(engine, 2000.0)
+
+        launch { source.consume(forwarder) }
+
+        try {
+            forwarder.consume(object : FlowSource {
+                override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                    throw IllegalStateException("Test")
+                }
+            })
+        } catch (cause: Throwable) {
+            // Ignore
+        }
+
+        yield()
+
+        assertFalse(source.isActive)
+    }
+
+    @Test
+    fun testEventFailure() = runBlockingSimulation {
+        val engine = FlowEngineImpl(coroutineContext, clock)
+        val forwarder = FlowForwarder(engine)
+        val source = FlowSink(engine, 2000.0)
+
+        launch { source.consume(forwarder) }
+
+        try {
+            forwarder.consume(object : FlowSource {
+                override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                    return Long.MAX_VALUE
+                }
+
+                override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
+                    throw IllegalStateException("Test")
+                }
+            })
+        } catch (cause: Throwable) {
+            // Ignore
+        }
+
+        yield()
+
+        assertTrue(source.isActive)
+        source.cancel()
+    }
+
+    @Test
+    fun testEventConvergeFailure() = runBlockingSimulation {
+        val engine = FlowEngineImpl(coroutineContext, clock)
+        val forwarder = FlowForwarder(engine)
+        val source = FlowSink(engine, 2000.0)
+
+        launch { source.consume(forwarder) }
+
+        try {
+            forwarder.consume(object : FlowSource {
+                override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                    return Long.MAX_VALUE
+                }
+
+                override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
+                    if (event == FlowEvent.Converge) {
+                        throw IllegalStateException("Test")
+                    }
+                }
+            })
+        } catch (cause: Throwable) {
+            // Ignore
+        }
+
+        yield()
+
+        assertTrue(source.isActive)
+        source.cancel()
+    }
 }

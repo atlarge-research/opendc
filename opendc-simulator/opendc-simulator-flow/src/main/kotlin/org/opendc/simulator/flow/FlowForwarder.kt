@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.flow
 
+import mu.KotlinLogging
 import org.opendc.simulator.flow.internal.FlowCountersImpl
 
 /**
@@ -31,6 +32,11 @@ import org.opendc.simulator.flow.internal.FlowCountersImpl
  * @param isCoupled A flag to indicate that the transformer will exit when the resource consumer exits.
  */
 public class FlowForwarder(private val engine: FlowEngine, private val isCoupled: Boolean = false) : FlowSource, FlowConsumer, AutoCloseable {
+    /**
+     * The logging instance of this connection.
+     */
+    private val logger = KotlinLogging.logger {}
+
     /**
      * The delegate [FlowSource].
      */
@@ -59,23 +65,25 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
         }
 
         override fun push(rate: Double) {
+            if (delegate == null) {
+                return
+            }
+
             _innerCtx?.push(rate)
             _demand = rate
         }
 
         override fun close() {
-            val delegate = checkNotNull(delegate) { "Delegate not active" }
-
-            if (isCoupled)
-                _innerCtx?.close()
-            else
-                _innerCtx?.push(0.0)
+            val delegate = delegate ?: return
+            val hasDelegateStarted = hasDelegateStarted
 
             // Warning: resumption of the continuation might change the entire state of the forwarder. Make sure we
             // reset beforehand the existing state and check whether it has been updated afterwards
             reset()
 
-            delegate.onEvent(this, engine.clock.millis(), FlowEvent.Exit)
+            if (hasDelegateStarted) {
+                delegate.onEvent(this, engine.clock.millis(), FlowEvent.Exit)
+            }
         }
     }
 
@@ -114,16 +122,7 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
     }
 
     override fun cancel() {
-        val delegate = delegate
-        val ctx = _innerCtx
-
-        if (delegate != null) {
-            this.delegate = null
-
-            if (ctx != null) {
-                delegate.onEvent(this._ctx, engine.clock.millis(), FlowEvent.Exit)
-            }
-        }
+        _ctx.close()
     }
 
     override fun close() {
@@ -144,34 +143,42 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
 
         updateCounters(conn, delta)
 
-        return delegate?.onPull(this._ctx, now, delta) ?: Long.MAX_VALUE
+        return try {
+            delegate?.onPull(this._ctx, now, delta) ?: Long.MAX_VALUE
+        } catch (cause: Throwable) {
+            logger.error(cause) { "Uncaught exception" }
+
+            reset()
+            Long.MAX_VALUE
+        }
     }
 
     override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
         when (event) {
-            FlowEvent.Start -> {
-                _innerCtx = conn
-            }
+            FlowEvent.Start -> _innerCtx = conn
             FlowEvent.Exit -> {
                 _innerCtx = null
 
                 val delegate = delegate
                 if (delegate != null) {
                     reset()
-                    delegate.onEvent(this._ctx, now, FlowEvent.Exit)
+
+                    try {
+                        delegate.onEvent(this._ctx, now, FlowEvent.Exit)
+                    } catch (cause: Throwable) {
+                        logger.error(cause) { "Uncaught exception" }
+                    }
                 }
             }
-            else -> delegate?.onEvent(this._ctx, now, event)
-        }
-    }
+            else ->
+                try {
+                    delegate?.onEvent(this._ctx, now, event)
+                } catch (cause: Throwable) {
+                    logger.error(cause) { "Uncaught exception" }
 
-    override fun onFailure(conn: FlowConnection, cause: Throwable) {
-        _innerCtx = null
-
-        val delegate = delegate
-        if (delegate != null) {
-            reset()
-            delegate.onFailure(this._ctx, cause)
+                    _innerCtx = null
+                    reset()
+                }
         }
     }
 
@@ -180,15 +187,25 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
      */
     private fun start() {
         val delegate = delegate ?: return
-        delegate.onEvent(checkNotNull(_innerCtx), engine.clock.millis(), FlowEvent.Start)
 
-        hasDelegateStarted = true
+        try {
+            delegate.onEvent(_ctx, engine.clock.millis(), FlowEvent.Start)
+            hasDelegateStarted = true
+        } catch (cause: Throwable) {
+            logger.error(cause) { "Uncaught exception" }
+            reset()
+        }
     }
 
     /**
      * Reset the delegate.
      */
     private fun reset() {
+        if (isCoupled)
+            _innerCtx?.close()
+        else
+            _innerCtx?.push(0.0)
+
         delegate = null
         hasDelegateStarted = false
     }
