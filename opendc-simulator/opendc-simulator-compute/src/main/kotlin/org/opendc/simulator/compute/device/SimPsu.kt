@@ -80,7 +80,7 @@ public class SimPsu(
         update()
     }
 
-    override fun createConsumer(): FlowSource = object : FlowSource {
+    override fun createSource(): FlowSource = object : FlowSource {
         override fun onStart(conn: FlowConnection, now: Long) {
             _ctx = conn
         }

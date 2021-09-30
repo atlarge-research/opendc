@@ -57,17 +57,9 @@ public class SimPdu(
         mux.addOutput(forwarder)
     }
 
-    override fun createConsumer(): FlowSource = object : FlowSource by forwarder {
-        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
-            val duration = forwarder.onPull(conn, now, delta)
-            val loss = computePowerLoss(conn.demand)
-            val newLimit = conn.demand + loss
-
-            conn.push(newLimit)
-            return duration
-        }
-
-        override fun toString(): String = "SimPdu.Consumer"
+    override fun createSource(): FlowSource = FlowMapper(forwarder) { _, rate ->
+        val loss = computePowerLoss(rate)
+        rate + loss
     }
 
     override fun toString(): String = "SimPdu"
@@ -85,7 +77,7 @@ public class SimPdu(
      */
     public class Outlet(private val switch: FlowMultiplexer, private val provider: FlowConsumer) : SimPowerOutlet(), AutoCloseable {
         override fun onConnect(inlet: SimPowerInlet) {
-            provider.startConsumer(inlet.createConsumer())
+            provider.startConsumer(inlet.createSource())
         }
 
         override fun onDisconnect(inlet: SimPowerInlet) {

@@ -44,5 +44,5 @@ public abstract class SimPowerInlet {
     /**
      * Create a [FlowSource] which represents the consumption of electricity from the power outlet.
      */
-    public abstract fun createConsumer(): FlowSource
+    public abstract fun createSource(): FlowSource
 }

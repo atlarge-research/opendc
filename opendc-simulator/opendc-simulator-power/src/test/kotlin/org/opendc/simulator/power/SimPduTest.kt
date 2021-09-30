@@ -25,7 +25,6 @@ package org.opendc.simulator.power
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
@@ -79,7 +78,7 @@ internal class SimPduTest {
         source.connect(pdu)
         val consumer = spyk(FixedFlowSource(100.0, utilization = 1.0))
         val inlet = object : SimPowerInlet() {
-            override fun createConsumer(): FlowSource = consumer
+            override fun createSource(): FlowSource = consumer
         }
 
         val outlet = pdu.newOutlet()
@@ -90,7 +89,6 @@ internal class SimPduTest {
     }
 
     @Test
-    @Disabled
     fun testLoss() = runBlockingSimulation {
         val engine = FlowEngine(coroutineContext, clock)
         val source = SimPowerSource(engine, capacity = 100.0)
@@ -116,6 +114,6 @@ internal class SimPduTest {
     }
 
     class SimpleInlet : SimPowerInlet() {
-        override fun createConsumer(): FlowSource = FixedFlowSource(100.0, utilization = 0.5)
+        override fun createSource(): FlowSource = FixedFlowSource(100.0, utilization = 0.5)
     }
 }

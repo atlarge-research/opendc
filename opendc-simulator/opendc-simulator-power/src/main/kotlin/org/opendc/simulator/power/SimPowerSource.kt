@@ -43,7 +43,7 @@ public class SimPowerSource(engine: FlowEngine, public val capacity: Double) : S
         get() = source.rate
 
     override fun onConnect(inlet: SimPowerInlet) {
-        source.startConsumer(inlet.createConsumer())
+        source.startConsumer(inlet.createSource())
     }
 
     override fun onDisconnect(inlet: SimPowerInlet) {

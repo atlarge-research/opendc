@@ -59,17 +59,13 @@ public class SimUps(
     }
 
     override fun onConnect(inlet: SimPowerInlet) {
-        val consumer = inlet.createConsumer()
-        provider.startConsumer(object : FlowSource by consumer {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
-                val duration = consumer.onPull(conn, now, delta)
-                val loss = computePowerLoss(conn.demand)
-                val newLimit = conn.demand + loss
+        val source = inlet.createSource()
+        val mapper = FlowMapper(source) { _, rate ->
+            val loss = computePowerLoss(rate)
+            rate + loss
+        }
 
-                conn.push(newLimit)
-                return duration
-            }
-        })
+        provider.startConsumer(mapper)
     }
 
     override fun onDisconnect(inlet: SimPowerInlet) {
@@ -88,7 +84,7 @@ public class SimUps(
      * A UPS inlet.
      */
     public inner class Inlet(private val forwarder: FlowForwarder) : SimPowerInlet(), AutoCloseable {
-        override fun createConsumer(): FlowSource = forwarder
+        override fun createSource(): FlowSource = forwarder
 
         /**
          * Remove the inlet from the PSU.

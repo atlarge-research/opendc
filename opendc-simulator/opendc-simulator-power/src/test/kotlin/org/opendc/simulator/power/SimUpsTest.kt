@@ -86,7 +86,7 @@ internal class SimUpsTest {
         source2.connect(ups.newInlet())
         val consumer = spyk(FixedFlowSource(100.0, utilization = 1.0))
         val inlet = object : SimPowerInlet() {
-            override fun createConsumer(): FlowSource = consumer
+            override fun createSource(): FlowSource = consumer
         }
 
         ups.connect(inlet)
@@ -96,6 +96,6 @@ internal class SimUpsTest {
     }
 
     class SimpleInlet : SimPowerInlet() {
-        override fun createConsumer(): FlowSource = FixedFlowSource(100.0, utilization = 0.5)
+        override fun createSource(): FlowSource = FixedFlowSource(100.0, utilization = 0.5)
     }
 }

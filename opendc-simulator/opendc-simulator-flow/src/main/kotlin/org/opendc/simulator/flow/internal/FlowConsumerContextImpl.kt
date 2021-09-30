@@ -127,6 +127,7 @@ internal class FlowConsumerContextImpl(
         engine.batch {
             source.onStart(this, _clock.millis())
             _state = State.Active
+
             pull()
         }
     }
