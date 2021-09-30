@@ -116,9 +116,9 @@ class CapelinIntegrationTest {
             { assertEquals(0, serviceMetrics.serversActive, "All VMs should finish after a run") },
             { assertEquals(0, serviceMetrics.attemptsFailure, "No VM should be unscheduled") },
             { assertEquals(0, serviceMetrics.serversPending, "No VM should not be in the queue") },
-            { assertEquals(223331032, this@CapelinIntegrationTest.exporter.idleTime) { "Incorrect idle time" } },
-            { assertEquals(67006568, this@CapelinIntegrationTest.exporter.activeTime) { "Incorrect active time" } },
-            { assertEquals(3159379, this@CapelinIntegrationTest.exporter.stealTime) { "Incorrect steal time" } },
+            { assertEquals(223327751, this@CapelinIntegrationTest.exporter.idleTime) { "Incorrect idle time" } },
+            { assertEquals(67009849, this@CapelinIntegrationTest.exporter.activeTime) { "Incorrect active time" } },
+            { assertEquals(3155964, this@CapelinIntegrationTest.exporter.stealTime) { "Incorrect steal time" } },
             { assertEquals(0, this@CapelinIntegrationTest.exporter.lostTime) { "Incorrect lost time" } },
             { assertEquals(5.841120890240688E9, this@CapelinIntegrationTest.exporter.energyUsage, 0.01) { "Incorrect power draw" } },
         )
@@ -160,8 +160,8 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(10998110, this@CapelinIntegrationTest.exporter.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9740290, this@CapelinIntegrationTest.exporter.activeTime) { "Active time incorrect" } },
+            { assertEquals(10998184, this@CapelinIntegrationTest.exporter.idleTime) { "Idle time incorrect" } },
+            { assertEquals(9740216, this@CapelinIntegrationTest.exporter.activeTime) { "Active time incorrect" } },
             { assertEquals(0, this@CapelinIntegrationTest.exporter.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, this@CapelinIntegrationTest.exporter.lostTime) { "Lost time incorrect" } }
         )
@@ -209,10 +209,10 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(6013899, this@CapelinIntegrationTest.exporter.idleTime) { "Idle time incorrect" } },
-            { assertEquals(14724501, this@CapelinIntegrationTest.exporter.activeTime) { "Active time incorrect" } },
-            { assertEquals(12530742, this@CapelinIntegrationTest.exporter.stealTime) { "Steal time incorrect" } },
-            { assertEquals(477279, this@CapelinIntegrationTest.exporter.lostTime) { "Lost time incorrect" } }
+            { assertEquals(6009751, this@CapelinIntegrationTest.exporter.idleTime) { "Idle time incorrect" } },
+            { assertEquals(14728649, this@CapelinIntegrationTest.exporter.activeTime) { "Active time incorrect" } },
+            { assertEquals(12526520, this@CapelinIntegrationTest.exporter.stealTime) { "Steal time incorrect" } },
+            { assertEquals(480866, this@CapelinIntegrationTest.exporter.lostTime) { "Lost time incorrect" } }
         )
     }
 
@@ -252,9 +252,9 @@ class CapelinIntegrationTest {
 
         // Note that these values have been verified beforehand
         assertAll(
-            { assertEquals(11132222, exporter.idleTime) { "Idle time incorrect" } },
-            { assertEquals(9606178, exporter.activeTime) { "Active time incorrect" } },
-            { assertEquals(0, exporter.stealTime) { "Steal time incorrect" } },
+            { assertEquals(11133606, exporter.idleTime) { "Idle time incorrect" } },
+            { assertEquals(9604794, exporter.activeTime) { "Active time incorrect" } },
+            { assertEquals(1311, exporter.stealTime) { "Steal time incorrect" } },
             { assertEquals(0, exporter.lostTime) { "Lost time incorrect" } },
             { assertEquals(2559005056, exporter.uptime) { "Uptime incorrect" } }
         )

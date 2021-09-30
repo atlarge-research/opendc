@@ -28,7 +28,6 @@ import org.junit.jupiter.api.*
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.internal.FlowConsumerContextImpl
 import org.opendc.simulator.flow.internal.FlowEngineImpl
-import org.opendc.simulator.flow.source.FixedFlowSource
 
 /**
  * A test suite for the [FlowConsumerContextImpl] class.
@@ -53,22 +52,6 @@ class FlowConsumerContextTest {
         val context = FlowConsumerContextImpl(engine, consumer, logic)
 
         engine.scheduleSync(engine.clock.millis(), context)
-    }
-
-    @Test
-    fun testIntermediateFlush() = runBlockingSimulation {
-        val engine = FlowEngineImpl(coroutineContext, clock)
-        val consumer = FixedFlowSource(1.0, 1.0)
-
-        val logic = spyk(object : FlowConsumerLogic {})
-        val context = FlowConsumerContextImpl(engine, consumer, logic)
-        context.capacity = 1.0
-
-        context.start()
-        delay(1) // Delay 1 ms to prevent hitting the fast path
-        engine.scheduleSync(engine.clock.millis(), context)
-
-        verify(exactly = 2) { logic.onPush(any(), any(), any(), any()) }
     }
 
     @Test
