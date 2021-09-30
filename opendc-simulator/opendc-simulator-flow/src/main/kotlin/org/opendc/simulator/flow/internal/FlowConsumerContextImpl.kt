@@ -95,6 +95,11 @@ internal class FlowConsumerContextImpl(
     private var _isImmediateUpdateScheduled = false
 
     /**
+     * A flag that indicates to the [FlowEngine] that the context is already enqueued to converge.
+     */
+    private var _willConverge: Boolean = false
+
+    /**
      * The timestamp of calls to the callbacks.
      */
     private var _lastPull: Long = Long.MIN_VALUE // Last call to `onPull`
@@ -177,12 +182,18 @@ internal class FlowConsumerContextImpl(
     }
 
     /**
-     * Update the state of the resource context.
+     * Update the state of the flow connection.
+     *
+     * @param now The current virtual timestamp.
+     * @return A flag to indicate whether the connection has already been updated before convergence.
      */
-    fun doUpdate(now: Long) {
+    fun doUpdate(now: Long): Boolean {
+        val willConverge = _willConverge
+        _willConverge = true
+
         val oldState = _state
         if (oldState != State.Active) {
-            return
+            return willConverge
         }
 
         _isUpdateActive = true
@@ -238,6 +249,8 @@ internal class FlowConsumerContextImpl(
         } finally {
             _isUpdateActive = false
         }
+
+        return willConverge
     }
 
     /**
@@ -270,6 +283,7 @@ internal class FlowConsumerContextImpl(
     fun onConverge(timestamp: Long) {
         val delta = max(0, timestamp - _lastConvergence)
         _lastConvergence = timestamp
+        _willConverge = false
 
         try {
             if (_state == State.Active) {

@@ -63,7 +63,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
     /**
      * The systems that have been visited during the engine cycle.
      */
-    private val visited = linkedSetOf<FlowConsumerContextImpl>()
+    private val visited = ArrayDeque<FlowConsumerContextImpl>()
 
     /**
      * The index in the batch stack.
@@ -80,8 +80,9 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
      * Update the specified [ctx] synchronously.
      */
     fun scheduleSync(now: Long, ctx: FlowConsumerContextImpl) {
-        ctx.doUpdate(now)
-        visited.add(ctx)
+        if (!ctx.doUpdate(now)) {
+            visited.add(ctx)
+        }
 
         // In-case the engine is already running in the call-stack, return immediately. The changes will be picked
         // up by the active engine.
@@ -192,8 +193,9 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
             ctx.pruneTimers(now)
 
             if (ctx.shouldUpdate(now)) {
-                ctx.doUpdate(now)
-                visited.add(ctx)
+                if (!ctx.doUpdate(now)) {
+                    visited.add(ctx)
+                }
             } else {
                 ctx.tryReschedule(now)
             }
@@ -206,8 +208,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
             while (true) {
                 val ctx = queue.poll() ?: break
 
-                if (ctx.shouldUpdate(now)) {
-                    ctx.doUpdate(now)
+                if (ctx.shouldUpdate(now) && !ctx.doUpdate(now)) {
                     visited.add(ctx)
                 }
             }
