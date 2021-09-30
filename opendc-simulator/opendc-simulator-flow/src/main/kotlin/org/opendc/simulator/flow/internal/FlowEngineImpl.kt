@@ -190,7 +190,8 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
 
             futureQueue.poll()
 
-            ctx.pruneTimers(now)
+            // Update the existing timers of the connection
+            ctx.updateTimers()
 
             if (ctx.shouldUpdate(now)) {
                 if (!ctx.doUpdate(now)) {
