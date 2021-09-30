@@ -42,6 +42,11 @@ public interface FlowConnection : AutoCloseable {
     public val demand: Double
 
     /**
+     * A flag to control whether [FlowSource.onConverge] should be invoked for this source.
+     */
+    public var shouldSourceConverge: Boolean
+
+    /**
      * Pull the source.
      */
     public fun pull()

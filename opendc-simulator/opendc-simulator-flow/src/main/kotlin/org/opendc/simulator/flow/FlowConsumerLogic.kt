@@ -39,6 +39,9 @@ public interface FlowConsumerLogic {
     /**
      * This method is invoked when the flow graph has converged into a steady-state system.
      *
+     * Make sure to enable [FlowConsumerContext.shouldSourceConverge] if you need this callback. By default, this method
+     * will not be invoked.
+     *
      * @param ctx The context in which the provider runs.
      * @param now The virtual timestamp in milliseconds at which the system converged.
      * @param delta The virtual duration between this call and the last call to [onConverge] in milliseconds.

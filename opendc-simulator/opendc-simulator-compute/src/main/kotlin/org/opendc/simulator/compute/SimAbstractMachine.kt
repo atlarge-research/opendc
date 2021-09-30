@@ -43,9 +43,9 @@ import kotlin.coroutines.resume
  */
 public abstract class SimAbstractMachine(
     protected val engine: FlowEngine,
-    final override val parent: FlowSystem?,
+    private val parent: FlowConvergenceListener?,
     final override val model: MachineModel
-) : SimMachine, FlowSystem {
+) : SimMachine, FlowConvergenceListener {
     /**
      * The resources allocated for this machine.
      */
@@ -114,6 +114,10 @@ public abstract class SimAbstractMachine(
 
         isTerminated = true
         cancel()
+    }
+
+    override fun onConverge(now: Long, delta: Long) {
+        parent?.onConverge(now, delta)
     }
 
     /**

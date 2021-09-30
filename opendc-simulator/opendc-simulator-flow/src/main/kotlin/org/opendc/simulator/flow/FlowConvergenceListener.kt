@@ -23,21 +23,14 @@
 package org.opendc.simulator.flow
 
 /**
- * A system of possible multiple sub-resources.
- *
- * This interface is used to model hierarchies of resource providers, which can listen efficiently to changes of the
- * resource provider.
+ * A listener interface for when a flow stage has converged into a steady-state.
  */
-public interface FlowSystem {
-    /**
-     * The parent system to which this system belongs or `null` if it has no parent.
-     */
-    public val parent: FlowSystem?
-
+public interface FlowConvergenceListener {
     /**
      * This method is invoked when the system has converged to a steady-state.
      *
-     * @param timestamp The timestamp at which the system converged.
+     * @param now The timestamp at which the system converged.
+     * @param delta The virtual duration between this call and the last call to [onConverge] in milliseconds.
      */
-    public fun onConverge(timestamp: Long)
+    public fun onConverge(now: Long, delta: Long) {}
 }

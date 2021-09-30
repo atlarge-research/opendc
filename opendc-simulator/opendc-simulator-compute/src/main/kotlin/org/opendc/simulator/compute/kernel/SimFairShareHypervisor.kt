@@ -28,8 +28,8 @@ import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.simulator.flow.FlowConvergenceListener
 import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSystem
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
@@ -45,7 +45,7 @@ import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
  */
 public class SimFairShareHypervisor(
     engine: FlowEngine,
-    private val parent: FlowSystem? = null,
+    private val parent: FlowConvergenceListener? = null,
     scalingGovernor: ScalingGovernor? = null,
     interferenceDomain: VmInterferenceDomain? = null,
     private val listener: SimHypervisor.Listener? = null
@@ -57,10 +57,8 @@ public class SimFairShareHypervisor(
         return SwitchSystem(ctx).switch
     }
 
-    private inner class SwitchSystem(private val ctx: SimMachineContext) : FlowSystem {
+    private inner class SwitchSystem(private val ctx: SimMachineContext) : FlowConvergenceListener {
         val switch = MaxMinFlowMultiplexer(engine, this, interferenceDomain)
-
-        override val parent: FlowSystem? = this@SimFairShareHypervisor.parent
 
         private var lastCpuUsage = 0.0
         private var lastCpuDemand = 0.0
@@ -70,11 +68,11 @@ public class SimFairShareHypervisor(
         private var lastInterference = 0.0
         private var lastReport = Long.MIN_VALUE
 
-        override fun onConverge(timestamp: Long) {
+        override fun onConverge(now: Long, delta: Long) {
             val listener = listener ?: return
             val counters = switch.counters
 
-            if (timestamp > lastReport) {
+            if (now > lastReport) {
                 listener.onSliceFinish(
                     this@SimFairShareHypervisor,
                     counters.demand - lastDemand,
@@ -85,7 +83,7 @@ public class SimFairShareHypervisor(
                     lastCpuDemand
                 )
             }
-            lastReport = timestamp
+            lastReport = now
 
             lastCpuDemand = switch.outputs.sumOf { it.demand }
             lastCpuUsage = switch.outputs.sumOf { it.rate }
@@ -96,6 +94,8 @@ public class SimFairShareHypervisor(
 
             val load = lastCpuDemand / ctx.cpus.sumOf { it.model.frequency }
             triggerGovernors(load)
+
+            parent?.onConverge(now, delta)
         }
     }
 }

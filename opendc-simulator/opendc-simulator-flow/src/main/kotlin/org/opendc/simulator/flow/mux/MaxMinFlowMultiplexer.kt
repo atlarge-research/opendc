@@ -38,7 +38,7 @@ import kotlin.math.min
  */
 public class MaxMinFlowMultiplexer(
     private val engine: FlowEngine,
-    private val parent: FlowSystem? = null,
+    private val parent: FlowConvergenceListener? = null,
     private val interferenceDomain: InterferenceDomain? = null
 ) : FlowMultiplexer {
     /**
@@ -269,6 +269,11 @@ public class MaxMinFlowMultiplexer(
             check(!_isClosed) { "Cannot re-use closed input" }
 
             _activeInputs += this
+
+            if (parent != null) {
+                ctx.shouldConsumerConverge = true
+            }
+
             super.start(ctx)
         }
 
@@ -289,7 +294,7 @@ public class MaxMinFlowMultiplexer(
         }
 
         override fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {
-            parent?.onConverge(now)
+            parent?.onConverge(now, delta)
         }
 
         override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {

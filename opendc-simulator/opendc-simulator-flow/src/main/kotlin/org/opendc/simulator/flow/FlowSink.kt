@@ -32,8 +32,15 @@ package org.opendc.simulator.flow
 public class FlowSink(
     private val engine: FlowEngine,
     initialCapacity: Double,
-    private val parent: FlowSystem? = null
+    private val parent: FlowConvergenceListener? = null
 ) : AbstractFlowConsumer(engine, initialCapacity) {
+
+    override fun start(ctx: FlowConsumerContext) {
+        if (parent != null) {
+            ctx.shouldConsumerConverge = true
+        }
+        super.start(ctx)
+    }
 
     override fun createLogic(): FlowConsumerLogic {
         return object : FlowConsumerLogic {
@@ -52,7 +59,7 @@ public class FlowSink(
             }
 
             override fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {
-                parent?.onConverge(now)
+                parent?.onConverge(now, delta)
             }
         }
     }

@@ -145,8 +145,6 @@ public abstract class SimAbstractHypervisor(
                 interferenceDomain?.leave(interferenceKey)
             }
         }
-
-        override fun onConverge(timestamp: Long) {}
     }
 
     /**

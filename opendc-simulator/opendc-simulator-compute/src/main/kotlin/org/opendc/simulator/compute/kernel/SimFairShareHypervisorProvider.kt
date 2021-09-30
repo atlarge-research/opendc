@@ -24,8 +24,8 @@ package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
+import org.opendc.simulator.flow.FlowConvergenceListener
 import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowSystem
 
 /**
  * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
@@ -35,7 +35,7 @@ public class SimFairShareHypervisorProvider : SimHypervisorProvider {
 
     override fun create(
         engine: FlowEngine,
-        parent: FlowSystem?,
+        parent: FlowConvergenceListener?,
         scalingGovernor: ScalingGovernor?,
         interferenceDomain: VmInterferenceDomain?,
         listener: SimHypervisor.Listener?

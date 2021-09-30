@@ -83,6 +83,7 @@ public class SimPsu(
     override fun createSource(): FlowSource = object : FlowSource {
         override fun onStart(conn: FlowConnection, now: Long) {
             _ctx = conn
+            conn.shouldSourceConverge = true
         }
 
         override fun onStop(conn: FlowConnection, now: Long, delta: Long) {

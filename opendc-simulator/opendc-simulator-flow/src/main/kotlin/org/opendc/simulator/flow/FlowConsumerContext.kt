@@ -34,6 +34,11 @@ public interface FlowConsumerContext : FlowConnection {
     public override var capacity: Double
 
     /**
+     * A flag to control whether [FlowConsumerLogic.onConverge] should be invoked for the consumer.
+     */
+    public var shouldConsumerConverge: Boolean
+
+    /**
      * Start the flow over the connection.
      */
     public fun start()

@@ -297,6 +297,10 @@ internal class FlowForwarderTest {
 
         try {
             forwarder.consume(object : FlowSource {
+                override fun onStart(conn: FlowConnection, now: Long) {
+                    conn.shouldSourceConverge = true
+                }
+
                 override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
                     return Long.MAX_VALUE
                 }

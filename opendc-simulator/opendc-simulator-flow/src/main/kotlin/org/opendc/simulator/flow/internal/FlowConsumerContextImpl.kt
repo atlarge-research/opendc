@@ -73,6 +73,12 @@ internal class FlowConsumerContextImpl(
         get() = _demand
 
     /**
+     * Flags to control the convergence of the consumer and source.
+     */
+    override var shouldConsumerConverge: Boolean = false
+    override var shouldSourceConverge: Boolean = false
+
+    /**
      * The clock to track simulation time.
      */
     private val _clock = engine.clock
@@ -114,7 +120,8 @@ internal class FlowConsumerContextImpl(
      */
     private var _lastPull: Long = Long.MIN_VALUE // Last call to `onPull`
     private var _lastPush: Long = Long.MIN_VALUE // Last call to `onPush`
-    private var _lastConvergence: Long = Long.MAX_VALUE // Last call to `onConvergence`
+    private var _lastSourceConvergence: Long = Long.MAX_VALUE // Last call to source `onConvergence`
+    private var _lastConsumerConvergence: Long = Long.MAX_VALUE // Last call to consumer `onConvergence`
 
     /**
      * The timers at which the context is scheduled to be interrupted.
@@ -199,8 +206,14 @@ internal class FlowConsumerContextImpl(
      * @return A flag to indicate whether the connection has already been updated before convergence.
      */
     fun doUpdate(now: Long): Boolean {
-        val willConverge = _willConverge
-        _willConverge = true
+        // The connection will only converge if either the source or the consumer wants the converge callback to be
+        // invoked.
+        val shouldConverge = shouldSourceConverge || shouldConsumerConverge
+        var willConverge = false
+        if (shouldConverge) {
+            willConverge = _willConverge
+            _willConverge = true
+        }
 
         val oldState = _state
         if (oldState != State.Active) {
@@ -286,19 +299,25 @@ internal class FlowConsumerContextImpl(
     /**
      * This method is invoked when the system converges into a steady state.
      */
-    fun onConverge(timestamp: Long) {
-        val delta = max(0, timestamp - _lastConvergence)
-        _lastConvergence = timestamp
+    fun onConverge(now: Long) {
         _willConverge = false
 
         try {
-            if (_state == State.Active) {
-                source.onConverge(this, timestamp, delta)
+            if (_state == State.Active && shouldSourceConverge) {
+                val delta = max(0, now - _lastSourceConvergence)
+                _lastSourceConvergence = now
+
+                source.onConverge(this, now, delta)
             }
 
-            logic.onConverge(this, timestamp, delta)
+            if (shouldConsumerConverge) {
+                val delta = max(0, now - _lastConsumerConvergence)
+                _lastConsumerConvergence = now
+
+                logic.onConverge(this, now, delta)
+            }
         } catch (cause: Throwable) {
-            doFailSource(timestamp, cause)
+            doFailSource(now, cause)
         }
     }
 

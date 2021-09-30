@@ -59,6 +59,9 @@ public interface FlowSource {
     /**
      * This method is invoked when the flow graph has converged into a steady-state system.
      *
+     * Make sure to enable [FlowConnection.shouldSourceConverge] if you need this callback. By default, this method
+     * will not be invoked.
+     *
      * @param conn The connection between the source and consumer.
      * @param now The virtual timestamp in milliseconds at which the system converged.
      * @param delta The virtual duration between this call and the last call to [onConverge] in milliseconds.

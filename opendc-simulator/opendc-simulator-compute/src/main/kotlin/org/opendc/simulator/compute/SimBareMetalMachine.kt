@@ -46,7 +46,7 @@ public class SimBareMetalMachine(
     model: MachineModel,
     powerDriver: PowerDriver,
     public val psu: SimPsu = SimPsu(500.0, mapOf(1.0 to 1.0)),
-    parent: FlowSystem? = null,
+    parent: FlowConvergenceListener? = null,
 ) : SimAbstractMachine(engine, parent, model) {
     /**
      * The power draw of the machine onto the PSU.
@@ -66,7 +66,7 @@ public class SimBareMetalMachine(
      */
     private val powerDriverLogic = powerDriver.createLogic(this, cpus)
 
-    override fun onConverge(timestamp: Long) {
+    override fun onConverge(now: Long, delta: Long) {
         psu.update()
     }
 

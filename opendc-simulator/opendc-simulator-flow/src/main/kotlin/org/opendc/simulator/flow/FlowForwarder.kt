@@ -52,6 +52,12 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
      * The exposed [FlowConnection].
      */
     private val _ctx = object : FlowConnection {
+        override var shouldSourceConverge: Boolean = false
+            set(value) {
+                field = value
+                _innerCtx?.shouldSourceConverge = value
+            }
+
         override val capacity: Double
             get() = _innerCtx?.capacity ?: 0.0
 
@@ -141,6 +147,10 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
 
     override fun onStart(conn: FlowConnection, now: Long) {
         _innerCtx = conn
+
+        if (_ctx.shouldSourceConverge) {
+            conn.shouldSourceConverge = true
+        }
     }
 
     override fun onStop(conn: FlowConnection, now: Long, delta: Long) {

@@ -131,6 +131,8 @@ public class SimTFDevice(
         override fun onStart(conn: FlowConnection, now: Long) {
             ctx = conn
             capacity = conn.capacity
+
+            conn.shouldSourceConverge = true
         }
 
         override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
