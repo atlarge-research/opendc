@@ -38,6 +38,7 @@ import org.opendc.simulator.core.SimulationCoroutineScope
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.SimResourceInterpreter
 import org.openjdk.jmh.annotations.*
+import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 @State(Scope.Thread)
@@ -63,22 +64,15 @@ class SimMachineBenchmarks {
         )
     }
 
-    @State(Scope.Benchmark)
+    @State(Scope.Thread)
     class Workload {
         lateinit var trace: Sequence<SimTraceWorkload.Fragment>
 
         @Setup
         fun setUp() {
-            trace = sequenceOf(
-                SimTraceWorkload.Fragment(0, 1000, 28.0, 1),
-                SimTraceWorkload.Fragment(1000, 1000, 3500.0, 1),
-                SimTraceWorkload.Fragment(2000, 1000, 0.0, 1),
-                SimTraceWorkload.Fragment(3000, 1000, 183.0, 1),
-                SimTraceWorkload.Fragment(4000, 1000, 400.0, 1),
-                SimTraceWorkload.Fragment(5000, 1000, 100.0, 1),
-                SimTraceWorkload.Fragment(6000, 1000, 3000.0, 1),
-                SimTraceWorkload.Fragment(7000, 1000, 4500.0, 1),
-            )
+            val random = ThreadLocalRandom.current()
+            val entries = List(10000) { SimTraceWorkload.Fragment(it * 1000L, 1000, random.nextDouble(0.0, 4500.0), 1) }
+            trace = entries.asSequence()
         }
     }
 

@@ -28,6 +28,7 @@ import org.opendc.simulator.core.SimulationCoroutineScope
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.resources.consumer.SimTraceConsumer
 import org.openjdk.jmh.annotations.*
+import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 @State(Scope.Thread)
@@ -51,16 +52,9 @@ class SimResourceBenchmarks {
 
         @Setup
         fun setUp() {
-            trace = sequenceOf(
-                SimTraceConsumer.Fragment(1000, 28.0),
-                SimTraceConsumer.Fragment(1000, 3500.0),
-                SimTraceConsumer.Fragment(1000, 0.0),
-                SimTraceConsumer.Fragment(1000, 183.0),
-                SimTraceConsumer.Fragment(1000, 400.0),
-                SimTraceConsumer.Fragment(1000, 100.0),
-                SimTraceConsumer.Fragment(1000, 3000.0),
-                SimTraceConsumer.Fragment(1000, 4500.0),
-            )
+            val random = ThreadLocalRandom.current()
+            val entries = List(10000) { SimTraceConsumer.Fragment(1000, random.nextDouble(0.0, 4500.0)) }
+            trace = entries.asSequence()
         }
     }
 
