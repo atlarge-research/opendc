@@ -67,7 +67,7 @@ internal class FlowSinkTest {
             provider.capacity = 0.5
         }
         assertEquals(3000, clock.millis())
-        verify(exactly = 1) { consumer.onEvent(any(), any(), FlowEvent.Capacity) }
+        verify(exactly = 1) { consumer.onPull(any(), any(), any()) }
     }
 
     @Test

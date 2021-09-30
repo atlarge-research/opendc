@@ -131,6 +131,8 @@ public class SimTFDevice(
         override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
             val consumedWork = conn.rate * delta / 1000.0
 
+            capacity = conn.capacity
+
             val activeWork = activeWork
             if (activeWork != null) {
                 if (activeWork.consume(consumedWork)) {
@@ -158,12 +160,8 @@ public class SimTFDevice(
         override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
             when (event) {
                 FlowEvent.Start -> {
-                    this.ctx = conn
-                    this.capacity = conn.capacity
-                }
-                FlowEvent.Capacity -> {
-                    this.capacity = conn.capacity
-                    conn.pull()
+                    ctx = conn
+                    capacity = conn.capacity
                 }
                 FlowEvent.Converge -> {
                     _usage.record(conn.rate)

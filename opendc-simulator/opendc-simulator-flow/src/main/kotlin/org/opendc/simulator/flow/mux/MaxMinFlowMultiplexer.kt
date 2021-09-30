@@ -356,8 +356,7 @@ public class MaxMinFlowMultiplexer(
         /**
          * The capacity of this output.
          */
-        val capacity: Double
-            get() = _ctx?.capacity ?: 0.0
+        @JvmField var capacity: Double = 0.0
 
         /**
          * Push the specified rate to the consumer.
@@ -374,6 +373,12 @@ public class MaxMinFlowMultiplexer(
         }
 
         override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            val capacity = capacity
+            if (capacity != conn.capacity) {
+                this.capacity = capacity
+                updateCapacity()
+            }
+
             runScheduler(now)
             return Long.MAX_VALUE
         }
@@ -383,13 +388,14 @@ public class MaxMinFlowMultiplexer(
                 FlowEvent.Start -> {
                     assert(_ctx == null) { "Source running concurrently" }
                     _ctx = conn
+                    capacity = conn.capacity
                     updateCapacity()
                 }
                 FlowEvent.Exit -> {
                     _ctx = null
+                    capacity = 0.0
                     updateCapacity()
                 }
-                FlowEvent.Capacity -> updateCapacity()
                 else -> {}
             }
         }

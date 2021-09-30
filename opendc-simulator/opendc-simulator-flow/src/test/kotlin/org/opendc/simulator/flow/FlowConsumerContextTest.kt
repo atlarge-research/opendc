@@ -99,6 +99,6 @@ class FlowConsumerContextTest {
         context.start()
         context.capacity = 4200.0
 
-        verify(exactly = 0) { consumer.onEvent(any(), any(), FlowEvent.Capacity) }
+        verify(exactly = 1) { consumer.onPull(any(), any(), any()) }
     }
 }

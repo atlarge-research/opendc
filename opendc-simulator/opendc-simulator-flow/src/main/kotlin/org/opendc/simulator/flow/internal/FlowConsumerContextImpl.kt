@@ -51,7 +51,11 @@ internal class FlowConsumerContextImpl(
             // Only changes will be propagated
             if (value != oldValue) {
                 field = value
-                onCapacityChange()
+
+                // Do not pull the source if it has not been started yet
+                if (_state == State.Active) {
+                    pull()
+                }
             }
         }
 
@@ -324,23 +328,6 @@ internal class FlowConsumerContextImpl(
         } catch (e: Throwable) {
             e.addSuppressed(cause)
             logger.error(e) { "Uncaught exception" }
-        }
-    }
-
-    /**
-     * Indicate that the capacity of the resource has changed.
-     */
-    private fun onCapacityChange() {
-        // Do not inform the consumer if it has not been started yet
-        if (_state != State.Active) {
-            return
-        }
-
-        engine.batch {
-            // Inform the consumer of the capacity change. This might already trigger an interrupt.
-            source.onEvent(this, _clock.millis(), FlowEvent.Capacity)
-
-            pull()
         }
     }
 

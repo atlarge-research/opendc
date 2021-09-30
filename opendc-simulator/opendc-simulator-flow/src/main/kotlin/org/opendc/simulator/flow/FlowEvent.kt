@@ -40,9 +40,4 @@ public enum class FlowEvent {
      * This event is emitted to the source when the system has converged into a steady state.
      */
     Converge,
-
-    /**
-     * This event is emitted to the source when the capacity of the consumer has changed.
-     */
-    Capacity,
 }

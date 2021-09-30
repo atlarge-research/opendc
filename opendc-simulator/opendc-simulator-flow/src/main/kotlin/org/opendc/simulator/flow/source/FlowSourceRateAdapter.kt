@@ -25,7 +25,6 @@ package org.opendc.simulator.flow.source
 import org.opendc.simulator.flow.FlowConnection
 import org.opendc.simulator.flow.FlowEvent
 import org.opendc.simulator.flow.FlowSource
-import kotlin.math.min
 
 /**
  * Helper class to expose an observable [rate] field describing the flow rate of the source.
@@ -59,20 +58,11 @@ public class FlowSourceRateAdapter(
     }
 
     override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-        val oldSpeed = rate
-
         try {
             delegate.onEvent(conn, now, event)
 
             when (event) {
                 FlowEvent.Converge -> rate = conn.rate
-                FlowEvent.Capacity -> {
-                    // Check if the consumer interrupted the consumer and updated the resource consumption. If not, we might
-                    // need to update the current speed.
-                    if (oldSpeed == rate) {
-                        rate = min(conn.capacity, rate)
-                    }
-                }
                 FlowEvent.Exit -> rate = 0.0
                 else -> {}
             }
