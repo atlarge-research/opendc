@@ -22,8 +22,6 @@
 
 package org.opendc.simulator.flow
 
-import io.mockk.every
-import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.*
@@ -67,7 +65,7 @@ internal class FlowSinkTest {
             provider.capacity = 0.5
         }
         assertEquals(3000, clock.millis())
-        verify(exactly = 1) { consumer.onPull(any(), any(), any()) }
+        verify(exactly = 3) { consumer.onPull(any(), any(), any()) }
     }
 
     @Test
@@ -102,7 +100,7 @@ internal class FlowSinkTest {
                 return Long.MAX_VALUE
             }
 
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
+            override fun onStart(conn: FlowConnection, now: Long) {
                 conn.pull()
             }
         }
@@ -120,11 +118,8 @@ internal class FlowSinkTest {
         val consumer = object : FlowSource {
             var isFirst = true
 
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-                when (event) {
-                    FlowEvent.Start -> resCtx = conn
-                    else -> {}
-                }
+            override fun onStart(conn: FlowConnection, now: Long) {
+                resCtx = conn
             }
 
             override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
@@ -154,9 +149,15 @@ internal class FlowSinkTest {
         val capacity = 4200.0
         val provider = FlowSink(engine, capacity)
 
-        val consumer = mockk<FlowSource>(relaxUnitFun = true)
-        every { consumer.onEvent(any(), any(), eq(FlowEvent.Start)) }
-            .throws(IllegalStateException())
+        val consumer = object : FlowSource {
+            override fun onStart(conn: FlowConnection, now: Long) {
+                throw IllegalStateException("Hi")
+            }
+
+            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                return Long.MAX_VALUE
+            }
+        }
 
         assertThrows<IllegalStateException> {
             provider.consume(consumer)

@@ -108,7 +108,7 @@ class SimNetworkSinkTest {
         assertTrue(source.isConnected)
 
         verify { source.createConsumer() }
-        verify { consumer.onEvent(any(), any(), FlowEvent.Start) }
+        verify { consumer.onStart(any(), any()) }
     }
 
     @Test
@@ -124,7 +124,7 @@ class SimNetworkSinkTest {
         assertFalse(sink.isConnected)
         assertFalse(source.isConnected)
 
-        verify { consumer.onEvent(any(), any(), FlowEvent.Exit) }
+        verify { consumer.onStop(any(), any(), any()) }
     }
 
     private class Source(engine: FlowEngine) : SimNetworkPort() {

@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
-import org.opendc.simulator.flow.FlowEvent
 import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.flow.source.FixedFlowSource
 
@@ -93,7 +92,7 @@ internal class SimUpsTest {
         ups.connect(inlet)
         ups.disconnect()
 
-        verify { consumer.onEvent(any(), any(), FlowEvent.Exit) }
+        verify { consumer.onStop(any(), any(), any()) }
     }
 
     class SimpleInlet : SimPowerInlet() {

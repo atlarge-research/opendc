@@ -23,7 +23,6 @@
 package org.opendc.simulator.flow.source
 
 import org.opendc.simulator.flow.FlowConnection
-import org.opendc.simulator.flow.FlowEvent
 import org.opendc.simulator.flow.FlowSource
 
 /**
@@ -48,28 +47,22 @@ public class FlowSourceRateAdapter(
         callback(0.0)
     }
 
-    override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
-        return try {
-            delegate.onPull(conn, now, delta)
-        } catch (cause: Throwable) {
+    override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+        try {
+            delegate.onStop(conn, now, delta)
+        } finally {
             rate = 0.0
-            throw cause
         }
     }
 
-    override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-        try {
-            delegate.onEvent(conn, now, event)
+    override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+        return delegate.onPull(conn, now, delta)
+    }
 
-            when (event) {
-                FlowEvent.Converge -> rate = conn.rate
-                FlowEvent.Exit -> rate = 0.0
-                else -> {}
-            }
-        } catch (cause: Throwable) {
-            rate = 0.0
-            throw cause
-        }
+    override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+        delegate.onConverge(conn, now, delta)
+
+        rate = conn.rate
     }
 
     override fun toString(): String = "FlowSourceRateAdapter[delegate=$delegate]"

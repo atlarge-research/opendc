@@ -50,7 +50,7 @@ class SimNetworkSwitchVirtualTest {
         assertTrue(source.isConnected)
 
         verify { source.createConsumer() }
-        verify { consumer.onEvent(any(), any(), FlowEvent.Start) }
+        verify { consumer.onStart(any(), any()) }
     }
 
     @Test

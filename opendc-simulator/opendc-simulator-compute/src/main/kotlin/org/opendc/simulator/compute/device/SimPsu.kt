@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.device
 
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.flow.FlowConnection
-import org.opendc.simulator.flow.FlowEvent
 import org.opendc.simulator.flow.FlowSource
 import org.opendc.simulator.power.SimPowerInlet
 import java.util.*
@@ -82,19 +81,22 @@ public class SimPsu(
     }
 
     override fun createConsumer(): FlowSource = object : FlowSource {
+        override fun onStart(conn: FlowConnection, now: Long) {
+            _ctx = conn
+        }
+
+        override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+            _ctx = null
+        }
+
         override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
             val powerDraw = computePowerDraw(_driver?.computePower() ?: 0.0)
             conn.push(powerDraw)
             return Long.MAX_VALUE
         }
 
-        override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-            when (event) {
-                FlowEvent.Start -> _ctx = conn
-                FlowEvent.Converge -> _powerDraw = conn.rate
-                FlowEvent.Exit -> _ctx = null
-                else -> {}
-            }
+        override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+            _powerDraw = conn.rate
         }
     }
 

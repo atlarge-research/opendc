@@ -88,13 +88,10 @@ public class ForwardingFlowMultiplexer(private val engine: FlowEngine) : FlowMul
         _availableOutputs += forwarder
 
         output.startConsumer(object : FlowSource by forwarder {
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-                if (event == FlowEvent.Exit) {
-                    // De-register the output after it has finished
-                    _outputs -= output
-                }
+            override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+                _outputs -= output
 
-                forwarder.onEvent(conn, now, event)
+                forwarder.onStop(conn, now, delta)
             }
         })
     }

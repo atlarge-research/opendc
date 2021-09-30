@@ -125,7 +125,7 @@ internal class FlowConsumerContextImpl(
     override fun start() {
         check(_state == State.Pending) { "Consumer is already started" }
         engine.batch {
-            source.onEvent(this, _clock.millis(), FlowEvent.Start)
+            source.onStart(this, _clock.millis())
             _state = State.Active
             pull()
         }
@@ -140,8 +140,7 @@ internal class FlowConsumerContextImpl(
             _state = State.Closed
             if (!_isUpdateActive) {
                 val now = _clock.millis()
-                val delta = max(0, now - _lastPull)
-                doStopSource(now, delta)
+                doStopSource(now)
 
                 // FIX: Make sure the context converges
                 pull()
@@ -210,19 +209,16 @@ internal class FlowConsumerContextImpl(
         _isUpdateActive = true
         _isImmediateUpdateScheduled = false
 
-        val lastPush = _lastPush
-        val pushDelta = max(0, now - lastPush)
-
         try {
             // Pull the source if (1) `pull` is called or (2) the timer of the source has expired
             val deadline = if (_isPulled || _deadline == now) {
                 val lastPull = _lastPull
-                val pullDelta = max(0, now - lastPull)
+                val delta = max(0, now - lastPull)
 
                 _isPulled = false
                 _lastPull = now
 
-                val duration = source.onPull(this, now, pullDelta)
+                val duration = source.onPull(this, now, delta)
                 if (duration != Long.MAX_VALUE)
                     now + duration
                 else
@@ -236,12 +232,15 @@ internal class FlowConsumerContextImpl(
                 State.Active -> {
                     val demand = _demand
                     if (demand != _activeDemand) {
+                        val lastPush = _lastPush
+                        val delta = max(0, now - lastPush)
+
                         _lastPush = now
 
-                        logic.onPush(this, now, pushDelta, demand)
+                        logic.onPush(this, now, delta, demand)
                     }
                 }
-                State.Closed -> doStopSource(now, pushDelta)
+                State.Closed -> doStopSource(now)
                 State.Pending -> throw IllegalStateException("Illegal transition to pending state")
             }
 
@@ -256,7 +255,7 @@ internal class FlowConsumerContextImpl(
             // Schedule an update at the new deadline
             scheduleDelayed(now, deadline)
         } catch (cause: Throwable) {
-            doFailSource(now, pushDelta, cause)
+            doFailSource(now, cause)
         } finally {
             _isUpdateActive = false
         }
@@ -293,12 +292,12 @@ internal class FlowConsumerContextImpl(
 
         try {
             if (_state == State.Active) {
-                source.onEvent(this, timestamp, FlowEvent.Converge)
+                source.onConverge(this, timestamp, delta)
             }
 
             logic.onConverge(this, timestamp, delta)
         } catch (cause: Throwable) {
-            doFailSource(timestamp, max(0, timestamp - _lastPull), cause)
+            doFailSource(timestamp, cause)
         }
     }
 
@@ -307,12 +306,13 @@ internal class FlowConsumerContextImpl(
     /**
      * Stop the [FlowSource].
      */
-    private fun doStopSource(now: Long, delta: Long) {
+    private fun doStopSource(now: Long) {
         try {
-            source.onEvent(this, now, FlowEvent.Exit)
-            logic.onFinish(this, now, delta, null)
+            source.onStop(this, now, max(0, now - _lastPull))
+            doFinishConsumer(now, null)
         } catch (cause: Throwable) {
-            doFailSource(now, delta, cause)
+            doFinishConsumer(now, cause)
+            return
         } finally {
             _deadline = Long.MAX_VALUE
             _demand = 0.0
@@ -322,9 +322,24 @@ internal class FlowConsumerContextImpl(
     /**
      * Fail the [FlowSource].
      */
-    private fun doFailSource(now: Long, delta: Long, cause: Throwable) {
+    private fun doFailSource(now: Long, cause: Throwable) {
         try {
-            logic.onFinish(this, now, delta, cause)
+            source.onStop(this, now, max(0, now - _lastPull))
+        } catch (e: Throwable) {
+            e.addSuppressed(cause)
+            doFinishConsumer(now, e)
+        } finally {
+            _deadline = Long.MAX_VALUE
+            _demand = 0.0
+        }
+    }
+
+    /**
+     * Finish the consumer.
+     */
+    private fun doFinishConsumer(now: Long, cause: Throwable?) {
+        try {
+            logic.onFinish(this, now, max(0, now - _lastPush), cause)
         } catch (e: Throwable) {
             e.addSuppressed(cause)
             logger.error(e) { "Uncaught exception" }

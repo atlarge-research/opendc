@@ -24,7 +24,6 @@ package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.flow.FlowConnection
-import org.opendc.simulator.flow.FlowEvent
 import org.opendc.simulator.flow.FlowSource
 
 /**
@@ -41,29 +40,14 @@ public class SimWorkloadLifecycle(private val ctx: SimMachineContext) {
      */
     public fun waitFor(consumer: FlowSource): FlowSource {
         waiting.add(consumer)
-        return object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
-                return try {
-                    consumer.onPull(conn, now, delta)
-                } catch (cause: Throwable) {
-                    complete(consumer)
-                    throw cause
-                }
-            }
-
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
+        return object : FlowSource by consumer {
+            override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
                 try {
-                    consumer.onEvent(conn, now, event)
-
-                    if (event == FlowEvent.Exit) {
-                        complete(consumer)
-                    }
-                } catch (cause: Throwable) {
+                    consumer.onStop(conn, now, delta)
+                } finally {
                     complete(consumer)
-                    throw cause
                 }
             }
-
             override fun toString(): String = "SimWorkloadLifecycle.Consumer[delegate=$consumer]"
         }
     }

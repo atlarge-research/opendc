@@ -22,10 +22,10 @@
 
 package org.opendc.simulator.flow
 
-import io.mockk.spyk
-import io.mockk.verify
+import io.mockk.*
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
@@ -122,7 +122,7 @@ internal class FlowForwarderTest {
         forwarder.startConsumer(consumer)
         forwarder.cancel()
 
-        verify(exactly = 0) { consumer.onEvent(any(), any(), FlowEvent.Exit) }
+        verify(exactly = 0) { consumer.onStop(any(), any(), any()) }
     }
 
     @Test
@@ -139,8 +139,8 @@ internal class FlowForwarderTest {
         yield()
         forwarder.cancel()
 
-        verify(exactly = 1) { consumer.onEvent(any(), any(), FlowEvent.Start) }
-        verify(exactly = 1) { consumer.onEvent(any(), any(), FlowEvent.Exit) }
+        verify(exactly = 1) { consumer.onStart(any(), any()) }
+        verify(exactly = 1) { consumer.onStop(any(), any(), any()) }
     }
 
     @Test
@@ -157,8 +157,8 @@ internal class FlowForwarderTest {
         yield()
         source.cancel()
 
-        verify(exactly = 1) { consumer.onEvent(any(), any(), FlowEvent.Start) }
-        verify(exactly = 1) { consumer.onEvent(any(), any(), FlowEvent.Exit) }
+        verify(exactly = 1) { consumer.onStart(any(), any()) }
+        verify(exactly = 1) { consumer.onStop(any(), any(), any()) }
     }
 
     @Test
@@ -182,22 +182,23 @@ internal class FlowForwarderTest {
     }
 
     @Test
+    @Disabled // Due to Kotlin bug: https://github.com/mockk/mockk/issues/368
     fun testAdjustCapacity() = runBlockingSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
-        val source = FlowSink(engine, 1.0)
+        val sink = FlowSink(engine, 1.0)
 
-        val consumer = spyk(FixedFlowSource(2.0, 1.0))
-        source.startConsumer(forwarder)
+        val source = spyk(FixedFlowSource(2.0, 1.0))
+        sink.startConsumer(forwarder)
 
         coroutineScope {
-            launch { forwarder.consume(consumer) }
+            launch { forwarder.consume(source) }
             delay(1000)
-            source.capacity = 0.5
+            sink.capacity = 0.5
         }
 
         assertEquals(3000, clock.millis())
-        verify(exactly = 1) { consumer.onPull(any(), any(), any()) }
+        verify(exactly = 1) { source.onPull(any(), any(), any()) }
     }
 
     @Test
@@ -259,7 +260,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testEventFailure() = runBlockingSimulation {
+    fun testStartFailure() = runBlockingSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 2000.0)
@@ -272,7 +273,7 @@ internal class FlowForwarderTest {
                     return Long.MAX_VALUE
                 }
 
-                override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
+                override fun onStart(conn: FlowConnection, now: Long) {
                     throw IllegalStateException("Test")
                 }
             })
@@ -287,7 +288,7 @@ internal class FlowForwarderTest {
     }
 
     @Test
-    fun testEventConvergeFailure() = runBlockingSimulation {
+    fun testConvergeFailure() = runBlockingSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val source = FlowSink(engine, 2000.0)
@@ -300,10 +301,8 @@ internal class FlowForwarderTest {
                     return Long.MAX_VALUE
                 }
 
-                override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-                    if (event == FlowEvent.Converge) {
-                        throw IllegalStateException("Test")
-                    }
+                override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+                    throw IllegalStateException("Test")
                 }
             })
         } catch (cause: Throwable) {

@@ -30,6 +30,23 @@ package org.opendc.simulator.flow
  */
 public interface FlowSource {
     /**
+     * This method is invoked when the source is started.
+     *
+     * @param conn The connection between the source and consumer.
+     * @param now The virtual timestamp in milliseconds at which the provider finished.
+     */
+    public fun onStart(conn: FlowConnection, now: Long) {}
+
+    /**
+     * This method is invoked when the source is finished.
+     *
+     * @param conn The connection between the source and consumer.
+     * @param now The virtual timestamp in milliseconds at which the source finished.
+     * @param delta The virtual duration between this call and the last call to [onPull] in milliseconds.
+     */
+    public fun onStop(conn: FlowConnection, now: Long, delta: Long) {}
+
+    /**
      * This method is invoked when the source is pulled.
      *
      * @param conn The connection between the source and consumer.
@@ -40,11 +57,11 @@ public interface FlowSource {
     public fun onPull(conn: FlowConnection, now: Long, delta: Long): Long
 
     /**
-     * This method is invoked when an event has occurred.
+     * This method is invoked when the flow graph has converged into a steady-state system.
      *
      * @param conn The connection between the source and consumer.
-     * @param now The virtual timestamp in milliseconds at which the event is occurring.
-     * @param event The event that has occurred.
+     * @param now The virtual timestamp in milliseconds at which the system converged.
+     * @param delta The virtual duration between this call and the last call to [onConverge] in milliseconds.
      */
-    public fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {}
+    public fun onConverge(conn: FlowConnection, now: Long, delta: Long) {}
 }

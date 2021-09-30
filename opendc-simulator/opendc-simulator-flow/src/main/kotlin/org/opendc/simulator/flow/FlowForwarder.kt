@@ -24,6 +24,7 @@ package org.opendc.simulator.flow
 
 import mu.KotlinLogging
 import org.opendc.simulator.flow.internal.FlowCountersImpl
+import kotlin.math.max
 
 /**
  * A class that acts as a [FlowSource] and [FlowConsumer] at the same time.
@@ -64,6 +65,8 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
             _innerCtx?.pull()
         }
 
+        @JvmField var lastPull = Long.MAX_VALUE
+
         override fun push(rate: Double) {
             if (delegate == null) {
                 return
@@ -82,7 +85,9 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
             reset()
 
             if (hasDelegateStarted) {
-                delegate.onEvent(this, engine.clock.millis(), FlowEvent.Exit)
+                val now = engine.clock.millis()
+                val delta = max(0, now - lastPull)
+                delegate.onStop(this, now, delta)
             }
         }
     }
@@ -134,6 +139,25 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
         }
     }
 
+    override fun onStart(conn: FlowConnection, now: Long) {
+        _innerCtx = conn
+    }
+
+    override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+        _innerCtx = null
+
+        val delegate = delegate
+        if (delegate != null) {
+            reset()
+
+            try {
+                delegate.onStop(this._ctx, now, delta)
+            } catch (cause: Throwable) {
+                logger.error(cause) { "Uncaught exception" }
+            }
+        }
+    }
+
     override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
         val delegate = delegate
 
@@ -141,10 +165,11 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
             start()
         }
 
+        _ctx.lastPull = now
         updateCounters(conn, delta)
 
         return try {
-            delegate?.onPull(this._ctx, now, delta) ?: Long.MAX_VALUE
+            delegate?.onPull(_ctx, now, delta) ?: Long.MAX_VALUE
         } catch (cause: Throwable) {
             logger.error(cause) { "Uncaught exception" }
 
@@ -153,32 +178,14 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
         }
     }
 
-    override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-        when (event) {
-            FlowEvent.Start -> _innerCtx = conn
-            FlowEvent.Exit -> {
-                _innerCtx = null
+    override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+        try {
+            delegate?.onConverge(this._ctx, now, delta)
+        } catch (cause: Throwable) {
+            logger.error(cause) { "Uncaught exception" }
 
-                val delegate = delegate
-                if (delegate != null) {
-                    reset()
-
-                    try {
-                        delegate.onEvent(this._ctx, now, FlowEvent.Exit)
-                    } catch (cause: Throwable) {
-                        logger.error(cause) { "Uncaught exception" }
-                    }
-                }
-            }
-            else ->
-                try {
-                    delegate?.onEvent(this._ctx, now, event)
-                } catch (cause: Throwable) {
-                    logger.error(cause) { "Uncaught exception" }
-
-                    _innerCtx = null
-                    reset()
-                }
+            _innerCtx = null
+            reset()
         }
     }
 
@@ -189,7 +196,7 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
         val delegate = delegate ?: return
 
         try {
-            delegate.onEvent(_ctx, engine.clock.millis(), FlowEvent.Start)
+            delegate.onStart(_ctx, engine.clock.millis())
             hasDelegateStarted = true
         } catch (cause: Throwable) {
             logger.error(cause) { "Uncaught exception" }

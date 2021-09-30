@@ -108,11 +108,8 @@ internal class ExclusiveFlowMultiplexerTest {
         val workload = object : FlowSource {
             var isFirst = true
 
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-                when (event) {
-                    FlowEvent.Start -> isFirst = true
-                    else -> {}
-                }
+            override fun onStart(conn: FlowConnection, now: Long) {
+                isFirst = true
             }
 
             override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {

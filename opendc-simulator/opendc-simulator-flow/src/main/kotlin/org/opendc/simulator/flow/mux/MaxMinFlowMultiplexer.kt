@@ -372,6 +372,19 @@ public class MaxMinFlowMultiplexer(
             provider.cancel()
         }
 
+        override fun onStart(conn: FlowConnection, now: Long) {
+            assert(_ctx == null) { "Source running concurrently" }
+            _ctx = conn
+            capacity = conn.capacity
+            updateCapacity()
+        }
+
+        override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+            _ctx = null
+            capacity = 0.0
+            updateCapacity()
+        }
+
         override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
             val capacity = capacity
             if (capacity != conn.capacity) {
@@ -381,23 +394,6 @@ public class MaxMinFlowMultiplexer(
 
             runScheduler(now)
             return Long.MAX_VALUE
-        }
-
-        override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-            when (event) {
-                FlowEvent.Start -> {
-                    assert(_ctx == null) { "Source running concurrently" }
-                    _ctx = conn
-                    capacity = conn.capacity
-                    updateCapacity()
-                }
-                FlowEvent.Exit -> {
-                    _ctx = null
-                    capacity = 0.0
-                    updateCapacity()
-                }
-                else -> {}
-            }
         }
 
         override fun compareTo(other: Output): Int = capacity.compareTo(other.capacity)

@@ -83,6 +83,28 @@ public interface FlowConsumer {
 public suspend fun FlowConsumer.consume(source: FlowSource) {
     return suspendCancellableCoroutine { cont ->
         startConsumer(object : FlowSource {
+            override fun onStart(conn: FlowConnection, now: Long) {
+                try {
+                    source.onStart(conn, now)
+                } catch (cause: Throwable) {
+                    cont.resumeWithException(cause)
+                    throw cause
+                }
+            }
+
+            override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+                try {
+                    source.onStop(conn, now, delta)
+
+                    if (!cont.isCompleted) {
+                        cont.resume(Unit)
+                    }
+                } catch (cause: Throwable) {
+                    cont.resumeWithException(cause)
+                    throw cause
+                }
+            }
+
             override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
                 return try {
                     source.onPull(conn, now, delta)
@@ -92,13 +114,9 @@ public suspend fun FlowConsumer.consume(source: FlowSource) {
                 }
             }
 
-            override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
+            override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
                 try {
-                    source.onEvent(conn, now, event)
-
-                    if (event == FlowEvent.Exit && !cont.isCompleted) {
-                        cont.resume(Unit)
-                    }
+                    source.onConverge(conn, now, delta)
                 } catch (cause: Throwable) {
                     cont.resumeWithException(cause)
                     throw cause

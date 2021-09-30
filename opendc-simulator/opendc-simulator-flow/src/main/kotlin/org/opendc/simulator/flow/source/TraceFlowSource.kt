@@ -23,7 +23,6 @@
 package org.opendc.simulator.flow.source
 
 import org.opendc.simulator.flow.FlowConnection
-import org.opendc.simulator.flow.FlowEvent
 import org.opendc.simulator.flow.FlowSource
 
 /**
@@ -32,6 +31,15 @@ import org.opendc.simulator.flow.FlowSource
 public class TraceFlowSource(private val trace: Sequence<Fragment>) : FlowSource {
     private var _iterator: Iterator<Fragment>? = null
     private var _nextTarget = Long.MIN_VALUE
+
+    override fun onStart(conn: FlowConnection, now: Long) {
+        check(_iterator == null) { "Source already running" }
+        _iterator = trace.iterator()
+    }
+
+    override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+        _iterator = null
+    }
 
     override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
         // Check whether the trace fragment was fully consumed, otherwise wait until we have done so
@@ -52,21 +60,8 @@ public class TraceFlowSource(private val trace: Sequence<Fragment>) : FlowSource
         }
     }
 
-    override fun onEvent(conn: FlowConnection, now: Long, event: FlowEvent) {
-        when (event) {
-            FlowEvent.Start -> {
-                check(_iterator == null) { "Source already running" }
-                _iterator = trace.iterator()
-            }
-            FlowEvent.Exit -> {
-                _iterator = null
-            }
-            else -> {}
-        }
-    }
-
     /**
-     * A fragment of the tgrace.
+     * A fragment of the trace.
      */
     public data class Fragment(val duration: Long, val usage: Double)
 }
