@@ -34,6 +34,5 @@ dependencies {
     api(libs.kotlinx.coroutines)
     implementation(projects.opendcUtils)
 
-    jmhImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }

@@ -8,7 +8,6 @@ jackson = "2.12.5"
 junit-jupiter = "5.7.2"
 junit-platform = "1.7.2"
 kotlin-logging = "2.0.11"
-kotlinx-benchmark = "0.3.1"
 kotlinx-coroutines = "1.5.1"
 ktor = "1.6.3"
 log4j = "2.14.1"
@@ -64,9 +63,6 @@ ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-jackson = { module = "io.ktor:ktor-client-jackson", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
-
-# Benchmark
-kotlinx-benchmark-runtime-jvm = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm", version.ref = "kotlinx-benchmark" }
 
 # Other
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }

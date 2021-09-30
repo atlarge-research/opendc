@@ -20,49 +20,21 @@
  * SOFTWARE.
  */
 
-import kotlinx.benchmark.gradle.*
 import org.jetbrains.kotlin.allopen.gradle.*
 
 plugins {
-    id("org.jetbrains.kotlinx.benchmark")
     `java-library`
     kotlin("plugin.allopen")
-}
-
-sourceSets {
-    register("jmh") {
-        compileClasspath += sourceSets["main"].output
-        runtimeClasspath += sourceSets["main"].output
-    }
-}
-
-configurations {
-    named("jmhImplementation") {
-        extendsFrom(configurations["implementation"])
-    }
+    id("me.champeau.jmh")
 }
 
 configure<AllOpenExtension> {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
-benchmark {
-    targets {
-        register("jmh") {
-            this as JvmBenchmarkTarget
-            jmhVersion = "1.33"
-        }
-    }
-}
+jmh {
+    jmhVersion.set("1.33")
 
-dependencies {
-    val libs = Libs(project)
-    implementation(libs["kotlinx.benchmark.runtime.jvm"])
-}
-
-// Workaround for https://github.com/Kotlin/kotlinx-benchmark/issues/39
-afterEvaluate {
-    tasks.named<org.gradle.jvm.tasks.Jar>("jmhBenchmarkJar") {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
+    profilers.add("stack")
+    profilers.add("gc")
 }
