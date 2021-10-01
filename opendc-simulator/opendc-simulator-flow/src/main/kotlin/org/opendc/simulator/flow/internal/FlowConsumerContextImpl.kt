@@ -24,7 +24,7 @@ package org.opendc.simulator.flow.internal
 
 import mu.KotlinLogging
 import org.opendc.simulator.flow.*
-import java.util.ArrayDeque
+import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -44,20 +44,18 @@ internal class FlowConsumerContextImpl(
     /**
      * The capacity of the connection.
      */
-    override var capacity: Double = 0.0
+    override var capacity: Double
+        get() = _capacity
         set(value) {
-            val oldValue = field
+            val oldValue = _capacity
 
             // Only changes will be propagated
             if (value != oldValue) {
-                field = value
-
-                // Do not pull the source if it has not been started yet
-                if (_state == State.Active) {
-                    pull()
-                }
+                _capacity = value
+                pull()
             }
         }
+    private var _capacity: Double = 0.0
 
     /**
      * The current processing rate of the connection.
@@ -75,8 +73,25 @@ internal class FlowConsumerContextImpl(
     /**
      * Flags to control the convergence of the consumer and source.
      */
-    override var shouldConsumerConverge: Boolean = false
     override var shouldSourceConverge: Boolean = false
+        set(value) {
+            field = value
+            _flags =
+                if (value)
+                    _flags or ConnConvergeSource
+                else
+                    _flags and ConnConvergeSource.inv()
+        }
+    override var shouldConsumerConverge: Boolean = false
+        set(value) {
+            field = value
+
+            _flags =
+                if (value)
+                    _flags or ConnConvergeConsumer
+                else
+                    _flags and ConnConvergeConsumer.inv()
+        }
 
     /**
      * The clock to track simulation time.
@@ -84,36 +99,15 @@ internal class FlowConsumerContextImpl(
     private val _clock = engine.clock
 
     /**
-     * A flag to indicate the state of the connection.
-     */
-    private var _state = State.Pending
-
-    /**
      * The current state of the connection.
      */
     private var _demand: Double = 0.0 // The current (pending) demand of the source
-    private var _activeDemand: Double = 0.0 // The previous demand of the source
     private var _deadline: Long = Long.MAX_VALUE // The deadline of the source's timer
 
     /**
-     * A flag to indicate that the source should be pulled.
+     * The flags of the flow connection, indicating certain actions.
      */
-    private var _isPulled = false
-
-    /**
-     * A flag to indicate that an update is active.
-     */
-    private var _isUpdateActive = false
-
-    /**
-     * A flag to indicate that an immediate update is scheduled.
-     */
-    private var _isImmediateUpdateScheduled = false
-
-    /**
-     * A flag that indicates to the [FlowEngine] that the context is already enqueued to converge.
-     */
-    private var _willConverge: Boolean = false
+    private var _flags: Int = 0
 
     /**
      * The timestamp of calls to the callbacks.
@@ -130,44 +124,53 @@ internal class FlowConsumerContextImpl(
     private val _pendingTimers: ArrayDeque<FlowEngineImpl.Timer> = ArrayDeque(5)
 
     override fun start() {
-        check(_state == State.Pending) { "Consumer is already started" }
+        check(_flags and ConnState == ConnPending) { "Consumer is already started" }
         engine.batch {
-            source.onStart(this, _clock.millis())
-            _state = State.Active
+            val now = _clock.millis()
+            source.onStart(this, now)
 
-            pull()
+            // Mark the connection as active and pulled
+            val newFlags = (_flags and ConnState.inv()) or ConnActive or ConnPulled
+            scheduleImmediate(now, newFlags)
         }
     }
 
     override fun close() {
-        if (_state == State.Closed) {
+        var flags = _flags
+        if (flags and ConnState == ConnClosed) {
             return
         }
 
         engine.batch {
-            _state = State.Closed
-            if (!_isUpdateActive) {
+            // Mark the connection as closed and pulled (in order to converge)
+            flags = (flags and ConnState.inv()) or ConnClosed or ConnPulled
+            _flags = flags
+
+            if (flags and ConnUpdateActive == 0) {
                 val now = _clock.millis()
                 doStopSource(now)
 
                 // FIX: Make sure the context converges
-                pull()
+                scheduleImmediate(now, flags)
             }
         }
     }
 
     override fun pull() {
-        if (_state == State.Closed) {
+        val flags = _flags
+        if (flags and ConnState != ConnActive) {
             return
         }
 
-        _isPulled = true
-        scheduleImmediate()
+        // Mark connection as pulled
+        scheduleImmediate(_clock.millis(), flags or ConnPulled)
     }
 
     override fun flush() {
+        val flags = _flags
+
         // Do not attempt to flush the connection if the connection is closed or an update is already active
-        if (_state == State.Closed || _isUpdateActive) {
+        if (flags and ConnState != ConnActive || flags and ConnUpdateActive != 0) {
             return
         }
 
@@ -181,118 +184,145 @@ internal class FlowConsumerContextImpl(
 
         _demand = rate
 
-        // Invalidate only if the active demand is changed and no update is active
-        // If an update is active, it will already get picked up at the end of the update
-        if (_activeDemand != rate && !_isUpdateActive) {
-            scheduleImmediate()
-        }
-    }
+        val flags = _flags
 
-    /**
-     * Determine whether the state of the flow connection should be updated.
-     */
-    fun shouldUpdate(timestamp: Long): Boolean {
-        // The flow connection should be updated for three reasons:
-        //  (1) The source should be pulled (after a call to `pull`)
-        //  (2) The demand of the source has changed (after a call to `push`)
-        //  (3) The timer of the source expired
-        return _isPulled || _demand != _activeDemand || _deadline == timestamp
+        if (flags and ConnUpdateActive != 0) {
+            // If an update is active, it will already get picked up at the end of the update
+            _flags = flags or ConnPushed
+        } else {
+            // Invalidate only if no update is active
+            scheduleImmediate(_clock.millis(), flags or ConnPushed)
+        }
     }
 
     /**
      * Update the state of the flow connection.
      *
      * @param now The current virtual timestamp.
-     * @return A flag to indicate whether the connection has already been updated before convergence.
+     * @param visited The queue of connections that have been visited during the cycle.
+     * @param timerQueue The queue of all pending timers.
+     * @param isImmediate A flag to indicate that this invocation is an immediate update or a delayed update.
      */
-    fun doUpdate(now: Long): Boolean {
-        // The connection will only converge if either the source or the consumer wants the converge callback to be
-        // invoked.
-        val shouldConverge = shouldSourceConverge || shouldConsumerConverge
-        var willConverge = false
-        if (shouldConverge) {
-            willConverge = _willConverge
-            _willConverge = true
+    fun doUpdate(
+        now: Long,
+        visited: ArrayDeque<FlowConsumerContextImpl>,
+        timerQueue: PriorityQueue<FlowEngineImpl.Timer>,
+        isImmediate: Boolean
+    ) {
+        var flags = _flags
+
+        // Precondition: The flow connection must be active
+        if (flags and ConnState != ConnActive) {
+            return
         }
 
-        val oldState = _state
-        if (oldState != State.Active) {
-            return willConverge
-        }
-
-        _isUpdateActive = true
-        _isImmediateUpdateScheduled = false
+        val deadline = _deadline
+        val reachedDeadline = deadline == now
+        var newDeadline = deadline
+        var hasUpdated = false
 
         try {
             // Pull the source if (1) `pull` is called or (2) the timer of the source has expired
-            val deadline = if (_isPulled || _deadline == now) {
+            newDeadline = if (flags and ConnPulled != 0 || reachedDeadline) {
                 val lastPull = _lastPull
                 val delta = max(0, now - lastPull)
 
-                _isPulled = false
+                // Update state before calling into the outside world, so it observes a consistent state
                 _lastPull = now
+                _flags = (flags and ConnPulled.inv()) or ConnUpdateActive
+                hasUpdated = true
 
                 val duration = source.onPull(this, now, delta)
+
+                // IMPORTANT: Re-fetch the flags after the callback might have changed those
+                flags = _flags
+
                 if (duration != Long.MAX_VALUE)
                     now + duration
                 else
                     duration
             } else {
-                _deadline
+                deadline
             }
 
-            // Check whether the state has changed after [consumer.onNext]
-            when (_state) {
-                State.Active -> {
-                    val demand = _demand
-                    if (demand != _activeDemand) {
-                        val lastPush = _lastPush
-                        val delta = max(0, now - lastPush)
+            // Push to the consumer if the rate of the source has changed (after a call to `push`)
+            val newState = flags and ConnState
+            if (newState == ConnActive && flags and ConnPushed != 0) {
+                val lastPush = _lastPush
+                val delta = max(0, now - lastPush)
 
-                        _lastPush = now
+                // Update state before calling into the outside world, so it observes a consistent state
+                _lastPush = now
+                _flags = (flags and ConnPushed.inv()) or ConnUpdateActive
+                hasUpdated = true
 
-                        logic.onPush(this, now, delta, demand)
-                    }
-                }
-                State.Closed -> doStopSource(now)
-                State.Pending -> throw IllegalStateException("Illegal transition to pending state")
+                logic.onPush(this, now, delta, _demand)
+
+                // IMPORTANT: Re-fetch the flags after the callback might have changed those
+                flags = _flags
+            } else if (newState == ConnClosed) {
+                hasUpdated = true
+
+                // The source has called [FlowConnection.close], so clean up the connection
+                doStopSource(now)
             }
-
-            // Note: pending limit might be changed by [logic.onConsume], so re-fetch the value
-            val newLimit = _demand
-
-            // Flush the changes to the flow
-            _activeDemand = newLimit
-            _deadline = deadline
-            _rate = min(capacity, newLimit)
-
-            // Schedule an update at the new deadline
-            scheduleDelayed(now, deadline)
         } catch (cause: Throwable) {
+            // Mark the connection as closed
+            flags = (flags and ConnState.inv()) or ConnClosed
+
             doFailSource(now, cause)
-        } finally {
-            _isUpdateActive = false
         }
 
-        return willConverge
-    }
+        // Check whether the connection needs to be added to the visited queue. This is the case when:
+        //  (1) An update was performed (either a push or a pull)
+        //  (2) Either the source or consumer want to converge, and
+        //  (3) Convergence is not already pending (ConnConvergePending)
+        if (hasUpdated && flags and (ConnConvergeSource or ConnConvergeConsumer) != 0 && flags and ConnConvergePending == 0) {
+            visited.add(this)
+            flags = flags or ConnConvergePending
+        }
 
-    /**
-     * Prune the elapsed timers from this context.
-     */
-    fun updateTimers() {
-        // Invariant: Any pending timer should only point to a future timestamp
-        // See also `scheduleDelayed`
-        _timer = _pendingTimers.poll()
-    }
+        // Compute the new flow rate of the connection
+        // Note: _demand might be changed by [logic.onConsume], so we must re-fetch the value
+        _rate = min(_capacity, _demand)
 
-    /**
-     * Try to re-schedule the resource context in case it was skipped.
-     */
-    fun tryReschedule(now: Long) {
-        val deadline = _deadline
-        if (deadline > now && deadline != Long.MAX_VALUE) {
-            scheduleDelayed(now, deadline)
+        // Indicate that no update is active anymore and flush the flags
+        _flags = flags and ConnUpdateActive.inv() and ConnUpdatePending.inv()
+
+        val pendingTimers = _pendingTimers
+
+        // Prune the head timer if this is a delayed update
+        val timer = if (!isImmediate) {
+            // Invariant: Any pending timer should only point to a future timestamp
+            // See also `scheduleDelayed`
+            val timer = pendingTimers.poll()
+            _timer = timer
+            timer
+        } else {
+            _timer
+        }
+
+        // Set the new deadline and schedule a delayed update for that deadline
+        _deadline = newDeadline
+
+        // Check whether we need to schedule a new timer for this connection. That is the case when:
+        // (1) The deadline is valid (not the maximum value)
+        // (2) The connection is active
+        // (3) The current active timer for the connection points to a later deadline
+        if (newDeadline == Long.MAX_VALUE || flags and ConnState != ConnActive || (timer != null && newDeadline >= timer.target)) {
+            // Ignore any deadline scheduled at the maximum value
+            // This indicates that the source does not want to register a timer
+            return
+        }
+
+        // Construct a timer for the new deadline and add it to the global queue of timers
+        val newTimer = FlowEngineImpl.Timer(this, newDeadline)
+        _timer = newTimer
+        timerQueue.add(newTimer)
+
+        // A timer already exists for this connection, so add it to the queue of pending timers
+        if (timer != null) {
+            pendingTimers.addFirst(timer)
         }
     }
 
@@ -300,17 +330,22 @@ internal class FlowConsumerContextImpl(
      * This method is invoked when the system converges into a steady state.
      */
     fun onConverge(now: Long) {
-        _willConverge = false
-
         try {
-            if (_state == State.Active && shouldSourceConverge) {
+            val flags = _flags
+
+            // The connection is converging now, so unset the convergence pending flag
+            _flags = flags and ConnConvergePending.inv()
+
+            // Call the source converge callback if it has enabled convergence and the connection is active
+            if (flags and ConnState == ConnActive && flags and ConnConvergeSource != 0) {
                 val delta = max(0, now - _lastSourceConvergence)
                 _lastSourceConvergence = now
 
                 source.onConverge(this, now, delta)
             }
 
-            if (shouldConsumerConverge) {
+            // Call the consumer callback if it has enabled convergence
+            if (flags and ConnConvergeConsumer != 0) {
                 val delta = max(0, now - _lastConsumerConvergence)
                 _lastConsumerConvergence = now
 
@@ -369,57 +404,16 @@ internal class FlowConsumerContextImpl(
     /**
      * Schedule an immediate update for this connection.
      */
-    private fun scheduleImmediate() {
+    private fun scheduleImmediate(now: Long, flags: Int) {
         // In case an immediate update is already scheduled, no need to do anything
-        if (_isImmediateUpdateScheduled) {
+        if (flags and ConnUpdatePending != 0) {
+            _flags = flags
             return
         }
 
-        _isImmediateUpdateScheduled = true
+        // Mark the connection that there is an update pending
+        _flags = flags or ConnUpdatePending
 
-        val now = _clock.millis()
         engine.scheduleImmediate(now, this)
-    }
-
-    /**
-     * Schedule a delayed update for this resource context.
-     */
-    private fun scheduleDelayed(now: Long, target: Long) {
-        // Ignore any target scheduled at the maximum value
-        // This indicates that the sources does not want to register a timer
-        if (target == Long.MAX_VALUE) {
-            return
-        }
-
-        val timer = _timer
-
-        if (timer == null) {
-            // No existing timer exists, so schedule a new timer and update the head
-            _timer = engine.scheduleDelayed(now, this, target)
-        } else if (target < timer.target) {
-            // Existing timer is further in the future, so schedule a new timer ahead of it
-            _timer = engine.scheduleDelayed(now, this, target)
-            _pendingTimers.addFirst(timer)
-        }
-    }
-
-    /**
-     * The state of a flow connection.
-     */
-    private enum class State {
-        /**
-         * The connection is pending and the consumer is waiting to consume the source.
-         */
-        Pending,
-
-        /**
-         * The connection is active and the source is currently being consumed.
-         */
-        Active,
-
-        /**
-         * The connection is closed and the source cannot be consumed through this connection anymore.
-         */
-        Closed
     }
 }

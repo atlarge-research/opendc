@@ -44,6 +44,8 @@ public class FlowSink(
 
     override fun createLogic(): FlowConsumerLogic {
         return object : FlowConsumerLogic {
+            private val parent = this@FlowSink.parent
+
             override fun onPush(
                 ctx: FlowConsumerContext,
                 now: Long,

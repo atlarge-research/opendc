@@ -63,7 +63,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
     /**
      * The systems that have been visited during the engine cycle.
      */
-    private val visited = ArrayDeque<FlowConsumerContextImpl>()
+    private val visited: ArrayDeque<FlowConsumerContextImpl> = ArrayDeque()
 
     /**
      * The index in the batch stack.
@@ -71,31 +71,18 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
     private var batchIndex = 0
 
     /**
-     * A flag to indicate that the engine is currently active.
-     */
-    private val isRunning: Boolean
-        get() = batchIndex > 0
-
-    /**
      * Update the specified [ctx] synchronously.
      */
     fun scheduleSync(now: Long, ctx: FlowConsumerContextImpl) {
-        if (!ctx.doUpdate(now)) {
-            visited.add(ctx)
-        }
+        ctx.doUpdate(now, visited, futureQueue, isImmediate = true)
 
         // In-case the engine is already running in the call-stack, return immediately. The changes will be picked
         // up by the active engine.
-        if (isRunning) {
+        if (batchIndex > 0) {
             return
         }
 
-        try {
-            batchIndex++
-            runEngine(now)
-        } finally {
-            batchIndex--
-        }
+        runEngine(now)
     }
 
     /**
@@ -109,36 +96,11 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
 
         // In-case the engine is already running in the call-stack, return immediately. The changes will be picked
         // up by the active engine.
-        if (isRunning) {
+        if (batchIndex > 0) {
             return
         }
 
-        try {
-            batchIndex++
-            runEngine(now)
-        } finally {
-            batchIndex--
-        }
-    }
-
-    /**
-     * Schedule the engine to run at [target] to update the flow contexts.
-     *
-     * This method will override earlier calls to this method for the same [ctx].
-     *
-     * @param now The current virtual timestamp.
-     * @param ctx The flow context to which the event applies.
-     * @param target The timestamp when the interrupt should happen.
-     */
-    fun scheduleDelayed(now: Long, ctx: FlowConsumerContextImpl, target: Long): Timer {
-        val futureQueue = futureQueue
-
-        require(target >= now) { "Timestamp must be in the future" }
-
-        val timer = Timer(ctx, target)
-        futureQueue.add(timer)
-
-        return timer
+        runEngine(now)
     }
 
     override fun newContext(consumer: FlowSource, provider: FlowConsumerLogic): FlowConsumerContext = FlowConsumerContextImpl(this, consumer, provider)
@@ -149,10 +111,22 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
 
     override fun popBatch() {
         try {
-            // Flush the work if the platform is not already running
+            // Flush the work if the engine is not already running
             if (batchIndex == 1 && queue.isNotEmpty()) {
-                runEngine(clock.millis())
+                doRunEngine(clock.millis())
             }
+        } finally {
+            batchIndex--
+        }
+    }
+
+    /**
+     * Run the engine and mark as active while running.
+     */
+    private fun runEngine(now: Long) {
+        try {
+            batchIndex++
+            doRunEngine(now)
         } finally {
             batchIndex--
         }
@@ -161,7 +135,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
     /**
      * Run all the enqueued actions for the specified [timestamp][now].
      */
-    private fun runEngine(now: Long) {
+    private fun doRunEngine(now: Long) {
         val queue = queue
         val futureQueue = futureQueue
         val futureInvocations = futureInvocations
@@ -179,27 +153,16 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
         // Execute all scheduled updates at current timestamp
         while (true) {
             val timer = futureQueue.peek() ?: break
-            val ctx = timer.ctx
             val target = timer.target
-
-            assert(target >= now) { "Internal inconsistency: found update of the past" }
 
             if (target > now) {
                 break
             }
 
+            assert(target >= now) { "Internal inconsistency: found update of the past" }
+
             futureQueue.poll()
-
-            // Update the existing timers of the connection
-            ctx.updateTimers()
-
-            if (ctx.shouldUpdate(now)) {
-                if (!ctx.doUpdate(now)) {
-                    visited.add(ctx)
-                }
-            } else {
-                ctx.tryReschedule(now)
-            }
+            timer.ctx.doUpdate(now, visited, futureQueue, isImmediate = false)
         }
 
         // Repeat execution of all immediate updates until the system has converged to a steady-state
@@ -208,17 +171,13 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
             // Execute all immediate updates
             while (true) {
                 val ctx = queue.poll() ?: break
-
-                if (ctx.shouldUpdate(now) && !ctx.doUpdate(now)) {
-                    visited.add(ctx)
-                }
+                ctx.doUpdate(now, visited, futureQueue, isImmediate = true)
             }
 
-            for (system in visited) {
-                system.onConverge(now)
+            while (true) {
+                val ctx = visited.poll() ?: break
+                ctx.onConverge(now)
             }
-
-            visited.clear()
         } while (queue.isNotEmpty())
 
         // Schedule an engine invocation for the next update to occur.
@@ -242,18 +201,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
                 // Case 2: A new timer was registered ahead of the other timers.
                 // Solution: Schedule a new scheduler invocation
                 @OptIn(InternalCoroutinesApi::class)
-                val handle = delay.invokeOnTimeout(
-                    target - now,
-                    {
-                        try {
-                            batchIndex++
-                            runEngine(target)
-                        } finally {
-                            batchIndex--
-                        }
-                    },
-                    context
-                )
+                val handle = delay.invokeOnTimeout(target - now, { runEngine(target) }, context)
                 scheduled.addFirst(Invocation(target, handle))
                 break
             } else if (invocation.timestamp < target) {
@@ -274,7 +222,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
      * This class is used to keep track of the future engine invocations created using the [Delay] instance. In case
      * the invocation is not needed anymore, it can be cancelled via [cancel].
      */
-    private data class Invocation(
+    private class Invocation(
         @JvmField val timestamp: Long,
         @JvmField val handle: DisposableHandle
     ) {
