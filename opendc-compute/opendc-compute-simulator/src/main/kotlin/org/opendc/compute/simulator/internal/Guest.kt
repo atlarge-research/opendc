@@ -33,12 +33,10 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.SimWorkloadMapper
-import org.opendc.simulator.compute.SimAbstractMachine
-import org.opendc.simulator.compute.SimMachine
+import org.opendc.simulator.compute.kernel.SimVirtualMachine
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.roundToLong
 
 /**
  * A virtual machine instance that is managed by a [SimHost].
@@ -50,7 +48,7 @@ internal class Guest(
     private val mapper: SimWorkloadMapper,
     private val listener: GuestListener,
     val server: Server,
-    val machine: SimMachine
+    val machine: SimVirtualMachine
 ) {
     /**
      * The [CoroutineScope] of the guest.
@@ -236,17 +234,22 @@ internal class Guest(
         .build()
 
     /**
-     * Helper function to track the uptime of the guest.
+     * Helper function to track the uptime and downtime of the guest.
      */
-    fun collectUptime(duration: Long, result: ObservableLongMeasurement? = null) {
+    fun updateUptime(duration: Long) {
         if (state == ServerState.RUNNING) {
             _uptime += duration
         } else if (state == ServerState.ERROR) {
             _downtime += duration
         }
+    }
 
-        result?.observe(_uptime, _upState)
-        result?.observe(_downtime, _downState)
+    /**
+     * Helper function to track the uptime of the guest.
+     */
+    fun collectUptime(result: ObservableLongMeasurement) {
+        result.observe(_uptime, _upState)
+        result.observe(_downtime, _downState)
     }
 
     private var _bootTime = Long.MIN_VALUE
@@ -254,9 +257,9 @@ internal class Guest(
     /**
      * Helper function to track the boot time of the guest.
      */
-    fun collectBootTime(result: ObservableLongMeasurement? = null) {
+    fun collectBootTime(result: ObservableLongMeasurement) {
         if (_bootTime != Long.MIN_VALUE) {
-            result?.observe(_bootTime)
+            result.observe(_bootTime)
         }
     }
 
@@ -276,33 +279,17 @@ internal class Guest(
         .putAll(attributes)
         .put(STATE_KEY, "idle")
         .build()
-    private var _totalTime = 0.0
 
     /**
      * Helper function to track the CPU time of a machine.
      */
-    fun collectCpuTime(duration: Long, result: ObservableLongMeasurement) {
-        val coreCount = server.flavor.cpuCount
-        val d = coreCount / _cpuLimit
+    fun collectCpuTime(result: ObservableLongMeasurement) {
+        val counters = machine.counters
 
-        var grantedWork = 0.0
-        var overcommittedWork = 0.0
-
-        for (cpu in (machine as SimAbstractMachine).cpus) {
-            val counters = cpu.counters
-            grantedWork += counters.actual
-            overcommittedWork += counters.overcommit
-        }
-
-        _totalTime += (duration / 1000.0) * coreCount
-        val activeTime = (grantedWork * d).roundToLong()
-        val idleTime = (_totalTime - grantedWork * d).roundToLong()
-        val stealTime = (overcommittedWork * d).roundToLong()
-
-        result.observe(activeTime, _activeState)
-        result.observe(idleTime, _idleState)
-        result.observe(stealTime, _stealState)
-        result.observe(0, _lostState)
+        result.observe(counters.cpuActiveTime / 1000, _activeState)
+        result.observe(counters.cpuIdleTime / 1000, _idleState)
+        result.observe(counters.cpuStealTime / 1000, _stealState)
+        result.observe(counters.cpuLostTime / 1000, _lostState)
     }
 
     private val _cpuLimit = machine.model.cpus.sumOf { it.frequency }

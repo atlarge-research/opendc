@@ -23,7 +23,6 @@
 package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
@@ -38,64 +37,20 @@ import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
  * concurrently using weighted fair sharing.
  *
  * @param engine The [FlowEngine] to manage the machine's resources.
- * @param parent The parent simulation system.
+ * @param listener The listener for the convergence of the system.
  * @param scalingGovernor The CPU frequency scaling governor to use for the hypervisor.
  * @param interferenceDomain The resource interference domain to which the hypervisor belongs.
- * @param listener The hypervisor listener to use.
  */
 public class SimFairShareHypervisor(
     engine: FlowEngine,
-    private val parent: FlowConvergenceListener? = null,
-    scalingGovernor: ScalingGovernor? = null,
-    interferenceDomain: VmInterferenceDomain? = null,
-    private val listener: SimHypervisor.Listener? = null
-) : SimAbstractHypervisor(engine, scalingGovernor, interferenceDomain) {
+    listener: FlowConvergenceListener?,
+    scalingGovernor: ScalingGovernor?,
+    interferenceDomain: VmInterferenceDomain?,
+) : SimAbstractHypervisor(engine, listener, scalingGovernor, interferenceDomain) {
+    /**
+     * The multiplexer that distributes the computing capacity.
+     */
+    override val mux: FlowMultiplexer = MaxMinFlowMultiplexer(engine, this, interferenceDomain)
 
-    override fun canFit(model: MachineModel, switch: FlowMultiplexer): Boolean = true
-
-    override fun createMultiplexer(ctx: SimMachineContext): FlowMultiplexer {
-        return SwitchSystem(ctx).switch
-    }
-
-    private inner class SwitchSystem(private val ctx: SimMachineContext) : FlowConvergenceListener {
-        val switch = MaxMinFlowMultiplexer(engine, this, interferenceDomain)
-
-        private var lastCpuUsage = 0.0
-        private var lastCpuDemand = 0.0
-        private var lastDemand = 0.0
-        private var lastActual = 0.0
-        private var lastOvercommit = 0.0
-        private var lastInterference = 0.0
-        private var lastReport = Long.MIN_VALUE
-
-        override fun onConverge(now: Long, delta: Long) {
-            val listener = listener ?: return
-            val counters = switch.counters
-
-            if (now > lastReport) {
-                listener.onSliceFinish(
-                    this@SimFairShareHypervisor,
-                    counters.demand - lastDemand,
-                    counters.actual - lastActual,
-                    counters.overcommit - lastOvercommit,
-                    counters.interference - lastInterference,
-                    lastCpuUsage,
-                    lastCpuDemand
-                )
-            }
-            lastReport = now
-
-            lastCpuDemand = switch.outputs.sumOf { it.demand }
-            lastCpuUsage = switch.outputs.sumOf { it.rate }
-            lastDemand = counters.demand
-            lastActual = counters.actual
-            lastOvercommit = counters.overcommit
-            lastInterference = counters.interference
-
-            val load = lastCpuDemand / ctx.cpus.sumOf { it.model.frequency }
-            triggerGovernors(load)
-
-            parent?.onConverge(now, delta)
-        }
-    }
+    override fun canFit(model: MachineModel): Boolean = true
 }

@@ -40,13 +40,12 @@ public interface SimHypervisorProvider {
     public val id: String
 
     /**
-     * Create a [SimHypervisor] instance with the specified [listener].
+     * Create a new [SimHypervisor] instance.
      */
     public fun create(
         engine: FlowEngine,
-        parent: FlowConvergenceListener? = null,
+        listener: FlowConvergenceListener? = null,
         scalingGovernor: ScalingGovernor? = null,
         interferenceDomain: VmInterferenceDomain? = null,
-        listener: SimHypervisor.Listener? = null
     ): SimHypervisor
 }

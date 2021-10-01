@@ -42,19 +42,19 @@ public class SimUps(
     /**
      * The resource aggregator used to combine the input sources.
      */
-    private val switch = MaxMinFlowMultiplexer(engine)
+    private val mux = MaxMinFlowMultiplexer(engine)
 
     /**
      * The [FlowConsumer] that represents the output of the UPS.
      */
-    private val provider = switch.newInput()
+    private val provider = mux.newInput()
 
     /**
      * Create a new UPS outlet.
      */
     public fun newInlet(): SimPowerInlet {
         val forward = FlowForwarder(engine, isCoupled = true)
-        switch.addOutput(forward)
+        forward.startConsumer(mux.newOutput())
         return Inlet(forward)
     }
 

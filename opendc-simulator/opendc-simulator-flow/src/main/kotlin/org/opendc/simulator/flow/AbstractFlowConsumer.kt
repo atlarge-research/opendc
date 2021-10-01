@@ -83,14 +83,18 @@ public abstract class AbstractFlowConsumer(private val engine: FlowEngine, initi
     /**
      * The previous demand for the consumer.
      */
-    private var previousDemand = 0.0
+    private var _previousDemand = 0.0
+    private var _previousCapacity = 0.0
 
     /**
      * Update the counters of the flow consumer.
      */
     protected fun updateCounters(ctx: FlowConnection, delta: Long) {
-        val demand = previousDemand
-        previousDemand = ctx.demand
+        val demand = _previousDemand
+        val capacity = _previousCapacity
+
+        _previousDemand = ctx.demand
+        _previousCapacity = ctx.capacity
 
         if (delta <= 0) {
             return
@@ -98,23 +102,23 @@ public abstract class AbstractFlowConsumer(private val engine: FlowEngine, initi
 
         val counters = _counters
         val deltaS = delta / 1000.0
-        val work = demand * deltaS
+        val total = demand * deltaS
+        val work = capacity * deltaS
         val actualWork = ctx.rate * deltaS
-        val remainingWork = work - actualWork
 
         counters.demand += work
         counters.actual += actualWork
-        counters.overcommit += remainingWork
+        counters.remaining += (total - actualWork)
     }
 
     /**
      * Update the counters of the flow consumer.
      */
-    protected fun updateCounters(demand: Double, actual: Double, overcommit: Double) {
+    protected fun updateCounters(demand: Double, actual: Double, remaining: Double) {
         val counters = _counters
         counters.demand += demand
         counters.actual += actual
-        counters.overcommit += overcommit
+        counters.remaining += remaining
     }
 
     final override fun startConsumer(source: FlowSource) {

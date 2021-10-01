@@ -37,7 +37,7 @@ import org.opendc.simulator.flow.source.TraceFlowSource
 /**
  * Test suite for the [ForwardingFlowMultiplexer] class.
  */
-internal class ExclusiveFlowMultiplexerTest {
+internal class ForwardingFlowMultiplexerTest {
     /**
      * Test a trace workload.
      */
@@ -63,7 +63,7 @@ internal class ExclusiveFlowMultiplexerTest {
         val forwarder = FlowForwarder(engine)
         val adapter = FlowSourceRateAdapter(forwarder, speed::add)
         source.startConsumer(adapter)
-        switch.addOutput(forwarder)
+        forwarder.startConsumer(switch.newOutput())
 
         val provider = switch.newInput()
         provider.consume(workload)
@@ -88,7 +88,7 @@ internal class ExclusiveFlowMultiplexerTest {
         val switch = ForwardingFlowMultiplexer(engine)
         val source = FlowSink(engine, 3200.0)
 
-        switch.addOutput(source)
+        source.startConsumer(switch.newOutput())
 
         val provider = switch.newInput()
         provider.consume(workload)
@@ -127,7 +127,7 @@ internal class ExclusiveFlowMultiplexerTest {
         val switch = ForwardingFlowMultiplexer(engine)
         val source = FlowSink(engine, 3200.0)
 
-        switch.addOutput(source)
+        source.startConsumer(switch.newOutput())
 
         val provider = switch.newInput()
         provider.consume(workload)
@@ -146,7 +146,7 @@ internal class ExclusiveFlowMultiplexerTest {
         val switch = ForwardingFlowMultiplexer(engine)
         val source = FlowSink(engine, 3200.0)
 
-        switch.addOutput(source)
+        source.startConsumer(switch.newOutput())
 
         switch.newInput()
         assertThrows<IllegalStateException> { switch.newInput() }

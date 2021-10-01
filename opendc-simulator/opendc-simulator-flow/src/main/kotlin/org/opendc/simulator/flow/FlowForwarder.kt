@@ -242,10 +242,11 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
 
         val counters = _counters
         val deltaS = delta / 1000.0
+        val total = ctx.capacity * deltaS
         val work = _demand * deltaS
         val actualWork = ctx.rate * deltaS
         counters.demand += work
         counters.actual += actualWork
-        counters.overcommit += (work - actualWork)
+        counters.remaining += (total - actualWork)
     }
 }

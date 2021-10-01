@@ -37,9 +37,9 @@ public interface FlowCounters {
     public val actual: Double
 
     /**
-     * The accumulated flow that could not be transferred over the connection.
+     * The amount of capacity that was not utilized.
      */
-    public val overcommit: Double
+    public val remaining: Double
 
     /**
      * The accumulated flow lost due to interference between sources.

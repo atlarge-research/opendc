@@ -50,7 +50,6 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.flow.FlowEngine
 import java.util.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.roundToLong
 
 /**
  * A [Host] that is simulates virtual machines on a physical machine using [SimHypervisor].
@@ -63,7 +62,7 @@ public class SimHost(
     context: CoroutineContext,
     engine: FlowEngine,
     meterProvider: MeterProvider,
-    hypervisor: SimHypervisorProvider,
+    hypervisorProvider: SimHypervisorProvider,
     scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
     powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
@@ -103,29 +102,8 @@ public class SimHost(
     /**
      * The hypervisor to run multiple workloads.
      */
-    private val hypervisor: SimHypervisor = hypervisor.create(
-        engine,
-        scalingGovernor = scalingGovernor,
-        interferenceDomain = interferenceDomain,
-        listener = object : SimHypervisor.Listener {
-            override fun onSliceFinish(
-                hypervisor: SimHypervisor,
-                totalWork: Double,
-                grantedWork: Double,
-                overcommittedWork: Double,
-                interferedWork: Double,
-                cpuUsage: Double,
-                cpuDemand: Double
-            ) {
-                _cpuDemand = cpuDemand
-                _cpuUsage = cpuUsage
-
-                collectTime()
-            }
-        }
-    )
-    private var _cpuUsage = 0.0
-    private var _cpuDemand = 0.0
+    private val hypervisor: SimHypervisor = hypervisorProvider
+        .create(engine, scalingGovernor = scalingGovernor, interferenceDomain = interferenceDomain)
 
     /**
      * The virtual machines running on the hypervisor.
@@ -157,22 +135,13 @@ public class SimHost(
         }
     }
 
+    /**
+     * The [Job] that represents the machine running the hypervisor.
+     */
+    private var _job: Job? = null
+
     init {
-        // Launch hypervisor onto machine
-        scope.launch {
-            try {
-                _bootTime = clock.millis()
-                _state = HostState.UP
-                machine.run(this@SimHost.hypervisor, emptyMap())
-            } catch (_: CancellationException) {
-                // Ignored
-            } catch (cause: Throwable) {
-                logger.error(cause) { "Host failed" }
-                throw cause
-            } finally {
-                _state = HostState.DOWN
-            }
-        }
+        launch()
 
         meter.upDownCounterBuilder("system.guests")
             .setDescription("Number of guests on this host")
@@ -184,15 +153,15 @@ public class SimHost(
         meter.gaugeBuilder("system.cpu.demand")
             .setDescription("Amount of CPU resources the guests would use if there were no CPU contention or CPU limits")
             .setUnit("MHz")
-            .buildWithCallback { result -> result.observe(_cpuDemand) }
+            .buildWithCallback { result -> result.observe(hypervisor.cpuDemand) }
         meter.gaugeBuilder("system.cpu.usage")
             .setDescription("Amount of CPU resources used by the host")
             .setUnit("MHz")
-            .buildWithCallback { result -> result.observe(_cpuUsage) }
+            .buildWithCallback { result -> result.observe(hypervisor.cpuUsage) }
         meter.gaugeBuilder("system.cpu.utilization")
             .setDescription("Utilization of the CPU resources of the host")
             .setUnit("%")
-            .buildWithCallback { result -> result.observe(_cpuUsage / _cpuLimit) }
+            .buildWithCallback { result -> result.observe(hypervisor.cpuUsage / _cpuLimit) }
         meter.counterBuilder("system.cpu.time")
             .setDescription("Amount of CPU time spent by the host")
             .setUnit("s")
@@ -200,16 +169,16 @@ public class SimHost(
         meter.gaugeBuilder("system.power.usage")
             .setDescription("Power usage of the host ")
             .setUnit("W")
-            .buildWithCallback { result -> result.observe(machine.powerDraw) }
+            .buildWithCallback { result -> result.observe(machine.powerUsage) }
         meter.counterBuilder("system.power.total")
             .setDescription("Amount of energy used by the CPU")
             .setUnit("J")
             .ofDoubles()
-            .buildWithCallback(::collectPowerTotal)
+            .buildWithCallback { result -> result.observe(machine.energyUsage) }
         meter.counterBuilder("system.time")
             .setDescription("The uptime of the host")
             .setUnit("s")
-            .buildWithCallback(::collectTime)
+            .buildWithCallback(::collectUptime)
         meter.gaugeBuilder("system.time.boot")
             .setDescription("The boot time of the host")
             .setUnit("1")
@@ -290,9 +259,12 @@ public class SimHost(
     }
 
     public suspend fun recover() {
-        collectTime()
-        _state = HostState.UP
-        _bootTime = clock.millis()
+        updateUptime()
+
+        launch()
+
+        // Wait for the hypervisor to launch before recovering the guests
+        yield()
 
         for (guest in guests.values) {
             guest.recover()
@@ -300,14 +272,42 @@ public class SimHost(
     }
 
     /**
+     * Launch the hypervisor.
+     */
+    private fun launch() {
+        check(_job == null) { "Concurrent hypervisor running" }
+
+        // Launch hypervisor onto machine
+        _job = scope.launch {
+            try {
+                _bootTime = clock.millis()
+                _state = HostState.UP
+                machine.run(hypervisor, emptyMap())
+            } catch (_: CancellationException) {
+                // Ignored
+            } catch (cause: Throwable) {
+                logger.error(cause) { "Host failed" }
+                throw cause
+            } finally {
+                _state = HostState.DOWN
+            }
+        }
+    }
+
+    /**
      * Reset the machine.
      */
     private fun reset() {
-        collectTime()
+        updateUptime()
+
+        // Stop the hypervisor
+        val job = _job
+        if (job != null) {
+            job.cancel()
+            _job = null
+        }
 
         _state = HostState.DOWN
-        _cpuUsage = 0.0
-        _cpuDemand = 0.0
     }
 
     /**
@@ -385,70 +385,25 @@ public class SimHost(
         }
     }
 
-    private var _lastCpuTimeCallback = clock.millis()
+    private val _activeState = Attributes.of(STATE_KEY, "active")
+    private val _stealState = Attributes.of(STATE_KEY, "steal")
+    private val _lostState = Attributes.of(STATE_KEY, "lost")
+    private val _idleState = Attributes.of(STATE_KEY, "idle")
 
     /**
      * Helper function to track the CPU time of a machine.
      */
     private fun collectCpuTime(result: ObservableLongMeasurement) {
-        val now = clock.millis()
-        val duration = now - _lastCpuTimeCallback
-
-        try {
-            collectCpuTime(duration, result)
-        } finally {
-            _lastCpuTimeCallback = now
-        }
-    }
-
-    private val _activeState = Attributes.of(STATE_KEY, "active")
-    private val _stealState = Attributes.of(STATE_KEY, "steal")
-    private val _lostState = Attributes.of(STATE_KEY, "lost")
-    private val _idleState = Attributes.of(STATE_KEY, "idle")
-    private var _totalTime = 0.0
-
-    /**
-     * Helper function to track the CPU time of a machine.
-     */
-    private fun collectCpuTime(duration: Long, result: ObservableLongMeasurement) {
-        val coreCount = this.model.cpuCount
-        val d = coreCount / _cpuLimit
-
         val counters = hypervisor.counters
-        val grantedWork = counters.actual
-        val overcommittedWork = counters.overcommit
-        val interferedWork = counters.interference
 
-        _totalTime += (duration / 1000.0) * coreCount
-        val activeTime = (grantedWork * d).roundToLong()
-        val idleTime = (_totalTime - grantedWork * d).roundToLong()
-        val stealTime = (overcommittedWork * d).roundToLong()
-        val lostTime = (interferedWork * d).roundToLong()
-
-        result.observe(activeTime, _activeState)
-        result.observe(idleTime, _idleState)
-        result.observe(stealTime, _stealState)
-        result.observe(lostTime, _lostState)
+        result.observe(counters.cpuActiveTime / 1000L, _activeState)
+        result.observe(counters.cpuIdleTime / 1000L, _idleState)
+        result.observe(counters.cpuStealTime / 1000L, _stealState)
+        result.observe(counters.cpuLostTime / 1000L, _lostState)
 
         for (guest in guests.values) {
-            guest.collectCpuTime(duration, result)
+            guest.collectCpuTime(result)
         }
-    }
-
-    private var _lastPowerCallback = clock.millis()
-    private var _totalPower = 0.0
-
-    /**
-     * Helper function to collect the total power usage of the machine.
-     */
-    private fun collectPowerTotal(result: ObservableDoubleMeasurement) {
-        val now = clock.millis()
-        val duration = now - _lastPowerCallback
-
-        _totalPower += duration / 1000.0 * machine.powerDraw
-        result.observe(_totalPower)
-
-        _lastPowerCallback = now
     }
 
     private var _lastReport = clock.millis()
@@ -456,14 +411,20 @@ public class SimHost(
     /**
      * Helper function to track the uptime of a machine.
      */
-    private fun collectTime(result: ObservableLongMeasurement? = null) {
+    private fun updateUptime() {
         val now = clock.millis()
         val duration = now - _lastReport
+        _lastReport = now
 
-        try {
-            collectTime(duration, result)
-        } finally {
-            _lastReport = now
+        if (_state == HostState.UP) {
+            _uptime += duration
+        } else if (_state == HostState.DOWN && scope.isActive) {
+            // Only increment downtime if the machine is in a failure state
+            _downtime += duration
+        }
+
+        for (guest in guests.values) {
+            guest.updateUptime(duration)
         }
     }
 
@@ -475,19 +436,14 @@ public class SimHost(
     /**
      * Helper function to track the uptime of a machine.
      */
-    private fun collectTime(duration: Long, result: ObservableLongMeasurement? = null) {
-        if (state == HostState.UP) {
-            _uptime += duration
-        } else if (state == HostState.DOWN && scope.isActive) {
-            // Only increment downtime if the machine is in a failure state
-            _downtime += duration
-        }
+    private fun collectUptime(result: ObservableLongMeasurement) {
+        updateUptime()
 
-        result?.observe(_uptime, _upState)
-        result?.observe(_downtime, _downState)
+        result.observe(_uptime, _upState)
+        result.observe(_downtime, _downState)
 
         for (guest in guests.values) {
-            guest.collectUptime(duration, result)
+            guest.collectUptime(result)
         }
     }
 
@@ -496,9 +452,9 @@ public class SimHost(
     /**
      * Helper function to track the boot time of a machine.
      */
-    private fun collectBootTime(result: ObservableLongMeasurement? = null) {
+    private fun collectBootTime(result: ObservableLongMeasurement) {
         if (_bootTime != Long.MIN_VALUE) {
-            result?.observe(_bootTime)
+            result.observe(_bootTime)
         }
 
         for (guest in guests.values) {

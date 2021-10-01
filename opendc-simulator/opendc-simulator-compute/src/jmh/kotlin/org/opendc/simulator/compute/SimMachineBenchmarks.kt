@@ -92,7 +92,7 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimSpaceSharedHypervisor(engine)
+            val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
 
             launch { machine.run(hypervisor) }
 
@@ -113,7 +113,7 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor(engine)
+            val hypervisor = SimFairShareHypervisor(engine, null, null, null)
 
             launch { machine.run(hypervisor) }
 
@@ -134,7 +134,7 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor(engine)
+            val hypervisor = SimFairShareHypervisor(engine, null, null, null)
 
             launch { machine.run(hypervisor) }
 

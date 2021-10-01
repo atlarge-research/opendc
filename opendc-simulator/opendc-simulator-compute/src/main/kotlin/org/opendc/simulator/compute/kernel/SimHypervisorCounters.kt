@@ -22,21 +22,27 @@
 
 package org.opendc.simulator.compute.kernel
 
-import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
-import org.opendc.simulator.flow.FlowConvergenceListener
-import org.opendc.simulator.flow.FlowEngine
-
 /**
- * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
+ * Performance counters of a [SimHypervisor].
  */
-public class SimFairShareHypervisorProvider : SimHypervisorProvider {
-    override val id: String = "fair-share"
+public interface SimHypervisorCounters {
+    /**
+     * The amount of time (in milliseconds) the CPUs of the hypervisor were actively running.
+     */
+    public val cpuActiveTime: Long
 
-    override fun create(
-        engine: FlowEngine,
-        listener: FlowConvergenceListener?,
-        scalingGovernor: ScalingGovernor?,
-        interferenceDomain: VmInterferenceDomain?,
-    ): SimHypervisor = SimFairShareHypervisor(engine, listener, scalingGovernor, interferenceDomain)
+    /**
+     * The amount of time (in milliseconds) the CPUs of the hypervisor were idle.
+     */
+    public val cpuIdleTime: Long
+
+    /**
+     * The amount of CPU time (in milliseconds) that virtual machines were ready to run, but were not able to.
+     */
+    public val cpuStealTime: Long
+
+    /**
+     * The amount of CPU time (in milliseconds) that was lost due to interference between virtual machines.
+     */
+    public val cpuLostTime: Long
 }

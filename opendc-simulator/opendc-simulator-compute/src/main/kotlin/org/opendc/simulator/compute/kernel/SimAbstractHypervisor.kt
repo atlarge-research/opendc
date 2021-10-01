@@ -30,6 +30,7 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.mux.FlowMultiplexer
+import kotlin.math.roundToLong
 
 /**
  * Abstract implementation of the [SimHypervisor] interface.
@@ -39,18 +40,19 @@ import org.opendc.simulator.flow.mux.FlowMultiplexer
  */
 public abstract class SimAbstractHypervisor(
     protected val engine: FlowEngine,
-    private val scalingGovernor: ScalingGovernor? = null,
+    private val listener: FlowConvergenceListener?,
+    private val scalingGovernor: ScalingGovernor?,
     protected val interferenceDomain: VmInterferenceDomain? = null
-) : SimHypervisor {
+) : SimHypervisor, FlowConvergenceListener {
     /**
      * The machine on which the hypervisor runs.
      */
-    private lateinit var context: SimMachineContext
+    protected lateinit var context: SimMachineContext
 
     /**
      * The resource switch to use.
      */
-    private lateinit var mux: FlowMultiplexer
+    protected abstract val mux: FlowMultiplexer
 
     /**
      * The virtual machines running on this hypervisor.
@@ -62,39 +64,73 @@ public abstract class SimAbstractHypervisor(
     /**
      * The resource counters associated with the hypervisor.
      */
-    public override val counters: FlowCounters
-        get() = mux.counters
+    public override val counters: SimHypervisorCounters
+        get() = _counters
+    private val _counters = object : SimHypervisorCounters {
+        @JvmField var d = 1.0 // Number of CPUs divided by total CPU capacity
+
+        override var cpuActiveTime: Long = 0L
+        override var cpuIdleTime: Long = 0L
+        override var cpuStealTime: Long = 0L
+        override var cpuLostTime: Long = 0L
+
+        private var _previousDemand = 0.0
+        private var _previousActual = 0.0
+        private var _previousRemaining = 0.0
+        private var _previousInterference = 0.0
+
+        /**
+         * Record the CPU time of the hypervisor.
+         */
+        fun record() {
+            val counters = mux.counters
+            val demand = counters.demand
+            val actual = counters.actual
+            val remaining = counters.remaining
+            val interference = counters.interference
+
+            val demandDelta = demand - _previousDemand
+            val actualDelta = actual - _previousActual
+            val remainingDelta = remaining - _previousRemaining
+            val interferenceDelta = interference - _previousInterference
+
+            _previousDemand = demand
+            _previousActual = actual
+            _previousRemaining = remaining
+            _previousInterference = interference
+
+            cpuActiveTime += (actualDelta * d).roundToLong()
+            cpuIdleTime += (remainingDelta * d).roundToLong()
+            cpuStealTime += ((demandDelta - actualDelta) * d).roundToLong()
+            cpuLostTime += (interferenceDelta * d).roundToLong()
+        }
+    }
+
+    /**
+     * The CPU capacity of the hypervisor in MHz.
+     */
+    override val cpuCapacity: Double
+        get() = mux.capacity
+
+    /**
+     * The CPU demand of the hypervisor in MHz.
+     */
+    override val cpuDemand: Double
+        get() = mux.demand
+
+    /**
+     * The CPU usage of the hypervisor in MHz.
+     */
+    override val cpuUsage: Double
+        get() = mux.rate
 
     /**
      * The scaling governors attached to the physical CPUs backing this hypervisor.
      */
     private val governors = mutableListOf<ScalingGovernor.Logic>()
 
-    /**
-     * Construct the [FlowMultiplexer] implementation that performs the actual scheduling of the CPUs.
-     */
-    public abstract fun createMultiplexer(ctx: SimMachineContext): FlowMultiplexer
-
-    /**
-     * Check whether the specified machine model fits on this hypervisor.
-     */
-    public abstract fun canFit(model: MachineModel, switch: FlowMultiplexer): Boolean
-
-    /**
-     * Trigger the governors to recompute the scaling limits.
-     */
-    protected fun triggerGovernors(load: Double) {
-        for (governor in governors) {
-            governor.onLimit(load)
-        }
-    }
-
     /* SimHypervisor */
-    override fun canFit(model: MachineModel): Boolean {
-        return canFit(model, mux)
-    }
-
-    override fun createMachine(model: MachineModel, interferenceId: String?): SimMachine {
+    override fun createMachine(model: MachineModel, interferenceId: String?): SimVirtualMachine {
         require(canFit(model)) { "Machine does not fit" }
         val vm = VirtualMachine(model, interferenceId)
         _vms.add(vm)
@@ -104,7 +140,13 @@ public abstract class SimAbstractHypervisor(
     /* SimWorkload */
     override fun onStart(ctx: SimMachineContext) {
         context = ctx
-        mux = createMultiplexer(ctx)
+
+        _cpuCount = ctx.cpus.size
+        _cpuCapacity = ctx.cpus.sumOf { it.model.frequency }
+        _counters.d = _cpuCount / _cpuCapacity * 1000L
+
+        // Clear the existing outputs of the multiplexer
+        mux.clearOutputs()
 
         for (cpu in ctx.cpus) {
             val governor = scalingGovernor?.createLogic(ScalingPolicyImpl(cpu))
@@ -113,8 +155,23 @@ public abstract class SimAbstractHypervisor(
                 governor.onStart()
             }
 
-            mux.addOutput(cpu)
+            cpu.startConsumer(mux.newOutput())
         }
+    }
+
+    private var _cpuCount = 0
+    private var _cpuCapacity = 0.0
+
+    /* FlowConvergenceListener */
+    override fun onConverge(now: Long, delta: Long) {
+        _counters.record()
+
+        val load = cpuDemand / cpuCapacity
+        for (governor in governors) {
+            governor.onLimit(load)
+        }
+
+        listener?.onConverge(now, delta)
     }
 
     /**
@@ -122,7 +179,7 @@ public abstract class SimAbstractHypervisor(
      *
      * @param model The machine model of the virtual machine.
      */
-    private inner class VirtualMachine(model: MachineModel, interferenceId: String? = null) : SimAbstractMachine(engine, parent = null, model) {
+    private inner class VirtualMachine(model: MachineModel, interferenceId: String? = null) : SimAbstractMachine(engine, parent = null, model), SimVirtualMachine {
         /**
          * The interference key of this virtual machine.
          */
@@ -132,6 +189,41 @@ public abstract class SimAbstractHypervisor(
          * The vCPUs of the machine.
          */
         override val cpus = model.cpus.map { VCpu(mux, mux.newInput(interferenceKey), it) }
+
+        /**
+         * The resource counters associated with the hypervisor.
+         */
+        override val counters: SimHypervisorCounters
+            get() = _counters
+        private val _counters = object : SimHypervisorCounters {
+            private val d = cpus.size / cpus.sumOf { it.model.frequency } * 1000
+
+            override val cpuActiveTime: Long
+                get() = (cpus.sumOf { it.counters.actual } * d).roundToLong()
+            override val cpuIdleTime: Long
+                get() = (cpus.sumOf { it.counters.actual + it.counters.remaining } * d).roundToLong()
+            override val cpuStealTime: Long
+                get() = (cpus.sumOf { it.counters.demand - it.counters.actual } * d).roundToLong()
+            override val cpuLostTime: Long = 0L
+        }
+
+        /**
+         * The CPU capacity of the hypervisor in MHz.
+         */
+        override val cpuCapacity: Double
+            get() = cpus.sumOf(FlowConsumer::capacity)
+
+        /**
+         * The CPU demand of the hypervisor in MHz.
+         */
+        override val cpuDemand: Double
+            get() = cpus.sumOf(FlowConsumer::demand)
+
+        /**
+         * The CPU usage of the hypervisor in MHz.
+         */
+        override val cpuUsage: Double
+            get() = cpus.sumOf(FlowConsumer::rate)
 
         override fun close() {
             super.close()

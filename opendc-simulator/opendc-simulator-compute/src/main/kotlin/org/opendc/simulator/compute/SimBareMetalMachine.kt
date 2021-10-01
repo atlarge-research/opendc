@@ -28,6 +28,7 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.FlowEngine
+import kotlin.math.max
 
 /**
  * A simulated bare-metal machine that is able to run a single workload.
@@ -49,10 +50,18 @@ public class SimBareMetalMachine(
     parent: FlowConvergenceListener? = null,
 ) : SimAbstractMachine(engine, parent, model) {
     /**
-     * The power draw of the machine onto the PSU.
+     * The current power usage of the machine (without PSU loss) in W.
      */
-    public val powerDraw: Double
-        get() = powerDriverLogic.computePower()
+    public val powerUsage: Double
+        get() = _powerUsage
+    private var _powerUsage = 0.0
+
+    /**
+     * The total energy usage of the machine (without PSU loss) in Joules.
+     */
+    public val energyUsage: Double
+        get() = _energyUsage
+    private var _energyUsage = 0.0
 
     /**
      * The processing units of the machine.
@@ -66,8 +75,20 @@ public class SimBareMetalMachine(
      */
     private val powerDriverLogic = powerDriver.createLogic(this, cpus)
 
+    private var _lastConverge = Long.MAX_VALUE
+
     override fun onConverge(now: Long, delta: Long) {
+        // Update the PSU stage
         psu.update()
+
+        val lastConverge = _lastConverge
+        _lastConverge = now
+        val duration = max(0, now - lastConverge)
+        if (duration > 0) {
+            // Compute the power and energy usage of the machine
+            _energyUsage += _powerUsage * (duration / 1000.0)
+            _powerUsage = powerDriverLogic.computePower()
+        }
     }
 
     init {

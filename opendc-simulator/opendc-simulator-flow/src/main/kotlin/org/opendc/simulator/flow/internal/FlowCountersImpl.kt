@@ -30,17 +30,17 @@ import org.opendc.simulator.flow.FlowCounters
 internal class FlowCountersImpl : FlowCounters {
     override var demand: Double = 0.0
     override var actual: Double = 0.0
-    override var overcommit: Double = 0.0
+    override var remaining: Double = 0.0
     override var interference: Double = 0.0
 
     override fun reset() {
         demand = 0.0
         actual = 0.0
-        overcommit = 0.0
+        remaining = 0.0
         interference = 0.0
     }
 
     override fun toString(): String {
-        return "FlowCounters[demand=$demand,actual=$actual,overcommit=$overcommit,interference=$interference]"
+        return "FlowCounters[demand=$demand,actual=$actual,remaining=$remaining,interference=$interference]"
     }
 }

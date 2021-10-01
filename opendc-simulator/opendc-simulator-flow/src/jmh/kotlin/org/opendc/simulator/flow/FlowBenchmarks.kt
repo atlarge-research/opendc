@@ -83,8 +83,8 @@ class FlowBenchmarks {
         return scope.runBlockingSimulation {
             val switch = MaxMinFlowMultiplexer(engine)
 
-            switch.addOutput(FlowSink(engine, 3000.0))
-            switch.addOutput(FlowSink(engine, 3000.0))
+            FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
+            FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
 
             val provider = switch.newInput()
             return@runBlockingSimulation provider.consume(TraceFlowSource(state.trace))
@@ -96,8 +96,8 @@ class FlowBenchmarks {
         return scope.runBlockingSimulation {
             val switch = MaxMinFlowMultiplexer(engine)
 
-            switch.addOutput(FlowSink(engine, 3000.0))
-            switch.addOutput(FlowSink(engine, 3000.0))
+            FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
+            FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
 
             repeat(3) {
                 launch {
@@ -113,8 +113,8 @@ class FlowBenchmarks {
         return scope.runBlockingSimulation {
             val switch = ForwardingFlowMultiplexer(engine)
 
-            switch.addOutput(FlowSink(engine, 3000.0))
-            switch.addOutput(FlowSink(engine, 3000.0))
+            FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
+            FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
 
             val provider = switch.newInput()
             return@runBlockingSimulation provider.consume(TraceFlowSource(state.trace))
@@ -126,8 +126,8 @@ class FlowBenchmarks {
         return scope.runBlockingSimulation {
             val switch = ForwardingFlowMultiplexer(engine)
 
-            switch.addOutput(FlowSink(engine, 3000.0))
-            switch.addOutput(FlowSink(engine, 3000.0))
+            FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
+            FlowSink(engine, 3000.0).startConsumer(switch.newOutput())
 
             repeat(2) {
                 launch {

@@ -63,11 +63,9 @@ public class SimNetworkSwitchVirtual(private val engine: FlowEngine) : SimNetwor
             get() = _provider
         private val _provider = mux.newInput()
 
-        override fun createConsumer(): FlowSource {
-            val forwarder = FlowForwarder(engine, isCoupled = true)
-            mux.addOutput(forwarder)
-            return forwarder
-        }
+        private val _source = mux.newOutput()
+
+        override fun createConsumer(): FlowSource = _source
 
         override fun close() {
             isClosed = true

@@ -46,7 +46,7 @@ import org.opendc.simulator.flow.FlowEngine
  * Test suite for the [SimHypervisor] class.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class SimHypervisorTest {
+internal class SimFairShareHypervisorTest {
     private lateinit var model: MachineModel
 
     @BeforeEach
@@ -63,26 +63,6 @@ internal class SimHypervisorTest {
      */
     @Test
     fun testOvercommittedSingle() = runBlockingSimulation {
-        val listener = object : SimHypervisor.Listener {
-            var totalRequestedWork = 0.0
-            var totalGrantedWork = 0.0
-            var totalOvercommittedWork = 0.0
-
-            override fun onSliceFinish(
-                hypervisor: SimHypervisor,
-                totalWork: Double,
-                grantedWork: Double,
-                overcommittedWork: Double,
-                interferedWork: Double,
-                cpuUsage: Double,
-                cpuDemand: Double
-            ) {
-                totalRequestedWork += totalWork
-                totalGrantedWork += grantedWork
-                totalOvercommittedWork += overcommittedWork
-            }
-        }
-
         val duration = 5 * 60L
         val workloadA =
             SimTraceWorkload(
@@ -96,7 +76,7 @@ internal class SimHypervisorTest {
 
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
-        val hypervisor = SimFairShareHypervisor(platform, scalingGovernor = PerformanceScalingGovernor(), listener = listener)
+        val hypervisor = SimFairShareHypervisor(platform, null, PerformanceScalingGovernor(), null)
 
         launch {
             machine.run(hypervisor)
@@ -111,9 +91,9 @@ internal class SimHypervisorTest {
         machine.close()
 
         assertAll(
-            { assertEquals(1113300.0, listener.totalRequestedWork, "Requested Burst does not match") },
-            { assertEquals(1023300.0, listener.totalGrantedWork, "Granted Burst does not match") },
-            { assertEquals(90000.0, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
+            { assertEquals(319781, hypervisor.counters.cpuActiveTime, "Active time does not match") },
+            { assertEquals(880219, hypervisor.counters.cpuIdleTime, "Idle time does not match") },
+            { assertEquals(28125, hypervisor.counters.cpuStealTime, "Steal time does not match") },
             { assertEquals(1200000, clock.millis()) { "Current time is correct" } }
         )
     }
@@ -123,26 +103,6 @@ internal class SimHypervisorTest {
      */
     @Test
     fun testOvercommittedDual() = runBlockingSimulation {
-        val listener = object : SimHypervisor.Listener {
-            var totalRequestedWork = 0.0
-            var totalGrantedWork = 0.0
-            var totalOvercommittedWork = 0.0
-
-            override fun onSliceFinish(
-                hypervisor: SimHypervisor,
-                totalWork: Double,
-                grantedWork: Double,
-                overcommittedWork: Double,
-                interferedWork: Double,
-                cpuUsage: Double,
-                cpuDemand: Double
-            ) {
-                totalRequestedWork += totalWork
-                totalGrantedWork += grantedWork
-                totalOvercommittedWork += overcommittedWork
-            }
-        }
-
         val duration = 5 * 60L
         val workloadA =
             SimTraceWorkload(
@@ -167,7 +127,7 @@ internal class SimHypervisorTest {
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, listener = listener)
+        val hypervisor = SimFairShareHypervisor(platform, null, null, null)
 
         launch {
             machine.run(hypervisor)
@@ -189,9 +149,9 @@ internal class SimHypervisorTest {
         yield()
 
         assertAll(
-            { assertEquals(2073600.0, listener.totalRequestedWork, "Requested Burst does not match") },
-            { assertEquals(1053600.0, listener.totalGrantedWork, "Granted Burst does not match") },
-            { assertEquals(1020000.0, listener.totalOvercommittedWork, "Overcommissioned Burst does not match") },
+            { assertEquals(329250, hypervisor.counters.cpuActiveTime, "Active time does not match") },
+            { assertEquals(870750, hypervisor.counters.cpuIdleTime, "Idle time does not match") },
+            { assertEquals(318750, hypervisor.counters.cpuStealTime, "Steal time does not match") },
             { assertEquals(1200000, clock.millis()) }
         )
     }
@@ -205,10 +165,8 @@ internal class SimHypervisorTest {
         )
 
         val platform = FlowEngine(coroutineContext, clock)
-        val machine = SimBareMetalMachine(
-            platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-        val hypervisor = SimFairShareHypervisor(platform)
+        val machine = SimBareMetalMachine(platform, model, SimplePowerDriver(ConstantPowerModel(0.0)))
+        val hypervisor = SimFairShareHypervisor(platform, null, null, null)
 
         assertDoesNotThrow {
             launch {
@@ -238,7 +196,7 @@ internal class SimHypervisorTest {
         val machine = SimBareMetalMachine(
             platform, model, SimplePowerDriver(ConstantPowerModel(0.0))
         )
-        val hypervisor = SimFairShareHypervisor(platform, interferenceDomain = interferenceModel.newDomain())
+        val hypervisor = SimFairShareHypervisor(platform, null, null, interferenceModel.newDomain())
 
         val duration = 5 * 60L
         val workloadA =

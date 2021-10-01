@@ -46,18 +46,14 @@ public class SimPdu(
     /**
      * The [FlowForwarder] that represents the input of the PDU.
      */
-    private val forwarder = FlowForwarder(engine)
+    private val output = mux.newOutput()
 
     /**
      * Create a new PDU outlet.
      */
     public fun newOutlet(): Outlet = Outlet(mux, mux.newInput())
 
-    init {
-        mux.addOutput(forwarder)
-    }
-
-    override fun createSource(): FlowSource = FlowMapper(forwarder) { _, rate ->
+    override fun createSource(): FlowSource = FlowMapper(output) { _, rate ->
         val loss = computePowerLoss(rate)
         rate + loss
     }

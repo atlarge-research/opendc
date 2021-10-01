@@ -217,7 +217,7 @@ internal class FlowForwarderTest {
         assertEquals(2.0, source.counters.actual)
         assertEquals(source.counters.actual, forwarder.counters.actual) { "Actual work" }
         assertEquals(source.counters.demand, forwarder.counters.demand) { "Work demand" }
-        assertEquals(source.counters.overcommit, forwarder.counters.overcommit) { "Overcommitted work" }
+        assertEquals(source.counters.remaining, forwarder.counters.remaining) { "Overcommitted work" }
         assertEquals(2000, clock.millis())
     }
 

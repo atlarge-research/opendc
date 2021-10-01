@@ -39,7 +39,22 @@ public interface FlowMultiplexer {
     /**
      * The outputs of the multiplexer over which the flows will be distributed.
      */
-    public val outputs: Set<FlowConsumer>
+    public val outputs: Set<FlowSource>
+
+    /**
+     * The actual processing rate of the multiplexer.
+     */
+    public val rate: Double
+
+    /**
+     * The demanded processing rate of the input.
+     */
+    public val demand: Double
+
+    /**
+     * The capacity of the outputs.
+     */
+    public val capacity: Double
 
     /**
      * The flow counters to track the flow metrics of all multiplexer inputs.
@@ -59,12 +74,27 @@ public interface FlowMultiplexer {
     public fun removeInput(input: FlowConsumer)
 
     /**
-     * Add the specified [output] to the multiplexer.
+     * Create a new output on this multiplexer.
      */
-    public fun addOutput(output: FlowConsumer)
+    public fun newOutput(): FlowSource
 
     /**
-     * Clear all inputs and outputs from the switch.
+     * Remove [output] from this multiplexer.
+     */
+    public fun removeOutput(output: FlowSource)
+
+    /**
+     * Clear all inputs and outputs from the multiplexer.
      */
     public fun clear()
+
+    /**
+     * Clear the inputs of the multiplexer.
+     */
+    public fun clearInputs()
+
+    /**
+     * Clear the outputs of the multiplexer.
+     */
+    public fun clearOutputs()
 }

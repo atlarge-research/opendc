@@ -38,35 +38,44 @@ public class ForwardingFlowMultiplexer(private val engine: FlowEngine) : FlowMul
         get() = _inputs
     private val _inputs = mutableSetOf<Input>()
 
-    override val outputs: Set<FlowConsumer>
+    override val outputs: Set<FlowSource>
         get() = _outputs
-    private val _outputs = mutableSetOf<FlowConsumer>()
-    private val _availableOutputs = ArrayDeque<FlowForwarder>()
+    private val _outputs = mutableSetOf<Output>()
+    private val _availableOutputs = ArrayDeque<Output>()
 
     override val counters: FlowCounters = object : FlowCounters {
         override val demand: Double
-            get() = _outputs.sumOf { it.counters.demand }
+            get() = _outputs.sumOf { it.forwarder.counters.demand }
         override val actual: Double
-            get() = _outputs.sumOf { it.counters.actual }
-        override val overcommit: Double
-            get() = _outputs.sumOf { it.counters.overcommit }
+            get() = _outputs.sumOf { it.forwarder.counters.actual }
+        override val remaining: Double
+            get() = _outputs.sumOf { it.forwarder.counters.remaining }
         override val interference: Double
-            get() = _outputs.sumOf { it.counters.interference }
+            get() = _outputs.sumOf { it.forwarder.counters.interference }
 
         override fun reset() {
-            for (input in _outputs) {
-                input.counters.reset()
+            for (output in _outputs) {
+                output.forwarder.counters.reset()
             }
         }
 
-        override fun toString(): String = "FlowCounters[demand=$demand,actual=$actual,overcommit=$overcommit]"
+        override fun toString(): String = "FlowCounters[demand=$demand,actual=$actual,remaining=$remaining]"
     }
 
+    override val rate: Double
+        get() = _outputs.sumOf { it.forwarder.rate }
+
+    override val demand: Double
+        get() = _outputs.sumOf { it.forwarder.demand }
+
+    override val capacity: Double
+        get() = _outputs.sumOf { it.forwarder.capacity }
+
     override fun newInput(key: InterferenceKey?): FlowConsumer {
-        val forwarder = checkNotNull(_availableOutputs.poll()) { "No capacity to serve request" }
-        val output = Input(forwarder)
-        _inputs += output
-        return output
+        val output = checkNotNull(_availableOutputs.poll()) { "No capacity to serve request" }
+        val input = Input(output)
+        _inputs += input
+        return input
     }
 
     override fun removeInput(input: FlowConsumer) {
@@ -74,51 +83,72 @@ public class ForwardingFlowMultiplexer(private val engine: FlowEngine) : FlowMul
             return
         }
 
-        (input as Input).close()
+        val output = (input as Input).output
+        output.forwarder.cancel()
+        _availableOutputs += output
     }
 
-    override fun addOutput(output: FlowConsumer) {
-        if (output in outputs) {
+    override fun newOutput(): FlowSource {
+        val forwarder = FlowForwarder(engine)
+        val output = Output(forwarder)
+
+        _outputs += output
+        return output
+    }
+
+    override fun removeOutput(output: FlowSource) {
+        if (!_outputs.remove(output)) {
             return
         }
 
-        val forwarder = FlowForwarder(engine)
+        val forwarder = (output as Output).forwarder
+        forwarder.close()
+    }
 
-        _outputs += output
-        _availableOutputs += forwarder
+    override fun clearInputs() {
+        for (input in _inputs) {
+            val output = input.output
+            output.forwarder.cancel()
+            _availableOutputs += output
+        }
 
-        output.startConsumer(object : FlowSource by forwarder {
-            override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
-                _outputs -= output
+        _inputs.clear()
+    }
 
-                forwarder.onStop(conn, now, delta)
-            }
-        })
+    override fun clearOutputs() {
+        for (output in _outputs) {
+            output.forwarder.cancel()
+        }
+        _outputs.clear()
+        _availableOutputs.clear()
     }
 
     override fun clear() {
-        for (input in _outputs) {
-            input.cancel()
-        }
-        _outputs.clear()
-
-        // Inputs are implicitly cancelled by the output forwarders
-        _inputs.clear()
+        clearOutputs()
+        clearInputs()
     }
 
     /**
      * An input on the multiplexer.
      */
-    private inner class Input(private val forwarder: FlowForwarder) : FlowConsumer by forwarder {
-        /**
-         * Close the input.
-         */
-        fun close() {
-            // We explicitly do not close the forwarder here in order to re-use it across input resources.
-            _inputs -= this
-            _availableOutputs += forwarder
+    private inner class Input(@JvmField val output: Output) : FlowConsumer by output.forwarder {
+        override fun toString(): String = "ForwardingFlowMultiplexer.Input"
+    }
+
+    /**
+     * An output on the multiplexer.
+     */
+    private inner class Output(@JvmField val forwarder: FlowForwarder) : FlowSource by forwarder {
+        override fun onStart(conn: FlowConnection, now: Long) {
+            _availableOutputs += this
+            forwarder.onStart(conn, now)
         }
 
-        override fun toString(): String = "ForwardingFlowMultiplexer.Input"
+        override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+            forwarder.cancel()
+            forwarder.onStop(conn, now, delta)
+        }
+
+        override fun toString(): String = "ForwardingFlowMultiplexer.Output"
     }
 }

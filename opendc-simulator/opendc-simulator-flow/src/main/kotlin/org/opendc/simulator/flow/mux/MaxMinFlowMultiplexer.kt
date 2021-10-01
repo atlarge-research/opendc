@@ -52,9 +52,9 @@ public class MaxMinFlowMultiplexer(
     /**
      * The outputs of the multiplexer.
      */
-    override val outputs: Set<FlowConsumer>
+    override val outputs: Set<FlowSource>
         get() = _outputs
-    private val _outputs = mutableSetOf<FlowConsumer>()
+    private val _outputs = mutableSetOf<Output>()
     private val _activeOutputs = mutableListOf<Output>()
 
     /**
@@ -67,35 +67,40 @@ public class MaxMinFlowMultiplexer(
     /**
      * The actual processing rate of the multiplexer.
      */
+    public override val rate: Double
+        get() = _rate
     private var _rate = 0.0
 
     /**
      * The demanded processing rate of the input.
      */
+    public override val demand: Double
+        get() = _demand
     private var _demand = 0.0
 
     /**
      * The capacity of the outputs.
      */
+    public override val capacity: Double
+        get() = _capacity
     private var _capacity = 0.0
 
     /**
      * Flag to indicate that the scheduler is active.
      */
     private var _schedulerActive = false
+    private var _lastSchedulerCycle = Long.MAX_VALUE
+
+    /**
+     * The last convergence timestamp and the input.
+     */
+    private var _lastConverge: Long = Long.MIN_VALUE
+    private var _lastConvergeInput: Input? = null
 
     override fun newInput(key: InterferenceKey?): FlowConsumer {
         val provider = Input(_capacity, key)
         _inputs.add(provider)
         return provider
-    }
-
-    override fun addOutput(output: FlowConsumer) {
-        val consumer = Output(output)
-        if (_outputs.add(output)) {
-            _activeOutputs.add(consumer)
-            output.startConsumer(consumer)
-        }
     }
 
     override fun removeInput(input: FlowConsumer) {
@@ -106,16 +111,38 @@ public class MaxMinFlowMultiplexer(
         (input as Input).close()
     }
 
-    override fun clear() {
-        for (input in _activeOutputs) {
+    override fun newOutput(): FlowSource {
+        val output = Output()
+        _outputs.add(output)
+        return output
+    }
+
+    override fun removeOutput(output: FlowSource) {
+        if (!_outputs.remove(output)) {
+            return
+        }
+
+        // This cast should always succeed since only `Output` instances should be added to `_outputs`
+        (output as Output).cancel()
+    }
+
+    override fun clearInputs() {
+        for (input in _inputs) {
             input.cancel()
         }
-        _activeOutputs.clear()
+        _inputs.clear()
+    }
 
-        for (output in _activeInputs) {
+    override fun clearOutputs() {
+        for (output in _outputs) {
             output.cancel()
         }
-        _activeInputs.clear()
+        _outputs.clear()
+    }
+
+    override fun clear() {
+        clearOutputs()
+        clearInputs()
     }
 
     /**
@@ -125,10 +152,13 @@ public class MaxMinFlowMultiplexer(
         if (_schedulerActive) {
             return
         }
-
+        val lastSchedulerCycle = _lastSchedulerCycle
+        val delta = max(0, now - lastSchedulerCycle)
         _schedulerActive = true
+        _lastSchedulerCycle = now
+
         try {
-            doSchedule(now)
+            doSchedule(now, delta)
         } finally {
             _schedulerActive = false
         }
@@ -137,12 +167,17 @@ public class MaxMinFlowMultiplexer(
     /**
      * Schedule the inputs over the outputs.
      */
-    private fun doSchedule(now: Long) {
+    private fun doSchedule(now: Long, delta: Long) {
         val activeInputs = _activeInputs
         val activeOutputs = _activeOutputs
 
+        // Update the counters of the scheduler
+        updateCounters(delta)
+
         // If there is no work yet, mark the inputs as idle.
         if (activeInputs.isEmpty()) {
+            _demand = 0.0
+            _rate = 0.0
             return
         }
 
@@ -156,6 +191,7 @@ public class MaxMinFlowMultiplexer(
 
             // Remove outputs that have finished
             if (!input.isActive) {
+                input.actualRate = 0.0
                 inputIterator.remove()
             }
         }
@@ -168,7 +204,8 @@ public class MaxMinFlowMultiplexer(
 
         // Divide the available output capacity fairly over the inputs using max-min fair sharing
         var remaining = activeInputs.size
-        for (input in activeInputs) {
+        for (i in activeInputs.indices) {
+            val input = activeInputs[i]
             val availableShare = availableCapacity / remaining--
             val grantedRate = min(input.allowedRate, availableShare)
 
@@ -192,7 +229,8 @@ public class MaxMinFlowMultiplexer(
         activeOutputs.sort()
 
         // Divide the requests over the available capacity of the input resources fairly
-        for (output in activeOutputs) {
+        for (i in activeOutputs.indices) {
+            val output = activeOutputs[i]
             val inputCapacity = output.capacity
             val fraction = inputCapacity / capacity
             val grantedSpeed = rate * fraction
@@ -217,6 +255,29 @@ public class MaxMinFlowMultiplexer(
         for (input in _inputs) {
             input.capacity = newCapacity
         }
+    }
+
+    /**
+     * The previous capacity of the multiplexer.
+     */
+    private var _previousCapacity = 0.0
+
+    /**
+     * Update the counters of the scheduler.
+     */
+    private fun updateCounters(delta: Long) {
+        val previousCapacity = _previousCapacity
+        _previousCapacity = _capacity
+
+        if (delta <= 0) {
+            return
+        }
+
+        val deltaS = delta / 1000.0
+
+        _counters.demand += _demand * deltaS
+        _counters.actual += _rate * deltaS
+        _counters.remaining += (previousCapacity - _rate) * deltaS
     }
 
     /**
@@ -253,6 +314,11 @@ public class MaxMinFlowMultiplexer(
         private var _lastPull: Long = Long.MIN_VALUE
 
         /**
+         * The interference domain this input belongs to.
+         */
+        private val interferenceDomain = this@MaxMinFlowMultiplexer.interferenceDomain
+
+        /**
          * Close the input.
          *
          * This method is invoked when the user removes an input from the switch.
@@ -269,7 +335,6 @@ public class MaxMinFlowMultiplexer(
             check(!_isClosed) { "Cannot re-use closed input" }
 
             _activeInputs += this
-
             if (parent != null) {
                 ctx.shouldConsumerConverge = true
             }
@@ -287,14 +352,22 @@ public class MaxMinFlowMultiplexer(
             doUpdateCounters(delta)
 
             actualRate = 0.0
-            this.limit = rate
+            limit = rate
             _lastPull = now
 
             runScheduler(now)
         }
 
         override fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {
-            parent?.onConverge(now, delta)
+            val lastConverge = _lastConverge
+            val parent = parent
+
+            if (parent != null && (lastConverge < now || _lastConvergeInput == null)) {
+                _lastConverge = now
+                _lastConvergeInput = this
+
+                parent.onConverge(now, max(0, now - lastConverge))
+            }
         }
 
         override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {
@@ -303,6 +376,14 @@ public class MaxMinFlowMultiplexer(
             limit = 0.0
             actualRate = 0.0
             _lastPull = now
+
+            // Assign a new input responsible for handling the convergence events
+            if (_lastConvergeInput == this) {
+                _lastConvergeInput = null
+            }
+
+            // Re-run scheduler to distribute new load
+            runScheduler(now)
         }
 
         /* Comparable */
@@ -328,35 +409,31 @@ public class MaxMinFlowMultiplexer(
 
             // Compute the performance penalty due to flow interference
             val perfScore = if (interferenceDomain != null) {
-                val load = _rate / capacity
+                val load = _rate / _capacity
                 interferenceDomain.apply(key, load)
             } else {
                 1.0
             }
 
             val deltaS = delta / 1000.0
-            val work = limit * deltaS
-            val actualWork = actualRate * deltaS
-            val remainingWork = work - actualWork
+            val demand = limit * deltaS
+            val actual = actualRate * deltaS
+            val remaining = (capacity - actualRate) * deltaS
 
-            updateCounters(work, actualWork, remainingWork)
+            updateCounters(demand, actual, remaining)
 
-            val distCounters = _counters
-            distCounters.demand += work
-            distCounters.actual += actualWork
-            distCounters.overcommit += remainingWork
-            distCounters.interference += actualWork * max(0.0, 1 - perfScore)
+            _counters.interference += actual * max(0.0, 1 - perfScore)
         }
     }
 
     /**
      * An internal [FlowSource] implementation for multiplexer outputs.
      */
-    private inner class Output(private val provider: FlowConsumer) : FlowSource, Comparable<Output> {
+    private inner class Output : FlowSource, Comparable<Output> {
         /**
          * The active [FlowConnection] of this source.
          */
-        private var _ctx: FlowConnection? = null
+        private var _conn: FlowConnection? = null
 
         /**
          * The capacity of this output.
@@ -367,27 +444,33 @@ public class MaxMinFlowMultiplexer(
          * Push the specified rate to the consumer.
          */
         fun push(rate: Double) {
-            _ctx?.push(rate)
+            _conn?.push(rate)
         }
 
         /**
          * Cancel this output.
          */
         fun cancel() {
-            provider.cancel()
+            _conn?.close()
         }
 
         override fun onStart(conn: FlowConnection, now: Long) {
-            assert(_ctx == null) { "Source running concurrently" }
-            _ctx = conn
+            assert(_conn == null) { "Source running concurrently" }
+            _conn = conn
             capacity = conn.capacity
+            _activeOutputs.add(this)
+
             updateCapacity()
         }
 
         override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
-            _ctx = null
+            _conn = null
             capacity = 0.0
+            _activeOutputs.remove(this)
+
             updateCapacity()
+
+            runScheduler(now)
         }
 
         override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
@@ -397,6 +480,7 @@ public class MaxMinFlowMultiplexer(
                 updateCapacity()
             }
 
+            // Re-run scheduler to distribute new load
             runScheduler(now)
             return Long.MAX_VALUE
         }

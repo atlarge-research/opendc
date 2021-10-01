@@ -44,7 +44,7 @@ internal class MaxMinFlowMultiplexerTest {
         val switch = MaxMinFlowMultiplexer(scheduler)
 
         val sources = List(2) { FlowSink(scheduler, 2000.0) }
-        sources.forEach { switch.addOutput(it) }
+        sources.forEach { it.startConsumer(switch.newOutput()) }
 
         val provider = switch.newInput()
         val consumer = FixedFlowSource(2000.0, 1.0)
@@ -76,10 +76,11 @@ internal class MaxMinFlowMultiplexerTest {
             )
 
         val switch = MaxMinFlowMultiplexer(scheduler)
+        val sink = FlowSink(scheduler, 3200.0)
         val provider = switch.newInput()
 
         try {
-            switch.addOutput(FlowSink(scheduler, 3200.0))
+            sink.startConsumer(switch.newOutput())
             provider.consume(workload)
             yield()
         } finally {
@@ -89,7 +90,7 @@ internal class MaxMinFlowMultiplexerTest {
         assertAll(
             { assertEquals(1113300.0, switch.counters.demand, "Requested work does not match") },
             { assertEquals(1023300.0, switch.counters.actual, "Actual work does not match") },
-            { assertEquals(90000.0, switch.counters.overcommit, "Overcommitted work does not match") },
+            { assertEquals(2816700.0, switch.counters.remaining, "Remaining capacity does not match") },
             { assertEquals(1200000, clock.millis()) }
         )
     }
@@ -122,11 +123,12 @@ internal class MaxMinFlowMultiplexerTest {
             )
 
         val switch = MaxMinFlowMultiplexer(scheduler)
+        val sink = FlowSink(scheduler, 3200.0)
         val providerA = switch.newInput()
         val providerB = switch.newInput()
 
         try {
-            switch.addOutput(FlowSink(scheduler, 3200.0))
+            sink.startConsumer(switch.newOutput())
 
             coroutineScope {
                 launch { providerA.consume(workloadA) }
@@ -140,7 +142,7 @@ internal class MaxMinFlowMultiplexerTest {
         assertAll(
             { assertEquals(2073600.0, switch.counters.demand, "Requested work does not match") },
             { assertEquals(1053600.0, switch.counters.actual, "Granted work does not match") },
-            { assertEquals(1020000.0, switch.counters.overcommit, "Overcommitted work does not match") },
+            { assertEquals(2786400.0, switch.counters.remaining, "Remaining capacity does not match") },
             { assertEquals(1200000, clock.millis()) }
         )
     }

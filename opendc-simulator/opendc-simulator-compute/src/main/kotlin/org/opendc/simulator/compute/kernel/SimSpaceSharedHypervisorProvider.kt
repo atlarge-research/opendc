@@ -35,9 +35,8 @@ public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
 
     override fun create(
         engine: FlowEngine,
-        parent: FlowConvergenceListener?,
+        listener: FlowConvergenceListener?,
         scalingGovernor: ScalingGovernor?,
         interferenceDomain: VmInterferenceDomain?,
-        listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimSpaceSharedHypervisor(engine)
+    ): SimHypervisor = SimSpaceSharedHypervisor(engine, listener, scalingGovernor)
 }

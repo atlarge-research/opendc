@@ -22,21 +22,29 @@
 
 package org.opendc.simulator.compute.kernel
 
-import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
-import org.opendc.simulator.flow.FlowConvergenceListener
-import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.compute.SimMachine
 
 /**
- * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
+ * A virtual [SimMachine] running on top of another [SimMachine].
  */
-public class SimFairShareHypervisorProvider : SimHypervisorProvider {
-    override val id: String = "fair-share"
+public interface SimVirtualMachine : SimMachine {
+    /**
+     * The resource counters associated with the virtual machine.
+     */
+    public val counters: SimHypervisorCounters
 
-    override fun create(
-        engine: FlowEngine,
-        listener: FlowConvergenceListener?,
-        scalingGovernor: ScalingGovernor?,
-        interferenceDomain: VmInterferenceDomain?,
-    ): SimHypervisor = SimFairShareHypervisor(engine, listener, scalingGovernor, interferenceDomain)
+    /**
+     * The CPU usage of the VM in MHz.
+     */
+    public val cpuUsage: Double
+
+    /**
+     * The CPU usage of the VM in MHz.
+     */
+    public val cpuDemand: Double
+
+    /**
+     * The CPU capacity of the VM in MHz.
+     */
+    public val cpuCapacity: Double
 }
