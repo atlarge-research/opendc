@@ -53,14 +53,15 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
      * Obtain the fragment with a timestamp equal or greater than [now].
      */
     private fun pullFragment(now: Long): Fragment? {
+        // Return the most recent fragment if its starting time + duration is later than `now`
         var fragment = fragment
-        if (fragment != null && !fragment.isExpired(now)) {
+        if (fragment != null && fragment.timestamp + offset + fragment.duration > now) {
             return fragment
         }
 
         while (iterator.hasNext()) {
             fragment = iterator.next()
-            if (!fragment.isExpired(now)) {
+            if (fragment.timestamp + offset + fragment.duration > now) {
                 this.fragment = fragment
                 return fragment
             }
@@ -70,15 +71,11 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
         return null
     }
 
-    /**
-     * Determine if the specified [Fragment] is expired, i.e., it has already passed.
-     */
-    private fun Fragment.isExpired(now: Long): Boolean {
-        val timestamp = this.timestamp + offset
-        return now >= timestamp + duration
-    }
+    private inner class Consumer(cpu: ProcessingUnit) : FlowSource {
+        private val offset = this@SimTraceWorkload.offset
+        private val id = cpu.id
+        private val coreCount = cpu.node.coreCount
 
-    private inner class Consumer(val cpu: ProcessingUnit) : FlowSource {
         override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
             val fragment = pullFragment(now)
 
@@ -95,7 +92,7 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
                 return timestamp - now
             }
 
-            val cores = min(cpu.node.coreCount, fragment.cores)
+            val cores = min(coreCount, fragment.cores)
             val usage = if (fragment.cores > 0)
                 fragment.usage / cores
             else
@@ -103,7 +100,7 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
             val deadline = timestamp + fragment.duration
             val duration = deadline - now
 
-            conn.push(if (cpu.id < cores && usage > 0.0) usage else 0.0)
+            conn.push(if (id < cores && usage > 0.0) usage else 0.0)
 
             return duration
         }
@@ -117,5 +114,10 @@ public class SimTraceWorkload(public val trace: Sequence<Fragment>, private val 
      * @param usage The CPU usage during the fragment.
      * @param cores The amount of cores utilized during the fragment.
      */
-    public data class Fragment(val timestamp: Long, val duration: Long, val usage: Double, val cores: Int)
+    public data class Fragment(
+        @JvmField val timestamp: Long,
+        @JvmField val duration: Long,
+        @JvmField val usage: Double,
+        @JvmField val cores: Int
+    )
 }
