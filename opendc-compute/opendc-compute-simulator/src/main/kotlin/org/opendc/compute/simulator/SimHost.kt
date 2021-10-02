@@ -109,6 +109,7 @@ public class SimHost(
      * The virtual machines running on the hypervisor.
      */
     private val guests = HashMap<Server, Guest>()
+    private val _guests = mutableListOf<Guest>()
 
     override val state: HostState
         get() = _state
@@ -199,7 +200,7 @@ public class SimHost(
             require(canFit(key)) { "Server does not fit" }
 
             val machine = hypervisor.createMachine(key.flavor.toMachineModel(), key.name)
-            Guest(
+            val newGuest = Guest(
                 scope.coroutineContext,
                 clock,
                 this,
@@ -208,6 +209,9 @@ public class SimHost(
                 server,
                 machine
             )
+
+            _guests.add(newGuest)
+            newGuest
         }
 
         if (start) {
@@ -231,7 +235,7 @@ public class SimHost(
 
     override suspend fun delete(server: Server) {
         val guest = guests[server] ?: return
-        guest.terminate()
+        guest.delete()
     }
 
     override fun addListener(listener: HostListener) {
@@ -253,7 +257,7 @@ public class SimHost(
     public suspend fun fail() {
         reset()
 
-        for (guest in guests.values) {
+        for (guest in _guests) {
             guest.fail()
         }
     }
@@ -266,7 +270,7 @@ public class SimHost(
         // Wait for the hypervisor to launch before recovering the guests
         yield()
 
-        for (guest in guests.values) {
+        for (guest in _guests) {
             guest.recover()
         }
     }
@@ -357,11 +361,17 @@ public class SimHost(
         var error = 0L
         var invalid = 0L
 
-        for ((_, guest) in guests) {
+        val guests = _guests.listIterator()
+        for (guest in guests) {
             when (guest.state) {
                 ServerState.TERMINATED -> terminated++
                 ServerState.RUNNING -> running++
                 ServerState.ERROR -> error++
+                ServerState.DELETED -> {
+                    // Remove guests that have been deleted
+                    this.guests.remove(guest.server)
+                    guests.remove()
+                }
                 else -> invalid++
             }
         }
@@ -380,8 +390,9 @@ public class SimHost(
     private fun collectCpuLimit(result: ObservableDoubleMeasurement) {
         result.observe(_cpuLimit)
 
-        for (guest in guests.values) {
-            guest.collectCpuLimit(result)
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].collectCpuLimit(result)
         }
     }
 
@@ -401,8 +412,9 @@ public class SimHost(
         result.observe(counters.cpuStealTime / 1000L, _stealState)
         result.observe(counters.cpuLostTime / 1000L, _lostState)
 
-        for (guest in guests.values) {
-            guest.collectCpuTime(result)
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].collectCpuTime(result)
         }
     }
 
@@ -423,8 +435,9 @@ public class SimHost(
             _downtime += duration
         }
 
-        for (guest in guests.values) {
-            guest.updateUptime(duration)
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].updateUptime(duration)
         }
     }
 
@@ -442,8 +455,9 @@ public class SimHost(
         result.observe(_uptime, _upState)
         result.observe(_downtime, _downState)
 
-        for (guest in guests.values) {
-            guest.collectUptime(result)
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].collectUptime(result)
         }
     }
 
@@ -457,8 +471,9 @@ public class SimHost(
             result.observe(_bootTime)
         }
 
-        for (guest in guests.values) {
-            guest.collectBootTime(result)
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].collectBootTime(result)
         }
     }
 }

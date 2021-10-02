@@ -24,6 +24,7 @@ package org.opendc.compute.simulator.internal
 
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.common.AttributesBuilder
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
@@ -71,17 +72,7 @@ internal class Guest(
     /**
      * The attributes of the guest.
      */
-    val attributes: Attributes = Attributes.builder()
-        .put(ResourceAttributes.HOST_NAME, server.name)
-        .put(ResourceAttributes.HOST_ID, server.uid.toString())
-        .put(ResourceAttributes.HOST_TYPE, server.flavor.name)
-        .put(AttributeKey.longKey("host.num_cpus"), server.flavor.cpuCount.toLong())
-        .put(AttributeKey.longKey("host.mem_capacity"), server.flavor.memorySize)
-        .put(AttributeKey.stringArrayKey("host.labels"), server.labels.map { (k, v) -> "$k:$v" })
-        .put(ResourceAttributes.HOST_ARCH, ResourceAttributes.HostArchValues.AMD64)
-        .put(ResourceAttributes.HOST_IMAGE_NAME, server.image.name)
-        .put(ResourceAttributes.HOST_IMAGE_ID, server.image.uid.toString())
-        .build()
+    val attributes: Attributes = GuestAttributes(this)
 
     /**
      * Start the guest.
@@ -114,12 +105,12 @@ internal class Guest(
     }
 
     /**
-     * Terminate the guest.
+     * Delete the guest.
      *
      * This operation will stop the guest if it is running on the host and remove all resources associated with the
      * guest.
      */
-    suspend fun terminate() {
+    suspend fun delete() {
         stop()
 
         state = ServerState.DELETED
@@ -224,12 +215,10 @@ internal class Guest(
 
     private var _uptime = 0L
     private var _downtime = 0L
-    private val _upState = Attributes.builder()
-        .putAll(attributes)
+    private val _upState = attributes.toBuilder()
         .put(STATE_KEY, "up")
         .build()
-    private val _downState = Attributes.builder()
-        .putAll(attributes)
+    private val _downState = attributes.toBuilder()
         .put(STATE_KEY, "down")
         .build()
 
@@ -263,20 +252,16 @@ internal class Guest(
         }
     }
 
-    private val _activeState = Attributes.builder()
-        .putAll(attributes)
+    private val _activeState = attributes.toBuilder()
         .put(STATE_KEY, "active")
         .build()
-    private val _stealState = Attributes.builder()
-        .putAll(attributes)
+    private val _stealState = attributes.toBuilder()
         .put(STATE_KEY, "steal")
         .build()
-    private val _lostState = Attributes.builder()
-        .putAll(attributes)
+    private val _lostState = attributes.toBuilder()
         .put(STATE_KEY, "lost")
         .build()
-    private val _idleState = Attributes.builder()
-        .putAll(attributes)
+    private val _idleState = attributes.toBuilder()
         .put(STATE_KEY, "idle")
         .build()
 
@@ -299,5 +284,67 @@ internal class Guest(
      */
     fun collectCpuLimit(result: ObservableDoubleMeasurement) {
         result.observe(_cpuLimit, attributes)
+    }
+
+    /**
+     * An optimized [Attributes] implementation.
+     */
+    private class GuestAttributes(private val uid: String, private val attributes: Attributes) : Attributes by attributes {
+        /**
+         * Construct a [GuestAttributes] instance from a [Guest].
+         */
+        constructor(guest: Guest) : this(
+            guest.server.uid.toString(),
+            Attributes.builder()
+                .put(ResourceAttributes.HOST_NAME, guest.server.name)
+                .put(ResourceAttributes.HOST_ID, guest.server.uid.toString())
+                .put(ResourceAttributes.HOST_TYPE, guest.server.flavor.name)
+                .put(AttributeKey.longKey("host.num_cpus"), guest.server.flavor.cpuCount.toLong())
+                .put(AttributeKey.longKey("host.mem_capacity"), guest.server.flavor.memorySize)
+                .put(AttributeKey.stringArrayKey("host.labels"), guest.server.labels.map { (k, v) -> "$k:$v" })
+                .put(ResourceAttributes.HOST_ARCH, ResourceAttributes.HostArchValues.AMD64)
+                .put(ResourceAttributes.HOST_IMAGE_NAME, guest.server.image.name)
+                .put(ResourceAttributes.HOST_IMAGE_ID, guest.server.image.uid.toString())
+                .build()
+        )
+
+        override fun <T : Any?> get(key: AttributeKey<T>): T? {
+            // Optimize access to the HOST_ID key which is accessed quite often
+            if (key == ResourceAttributes.HOST_ID) {
+                @Suppress("UNCHECKED_CAST")
+                return uid as T?
+            }
+            return attributes.get(key)
+        }
+
+        override fun toBuilder(): AttributesBuilder {
+            val delegate = attributes.toBuilder()
+            return object : AttributesBuilder {
+
+                override fun putAll(attributes: Attributes): AttributesBuilder {
+                    delegate.putAll(attributes)
+                    return this
+                }
+
+                override fun <T : Any?> put(key: AttributeKey<Long>, value: Int): AttributesBuilder {
+                    delegate.put<T>(key, value)
+                    return this
+                }
+
+                override fun <T : Any?> put(key: AttributeKey<T>, value: T): AttributesBuilder {
+                    delegate.put(key, value)
+                    return this
+                }
+
+                override fun build(): Attributes = GuestAttributes(uid, delegate.build())
+            }
+        }
+
+        override fun equals(other: Any?): Boolean = attributes == other
+
+        // Cache hash code
+        private val _hash = attributes.hashCode()
+
+        override fun hashCode(): Int = _hash
     }
 }
