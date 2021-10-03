@@ -23,9 +23,8 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceContext
-import org.opendc.simulator.resources.SimResourceEvent
+import org.opendc.simulator.flow.FlowConnection
+import org.opendc.simulator.flow.FlowSource
 
 /**
  * A helper class to manage the lifecycle of a [SimWorkload]
@@ -34,40 +33,29 @@ public class SimWorkloadLifecycle(private val ctx: SimMachineContext) {
     /**
      * The resource consumers which represent the lifecycle of the workload.
      */
-    private val waiting = mutableSetOf<SimResourceConsumer>()
+    private val waiting = mutableSetOf<FlowSource>()
 
     /**
      * Wait for the specified [consumer] to complete before ending the lifecycle of the workload.
      */
-    public fun waitFor(consumer: SimResourceConsumer): SimResourceConsumer {
+    public fun waitFor(consumer: FlowSource): FlowSource {
         waiting.add(consumer)
-        return object : SimResourceConsumer by consumer {
-            override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
+        return object : FlowSource by consumer {
+            override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
                 try {
-                    consumer.onEvent(ctx, event)
-                } finally {
-                    if (event == SimResourceEvent.Exit) {
-                        complete(consumer)
-                    }
-                }
-            }
-
-            override fun onFailure(ctx: SimResourceContext, cause: Throwable) {
-                try {
-                    consumer.onFailure(ctx, cause)
+                    consumer.onStop(conn, now, delta)
                 } finally {
                     complete(consumer)
                 }
             }
-
             override fun toString(): String = "SimWorkloadLifecycle.Consumer[delegate=$consumer]"
         }
     }
 
     /**
-     * Complete the specified [SimResourceConsumer].
+     * Complete the specified [FlowSource].
      */
-    private fun complete(consumer: SimResourceConsumer) {
+    private fun complete(consumer: FlowSource) {
         if (waiting.remove(consumer) && waiting.isEmpty()) {
             ctx.close()
         }

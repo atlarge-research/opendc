@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 
 /**
  * A simulated execution context in which a bootable image runs. This interface represents the
@@ -31,9 +31,9 @@ import org.opendc.simulator.resources.SimResourceInterpreter
  */
 public interface SimMachineContext : AutoCloseable {
     /**
-     * The resource interpreter that simulates the machine.
+     * The [FlowEngine] that simulates the machine.
      */
-    public val interpreter: SimResourceInterpreter
+    public val engine: FlowEngine
 
     /**
      * The metadata associated with the context.

@@ -22,21 +22,24 @@
 
 package org.opendc.simulator.compute.kernel
 
-import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.model.MachineModel
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSwitch
-import org.opendc.simulator.resources.SimResourceSwitchExclusive
+import org.opendc.simulator.flow.FlowConvergenceListener
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.mux.FlowMultiplexer
+import org.opendc.simulator.flow.mux.ForwardingFlowMultiplexer
 
 /**
  * A [SimHypervisor] that allocates its sub-resources exclusively for the virtual machine that it hosts.
  */
-public class SimSpaceSharedHypervisor(interpreter: SimResourceInterpreter) : SimAbstractHypervisor(interpreter) {
-    override fun canFit(model: MachineModel, switch: SimResourceSwitch): Boolean {
-        return switch.inputs.size - switch.outputs.size >= model.cpus.size
-    }
+public class SimSpaceSharedHypervisor(
+    engine: FlowEngine,
+    listener: FlowConvergenceListener?,
+    scalingGovernor: ScalingGovernor?,
+) : SimAbstractHypervisor(engine, listener, scalingGovernor) {
+    override val mux: FlowMultiplexer = ForwardingFlowMultiplexer(engine)
 
-    override fun createSwitch(ctx: SimMachineContext): SimResourceSwitch {
-        return SimResourceSwitchExclusive()
+    override fun canFit(model: MachineModel): Boolean {
+        return mux.outputs.size - mux.inputs.size >= model.cpus.size
     }
 }

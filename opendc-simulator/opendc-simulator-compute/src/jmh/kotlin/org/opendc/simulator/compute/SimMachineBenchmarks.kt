@@ -36,8 +36,9 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.SimulationCoroutineScope
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 import org.openjdk.jmh.annotations.*
+import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 @State(Scope.Thread)
@@ -47,13 +48,13 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineBenchmarks {
     private lateinit var scope: SimulationCoroutineScope
-    private lateinit var interpreter: SimResourceInterpreter
+    private lateinit var engine: FlowEngine
     private lateinit var machineModel: MachineModel
 
     @Setup
     fun setUp() {
         scope = SimulationCoroutineScope()
-        interpreter = SimResourceInterpreter(scope.coroutineContext, scope.clock)
+        engine = FlowEngine(scope.coroutineContext, scope.clock)
 
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
@@ -63,22 +64,15 @@ class SimMachineBenchmarks {
         )
     }
 
-    @State(Scope.Benchmark)
+    @State(Scope.Thread)
     class Workload {
         lateinit var trace: Sequence<SimTraceWorkload.Fragment>
 
         @Setup
         fun setUp() {
-            trace = sequenceOf(
-                SimTraceWorkload.Fragment(0, 1000, 28.0, 1),
-                SimTraceWorkload.Fragment(1000, 1000, 3500.0, 1),
-                SimTraceWorkload.Fragment(2000, 1000, 0.0, 1),
-                SimTraceWorkload.Fragment(3000, 1000, 183.0, 1),
-                SimTraceWorkload.Fragment(4000, 1000, 400.0, 1),
-                SimTraceWorkload.Fragment(5000, 1000, 100.0, 1),
-                SimTraceWorkload.Fragment(6000, 1000, 3000.0, 1),
-                SimTraceWorkload.Fragment(7000, 1000, 4500.0, 1),
-            )
+            val random = ThreadLocalRandom.current()
+            val entries = List(10000) { SimTraceWorkload.Fragment(it * 1000L, 1000, random.nextDouble(0.0, 4500.0), 1) }
+            trace = entries.asSequence()
         }
     }
 
@@ -86,7 +80,7 @@ class SimMachineBenchmarks {
     fun benchmarkBareMetal(state: Workload) {
         return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
-                interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+                engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
             return@runBlockingSimulation machine.run(SimTraceWorkload(state.trace))
         }
@@ -96,9 +90,9 @@ class SimMachineBenchmarks {
     fun benchmarkSpaceSharedHypervisor(state: Workload) {
         return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
-                interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+                engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimSpaceSharedHypervisor(interpreter)
+            val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
 
             launch { machine.run(hypervisor) }
 
@@ -117,9 +111,9 @@ class SimMachineBenchmarks {
     fun benchmarkFairShareHypervisorSingle(state: Workload) {
         return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
-                interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+                engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor(interpreter)
+            val hypervisor = SimFairShareHypervisor(engine, null, null, null)
 
             launch { machine.run(hypervisor) }
 
@@ -138,9 +132,9 @@ class SimMachineBenchmarks {
     fun benchmarkFairShareHypervisorDouble(state: Workload) {
         return scope.runBlockingSimulation {
             val machine = SimBareMetalMachine(
-                interpreter, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
+                engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            val hypervisor = SimFairShareHypervisor(interpreter)
+            val hypervisor = SimFairShareHypervisor(engine, null, null, null)
 
             launch { machine.run(hypervisor) }
 

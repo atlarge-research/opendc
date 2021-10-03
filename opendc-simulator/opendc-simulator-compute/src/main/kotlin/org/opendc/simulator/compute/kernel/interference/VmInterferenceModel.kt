@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.compute.kernel.interference
 
-import org.opendc.simulator.resources.interference.InterferenceKey
+import org.opendc.simulator.flow.interference.InterferenceKey
 import java.util.*
 
 /**

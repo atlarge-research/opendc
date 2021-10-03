@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.resources.SimResourceConsumer
+import org.opendc.simulator.flow.FlowSource
 
 /**
  * An abstract inlet that consumes electricity from a power outlet.
@@ -42,7 +42,7 @@ public abstract class SimPowerInlet {
     internal var _outlet: SimPowerOutlet? = null
 
     /**
-     * Create a [SimResourceConsumer] which represents the consumption of electricity from the power outlet.
+     * Create a [FlowSource] which represents the consumption of electricity from the power outlet.
      */
-    public abstract fun createConsumer(): SimResourceConsumer
+    public abstract fun createSource(): FlowSource
 }

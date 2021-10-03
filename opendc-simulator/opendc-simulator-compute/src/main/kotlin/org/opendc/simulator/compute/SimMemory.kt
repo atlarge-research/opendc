@@ -23,12 +23,12 @@
 package org.opendc.simulator.compute
 
 import org.opendc.simulator.compute.model.MemoryUnit
-import org.opendc.simulator.resources.SimResourceProvider
+import org.opendc.simulator.flow.FlowConsumer
 
 /**
  * An interface to control the memory usage of simulated workloads.
  */
-public interface SimMemory : SimResourceProvider {
+public interface SimMemory : FlowConsumer {
     /**
      * The models representing the static information of the memory units supporting this interface.
      */

@@ -131,7 +131,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
             // Instantiate the desired topology
             runner.apply(topology)
 
-            // Run the workload trace
+            // Converge the workload trace
             runner.run(workload.source.resolve(workloadLoader, seeder), seeder.nextLong())
         } finally {
             runner.close()

@@ -24,8 +24,8 @@ package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSystem
+import org.opendc.simulator.flow.FlowConvergenceListener
+import org.opendc.simulator.flow.FlowEngine
 
 /**
  * A [SimHypervisorProvider] for the [SimSpaceSharedHypervisor] implementation.
@@ -34,10 +34,9 @@ public class SimSpaceSharedHypervisorProvider : SimHypervisorProvider {
     override val id: String = "space-shared"
 
     override fun create(
-        interpreter: SimResourceInterpreter,
-        parent: SimResourceSystem?,
+        engine: FlowEngine,
+        listener: FlowConvergenceListener?,
         scalingGovernor: ScalingGovernor?,
         interferenceDomain: VmInterferenceDomain?,
-        listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimSpaceSharedHypervisor(interpreter)
+    ): SimHypervisor = SimSpaceSharedHypervisor(engine, listener, scalingGovernor)
 }

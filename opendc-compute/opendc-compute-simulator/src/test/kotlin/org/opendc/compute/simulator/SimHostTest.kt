@@ -41,7 +41,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.HOST_ID
 import org.opendc.telemetry.compute.table.HostData
@@ -87,14 +87,14 @@ internal class SimHostTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val virtDriver = SimHost(
             uid = hostId,
             name = "test",
             model = machineModel,
             meta = emptyMap(),
             coroutineContext,
-            interpreter,
+            engine,
             meterProvider,
             SimFairShareHypervisorProvider()
         )
@@ -170,9 +170,9 @@ internal class SimHostTest {
         reader.close()
 
         assertAll(
-            { assertEquals(659, activeTime, "Active time does not match") },
-            { assertEquals(2342, idleTime, "Idle time does not match") },
-            { assertEquals(638, stealTime, "Steal time does not match") },
+            { assertEquals(658, activeTime, "Active time does not match") },
+            { assertEquals(1741, idleTime, "Idle time does not match") },
+            { assertEquals(637, stealTime, "Steal time does not match") },
             { assertEquals(1500001, clock.millis()) }
         )
     }
@@ -199,14 +199,14 @@ internal class SimHostTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val engine = FlowEngine(coroutineContext, clock)
         val host = SimHost(
             uid = hostId,
             name = "test",
             model = machineModel,
             meta = emptyMap(),
             coroutineContext,
-            interpreter,
+            engine,
             meterProvider,
             SimFairShareHypervisorProvider()
         )
@@ -253,7 +253,7 @@ internal class SimHostTest {
             host.spawn(server)
             delay(5000L)
             host.fail()
-            delay(5000L)
+            delay(duration * 1000)
             host.recover()
 
             suspendCancellableCoroutine<Unit> { cont ->
@@ -274,12 +274,12 @@ internal class SimHostTest {
         reader.close()
 
         assertAll(
-            { assertEquals(2661, idleTime, "Idle time does not match") },
-            { assertEquals(339, activeTime, "Active time does not match") },
-            { assertEquals(1195001, uptime, "Uptime does not match") },
-            { assertEquals(5000, downtime, "Downtime does not match") },
-            { assertEquals(1195000, guestUptime, "Guest uptime does not match") },
-            { assertEquals(5000, guestDowntime, "Guest downtime does not match") },
+            { assertEquals(1175, idleTime, "Idle time does not match") },
+            { assertEquals(624, activeTime, "Active time does not match") },
+            { assertEquals(900001, uptime, "Uptime does not match") },
+            { assertEquals(300000, downtime, "Downtime does not match") },
+            { assertEquals(900000, guestUptime, "Guest uptime does not match") },
+            { assertEquals(300000, guestDowntime, "Guest downtime does not match") },
         )
     }
 

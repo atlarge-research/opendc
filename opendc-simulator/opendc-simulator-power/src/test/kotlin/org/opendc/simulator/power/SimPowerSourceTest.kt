@@ -31,10 +31,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceEvent
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSource
+import org.opendc.simulator.flow.source.FixedFlowSource
 
 /**
  * Test suite for the [SimPowerSource]
@@ -42,8 +41,8 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 internal class SimPowerSourceTest {
     @Test
     fun testInitialState() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
 
         assertFalse(source.isConnected)
         assertNull(source.inlet)
@@ -52,8 +51,8 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testDisconnectIdempotent() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
 
         assertDoesNotThrow { source.disconnect() }
         assertFalse(source.isConnected)
@@ -61,8 +60,8 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testConnect() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
         val inlet = SimpleInlet()
 
         source.connect(inlet)
@@ -76,27 +75,27 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testDisconnect() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val consumer = spyk(SimWorkConsumer(100.0, utilization = 1.0))
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
+        val consumer = spyk(FixedFlowSource(100.0, utilization = 1.0))
         val inlet = object : SimPowerInlet() {
-            override fun createConsumer(): SimResourceConsumer = consumer
+            override fun createSource(): FlowSource = consumer
         }
 
         source.connect(inlet)
         source.disconnect()
 
-        verify { consumer.onEvent(any(), SimResourceEvent.Exit) }
+        verify { consumer.onStop(any(), any(), any()) }
     }
 
     @Test
     fun testDisconnectAssertion() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
         val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)
         every { inlet.isConnected } returns false
         every { inlet._outlet } returns null
-        every { inlet.createConsumer() } returns SimWorkConsumer(100.0, utilization = 1.0)
+        every { inlet.createSource() } returns FixedFlowSource(100.0, utilization = 1.0)
 
         source.connect(inlet)
 
@@ -107,8 +106,8 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testOutletAlreadyConnected() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
         val inlet = SimpleInlet()
 
         source.connect(inlet)
@@ -121,8 +120,8 @@ internal class SimPowerSourceTest {
 
     @Test
     fun testInletAlreadyConnected() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
         val inlet = mockk<SimPowerInlet>(relaxUnitFun = true)
         every { inlet.isConnected } returns true
 
@@ -132,6 +131,6 @@ internal class SimPowerSourceTest {
     }
 
     class SimpleInlet : SimPowerInlet() {
-        override fun createConsumer(): SimResourceConsumer = SimWorkConsumer(100.0, utilization = 1.0)
+        override fun createSource(): FlowSource = FixedFlowSource(100.0, utilization = 1.0)
     }
 }

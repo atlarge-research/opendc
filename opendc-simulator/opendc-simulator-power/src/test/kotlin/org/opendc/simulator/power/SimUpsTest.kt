@@ -28,10 +28,9 @@ import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceEvent
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.flow.FlowEngine
+import org.opendc.simulator.flow.FlowSource
+import org.opendc.simulator.flow.source.FixedFlowSource
 
 /**
  * Test suite for the [SimUps] class.
@@ -39,9 +38,9 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 internal class SimUpsTest {
     @Test
     fun testSingleInlet() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
-        val ups = SimUps(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
+        val ups = SimUps(engine)
         source.connect(ups.newInlet())
         ups.connect(SimpleInlet())
 
@@ -50,10 +49,10 @@ internal class SimUpsTest {
 
     @Test
     fun testDoubleInlet() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source1 = SimPowerSource(interpreter, capacity = 100.0)
-        val source2 = SimPowerSource(interpreter, capacity = 100.0)
-        val ups = SimUps(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source1 = SimPowerSource(engine, capacity = 100.0)
+        val source2 = SimPowerSource(engine, capacity = 100.0)
+        val ups = SimUps(engine)
         source1.connect(ups.newInlet())
         source2.connect(ups.newInlet())
 
@@ -67,10 +66,10 @@ internal class SimUpsTest {
 
     @Test
     fun testLoss() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = 100.0)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = 100.0)
         // https://download.schneider-electric.com/files?p_Doc_Ref=SPD_NRAN-66CK3D_EN
-        val ups = SimUps(interpreter, idlePower = 4.0, lossCoefficient = 0.05)
+        val ups = SimUps(engine, idlePower = 4.0, lossCoefficient = 0.05)
         source.connect(ups.newInlet())
         ups.connect(SimpleInlet())
 
@@ -79,24 +78,24 @@ internal class SimUpsTest {
 
     @Test
     fun testDisconnect() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source1 = SimPowerSource(interpreter, capacity = 100.0)
-        val source2 = SimPowerSource(interpreter, capacity = 100.0)
-        val ups = SimUps(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source1 = SimPowerSource(engine, capacity = 100.0)
+        val source2 = SimPowerSource(engine, capacity = 100.0)
+        val ups = SimUps(engine)
         source1.connect(ups.newInlet())
         source2.connect(ups.newInlet())
-        val consumer = spyk(SimWorkConsumer(100.0, utilization = 1.0))
+        val consumer = spyk(FixedFlowSource(100.0, utilization = 1.0))
         val inlet = object : SimPowerInlet() {
-            override fun createConsumer(): SimResourceConsumer = consumer
+            override fun createSource(): FlowSource = consumer
         }
 
         ups.connect(inlet)
         ups.disconnect()
 
-        verify { consumer.onEvent(any(), SimResourceEvent.Exit) }
+        verify { consumer.onStop(any(), any(), any()) }
     }
 
     class SimpleInlet : SimPowerInlet() {
-        override fun createConsumer(): SimResourceConsumer = SimWorkConsumer(100.0, utilization = 0.5)
+        override fun createSource(): FlowSource = FixedFlowSource(100.0, utilization = 0.5)
     }
 }

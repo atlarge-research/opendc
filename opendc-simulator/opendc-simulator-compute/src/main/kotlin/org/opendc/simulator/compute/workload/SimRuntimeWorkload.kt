@@ -23,7 +23,7 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.flow.source.FixedFlowSource
 
 /**
  * A [SimWorkload] that models application execution as a single duration.
@@ -44,7 +44,7 @@ public class SimRuntimeWorkload(
         val lifecycle = SimWorkloadLifecycle(ctx)
         for (cpu in ctx.cpus) {
             val limit = cpu.capacity * utilization
-            cpu.startConsumer(lifecycle.waitFor(SimWorkConsumer((limit / 1000) * duration, utilization)))
+            cpu.startConsumer(lifecycle.waitFor(FixedFlowSource((limit / 1000) * duration, utilization)))
         }
     }
 

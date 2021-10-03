@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.*
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.source.FixedFlowSource
 
 /**
  * Test suite for the [SimNetworkSwitchVirtual] class.
@@ -37,10 +37,10 @@ import org.opendc.simulator.resources.consumer.SimWorkConsumer
 class SimNetworkSwitchVirtualTest {
     @Test
     fun testConnect() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
-        val source = spyk(Source(interpreter))
-        val switch = SimNetworkSwitchVirtual(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
+        val source = spyk(Source(engine))
+        val switch = SimNetworkSwitchVirtual(engine)
         val consumer = source.consumer
 
         switch.newPort().connect(sink)
@@ -50,14 +50,14 @@ class SimNetworkSwitchVirtualTest {
         assertTrue(source.isConnected)
 
         verify { source.createConsumer() }
-        verify { consumer.onEvent(any(), SimResourceEvent.Start) }
+        verify { consumer.onStart(any(), any()) }
     }
 
     @Test
     fun testConnectClosedPort() = runBlockingSimulation {
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val sink = SimNetworkSink(interpreter, capacity = 100.0)
-        val switch = SimNetworkSwitchVirtual(interpreter)
+        val engine = FlowEngine(coroutineContext, clock)
+        val sink = SimNetworkSink(engine, capacity = 100.0)
+        val switch = SimNetworkSwitchVirtual(engine)
 
         val port = switch.newPort()
         port.close()
@@ -67,11 +67,11 @@ class SimNetworkSwitchVirtualTest {
         }
     }
 
-    private class Source(interpreter: SimResourceInterpreter) : SimNetworkPort() {
-        val consumer = spyk(SimWorkConsumer(Double.POSITIVE_INFINITY, utilization = 0.8))
+    private class Source(engine: FlowEngine) : SimNetworkPort() {
+        val consumer = spyk(FixedFlowSource(Double.POSITIVE_INFINITY, utilization = 0.8))
 
-        public override fun createConsumer(): SimResourceConsumer = consumer
+        public override fun createConsumer(): FlowSource = consumer
 
-        override val provider: SimResourceProvider = SimResourceSource(0.0, interpreter)
+        override val provider: FlowConsumer = FlowSink(engine, 0.0)
     }
 }

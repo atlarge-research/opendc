@@ -42,7 +42,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.resources.SimResourceInterpreter
+import org.opendc.simulator.flow.FlowEngine
 import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.trace.Trace
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
@@ -70,7 +70,7 @@ internal class WorkflowServiceTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
+        val interpreter = FlowEngine(coroutineContext, clock)
         val machineModel = createMachineModel()
         val hvProvider = SimSpaceSharedHypervisorProvider()
         val hosts = List(4) { id ->
@@ -126,7 +126,7 @@ internal class WorkflowServiceTest {
             { assertEquals(metrics.jobsSubmitted, metrics.jobsFinished, "Not all started jobs finished") },
             { assertEquals(0, metrics.tasksActive, "Not all started tasks finished") },
             { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") },
-            { assertEquals(33213237L, clock.millis()) }
+            { assertEquals(33213236L, clock.millis()) }
         )
     }
 

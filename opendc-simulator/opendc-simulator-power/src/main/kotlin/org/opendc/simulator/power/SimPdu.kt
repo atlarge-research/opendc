@@ -22,52 +22,40 @@
 
 package org.opendc.simulator.power
 
-import org.opendc.simulator.resources.*
+import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.mux.FlowMultiplexer
+import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
 /**
  * A model of a Power Distribution Unit (PDU).
  *
- * @param interpreter The underlying [SimResourceInterpreter] to drive the simulation under the hood.
+ * @param engine The underlying [FlowEngine] to drive the simulation under the hood.
  * @param idlePower The idle power consumption of the PDU independent of the load on the PDU.
  * @param lossCoefficient The coefficient for the power loss of the PDU proportional to the square load.
  */
 public class SimPdu(
-    interpreter: SimResourceInterpreter,
+    engine: FlowEngine,
     private val idlePower: Double = 0.0,
     private val lossCoefficient: Double = 0.0,
 ) : SimPowerInlet() {
     /**
-     * The [SimResourceDistributor] that distributes the electricity over the PDU outlets.
+     * The [FlowMultiplexer] that distributes the electricity over the PDU outlets.
      */
-    private val distributor = SimResourceDistributorMaxMin(interpreter)
+    private val mux = MaxMinFlowMultiplexer(engine)
+
+    /**
+     * The [FlowForwarder] that represents the input of the PDU.
+     */
+    private val output = mux.newOutput()
 
     /**
      * Create a new PDU outlet.
      */
-    public fun newOutlet(): Outlet = Outlet(distributor.newOutput())
+    public fun newOutlet(): Outlet = Outlet(mux, mux.newInput())
 
-    override fun createConsumer(): SimResourceConsumer = object : SimResourceConsumer by distributor {
-        override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-            return when (val cmd = distributor.onNext(ctx)) {
-                is SimResourceCommand.Consume -> {
-                    val duration = cmd.work / cmd.limit
-                    val loss = computePowerLoss(cmd.limit)
-                    val newLimit = cmd.limit + loss
-
-                    SimResourceCommand.Consume(duration * newLimit, newLimit, cmd.deadline)
-                }
-                is SimResourceCommand.Idle -> {
-                    val loss = computePowerLoss(0.0)
-                    if (loss > 0.0)
-                        SimResourceCommand.Consume(Double.POSITIVE_INFINITY, loss, cmd.deadline)
-                    else
-                        cmd
-                }
-                else -> cmd
-            }
-        }
-
-        override fun toString(): String = "SimPdu.Consumer"
+    override fun createSource(): FlowSource = FlowMapper(output) { _, rate ->
+        val loss = computePowerLoss(rate)
+        rate + loss
     }
 
     override fun toString(): String = "SimPdu"
@@ -83,9 +71,9 @@ public class SimPdu(
     /**
      * A PDU outlet.
      */
-    public class Outlet(private val provider: SimResourceCloseableProvider) : SimPowerOutlet(), AutoCloseable {
+    public class Outlet(private val switch: FlowMultiplexer, private val provider: FlowConsumer) : SimPowerOutlet(), AutoCloseable {
         override fun onConnect(inlet: SimPowerInlet) {
-            provider.startConsumer(inlet.createConsumer())
+            provider.startConsumer(inlet.createSource())
         }
 
         override fun onDisconnect(inlet: SimPowerInlet) {
@@ -96,7 +84,7 @@ public class SimPdu(
          * Remove the outlet from the PDU.
          */
         override fun close() {
-            provider.close()
+            switch.removeInput(provider)
         }
 
         override fun toString(): String = "SimPdu.Outlet"

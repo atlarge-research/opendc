@@ -24,8 +24,8 @@ package org.opendc.simulator.compute.kernel
 
 import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
-import org.opendc.simulator.resources.SimResourceInterpreter
-import org.opendc.simulator.resources.SimResourceSystem
+import org.opendc.simulator.flow.FlowConvergenceListener
+import org.opendc.simulator.flow.FlowEngine
 
 /**
  * A [SimHypervisorProvider] for the [SimFairShareHypervisor] implementation.
@@ -34,16 +34,9 @@ public class SimFairShareHypervisorProvider : SimHypervisorProvider {
     override val id: String = "fair-share"
 
     override fun create(
-        interpreter: SimResourceInterpreter,
-        parent: SimResourceSystem?,
+        engine: FlowEngine,
+        listener: FlowConvergenceListener?,
         scalingGovernor: ScalingGovernor?,
         interferenceDomain: VmInterferenceDomain?,
-        listener: SimHypervisor.Listener?
-    ): SimHypervisor = SimFairShareHypervisor(
-        interpreter,
-        parent,
-        scalingGovernor = scalingGovernor,
-        interferenceDomain = interferenceDomain,
-        listener = listener
-    )
+    ): SimHypervisor = SimFairShareHypervisor(engine, listener, scalingGovernor, interferenceDomain)
 }

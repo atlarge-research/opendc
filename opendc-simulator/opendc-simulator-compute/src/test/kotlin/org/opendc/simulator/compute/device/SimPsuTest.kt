@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.simulator.flow.FlowEngine
 import org.opendc.simulator.power.SimPowerSource
-import org.opendc.simulator.resources.SimResourceInterpreter
 
 /**
  * Test suite for [SimPsu]
@@ -55,8 +55,8 @@ internal class SimPsuTest {
         val ratedOutputPower = 240.0
         val energyEfficiency = mapOf(0.0 to 1.0)
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = ratedOutputPower)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = ratedOutputPower)
 
         val cpuLogic = mockk<PowerDriver.Logic>()
         every { cpuLogic.computePower() } returns 0.0
@@ -78,8 +78,8 @@ internal class SimPsuTest {
             1.0 to 0.94,
         )
 
-        val interpreter = SimResourceInterpreter(coroutineContext, clock)
-        val source = SimPowerSource(interpreter, capacity = ratedOutputPower)
+        val engine = FlowEngine(coroutineContext, clock)
+        val source = SimPowerSource(engine, capacity = ratedOutputPower)
 
         val cpuLogic = mockk<PowerDriver.Logic>()
         every { cpuLogic.computePower() } returnsMany listOf(50.0, 100.0, 150.0, 200.0)

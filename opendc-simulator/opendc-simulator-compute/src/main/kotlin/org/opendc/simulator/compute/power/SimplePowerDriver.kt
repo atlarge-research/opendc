@@ -37,7 +37,7 @@ public class SimplePowerDriver(private val model: PowerModel) : PowerDriver {
 
             for (cpu in cpus) {
                 targetFreq += cpu.capacity
-                totalSpeed += cpu.speed
+                totalSpeed += cpu.rate
             }
 
             return model.computePower(totalSpeed / targetFreq)

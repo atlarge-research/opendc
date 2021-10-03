@@ -22,12 +22,13 @@
 
 package org.opendc.simulator.network
 
-import org.opendc.simulator.resources.*
+import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.mux.MaxMinFlowMultiplexer
 
 /**
  * A [SimNetworkSwitch] that can support new networking ports on demand.
  */
-public class SimNetworkSwitchVirtual(interpreter: SimResourceInterpreter) : SimNetworkSwitch {
+public class SimNetworkSwitchVirtual(private val engine: FlowEngine) : SimNetworkSwitch {
     /**
      * The ports of this switch.
      */
@@ -36,9 +37,9 @@ public class SimNetworkSwitchVirtual(interpreter: SimResourceInterpreter) : SimN
     private val _ports = mutableListOf<Port>()
 
     /**
-     * The [SimResourceSwitchMaxMin] to actually perform the switching.
+     * The [MaxMinFlowMultiplexer] to actually perform the switching.
      */
-    private val switch = SimResourceSwitchMaxMin(interpreter)
+    private val mux = MaxMinFlowMultiplexer(engine)
 
     /**
      * Open a new port on the switch.
@@ -58,19 +59,17 @@ public class SimNetworkSwitchVirtual(interpreter: SimResourceInterpreter) : SimN
          */
         private var isClosed: Boolean = false
 
-        override val provider: SimResourceProvider
+        override val provider: FlowConsumer
             get() = _provider
-        private val _provider = switch.newOutput()
+        private val _provider = mux.newInput()
 
-        override fun createConsumer(): SimResourceConsumer {
-            val forwarder = SimResourceForwarder(isCoupled = true)
-            switch.addInput(forwarder)
-            return forwarder
-        }
+        private val _source = mux.newOutput()
+
+        override fun createConsumer(): FlowSource = _source
 
         override fun close() {
             isClosed = true
-            _provider.close()
+            mux.removeInput(_provider)
             _ports.remove(this)
         }
     }
