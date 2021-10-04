@@ -29,6 +29,11 @@ package org.opendc.simulator.flow
  */
 public interface FlowConsumerContext : FlowConnection {
     /**
+     * The deadline of the source.
+     */
+    public val deadline: Long
+
+    /**
      * The capacity of the connection.
      */
     public override var capacity: Double
@@ -39,12 +44,17 @@ public interface FlowConsumerContext : FlowConnection {
     public var shouldConsumerConverge: Boolean
 
     /**
+     * A flag to control whether the timers for the [FlowSource] should be enabled.
+     */
+    public var enableTimers: Boolean
+
+    /**
      * Start the flow over the connection.
      */
     public fun start()
 
     /**
-     * Synchronously flush the changes of the connection.
+     * Synchronously pull the source of the connection.
      */
-    public fun flush()
+    public fun pullSync()
 }

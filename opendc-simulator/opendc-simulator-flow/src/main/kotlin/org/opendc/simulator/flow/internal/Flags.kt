@@ -41,3 +41,4 @@ internal const val ConnUpdateSkipped = 1 shl 6 // An update of the connection wa
 internal const val ConnConvergePending = 1 shl 7 // Indication that a convergence is already pending
 internal const val ConnConvergeSource = 1 shl 8 // Enable convergence of the source
 internal const val ConnConvergeConsumer = 1 shl 9 // Enable convergence of the consumer
+internal const val ConnDisableTimers = 1 shl 10 // Disable timers for the source

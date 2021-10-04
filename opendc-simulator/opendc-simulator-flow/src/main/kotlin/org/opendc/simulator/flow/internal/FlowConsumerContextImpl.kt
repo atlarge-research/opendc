@@ -69,23 +69,30 @@ internal class FlowConsumerContextImpl(
      */
     override val demand: Double
         get() = _demand
+    private var _demand: Double = 0.0 // The current (pending) demand of the source
+
+    /**
+     * The deadline of the source.
+     */
+    override val deadline: Long
+        get() = _deadline
+    private var _deadline: Long = Long.MAX_VALUE // The deadline of the source's timer
 
     /**
      * Flags to control the convergence of the consumer and source.
      */
-    override var shouldSourceConverge: Boolean = false
+    override var shouldSourceConverge: Boolean
+        get() = _flags and ConnConvergeSource == ConnConvergeSource
         set(value) {
-            field = value
             _flags =
                 if (value)
                     _flags or ConnConvergeSource
                 else
                     _flags and ConnConvergeSource.inv()
         }
-    override var shouldConsumerConverge: Boolean = false
+    override var shouldConsumerConverge: Boolean
+        get() = _flags and ConnConvergeConsumer == ConnConvergeConsumer
         set(value) {
-            field = value
-
             _flags =
                 if (value)
                     _flags or ConnConvergeConsumer
@@ -94,15 +101,22 @@ internal class FlowConsumerContextImpl(
         }
 
     /**
+     * Flag to control the timers on the [FlowSource]
+     */
+    override var enableTimers: Boolean
+        get() = _flags and ConnDisableTimers != ConnDisableTimers
+        set(value) {
+            _flags =
+                if (!value)
+                    _flags or ConnDisableTimers
+                else
+                    _flags and ConnDisableTimers.inv()
+        }
+
+    /**
      * The clock to track simulation time.
      */
     private val _clock = engine.clock
-
-    /**
-     * The current state of the connection.
-     */
-    private var _demand: Double = 0.0 // The current (pending) demand of the source
-    private var _deadline: Long = Long.MAX_VALUE // The deadline of the source's timer
 
     /**
      * The flags of the flow connection, indicating certain actions.
@@ -166,7 +180,7 @@ internal class FlowConsumerContextImpl(
         scheduleImmediate(_clock.millis(), flags or ConnPulled)
     }
 
-    override fun flush() {
+    override fun pullSync() {
         val flags = _flags
 
         // Do not attempt to flush the connection if the connection is closed or an update is already active
@@ -308,8 +322,13 @@ internal class FlowConsumerContextImpl(
         // Check whether we need to schedule a new timer for this connection. That is the case when:
         // (1) The deadline is valid (not the maximum value)
         // (2) The connection is active
-        // (3) The current active timer for the connection points to a later deadline
-        if (newDeadline == Long.MAX_VALUE || flags and ConnState != ConnActive || (timer != null && newDeadline >= timer.target)) {
+        // (3) Timers are not disabled for the source
+        // (4) The current active timer for the connection points to a later deadline
+        if (newDeadline == Long.MAX_VALUE ||
+            flags and ConnState != ConnActive ||
+            flags and ConnDisableTimers != 0 ||
+            (timer != null && newDeadline >= timer.target)
+        ) {
             // Ignore any deadline scheduled at the maximum value
             // This indicates that the source does not want to register a timer
             return
