@@ -150,23 +150,17 @@ internal class FlowConsumerContextImpl(
     }
 
     override fun close() {
-        var flags = _flags
+        val flags = _flags
         if (flags and ConnState == ConnClosed) {
             return
         }
 
-        engine.batch {
-            // Mark the connection as closed and pulled (in order to converge)
-            flags = (flags and ConnState.inv()) or ConnClosed or ConnPulled
-            _flags = flags
-
-            if (flags and ConnUpdateActive == 0) {
-                val now = _clock.millis()
-                doStopSource(now)
-
-                // FIX: Make sure the context converges
-                scheduleImmediate(now, flags)
-            }
+        // Toggle the close bit. In case no update is active, schedule a new update.
+        if (flags and ConnUpdateActive == 0) {
+            val now = _clock.millis()
+            scheduleImmediate(now, flags or ConnClose)
+        } else {
+            _flags = flags or ConnClose
         }
     }
 
@@ -232,7 +226,7 @@ internal class FlowConsumerContextImpl(
 
         val deadline = _deadline
         val reachedDeadline = deadline == now
-        var newDeadline = deadline
+        var newDeadline: Long
         var hasUpdated = false
 
         try {
@@ -259,9 +253,13 @@ internal class FlowConsumerContextImpl(
                 deadline
             }
 
+            // Make the new deadline available for the consumer if it has changed
+            if (newDeadline != deadline) {
+                _deadline = newDeadline
+            }
+
             // Push to the consumer if the rate of the source has changed (after a call to `push`)
-            val newState = flags and ConnState
-            if (newState == ConnActive && flags and ConnPushed != 0) {
+            if (flags and ConnPushed != 0) {
                 val lastPush = _lastPush
                 val delta = max(0, now - lastPush)
 
@@ -274,17 +272,33 @@ internal class FlowConsumerContextImpl(
 
                 // IMPORTANT: Re-fetch the flags after the callback might have changed those
                 flags = _flags
-            } else if (newState == ConnClosed) {
+            }
+
+            // Check whether the source or consumer have tried to close the connection
+            if (flags and ConnClose != 0) {
                 hasUpdated = true
 
                 // The source has called [FlowConnection.close], so clean up the connection
                 doStopSource(now)
+
+                // IMPORTANT: Re-fetch the flags after the callback might have changed those
+                // We now also mark the connection as closed
+                flags = (_flags and ConnState.inv()) or ConnClosed
+
+                _demand = 0.0
+                newDeadline = Long.MAX_VALUE
             }
         } catch (cause: Throwable) {
+            hasUpdated = true
+
+            // Clean up the connection
+            doFailSource(now, cause)
+
             // Mark the connection as closed
             flags = (flags and ConnState.inv()) or ConnClosed
 
-            doFailSource(now, cause)
+            _demand = 0.0
+            newDeadline = Long.MAX_VALUE
         }
 
         // Check whether the connection needs to be added to the visited queue. This is the case when:
@@ -315,9 +329,6 @@ internal class FlowConsumerContextImpl(
         } else {
             _timer
         }
-
-        // Set the new deadline and schedule a delayed update for that deadline
-        _deadline = newDeadline
 
         // Check whether we need to schedule a new timer for this connection. That is the case when:
         // (1) The deadline is valid (not the maximum value)
@@ -355,8 +366,8 @@ internal class FlowConsumerContextImpl(
             // The connection is converging now, so unset the convergence pending flag
             _flags = flags and ConnConvergePending.inv()
 
-            // Call the source converge callback if it has enabled convergence and the connection is active
-            if (flags and ConnState == ConnActive && flags and ConnConvergeSource != 0) {
+            // Call the source converge callback if it has enabled convergence
+            if (flags and ConnConvergeSource != 0) {
                 val delta = max(0, now - _lastSourceConvergence)
                 _lastSourceConvergence = now
 
@@ -371,7 +382,13 @@ internal class FlowConsumerContextImpl(
                 logic.onConverge(this, now, delta)
             }
         } catch (cause: Throwable) {
+            // Invoke the finish callbacks
             doFailSource(now, cause)
+
+            // Mark the connection as closed
+            _flags = (_flags and ConnState.inv()) or ConnClosed
+            _demand = 0.0
+            _deadline = Long.MAX_VALUE
         }
     }
 
@@ -386,10 +403,6 @@ internal class FlowConsumerContextImpl(
             doFinishConsumer(now, null)
         } catch (cause: Throwable) {
             doFinishConsumer(now, cause)
-            return
-        } finally {
-            _deadline = Long.MAX_VALUE
-            _demand = 0.0
         }
     }
 
@@ -402,9 +415,6 @@ internal class FlowConsumerContextImpl(
         } catch (e: Throwable) {
             e.addSuppressed(cause)
             doFinishConsumer(now, e)
-        } finally {
-            _deadline = Long.MAX_VALUE
-            _demand = 0.0
         }
     }
 
