@@ -327,6 +327,9 @@ public class MaxMinFlowMultiplexer(
             for (input in _activeInputs) {
                 input.capacity = newCapacity
             }
+
+            // Sort outputs by their capacity
+            _activeOutputs.sort()
         }
 
         /**
@@ -407,9 +410,6 @@ public class MaxMinFlowMultiplexer(
 
             this.demand = demand
             this.rate = rate
-
-            // Sort all consumers by their capacity
-            activeOutputs.sort()
 
             // Divide the requests over the available capacity of the input resources fairly
             for (i in activeOutputs.indices) {
