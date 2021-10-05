@@ -38,7 +38,7 @@ import kotlin.math.min
  */
 public class MaxMinFlowMultiplexer(
     private val engine: FlowEngine,
-    private val parent: FlowConvergenceListener? = null,
+    parent: FlowConvergenceListener? = null,
     private val interferenceDomain: InterferenceDomain? = null
 ) : FlowMultiplexer {
     /**
@@ -47,7 +47,6 @@ public class MaxMinFlowMultiplexer(
     override val inputs: Set<FlowConsumer>
         get() = _inputs
     private val _inputs = mutableSetOf<Input>()
-    private val _activeInputs = mutableListOf<Input>()
 
     /**
      * The outputs of the multiplexer.
@@ -55,50 +54,38 @@ public class MaxMinFlowMultiplexer(
     override val outputs: Set<FlowSource>
         get() = _outputs
     private val _outputs = mutableSetOf<Output>()
-    private val _activeOutputs = mutableListOf<Output>()
 
     /**
      * The flow counters of this multiplexer.
      */
     public override val counters: FlowCounters
-        get() = _counters
-    private val _counters = FlowCountersImpl()
+        get() = scheduler.counters
 
     /**
      * The actual processing rate of the multiplexer.
      */
     public override val rate: Double
-        get() = _rate
-    private var _rate = 0.0
+        get() = scheduler.rate
 
     /**
      * The demanded processing rate of the input.
      */
     public override val demand: Double
-        get() = _demand
-    private var _demand = 0.0
+        get() = scheduler.demand
 
     /**
      * The capacity of the outputs.
      */
     public override val capacity: Double
-        get() = _capacity
-    private var _capacity = 0.0
+        get() = scheduler.capacity
 
     /**
-     * Flag to indicate that the scheduler is active.
+     * The [Scheduler] instance of this multiplexer.
      */
-    private var _schedulerActive = false
-    private var _lastSchedulerCycle = Long.MAX_VALUE
-
-    /**
-     * The last convergence timestamp and the input.
-     */
-    private var _lastConverge: Long = Long.MIN_VALUE
-    private var _lastConvergeInput: Input? = null
+    private val scheduler = Scheduler(engine, parent)
 
     override fun newInput(key: InterferenceKey?): FlowConsumer {
-        val provider = Input(_capacity, key)
+        val provider = Input(engine, scheduler, interferenceDomain, key)
         _inputs.add(provider)
         return provider
     }
@@ -112,7 +99,7 @@ public class MaxMinFlowMultiplexer(
     }
 
     override fun newOutput(): FlowSource {
-        val output = Output()
+        val output = Output(scheduler)
         _outputs.add(output)
         return output
     }
@@ -146,147 +133,330 @@ public class MaxMinFlowMultiplexer(
     }
 
     /**
-     * Converge the scheduler of the multiplexer.
+     * Helper class containing the scheduler state.
      */
-    private fun runScheduler(now: Long) {
-        if (_schedulerActive) {
-            return
+    private class Scheduler(private val engine: FlowEngine, private val parent: FlowConvergenceListener?) {
+        /**
+         * The flow counters of this scheduler.
+         */
+        @JvmField val counters = FlowCountersImpl()
+
+        /**
+         * The flow rate of the multiplexer.
+         */
+        @JvmField var rate = 0.0
+
+        /**
+         * The demand for the multiplexer.
+         */
+        @JvmField var demand = 0.0
+
+        /**
+         * The capacity of the multiplexer.
+         */
+        @JvmField var capacity = 0.0
+
+        /**
+         * An [Output] that is used to activate the scheduler.
+         */
+        @JvmField var activationOutput: Output? = null
+
+        /**
+         * The active inputs registered with the scheduler.
+         */
+        private val _activeInputs = mutableListOf<Input>()
+
+        /**
+         * The active outputs registered with the scheduler.
+         */
+        private val _activeOutputs = mutableListOf<Output>()
+
+        /**
+         * Flag to indicate that the scheduler is active.
+         */
+        private var _schedulerActive = false
+        private var _lastSchedulerCycle = Long.MAX_VALUE
+
+        /**
+         * The last convergence timestamp and the input.
+         */
+        private var _lastConverge: Long = Long.MIN_VALUE
+        private var _lastConvergeInput: Input? = null
+
+        /**
+         * Register the specified [input] to this scheduler.
+         */
+        fun registerInput(input: Input) {
+            _activeInputs.add(input)
+
+            val hasActivationOutput = activationOutput != null
+
+            // Disable timers and convergence of the source if one of the output manages it
+            input.shouldConsumerConverge = !hasActivationOutput
+            input.enableTimers = !hasActivationOutput
+            input.capacity = capacity
+            trigger(engine.clock.millis())
         }
-        val lastSchedulerCycle = _lastSchedulerCycle
-        val delta = max(0, now - lastSchedulerCycle)
-        _schedulerActive = true
-        _lastSchedulerCycle = now
 
-        try {
-            doSchedule(now, delta)
-        } finally {
-            _schedulerActive = false
-        }
-    }
+        /**
+         * De-register the specified [input] from this scheduler.
+         */
+        fun deregisterInput(input: Input, now: Long) {
+            // Assign a new input responsible for handling the convergence events
+            if (_lastConvergeInput == input) {
+                _lastConvergeInput = null
+            }
 
-    /**
-     * Schedule the inputs over the outputs.
-     */
-    private fun doSchedule(now: Long, delta: Long) {
-        val activeInputs = _activeInputs
-        val activeOutputs = _activeOutputs
-
-        // Update the counters of the scheduler
-        updateCounters(delta)
-
-        // If there is no work yet, mark the inputs as idle.
-        if (activeInputs.isEmpty()) {
-            _demand = 0.0
-            _rate = 0.0
-            return
+            // Re-run scheduler to distribute new load
+            trigger(now)
         }
 
-        val capacity = _capacity
-        var availableCapacity = capacity
+        /**
+         * This method is invoked when one of the inputs converges.
+         */
+        fun convergeInput(input: Input, now: Long) {
 
-        // Pull in the work of the outputs
-        val inputIterator = activeInputs.listIterator()
-        for (input in inputIterator) {
-            input.pull(now)
+            val lastConverge = _lastConverge
+            val lastConvergeInput = _lastConvergeInput
+            val parent = parent
 
-            // Remove outputs that have finished
-            if (!input.isActive) {
-                input.actualRate = 0.0
-                inputIterator.remove()
+            if (parent != null && (now > lastConverge || lastConvergeInput == null || lastConvergeInput == input)) {
+                _lastConverge = now
+                _lastConvergeInput = input
+
+                parent.onConverge(now, max(0, now - lastConverge))
             }
         }
 
-        var demand = 0.0
+        /**
+         * Register the specified [output] to this scheduler.
+         */
+        fun registerOutput(output: Output) {
+            _activeOutputs.add(output)
 
-        // Sort in-place the inputs based on their pushed flow.
-        // Profiling shows that it is faster than maintaining some kind of sorted set.
-        activeInputs.sort()
+            updateCapacity()
+            updateActivationOutput()
+        }
 
-        // Divide the available output capacity fairly over the inputs using max-min fair sharing
-        var remaining = activeInputs.size
-        for (i in activeInputs.indices) {
-            val input = activeInputs[i]
-            val availableShare = availableCapacity / remaining--
-            val grantedRate = min(input.allowedRate, availableShare)
+        /**
+         * De-register the specified [output] from this scheduler.
+         */
+        fun deregisterOutput(output: Output, now: Long) {
+            _activeOutputs.remove(output)
+            updateCapacity()
 
-            // Ignore empty sources
-            if (grantedRate <= 0.0) {
-                input.actualRate = 0.0
-                continue
+            trigger(now)
+        }
+
+        /**
+         * This method is invoked when one of the outputs converges.
+         */
+        fun convergeOutput(output: Output, now: Long) {
+            val lastConverge = _lastConverge
+            val parent = parent
+
+            if (parent != null) {
+                _lastConverge = now
+
+                parent.onConverge(now, max(0, now - lastConverge))
             }
 
-            input.actualRate = grantedRate
-            demand += input.limit
-            availableCapacity -= grantedRate
+            if (!output.isActive) {
+                output.isActivationOutput = false
+                updateActivationOutput()
+            }
         }
 
-        val rate = capacity - availableCapacity
+        /**
+         * Trigger the scheduler of the multiplexer.
+         *
+         * @param now The current virtual timestamp of the simulation.
+         */
+        fun trigger(now: Long) {
+            if (_schedulerActive) {
+                // No need to trigger the scheduler in case it is already active
+                return
+            }
 
-        _demand = demand
-        _rate = rate
+            val activationOutput = activationOutput
 
-        // Sort all consumers by their capacity
-        activeOutputs.sort()
-
-        // Divide the requests over the available capacity of the input resources fairly
-        for (i in activeOutputs.indices) {
-            val output = activeOutputs[i]
-            val inputCapacity = output.capacity
-            val fraction = inputCapacity / capacity
-            val grantedSpeed = rate * fraction
-
-            output.push(grantedSpeed)
-        }
-    }
-
-    /**
-     * Recompute the capacity of the multiplexer.
-     */
-    private fun updateCapacity() {
-        val newCapacity = _activeOutputs.sumOf(Output::capacity)
-
-        // No-op if the capacity is unchanged
-        if (_capacity == newCapacity) {
-            return
+            // We can run the scheduler in two ways:
+            // (1) We can pull one of the multiplexer's outputs. This allows us to cascade multiple pushes by the input
+            //     into a single scheduling cycle, but is slower in case of a few changes at the same timestamp.
+            // (2) We run the scheduler directly from this method call. This is the fastest approach when there are only
+            //     a few inputs and little changes at the same timestamp.
+            // We always pick for option (1) unless there are no outputs available.
+            if (activationOutput != null) {
+                activationOutput.pull()
+                return
+            } else {
+                runScheduler(now)
+            }
         }
 
-        _capacity = newCapacity
+        /**
+         * Synchronously run the scheduler of the multiplexer.
+         */
+        fun runScheduler(now: Long): Long {
+            val lastSchedulerCycle = _lastSchedulerCycle
+            _lastSchedulerCycle = now
 
-        for (input in _inputs) {
-            input.capacity = newCapacity
-        }
-    }
+            val delta = max(0, now - lastSchedulerCycle)
 
-    /**
-     * The previous capacity of the multiplexer.
-     */
-    private var _previousCapacity = 0.0
-
-    /**
-     * Update the counters of the scheduler.
-     */
-    private fun updateCounters(delta: Long) {
-        val previousCapacity = _previousCapacity
-        _previousCapacity = _capacity
-
-        if (delta <= 0) {
-            return
+            return try {
+                _schedulerActive = true
+                doRunScheduler(delta)
+            } finally {
+                _schedulerActive = false
+            }
         }
 
-        val deltaS = delta / 1000.0
+        /**
+         * Recompute the capacity of the multiplexer.
+         */
+        fun updateCapacity() {
+            val newCapacity = _activeOutputs.sumOf(Output::capacity)
 
-        _counters.demand += _demand * deltaS
-        _counters.actual += _rate * deltaS
-        _counters.remaining += (previousCapacity - _rate) * deltaS
+            // No-op if the capacity is unchanged
+            if (capacity == newCapacity) {
+                return
+            }
+
+            capacity = newCapacity
+
+            for (input in _activeInputs) {
+                input.capacity = newCapacity
+            }
+
+            // Sort outputs by their capacity
+            _activeOutputs.sort()
+        }
+
+        /**
+         * Updates the output that is used for scheduler activation.
+         */
+        private fun updateActivationOutput() {
+            val output = _activeOutputs.firstOrNull()
+            activationOutput = output
+
+            if (output != null) {
+                output.isActivationOutput = true
+            }
+
+            val hasActivationOutput = output != null
+
+            for (input in _activeInputs) {
+                input.shouldConsumerConverge = !hasActivationOutput
+                input.enableTimers = !hasActivationOutput
+            }
+        }
+
+        /**
+         * Schedule the inputs over the outputs.
+         *
+         * @return The deadline after which a new scheduling cycle should start.
+         */
+        private fun doRunScheduler(delta: Long): Long {
+            val activeInputs = _activeInputs
+            val activeOutputs = _activeOutputs
+
+            // Update the counters of the scheduler
+            updateCounters(delta)
+
+            // If there is no work yet, mark the inputs as idle.
+            if (activeInputs.isEmpty()) {
+                demand = 0.0
+                rate = 0.0
+                return Long.MAX_VALUE
+            }
+
+            val capacity = capacity
+            var availableCapacity = capacity
+
+            // Pull in the work of the outputs
+            val inputIterator = activeInputs.listIterator()
+            for (input in inputIterator) {
+                input.pullSync()
+
+                // Remove outputs that have finished
+                if (!input.isActive) {
+                    input.actualRate = 0.0
+                    inputIterator.remove()
+                }
+            }
+
+            var demand = 0.0
+            var deadline = Long.MAX_VALUE
+
+            // Sort in-place the inputs based on their pushed flow.
+            // Profiling shows that it is faster than maintaining some kind of sorted set.
+            activeInputs.sort()
+
+            // Divide the available output capacity fairly over the inputs using max-min fair sharing
+            val size = activeInputs.size
+            for (i in activeInputs.indices) {
+                val input = activeInputs[i]
+                val availableShare = availableCapacity / (size - i)
+                val grantedRate = min(input.allowedRate, availableShare)
+
+                demand += input.limit
+                deadline = min(deadline, input.deadline)
+                availableCapacity -= grantedRate
+
+                input.actualRate = grantedRate
+            }
+
+            val rate = capacity - availableCapacity
+
+            this.demand = demand
+            this.rate = rate
+
+            // Divide the requests over the available capacity of the input resources fairly
+            for (i in activeOutputs.indices) {
+                val output = activeOutputs[i]
+                val inputCapacity = output.capacity
+                val fraction = inputCapacity / capacity
+                val grantedSpeed = rate * fraction
+
+                output.push(grantedSpeed)
+            }
+
+            return deadline
+        }
+
+        /**
+         * The previous capacity of the multiplexer.
+         */
+        private var _previousCapacity = 0.0
+
+        /**
+         * Update the counters of the scheduler.
+         */
+        private fun updateCounters(delta: Long) {
+            val previousCapacity = _previousCapacity
+            _previousCapacity = capacity
+
+            if (delta <= 0) {
+                return
+            }
+
+            val deltaS = delta / 1000.0
+
+            counters.demand += demand * deltaS
+            counters.actual += rate * deltaS
+            counters.remaining += (previousCapacity - rate) * deltaS
+        }
     }
 
     /**
      * An internal [FlowConsumer] implementation for multiplexer inputs.
      */
-    private inner class Input(capacity: Double, val key: InterferenceKey?) :
-        AbstractFlowConsumer(engine, capacity),
-        FlowConsumerLogic,
-        Comparable<Input> {
+    private class Input(
+        engine: FlowEngine,
+        private val scheduler: Scheduler,
+        private val interferenceDomain: InterferenceDomain?,
+        @JvmField val key: InterferenceKey?
+    ) : AbstractFlowConsumer(engine, scheduler.capacity), FlowConsumerLogic, Comparable<Input> {
         /**
          * The requested limit.
          */
@@ -298,25 +468,39 @@ public class MaxMinFlowMultiplexer(
         @JvmField var actualRate: Double = 0.0
 
         /**
+         * The deadline of the input.
+         */
+        val deadline: Long
+            get() = ctx?.deadline ?: Long.MAX_VALUE
+
+        /**
          * The processing rate that is allowed by the model constraints.
          */
         val allowedRate: Double
             get() = min(capacity, limit)
 
         /**
+         * A flag to enable timers for the input.
+         */
+        var enableTimers: Boolean = true
+            set(value) {
+                field = value
+                ctx?.enableTimers = value
+            }
+
+        /**
+         * A flag to control whether the input should converge.
+         */
+        var shouldConsumerConverge: Boolean = true
+            set(value) {
+                field = value
+                ctx?.shouldConsumerConverge = value
+            }
+
+        /**
          * A flag to indicate that the input is closed.
          */
         private var _isClosed: Boolean = false
-
-        /**
-         * The timestamp at which we received the last command.
-         */
-        private var _lastPull: Long = Long.MIN_VALUE
-
-        /**
-         * The interference domain this input belongs to.
-         */
-        private val interferenceDomain = this@MaxMinFlowMultiplexer.interferenceDomain
 
         /**
          * Close the input.
@@ -333,12 +517,7 @@ public class MaxMinFlowMultiplexer(
 
         override fun start(ctx: FlowConsumerContext) {
             check(!_isClosed) { "Cannot re-use closed input" }
-
-            _activeInputs += this
-            if (parent != null) {
-                ctx.shouldConsumerConverge = true
-            }
-
+            scheduler.registerInput(this)
             super.start(ctx)
         }
 
@@ -353,21 +532,8 @@ public class MaxMinFlowMultiplexer(
 
             actualRate = 0.0
             limit = rate
-            _lastPull = now
 
-            runScheduler(now)
-        }
-
-        override fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {
-            val lastConverge = _lastConverge
-            val parent = parent
-
-            if (parent != null && (lastConverge < now || _lastConvergeInput == null)) {
-                _lastConverge = now
-                _lastConvergeInput = this
-
-                parent.onConverge(now, max(0, now - lastConverge))
-            }
+            scheduler.trigger(now)
         }
 
         override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {
@@ -375,15 +541,15 @@ public class MaxMinFlowMultiplexer(
 
             limit = 0.0
             actualRate = 0.0
-            _lastPull = now
 
-            // Assign a new input responsible for handling the convergence events
-            if (_lastConvergeInput == this) {
-                _lastConvergeInput = null
-            }
+            scheduler.deregisterInput(this, now)
 
-            // Re-run scheduler to distribute new load
-            runScheduler(now)
+            // BUG: Cancel the connection so that `ctx` is set to `null`
+            cancel()
+        }
+
+        override fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {
+            scheduler.convergeInput(this, now)
         }
 
         /* Comparable */
@@ -392,11 +558,8 @@ public class MaxMinFlowMultiplexer(
         /**
          * Pull the source if necessary.
          */
-        fun pull(now: Long) {
-            val ctx = ctx
-            if (ctx != null && _lastPull < now) {
-                ctx.flush()
-            }
+        fun pullSync() {
+            ctx?.pullSync()
         }
 
         /**
@@ -409,7 +572,7 @@ public class MaxMinFlowMultiplexer(
 
             // Compute the performance penalty due to flow interference
             val perfScore = if (interferenceDomain != null) {
-                val load = _rate / _capacity
+                val load = scheduler.rate / scheduler.capacity
                 interferenceDomain.apply(key, load)
             } else {
                 1.0
@@ -422,14 +585,14 @@ public class MaxMinFlowMultiplexer(
 
             updateCounters(demand, actual, remaining)
 
-            _counters.interference += actual * max(0.0, 1 - perfScore)
+            scheduler.counters.interference += actual * max(0.0, 1 - perfScore)
         }
     }
 
     /**
      * An internal [FlowSource] implementation for multiplexer outputs.
      */
-    private inner class Output : FlowSource, Comparable<Output> {
+    private class Output(private val scheduler: Scheduler) : FlowSource, Comparable<Output> {
         /**
          * The active [FlowConnection] of this source.
          */
@@ -439,6 +602,22 @@ public class MaxMinFlowMultiplexer(
          * The capacity of this output.
          */
         @JvmField var capacity: Double = 0.0
+
+        /**
+         * A flag to indicate that this output is the activation output.
+         */
+        var isActivationOutput: Boolean
+            get() = _isActivationOutput
+            set(value) {
+                _isActivationOutput = value
+                _conn?.shouldSourceConverge = value
+            }
+        private var _isActivationOutput: Boolean = false
+
+        /**
+         * A flag to indicate that the output is active.
+         */
+        @JvmField var isActive = false
 
         /**
          * Push the specified rate to the consumer.
@@ -454,35 +633,56 @@ public class MaxMinFlowMultiplexer(
             _conn?.close()
         }
 
+        /**
+         * Pull this output.
+         */
+        fun pull() {
+            _conn?.pull()
+        }
+
         override fun onStart(conn: FlowConnection, now: Long) {
             assert(_conn == null) { "Source running concurrently" }
             _conn = conn
             capacity = conn.capacity
-            _activeOutputs.add(this)
+            isActive = true
 
-            updateCapacity()
+            scheduler.registerOutput(this)
         }
 
         override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
             _conn = null
             capacity = 0.0
-            _activeOutputs.remove(this)
+            isActive = false
 
-            updateCapacity()
-
-            runScheduler(now)
+            scheduler.deregisterOutput(this, now)
         }
 
         override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
             val capacity = capacity
             if (capacity != conn.capacity) {
                 this.capacity = capacity
-                updateCapacity()
+                scheduler.updateCapacity()
             }
 
-            // Re-run scheduler to distribute new load
-            runScheduler(now)
-            return Long.MAX_VALUE
+            return if (_isActivationOutput) {
+                // If this output is the activation output, synchronously run the scheduler and return the new deadline
+                val deadline = scheduler.runScheduler(now)
+                if (deadline == Long.MAX_VALUE)
+                    deadline
+                else
+                    deadline - now
+            } else {
+                // Output is not the activation output, so trigger activation output and do not install timer for this
+                // output (by returning `Long.MAX_VALUE`)
+                scheduler.trigger(now)
+                Long.MAX_VALUE
+            }
+        }
+
+        override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+            if (_isActivationOutput) {
+                scheduler.convergeOutput(this, now)
+            }
         }
 
         override fun compareTo(other: Output): Int = capacity.compareTo(other.capacity)

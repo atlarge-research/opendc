@@ -26,6 +26,7 @@ description = "Experiments for the Capelin work"
 plugins {
     `experiment-conventions`
     `testing-conventions`
+    `benchmark-conventions`
 }
 
 dependencies {

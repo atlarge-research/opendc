@@ -35,9 +35,10 @@ internal const val ConnState = 0b11 // Mask for accessing the state of the flow 
  */
 internal const val ConnPulled = 1 shl 2 // The source should be pulled
 internal const val ConnPushed = 1 shl 3 // The source has pushed a value
-internal const val ConnUpdateActive = 1 shl 4 // An update for the connection is active
-internal const val ConnUpdatePending = 1 shl 5 // An (immediate) update of the connection is pending
-internal const val ConnUpdateSkipped = 1 shl 6 // An update of the connection was not necessary
+internal const val ConnClose = 1 shl 4 // The connection should be closed
+internal const val ConnUpdateActive = 1 shl 5 // An update for the connection is active
+internal const val ConnUpdatePending = 1 shl 6 // An (immediate) update of the connection is pending
 internal const val ConnConvergePending = 1 shl 7 // Indication that a convergence is already pending
 internal const val ConnConvergeSource = 1 shl 8 // Enable convergence of the source
 internal const val ConnConvergeConsumer = 1 shl 9 // Enable convergence of the consumer
+internal const val ConnDisableTimers = 1 shl 10 // Disable timers for the source

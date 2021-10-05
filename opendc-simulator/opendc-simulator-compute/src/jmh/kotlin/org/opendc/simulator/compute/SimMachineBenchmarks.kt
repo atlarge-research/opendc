@@ -22,6 +22,7 @@
 
 package org.opendc.simulator.compute
 
+import javafx.application.Application.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -34,7 +35,6 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimTraceWorkload
-import org.opendc.simulator.core.SimulationCoroutineScope
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.openjdk.jmh.annotations.*
@@ -47,48 +47,38 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 3, timeUnit = TimeUnit.SECONDS)
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineBenchmarks {
-    private lateinit var scope: SimulationCoroutineScope
-    private lateinit var engine: FlowEngine
     private lateinit var machineModel: MachineModel
+    private lateinit var trace: Sequence<SimTraceWorkload.Fragment>
 
     @Setup
     fun setUp() {
-        scope = SimulationCoroutineScope()
-        engine = FlowEngine(scope.coroutineContext, scope.clock)
-
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
         machineModel = MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
-    }
 
-    @State(Scope.Thread)
-    class Workload {
-        lateinit var trace: Sequence<SimTraceWorkload.Fragment>
-
-        @Setup
-        fun setUp() {
-            val random = ThreadLocalRandom.current()
-            val entries = List(10000) { SimTraceWorkload.Fragment(it * 1000L, 1000, random.nextDouble(0.0, 4500.0), 1) }
-            trace = entries.asSequence()
-        }
+        val random = ThreadLocalRandom.current()
+        val entries = List(10000) { SimTraceWorkload.Fragment(it * 1000L, 1000, random.nextDouble(0.0, 4500.0), 1) }
+        trace = entries.asSequence()
     }
 
     @Benchmark
-    fun benchmarkBareMetal(state: Workload) {
-        return scope.runBlockingSimulation {
+    fun benchmarkBareMetal() {
+        return runBlockingSimulation {
+            val engine = FlowEngine(coroutineContext, clock)
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            return@runBlockingSimulation machine.run(SimTraceWorkload(state.trace))
+            return@runBlockingSimulation machine.run(SimTraceWorkload(trace))
         }
     }
 
     @Benchmark
-    fun benchmarkSpaceSharedHypervisor(state: Workload) {
-        return scope.runBlockingSimulation {
+    fun benchmarkSpaceSharedHypervisor() {
+        return runBlockingSimulation {
+            val engine = FlowEngine(coroutineContext, clock)
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
@@ -99,7 +89,7 @@ class SimMachineBenchmarks {
             val vm = hypervisor.createMachine(machineModel)
 
             try {
-                return@runBlockingSimulation vm.run(SimTraceWorkload(state.trace))
+                return@runBlockingSimulation vm.run(SimTraceWorkload(trace))
             } finally {
                 vm.close()
                 machine.close()
@@ -108,8 +98,9 @@ class SimMachineBenchmarks {
     }
 
     @Benchmark
-    fun benchmarkFairShareHypervisorSingle(state: Workload) {
-        return scope.runBlockingSimulation {
+    fun benchmarkFairShareHypervisorSingle() {
+        return runBlockingSimulation {
+            val engine = FlowEngine(coroutineContext, clock)
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
@@ -120,7 +111,7 @@ class SimMachineBenchmarks {
             val vm = hypervisor.createMachine(machineModel)
 
             try {
-                return@runBlockingSimulation vm.run(SimTraceWorkload(state.trace))
+                return@runBlockingSimulation vm.run(SimTraceWorkload(trace))
             } finally {
                 vm.close()
                 machine.close()
@@ -129,8 +120,9 @@ class SimMachineBenchmarks {
     }
 
     @Benchmark
-    fun benchmarkFairShareHypervisorDouble(state: Workload) {
-        return scope.runBlockingSimulation {
+    fun benchmarkFairShareHypervisorDouble() {
+        return runBlockingSimulation {
+            val engine = FlowEngine(coroutineContext, clock)
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
@@ -144,7 +136,7 @@ class SimMachineBenchmarks {
 
                     launch {
                         try {
-                            vm.run(SimTraceWorkload(state.trace))
+                            vm.run(SimTraceWorkload(trace))
                         } finally {
                             machine.close()
                         }
