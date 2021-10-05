@@ -182,7 +182,11 @@ internal class FlowConsumerContextImpl(
             return
         }
 
-        engine.scheduleSync(_clock.millis(), this)
+        val now = _clock.millis()
+
+        if (flags and (ConnPulled or ConnPushed) != 0 || _deadline == now) {
+            engine.scheduleSync(now, this)
+        }
     }
 
     override fun push(rate: Double) {
