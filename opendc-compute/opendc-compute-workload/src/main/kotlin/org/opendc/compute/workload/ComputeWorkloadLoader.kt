@@ -23,13 +23,14 @@
 package org.opendc.compute.workload
 
 import mu.KotlinLogging
-import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.trace.*
 import java.io.File
 import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.max
 import kotlin.math.roundToLong
 
 /**
@@ -51,7 +52,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * Read the fragments into memory.
      */
-    private fun parseFragments(trace: Trace): Map<String, List<SimTraceWorkload.Fragment>> {
+    private fun parseFragments(trace: Trace): Map<String, Builder> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCE_STATES)).newReader()
 
         val idCol = reader.resolve(RESOURCE_ID)
@@ -60,7 +61,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         val coresCol = reader.resolve(RESOURCE_CPU_COUNT)
         val usageCol = reader.resolve(RESOURCE_STATE_CPU_USAGE)
 
-        val fragments = mutableMapOf<String, MutableList<SimTraceWorkload.Fragment>>()
+        val fragments = mutableMapOf<String, Builder>()
 
         return try {
             while (reader.nextRow()) {
@@ -70,14 +71,10 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
 
-                val fragment = SimTraceWorkload.Fragment(
-                    time.toEpochMilli(),
-                    duration.toMillis(),
-                    cpuUsage,
-                    cores
-                )
-
-                fragments.computeIfAbsent(id) { mutableListOf() }.add(fragment)
+                val timeMs = time.toEpochMilli()
+                val deadlineMs = timeMs + duration.toMillis()
+                val builder = fragments.computeIfAbsent(id) { Builder() }
+                builder.add(timeMs, deadlineMs, cpuUsage, cores)
             }
 
             fragments
@@ -89,7 +86,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * Read the metadata into a workload.
      */
-    private fun parseMeta(trace: Trace, fragments: Map<String, List<SimTraceWorkload.Fragment>>): List<VirtualMachine> {
+    private fun parseMeta(trace: Trace, fragments: Map<String, Builder>): List<VirtualMachine> {
         val reader = checkNotNull(trace.getTable(TABLE_RESOURCES)).newReader()
 
         val idCol = reader.resolve(RESOURCE_ID)
@@ -115,8 +112,8 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                 val requiredMemory = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
-                val vmFragments = fragments.getValue(id).asSequence()
-                val totalLoad = vmFragments.sumOf { (it.usage * it.duration) / 1000.0 } // avg MHz * duration = MFLOPs
+                val builder = fragments.getValue(id)
+                val totalLoad = builder.totalLoad
 
                 entries.add(
                     VirtualMachine(
@@ -127,7 +124,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                         totalLoad,
                         submissionTime,
                         endTime,
-                        vmFragments
+                        builder.build()
                     )
                 )
             }
@@ -164,5 +161,39 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
      */
     public fun reset() {
         cache.clear()
+    }
+
+    /**
+     * A builder for a VM trace.
+     */
+    private class Builder {
+        /**
+         * The total load of the trace.
+         */
+        @JvmField var totalLoad: Double = 0.0
+
+        /**
+         * The internal builder for the trace.
+         */
+        private val builder = SimTrace.builder()
+
+        /**
+         * Add a fragment to the trace.
+         *
+         * @param timestamp Timestamp at which the fragment starts (in epoch millis).
+         * @param deadline Timestamp at which the fragment ends (in epoch millis).
+         * @param usage CPU usage of this fragment.
+         * @param cores Number of cores used.
+         */
+        fun add(timestamp: Long, deadline: Long, usage: Double, cores: Int) {
+            val duration = max(0, deadline - timestamp)
+            totalLoad += (usage * duration) / 1000.0 // avg MHz * duration = MFLOPs
+            builder.add(timestamp, deadline, usage, cores)
+        }
+
+        /**
+         * Build the trace.
+         */
+        fun build(): SimTrace = builder.build()
     }
 }

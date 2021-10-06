@@ -39,6 +39,8 @@ import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.workload.SimTrace
+import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
@@ -105,11 +107,11 @@ internal class SimHostTest {
             emptyMap(),
             mapOf(
                 "workload" to SimTraceWorkload(
-                    sequenceOf(
-                        SimTraceWorkload.Fragment(0, duration * 1000, 2 * 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
-                        SimTraceWorkload.Fragment(duration * 2000, duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 3000, duration * 1000, 2 * 183.0, 2)
+                    SimTrace.ofFragments(
+                        SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceFragment(duration * 1000, duration * 1000, 2 * 3500.0, 2),
+                        SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceFragment(duration * 3000, duration * 1000, 2 * 183.0, 2)
                     ),
                     offset = 1
                 )
@@ -121,11 +123,11 @@ internal class SimHostTest {
             emptyMap(),
             mapOf(
                 "workload" to SimTraceWorkload(
-                    sequenceOf(
-                        SimTraceWorkload.Fragment(0, duration * 1000, 2 * 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000, duration * 1000, 2 * 3100.0, 2),
-                        SimTraceWorkload.Fragment(duration * 2000, duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 3000, duration * 1000, 2 * 73.0, 2)
+                    SimTrace.ofFragments(
+                        SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceFragment(duration * 1000, duration * 1000, 2 * 3100.0, 2),
+                        SimTraceFragment(duration * 2000, duration * 1000, 0.0, 2),
+                        SimTraceFragment(duration * 3000, duration * 1000, 2 * 73.0, 2)
                     ),
                     offset = 1
                 )
@@ -217,11 +219,11 @@ internal class SimHostTest {
             emptyMap(),
             mapOf(
                 "workload" to SimTraceWorkload(
-                    sequenceOf(
-                        SimTraceWorkload.Fragment(0, duration * 1000, 2 * 28.0, 2),
-                        SimTraceWorkload.Fragment(duration * 1000L, duration * 1000, 2 * 3500.0, 2),
-                        SimTraceWorkload.Fragment(duration * 2000L, duration * 1000, 0.0, 2),
-                        SimTraceWorkload.Fragment(duration * 3000L, duration * 1000, 2 * 183.0, 2)
+                    SimTrace.ofFragments(
+                        SimTraceFragment(0, duration * 1000, 2 * 28.0, 2),
+                        SimTraceFragment(duration * 1000L, duration * 1000, 2 * 3500.0, 2),
+                        SimTraceFragment(duration * 2000L, duration * 1000, 0.0, 2),
+                        SimTraceFragment(duration * 3000L, duration * 1000, 2 * 183.0, 2)
                     ),
                     offset = 1
                 )

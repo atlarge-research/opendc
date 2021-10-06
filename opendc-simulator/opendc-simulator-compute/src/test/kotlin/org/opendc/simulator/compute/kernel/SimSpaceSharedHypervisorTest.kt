@@ -36,9 +36,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.compute.workload.SimFlopsWorkload
-import org.opendc.simulator.compute.workload.SimRuntimeWorkload
-import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.compute.workload.*
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 
@@ -66,11 +64,11 @@ internal class SimSpaceSharedHypervisorTest {
         val duration = 5 * 60L
         val workloadA =
             SimTraceWorkload(
-                sequenceOf(
-                    SimTraceWorkload.Fragment(0, duration * 1000, 28.0, 1),
-                    SimTraceWorkload.Fragment(duration * 1000, duration * 1000, 3500.0, 1),
-                    SimTraceWorkload.Fragment(duration * 2000, duration * 1000, 0.0, 1),
-                    SimTraceWorkload.Fragment(duration * 3000, duration * 1000, 183.0, 1)
+                SimTrace.ofFragments(
+                    SimTraceFragment(0, duration * 1000, 28.0, 1),
+                    SimTraceFragment(duration * 1000, duration * 1000, 3500.0, 1),
+                    SimTraceFragment(duration * 2000, duration * 1000, 0.0, 1),
+                    SimTraceFragment(duration * 3000, duration * 1000, 183.0, 1)
                 ),
             )
 

@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute
 
-import javafx.application.Application.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -34,6 +33,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalCoroutinesApi::class)
 class SimMachineBenchmarks {
     private lateinit var machineModel: MachineModel
-    private lateinit var trace: Sequence<SimTraceWorkload.Fragment>
+    private lateinit var trace: SimTrace
 
     @Setup
     fun setUp() {
@@ -60,8 +60,13 @@ class SimMachineBenchmarks {
         )
 
         val random = ThreadLocalRandom.current()
-        val entries = List(10000) { SimTraceWorkload.Fragment(it * 1000L, 1000, random.nextDouble(0.0, 4500.0), 1) }
-        trace = entries.asSequence()
+        val builder = SimTrace.builder()
+        repeat(10000) {
+            val timestamp = it.toLong()
+            val deadline = timestamp + 1000
+            builder.add(timestamp, deadline, random.nextDouble(0.0, 4500.0), 1)
+        }
+        trace = builder.build()
     }
 
     @Benchmark
