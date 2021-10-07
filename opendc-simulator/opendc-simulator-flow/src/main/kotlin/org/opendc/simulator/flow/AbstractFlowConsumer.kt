@@ -22,7 +22,7 @@
 
 package org.opendc.simulator.flow
 
-import org.opendc.simulator.flow.internal.FlowCountersImpl
+import org.opendc.simulator.flow.internal.MutableFlowCounters
 
 /**
  * Abstract implementation of the [FlowConsumer] which can be re-used by other implementations.
@@ -56,13 +56,6 @@ public abstract class AbstractFlowConsumer(private val engine: FlowEngine, initi
         get() = ctx?.demand ?: 0.0
 
     /**
-     * The flow counters to track the flow metrics of the consumer.
-     */
-    public override val counters: FlowCounters
-        get() = _counters
-    private val _counters = FlowCountersImpl()
-
-    /**
      * The [FlowConsumerContext] that is currently running.
      */
     protected var ctx: FlowConsumerContext? = null
@@ -89,7 +82,7 @@ public abstract class AbstractFlowConsumer(private val engine: FlowEngine, initi
     /**
      * Update the counters of the flow consumer.
      */
-    protected fun updateCounters(ctx: FlowConnection, delta: Long) {
+    protected fun MutableFlowCounters.update(ctx: FlowConnection, delta: Long) {
         val demand = _previousDemand
         val capacity = _previousCapacity
 
@@ -100,25 +93,12 @@ public abstract class AbstractFlowConsumer(private val engine: FlowEngine, initi
             return
         }
 
-        val counters = _counters
         val deltaS = delta / 1000.0
         val total = demand * deltaS
         val work = capacity * deltaS
         val actualWork = ctx.rate * deltaS
 
-        counters.demand += work
-        counters.actual += actualWork
-        counters.remaining += (total - actualWork)
-    }
-
-    /**
-     * Update the counters of the flow consumer.
-     */
-    protected fun updateCounters(demand: Double, actual: Double, remaining: Double) {
-        val counters = _counters
-        counters.demand += demand
-        counters.actual += actual
-        counters.remaining += remaining
+        increment(work, actualWork, (total - actualWork), 0.0)
     }
 
     final override fun startConsumer(source: FlowSource) {

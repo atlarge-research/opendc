@@ -25,7 +25,7 @@ package org.opendc.simulator.flow.mux
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.interference.InterferenceDomain
 import org.opendc.simulator.flow.interference.InterferenceKey
-import org.opendc.simulator.flow.internal.FlowCountersImpl
+import org.opendc.simulator.flow.internal.MutableFlowCounters
 import kotlin.math.max
 import kotlin.math.min
 
@@ -85,7 +85,7 @@ public class MaxMinFlowMultiplexer(
     private val scheduler = Scheduler(engine, parent)
 
     override fun newInput(key: InterferenceKey?): FlowConsumer {
-        val provider = Input(engine, scheduler, interferenceDomain, key)
+        val provider = Input(engine, scheduler, interferenceDomain, key, scheduler.capacity)
         _inputs.add(provider)
         return provider
     }
@@ -135,11 +135,11 @@ public class MaxMinFlowMultiplexer(
     /**
      * Helper class containing the scheduler state.
      */
-    private class Scheduler(private val engine: FlowEngine, private val parent: FlowConvergenceListener?) {
+    private class Scheduler(engine: FlowEngine, private val parent: FlowConvergenceListener?) {
         /**
          * The flow counters of this scheduler.
          */
-        @JvmField val counters = FlowCountersImpl()
+        @JvmField val counters = MutableFlowCounters()
 
         /**
          * The flow rate of the multiplexer.
@@ -184,6 +184,11 @@ public class MaxMinFlowMultiplexer(
         private var _lastConvergeInput: Input? = null
 
         /**
+         * The simulation clock.
+         */
+        private val _clock = engine.clock
+
+        /**
          * Register the specified [input] to this scheduler.
          */
         fun registerInput(input: Input) {
@@ -195,7 +200,7 @@ public class MaxMinFlowMultiplexer(
             input.shouldConsumerConverge = !hasActivationOutput
             input.enableTimers = !hasActivationOutput
             input.capacity = capacity
-            trigger(engine.clock.millis())
+            trigger(_clock.millis())
         }
 
         /**
@@ -447,10 +452,15 @@ public class MaxMinFlowMultiplexer(
             }
 
             val deltaS = delta / 1000.0
+            val demand = demand
+            val rate = rate
 
-            counters.demand += demand * deltaS
-            counters.actual += rate * deltaS
-            counters.remaining += (previousCapacity - rate) * deltaS
+            counters.increment(
+                demand = demand * deltaS,
+                actual = rate * deltaS,
+                remaining = (previousCapacity - rate) * deltaS,
+                interference = 0.0
+            )
         }
     }
 
@@ -458,11 +468,67 @@ public class MaxMinFlowMultiplexer(
      * An internal [FlowConsumer] implementation for multiplexer inputs.
      */
     private class Input(
-        engine: FlowEngine,
+        private val engine: FlowEngine,
         private val scheduler: Scheduler,
         private val interferenceDomain: InterferenceDomain?,
-        @JvmField val key: InterferenceKey?
-    ) : AbstractFlowConsumer(engine, scheduler.capacity), FlowConsumerLogic, Comparable<Input> {
+        @JvmField val key: InterferenceKey?,
+        initialCapacity: Double,
+    ) : FlowConsumer, FlowConsumerLogic, Comparable<Input> {
+        /**
+         * A flag to indicate that the consumer is active.
+         */
+        override val isActive: Boolean
+            get() = _ctx != null
+
+        /**
+         * The demand of the consumer.
+         */
+        override val demand: Double
+            get() = limit
+
+        /**
+         * The processing rate of the consumer.
+         */
+        override val rate: Double
+            get() = actualRate
+
+        /**
+         * The capacity of the input.
+         */
+        override var capacity: Double
+            get() = _capacity
+            set(value) {
+                allowedRate = min(limit, value)
+                _capacity = value
+                _ctx?.capacity = value
+            }
+        private var _capacity = initialCapacity
+
+        /**
+         * The flow counters to track the flow metrics of the consumer.
+         */
+        override val counters: FlowCounters
+            get() = _counters
+        private val _counters = MutableFlowCounters()
+
+        /**
+         * A flag to enable timers for the input.
+         */
+        var enableTimers: Boolean = true
+            set(value) {
+                field = value
+                _ctx?.enableTimers = value
+            }
+
+        /**
+         * A flag to control whether the input should converge.
+         */
+        var shouldConsumerConverge: Boolean = true
+            set(value) {
+                field = value
+                _ctx?.shouldConsumerConverge = value
+            }
+
         /**
          * The requested limit.
          */
@@ -482,35 +548,12 @@ public class MaxMinFlowMultiplexer(
          * The deadline of the input.
          */
         val deadline: Long
-            get() = ctx?.deadline ?: Long.MAX_VALUE
+            get() = _ctx?.deadline ?: Long.MAX_VALUE
 
         /**
-         * The capacity of the input.
+         * The [FlowConsumerContext] that is currently running.
          */
-        override var capacity: Double
-            get() = super.capacity
-            set(value) {
-                allowedRate = min(limit, value)
-                super.capacity = value
-            }
-
-        /**
-         * A flag to enable timers for the input.
-         */
-        var enableTimers: Boolean = true
-            set(value) {
-                field = value
-                ctx?.enableTimers = value
-            }
-
-        /**
-         * A flag to control whether the input should converge.
-         */
-        var shouldConsumerConverge: Boolean = true
-            set(value) {
-                field = value
-                ctx?.shouldConsumerConverge = value
-            }
+        private var _ctx: FlowConsumerContext? = null
 
         /**
          * A flag to indicate that the input is closed.
@@ -527,13 +570,33 @@ public class MaxMinFlowMultiplexer(
             cancel()
         }
 
-        /* AbstractFlowConsumer */
-        override fun createLogic(): FlowConsumerLogic = this
+        /**
+         * Pull the source if necessary.
+         */
+        fun pullSync() {
+            _ctx?.pullSync()
+        }
 
-        override fun start(ctx: FlowConsumerContext) {
+        /* FlowConsumer */
+        override fun startConsumer(source: FlowSource) {
             check(!_isClosed) { "Cannot re-use closed input" }
+            check(_ctx == null) { "Consumer is in invalid state" }
+
+            val ctx = engine.newContext(source, this)
+            _ctx = ctx
+
+            ctx.capacity = capacity
             scheduler.registerInput(this)
-            super.start(ctx)
+
+            ctx.start()
+        }
+
+        override fun pull() {
+            _ctx?.pull()
+        }
+
+        override fun cancel() {
+            _ctx?.close()
         }
 
         /* FlowConsumerLogic */
@@ -562,8 +625,7 @@ public class MaxMinFlowMultiplexer(
 
             scheduler.deregisterInput(this, now)
 
-            // BUG: Cancel the connection so that `ctx` is set to `null`
-            cancel()
+            _ctx = null
         }
 
         override fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {
@@ -572,13 +634,6 @@ public class MaxMinFlowMultiplexer(
 
         /* Comparable */
         override fun compareTo(other: Input): Int = allowedRate.compareTo(other.allowedRate)
-
-        /**
-         * Pull the source if necessary.
-         */
-        fun pullSync() {
-            ctx?.pullSync()
-        }
 
         /**
          * Helper method to update the flow counters of the multiplexer.
@@ -596,14 +651,16 @@ public class MaxMinFlowMultiplexer(
                 1.0
             }
 
+            val actualRate = actualRate
+
             val deltaS = delta / 1000.0
             val demand = limit * deltaS
             val actual = actualRate * deltaS
-            val remaining = (capacity - actualRate) * deltaS
+            val remaining = (_capacity - actualRate) * deltaS
+            val interference = actual * max(0.0, 1 - perfScore)
 
-            updateCounters(demand, actual, remaining)
-
-            scheduler.counters.interference += actual * max(0.0, 1 - perfScore)
+            _counters.increment(demand, actual, remaining, interference)
+            scheduler.counters.increment(0.0, 0.0, 0.0, interference)
         }
     }
 

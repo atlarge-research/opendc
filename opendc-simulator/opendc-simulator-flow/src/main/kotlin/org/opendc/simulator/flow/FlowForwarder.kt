@@ -23,7 +23,7 @@
 package org.opendc.simulator.flow
 
 import mu.KotlinLogging
-import org.opendc.simulator.flow.internal.FlowCountersImpl
+import org.opendc.simulator.flow.internal.MutableFlowCounters
 import kotlin.math.max
 
 /**
@@ -117,7 +117,7 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
 
     override val counters: FlowCounters
         get() = _counters
-    private val _counters = FlowCountersImpl()
+    private val _counters = MutableFlowCounters()
 
     override fun startConsumer(source: FlowSource) {
         check(delegate == null) { "Forwarder already active" }
@@ -245,8 +245,7 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
         val total = ctx.capacity * deltaS
         val work = _demand * deltaS
         val actualWork = ctx.rate * deltaS
-        counters.demand += work
-        counters.actual += actualWork
-        counters.remaining += (total - actualWork)
+
+        counters.increment(work, actualWork, (total - actualWork), 0.0)
     }
 }

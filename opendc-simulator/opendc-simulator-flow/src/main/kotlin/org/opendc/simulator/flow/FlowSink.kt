@@ -22,6 +22,8 @@
 
 package org.opendc.simulator.flow
 
+import org.opendc.simulator.flow.internal.MutableFlowCounters
+
 /**
  * A [FlowSink] represents a sink with a fixed capacity.
  *
@@ -34,6 +36,12 @@ public class FlowSink(
     initialCapacity: Double,
     private val parent: FlowConvergenceListener? = null
 ) : AbstractFlowConsumer(engine, initialCapacity) {
+    /**
+     * The flow counters to track the flow metrics of the consumer.
+     */
+    public override val counters: FlowCounters
+        get() = _counters
+    private val _counters = MutableFlowCounters()
 
     override fun start(ctx: FlowConsumerContext) {
         if (parent != null) {
@@ -52,11 +60,11 @@ public class FlowSink(
                 delta: Long,
                 rate: Double
             ) {
-                updateCounters(ctx, delta)
+                _counters.update(ctx, delta)
             }
 
             override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {
-                updateCounters(ctx, delta)
+                _counters.update(ctx, delta)
                 cancel()
             }
 

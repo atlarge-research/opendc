@@ -27,17 +27,27 @@ import org.opendc.simulator.flow.FlowCounters
 /**
  * Mutable implementation of the [FlowCounters] interface.
  */
-internal class FlowCountersImpl : FlowCounters {
-    override var demand: Double = 0.0
-    override var actual: Double = 0.0
-    override var remaining: Double = 0.0
-    override var interference: Double = 0.0
+public class MutableFlowCounters : FlowCounters {
+    override val demand: Double
+        get() = _counters[0]
+    override val actual: Double
+        get() = _counters[1]
+    override val remaining: Double
+        get() = _counters[2]
+    override val interference: Double
+        get() = _counters[3]
+    private val _counters = DoubleArray(4)
 
     override fun reset() {
-        demand = 0.0
-        actual = 0.0
-        remaining = 0.0
-        interference = 0.0
+        _counters.fill(0.0)
+    }
+
+    public fun increment(demand: Double, actual: Double, remaining: Double, interference: Double) {
+        val counters = _counters
+        counters[0] += demand
+        counters[1] += actual
+        counters[2] += remaining
+        counters[3] += interference
     }
 
     override fun toString(): String {
