@@ -38,7 +38,7 @@ import kotlin.coroutines.CoroutineContext
  * @param context The coroutine context to use.
  * @param clock The virtual simulation clock.
  */
-internal class FlowEngineImpl(private val context: CoroutineContext, override val clock: Clock) : FlowEngine, Runnable {
+internal class FlowEngineImpl(private val context: CoroutineContext, clock: Clock) : FlowEngine, Runnable {
     /**
      * The [Delay] instance that provides scheduled execution of [Runnable]s.
      */
@@ -69,6 +69,13 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
      * The index in the batch stack.
      */
     private var batchIndex = 0
+
+    /**
+     * The virtual [Clock] of this engine.
+     */
+    override val clock: Clock
+        get() = _clock
+    private val _clock: Clock = clock
 
     /**
      * Update the specified [ctx] synchronously.
@@ -113,7 +120,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
         try {
             // Flush the work if the engine is not already running
             if (batchIndex == 1 && queue.isNotEmpty()) {
-                doRunEngine(clock.millis())
+                doRunEngine(_clock.millis())
             }
         } finally {
             batchIndex--
@@ -122,7 +129,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, override va
 
     /* Runnable */
     override fun run() {
-        val now = clock.millis()
+        val now = _clock.millis()
         val invocation = futureInvocations.poll() // Clear invocation from future invocation queue
         assert(now >= invocation.timestamp) { "Future invocations invariant violated" }
 
