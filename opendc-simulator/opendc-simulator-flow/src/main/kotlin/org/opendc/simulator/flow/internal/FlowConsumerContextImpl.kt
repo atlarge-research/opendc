@@ -134,8 +134,8 @@ internal class FlowConsumerContextImpl(
     /**
      * The timers at which the context is scheduled to be interrupted.
      */
-    private var _timer: FlowEngineImpl.Timer? = null
-    private val _pendingTimers: ArrayDeque<FlowEngineImpl.Timer> = ArrayDeque(5)
+    private var _timer: Long = Long.MAX_VALUE
+    private val _pendingTimers: ArrayDeque<Long> = ArrayDeque(5)
 
     override fun start() {
         check(_flags and ConnState == ConnPending) { "Consumer is already started" }
@@ -217,8 +217,8 @@ internal class FlowConsumerContextImpl(
      */
     fun doUpdate(
         now: Long,
-        visited: ArrayDeque<FlowConsumerContextImpl>,
-        timerQueue: PriorityQueue<FlowEngineImpl.Timer>,
+        visited: FlowDeque,
+        timerQueue: FlowTimerQueue,
         isImmediate: Boolean
     ) {
         var flags = _flags
@@ -326,8 +326,7 @@ internal class FlowConsumerContextImpl(
         // Prune the head timer if this is a delayed update
         val timer = if (!isImmediate) {
             // Invariant: Any pending timer should only point to a future timestamp
-            // See also `scheduleDelayed`
-            val timer = pendingTimers.poll()
+            val timer = pendingTimers.poll() ?: Long.MAX_VALUE
             _timer = timer
             timer
         } else {
@@ -342,7 +341,7 @@ internal class FlowConsumerContextImpl(
         if (newDeadline == Long.MAX_VALUE ||
             flags and ConnState != ConnActive ||
             flags and ConnDisableTimers != 0 ||
-            (timer != null && newDeadline >= timer.target)
+            (timer != Long.MAX_VALUE && newDeadline >= timer)
         ) {
             // Ignore any deadline scheduled at the maximum value
             // This indicates that the source does not want to register a timer
@@ -350,12 +349,11 @@ internal class FlowConsumerContextImpl(
         }
 
         // Construct a timer for the new deadline and add it to the global queue of timers
-        val newTimer = FlowEngineImpl.Timer(this, newDeadline)
-        _timer = newTimer
-        timerQueue.add(newTimer)
+        _timer = newDeadline
+        timerQueue.add(this, newDeadline)
 
-        // A timer already exists for this connection, so add it to the queue of pending timers
-        if (timer != null) {
+        // Slow-path: a timer already exists for this connection, so add it to the queue of pending timers
+        if (timer != Long.MAX_VALUE) {
             pendingTimers.addFirst(timer)
         }
     }

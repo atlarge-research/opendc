@@ -48,12 +48,12 @@ internal class FlowEngineImpl(private val context: CoroutineContext, clock: Cloc
     /**
      * The queue of connection updates that are scheduled for immediate execution.
      */
-    private val queue = ArrayDeque<FlowConsumerContextImpl>()
+    private val queue = FlowDeque()
 
     /**
      * A priority queue containing the connection updates to be scheduled in the future.
      */
-    private val futureQueue = PriorityQueue<Timer>()
+    private val futureQueue = FlowTimerQueue()
 
     /**
      * The stack of engine invocations to occur in the future.
@@ -63,7 +63,7 @@ internal class FlowEngineImpl(private val context: CoroutineContext, clock: Cloc
     /**
      * The systems that have been visited during the engine cycle.
      */
-    private val visited: ArrayDeque<FlowConsumerContextImpl> = ArrayDeque()
+    private val visited = FlowDeque()
 
     /**
      * The index in the batch stack.
@@ -151,17 +151,8 @@ internal class FlowEngineImpl(private val context: CoroutineContext, clock: Cloc
 
             // Execute all scheduled updates at current timestamp
             while (true) {
-                val timer = futureQueue.peek() ?: break
-                val target = timer.target
-
-                if (target > now) {
-                    break
-                }
-
-                assert(target >= now) { "Internal inconsistency: found update of the past" }
-
-                futureQueue.poll()
-                timer.ctx.doUpdate(now, visited, futureQueue, isImmediate = false)
+                val ctx = futureQueue.poll(now) ?: break
+                ctx.doUpdate(now, visited, futureQueue, isImmediate = false)
             }
 
             // Repeat execution of all immediate updates until the system has converged to a steady-state
@@ -184,9 +175,9 @@ internal class FlowEngineImpl(private val context: CoroutineContext, clock: Cloc
         }
 
         // Schedule an engine invocation for the next update to occur.
-        val headTimer = futureQueue.peek()
-        if (headTimer != null) {
-            trySchedule(now, futureInvocations, headTimer.target)
+        val headDeadline = futureQueue.peekDeadline()
+        if (headDeadline != Long.MAX_VALUE) {
+            trySchedule(now, futureInvocations, headDeadline)
         }
     }
 
@@ -223,18 +214,5 @@ internal class FlowEngineImpl(private val context: CoroutineContext, clock: Cloc
          * Cancel the engine invocation.
          */
         fun cancel() = handle.dispose()
-    }
-
-    /**
-     * An update call for [ctx] that is scheduled for [target].
-     *
-     * This class represents an update in the future at [target] requested by [ctx].
-     */
-    class Timer(@JvmField val ctx: FlowConsumerContextImpl, @JvmField val target: Long) : Comparable<Timer> {
-        override fun compareTo(other: Timer): Int {
-            return target.compareTo(other.target)
-        }
-
-        override fun toString(): String = "Timer[ctx=$ctx,timestamp=$target]"
     }
 }
