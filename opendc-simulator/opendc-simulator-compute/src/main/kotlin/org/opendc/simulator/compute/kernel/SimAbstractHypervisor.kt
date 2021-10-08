@@ -66,45 +66,7 @@ public abstract class SimAbstractHypervisor(
      */
     public override val counters: SimHypervisorCounters
         get() = _counters
-    private val _counters = object : SimHypervisorCounters {
-        @JvmField var d = 1.0 // Number of CPUs divided by total CPU capacity
-
-        override var cpuActiveTime: Long = 0L
-        override var cpuIdleTime: Long = 0L
-        override var cpuStealTime: Long = 0L
-        override var cpuLostTime: Long = 0L
-
-        private var _previousDemand = 0.0
-        private var _previousActual = 0.0
-        private var _previousRemaining = 0.0
-        private var _previousInterference = 0.0
-
-        /**
-         * Record the CPU time of the hypervisor.
-         */
-        fun record() {
-            val counters = mux.counters
-            val demand = counters.demand
-            val actual = counters.actual
-            val remaining = counters.remaining
-            val interference = counters.interference
-
-            val demandDelta = demand - _previousDemand
-            val actualDelta = actual - _previousActual
-            val remainingDelta = remaining - _previousRemaining
-            val interferenceDelta = interference - _previousInterference
-
-            _previousDemand = demand
-            _previousActual = actual
-            _previousRemaining = remaining
-            _previousInterference = interference
-
-            cpuActiveTime += (actualDelta * d).roundToLong()
-            cpuIdleTime += (remainingDelta * d).roundToLong()
-            cpuStealTime += ((demandDelta - actualDelta) * d).roundToLong()
-            cpuLostTime += (interferenceDelta * d).roundToLong()
-        }
-    }
+    private val _counters = CountersImpl(this)
 
     /**
      * The CPU capacity of the hypervisor in MHz.
@@ -204,7 +166,7 @@ public abstract class SimAbstractHypervisor(
                 get() = (cpus.sumOf { it.counters.actual + it.counters.remaining } * d).roundToLong()
             override val cpuStealTime: Long
                 get() = (cpus.sumOf { it.counters.demand - it.counters.actual } * d).roundToLong()
-            override val cpuLostTime: Long = 0L
+            override val cpuLostTime: Long = (cpus.sumOf { it.counters.interference } * d).roundToLong()
         }
 
         /**
@@ -276,5 +238,53 @@ public abstract class SimAbstractHypervisor(
         override val max: Double = cpu.model.frequency
 
         override val min: Double = 0.0
+    }
+
+    /**
+     * Implementation of [SimHypervisorCounters].
+     */
+    private class CountersImpl(private val hv: SimAbstractHypervisor) : SimHypervisorCounters {
+        @JvmField var d = 1.0 // Number of CPUs divided by total CPU capacity
+
+        override val cpuActiveTime: Long
+            get() = _cpuTime[0]
+        override val cpuIdleTime: Long
+            get() = _cpuTime[1]
+        override val cpuStealTime: Long
+            get() = _cpuTime[2]
+        override val cpuLostTime: Long
+            get() = _cpuTime[3]
+
+        private val _cpuTime = LongArray(4)
+        private val _previous = DoubleArray(4)
+
+        /**
+         * Record the CPU time of the hypervisor.
+         */
+        fun record() {
+            val cpuTime = _cpuTime
+            val previous = _previous
+            val counters = hv.mux.counters
+
+            val demand = counters.demand
+            val actual = counters.actual
+            val remaining = counters.remaining
+            val interference = counters.interference
+
+            val demandDelta = demand - previous[0]
+            val actualDelta = actual - previous[1]
+            val remainingDelta = remaining - previous[2]
+            val interferenceDelta = interference - previous[3]
+
+            previous[0] = demand
+            previous[1] = actual
+            previous[2] = remaining
+            previous[3] = interference
+
+            cpuTime[0] += (actualDelta * d).roundToLong()
+            cpuTime[1] += (remainingDelta * d).roundToLong()
+            cpuTime[2] += ((demandDelta - actualDelta) * d).roundToLong()
+            cpuTime[3] += (interferenceDelta * d).roundToLong()
+        }
     }
 }

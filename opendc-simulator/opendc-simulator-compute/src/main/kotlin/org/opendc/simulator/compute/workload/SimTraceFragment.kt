@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,17 @@
 
 package org.opendc.simulator.compute.workload
 
-import org.opendc.simulator.compute.SimMachineContext
-
 /**
- * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
- * consumption for some period of time.
+ * A fragment of the workload trace.
  *
- * @param trace The trace of fragments to use.
- * @param offset The offset for the timestamps.
+ * @param timestamp The timestamp at which the fragment starts (in epoch millis).
+ * @param duration The duration of the fragment (in milliseconds).
+ * @param usage The CPU usage during the fragment (in MHz).
+ * @param cores The amount of cores utilized during the fragment.
  */
-public class SimTraceWorkload(private val trace: SimTrace, private val offset: Long = 0L) : SimWorkload {
-    override fun onStart(ctx: SimMachineContext) {
-        val lifecycle = SimWorkloadLifecycle(ctx)
-
-        for (cpu in ctx.cpus) {
-            cpu.startConsumer(lifecycle.waitFor(trace.newSource(cpu.model, offset)))
-        }
-    }
-
-    override fun toString(): String = "SimTraceWorkload"
-}
+public data class SimTraceFragment(
+    @JvmField val timestamp: Long,
+    @JvmField val duration: Long,
+    @JvmField val usage: Double,
+    @JvmField val cores: Int
+)

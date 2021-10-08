@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,37 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.workload
+package org.opendc.simulator.flow.internal
 
-import org.opendc.simulator.compute.SimMachineContext
+import org.opendc.simulator.flow.FlowCounters
 
 /**
- * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
- * consumption for some period of time.
- *
- * @param trace The trace of fragments to use.
- * @param offset The offset for the timestamps.
+ * Mutable implementation of the [FlowCounters] interface.
  */
-public class SimTraceWorkload(private val trace: SimTrace, private val offset: Long = 0L) : SimWorkload {
-    override fun onStart(ctx: SimMachineContext) {
-        val lifecycle = SimWorkloadLifecycle(ctx)
+public class MutableFlowCounters : FlowCounters {
+    override val demand: Double
+        get() = _counters[0]
+    override val actual: Double
+        get() = _counters[1]
+    override val remaining: Double
+        get() = _counters[2]
+    override val interference: Double
+        get() = _counters[3]
+    private val _counters = DoubleArray(4)
 
-        for (cpu in ctx.cpus) {
-            cpu.startConsumer(lifecycle.waitFor(trace.newSource(cpu.model, offset)))
-        }
+    override fun reset() {
+        _counters.fill(0.0)
     }
 
-    override fun toString(): String = "SimTraceWorkload"
+    public fun increment(demand: Double, actual: Double, remaining: Double, interference: Double) {
+        val counters = _counters
+        counters[0] += demand
+        counters[1] += actual
+        counters[2] += remaining
+        counters[3] += interference
+    }
+
+    override fun toString(): String {
+        return "FlowCounters[demand=$demand,actual=$actual,remaining=$remaining,interference=$interference]"
+    }
 }

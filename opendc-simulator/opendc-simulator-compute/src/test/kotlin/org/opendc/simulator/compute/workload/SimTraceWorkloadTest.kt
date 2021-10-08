@@ -58,11 +58,11 @@ class SimTraceWorkloadTest {
         )
 
         val workload = SimTraceWorkload(
-            sequenceOf(
-                SimTraceWorkload.Fragment(0, 1000, 2 * 28.0, 2),
-                SimTraceWorkload.Fragment(1000, 1000, 2 * 3100.0, 2),
-                SimTraceWorkload.Fragment(2000, 1000, 0.0, 2),
-                SimTraceWorkload.Fragment(3000, 1000, 2 * 73.0, 2)
+            SimTrace.ofFragments(
+                SimTraceFragment(0, 1000, 2 * 28.0, 2),
+                SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
+                SimTraceFragment(2000, 1000, 0.0, 2),
+                SimTraceFragment(3000, 1000, 2 * 73.0, 2)
             ),
             offset = 0
         )
@@ -85,11 +85,11 @@ class SimTraceWorkloadTest {
         )
 
         val workload = SimTraceWorkload(
-            sequenceOf(
-                SimTraceWorkload.Fragment(0, 1000, 2 * 28.0, 2),
-                SimTraceWorkload.Fragment(1000, 1000, 2 * 3100.0, 2),
-                SimTraceWorkload.Fragment(2000, 1000, 0.0, 2),
-                SimTraceWorkload.Fragment(3000, 1000, 2 * 73.0, 2)
+            SimTrace.ofFragments(
+                SimTraceFragment(0, 1000, 2 * 28.0, 2),
+                SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
+                SimTraceFragment(2000, 1000, 0.0, 2),
+                SimTraceFragment(3000, 1000, 2 * 73.0, 2)
             ),
             offset = 1000
         )
@@ -112,11 +112,11 @@ class SimTraceWorkloadTest {
         )
 
         val workload = SimTraceWorkload(
-            sequenceOf(
-                SimTraceWorkload.Fragment(0, 1000, 2 * 28.0, 2),
-                SimTraceWorkload.Fragment(1000, 1000, 2 * 3100.0, 2),
-                SimTraceWorkload.Fragment(2000, 1000, 0.0, 2),
-                SimTraceWorkload.Fragment(3000, 1000, 2 * 73.0, 2)
+            SimTrace.ofFragments(
+                SimTraceFragment(0, 1000, 2 * 28.0, 2),
+                SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
+                SimTraceFragment(2000, 1000, 0.0, 2),
+                SimTraceFragment(3000, 1000, 2 * 73.0, 2)
             ),
             offset = 0
         )
@@ -140,11 +140,11 @@ class SimTraceWorkloadTest {
         )
 
         val workload = SimTraceWorkload(
-            sequenceOf(
-                SimTraceWorkload.Fragment(0, 1000, 2 * 28.0, 2),
-                SimTraceWorkload.Fragment(1000, 1000, 2 * 3100.0, 2),
-                SimTraceWorkload.Fragment(2000, 1000, 0.0, 0),
-                SimTraceWorkload.Fragment(3000, 1000, 2 * 73.0, 2)
+            SimTrace.ofFragments(
+                SimTraceFragment(0, 1000, 2 * 28.0, 2),
+                SimTraceFragment(1000, 1000, 2 * 3100.0, 2),
+                SimTraceFragment(2000, 1000, 0.0, 0),
+                SimTraceFragment(3000, 1000, 2 * 73.0, 2)
             ),
             offset = 0
         )

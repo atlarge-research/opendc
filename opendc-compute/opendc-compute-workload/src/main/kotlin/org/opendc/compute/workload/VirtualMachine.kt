@@ -22,7 +22,7 @@
 
 package org.opendc.compute.workload
 
-import org.opendc.simulator.compute.workload.SimTraceWorkload
+import org.opendc.simulator.compute.workload.SimTrace
 import java.time.Instant
 import java.util.*
 
@@ -35,7 +35,7 @@ import java.util.*
  * @param memCapacity The provisioned memory for the VM.
  * @param startTime The start time of the VM.
  * @param stopTime The stop time of the VM.
- * @param trace The trace fragments that belong to this VM.
+ * @param trace The trace that belong to this VM.
  */
 public data class VirtualMachine(
     val uid: UUID,
@@ -45,5 +45,5 @@ public data class VirtualMachine(
     val totalLoad: Double,
     val startTime: Instant,
     val stopTime: Instant,
-    val trace: Sequence<SimTraceWorkload.Fragment>,
+    val trace: SimTrace,
 )

@@ -22,25 +22,7 @@
 
 package org.opendc.simulator.flow.internal
 
-import org.opendc.simulator.flow.FlowCounters
-
 /**
- * Mutable implementation of the [FlowCounters] interface.
+ * Constant for converting milliseconds into seconds.
  */
-internal class FlowCountersImpl : FlowCounters {
-    override var demand: Double = 0.0
-    override var actual: Double = 0.0
-    override var remaining: Double = 0.0
-    override var interference: Double = 0.0
-
-    override fun reset() {
-        demand = 0.0
-        actual = 0.0
-        remaining = 0.0
-        interference = 0.0
-    }
-
-    override fun toString(): String {
-        return "FlowCounters[demand=$demand,actual=$actual,remaining=$remaining,interference=$interference]"
-    }
-}
+internal const val D_MS_TO_S = 1 / 1000.0
