@@ -421,16 +421,19 @@ public class MaxMinFlowMultiplexer(
             }
 
             this.demand = demand
-            this.rate = rate
+            if (this.rate != rate) {
+                // Only update the outputs if the output rate has changed
+                this.rate = rate
 
-            // Divide the requests over the available capacity of the input resources fairly
-            for (i in activeOutputs.indices) {
-                val output = activeOutputs[i]
-                val inputCapacity = output.capacity
-                val fraction = inputCapacity / capacity
-                val grantedSpeed = rate * fraction
+                // Divide the requests over the available capacity of the input resources fairly
+                for (i in activeOutputs.indices) {
+                    val output = activeOutputs[i]
+                    val inputCapacity = output.capacity
+                    val fraction = inputCapacity / capacity
+                    val grantedSpeed = rate * fraction
 
-                output.push(grantedSpeed)
+                    output.push(grantedSpeed)
+                }
             }
 
             return deadline
