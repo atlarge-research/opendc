@@ -72,6 +72,10 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
             _innerCtx?.pull()
         }
 
+        override fun pull(now: Long) {
+            _innerCtx?.pull(now)
+        }
+
         @JvmField var lastPull = Long.MAX_VALUE
 
         override fun push(rate: Double) {

@@ -164,25 +164,27 @@ internal class FlowConsumerContextImpl(
         }
     }
 
-    override fun pull() {
+    override fun pull(now: Long) {
         val flags = _flags
         if (flags and ConnState != ConnActive) {
             return
         }
 
         // Mark connection as pulled
-        scheduleImmediate(_clock.millis(), flags or ConnPulled)
+        scheduleImmediate(now, flags or ConnPulled)
     }
 
-    override fun pullSync() {
+    override fun pull() {
+        pull(_clock.millis())
+    }
+
+    override fun pullSync(now: Long) {
         val flags = _flags
 
         // Do not attempt to flush the connection if the connection is closed or an update is already active
         if (flags and ConnState != ConnActive || flags and ConnUpdateActive != 0) {
             return
         }
-
-        val now = _clock.millis()
 
         if (flags and (ConnPulled or ConnPushed) != 0 || _deadline == now) {
             engine.scheduleSync(now, this)

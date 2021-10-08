@@ -52,6 +52,13 @@ public interface FlowConnection : AutoCloseable {
     public fun pull()
 
     /**
+     * Pull the source.
+     *
+     * @param now The timestamp at which the connection is pulled.
+     */
+    public fun pull(now: Long)
+
+    /**
      * Push the given flow [rate] over this connection.
      *
      * @param rate The rate of the flow to push.

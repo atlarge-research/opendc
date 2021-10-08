@@ -129,11 +129,8 @@ internal class FlowEngineImpl(private val context: CoroutineContext, clock: Cloc
 
     /* Runnable */
     override fun run() {
-        val now = _clock.millis()
         val invocation = futureInvocations.poll() // Clear invocation from future invocation queue
-        assert(now >= invocation.timestamp) { "Future invocations invariant violated" }
-
-        doRunEngine(now)
+        doRunEngine(invocation.timestamp)
     }
 
     /**

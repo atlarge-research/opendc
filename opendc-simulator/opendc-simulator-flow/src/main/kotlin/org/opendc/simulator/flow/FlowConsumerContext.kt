@@ -55,6 +55,8 @@ public interface FlowConsumerContext : FlowConnection {
 
     /**
      * Synchronously pull the source of the connection.
+     *
+     * @param now The timestamp at which the connection is pulled.
      */
-    public fun pullSync()
+    public fun pullSync(now: Long)
 }

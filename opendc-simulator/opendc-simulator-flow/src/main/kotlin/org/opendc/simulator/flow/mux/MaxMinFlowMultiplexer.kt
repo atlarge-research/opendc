@@ -302,7 +302,7 @@ public class MaxMinFlowMultiplexer(
             //     a few inputs and little changes at the same timestamp.
             // We always pick for option (1) unless there are no outputs available.
             if (activationOutput != null) {
-                activationOutput.pull()
+                activationOutput.pull(now)
                 return
             } else {
                 runScheduler(now)
@@ -320,7 +320,7 @@ public class MaxMinFlowMultiplexer(
 
             return try {
                 _schedulerActive = true
-                doRunScheduler(delta)
+                doRunScheduler(now, delta)
             } finally {
                 _schedulerActive = false
             }
@@ -371,7 +371,7 @@ public class MaxMinFlowMultiplexer(
          *
          * @return The deadline after which a new scheduling cycle should start.
          */
-        private fun doRunScheduler(delta: Long): Long {
+        private fun doRunScheduler(now: Long, delta: Long): Long {
             val activeInputs = _activeInputs
             val activeOutputs = _activeOutputs
             var inputArray = _inputArray
@@ -396,7 +396,8 @@ public class MaxMinFlowMultiplexer(
             // Pull in the work of the inputs
             for (i in 0 until inputSize) {
                 val input = inputArray[i]
-                input.pullSync()
+
+                input.pullSync(now)
 
                 // Remove inputs that have finished
                 if (!input.isActive) {
@@ -595,8 +596,8 @@ public class MaxMinFlowMultiplexer(
         /**
          * Pull the source if necessary.
          */
-        fun pullSync() {
-            _ctx?.pullSync()
+        fun pullSync(now: Long) {
+            _ctx?.pullSync(now)
         }
 
         /* FlowConsumer */
@@ -733,8 +734,8 @@ public class MaxMinFlowMultiplexer(
         /**
          * Pull this output.
          */
-        fun pull() {
-            _conn?.pull()
+        fun pull(now: Long) {
+            _conn?.pull(now)
         }
 
         override fun onStart(conn: FlowConnection, now: Long) {
@@ -772,6 +773,7 @@ public class MaxMinFlowMultiplexer(
                 // Output is not the activation output, so trigger activation output and do not install timer for this
                 // output (by returning `Long.MAX_VALUE`)
                 scheduler.trigger(now)
+
                 Long.MAX_VALUE
             }
         }
