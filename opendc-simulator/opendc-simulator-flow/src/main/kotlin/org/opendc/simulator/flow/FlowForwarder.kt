@@ -23,6 +23,7 @@
 package org.opendc.simulator.flow
 
 import mu.KotlinLogging
+import org.opendc.simulator.flow.internal.D_MS_TO_S
 import org.opendc.simulator.flow.internal.MutableFlowCounters
 import kotlin.math.max
 
@@ -241,7 +242,7 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
         }
 
         val counters = _counters
-        val deltaS = delta / 1000.0
+        val deltaS = delta * D_MS_TO_S
         val total = ctx.capacity * deltaS
         val work = _demand * deltaS
         val actualWork = ctx.rate * deltaS

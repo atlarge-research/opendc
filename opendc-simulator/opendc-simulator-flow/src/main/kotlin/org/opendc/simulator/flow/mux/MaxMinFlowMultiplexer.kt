@@ -25,6 +25,7 @@ package org.opendc.simulator.flow.mux
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.interference.InterferenceDomain
 import org.opendc.simulator.flow.interference.InterferenceKey
+import org.opendc.simulator.flow.internal.D_MS_TO_S
 import org.opendc.simulator.flow.internal.MutableFlowCounters
 import kotlin.math.max
 import kotlin.math.min
@@ -451,7 +452,7 @@ public class MaxMinFlowMultiplexer(
                 return
             }
 
-            val deltaS = delta / 1000.0
+            val deltaS = delta * D_MS_TO_S
             val demand = demand
             val rate = rate
 
@@ -653,7 +654,7 @@ public class MaxMinFlowMultiplexer(
 
             val actualRate = actualRate
 
-            val deltaS = delta / 1000.0
+            val deltaS = delta * D_MS_TO_S
             val demand = limit * deltaS
             val actual = actualRate * deltaS
             val remaining = (_capacity - actualRate) * deltaS
