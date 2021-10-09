@@ -29,6 +29,7 @@ import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.createComputeScheduler
 import org.opendc.compute.workload.export.parquet.ParquetComputeMetricExporter
 import org.opendc.compute.workload.grid5000
+import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import org.opendc.compute.workload.topology.apply
 import org.opendc.compute.workload.util.VmInterferenceModelReader
 import org.opendc.experiments.capelin.model.OperationalPhenomena
@@ -38,7 +39,6 @@ import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.compute.collectServiceMetrics
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import java.io.File
 import java.time.Duration
@@ -109,9 +109,11 @@ abstract class Portfolio(name: String) : Experiment(name) {
                 grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
             else
                 null
+        val telemetry = SdkTelemetryManager(clock)
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
+            telemetry,
             computeScheduler,
             failureModel,
             performanceInterferenceModel?.withSeed(repeat.toLong())
@@ -122,7 +124,8 @@ abstract class Portfolio(name: String) : Experiment(name) {
             "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
             4096
         )
-        val metricReader = CoroutineMetricReader(this, runner.producers, exporter)
+        telemetry.registerMetricReader(CoroutineMetricReader(this, exporter))
+
         val topology = clusterTopology(File(config.getString("env-path"), "${topology.name}.txt"))
 
         try {
@@ -133,17 +136,6 @@ abstract class Portfolio(name: String) : Experiment(name) {
             runner.run(workload.source.resolve(workloadLoader, seeder), seeder.nextLong())
         } finally {
             runner.close()
-            metricReader.close()
-        }
-
-        val monitorResults = collectServiceMetrics(runner.producers[0])
-        logger.debug {
-            "Scheduler " +
-                "Success=${monitorResults.attemptsSuccess} " +
-                "Failure=${monitorResults.attemptsFailure} " +
-                "Error=${monitorResults.attemptsError} " +
-                "Pending=${monitorResults.serversPending} " +
-                "Active=${monitorResults.serversActive}"
         }
     }
 }

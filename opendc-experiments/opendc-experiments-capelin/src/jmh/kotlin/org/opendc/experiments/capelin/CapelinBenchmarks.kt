@@ -29,6 +29,7 @@ import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.workload.*
+import org.opendc.compute.workload.telemetry.NoopTelemetryManager
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
 import org.opendc.experiments.capelin.topology.clusterTopology
@@ -70,6 +71,7 @@ class CapelinBenchmarks {
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
+            NoopTelemetryManager(),
             computeScheduler
         )
 

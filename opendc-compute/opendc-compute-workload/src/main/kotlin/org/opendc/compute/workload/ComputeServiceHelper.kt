@@ -22,10 +22,6 @@
 
 package org.opendc.compute.workload
 
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import io.opentelemetry.sdk.metrics.export.MetricProducer
-import io.opentelemetry.sdk.resources.Resource
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,12 +29,11 @@ import kotlinx.coroutines.yield
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.workload.telemetry.TelemetryManager
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.flow.FlowEngine
-import org.opendc.telemetry.compute.*
-import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Clock
 import java.time.Duration
 import java.util.*
@@ -50,6 +45,7 @@ import kotlin.math.max
  *
  * @param context [CoroutineContext] to run the simulation in.
  * @param clock [Clock] instance tracking simulation time.
+ * @param telemetry Helper class for managing telemetry.
  * @param scheduler [ComputeScheduler] implementation to use for the service.
  * @param failureModel A failure model to use for injecting failures.
  * @param interferenceModel The model to use for performance interference.
@@ -58,6 +54,7 @@ import kotlin.math.max
 public class ComputeServiceHelper(
     private val context: CoroutineContext,
     private val clock: Clock,
+    private val telemetry: TelemetryManager,
     scheduler: ComputeScheduler,
     private val failureModel: FailureModel? = null,
     private val interferenceModel: VmInterferenceModel? = null,
@@ -69,25 +66,17 @@ public class ComputeServiceHelper(
     public val service: ComputeService
 
     /**
-     * The [MetricProducer] that are used by the [ComputeService] and the simulated hosts.
-     */
-    public val producers: List<MetricProducer>
-        get() = _metricProducers
-    private val _metricProducers = mutableListOf<MetricProducer>()
-
-    /**
      * The [FlowEngine] to simulate the hosts.
      */
-    private val engine = FlowEngine(context, clock)
+    private val _engine = FlowEngine(context, clock)
 
     /**
      * The hosts that belong to this class.
      */
-    private val hosts = mutableSetOf<SimHost>()
+    private val _hosts = mutableSetOf<SimHost>()
 
     init {
-        val (service, serviceMeterProvider) = createService(scheduler, schedulingQuantum)
-        this._metricProducers.add(serviceMeterProvider)
+        val service = createService(scheduler, schedulingQuantum)
         this.service = service
     }
 
@@ -165,27 +154,14 @@ public class ComputeServiceHelper(
      * @return The [SimHost] that has been constructed by the runner.
      */
     public fun registerHost(spec: HostSpec, optimize: Boolean = false): SimHost {
-        val resource = Resource.builder()
-            .put(HOST_ID, spec.uid.toString())
-            .put(HOST_NAME, spec.name)
-            .put(HOST_ARCH, ResourceAttributes.HostArchValues.AMD64)
-            .put(HOST_NCPUS, spec.model.cpus.size)
-            .put(HOST_MEM_CAPACITY, spec.model.memory.sumOf { it.size })
-            .build()
-
-        val meterProvider = SdkMeterProvider.builder()
-            .setClock(clock.toOtelClock())
-            .setResource(resource)
-            .build()
-        _metricProducers.add(meterProvider)
-
+        val meterProvider = telemetry.createMeterProvider(spec)
         val host = SimHost(
             spec.uid,
             spec.name,
             spec.model,
             spec.meta,
             context,
-            engine,
+            _engine,
             meterProvider,
             spec.hypervisor,
             powerDriver = spec.powerDriver,
@@ -193,7 +169,7 @@ public class ComputeServiceHelper(
             optimize = optimize
         )
 
-        hosts.add(host)
+        _hosts.add(host)
         service.addHost(host)
 
         return host
@@ -202,27 +178,18 @@ public class ComputeServiceHelper(
     override fun close() {
         service.close()
 
-        for (host in hosts) {
+        for (host in _hosts) {
             host.close()
         }
 
-        hosts.clear()
+        _hosts.clear()
     }
 
     /**
      * Construct a [ComputeService] instance.
      */
-    private fun createService(scheduler: ComputeScheduler, schedulingQuantum: Duration): Pair<ComputeService, SdkMeterProvider> {
-        val resource = Resource.builder()
-            .put(ResourceAttributes.SERVICE_NAME, "opendc-compute")
-            .build()
-
-        val meterProvider = SdkMeterProvider.builder()
-            .setClock(clock.toOtelClock())
-            .setResource(resource)
-            .build()
-
-        val service = ComputeService(context, clock, meterProvider, scheduler, schedulingQuantum)
-        return service to meterProvider
+    private fun createService(scheduler: ComputeScheduler, schedulingQuantum: Duration): ComputeService {
+        val meterProvider = telemetry.createMeterProvider(scheduler)
+        return ComputeService(context, clock, meterProvider, scheduler, schedulingQuantum)
     }
 }

@@ -23,7 +23,6 @@
 package org.opendc.experiments.tf20.core
 
 import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.*
 import org.opendc.simulator.compute.SimBareMetalMachine
@@ -82,7 +81,6 @@ public class SimTFDevice(
         .setDescription("The amount of device resources used")
         .setUnit("MHz")
         .build()
-        .bind(Attributes.of(deviceId, uid.toString()))
 
     /**
      * The power draw of the device.
@@ -91,7 +89,6 @@ public class SimTFDevice(
         .setDescription("The power draw of the device")
         .setUnit("W")
         .build()
-        .bind(Attributes.of(deviceId, uid.toString()))
 
     /**
      * The workload that will be run by the device.

@@ -22,11 +22,16 @@
 
 package org.opendc.telemetry.sdk.metrics.export
 
+import io.opentelemetry.sdk.common.CompletableResultCode
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality
 import io.opentelemetry.sdk.metrics.export.MetricExporter
 import io.opentelemetry.sdk.metrics.export.MetricProducer
+import io.opentelemetry.sdk.metrics.export.MetricReader
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import java.time.Duration
+import java.util.*
 
 /**
  * A helper class to read the metrics from a list of [MetricProducer]s and automatically export the metrics every
@@ -35,16 +40,16 @@ import java.time.Duration
  * The reader runs in a [CoroutineScope] which enables collection of metrics in environments with a custom clock.
  *
  * @param scope The [CoroutineScope] to run the reader in.
- * @param producers The metric producers to gather metrics from.
+ * @param producer The metric producer to gather metrics from.
  * @param exporter The export to export the metrics to.
  * @param exportInterval The export interval.
  */
-public class CoroutineMetricReader(
+public class CoroutineMetricReader private constructor(
     scope: CoroutineScope,
-    private val producers: List<MetricProducer>,
+    private val producer: MetricProducer,
     private val exporter: MetricExporter,
-    private val exportInterval: Duration = Duration.ofMinutes(5)
-) : AutoCloseable {
+    private val exportInterval: Duration
+) : MetricReader {
     private val logger = KotlinLogging.logger {}
 
     /**
@@ -57,9 +62,8 @@ public class CoroutineMetricReader(
             while (isActive) {
                 delay(intervalMs)
 
-                val metrics = producers.flatMap(MetricProducer::collectAllMetrics)
-
                 try {
+                    val metrics = producer.collectAllMetrics()
                     val result = exporter.export(metrics)
                     result.whenComplete {
                         if (!result.isSuccess) {
@@ -75,7 +79,29 @@ public class CoroutineMetricReader(
         }
     }
 
-    override fun close() {
+    override fun getPreferredTemporality(): AggregationTemporality = AggregationTemporality.CUMULATIVE
+
+    override fun flush(): CompletableResultCode {
+        return exporter.flush()
+    }
+
+    override fun shutdown(): CompletableResultCode {
         job.cancel()
+        return CompletableResultCode.ofSuccess()
+    }
+
+    public companion object {
+        /**
+         * Construct a [MetricReaderFactory] for this metric reader.
+         */
+        public operator fun invoke(
+            scope: CoroutineScope,
+            exporter: MetricExporter,
+            exportInterval: Duration = Duration.ofMinutes(5)
+        ): MetricReaderFactory {
+            return MetricReaderFactory { producer ->
+                CoroutineMetricReader(scope, producer, exporter, exportInterval)
+            }
+        }
     }
 }

@@ -226,7 +226,7 @@ internal class FaaSServiceImpl(
 
                 val instance = if (activeInstance != null) {
                     _timelyInvocations.add(1)
-                    function.timelyInvocations.add(1)
+                    function.timelyInvocations.add(1, function.attributes)
 
                     activeInstance
                 } else {
@@ -234,29 +234,29 @@ internal class FaaSServiceImpl(
                     instances.add(instance)
                     terminationPolicy.enqueue(instance)
 
-                    function.idleInstances.add(1)
+                    function.idleInstances.add(1, function.attributes)
 
                     _delayedInvocations.add(1)
-                    function.delayedInvocations.add(1)
+                    function.delayedInvocations.add(1, function.attributes)
 
                     instance
                 }
 
                 suspend {
                     val start = clock.millis()
-                    function.waitTime.record(start - submitTime)
-                    function.idleInstances.add(-1)
-                    function.activeInstances.add(1)
+                    function.waitTime.record(start - submitTime, function.attributes)
+                    function.idleInstances.add(-1, function.attributes)
+                    function.activeInstances.add(1, function.attributes)
                     try {
                         instance.invoke()
                     } catch (e: Throwable) {
                         logger.debug(e) { "Function invocation failed" }
-                        function.failedInvocations.add(1)
+                        function.failedInvocations.add(1, function.attributes)
                     } finally {
                         val end = clock.millis()
-                        function.activeTime.record(end - start)
-                        function.idleInstances.add(1)
-                        function.activeInstances.add(-1)
+                        function.activeTime.record(end - start, function.attributes)
+                        function.idleInstances.add(1, function.attributes)
+                        function.activeInstances.add(-1, function.attributes)
                     }
                 }.startCoroutineCancellable(cont)
             }
@@ -269,7 +269,7 @@ internal class FaaSServiceImpl(
         check(function.uid in functions) { "Function does not exist (anymore)" }
 
         _invocations.add(1)
-        function.invocations.add(1)
+        function.invocations.add(1, function.attributes)
 
         return suspendCancellableCoroutine { cont ->
             if (!queue.add(InvocationRequest(clock.millis(), function, cont))) {

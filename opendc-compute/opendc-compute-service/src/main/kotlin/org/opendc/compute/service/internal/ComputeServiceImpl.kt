@@ -123,12 +123,9 @@ internal class ComputeServiceImpl(
         .setDescription("Number of scheduling attempts")
         .setUnit("1")
         .build()
-    private val _schedulingAttemptsSuccess = _schedulingAttempts
-        .bind(Attributes.of(AttributeKey.stringKey("result"), "success"))
-    private val _schedulingAttemptsFailure = _schedulingAttempts
-        .bind(Attributes.of(AttributeKey.stringKey("result"), "failure"))
-    private val _schedulingAttemptsError = _schedulingAttempts
-        .bind(Attributes.of(AttributeKey.stringKey("result"), "error"))
+    private val _schedulingAttemptsSuccessAttr = Attributes.of(AttributeKey.stringKey("result"), "success")
+    private val _schedulingAttemptsFailureAttr = Attributes.of(AttributeKey.stringKey("result"), "failure")
+    private val _schedulingAttemptsErrorAttr = Attributes.of(AttributeKey.stringKey("result"), "error")
 
     /**
      * The response time of the service.
@@ -146,8 +143,8 @@ internal class ComputeServiceImpl(
         .setDescription("Number of servers managed by the scheduler")
         .setUnit("1")
         .build()
-    private val _serversPending = _servers.bind(Attributes.of(AttributeKey.stringKey("state"), "pending"))
-    private val _serversActive = _servers.bind(Attributes.of(AttributeKey.stringKey("state"), "active"))
+    private val _serversPendingAttr = Attributes.of(AttributeKey.stringKey("state"), "pending")
+    private val _serversActiveAttr = Attributes.of(AttributeKey.stringKey("state"), "active")
 
     /**
      * The [TimerScheduler] to use for scheduling the scheduler cycles.
@@ -171,8 +168,8 @@ internal class ComputeServiceImpl(
                 val total = hostCount
                 val available = availableHosts.size.toLong()
 
-                result.observe(available, upState)
-                result.observe(total - available, downState)
+                result.record(available, upState)
+                result.record(total - available, downState)
             }
 
         meter.gaugeBuilder("system.time.provision")
@@ -336,7 +333,7 @@ internal class ComputeServiceImpl(
 
         server.lastProvisioningTimestamp = now
         queue.add(request)
-        _serversPending.add(1)
+        _servers.add(1, _serversPendingAttr)
         requestSchedulingCycle()
         return request
     }
@@ -384,7 +381,7 @@ internal class ComputeServiceImpl(
 
             if (request.isCancelled) {
                 queue.poll()
-                _serversPending.add(-1)
+                _servers.add(-1, _serversPendingAttr)
                 continue
             }
 
@@ -396,8 +393,8 @@ internal class ComputeServiceImpl(
                 if (server.flavor.memorySize > maxMemory || server.flavor.cpuCount > maxCores) {
                     // Remove the incoming image
                     queue.poll()
-                    _serversPending.add(-1)
-                    _schedulingAttemptsFailure.add(1)
+                    _servers.add(-1, _serversPendingAttr)
+                    _schedulingAttempts.add(1, _schedulingAttemptsFailureAttr)
 
                     logger.warn { "Failed to spawn $server: does not fit [${clock.instant()}]" }
 
@@ -412,7 +409,7 @@ internal class ComputeServiceImpl(
 
             // Remove request from queue
             queue.poll()
-            _serversPending.add(-1)
+            _servers.add(-1, _serversPendingAttr)
             _schedulingLatency.record(now - request.submitTime, server.attributes)
 
             logger.info { "Assigned server $server to host $host." }
@@ -429,8 +426,8 @@ internal class ComputeServiceImpl(
                     host.spawn(server)
                     activeServers[server] = host
 
-                    _serversActive.add(1)
-                    _schedulingAttemptsSuccess.add(1)
+                    _servers.add(1, _serversActiveAttr)
+                    _schedulingAttempts.add(1, _schedulingAttemptsSuccessAttr)
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to deploy VM" }
 
@@ -438,7 +435,7 @@ internal class ComputeServiceImpl(
                     hv.provisionedCores -= server.flavor.cpuCount
                     hv.availableMemory += server.flavor.memorySize
 
-                    _schedulingAttemptsError.add(1)
+                    _schedulingAttempts.add(1, _schedulingAttemptsErrorAttr)
                 }
             }
         }
@@ -494,7 +491,7 @@ internal class ComputeServiceImpl(
             logger.info { "[${clock.instant()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
 
             if (activeServers.remove(server) != null) {
-                _serversActive.add(-1)
+                _servers.add(-1, _serversActiveAttr)
             }
 
             val hv = hostToView[host]
@@ -516,7 +513,7 @@ internal class ComputeServiceImpl(
      */
     private fun collectProvisionTime(result: ObservableLongMeasurement) {
         for ((_, server) in servers) {
-            result.observe(server.lastProvisioningTimestamp, server.attributes)
+            result.record(server.lastProvisioningTimestamp, server.attributes)
         }
     }
 }

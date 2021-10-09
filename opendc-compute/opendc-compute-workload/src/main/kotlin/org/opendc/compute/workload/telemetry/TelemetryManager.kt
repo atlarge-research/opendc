@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,23 @@
  * SOFTWARE.
  */
 
-description = "Telemetry API for OpenDC"
+package org.opendc.compute.workload.telemetry
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import io.opentelemetry.api.metrics.MeterProvider
+import org.opendc.compute.service.scheduler.ComputeScheduler
+import org.opendc.compute.workload.topology.HostSpec
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(libs.opentelemetry.api)
+/**
+ * Helper class to manage the telemetry for a [ComputeServiceHelper] instance.
+ */
+public interface TelemetryManager {
+    /**
+     * Construct a [MeterProvider] for the specified [ComputeScheduler].
+     */
+    public fun createMeterProvider(scheduler: ComputeScheduler): MeterProvider
+
+    /**
+     * Construct a [MeterProvider] for the specified [HostSpec].
+     */
+    public fun createMeterProvider(host: HostSpec): MeterProvider
 }
