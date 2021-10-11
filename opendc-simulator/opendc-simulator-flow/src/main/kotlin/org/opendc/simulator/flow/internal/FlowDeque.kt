@@ -25,7 +25,10 @@ package org.opendc.simulator.flow.internal
 import java.util.*
 
 /**
- * A specialized [ArrayDeque] for [FlowConsumerContextImpl] implementations.
+ * A specialized [ArrayDeque] that tracks the [FlowConsumerContextImpl] instances that have updated in an interpreter
+ * cycle.
+ *
+ * By using a specialized class, we reduce the overhead caused by type-erasure.
  */
 internal class FlowDeque(initialCapacity: Int = 256) {
     /**
@@ -106,7 +109,7 @@ internal class FlowDeque(initialCapacity: Int = 256) {
 
         val a = arrayOfNulls<FlowConsumerContextImpl>(newCapacity)
 
-        _elements.copyInto(a, 0, p, r)
+        _elements.copyInto(a, 0, p, n)
         _elements.copyInto(a, r, 0, p)
 
         _elements = a
