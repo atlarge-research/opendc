@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.service.internal
+package org.opendc.compute.service.scheduler.filters
 
-import org.opendc.compute.service.ComputeService
-import org.opendc.compute.service.driver.Host
-import java.util.UUID
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.internal.HostView
 
 /**
- * A view of a [Host] as seen from the [ComputeService]
+ * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [Server] and the available
+ * capacity on the host.
  */
-public class HostView(public val host: Host) {
-    /**
-     * The unique identifier of the host.
-     */
-    public val uid: UUID
-        get() = host.uid
+public class VCpuCapacityFilter : HostFilter {
+    override fun test(host: HostView, server: Server): Boolean {
+        val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double
+        val hostModel = host.host.model
+        val availableCapacity = hostModel.cpuCapacity / hostModel.cpuCount
 
-    public var instanceCount: Int = 0
-    public var availableMemory: Long = host.model.memoryCapacity
-    public var provisionedCores: Int = 0
-
-    override fun toString(): String = "HostView[host=$host]"
+        return requiredCapacity == null || availableCapacity >= (requiredCapacity / server.flavor.cpuCount)
+    }
 }

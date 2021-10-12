@@ -34,7 +34,7 @@ public class RamFilter(private val allocationRatio: Double) : HostFilter {
     override fun test(host: HostView, server: Server): Boolean {
         val requested = server.flavor.memorySize
         val available = host.availableMemory
-        val total = host.host.model.memorySize
+        val total = host.host.model.memoryCapacity
 
         // Do not allow an instance to overcommit against itself, only against
         // other instances.

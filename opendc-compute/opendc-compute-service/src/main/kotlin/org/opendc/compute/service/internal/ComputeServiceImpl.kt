@@ -298,7 +298,7 @@ internal class ComputeServiceImpl(
 
         val hv = HostView(host)
         maxCores = max(maxCores, host.model.cpuCount)
-        maxMemory = max(maxMemory, host.model.memorySize)
+        maxMemory = max(maxMemory, host.model.memoryCapacity)
         hostToView[host] = hv
 
         if (host.state == HostState.UP) {

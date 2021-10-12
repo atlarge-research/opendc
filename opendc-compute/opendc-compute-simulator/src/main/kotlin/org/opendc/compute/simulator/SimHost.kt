@@ -121,7 +121,7 @@ public class SimHost(
             field = value
         }
 
-    override val model: HostModel = HostModel(model.cpus.size, model.memory.sumOf { it.size })
+    override val model: HostModel = HostModel(model.cpus.sumOf { it.frequency }, model.cpus.size, model.memory.sumOf { it.size })
 
     /**
      * The [GuestListener] that listens for guest events.
@@ -188,7 +188,7 @@ public class SimHost(
     }
 
     override fun canFit(server: Server): Boolean {
-        val sufficientMemory = model.memorySize >= server.flavor.memorySize
+        val sufficientMemory = model.memoryCapacity >= server.flavor.memorySize
         val enoughCpus = model.cpuCount >= server.flavor.cpuCount
         val canFit = hypervisor.canFit(server.flavor.toMachineModel())
 
@@ -319,8 +319,9 @@ public class SimHost(
      */
     private fun Flavor.toMachineModel(): MachineModel {
         val originalCpu = machine.model.cpus[0]
+        val cpuCapacity = (this.meta["cpu-capacity"] as? Double ?: Double.MAX_VALUE).coerceAtMost(originalCpu.frequency)
         val processingNode = originalCpu.node.copy(coreCount = cpuCount)
-        val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
+        val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode, frequency = cpuCapacity) }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
         return MachineModel(processingUnits, memoryUnits).optimize()
