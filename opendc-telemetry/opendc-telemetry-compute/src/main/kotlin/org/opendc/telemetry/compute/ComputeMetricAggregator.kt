@@ -30,7 +30,6 @@ import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import org.opendc.telemetry.compute.table.*
 import java.time.Instant
-import kotlin.math.roundToLong
 
 /**
  * Helper class responsible for aggregating [MetricData] into [ServiceData], [HostData] and [ServerData].
@@ -79,12 +78,6 @@ public class ComputeMetricAggregator {
                             "failure" -> service.attemptsFailure = point.value.toInt()
                             "error" -> service.attemptsError = point.value.toInt()
                         }
-                    }
-                }
-                "scheduler.latency" -> {
-                    for (point in metric.doubleHistogramData.points) {
-                        val server = getServer(servers, point) ?: continue
-                        server.schedulingLatency = (point.sum / point.count).roundToLong()
                     }
                 }
 
@@ -190,11 +183,18 @@ public class ComputeMetricAggregator {
                         val server = getServer(servers, point)
 
                         if (server != null) {
-                            server.bootTime = point.value
+                            server.bootTime = Instant.ofEpochMilli(point.value)
                             server.host = agg.host
                         } else {
-                            agg.bootTime = point.value
+                            agg.bootTime = Instant.ofEpochMilli(point.value)
                         }
+                    }
+                }
+                "system.time.provision" -> {
+                    for (point in metric.longGaugeData.points) {
+                        val server = getServer(servers, point) ?: continue
+                        server.recordTimestamp(point)
+                        server.provisionTime = Instant.ofEpochMilli(point.value)
                     }
                 }
             }
@@ -323,7 +323,7 @@ public class ComputeMetricAggregator {
         private var previousUptime = 0L
         @JvmField var downtime = 0L
         private var previousDowntime = 0L
-        @JvmField var bootTime = Long.MIN_VALUE
+        @JvmField var bootTime: Instant? = null
 
         /**
          * Finish the aggregation for this cycle.
@@ -379,7 +379,7 @@ public class ComputeMetricAggregator {
                 powerTotal - previousPowerTotal,
                 uptime - previousUptime,
                 downtime - previousDowntime,
-                if (bootTime != Long.MIN_VALUE) Instant.ofEpochMilli(bootTime) else null
+                bootTime
             )
         }
 
@@ -419,8 +419,8 @@ public class ComputeMetricAggregator {
         private var previousUptime = 0L
         @JvmField var downtime: Long = 0
         private var previousDowntime = 0L
-        @JvmField var bootTime: Long = 0
-        @JvmField var schedulingLatency = 0L
+        @JvmField var provisionTime: Instant? = null
+        @JvmField var bootTime: Instant? = null
         @JvmField var cpuLimit = 0.0
         @JvmField var cpuActiveTime = 0L
         @JvmField var cpuIdleTime = 0L
@@ -461,8 +461,8 @@ public class ComputeMetricAggregator {
                 host,
                 uptime - previousUptime,
                 downtime - previousDowntime,
-                if (bootTime != Long.MIN_VALUE) Instant.ofEpochMilli(bootTime) else null,
-                schedulingLatency,
+                provisionTime,
+                bootTime,
                 cpuLimit,
                 cpuActiveTime - previousCpuActiveTime,
                 cpuIdleTime - previousCpuIdleTime,

@@ -55,9 +55,8 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
 
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
-        val bootTime = data.bootTime
-        builder["boot_time"] = bootTime?.toEpochMilli()
-        builder["scheduling_latency"] = data.schedulingLatency
+        builder["boot_time"] = data.bootTime?.toEpochMilli()
+        builder["provision_time"] = data.provisionTime?.toEpochMilli()
 
         builder["cpu_count"] = data.server.cpuCount
         builder["cpu_limit"] = data.cpuLimit
@@ -81,8 +80,8 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             .name("host_id").type(UUID_SCHEMA.optional()).noDefault()
             .requiredLong("uptime")
             .requiredLong("downtime")
+            .name("provision_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
             .name("boot_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
-            .requiredLong("scheduling_latency")
             .requiredInt("cpu_count")
             .requiredDouble("cpu_limit")
             .requiredLong("cpu_time_active")

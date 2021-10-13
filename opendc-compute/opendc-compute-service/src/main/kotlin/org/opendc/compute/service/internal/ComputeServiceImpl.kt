@@ -26,6 +26,7 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.metrics.MeterProvider
+import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.compute.api.*
@@ -173,6 +174,12 @@ internal class ComputeServiceImpl(
                 result.observe(available, upState)
                 result.observe(total - available, downState)
             }
+
+        meter.gaugeBuilder("system.time.provision")
+            .setDescription("The most recent timestamp where the server entered a provisioned state")
+            .setUnit("1")
+            .ofLongs()
+            .buildWithCallback(::collectProvisionTime)
     }
 
     override fun newClient(): ComputeClient {
@@ -324,8 +331,10 @@ internal class ComputeServiceImpl(
 
     internal fun schedule(server: InternalServer): SchedulingRequest {
         logger.debug { "Enqueueing server ${server.uid} to be assigned to host." }
+        val now = clock.millis()
+        val request = SchedulingRequest(server, now)
 
-        val request = SchedulingRequest(server, clock.millis())
+        server.lastProvisioningTimestamp = now
         queue.add(request)
         _serversPending.add(1)
         requestSchedulingCycle()
@@ -499,6 +508,15 @@ internal class ComputeServiceImpl(
 
             // Try to reschedule if needed
             requestSchedulingCycle()
+        }
+    }
+
+    /**
+     * Collect the timestamp when each server entered its provisioning state most recently.
+     */
+    private fun collectProvisionTime(result: ObservableLongMeasurement) {
+        for ((_, server) in servers) {
+            result.observe(server.lastProvisioningTimestamp, server.attributes)
         }
     }
 }

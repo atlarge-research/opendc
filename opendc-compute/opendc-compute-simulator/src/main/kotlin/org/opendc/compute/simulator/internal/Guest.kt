@@ -248,7 +248,7 @@ internal class Guest(
      */
     fun collectBootTime(result: ObservableLongMeasurement) {
         if (_bootTime != Long.MIN_VALUE) {
-            result.observe(_bootTime)
+            result.observe(_bootTime, attributes)
         }
     }
 
