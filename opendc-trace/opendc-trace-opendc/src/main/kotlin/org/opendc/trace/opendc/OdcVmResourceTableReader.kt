@@ -69,6 +69,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
             COL_START_TIME -> Instant.ofEpochMilli(record[AVRO_COL_START_TIME] as Long)
             COL_STOP_TIME -> Instant.ofEpochMilli(record[AVRO_COL_STOP_TIME] as Long)
             COL_CPU_COUNT -> getInt(index)
+            COL_CPU_CAPACITY -> getDouble(index)
             COL_MEM_CAPACITY -> getDouble(index)
             else -> throw IllegalArgumentException("Invalid column")
         }
@@ -95,6 +96,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
+            COL_CPU_CAPACITY -> if (AVRO_COL_CPU_CAPACITY >= 0) (record[AVRO_COL_CPU_CAPACITY] as Number).toDouble() else 0.0
             COL_MEM_CAPACITY -> (record[AVRO_COL_MEM_CAPACITY] as Number).toDouble()
             else -> throw IllegalArgumentException("Invalid column")
         }
@@ -115,6 +117,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
             AVRO_COL_START_TIME = (schema.getField("start_time") ?: schema.getField("submissionTime")).pos()
             AVRO_COL_STOP_TIME = (schema.getField("stop_time") ?: schema.getField("endTime")).pos()
             AVRO_COL_CPU_COUNT = (schema.getField("cpu_count") ?: schema.getField("maxCores")).pos()
+            AVRO_COL_CPU_CAPACITY = schema.getField("cpu_capacity")?.pos() ?: -1
             AVRO_COL_MEM_CAPACITY = (schema.getField("mem_capacity") ?: schema.getField("requiredMemory")).pos()
         } catch (e: NullPointerException) {
             // This happens when the field we are trying to access does not exist
@@ -126,19 +129,22 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
     private var AVRO_COL_START_TIME = -1
     private var AVRO_COL_STOP_TIME = -1
     private var AVRO_COL_CPU_COUNT = -1
+    private var AVRO_COL_CPU_CAPACITY = -1
     private var AVRO_COL_MEM_CAPACITY = -1
 
     private val COL_ID = 0
     private val COL_START_TIME = 1
     private val COL_STOP_TIME = 2
     private val COL_CPU_COUNT = 3
-    private val COL_MEM_CAPACITY = 4
+    private val COL_CPU_CAPACITY = 4
+    private val COL_MEM_CAPACITY = 5
 
     private val columns = mapOf(
         RESOURCE_ID to COL_ID,
         RESOURCE_START_TIME to COL_START_TIME,
         RESOURCE_STOP_TIME to COL_STOP_TIME,
         RESOURCE_CPU_COUNT to COL_CPU_COUNT,
+        RESOURCE_CPU_CAPACITY to COL_CPU_CAPACITY,
         RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY,
     )
 }

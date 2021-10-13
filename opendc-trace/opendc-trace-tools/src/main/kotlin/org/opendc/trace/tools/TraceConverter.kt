@@ -130,9 +130,10 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
 
         while (hasNextRow) {
             var id: String
-            var numCpus = Int.MIN_VALUE
-            var memCapacity = Double.MIN_VALUE
-            var memUsage = Double.MIN_VALUE
+            var cpuCount = 0
+            var cpuCapacity = 0.0
+            var memCapacity = 0.0
+            var memUsage = 0.0
             var startTime = Long.MAX_VALUE
             var stopTime = Long.MIN_VALUE
 
@@ -140,12 +141,13 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
                 id = reader.get(RESOURCE_ID)
 
                 val timestamp = reader.get(RESOURCE_STATE_TIMESTAMP).toEpochMilli()
+
                 startTime = min(startTime, timestamp)
                 stopTime = max(stopTime, timestamp)
-
-                numCpus = max(numCpus, reader.getInt(RESOURCE_CPU_COUNT))
-
+                cpuCount = max(cpuCount, reader.getInt(RESOURCE_CPU_COUNT))
+                cpuCapacity = max(cpuCapacity, reader.getDouble(RESOURCE_CPU_CAPACITY))
                 memCapacity = max(memCapacity, reader.getDouble(RESOURCE_MEM_CAPACITY))
+
                 if (reader.hasColumn(RESOURCE_STATE_MEM_USAGE)) {
                     memUsage = max(memUsage, reader.getDouble(RESOURCE_STATE_MEM_USAGE))
                 }
@@ -165,7 +167,8 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
             writer.set(RESOURCE_ID, id)
             writer.set(RESOURCE_START_TIME, Instant.ofEpochMilli(startTime))
             writer.set(RESOURCE_STOP_TIME, Instant.ofEpochMilli(stopTime))
-            writer.setInt(RESOURCE_CPU_COUNT, numCpus)
+            writer.setInt(RESOURCE_CPU_COUNT, cpuCount)
+            writer.setDouble(RESOURCE_CPU_CAPACITY, cpuCapacity)
             writer.setDouble(RESOURCE_MEM_CAPACITY, max(memCapacity, memUsage))
             writer.endRow()
         }

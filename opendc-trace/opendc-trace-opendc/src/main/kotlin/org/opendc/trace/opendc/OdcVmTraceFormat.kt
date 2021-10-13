@@ -48,7 +48,7 @@ public class OdcVmTraceFormat : TraceFormat {
 
     override fun create(path: Path) {
         // Construct directory containing the trace files
-        Files.createDirectory(path)
+        Files.createDirectories(path)
 
         val tables = getTables(path)
 
@@ -68,6 +68,7 @@ public class OdcVmTraceFormat : TraceFormat {
                     RESOURCE_START_TIME,
                     RESOURCE_STOP_TIME,
                     RESOURCE_CPU_COUNT,
+                    RESOURCE_CPU_CAPACITY,
                     RESOURCE_MEM_CAPACITY,
                 )
             )
@@ -138,6 +139,7 @@ public class OdcVmTraceFormat : TraceFormat {
             .name("start_time").type(TIMESTAMP_SCHEMA).noDefault()
             .name("stop_time").type(TIMESTAMP_SCHEMA).noDefault()
             .requiredInt("cpu_count")
+            .requiredDouble("cpu_capacity")
             .requiredLong("mem_capacity")
             .endRecord()
 

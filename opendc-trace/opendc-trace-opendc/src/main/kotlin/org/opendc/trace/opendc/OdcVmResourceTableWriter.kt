@@ -64,6 +64,7 @@ internal class OdcVmResourceTableWriter(
             RESOURCE_START_TIME -> (schema.getField("start_time") ?: schema.getField("submissionTime")).pos()
             RESOURCE_STOP_TIME -> (schema.getField("stop_time") ?: schema.getField("endTime")).pos()
             RESOURCE_CPU_COUNT -> (schema.getField("cpu_count") ?: schema.getField("maxCores")).pos()
+            RESOURCE_CPU_CAPACITY -> schema.getField("cpu_capacity").pos()
             RESOURCE_MEM_CAPACITY -> (schema.getField("mem_capacity") ?: schema.getField("requiredMemory")).pos()
             else -> -1
         }
