@@ -222,7 +222,7 @@ public class ComputeMetricAggregator {
     private fun getHost(hosts: MutableMap<String, HostAggregator>, resource: Resource): HostAggregator? {
         val id = resource.attributes[HOST_ID]
         return if (id != null) {
-            hosts.computeIfAbsent(id) { HostAggregator(resource) }
+            hosts.getOrPut(id) { HostAggregator(resource) }
         } else {
             null
         }
@@ -234,7 +234,7 @@ public class ComputeMetricAggregator {
     private fun getServer(servers: MutableMap<String, ServerAggregator>, point: PointData): ServerAggregator? {
         val id = point.attributes[ResourceAttributes.HOST_ID]
         return if (id != null) {
-            servers.computeIfAbsent(id) { ServerAggregator(point.attributes) }
+            servers.getOrPut(id) { ServerAggregator(point.attributes) }
         } else {
             null
         }
