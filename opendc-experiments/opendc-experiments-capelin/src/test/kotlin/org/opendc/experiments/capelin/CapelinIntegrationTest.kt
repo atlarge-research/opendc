@@ -34,9 +34,8 @@ import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.workload.*
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
-import org.opendc.compute.workload.util.PerformanceInterferenceReader
+import org.opendc.compute.workload.util.VmInterferenceModelReader
 import org.opendc.experiments.capelin.topology.clusterTopology
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.collectServiceMetrics
@@ -177,9 +176,9 @@ class CapelinIntegrationTest {
         val workload = createTestWorkload(1.0, seed)
         val perfInterferenceInput = checkNotNull(CapelinIntegrationTest::class.java.getResourceAsStream("/bitbrains-perf-interference.json"))
         val performanceInterferenceModel =
-            PerformanceInterferenceReader()
+            VmInterferenceModelReader()
                 .read(perfInterferenceInput)
-                .let { VmInterferenceModel(it, Random(seed.toLong())) }
+                .withSeed(seed.toLong())
 
         val simulator = ComputeWorkloadRunner(
             coroutineContext,
@@ -213,7 +212,7 @@ class CapelinIntegrationTest {
             { assertEquals(6013515, this@CapelinIntegrationTest.exporter.idleTime) { "Idle time incorrect" } },
             { assertEquals(14724500, this@CapelinIntegrationTest.exporter.activeTime) { "Active time incorrect" } },
             { assertEquals(12530742, this@CapelinIntegrationTest.exporter.stealTime) { "Steal time incorrect" } },
-            { assertEquals(481251, this@CapelinIntegrationTest.exporter.lostTime) { "Lost time incorrect" } }
+            { assertEquals(465088, this@CapelinIntegrationTest.exporter.lostTime) { "Lost time incorrect" } }
         )
     }
 

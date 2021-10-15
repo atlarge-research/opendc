@@ -32,7 +32,7 @@ import org.opendc.compute.workload.*
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
-import org.opendc.compute.workload.util.PerformanceInterferenceReader
+import org.opendc.compute.workload.util.VmInterferenceModelReader
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -131,7 +131,7 @@ class RunnerCli : CliktCommand(name = "runner") {
         logger.info { "Constructing performance interference model" }
 
         val workloadLoader = ComputeWorkloadLoader(tracePath)
-        val interferenceGroups = let {
+        val interferenceModel = let {
             val path = tracePath.resolve(scenario.trace.traceId).resolve("performance-interference-model.json")
             val operational = scenario.operationalPhenomena
             val enabled = operational.performanceInterferenceEnabled
@@ -140,15 +140,14 @@ class RunnerCli : CliktCommand(name = "runner") {
                 return@let null
             }
 
-            PerformanceInterferenceReader().read(path.inputStream())
+            VmInterferenceModelReader().read(path.inputStream())
         }
 
         val targets = portfolio.targets
         val results = (0 until targets.repeatsPerScenario).map { repeat ->
             logger.info { "Starting repeat $repeat" }
             withTimeout(runTimeout * 1000) {
-                val interferenceModel = interferenceGroups?.let { VmInterferenceModel(it, Random(repeat.toLong())) }
-                runRepeat(scenario, repeat, topology, workloadLoader, interferenceModel)
+                runRepeat(scenario, repeat, topology, workloadLoader, interferenceModel?.withSeed(repeat.toLong()))
             }
         }
 

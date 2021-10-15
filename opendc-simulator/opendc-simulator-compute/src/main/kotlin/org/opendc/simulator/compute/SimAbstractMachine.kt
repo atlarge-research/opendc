@@ -77,33 +77,41 @@ public abstract class SimAbstractMachine(
     private var isTerminated = false
 
     /**
-     * The continuation to resume when the virtual machine workload has finished.
+     * The current active [Context].
      */
-    private var cont: Continuation<Unit>? = null
+    private var _ctx: Context? = null
+
+    /**
+     * This method is invoked when the machine is started.
+     */
+    protected open fun onStart(ctx: SimMachineContext) {}
+
+    /**
+     * This method is invoked when the machine is stopped.
+     */
+    protected open fun onStop(ctx: SimMachineContext) {
+        _ctx = null
+    }
 
     /**
      * Converge the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
      */
     override suspend fun run(workload: SimWorkload, meta: Map<String, Any>) {
         check(!isTerminated) { "Machine is terminated" }
-        check(cont == null) { "A machine cannot run concurrently" }
-
-        val ctx = Context(meta)
+        check(_ctx == null) { "A machine cannot run concurrently" }
 
         return suspendCancellableCoroutine { cont ->
-            this.cont = cont
+            val ctx = Context(meta, cont)
+            _ctx = ctx
 
             // Cancel all cpus on cancellation
-            cont.invokeOnCancellation {
-                this.cont = null
-                engine.batch {
-                    for (cpu in cpus) {
-                        cpu.cancel()
-                    }
-                }
-            }
+            cont.invokeOnCancellation { ctx.close() }
 
-            engine.batch { workload.onStart(ctx) }
+            engine.batch {
+                onStart(ctx)
+
+                workload.onStart(ctx)
+            }
         }
     }
 
@@ -113,7 +121,7 @@ public abstract class SimAbstractMachine(
         }
 
         isTerminated = true
-        cancel()
+        _ctx?.close()
     }
 
     override fun onConverge(now: Long, delta: Long) {
@@ -121,26 +129,14 @@ public abstract class SimAbstractMachine(
     }
 
     /**
-     * Cancel the workload that is currently running on the machine.
-     */
-    private fun cancel() {
-        engine.batch {
-            for (cpu in cpus) {
-                cpu.cancel()
-            }
-        }
-
-        val cont = cont
-        if (cont != null) {
-            this.cont = null
-            cont.resume(Unit)
-        }
-    }
-
-    /**
      * The execution context in which the workload runs.
      */
-    private inner class Context(override val meta: Map<String, Any>) : SimMachineContext {
+    private inner class Context(override val meta: Map<String, Any>, private val cont: Continuation<Unit>) : SimMachineContext {
+        /**
+         * A flag to indicate that the context has been closed.
+         */
+        private var isClosed = false
+
         override val engine: FlowEngine
             get() = this@SimAbstractMachine.engine
 
@@ -152,7 +148,21 @@ public abstract class SimAbstractMachine(
 
         override val storage: List<SimStorageInterface> = this@SimAbstractMachine.storage
 
-        override fun close() = cancel()
+        override fun close() {
+            if (isClosed) {
+                return
+            }
+
+            isClosed = true
+            engine.batch {
+                for (cpu in cpus) {
+                    cpu.cancel()
+                }
+            }
+
+            onStop(this)
+            cont.resume(Unit)
+        }
     }
 
     /**
@@ -166,7 +176,7 @@ public abstract class SimAbstractMachine(
      * The [SimNetworkAdapter] implementation for a machine.
      */
     private class NetworkAdapterImpl(
-        private val engine: FlowEngine,
+        engine: FlowEngine,
         model: NetworkAdapter,
         index: Int
     ) : SimNetworkAdapter(), SimNetworkInterface {

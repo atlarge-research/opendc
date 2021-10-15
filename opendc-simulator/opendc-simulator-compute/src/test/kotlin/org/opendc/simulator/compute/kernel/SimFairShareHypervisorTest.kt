@@ -30,7 +30,6 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceGroup
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -187,12 +186,11 @@ internal class SimFairShareHypervisorTest {
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
 
-        val groups = listOf(
-            VmInterferenceGroup(targetLoad = 0.0, score = 0.9, members = setOf("a", "b")),
-            VmInterferenceGroup(targetLoad = 0.0, score = 0.6, members = setOf("a", "c")),
-            VmInterferenceGroup(targetLoad = 0.1, score = 0.8, members = setOf("a", "n"))
-        )
-        val interferenceModel = VmInterferenceModel(groups)
+        val interferenceModel = VmInterferenceModel.builder()
+            .addGroup(targetLoad = 0.0, score = 0.9, members = setOf("a", "b"))
+            .addGroup(targetLoad = 0.0, score = 0.6, members = setOf("a", "c"))
+            .addGroup(targetLoad = 0.1, score = 0.8, members = setOf("a", "n"))
+            .build()
 
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(

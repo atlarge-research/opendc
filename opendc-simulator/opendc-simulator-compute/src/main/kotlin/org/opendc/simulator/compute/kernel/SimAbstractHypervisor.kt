@@ -29,6 +29,7 @@ import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.flow.*
+import org.opendc.simulator.flow.interference.InterferenceKey
 import org.opendc.simulator.flow.mux.FlowMultiplexer
 import kotlin.math.roundToLong
 
@@ -141,11 +142,14 @@ public abstract class SimAbstractHypervisor(
      *
      * @param model The machine model of the virtual machine.
      */
-    private inner class VirtualMachine(model: MachineModel, interferenceId: String? = null) : SimAbstractMachine(engine, parent = null, model), SimVirtualMachine {
+    private inner class VirtualMachine(
+        model: MachineModel,
+        private val interferenceId: String? = null
+    ) : SimAbstractMachine(engine, parent = null, model), SimVirtualMachine {
         /**
          * The interference key of this virtual machine.
          */
-        private val interferenceKey = interferenceId?.let { interferenceDomain?.join(interferenceId) }
+        private var interferenceKey: InterferenceKey? = interferenceId?.let { interferenceDomain?.createKey(it) }
 
         /**
          * The vCPUs of the machine.
@@ -187,6 +191,24 @@ public abstract class SimAbstractHypervisor(
         override val cpuUsage: Double
             get() = cpus.sumOf(FlowConsumer::rate)
 
+        override fun onStart(ctx: SimMachineContext) {
+            val interferenceKey = interferenceKey
+            if (interferenceKey != null) {
+                interferenceDomain?.join(interferenceKey)
+            }
+
+            super.onStart(ctx)
+        }
+
+        override fun onStop(ctx: SimMachineContext) {
+            super.onStop(ctx)
+
+            val interferenceKey = interferenceKey
+            if (interferenceKey != null) {
+                interferenceDomain?.leave(interferenceKey)
+            }
+        }
+
         override fun close() {
             super.close()
 
@@ -195,8 +217,10 @@ public abstract class SimAbstractHypervisor(
             }
 
             _vms.remove(this)
+
+            val interferenceKey = interferenceKey
             if (interferenceKey != null) {
-                interferenceDomain?.leave(interferenceKey)
+                interferenceDomain?.removeKey(interferenceKey)
             }
         }
     }
