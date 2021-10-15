@@ -28,17 +28,17 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
-import org.opendc.telemetry.compute.table.ServerData
+import org.opendc.telemetry.compute.table.ServerTableReader
 import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
 import org.opendc.trace.util.parquet.UUID_SCHEMA
 import org.opendc.trace.util.parquet.optional
 import java.io.File
 
 /**
- * A Parquet event writer for [ServerData]s.
+ * A Parquet event writer for [ServerTableReader]s.
  */
 public class ParquetServerDataWriter(path: File, bufferSize: Int) :
-    ParquetDataWriter<ServerData>(path, SCHEMA, bufferSize) {
+    ParquetDataWriter<ServerTableReader>(path, SCHEMA, bufferSize) {
 
     override fun buildWriter(builder: AvroParquetWriter.Builder<GenericData.Record>): ParquetWriter<GenericData.Record> {
         return builder
@@ -47,7 +47,7 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             .build()
     }
 
-    override fun convert(builder: GenericRecordBuilder, data: ServerData) {
+    override fun convert(builder: GenericRecordBuilder, data: ServerTableReader) {
         builder["timestamp"] = data.timestamp.toEpochMilli()
 
         builder["server_id"] = data.server.id

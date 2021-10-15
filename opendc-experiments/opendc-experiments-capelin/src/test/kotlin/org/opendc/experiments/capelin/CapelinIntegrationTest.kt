@@ -39,7 +39,7 @@ import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.collectServiceMetrics
-import org.opendc.telemetry.compute.table.HostData
+import org.opendc.telemetry.compute.table.HostTableReader
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import java.io.File
 import java.time.Duration
@@ -284,13 +284,13 @@ class CapelinIntegrationTest {
         var energyUsage = 0.0
         var uptime = 0L
 
-        override fun record(data: HostData) {
-            idleTime += data.cpuIdleTime
-            activeTime += data.cpuActiveTime
-            stealTime += data.cpuStealTime
-            lostTime += data.cpuLostTime
-            energyUsage += data.powerTotal
-            uptime += data.uptime
+        override fun record(reader: HostTableReader) {
+            idleTime += reader.cpuIdleTime
+            activeTime += reader.cpuActiveTime
+            stealTime += reader.cpuStealTime
+            lostTime += reader.cpuLostTime
+            energyUsage += reader.powerTotal
+            uptime += reader.uptime
         }
     }
 }

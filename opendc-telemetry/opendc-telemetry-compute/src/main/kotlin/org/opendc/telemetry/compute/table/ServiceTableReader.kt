@@ -25,19 +25,46 @@ package org.opendc.telemetry.compute.table
 import java.time.Instant
 
 /**
- * A trace entry for a particular server.
+ * An interface that is used to read a row of a service trace entry.
  */
-public data class ServerData(
-    val timestamp: Instant,
-    val server: ServerInfo,
-    val host: HostInfo?,
-    val uptime: Long,
-    val downtime: Long,
-    val provisionTime: Instant?,
-    val bootTime: Instant?,
-    val cpuLimit: Double,
-    val cpuActiveTime: Long,
-    val cpuIdleTime: Long,
-    val cpuStealTime: Long,
-    val cpuLostTime: Long,
-)
+public interface ServiceTableReader {
+    /**
+     * The timestamp of the current entry of the reader.
+     */
+    public val timestamp: Instant
+
+    /**
+     * The number of hosts that are up at this instant.
+     */
+    public val hostsUp: Int
+
+    /**
+     * The number of hosts that are down at this instant.
+     */
+    public val hostsDown: Int
+
+    /**
+     * The number of servers that are pending to be scheduled.
+     */
+    public val serversPending: Int
+
+    /**
+     * The number of servers that are currently active.
+     */
+    public val serversActive: Int
+
+    /**
+     * The scheduling attempts that were successful.
+     */
+    public val attemptsSuccess: Int
+
+    /**
+     * The scheduling attempts that were unsuccessful due to client error.
+     */
+    public val attemptsFailure: Int
+
+    /**
+     * The scheduling attempts that were unsuccessful due to scheduler error.
+     */
+    public val attemptsError: Int
+}

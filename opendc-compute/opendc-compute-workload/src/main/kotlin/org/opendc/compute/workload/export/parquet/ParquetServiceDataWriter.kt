@@ -25,17 +25,17 @@ package org.opendc.compute.workload.export.parquet
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericRecordBuilder
-import org.opendc.telemetry.compute.table.ServiceData
+import org.opendc.telemetry.compute.table.ServiceTableReader
 import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
 import java.io.File
 
 /**
- * A Parquet event writer for [ServiceData]s.
+ * A Parquet event writer for [ServiceTableReader]s.
  */
 public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
-    ParquetDataWriter<ServiceData>(path, SCHEMA, bufferSize) {
+    ParquetDataWriter<ServiceTableReader>(path, SCHEMA, bufferSize) {
 
-    override fun convert(builder: GenericRecordBuilder, data: ServiceData) {
+    override fun convert(builder: GenericRecordBuilder, data: ServiceTableReader) {
         builder["timestamp"] = data.timestamp.toEpochMilli()
         builder["hosts_up"] = data.hostsUp
         builder["hosts_down"] = data.hostsDown

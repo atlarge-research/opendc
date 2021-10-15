@@ -24,8 +24,8 @@ package org.opendc.web.runner
 
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.ComputeMonitor
-import org.opendc.telemetry.compute.table.HostData
-import org.opendc.telemetry.compute.table.ServiceData
+import org.opendc.telemetry.compute.table.HostTableReader
+import org.opendc.telemetry.compute.table.ServiceTableReader
 import kotlin.math.max
 import kotlin.math.roundToLong
 
@@ -33,24 +33,24 @@ import kotlin.math.roundToLong
  * A [ComputeMonitor] that tracks the aggregate metrics for each repeat.
  */
 class WebComputeMetricExporter : ComputeMetricExporter() {
-    override fun record(data: HostData) {
-        val slices = data.downtime / SLICE_LENGTH
+    override fun record(reader: HostTableReader) {
+        val slices = reader.downtime / SLICE_LENGTH
 
         hostAggregateMetrics = AggregateHostMetrics(
-            hostAggregateMetrics.totalActiveTime + data.cpuActiveTime,
-            hostAggregateMetrics.totalIdleTime + data.cpuIdleTime,
-            hostAggregateMetrics.totalStealTime + data.cpuStealTime,
-            hostAggregateMetrics.totalLostTime + data.cpuLostTime,
-            hostAggregateMetrics.totalPowerDraw + data.powerTotal,
+            hostAggregateMetrics.totalActiveTime + reader.cpuActiveTime,
+            hostAggregateMetrics.totalIdleTime + reader.cpuIdleTime,
+            hostAggregateMetrics.totalStealTime + reader.cpuStealTime,
+            hostAggregateMetrics.totalLostTime + reader.cpuLostTime,
+            hostAggregateMetrics.totalPowerDraw + reader.powerTotal,
             hostAggregateMetrics.totalFailureSlices + slices,
-            hostAggregateMetrics.totalFailureVmSlices + data.guestsRunning * slices
+            hostAggregateMetrics.totalFailureVmSlices + reader.guestsRunning * slices
         )
 
-        hostMetrics.compute(data.host.id) { _, prev ->
+        hostMetrics.compute(reader.host.id) { _, prev ->
             HostMetrics(
-                data.cpuUsage + (prev?.cpuUsage ?: 0.0),
-                data.cpuDemand + (prev?.cpuDemand ?: 0.0),
-                data.guestsRunning + (prev?.instanceCount ?: 0),
+                reader.cpuUsage + (prev?.cpuUsage ?: 0.0),
+                reader.cpuDemand + (prev?.cpuDemand ?: 0.0),
+                reader.guestsRunning + (prev?.instanceCount ?: 0),
                 1 + (prev?.count ?: 0)
             )
         }
@@ -79,13 +79,13 @@ class WebComputeMetricExporter : ComputeMetricExporter() {
 
     private var serviceMetrics: AggregateServiceMetrics = AggregateServiceMetrics()
 
-    override fun record(data: ServiceData) {
+    override fun record(reader: ServiceTableReader) {
         serviceMetrics = AggregateServiceMetrics(
-            max(data.attemptsSuccess, serviceMetrics.vmTotalCount),
-            max(data.serversPending, serviceMetrics.vmWaitingCount),
-            max(data.serversActive, serviceMetrics.vmActiveCount),
+            max(reader.attemptsSuccess, serviceMetrics.vmTotalCount),
+            max(reader.serversPending, serviceMetrics.vmWaitingCount),
+            max(reader.serversActive, serviceMetrics.vmActiveCount),
             max(0, serviceMetrics.vmInactiveCount),
-            max(data.attemptsFailure, serviceMetrics.vmFailedCount),
+            max(reader.attemptsFailure, serviceMetrics.vmFailedCount),
         )
     }
 
