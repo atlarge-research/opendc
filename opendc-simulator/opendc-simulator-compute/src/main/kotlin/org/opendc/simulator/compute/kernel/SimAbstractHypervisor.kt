@@ -144,7 +144,7 @@ public abstract class SimAbstractHypervisor(
      */
     private inner class VirtualMachine(
         model: MachineModel,
-        private val interferenceId: String? = null
+        interferenceId: String? = null
     ) : SimAbstractMachine(engine, parent = null, model), SimVirtualMachine {
         /**
          * The interference key of this virtual machine.
@@ -154,24 +154,14 @@ public abstract class SimAbstractHypervisor(
         /**
          * The vCPUs of the machine.
          */
-        override val cpus = model.cpus.map { VCpu(mux, mux.newInput(interferenceKey), it) }
+        override val cpus = model.cpus.map { cpu -> VCpu(mux, mux.newInput(cpu.frequency, interferenceKey), cpu) }
 
         /**
          * The resource counters associated with the hypervisor.
          */
         override val counters: SimHypervisorCounters
             get() = _counters
-        private val _counters = object : SimHypervisorCounters {
-            private val d = cpus.size / cpus.sumOf { it.model.frequency } * 1000
-
-            override val cpuActiveTime: Long
-                get() = (cpus.sumOf { it.counters.actual } * d).roundToLong()
-            override val cpuIdleTime: Long
-                get() = (cpus.sumOf { it.counters.actual + it.counters.remaining } * d).roundToLong()
-            override val cpuStealTime: Long
-                get() = (cpus.sumOf { it.counters.demand - it.counters.actual } * d).roundToLong()
-            override val cpuLostTime: Long = (cpus.sumOf { it.counters.interference } * d).roundToLong()
-        }
+        private val _counters = VmCountersImpl(cpus)
 
         /**
          * The CPU capacity of the hypervisor in MHz.
@@ -235,9 +225,7 @@ public abstract class SimAbstractHypervisor(
     ) : SimProcessingUnit, FlowConsumer by source {
         override var capacity: Double
             get() = source.capacity
-            set(_) {
-                // Ignore capacity changes
-            }
+            set(_) = TODO("Capacity changes on vCPU not supported")
 
         override fun toString(): String = "SimAbstractHypervisor.VCpu[model=$model]"
 
@@ -310,5 +298,21 @@ public abstract class SimAbstractHypervisor(
             cpuTime[2] += ((demandDelta - actualDelta) * d).roundToLong()
             cpuTime[3] += (interferenceDelta * d).roundToLong()
         }
+    }
+
+    /**
+     * A [SimHypervisorCounters] implementation for a virtual machine.
+     */
+    private class VmCountersImpl(private val cpus: List<VCpu>) : SimHypervisorCounters {
+        private val d = cpus.size / cpus.sumOf { it.model.frequency } * 1000
+
+        override val cpuActiveTime: Long
+            get() = (cpus.sumOf { it.counters.actual } * d).roundToLong()
+        override val cpuIdleTime: Long
+            get() = (cpus.sumOf { it.counters.actual + it.counters.remaining } * d).roundToLong()
+        override val cpuStealTime: Long
+            get() = (cpus.sumOf { it.counters.demand - it.counters.actual } * d).roundToLong()
+        override val cpuLostTime: Long
+            get() = (cpus.sumOf { it.counters.interference } * d).roundToLong()
     }
 }

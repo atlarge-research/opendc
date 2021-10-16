@@ -78,6 +78,8 @@ public class ForwardingFlowMultiplexer(private val engine: FlowEngine) : FlowMul
         return input
     }
 
+    override fun newInput(capacity: Double, key: InterferenceKey?): FlowConsumer = newInput(key)
+
     override fun removeInput(input: FlowConsumer) {
         if (!_inputs.remove(input)) {
             return
