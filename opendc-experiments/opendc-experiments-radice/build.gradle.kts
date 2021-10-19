@@ -25,6 +25,7 @@ description = "Experiments for the Risk Analysis work"
 /* Build configuration */
 plugins {
     `kotlin-conventions`
+    `benchmark-conventions`
     distribution
 }
 
