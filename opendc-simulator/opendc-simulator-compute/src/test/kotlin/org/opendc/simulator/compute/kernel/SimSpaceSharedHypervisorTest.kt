@@ -36,6 +36,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.*
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
@@ -76,13 +77,13 @@ internal class SimSpaceSharedHypervisorTest {
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
         val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
 
-        launch { machine.run(hypervisor) }
-        val vm = hypervisor.createMachine(machineModel)
-        vm.run(workloadA)
+        launch { machine.runWorkload(hypervisor) }
+        val vm = hypervisor.newMachine(machineModel)
+        vm.runWorkload(workloadA)
         yield()
 
-        vm.close()
-        machine.close()
+        hypervisor.removeMachine(vm)
+        machine.cancel()
 
         assertEquals(5 * 60L * 4000, clock.millis()) { "Took enough time" }
     }
@@ -98,12 +99,13 @@ internal class SimSpaceSharedHypervisorTest {
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
         val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
 
-        launch { machine.run(hypervisor) }
+        launch { machine.runWorkload(hypervisor) }
         yield()
-        val vm = hypervisor.createMachine(machineModel)
-        vm.run(workload)
-        vm.close()
-        machine.close()
+        val vm = hypervisor.newMachine(machineModel)
+        vm.runWorkload(workload)
+        hypervisor.removeMachine(vm)
+
+        machine.cancel()
 
         assertEquals(duration, clock.millis()) { "Took enough time" }
     }
@@ -121,11 +123,11 @@ internal class SimSpaceSharedHypervisorTest {
         )
         val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
 
-        launch { machine.run(hypervisor) }
+        launch { machine.runWorkload(hypervisor) }
         yield()
-        val vm = hypervisor.createMachine(machineModel)
-        vm.run(workload)
-        machine.close()
+        val vm = hypervisor.newMachine(machineModel)
+        vm.runWorkload(workload)
+        machine.cancel()
 
         assertEquals(duration, clock.millis()) { "Took enough time" }
     }
@@ -142,19 +144,20 @@ internal class SimSpaceSharedHypervisorTest {
         )
         val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
 
-        launch { machine.run(hypervisor) }
+        launch { machine.runWorkload(hypervisor) }
         yield()
 
-        val vm = hypervisor.createMachine(machineModel)
-        vm.run(SimRuntimeWorkload(duration))
-        vm.close()
+        val vm = hypervisor.newMachine(machineModel)
+        vm.runWorkload(SimRuntimeWorkload(duration))
+        hypervisor.removeMachine(vm)
 
         yield()
 
-        val vm2 = hypervisor.createMachine(machineModel)
-        vm2.run(SimRuntimeWorkload(duration))
-        vm2.close()
-        machine.close()
+        val vm2 = hypervisor.newMachine(machineModel)
+        vm2.runWorkload(SimRuntimeWorkload(duration))
+        hypervisor.removeMachine(vm2)
+
+        machine.cancel()
 
         assertEquals(duration * 2, clock.millis()) { "Took enough time" }
     }
@@ -168,17 +171,17 @@ internal class SimSpaceSharedHypervisorTest {
         val machine = SimBareMetalMachine(engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0)))
         val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
 
-        launch { machine.run(hypervisor) }
+        launch { machine.runWorkload(hypervisor) }
         yield()
 
-        hypervisor.createMachine(machineModel)
+        hypervisor.newMachine(machineModel)
 
         assertAll(
             { assertFalse(hypervisor.canFit(machineModel)) },
-            { assertThrows<IllegalArgumentException> { hypervisor.createMachine(machineModel) } }
+            { assertThrows<IllegalArgumentException> { hypervisor.newMachine(machineModel) } }
         )
 
-        machine.close()
+        machine.cancel()
     }
 
     /**
@@ -192,16 +195,16 @@ internal class SimSpaceSharedHypervisorTest {
         )
         val hypervisor = SimSpaceSharedHypervisor(interpreter, null, null)
 
-        launch { machine.run(hypervisor) }
+        launch { machine.runWorkload(hypervisor) }
         yield()
 
-        hypervisor.createMachine(machineModel).close()
+        hypervisor.removeMachine(hypervisor.newMachine(machineModel))
 
         assertAll(
             { assertTrue(hypervisor.canFit(machineModel)) },
-            { assertDoesNotThrow { hypervisor.createMachine(machineModel) } }
+            { assertDoesNotThrow { hypervisor.newMachine(machineModel) } }
         )
 
-        machine.close()
+        machine.cancel()
     }
 }

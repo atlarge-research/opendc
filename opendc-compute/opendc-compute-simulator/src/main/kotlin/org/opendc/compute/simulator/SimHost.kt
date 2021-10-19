@@ -47,6 +47,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.FlowEngine
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -136,11 +137,6 @@ public class SimHost(
         }
     }
 
-    /**
-     * The [Job] that represents the machine running the hypervisor.
-     */
-    private var _job: Job? = null
-
     init {
         launch()
 
@@ -199,11 +195,12 @@ public class SimHost(
         val guest = guests.computeIfAbsent(server) { key ->
             require(canFit(key)) { "Server does not fit" }
 
-            val machine = hypervisor.createMachine(key.flavor.toMachineModel(), key.name)
+            val machine = hypervisor.newMachine(key.flavor.toMachineModel(), key.name)
             val newGuest = Guest(
                 scope.coroutineContext,
                 clock,
                 this,
+                hypervisor,
                 mapper,
                 guestListener,
                 server,
@@ -249,7 +246,7 @@ public class SimHost(
     override fun close() {
         reset()
         scope.cancel()
-        machine.close()
+        machine.cancel()
     }
 
     override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
@@ -276,26 +273,39 @@ public class SimHost(
     }
 
     /**
+     * The [Job] that represents the machine running the hypervisor.
+     */
+    private var _ctx: SimMachineContext? = null
+
+    /**
      * Launch the hypervisor.
      */
     private fun launch() {
-        check(_job == null) { "Concurrent hypervisor running" }
+        check(_ctx == null) { "Concurrent hypervisor running" }
 
         // Launch hypervisor onto machine
-        _job = scope.launch {
-            try {
-                _bootTime = clock.millis()
-                _state = HostState.UP
-                machine.run(hypervisor, emptyMap())
-            } catch (_: CancellationException) {
-                // Ignored
-            } catch (cause: Throwable) {
-                logger.error(cause) { "Host failed" }
-                throw cause
-            } finally {
-                _state = HostState.DOWN
+        _ctx = machine.startWorkload(object : SimWorkload {
+            override fun onStart(ctx: SimMachineContext) {
+                try {
+                    _bootTime = clock.millis()
+                    _state = HostState.UP
+                    hypervisor.onStart(ctx)
+                } catch (cause: Throwable) {
+                    _state = HostState.DOWN
+                    _ctx = null
+                    throw cause
+                }
             }
-        }
+
+            override fun onStop(ctx: SimMachineContext) {
+                try {
+                    hypervisor.onStop(ctx)
+                } finally {
+                    _state = HostState.DOWN
+                    _ctx = null
+                }
+            }
+        })
     }
 
     /**
@@ -305,12 +315,7 @@ public class SimHost(
         updateUptime()
 
         // Stop the hypervisor
-        val job = _job
-        if (job != null) {
-            job.cancel()
-            _job = null
-        }
-
+        _ctx?.close()
         _state = HostState.DOWN
     }
 

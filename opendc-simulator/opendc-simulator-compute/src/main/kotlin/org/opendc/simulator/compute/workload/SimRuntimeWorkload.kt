@@ -48,5 +48,7 @@ public class SimRuntimeWorkload(
         }
     }
 
+    override fun onStop(ctx: SimMachineContext) {}
+
     override fun toString(): String = "SimRuntimeWorkload(duration=$duration,utilization=$utilization)"
 }

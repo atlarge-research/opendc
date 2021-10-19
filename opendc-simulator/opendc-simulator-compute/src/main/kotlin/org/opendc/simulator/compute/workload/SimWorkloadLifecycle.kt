@@ -33,31 +33,50 @@ public class SimWorkloadLifecycle(private val ctx: SimMachineContext) {
     /**
      * The resource consumers which represent the lifecycle of the workload.
      */
-    private val waiting = mutableSetOf<FlowSource>()
+    private val waiting = HashSet<Wrapper>()
 
     /**
-     * Wait for the specified [consumer] to complete before ending the lifecycle of the workload.
+     * Wait for the specified [source] to complete before ending the lifecycle of the workload.
      */
-    public fun waitFor(consumer: FlowSource): FlowSource {
-        waiting.add(consumer)
-        return object : FlowSource by consumer {
-            override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
-                try {
-                    consumer.onStop(conn, now, delta)
-                } finally {
-                    complete(consumer)
-                }
-            }
-            override fun toString(): String = "SimWorkloadLifecycle.Consumer[delegate=$consumer]"
+    public fun waitFor(source: FlowSource): FlowSource {
+        val wrapper = Wrapper(source)
+        waiting.add(wrapper)
+        return wrapper
+    }
+
+    /**
+     * Complete the specified [Wrapper].
+     */
+    private fun complete(wrapper: Wrapper) {
+        if (waiting.remove(wrapper) && waiting.isEmpty()) {
+            ctx.close()
         }
     }
 
     /**
-     * Complete the specified [FlowSource].
+     * A [FlowSource] that wraps [delegate] and informs [SimWorkloadLifecycle] that is has completed.
      */
-    private fun complete(consumer: FlowSource) {
-        if (waiting.remove(consumer) && waiting.isEmpty()) {
-            ctx.close()
+    private inner class Wrapper(private val delegate: FlowSource) : FlowSource {
+        override fun onStart(conn: FlowConnection, now: Long) {
+            delegate.onStart(conn, now)
         }
+
+        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            return delegate.onPull(conn, now, delta)
+        }
+
+        override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+            delegate.onConverge(conn, now, delta)
+        }
+
+        override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+            try {
+                delegate.onStop(conn, now, delta)
+            } finally {
+                complete(this)
+            }
+        }
+
+        override fun toString(): String = "SimWorkloadLifecycle.Wrapper[delegate=$delegate]"
     }
 }

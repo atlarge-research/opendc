@@ -23,6 +23,7 @@
 package org.opendc.simulator.compute
 
 import kotlinx.coroutines.*
+import mu.KotlinLogging
 import org.opendc.simulator.compute.device.SimNetworkAdapter
 import org.opendc.simulator.compute.device.SimPeripheral
 import org.opendc.simulator.compute.model.MachineModel
@@ -31,8 +32,6 @@ import org.opendc.simulator.compute.model.NetworkAdapter
 import org.opendc.simulator.compute.model.StorageDevice
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.*
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
 
 /**
  * Abstract implementation of the [SimMachine] interface.
@@ -72,55 +71,19 @@ public abstract class SimAbstractMachine(
     public override val peripherals: List<SimPeripheral> = net.map { it as SimNetworkAdapter }
 
     /**
-     * A flag to indicate that the machine is terminated.
-     */
-    private var isTerminated = false
-
-    /**
      * The current active [Context].
      */
     private var _ctx: Context? = null
 
-    /**
-     * This method is invoked when the machine is started.
-     */
-    protected open fun onStart(ctx: SimMachineContext) {}
-
-    /**
-     * This method is invoked when the machine is stopped.
-     */
-    protected open fun onStop(ctx: SimMachineContext) {
-        _ctx = null
-    }
-
-    /**
-     * Converge the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
-     */
-    override suspend fun run(workload: SimWorkload, meta: Map<String, Any>) {
-        check(!isTerminated) { "Machine is terminated" }
+    override fun startWorkload(workload: SimWorkload, meta: Map<String, Any>): SimMachineContext {
         check(_ctx == null) { "A machine cannot run concurrently" }
 
-        return suspendCancellableCoroutine { cont ->
-            val ctx = Context(meta, cont)
-            _ctx = ctx
-
-            // Cancel all cpus on cancellation
-            cont.invokeOnCancellation { ctx.close() }
-
-            engine.batch {
-                onStart(ctx)
-
-                workload.onStart(ctx)
-            }
-        }
+        val ctx = Context(workload, meta)
+        ctx.start()
+        return ctx
     }
 
-    override fun close() {
-        if (isTerminated) {
-            return
-        }
-
-        isTerminated = true
+    override fun cancel() {
         _ctx?.close()
     }
 
@@ -130,15 +93,33 @@ public abstract class SimAbstractMachine(
 
     /**
      * The execution context in which the workload runs.
+     *
+     * @param workload The workload that is running on the machine.
+     * @param meta The metadata passed to the workload.
      */
-    private inner class Context(override val meta: Map<String, Any>, private val cont: Continuation<Unit>) : SimMachineContext {
+    private inner class Context(
+        private val workload: SimWorkload,
+        override val meta: Map<String, Any>
+    ) : SimMachineContext {
         /**
          * A flag to indicate that the context has been closed.
          */
         private var isClosed = false
 
-        override val engine: FlowEngine
-            get() = this@SimAbstractMachine.engine
+        override val engine: FlowEngine = this@SimAbstractMachine.engine
+
+        /**
+         * Start this context.
+         */
+        fun start() {
+            try {
+                _ctx = this
+                engine.batch { workload.onStart(this) }
+            } catch (cause: Throwable) {
+                logger.warn(cause) { "Workload failed during onStart callback" }
+                close()
+            }
+        }
 
         override val cpus: List<SimProcessingUnit> = this@SimAbstractMachine.cpus
 
@@ -154,15 +135,43 @@ public abstract class SimAbstractMachine(
             }
 
             isClosed = true
+            assert(_ctx == this) { "Invariant violation: multiple contexts active for a single machine" }
+            _ctx = null
+
+            // Cancel all the resources associated with the machine
+            doCancel()
+
+            try {
+                workload.onStop(this)
+            } catch (cause: Throwable) {
+                logger.warn(cause) { "Workload failed during onStop callback" }
+            }
+        }
+
+        /**
+         * Run the stop procedures for the resources associated with the machine.
+         */
+        private fun doCancel() {
             engine.batch {
                 for (cpu in cpus) {
                     cpu.cancel()
                 }
-            }
 
-            onStop(this)
-            cont.resume(Unit)
+                memory.cancel()
+
+                for (ifx in net) {
+                    (ifx as NetworkAdapterImpl).disconnect()
+                }
+
+                for (storage in storage) {
+                    val impl = storage as StorageDeviceImpl
+                    impl.read.cancel()
+                    impl.write.cancel()
+                }
+            }
         }
+
+        override fun toString(): String = "SimAbstractMachine.Context"
     }
 
     /**
@@ -217,5 +226,13 @@ public abstract class SimAbstractMachine(
         override val write: FlowConsumer = FlowSink(engine, model.writeBandwidth)
 
         override fun toString(): String = "SimAbstractMachine.StorageDeviceImpl[name=$name,capacity=$capacity]"
+    }
+
+    private companion object {
+        /**
+         * The logging instance associated with this class.
+         */
+        @JvmStatic
+        private val logger = KotlinLogging.logger {}
     }
 }

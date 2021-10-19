@@ -76,7 +76,7 @@ class SimMachineBenchmarks {
             val machine = SimBareMetalMachine(
                 engine, machineModel, SimplePowerDriver(ConstantPowerModel(0.0))
             )
-            return@runBlockingSimulation machine.run(SimTraceWorkload(trace))
+            return@runBlockingSimulation machine.runWorkload(SimTraceWorkload(trace))
         }
     }
 
@@ -89,15 +89,15 @@ class SimMachineBenchmarks {
             )
             val hypervisor = SimSpaceSharedHypervisor(engine, null, null)
 
-            launch { machine.run(hypervisor) }
+            launch { machine.runWorkload(hypervisor) }
 
-            val vm = hypervisor.createMachine(machineModel)
+            val vm = hypervisor.newMachine(machineModel)
 
             try {
-                return@runBlockingSimulation vm.run(SimTraceWorkload(trace))
+                return@runBlockingSimulation vm.runWorkload(SimTraceWorkload(trace))
             } finally {
-                vm.close()
-                machine.close()
+                vm.cancel()
+                machine.cancel()
             }
         }
     }
@@ -111,15 +111,15 @@ class SimMachineBenchmarks {
             )
             val hypervisor = SimFairShareHypervisor(engine, null, null, null)
 
-            launch { machine.run(hypervisor) }
+            launch { machine.runWorkload(hypervisor) }
 
-            val vm = hypervisor.createMachine(machineModel)
+            val vm = hypervisor.newMachine(machineModel)
 
             try {
-                return@runBlockingSimulation vm.run(SimTraceWorkload(trace))
+                return@runBlockingSimulation vm.runWorkload(SimTraceWorkload(trace))
             } finally {
-                vm.close()
-                machine.close()
+                vm.cancel()
+                machine.cancel()
             }
         }
     }
@@ -133,22 +133,22 @@ class SimMachineBenchmarks {
             )
             val hypervisor = SimFairShareHypervisor(engine, null, null, null)
 
-            launch { machine.run(hypervisor) }
+            launch { machine.runWorkload(hypervisor) }
 
             coroutineScope {
                 repeat(2) {
-                    val vm = hypervisor.createMachine(machineModel)
+                    val vm = hypervisor.newMachine(machineModel)
 
                     launch {
                         try {
-                            vm.run(SimTraceWorkload(trace))
+                            vm.runWorkload(SimTraceWorkload(trace))
                         } finally {
-                            machine.close()
+                            machine.cancel()
                         }
                     }
                 }
             }
-            machine.close()
+            machine.cancel()
         }
     }
 }

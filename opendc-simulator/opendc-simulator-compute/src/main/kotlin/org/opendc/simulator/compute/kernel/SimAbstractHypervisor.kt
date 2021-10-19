@@ -28,6 +28,7 @@ import org.opendc.simulator.compute.kernel.cpufreq.ScalingPolicy
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.interference.InterferenceKey
 import org.opendc.simulator.flow.mux.FlowMultiplexer
@@ -93,11 +94,18 @@ public abstract class SimAbstractHypervisor(
     private val governors = mutableListOf<ScalingGovernor.Logic>()
 
     /* SimHypervisor */
-    override fun createMachine(model: MachineModel, interferenceId: String?): SimVirtualMachine {
+    override fun newMachine(model: MachineModel, interferenceId: String?): SimVirtualMachine {
         require(canFit(model)) { "Machine does not fit" }
         val vm = VirtualMachine(model, interferenceId)
         _vms.add(vm)
         return vm
+    }
+
+    override fun removeMachine(machine: SimVirtualMachine) {
+        if (_vms.remove(machine)) {
+            // This cast must always succeed, since `_vms` only contains `VirtualMachine` types.
+            (machine as VirtualMachine).close()
+        }
     }
 
     /* SimWorkload */
@@ -122,6 +130,8 @@ public abstract class SimAbstractHypervisor(
         }
     }
 
+    override fun onStop(ctx: SimMachineContext) {}
+
     private var _cpuCount = 0
     private var _cpuCapacity = 0.0
 
@@ -145,11 +155,16 @@ public abstract class SimAbstractHypervisor(
     private inner class VirtualMachine(
         model: MachineModel,
         interferenceId: String? = null
-    ) : SimAbstractMachine(engine, parent = null, model), SimVirtualMachine {
+    ) : SimAbstractMachine(engine, parent = null, model), SimVirtualMachine, AutoCloseable {
+        /**
+         * A flag to indicate that the machine is closed.
+         */
+        private var isClosed = false
+
         /**
          * The interference key of this virtual machine.
          */
-        private var interferenceKey: InterferenceKey? = interferenceId?.let { interferenceDomain?.createKey(it) }
+        private val interferenceKey: InterferenceKey? = interferenceId?.let { interferenceDomain?.createKey(it) }
 
         /**
          * The vCPUs of the machine.
@@ -181,36 +196,60 @@ public abstract class SimAbstractHypervisor(
         override val cpuUsage: Double
             get() = cpus.sumOf(FlowConsumer::rate)
 
-        override fun onStart(ctx: SimMachineContext) {
-            val interferenceKey = interferenceKey
-            if (interferenceKey != null) {
-                interferenceDomain?.join(interferenceKey)
-            }
+        override fun startWorkload(workload: SimWorkload, meta: Map<String, Any>): SimMachineContext {
+            check(!isClosed) { "Machine is closed" }
 
-            super.onStart(ctx)
-        }
+            return super.startWorkload(
+                object : SimWorkload {
+                    override fun onStart(ctx: SimMachineContext) {
+                        try {
+                            joinInterferenceDomain()
+                            workload.onStart(ctx)
+                        } catch (cause: Throwable) {
+                            leaveInterferenceDomain()
+                            throw cause
+                        }
+                    }
 
-        override fun onStop(ctx: SimMachineContext) {
-            super.onStop(ctx)
-
-            val interferenceKey = interferenceKey
-            if (interferenceKey != null) {
-                interferenceDomain?.leave(interferenceKey)
-            }
+                    override fun onStop(ctx: SimMachineContext) {
+                        leaveInterferenceDomain()
+                        workload.onStop(ctx)
+                    }
+                },
+                meta
+            )
         }
 
         override fun close() {
-            super.close()
+            if (isClosed) {
+                return
+            }
+
+            isClosed = true
+            cancel()
 
             for (cpu in cpus) {
                 cpu.close()
             }
+        }
 
-            _vms.remove(this)
-
+        /**
+         * Join the interference domain of the hypervisor.
+         */
+        private fun joinInterferenceDomain() {
             val interferenceKey = interferenceKey
             if (interferenceKey != null) {
-                interferenceDomain?.removeKey(interferenceKey)
+                interferenceDomain?.join(interferenceKey)
+            }
+        }
+
+        /**
+         * Leave the interference domain of the hypervisor.
+         */
+        private fun leaveInterferenceDomain() {
+            val interferenceKey = interferenceKey
+            if (interferenceKey != null) {
+                interferenceDomain?.leave(interferenceKey)
             }
         }
     }

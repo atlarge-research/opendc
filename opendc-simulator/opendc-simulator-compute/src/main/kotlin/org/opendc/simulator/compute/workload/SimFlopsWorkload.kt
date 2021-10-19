@@ -48,5 +48,7 @@ public class SimFlopsWorkload(
         }
     }
 
+    override fun onStop(ctx: SimMachineContext) {}
+
     override fun toString(): String = "SimFlopsWorkload(FLOPs=$flops,utilization=$utilization)"
 }

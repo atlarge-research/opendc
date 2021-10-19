@@ -34,7 +34,9 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.SimWorkloadMapper
+import org.opendc.simulator.compute.kernel.SimHypervisor
 import org.opendc.simulator.compute.kernel.SimVirtualMachine
+import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
@@ -46,6 +48,7 @@ internal class Guest(
     context: CoroutineContext,
     private val clock: Clock,
     val host: SimHost,
+    private val hypervisor: SimHypervisor,
     private val mapper: SimWorkloadMapper,
     private val listener: GuestListener,
     val server: Server,
@@ -114,8 +117,7 @@ internal class Guest(
         stop()
 
         state = ServerState.DELETED
-
-        machine.close()
+        hypervisor.removeMachine(machine)
         scope.cancel()
     }
 
@@ -191,7 +193,7 @@ internal class Guest(
      */
     private suspend fun runMachine(workload: SimWorkload) {
         delay(1) // TODO Introduce model for boot time
-        machine.run(workload, mapOf("driver" to host, "server" to server))
+        machine.runWorkload(workload, mapOf("driver" to host, "server" to server))
     }
 
     /**

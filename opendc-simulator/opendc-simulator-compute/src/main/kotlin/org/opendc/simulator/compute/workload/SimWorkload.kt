@@ -37,4 +37,11 @@ public interface SimWorkload {
      * @param ctx The execution context in which the machine runs.
      */
     public fun onStart(ctx: SimMachineContext)
+
+    /**
+     * This method is invoked when the workload is stopped.
+     *
+     * @param ctx The execution context in which the machine runs.
+     */
+    public fun onStop(ctx: SimMachineContext)
 }
