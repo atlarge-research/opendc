@@ -1,0 +1,1314 @@
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 1.0
+  core-ram-weight: 0.0
+  instance-count-weight: 0.0
+  vcpu-weight: 0.0
+  vcpu-capacity-weight: 0.0
+  cpu-allocation-ratio: 16.0
+  ram-allocation-ratio: 1.5
+  subset-size: 1
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "baseline"
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 0.2992890373565032
+  core-ram-weight: 0.17799269773373583
+  instance-count-weight: 0.9457196060507427
+  vcpu-weight: 0.19962208373198398
+  vcpu-capacity-weight: 0.17136544173104715
+  cpu-allocation-ratio: 26.653025998685507
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B1"
+fitness:
+  - 26166.773171939225
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 0.2992890373565032
+  core-ram-weight: 0.17799269773373583
+  instance-count-weight: 0.9457196060507427
+  vcpu-weight: 0.19962208373198398
+  vcpu-capacity-weight: 0.17136544173104715
+  cpu-allocation-ratio: 26.565594508079776
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B2"
+fitness:
+  - 26175.283870946514
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: false
+  ram-weight: 0.22254522654080366
+  core-ram-weight: 0.17799269773373583
+  instance-count-weight: 0.9457196060507427
+  vcpu-weight: 0.19962208373198398
+  vcpu-capacity-weight: 0.13052109364545572
+  cpu-allocation-ratio: 26.653025998685507
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B3"
+fitness:
+  - 26267.458918060238
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 0.34351713499907377
+  core-ram-weight: 0.19627717758121088
+  instance-count-weight: 0.9457196060507427
+  vcpu-weight: 0.19962208373198398
+  vcpu-capacity-weight: -0.027366164213969535
+  cpu-allocation-ratio: 27.577566532371126
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B4"
+fitness:
+  - 26553.492316337746
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 0.34351713499907377
+  core-ram-weight: 0.19627717758121088
+  instance-count-weight: 0.9457196060507427
+  vcpu-weight: 0.19962208373198398
+  vcpu-capacity-weight: -0.027366164213969535
+  cpu-allocation-ratio: 26.653025998685507
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B5"
+fitness:
+  - 26682.015756272438
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 0.2992890373565032
+  core-ram-weight: 0.17799269773373583
+  instance-count-weight: 0.9457196060507427
+  vcpu-weight: 0.19962208373198398
+  vcpu-capacity-weight: 0.17136544173104715
+  cpu-allocation-ratio: 24.156662149006706
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B6"
+fitness:
+  - 27114.290400008194
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 0.34351713499907377
+  core-ram-weight: 0.19627717758121088
+  instance-count-weight: 0.9457196060507427
+  vcpu-weight: 0.19962208373198398
+  vcpu-capacity-weight: -0.027366164213969535
+  cpu-allocation-ratio: 26.509494628938352
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B7"
+fitness:
+  - 27122.152554331686
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 0.6556887667321591
+  core-ram-weight: 0.19627717758121088
+  instance-count-weight: 0.9457196060507427
+  vcpu-weight: -0.3768780837132437
+  vcpu-capacity-weight: -0.3138183190355841
+  cpu-allocation-ratio: 26.653025998685507
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B8"
+fitness:
+  - 27154.30274967251
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: false
+  ram-weight: -0.20318484303986084
+  core-ram-weight: 0.7593982637892128
+  instance-count-weight: 0.8077116085580822
+  vcpu-weight: 0.19477463156942698
+  vcpu-capacity-weight: -0.25123373577085073
+  cpu-allocation-ratio: 10.196770684018777
+  ram-allocation-ratio: 1.5
+  subset-size: 1
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "B9"
+fitness:
+  - 27190.442002835447
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: false
+  ram-weight: 0.6591868458508687
+  core-ram-weight: 0.07907562261517542
+  instance-count-weight: 0.16880845648589027
+  vcpu-weight: 0.19477463156942698
+  vcpu-capacity-weight: -0.25123373577085073
+  cpu-allocation-ratio: 1.0
+  ram-allocation-ratio: 1.5
+  subset-size: 1
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "W1"
+fitness:
+  - 188740.98693785554
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: false
+  ram-weight: -0.20318484303986084
+  core-ram-weight: 0.6411427422801137
+  instance-count-weight: 0.26916199252947615
+  vcpu-weight: 0.19477463156942698
+  vcpu-capacity-weight: -0.25123373577085073
+  cpu-allocation-ratio: 1.0
+  ram-allocation-ratio: 1.5
+  subset-size: 1
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "W2"
+fitness:
+  - 185968.64878735546
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: false
+  ram-weight: 0.4701866095571442
+  core-ram-weight: 0.7593982637892128
+  instance-count-weight: 0.534482824754988
+  vcpu-weight: -0.3276308042032794
+  vcpu-capacity-weight: -0.25123373577085073
+  cpu-allocation-ratio: 1.0
+  ram-allocation-ratio: 1.5
+  subset-size: 1
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "W3"
+fitness:
+  - 181167.0084056514
+---
+workload: "baseline"
+topology:
+  id: "base"
+  clusters:
+    - id: "1"
+      name: "1"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "2"
+      name: "2"
+      machine-model: "dell:r710"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620/fast"
+      host-count: 16
+    - id: "4"
+      name: "4"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "5"
+      name: "5"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "6"
+      name: "6"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "3"
+      name: "3"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "7"
+      name: "7"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "8"
+      name: "8"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "9"
+      name: "9"
+      machine-model: "dell:r620"
+      host-count: 16
+    - id: "10"
+      name: "10"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "11"
+      name: "11"
+      machine-model: "dell:r820"
+      host-count: 6
+    - id: "12"
+      name: "12"
+      machine-model: "dell:r820"
+      host-count: 6
+scheduler:
+  filter-capacity: true
+  ram-weight: 0.34351713499907377
+  core-ram-weight: 0.19627717758121088
+  instance-count-weight: -0.4036336815602586
+  vcpu-weight: 0.31352746265787257
+  vcpu-capacity-weight: -0.027366164213969535
+  cpu-allocation-ratio: 1.1660085203550152
+  ram-allocation-ratio: 1.5
+  subset-size: 2
+phenomena:
+  failure-interval: 604800.000000000
+  interference-enabled: true
+availability-sla:
+  target: 0.995
+  refunds:
+    "0.990": 0.3
+    "0.950": 1.0
+    "0.995": 0.1
+qos-sla:
+  target: 0.025
+  refunds:
+    "0.025": 0.1
+    "0.050": 0.3
+    "0.100": 1.0
+pue: 1.57
+co2-footprint: 0.556
+costs:
+  vcpu: 0.04
+  power: 300.0
+  co2: 64.0
+  co2-social: 360.11
+  investigation: 125.0
+partitions:
+  candidate: "W4"
+fitness:
+  - 179913.39019470316

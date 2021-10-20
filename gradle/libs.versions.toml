@@ -5,6 +5,7 @@ config = "1.4.1"
 commons-math3 = "3.6.1"
 hadoop = "3.3.1"
 jackson = "2.13.1"
+jenetics = "6.3.0"
 junit-jupiter = "5.8.2"
 junit-platform = "1.8.2"
 kotlin-logging = "2.1.21"
@@ -70,3 +71,5 @@ classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classg
 hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
 hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }
 commons-math3 = { module = "org.apache.commons:commons-math3", version.ref = "commons-math3" }
+jenetics-main = { module = "io.jenetics:jenetics", version.ref = "jenetics" }
+jenetics-ext = { module = "io.jenetics:jenetics.ext", version.ref = "jenetics" }

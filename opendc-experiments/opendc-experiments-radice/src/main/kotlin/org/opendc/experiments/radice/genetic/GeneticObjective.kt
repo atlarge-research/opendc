@@ -20,32 +20,27 @@
  * SOFTWARE.
  */
 
-@file:JvmName("RadiceCli")
-package org.opendc.experiments.radice
+package org.opendc.experiments.radice.genetic
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.subcommands
-import com.typesafe.config.ConfigFactory
+import io.jenetics.ext.moea.Vec
+import org.opendc.telemetry.risk.RiskFactor
 
 /**
- * Main method of the application.
+ * The type of optimization objective.
  */
-fun main(args: Array<String>): Unit = RadiceCommand().main(args)
-
-/**
- * Represents the command for the radice experiments.
- */
-internal class RadiceCommand : CliktCommand(name = "radice") {
+interface GeneticObjective<T> {
     /**
-     * The configuration for the experiments.
+     * Construct an accumulator of type [T] to store the result of different runs.
      */
-    private val config = ConfigFactory.load().getConfig("opendc.experiments.radice")
+    fun createAccumulator(): T
 
-    init {
-        subcommands(RadiceGenerateCommand(config))
-        subcommands(RadiceRunCommand(config))
-        subcommands(RadiceOptimizeCommand(config))
-    }
+    /**
+     * Add the specified [result] to [acc].
+     */
+    fun add(acc: T, result: Map<RiskFactor, Double>)
 
-    override fun run() {}
+    /**
+     * Compute the fitness of the solution based on [acc].
+     */
+    fun fitness(acc: T): Vec<DoubleArray>
 }

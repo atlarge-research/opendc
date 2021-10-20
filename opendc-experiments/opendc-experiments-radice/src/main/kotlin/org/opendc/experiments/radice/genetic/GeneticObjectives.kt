@@ -20,32 +20,30 @@
  * SOFTWARE.
  */
 
-@file:JvmName("RadiceCli")
-package org.opendc.experiments.radice
+@file:JvmName("GeneticObjectives")
+package org.opendc.experiments.radice.genetic
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.subcommands
-import com.typesafe.config.ConfigFactory
-
-/**
- * Main method of the application.
- */
-fun main(args: Array<String>): Unit = RadiceCommand().main(args)
+import io.jenetics.ext.moea.Vec
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics
+import org.opendc.telemetry.risk.RiskFactor
 
 /**
- * Represents the command for the radice experiments.
+ * Optimize the datacenter based on the total incurred costs.
  */
-internal class RadiceCommand : CliktCommand(name = "radice") {
-    /**
-     * The configuration for the experiments.
-     */
-    private val config = ConfigFactory.load().getConfig("opendc.experiments.radice")
+fun totalCosts(): GeneticObjective<DescriptiveStatistics> {
+    return object : GeneticObjective<DescriptiveStatistics> {
+        override fun createAccumulator(): DescriptiveStatistics = SynchronizedDescriptiveStatistics()
 
-    init {
-        subcommands(RadiceGenerateCommand(config))
-        subcommands(RadiceRunCommand(config))
-        subcommands(RadiceOptimizeCommand(config))
+        override fun add(acc: DescriptiveStatistics, result: Map<RiskFactor, Double>) {
+            val totalCosts = result.values.sum()
+            acc.addValue(totalCosts)
+        }
+
+        override fun fitness(acc: DescriptiveStatistics): Vec<DoubleArray> {
+            return Vec.of(acc.mean)
+        }
+
+        override fun toString(): String = "TotalCostsObjective"
     }
-
-    override fun run() {}
 }

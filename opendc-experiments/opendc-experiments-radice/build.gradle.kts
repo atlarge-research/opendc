@@ -48,6 +48,8 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.dataformat.yaml)
+    implementation(libs.jenetics.main)
+    implementation(libs.jenetics.ext)
 
     runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
     runtimeOnly(libs.log4j.slf4j)
