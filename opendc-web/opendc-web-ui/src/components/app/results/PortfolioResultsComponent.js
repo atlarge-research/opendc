@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Bar, CartesianGrid, ComposedChart, ErrorBar, ResponsiveContainer, Scatter, XAxis, YAxis } from 'recharts'
+import { Bar, CartesianGrid, ComposedChart, ErrorBar, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from 'recharts'
 import { AVAILABLE_METRICS, METRIC_NAMES_SHORT, METRIC_UNITS } from '../../../util/available-metrics'
 import { mean, std } from 'mathjs'
 import Shapes from '../../../shapes/index'
@@ -76,6 +76,7 @@ const PortfolioResultsComponent = ({ portfolio, scenarios }) => {
                                         direction="x"
                                     />
                                 </Scatter>
+                                <Tooltip/>
                             </ComposedChart>
                         </ResponsiveContainer>
                     </div>
