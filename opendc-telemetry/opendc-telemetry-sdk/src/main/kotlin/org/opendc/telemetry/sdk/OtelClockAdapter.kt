@@ -28,7 +28,7 @@ import io.opentelemetry.sdk.common.Clock
  * An adapter class that bridges a [java.time.Clock] to a [Clock]
  */
 public class OtelClockAdapter(private val clock: java.time.Clock) : Clock {
-    override fun now(): Long = clock.millis()
+    override fun now(): Long = nanoTime()
 
     override fun nanoTime(): Long = clock.millis() * 1_000_000L
 }
