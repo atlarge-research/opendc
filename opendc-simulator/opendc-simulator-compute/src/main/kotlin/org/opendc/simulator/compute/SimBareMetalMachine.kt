@@ -60,8 +60,12 @@ public class SimBareMetalMachine(
      * The total energy usage of the machine (without PSU loss) in Joules.
      */
     public val energyUsage: Double
-        get() = _energyUsage
+        get() {
+            computeEnergyUsage(engine.clock.millis())
+            return _energyUsage
+        }
     private var _energyUsage = 0.0
+    private var _energyLastComputation = 0L
 
     /**
      * The processing units of the machine.
@@ -86,13 +90,25 @@ public class SimBareMetalMachine(
         val duration = max(0, now - lastConverge)
         if (duration > 0) {
             // Compute the power and energy usage of the machine
-            _energyUsage += _powerUsage * (duration / 1000.0)
+            computeEnergyUsage(now)
             _powerUsage = powerDriverLogic.computePower()
         }
     }
 
     init {
         psu.connect(powerDriverLogic)
+        _powerUsage = powerDriverLogic.computePower()
+    }
+
+    /**
+     * Helper method to compute total energy usage.
+     */
+    private fun computeEnergyUsage(now: Long) {
+        val duration = max(0, now - _energyLastComputation)
+        _energyLastComputation = now
+
+        // Compute the energy usage of the machine
+        _energyUsage += _powerUsage * (duration / 1000.0)
     }
 
     /**

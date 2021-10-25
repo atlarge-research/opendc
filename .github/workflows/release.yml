@@ -24,9 +24,9 @@ jobs:
         run: chmod +x gradlew
       - uses: actions/cache@v2
         with:
-          path:|
-          ~/.gradle/caches
-          ~/.gradle/wrapper
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
           key: ${{ runner.os }}-${{ matrix.java }}-gradle-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.java }}-gradle-

@@ -24,6 +24,9 @@ package org.opendc.simulator.flow.internal
 
 /**
  * Specialized priority queue for flow timers.
+ *
+ * By using a specialized priority queue, we reduce the overhead caused by the default priority queue implementation
+ * being generic.
  */
 internal class FlowTimerQueue(initialCapacity: Int = 256) {
     /**
@@ -46,9 +49,11 @@ internal class FlowTimerQueue(initialCapacity: Int = 256) {
      */
     fun add(ctx: FlowConsumerContextImpl, deadline: Long) {
         val i = size
-        val deadlines = _deadlines
+        var deadlines = _deadlines
         if (i >= deadlines.size) {
             grow()
+            // Re-fetch the resized array
+            deadlines = _deadlines
         }
 
         siftUp(deadlines, _pending, i, ctx, deadline)

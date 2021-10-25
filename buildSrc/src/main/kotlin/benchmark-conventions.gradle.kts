@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+import me.champeau.jmh.JMHTask
 import org.jetbrains.kotlin.allopen.gradle.*
 
 plugins {
@@ -37,4 +38,19 @@ jmh {
 
     profilers.add("stack")
     profilers.add("gc")
+
+    includeTests.set(false) // Do not include tests by default
+}
+
+tasks.named("jmh", JMHTask::class) {
+    outputs.upToDateWhen { false } // XXX Do not cache the output of this task
+
+    testRuntimeClasspath.setFrom() // XXX Clear test runtime classpath to eliminate duplicate dependencies on classpath
+}
+
+dependencies {
+    constraints {
+        val libs = Libs(project)
+        jmh(libs["commons.math3"]) // XXX Force JMH to use the same commons-math3 version as OpenDC
+    }
 }
