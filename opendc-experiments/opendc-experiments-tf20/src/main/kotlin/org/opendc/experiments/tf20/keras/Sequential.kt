@@ -49,10 +49,10 @@ public class Sequential(vararg layers: Layer) : TrainableModel(*layers) {
     }
 
     override fun forward(): Double {
-        return layers.sumByDouble { it.forward() }
+        return layers.sumOf { it.forward() }
     }
 
     override fun backward(): Double {
-        return layers.sumByDouble { it.backward() }
+        return layers.sumOf { it.backward() }
     }
 }

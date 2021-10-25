@@ -47,8 +47,9 @@ class InternalServerTest {
     fun testEquality() {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
+
         val a = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
         val b = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
@@ -59,8 +60,8 @@ class InternalServerTest {
     fun testEqualityWithDifferentType() {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val a = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         val b = mockk<Server>(relaxUnitFun = true)
@@ -73,8 +74,8 @@ class InternalServerTest {
     fun testInequalityWithDifferentType() {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val a = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         val b = mockk<Server>(relaxUnitFun = true)
@@ -87,8 +88,8 @@ class InternalServerTest {
     fun testInequalityWithIncorrectType() {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val a = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         assertNotEquals(a, Unit)
@@ -98,11 +99,11 @@ class InternalServerTest {
     fun testStartTerminatedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
-        every { service.schedule(any()) } answers { ComputeServiceImpl.SchedulingRequest(it.invocation.args[0] as InternalServer) }
+        every { service.schedule(any()) } answers { ComputeServiceImpl.SchedulingRequest(it.invocation.args[0] as InternalServer, 0) }
 
         server.start()
 
@@ -114,8 +115,8 @@ class InternalServerTest {
     fun testStartDeletedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         server.state = ServerState.DELETED
@@ -127,8 +128,8 @@ class InternalServerTest {
     fun testStartProvisioningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         server.state = ServerState.PROVISIONING
@@ -142,8 +143,8 @@ class InternalServerTest {
     fun testStartRunningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         server.state = ServerState.RUNNING
@@ -157,10 +158,10 @@ class InternalServerTest {
     fun testStopProvisioningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
-        val request = ComputeServiceImpl.SchedulingRequest(server)
+        val request = ComputeServiceImpl.SchedulingRequest(server, 0)
 
         every { service.schedule(any()) } returns request
 
@@ -175,8 +176,8 @@ class InternalServerTest {
     fun testStopTerminatedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         server.state = ServerState.TERMINATED
@@ -189,8 +190,8 @@ class InternalServerTest {
     fun testStopDeletedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         server.state = ServerState.DELETED
@@ -203,8 +204,8 @@ class InternalServerTest {
     fun testStopRunningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>()
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
         val host = mockk<Host>(relaxUnitFun = true)
 
@@ -220,10 +221,10 @@ class InternalServerTest {
     fun testDeleteProvisioningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
-        val request = ComputeServiceImpl.SchedulingRequest(server)
+        val request = ComputeServiceImpl.SchedulingRequest(server, 0)
 
         every { service.schedule(any()) } returns request
 
@@ -239,8 +240,8 @@ class InternalServerTest {
     fun testDeleteTerminatedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         server.state = ServerState.TERMINATED
@@ -255,8 +256,8 @@ class InternalServerTest {
     fun testDeleteDeletedServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
 
         server.state = ServerState.DELETED
@@ -269,8 +270,8 @@ class InternalServerTest {
     fun testDeleteRunningServer() = runBlockingSimulation {
         val service = mockk<ComputeServiceImpl>(relaxUnitFun = true)
         val uid = UUID.randomUUID()
-        val flavor = mockk<InternalFlavor>()
-        val image = mockk<InternalImage>()
+        val flavor = mockFlavor()
+        val image = mockImage()
         val server = InternalServer(service, uid, "test", flavor, image, mutableMapOf(), mutableMapOf())
         val host = mockk<Host>(relaxUnitFun = true)
 
@@ -281,5 +282,21 @@ class InternalServerTest {
 
         coVerify { host.delete(server) }
         verify { service.delete(server) }
+    }
+
+    private fun mockFlavor(): InternalFlavor {
+        val flavor = mockk<InternalFlavor>()
+        every { flavor.name } returns "c5.large"
+        every { flavor.uid } returns UUID.randomUUID()
+        every { flavor.cpuCount } returns 2
+        every { flavor.memorySize } returns 4096
+        return flavor
+    }
+
+    private fun mockImage(): InternalImage {
+        val image = mockk<InternalImage>()
+        every { image.name } returns "ubuntu-20.04"
+        every { image.uid } returns UUID.randomUUID()
+        return image
     }
 }

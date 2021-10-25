@@ -22,13 +22,16 @@
 
 package org.opendc.experiments.serverless.trace
 
-import org.opendc.serverless.simulator.workload.SimServerlessWorkload
+import org.opendc.faas.simulator.workload.SimFaaSWorkload
+import org.opendc.simulator.compute.workload.SimTrace
+import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
- * A [SimServerlessWorkload] for a [FunctionTrace].
+ * A [SimFaaSWorkload] for a [FunctionTrace].
  */
-public class FunctionTraceWorkload(trace: FunctionTrace) : SimServerlessWorkload, SimWorkload by SimTraceWorkload(trace.samples.asSequence().map { SimTraceWorkload.Fragment(it.duration, it.cpuUsage, 1) }) {
+class FunctionTraceWorkload(trace: FunctionTrace) :
+    SimFaaSWorkload, SimWorkload by SimTraceWorkload(SimTrace.ofFragments(trace.samples.map { SimTraceFragment(it.timestamp, it.duration, it.cpuUsage, 1) })) {
     override suspend fun invoke() {}
 }

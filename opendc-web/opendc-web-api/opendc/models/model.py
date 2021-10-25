@@ -1,8 +1,7 @@
 from bson.objectid import ObjectId
+from werkzeug.exceptions import NotFound
 
-from opendc.util.database import DB
-from opendc.util.exceptions import ClientError
-from opendc.util.rest import Response
+from opendc.exts import db
 
 
 class Model:
@@ -15,15 +14,13 @@ class Model:
         """Fetches the document with given ID from the collection."""
         if isinstance(_id, str) and len(_id) == 24:
             _id = ObjectId(_id)
-        elif not isinstance(_id, ObjectId):
-            return cls(None)
 
-        return cls(DB.fetch_one({'_id': _id}, cls.collection_name))
+        return cls(db.fetch_one({'_id': _id}, cls.collection_name))
 
     @classmethod
     def get_all(cls):
         """Fetches all documents from the collection."""
-        return cls(DB.fetch_all({}, cls.collection_name))
+        return cls(db.fetch_all({}, cls.collection_name))
 
     def __init__(self, obj):
         self.obj = obj
@@ -35,7 +32,7 @@ class Model:
     def check_exists(self):
         """Raises an error if the enclosed object does not exist."""
         if self.obj is None:
-            raise ClientError(Response(404, 'Not found.'))
+            raise NotFound('Entity not found.')
 
     def set_property(self, key, value):
         """Sets the given property on the enclosed object, with support for simple nested access."""
@@ -48,11 +45,11 @@ class Model:
     def insert(self):
         """Inserts the enclosed object and generates a UUID for it."""
         self.obj['_id'] = ObjectId()
-        DB.insert(self.obj, self.collection_name)
+        db.insert(self.obj, self.collection_name)
 
     def update(self):
         """Updates the enclosed object and updates the internal reference to the newly inserted object."""
-        DB.update(self.get_id(), self.obj, self.collection_name)
+        db.update(self.get_id(), self.obj, self.collection_name)
 
     def delete(self):
         """Deletes the enclosed object in the database, if it existed."""
@@ -60,5 +57,5 @@ class Model:
             return None
 
         old_object = self.obj.copy()
-        DB.delete_one({'_id': self.get_id()}, self.collection_name)
+        db.delete_one({'_id': self.get_id()}, self.collection_name)
         return old_object

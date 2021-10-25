@@ -32,14 +32,9 @@ dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcServerless.opendcServerlessService)
-    implementation(projects.opendcServerless.opendcServerlessSimulator)
+    implementation(projects.opendcFaas.opendcFaasService)
+    implementation(projects.opendcFaas.opendcFaasSimulator)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
     implementation(libs.kotlin.logging)
     implementation(libs.config)
-
-    implementation(libs.parquet) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
 }

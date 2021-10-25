@@ -7,19 +7,7 @@
  * @returns {string} A human-friendly string version of that date and time.
  */
 export function parseAndFormatDateTime(dateTimeString) {
-    return formatDateTime(parseDateTime(dateTimeString))
-}
-
-/**
- * Parses date-time string representations and returns a parsed object.
- *
- * The format assumed is "YYYY-MM-DDTHH:MM:SS".
- *
- * @param dateTimeString A string expressing a date and a time, in the above mentioned format.
- * @returns {object} A Date object with the parsed date and time information as content.
- */
-export function parseDateTime(dateTimeString) {
-    return new Date(dateTimeString + '.000Z')
+    return formatDateTime(new Date(dateTimeString))
 }
 
 /**

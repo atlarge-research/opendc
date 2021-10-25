@@ -1,0 +1,16 @@
+{
+    "extends": ["next", "eslint:recommended"],
+    "env": {
+        "browser": true,
+        "node": true,
+        "es6": true
+    },
+    "overrides": [
+        {
+            "files": ["src/**/*.test.js"],
+            "env": {
+                "jest": true
+            }
+        }
+    ]
+}

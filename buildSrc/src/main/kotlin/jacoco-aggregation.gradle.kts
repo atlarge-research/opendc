@@ -1,7 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2019 atlarge-research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +35,10 @@ tasks.register<JacocoReport>("codeCoverageReport") {
     description = "Generates an aggregate report based on all subprojects"
 
     reports {
-        xml.isEnabled = true
-        xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+        xml.required.set(true)
+        xml.outputLocation.set(file("${buildDir}/reports/jacoco/report.xml"))
 
-        html.isEnabled = true
+        html.required.set(true)
     }
 
     subprojects {

@@ -22,7 +22,8 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.flow.StateFlow
+import org.opendc.simulator.compute.device.SimPeripheral
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.workload.SimWorkload
 
 /**
@@ -32,15 +33,15 @@ public interface SimMachine : AutoCloseable {
     /**
      * The model of the machine containing its specifications.
      */
-    public val model: SimMachineModel
+    public val model: MachineModel
 
     /**
-     * A [StateFlow] representing the CPU usage of the simulated machine.
+     * The peripherals attached to the machine.
      */
-    public val usage: StateFlow<Double>
+    public val peripherals: List<SimPeripheral>
 
     /**
-     * Run the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
+     * Converge the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
      */
     public suspend fun run(workload: SimWorkload, meta: Map<String, Any> = emptyMap())
 

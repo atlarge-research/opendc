@@ -23,19 +23,19 @@
 package org.opendc.simulator.compute
 
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.resources.SimResourceProvider
+import org.opendc.simulator.flow.FlowConsumer
 
 /**
  * A simulated processing unit.
  */
-public interface SimProcessingUnit : SimResourceProvider {
+public interface SimProcessingUnit : FlowConsumer {
+    /**
+     * The capacity of the processing unit, which can be adjusted by the workload if supported by the machine.
+     */
+    public override var capacity: Double
+
     /**
      *  The model representing the static properties of the processing unit.
      */
     public val model: ProcessingUnit
-
-    /**
-     * The current speed of the processing unit.
-     */
-    public val speed: Double
 }

@@ -28,16 +28,16 @@ tasks.test {
     useJUnitPlatform()
 
     reports {
-        html.isEnabled = true
-        junitXml.isEnabled = true
+        html.required.set(true)
+        junitXml.required.set(true)
     }
 }
 
 dependencies {
     val libs = Libs(project)
 
-    testImplementation(libs["junit-jupiter-api"])
-    testImplementation(libs["junit-jupiter-params"])
+    testImplementation(libs["junit.jupiter.api"])
+    testImplementation(libs["junit.jupiter.params"])
     testImplementation(libs["mockk"])
-    testRuntimeOnly(libs["junit-jupiter-engine"])
+    testRuntimeOnly(libs["junit.jupiter.engine"])
 }

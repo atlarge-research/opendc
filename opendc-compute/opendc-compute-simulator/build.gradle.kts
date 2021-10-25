@@ -33,11 +33,13 @@ dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcCompute.opendcComputeService)
     api(projects.opendcSimulator.opendcSimulatorCompute)
-    api(projects.opendcSimulator.opendcSimulatorFailures)
+    api(libs.commons.math3)
     implementation(projects.opendcUtils)
+    implementation(libs.opentelemetry.semconv)
     implementation(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    testImplementation(projects.opendcTelemetry.opendcTelemetryCompute)
     testRuntimeOnly(libs.slf4j.simple)
 }

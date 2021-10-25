@@ -1,8 +1,29 @@
+from marshmallow import Schema, fields, validate
+from werkzeug.exceptions import Forbidden
+
 from opendc.models.model import Model
-from opendc.models.user import User
-from opendc.util.database import DB
-from opendc.util.exceptions import ClientError
-from opendc.util.rest import Response
+from opendc.exts import db
+
+
+class ProjectAuthorizations(Schema):
+    """
+    Schema representing a project authorization.
+    """
+    userId = fields.String(required=True)
+    level = fields.String(required=True, validate=validate.OneOf(["VIEW", "EDIT", "OWN"]))
+
+
+class ProjectSchema(Schema):
+    """
+    Schema representing a Project.
+    """
+    _id = fields.String(dump_only=True)
+    name = fields.String(required=True)
+    datetimeCreated = fields.DateTime()
+    datetimeLastEdited = fields.DateTime()
+    topologyIds = fields.List(fields.String())
+    portfolioIds = fields.List(fields.String())
+    authorizations = fields.List(fields.Nested(ProjectAuthorizations))
 
 
 class Project(Model):
@@ -10,22 +31,18 @@ class Project(Model):
 
     collection_name = 'projects'
 
-    def check_user_access(self, google_id, edit_access):
-        """Raises an error if the user with given [google_id] has insufficient access.
+    def check_user_access(self, user_id, edit_access):
+        """Raises an error if the user with given [user_id] has insufficient access.
 
-        :param google_id: The Google ID of the user.
+        :param user_id: The User ID of the user.
         :param edit_access: True when edit access should be checked, otherwise view access.
         """
-        user = User.from_google_id(google_id)
-        authorizations = list(filter(lambda x: str(x['projectId']) == str(self.get_id()),
-                                     user.obj['authorizations']))
-        if len(authorizations) == 0 or (edit_access and authorizations[0]['authorizationLevel'] == 'VIEW'):
-            raise ClientError(Response(403, "Forbidden from retrieving project."))
+        for authorization in self.obj['authorizations']:
+            if user_id == authorization['userId'] and authorization['level'] != 'VIEW' or not edit_access:
+                return
+        raise Forbidden("Forbidden from retrieving project.")
 
-    def get_all_authorizations(self):
-        """Get all user IDs having access to this project."""
-        return [
-            str(user['_id']) for user in DB.fetch_all({'authorizations': {
-                'projectId': self.obj['_id']
-            }}, User.collection_name)
-        ]
+    @classmethod
+    def get_for_user(cls, user_id):
+        """Get all projects for the specified user id."""
+        return db.fetch_all({'authorizations.userId': user_id}, Project.collection_name)

@@ -23,38 +23,35 @@
 package org.opendc.experiments.capelin
 
 import com.typesafe.config.ConfigFactory
-import io.opentelemetry.sdk.metrics.export.MetricProducer
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
-import org.opendc.compute.service.scheduler.*
-import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
-import org.opendc.compute.service.scheduler.filters.ComputeFilter
-import org.opendc.compute.service.scheduler.weights.*
-import org.opendc.experiments.capelin.model.CompositeWorkload
+import org.opendc.compute.workload.ComputeWorkloadLoader
+import org.opendc.compute.workload.ComputeWorkloadRunner
+import org.opendc.compute.workload.createComputeScheduler
+import org.opendc.compute.workload.export.parquet.ParquetComputeMetricExporter
+import org.opendc.compute.workload.grid5000
+import org.opendc.compute.workload.topology.apply
+import org.opendc.compute.workload.util.PerformanceInterferenceReader
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.experiments.capelin.monitor.ParquetExperimentMonitor
-import org.opendc.experiments.capelin.trace.Sc20ParquetTraceReader
-import org.opendc.experiments.capelin.trace.Sc20RawParquetTraceReader
-import org.opendc.format.environment.sc20.Sc20ClusterEnvironmentReader
-import org.opendc.format.trace.PerformanceInterferenceModelReader
+import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.core.runBlockingSimulation
+import org.opendc.telemetry.compute.collectServiceMetrics
+import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import java.io.File
+import java.time.Duration
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.random.asKotlinRandom
+import kotlin.math.roundToLong
 
 /**
  * A portfolio represents a collection of scenarios are tested for the work.
  *
  * @param name The name of the portfolio.
  */
-public abstract class Portfolio(name: String) : Experiment(name) {
+abstract class Portfolio(name: String) : Experiment(name) {
     /**
      * The logger for this portfolio instance.
      */
@@ -71,147 +68,84 @@ public abstract class Portfolio(name: String) : Experiment(name) {
     private val vmPlacements by anyOf(emptyMap<String, String>())
 
     /**
-     * The path to the performance interference model.
-     */
-    private val performanceInterferenceModel by anyOf<PerformanceInterferenceModelReader?>(null)
-
-    /**
      * The topology to test.
      */
-    public abstract val topology: Topology
+    abstract val topology: Topology
 
     /**
      * The workload to test.
      */
-    public abstract val workload: Workload
+    abstract val workload: Workload
 
     /**
      * The operational phenomenas to consider.
      */
-    public abstract val operationalPhenomena: OperationalPhenomena
+    abstract val operationalPhenomena: OperationalPhenomena
 
     /**
      * The allocation policies to consider.
      */
-    public abstract val allocationPolicy: String
+    abstract val allocationPolicy: String
 
     /**
-     * A map of trace readers.
+     * A helper class to load workload traces.
      */
-    private val traceReaders = ConcurrentHashMap<String, Sc20RawParquetTraceReader>()
+    private val workloadLoader = ComputeWorkloadLoader(File(config.getString("trace-path")))
 
     /**
      * Perform a single trial for this portfolio.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val seeder = Random(repeat.toLong())
-        val environment = Sc20ClusterEnvironmentReader(File(config.getString("env-path"), "${topology.name}.txt"))
 
-        val chan = Channel<Unit>(Channel.CONFLATED)
-        val allocationPolicy = createComputeScheduler(seeder)
+        val performanceInterferenceModel = if (operationalPhenomena.hasInterference)
+            PerformanceInterferenceReader()
+                .read(File(config.getString("interference-model")))
+                .let { VmInterferenceModel(it, Random(seeder.nextLong())) }
+        else
+            null
 
-        val meterProvider = createMeterProvider(clock)
-        val workload = workload
-        val workloadNames = if (workload is CompositeWorkload) {
-            workload.workloads.map { it.name }
-        } else {
-            listOf(workload.name)
-        }
+        val computeScheduler = createComputeScheduler(allocationPolicy, seeder, vmPlacements)
+        val failureModel =
+            if (operationalPhenomena.failureFrequency > 0)
+                grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
+            else
+                null
+        val runner = ComputeWorkloadRunner(
+            coroutineContext,
+            clock,
+            computeScheduler,
+            failureModel,
+            performanceInterferenceModel
+        )
 
-        val rawReaders = workloadNames.map { workloadName ->
-            traceReaders.computeIfAbsent(workloadName) {
-                logger.info { "Loading trace $workloadName" }
-                Sc20RawParquetTraceReader(File(config.getString("trace-path"), workloadName))
-            }
-        }
-
-        val performanceInterferenceModel = performanceInterferenceModel
-            ?.takeIf { operationalPhenomena.hasInterference }
-            ?.construct(seeder.asKotlinRandom()) ?: emptyMap()
-        val trace = Sc20ParquetTraceReader(rawReaders, performanceInterferenceModel, workload, seeder.nextInt())
-
-        val monitor = ParquetExperimentMonitor(
+        val exporter = ParquetComputeMetricExporter(
             File(config.getString("output-path")),
             "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
             4096
         )
+        val metricReader = CoroutineMetricReader(this, runner.producers, exporter)
+        val topology = clusterTopology(File(config.getString("env-path"), "${topology.name}.txt"))
 
-        withComputeService(clock, meterProvider, environment, allocationPolicy) { scheduler ->
-            val failureDomain = if (operationalPhenomena.failureFrequency > 0) {
-                logger.debug("ENABLING failures")
-                createFailureDomain(
-                    this,
-                    clock,
-                    seeder.nextInt(),
-                    operationalPhenomena.failureFrequency,
-                    scheduler,
-                    chan
-                )
-            } else {
-                null
-            }
+        try {
+            // Instantiate the desired topology
+            runner.apply(topology)
 
-            withMonitor(monitor, clock, meterProvider as MetricProducer, scheduler) {
-                processTrace(
-                    clock,
-                    trace,
-                    scheduler,
-                    chan,
-                    monitor
-                )
-            }
-
-            failureDomain?.cancel()
+            // Converge the workload trace
+            runner.run(workload.source.resolve(workloadLoader, seeder), seeder.nextLong())
+        } finally {
+            runner.close()
+            metricReader.close()
         }
 
-        val monitorResults = collectMetrics(meterProvider as MetricProducer)
-        logger.debug { "Finish SUBMIT=${monitorResults.submittedVms} FAIL=${monitorResults.unscheduledVms} QUEUE=${monitorResults.queuedVms} RUNNING=${monitorResults.runningVms}" }
-    }
-
-    /**
-     * Create the [ComputeScheduler] instance to use for the trial.
-     */
-    private fun createComputeScheduler(seeder: Random): ComputeScheduler {
-        return when (allocationPolicy) {
-            "mem" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(MemoryWeigher() to -1.0)
-            )
-            "mem-inv" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(MemoryWeigher() to -1.0)
-            )
-            "core-mem" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(CoreMemoryWeigher() to -1.0)
-            )
-            "core-mem-inv" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(CoreMemoryWeigher() to -1.0)
-            )
-            "active-servers" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(ProvisionedCoresWeigher() to -1.0)
-            )
-            "active-servers-inv" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(InstanceCountWeigher() to 1.0)
-            )
-            "provisioned-cores" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(ProvisionedCoresWeigher() to -1.0)
-            )
-            "provisioned-cores-inv" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(ProvisionedCoresWeigher() to 1.0)
-            )
-            "random" -> FilterScheduler(
-                filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-                weighers = listOf(RandomWeigher(Random(seeder.nextLong())) to 1.0)
-            )
-            "replay" -> ReplayScheduler(vmPlacements)
-            else -> throw IllegalArgumentException("Unknown policy $allocationPolicy")
+        val monitorResults = collectServiceMetrics(runner.producers[0])
+        logger.debug {
+            "Scheduler " +
+                "Success=${monitorResults.attemptsSuccess} " +
+                "Failure=${monitorResults.attemptsFailure} " +
+                "Error=${monitorResults.attemptsError} " +
+                "Pending=${monitorResults.serversPending} " +
+                "Active=${monitorResults.serversActive}"
         }
     }
 }

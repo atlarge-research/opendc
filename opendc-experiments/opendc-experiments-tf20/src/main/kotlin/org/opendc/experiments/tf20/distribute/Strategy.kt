@@ -27,7 +27,7 @@ package org.opendc.experiments.tf20.distribute
  */
 public interface Strategy {
     /**
-     * Run the specified batch using the given strategy.
+     * Converge the specified batch using the given strategy.
      */
     public suspend fun run(forward: Double, backward: Double, batchSize: Int)
 }

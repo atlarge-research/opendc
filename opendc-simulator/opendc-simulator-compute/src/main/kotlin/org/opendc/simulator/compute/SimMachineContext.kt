@@ -22,19 +22,18 @@
 
 package org.opendc.simulator.compute
 
-import org.opendc.simulator.compute.model.MemoryUnit
-import java.time.Clock
+import org.opendc.simulator.flow.FlowEngine
 
 /**
  * A simulated execution context in which a bootable image runs. This interface represents the
  * firmware interface between the running image (e.g. operating system) and the physical or virtual firmware on
  * which the image runs.
  */
-public interface SimMachineContext {
+public interface SimMachineContext : AutoCloseable {
     /**
-     * The virtual clock tracking simulation time.
+     * The [FlowEngine] that simulates the machine.
      */
-    public val clock: Clock
+    public val engine: FlowEngine
 
     /**
      * The metadata associated with the context.
@@ -47,7 +46,22 @@ public interface SimMachineContext {
     public val cpus: List<SimProcessingUnit>
 
     /**
-     * The memory available on the machine
+     * The memory interface of the machine.
      */
-    public val memory: List<MemoryUnit>
+    public val memory: SimMemory
+
+    /**
+     * The network interfaces available to the workload.
+     */
+    public val net: List<SimNetworkInterface>
+
+    /**
+     * The storage devices available to the workload.
+     */
+    public val storage: List<SimStorageInterface>
+
+    /**
+     * Stop the workload.
+     */
+    public override fun close()
 }

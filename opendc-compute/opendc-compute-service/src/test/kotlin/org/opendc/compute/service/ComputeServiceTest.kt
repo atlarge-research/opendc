@@ -37,9 +37,10 @@ import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostModel
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.FilterScheduler
-import org.opendc.compute.service.scheduler.filters.ComputeCapabilitiesFilter
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
-import org.opendc.compute.service.scheduler.weights.MemoryWeigher
+import org.opendc.compute.service.scheduler.filters.RamFilter
+import org.opendc.compute.service.scheduler.filters.VCpuFilter
+import org.opendc.compute.service.scheduler.weights.RamWeigher
 import org.opendc.simulator.core.SimulationCoroutineScope
 import org.opendc.simulator.core.runBlockingSimulation
 import java.util.*
@@ -57,11 +58,10 @@ internal class ComputeServiceTest {
         scope = SimulationCoroutineScope()
         val clock = scope.clock
         val computeScheduler = FilterScheduler(
-            filters = listOf(ComputeFilter(), ComputeCapabilitiesFilter()),
-            weighers = listOf(MemoryWeigher() to -1.0)
+            filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
+            weighers = listOf(RamWeigher())
         )
-        val meter = MeterProvider.noop().get("opendc-compute")
-        service = ComputeService(scope.coroutineContext, clock, meter, computeScheduler)
+        service = ComputeService(scope.coroutineContext, clock, MeterProvider.noop(), computeScheduler)
     }
 
     @Test
@@ -167,9 +167,9 @@ internal class ComputeServiceTest {
         val server = client.newServer("test", image, flavor, start = false)
 
         server.start()
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
         server.refresh()
-        assertEquals(ServerState.ERROR, server.state)
+        assertEquals(ServerState.TERMINATED, server.state)
     }
 
     @Test
@@ -180,9 +180,9 @@ internal class ComputeServiceTest {
         val server = client.newServer("test", image, flavor, start = false)
 
         server.start()
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
         server.refresh()
-        assertEquals(ServerState.ERROR, server.state)
+        assertEquals(ServerState.TERMINATED, server.state)
     }
 
     @Test
@@ -193,9 +193,9 @@ internal class ComputeServiceTest {
         val server = client.newServer("test", image, flavor, start = false)
 
         server.start()
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
         server.refresh()
-        assertEquals(ServerState.ERROR, server.state)
+        assertEquals(ServerState.TERMINATED, server.state)
     }
 
     @Test
@@ -207,7 +207,7 @@ internal class ComputeServiceTest {
 
         server.start()
         server.stop()
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
         server.refresh()
         assertEquals(ServerState.TERMINATED, server.state)
     }
@@ -228,7 +228,7 @@ internal class ComputeServiceTest {
         val server = client.newServer("test", image, flavor, start = false)
 
         server.start()
-        delay(10 * 60 * 1000)
+        delay(10L * 60 * 1000)
         server.refresh()
         assertEquals(ServerState.PROVISIONING, server.state)
 
@@ -254,12 +254,12 @@ internal class ComputeServiceTest {
         val server = client.newServer("test", image, flavor, start = false)
 
         server.start()
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
 
         every { host.state } returns HostState.UP
         listeners.forEach { it.onStateChanged(host, HostState.UP) }
 
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
         server.refresh()
         assertEquals(ServerState.PROVISIONING, server.state)
 
@@ -284,13 +284,13 @@ internal class ComputeServiceTest {
         val image = client.newImage("test")
         val server = client.newServer("test", image, flavor, start = false)
 
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
 
         every { host.state } returns HostState.DOWN
         listeners.forEach { it.onStateChanged(host, HostState.DOWN) }
 
         server.start()
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
         server.refresh()
         assertEquals(ServerState.PROVISIONING, server.state)
 
@@ -344,7 +344,7 @@ internal class ComputeServiceTest {
 
         // Start server
         server.start()
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
         coVerify { host.spawn(capture(slot), true) }
 
         listeners.forEach { it.onStateChanged(host, slot.captured, ServerState.RUNNING) }
@@ -383,7 +383,7 @@ internal class ComputeServiceTest {
         val server = client.newServer("test", image, flavor, start = false)
 
         server.start()
-        delay(5 * 60 * 1000)
+        delay(5L * 60 * 1000)
 
         server.refresh()
         assertEquals(ServerState.PROVISIONING, server.state)

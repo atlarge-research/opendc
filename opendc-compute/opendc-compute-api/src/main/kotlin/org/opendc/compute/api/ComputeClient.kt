@@ -45,7 +45,7 @@ public interface ComputeClient : AutoCloseable {
      *
      * @param name The name of the flavor.
      * @param cpuCount The amount of CPU cores for this flavor.
-     * @param memorySize The size of the memory.
+     * @param memorySize The size of the memory in MB.
      * @param labels The identifying labels of the image.
      * @param meta The non-identifying meta-data of the image.
      */

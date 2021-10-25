@@ -23,72 +23,22 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.resources.SimResourceCommand
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceContext
-import org.opendc.simulator.resources.consumer.SimConsumerBarrier
 
 /**
  * A [SimWorkload] that replays a workload trace consisting of multiple fragments, each indicating the resource
  * consumption for some period of time.
+ *
+ * @param trace The trace of fragments to use.
+ * @param offset The offset for the timestamps.
  */
-public class SimTraceWorkload(public val trace: Sequence<Fragment>) : SimWorkload {
-    private var offset = Long.MIN_VALUE
-    private val iterator = trace.iterator()
-    private var fragment: Fragment? = null
-    private lateinit var barrier: SimConsumerBarrier
-
+public class SimTraceWorkload(private val trace: SimTrace, private val offset: Long = 0L) : SimWorkload {
     override fun onStart(ctx: SimMachineContext) {
-        check(offset == Long.MIN_VALUE) { "Workload does not support re-use" }
+        val lifecycle = SimWorkloadLifecycle(ctx)
 
-        barrier = SimConsumerBarrier(ctx.cpus.size)
-        fragment = nextFragment()
-        offset = ctx.clock.millis()
-    }
-
-    override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer {
-        return object : SimResourceConsumer {
-            override fun onNext(ctx: SimResourceContext): SimResourceCommand {
-                val now = ctx.clock.millis()
-                val fragment = fragment ?: return SimResourceCommand.Exit
-                val usage = fragment.usage / fragment.cores
-                val work = (fragment.duration / 1000) * usage
-                val deadline = offset + fragment.duration
-
-                assert(deadline >= now) { "Deadline already passed" }
-
-                val cmd =
-                    if (cpu.id < fragment.cores && work > 0.0)
-                        SimResourceCommand.Consume(work, usage, deadline)
-                    else
-                        SimResourceCommand.Idle(deadline)
-
-                if (barrier.enter()) {
-                    this@SimTraceWorkload.fragment = nextFragment()
-                    this@SimTraceWorkload.offset += fragment.duration
-                }
-
-                return cmd
-            }
+        for (cpu in ctx.cpus) {
+            cpu.startConsumer(lifecycle.waitFor(trace.newSource(cpu.model, offset)))
         }
     }
 
     override fun toString(): String = "SimTraceWorkload"
-
-    /**
-     * Obtain the next fragment.
-     */
-    private fun nextFragment(): Fragment? {
-        return if (iterator.hasNext()) {
-            iterator.next()
-        } else {
-            null
-        }
-    }
-
-    /**
-     * A fragment of the workload.
-     */
-    public data class Fragment(val duration: Long, val usage: Double, val cores: Int)
 }

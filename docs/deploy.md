@@ -5,18 +5,32 @@ running to deploy on a server.
 
 ## Contents
 
-1. [Preamble](#preamble)
+1. [Setting up Auth0](#setting-up-auth0)
 1. [Installing Docker](#installing-docker)
 1. [Running OpenDC from source](#running-opendc-from-source)
 
-## Preamble
+## Setting up Auth0
 
-To run OpenDC, you have to create a Google API Console project and client ID, which the OpenDC frontend and
-web server will use to authenticate users and requests.
-Follow [these steps](https://developers.google.com/identity/sign-in/web/sign-in) to make such a project. In the '
-Authorized JavaScript origins' and 'Authorized redirect URI' fields, be sure to add `http://localhost:8080` (frontend)
-, `http://localhost:8081` (api) and `https://localhost:3000` (frontend dev). Download the JSON of the OAuth 2.0 client
-ID you created from the Credentials tab, and specifically note the `client_id`, which you'll need to build OpenDC.
+OpenDC uses [Auth0](https://auth0.com) as Identity Provider so that OpenDC does not have to manage user data itself, 
+which greatly simplifies our frontend and backend implementation. We have chosen to use Auth0 as it is a well-known
+Identity Provider with good software support and a free tier for users to experiment with.
+
+To deploy OpenDC yourself, you need to have an [Auth0 tenant](https://auth0.com/docs/get-started/learn-the-basics) and
+create:
+
+1. **A Single Page Application (SPA)**  
+   You need to define the OpenDC frontend application in Auth0. Please see the [following guide](https://auth0.com/docs/quickstart/spa/react#configure-auth0)
+   on how you can define an SPA in Auth0. Make sure you have added the necessary URLs to the _Allowed Callback URLs_:
+   for a local deployment, you should add at least `http://localhost:3000, http://localhost:8080`.
+
+   Once your application has been created, you should have a _Domain_ and _Client ID_ which we need to pass to the
+   frontend application (as `OPENDC_AUTH0_DOMAIN` and `OPENDC_AUTH0_CLIENT_ID` respectively).
+2. **An API**  
+   You need to define the OpenDC API server in Auth0. Please refer to the [following guide](https://auth0.com/docs/quickstart/backend/python/01-authorization#create-an-api)
+   on how to define an API in Auth0.
+   
+   Remember the identifier you created the API with, as we need it in the next steps (as `OPENDC_AUTH0_AUDIENCE`).
+
 
 ## Installing Docker
 
@@ -36,8 +50,8 @@ cd opendc/
 ```
 
 In the directory you just entered, you need to set up a set of environment variables. To do this, create a file
-called `.env` in the `opendc` folder. In this file, replace `your-google-oauth-client-id` with your `client_id` from the
-OAuth client ID you created. For a standard setup, you can leave the other settings as-is.
+called `.env` in the `opendc` folder. In this file, replace `your-auth0-*` with the Auth0 details you got from the first
+step. For a standard setup, you can leave the other settings as-is.
 
 ```.env
 MONGO_INITDB_ROOT_USERNAME=root
@@ -47,7 +61,9 @@ OPENDC_DB=opendc
 OPENDC_DB_USERNAME=opendc
 OPENDC_DB_PASSWORD=opendcpassword
 OPENDC_FLASK_SECRET="This is a secret flask key, please change"
-OPENDC_OAUTH_CLIENT_ID=your-google-oauth-client-id
+OPENDC_AUTH0_DOMAIN=your-auth0-domain
+OPENDC_AUTH0_CLIENT_ID=your-auth0-client-id
+OPENDC_AUTH0_AUDIENCE=your-auth0-api-identifier
 OPENDC_API_BASE_URL=http://localhost:8081
 ```
 

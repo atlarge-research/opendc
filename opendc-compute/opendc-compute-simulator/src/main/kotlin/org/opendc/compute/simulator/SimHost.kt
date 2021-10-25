@@ -22,29 +22,34 @@
 
 package org.opendc.compute.simulator
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
-import io.opentelemetry.api.metrics.common.Labels
+import io.opentelemetry.api.metrics.MeterProvider
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
+import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
+import org.opendc.compute.simulator.internal.Guest
+import org.opendc.compute.simulator.internal.GuestListener
 import org.opendc.simulator.compute.*
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.ScalingDriver
-import org.opendc.simulator.compute.cpufreq.ScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
-import org.opendc.simulator.compute.interference.IMAGE_PERF_INTERFERENCE_MODEL
-import org.opendc.simulator.compute.interference.PerformanceInterferenceModel
+import org.opendc.simulator.compute.kernel.SimHypervisor
+import org.opendc.simulator.compute.kernel.SimHypervisorProvider
+import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
+import org.opendc.simulator.compute.kernel.cpufreq.ScalingGovernor
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceDomain
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
-import org.opendc.simulator.compute.power.PowerModel
-import org.opendc.simulator.failures.FailureDomain
-import java.time.Clock
+import org.opendc.simulator.compute.power.PowerDriver
+import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.flow.FlowEngine
 import java.util.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
 
 /**
  * A [Host] that is simulates virtual machines on a physical machine using [SimHypervisor].
@@ -52,34 +57,27 @@ import kotlin.coroutines.resume
 public class SimHost(
     override val uid: UUID,
     override val name: String,
-    model: SimMachineModel,
+    model: MachineModel,
     override val meta: Map<String, Any>,
     context: CoroutineContext,
-    clock: Clock,
-    meter: Meter,
-    hypervisor: SimHypervisorProvider,
-    scalingGovernor: ScalingGovernor,
-    scalingDriver: ScalingDriver,
+    engine: FlowEngine,
+    meterProvider: MeterProvider,
+    hypervisorProvider: SimHypervisorProvider,
+    scalingGovernor: ScalingGovernor = PerformanceScalingGovernor(),
+    powerDriver: PowerDriver = SimplePowerDriver(ConstantPowerModel(0.0)),
     private val mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-) : Host, FailureDomain, AutoCloseable {
-
-    public constructor(
-        uid: UUID,
-        name: String,
-        model: SimMachineModel,
-        meta: Map<String, Any>,
-        context: CoroutineContext,
-        clock: Clock,
-        meter: Meter,
-        hypervisor: SimHypervisorProvider,
-        powerModel: PowerModel = ConstantPowerModel(0.0),
-        mapper: SimWorkloadMapper = SimMetaWorkloadMapper(),
-    ) : this(uid, name, model, meta, context, clock, meter, hypervisor, PerformanceScalingGovernor(), SimpleScalingDriver(powerModel), mapper)
-
+    interferenceDomain: VmInterferenceDomain? = null,
+    private val optimize: Boolean = false
+) : Host, AutoCloseable {
     /**
      * The [CoroutineScope] of the host bounded by the lifecycle of the host.
      */
-    override val scope: CoroutineScope = CoroutineScope(context + Job())
+    private val scope: CoroutineScope = CoroutineScope(context + Job())
+
+    /**
+     * The clock instance used by the host.
+     */
+    private val clock = engine.clock
 
     /**
      * The logger instance of this server.
@@ -87,52 +85,31 @@ public class SimHost(
     private val logger = KotlinLogging.logger {}
 
     /**
+     * The [Meter] to track metrics of the simulated host.
+     */
+    private val meter = meterProvider.get("org.opendc.compute.simulator")
+
+    /**
      * The event listeners registered with this host.
      */
     private val listeners = mutableListOf<HostListener>()
 
     /**
-     * Current total memory use of the images on this hypervisor.
-     */
-    private var availableMemory: Long = model.memory.map { it.size }.sum()
-
-    /**
      * The machine to run on.
      */
-    public val machine: SimBareMetalMachine = SimBareMetalMachine(context, clock, model, scalingGovernor, scalingDriver)
+    public val machine: SimBareMetalMachine = SimBareMetalMachine(engine, model.optimize(), powerDriver)
 
     /**
      * The hypervisor to run multiple workloads.
      */
-    public val hypervisor: SimHypervisor = hypervisor.create(
-        scope.coroutineContext, clock,
-        object : SimHypervisor.Listener {
-            override fun onSliceFinish(
-                hypervisor: SimHypervisor,
-                requestedWork: Long,
-                grantedWork: Long,
-                overcommittedWork: Long,
-                interferedWork: Long,
-                cpuUsage: Double,
-                cpuDemand: Double
-            ) {
-
-                _batch.put(_cpuWork, requestedWork.toDouble())
-                _batch.put(_cpuWorkGranted, grantedWork.toDouble())
-                _batch.put(_cpuWorkOvercommit, overcommittedWork.toDouble())
-                _batch.put(_cpuWorkInterference, interferedWork.toDouble())
-                _batch.put(_cpuUsage, cpuUsage)
-                _batch.put(_cpuDemand, cpuDemand)
-                _batch.put(_cpuPower, machine.powerDraw)
-                _batch.record()
-            }
-        }
-    )
+    private val hypervisor: SimHypervisor = hypervisorProvider
+        .create(engine, scalingGovernor = scalingGovernor, interferenceDomain = interferenceDomain)
 
     /**
      * The virtual machines running on the hypervisor.
      */
     private val guests = HashMap<Server, Guest>()
+    private val _guests = mutableListOf<Guest>()
 
     override val state: HostState
         get() = _state
@@ -144,122 +121,98 @@ public class SimHost(
             field = value
         }
 
-    override val model: HostModel = HostModel(model.cpus.size, model.memory.map { it.size }.sum())
+    override val model: HostModel = HostModel(model.cpus.size, model.memory.sumOf { it.size })
 
     /**
-     * The number of guests on the host.
+     * The [GuestListener] that listens for guest events.
      */
-    private val _guests = meter.longUpDownCounterBuilder("guests.total")
-        .setDescription("Number of guests")
-        .setUnit("1")
-        .build()
-        .bind(Labels.of("host", uid.toString()))
+    private val guestListener = object : GuestListener {
+        override fun onStart(guest: Guest) {
+            listeners.forEach { it.onStateChanged(this@SimHost, guest.server, guest.state) }
+        }
 
-    /**
-     * The number of active guests on the host.
-     */
-    private val _activeGuests = meter.longUpDownCounterBuilder("guests.active")
-        .setDescription("Number of active guests")
-        .setUnit("1")
-        .build()
-        .bind(Labels.of("host", uid.toString()))
-
-    /**
-     * The CPU usage on the host.
-     */
-    private val _cpuUsage = meter.doubleValueRecorderBuilder("cpu.usage")
-        .setDescription("The amount of CPU resources used by the host")
-        .setUnit("MHz")
-        .build()
-
-    /**
-     * The CPU demand on the host.
-     */
-    private val _cpuDemand = meter.doubleValueRecorderBuilder("cpu.demand")
-        .setDescription("The amount of CPU resources the guests would use if there were no CPU contention or CPU limits")
-        .setUnit("MHz")
-        .build()
-
-    /**
-     * The requested work for the CPU.
-     */
-    private val _cpuPower = meter.doubleValueRecorderBuilder("power.usage")
-        .setDescription("The amount of power used by the CPU")
-        .setUnit("W")
-        .build()
-
-    /**
-     * The requested work for the CPU.
-     */
-    private val _cpuWork = meter.doubleValueRecorderBuilder("cpu.work.total")
-        .setDescription("The amount of work supplied to the CPU")
-        .setUnit("1")
-        .build()
-
-    /**
-     * The work actually performed by the CPU.
-     */
-    private val _cpuWorkGranted = meter.doubleValueRecorderBuilder("cpu.work.granted")
-        .setDescription("The amount of work performed by the CPU")
-        .setUnit("1")
-        .build()
-
-    /**
-     * The work that could not be performed by the CPU due to overcommitting resource.
-     */
-    private val _cpuWorkOvercommit = meter.doubleValueRecorderBuilder("cpu.work.overcommit")
-        .setDescription("The amount of work not performed by the CPU due to overcommitment")
-        .setUnit("1")
-        .build()
-
-    /**
-     * The work that could not be performed by the CPU due to interference.
-     */
-    private val _cpuWorkInterference = meter.doubleValueRecorderBuilder("cpu.work.interference")
-        .setDescription("The amount of work not performed by the CPU due to interference")
-        .setUnit("1")
-        .build()
-
-    /**
-     * The batch recorder used to record multiple metrics atomically.
-     */
-    private val _batch = meter.newBatchRecorder("host", uid.toString())
-
-    init {
-        // Launch hypervisor onto machine
-        scope.launch {
-            try {
-                _state = HostState.UP
-                machine.run(this@SimHost.hypervisor, emptyMap())
-            } catch (_: CancellationException) {
-                // Ignored
-            } catch (cause: Throwable) {
-                logger.error(cause) { "Host failed" }
-                throw cause
-            } finally {
-                _state = HostState.DOWN
-            }
+        override fun onStop(guest: Guest) {
+            listeners.forEach { it.onStateChanged(this@SimHost, guest.server, guest.state) }
         }
     }
 
+    /**
+     * The [Job] that represents the machine running the hypervisor.
+     */
+    private var _job: Job? = null
+
+    init {
+        launch()
+
+        meter.upDownCounterBuilder("system.guests")
+            .setDescription("Number of guests on this host")
+            .setUnit("1")
+            .buildWithCallback(::collectGuests)
+        meter.gaugeBuilder("system.cpu.limit")
+            .setDescription("Amount of CPU resources available to the host")
+            .buildWithCallback(::collectCpuLimit)
+        meter.gaugeBuilder("system.cpu.demand")
+            .setDescription("Amount of CPU resources the guests would use if there were no CPU contention or CPU limits")
+            .setUnit("MHz")
+            .buildWithCallback { result -> result.observe(hypervisor.cpuDemand) }
+        meter.gaugeBuilder("system.cpu.usage")
+            .setDescription("Amount of CPU resources used by the host")
+            .setUnit("MHz")
+            .buildWithCallback { result -> result.observe(hypervisor.cpuUsage) }
+        meter.gaugeBuilder("system.cpu.utilization")
+            .setDescription("Utilization of the CPU resources of the host")
+            .setUnit("%")
+            .buildWithCallback { result -> result.observe(hypervisor.cpuUsage / _cpuLimit) }
+        meter.counterBuilder("system.cpu.time")
+            .setDescription("Amount of CPU time spent by the host")
+            .setUnit("s")
+            .buildWithCallback(::collectCpuTime)
+        meter.gaugeBuilder("system.power.usage")
+            .setDescription("Power usage of the host ")
+            .setUnit("W")
+            .buildWithCallback { result -> result.observe(machine.powerUsage) }
+        meter.counterBuilder("system.power.total")
+            .setDescription("Amount of energy used by the CPU")
+            .setUnit("J")
+            .ofDoubles()
+            .buildWithCallback { result -> result.observe(machine.energyUsage) }
+        meter.counterBuilder("system.time")
+            .setDescription("The uptime of the host")
+            .setUnit("s")
+            .buildWithCallback(::collectUptime)
+        meter.gaugeBuilder("system.time.boot")
+            .setDescription("The boot time of the host")
+            .setUnit("1")
+            .ofLongs()
+            .buildWithCallback(::collectBootTime)
+    }
+
     override fun canFit(server: Server): Boolean {
-        val sufficientMemory = availableMemory > server.flavor.memorySize
-        val enoughCpus = machine.model.cpus.size >= server.flavor.cpuCount
+        val sufficientMemory = model.memorySize >= server.flavor.memorySize
+        val enoughCpus = model.cpuCount >= server.flavor.cpuCount
         val canFit = hypervisor.canFit(server.flavor.toMachineModel())
 
         return sufficientMemory && enoughCpus && canFit
     }
 
     override suspend fun spawn(server: Server, start: Boolean) {
-        // Return if the server already exists on this host
-        if (server in this) {
-            return
-        }
+        val guest = guests.computeIfAbsent(server) { key ->
+            require(canFit(key)) { "Server does not fit" }
 
-        require(canFit(server)) { "Server does not fit" }
-        val guest = Guest(server, hypervisor.createMachine(server.flavor.toMachineModel()))
-        guests[server] = guest
-        _guests.add(1)
+            val machine = hypervisor.createMachine(key.flavor.toMachineModel(), key.name)
+            val newGuest = Guest(
+                scope.coroutineContext,
+                clock,
+                this,
+                mapper,
+                guestListener,
+                server,
+                machine
+            )
+
+            _guests.add(newGuest)
+            newGuest
+        }
 
         if (start) {
             guest.start()
@@ -281,9 +234,8 @@ public class SimHost(
     }
 
     override suspend fun delete(server: Server) {
-        val guest = guests.remove(server) ?: return
-        guest.terminate()
-        _guests.add(-1)
+        val guest = guests[server] ?: return
+        guest.delete()
     }
 
     override fun addListener(listener: HostListener) {
@@ -295,130 +247,233 @@ public class SimHost(
     }
 
     override fun close() {
+        reset()
         scope.cancel()
         machine.close()
     }
 
     override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
 
+    public suspend fun fail() {
+        reset()
+
+        for (guest in _guests) {
+            guest.fail()
+        }
+    }
+
+    public suspend fun recover() {
+        updateUptime()
+
+        launch()
+
+        // Wait for the hypervisor to launch before recovering the guests
+        yield()
+
+        for (guest in _guests) {
+            guest.recover()
+        }
+    }
+
+    /**
+     * Launch the hypervisor.
+     */
+    private fun launch() {
+        check(_job == null) { "Concurrent hypervisor running" }
+
+        // Launch hypervisor onto machine
+        _job = scope.launch {
+            try {
+                _bootTime = clock.millis()
+                _state = HostState.UP
+                machine.run(hypervisor, emptyMap())
+            } catch (_: CancellationException) {
+                // Ignored
+            } catch (cause: Throwable) {
+                logger.error(cause) { "Host failed" }
+                throw cause
+            } finally {
+                _state = HostState.DOWN
+            }
+        }
+    }
+
+    /**
+     * Reset the machine.
+     */
+    private fun reset() {
+        updateUptime()
+
+        // Stop the hypervisor
+        val job = _job
+        if (job != null) {
+            job.cancel()
+            _job = null
+        }
+
+        _state = HostState.DOWN
+    }
+
     /**
      * Convert flavor to machine model.
      */
-    private fun Flavor.toMachineModel(): SimMachineModel {
+    private fun Flavor.toMachineModel(): MachineModel {
         val originalCpu = machine.model.cpus[0]
         val processingNode = originalCpu.node.copy(coreCount = cpuCount)
         val processingUnits = (0 until cpuCount).map { originalCpu.copy(id = it, node = processingNode) }
         val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
 
-        return SimMachineModel(processingUnits, memoryUnits)
-    }
-
-    private fun onGuestStart(vm: Guest) {
-        guests.forEach { (_, guest) ->
-            if (guest.state == ServerState.RUNNING) {
-                vm.performanceInterferenceModel?.onStart(vm.server.image.name)
-            }
-        }
-
-        _activeGuests.add(1)
-        listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
-    }
-
-    private fun onGuestStop(vm: Guest) {
-        guests.forEach { (_, guest) ->
-            if (guest.state == ServerState.RUNNING) {
-                vm.performanceInterferenceModel?.onStop(vm.server.image.name)
-            }
-        }
-
-        _activeGuests.add(-1)
-        listeners.forEach { it.onStateChanged(this, vm.server, vm.state) }
-    }
-
-    override suspend fun fail() {
-        _state = HostState.DOWN
-    }
-
-    override suspend fun recover() {
-        _state = HostState.UP
+        return MachineModel(processingUnits, memoryUnits).optimize()
     }
 
     /**
-     * A virtual machine instance that the driver manages.
+     * Optimize the [MachineModel] for simulation.
      */
-    private inner class Guest(val server: Server, val machine: SimMachine) {
-        val performanceInterferenceModel: PerformanceInterferenceModel? = server.meta[IMAGE_PERF_INTERFERENCE_MODEL] as? PerformanceInterferenceModel?
+    private fun MachineModel.optimize(): MachineModel {
+        if (!optimize) {
+            return this
+        }
 
-        var state: ServerState = ServerState.TERMINATED
+        val originalCpu = cpus[0]
+        val freq = cpus.sumOf { it.frequency }
+        val processingNode = originalCpu.node.copy(coreCount = 1)
+        val processingUnits = listOf(originalCpu.copy(frequency = freq, node = processingNode))
 
-        suspend fun start() {
-            when (state) {
-                ServerState.TERMINATED -> {
-                    logger.info { "User requested to start server ${server.uid}" }
-                    launch()
-                }
-                ServerState.RUNNING -> return
+        val memorySize = memory.sumOf { it.size }
+        val memoryUnits = listOf(MemoryUnit("Generic", "Generic", 3200.0, memorySize))
+
+        return MachineModel(processingUnits, memoryUnits)
+    }
+
+    private val STATE_KEY = AttributeKey.stringKey("state")
+
+    private val terminatedState = Attributes.of(STATE_KEY, "terminated")
+    private val runningState = Attributes.of(STATE_KEY, "running")
+    private val errorState = Attributes.of(STATE_KEY, "error")
+    private val invalidState = Attributes.of(STATE_KEY, "invalid")
+
+    /**
+     * Helper function to collect the guest counts on this host.
+     */
+    private fun collectGuests(result: ObservableLongMeasurement) {
+        var terminated = 0L
+        var running = 0L
+        var error = 0L
+        var invalid = 0L
+
+        val guests = _guests.listIterator()
+        for (guest in guests) {
+            when (guest.state) {
+                ServerState.TERMINATED -> terminated++
+                ServerState.RUNNING -> running++
+                ServerState.ERROR -> error++
                 ServerState.DELETED -> {
-                    logger.warn { "User tried to start terminated server" }
-                    throw IllegalArgumentException("Server is terminated")
+                    // Remove guests that have been deleted
+                    this.guests.remove(guest.server)
+                    guests.remove()
                 }
-                else -> assert(false) { "Invalid state transition" }
+                else -> invalid++
             }
         }
 
-        suspend fun stop() {
-            when (state) {
-                ServerState.RUNNING, ServerState.ERROR -> {
-                    val job = job ?: throw IllegalStateException("Server should be active")
-                    job.cancel()
-                    job.join()
-                }
-                ServerState.TERMINATED, ServerState.DELETED -> return
-                else -> assert(false) { "Invalid state transition" }
-            }
+        result.observe(terminated, terminatedState)
+        result.observe(running, runningState)
+        result.observe(error, errorState)
+        result.observe(invalid, invalidState)
+    }
+
+    private val _cpuLimit = machine.model.cpus.sumOf { it.frequency }
+
+    /**
+     * Helper function to collect the CPU limits of a machine.
+     */
+    private fun collectCpuLimit(result: ObservableDoubleMeasurement) {
+        result.observe(_cpuLimit)
+
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].collectCpuLimit(result)
+        }
+    }
+
+    private val _activeState = Attributes.of(STATE_KEY, "active")
+    private val _stealState = Attributes.of(STATE_KEY, "steal")
+    private val _lostState = Attributes.of(STATE_KEY, "lost")
+    private val _idleState = Attributes.of(STATE_KEY, "idle")
+
+    /**
+     * Helper function to track the CPU time of a machine.
+     */
+    private fun collectCpuTime(result: ObservableLongMeasurement) {
+        val counters = hypervisor.counters
+
+        result.observe(counters.cpuActiveTime / 1000L, _activeState)
+        result.observe(counters.cpuIdleTime / 1000L, _idleState)
+        result.observe(counters.cpuStealTime / 1000L, _stealState)
+        result.observe(counters.cpuLostTime / 1000L, _lostState)
+
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].collectCpuTime(result)
+        }
+    }
+
+    private var _lastReport = clock.millis()
+
+    /**
+     * Helper function to track the uptime of a machine.
+     */
+    private fun updateUptime() {
+        val now = clock.millis()
+        val duration = now - _lastReport
+        _lastReport = now
+
+        if (_state == HostState.UP) {
+            _uptime += duration
+        } else if (_state == HostState.DOWN && scope.isActive) {
+            // Only increment downtime if the machine is in a failure state
+            _downtime += duration
         }
 
-        suspend fun terminate() {
-            stop()
-            state = ServerState.DELETED
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].updateUptime(duration)
+        }
+    }
+
+    private var _uptime = 0L
+    private var _downtime = 0L
+    private val _upState = Attributes.of(STATE_KEY, "up")
+    private val _downState = Attributes.of(STATE_KEY, "down")
+
+    /**
+     * Helper function to track the uptime of a machine.
+     */
+    private fun collectUptime(result: ObservableLongMeasurement) {
+        updateUptime()
+
+        result.observe(_uptime, _upState)
+        result.observe(_downtime, _downState)
+
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].collectUptime(result)
+        }
+    }
+
+    private var _bootTime = Long.MIN_VALUE
+
+    /**
+     * Helper function to track the boot time of a machine.
+     */
+    private fun collectBootTime(result: ObservableLongMeasurement) {
+        if (_bootTime != Long.MIN_VALUE) {
+            result.observe(_bootTime)
         }
 
-        private var job: Job? = null
-
-        private suspend fun launch() = suspendCancellableCoroutine<Unit> { cont ->
-            assert(job == null) { "Concurrent job running" }
-            val workload = mapper.createWorkload(server)
-
-            job = scope.launch {
-                delay(1) // TODO Introduce boot time
-                init()
-                cont.resume(Unit)
-                try {
-                    machine.run(workload, mapOf("driver" to this@SimHost, "server" to server))
-                    exit(null)
-                } catch (cause: Throwable) {
-                    exit(cause)
-                } finally {
-                    machine.close()
-                    job = null
-                }
-            }
-        }
-
-        private fun init() {
-            state = ServerState.RUNNING
-            onGuestStart(this)
-        }
-
-        private fun exit(cause: Throwable?) {
-            state =
-                if (cause == null)
-                    ServerState.TERMINATED
-                else
-                    ServerState.ERROR
-
-            availableMemory += server.flavor.memorySize
-            onGuestStop(this)
+        val guests = _guests
+        for (i in guests.indices) {
+            guests[i].collectBootTime(result)
         }
     }
 }

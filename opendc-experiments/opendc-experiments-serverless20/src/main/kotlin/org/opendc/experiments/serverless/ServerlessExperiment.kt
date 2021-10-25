@@ -31,21 +31,22 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.opendc.experiments.serverless.trace.FunctionTraceWorkload
 import org.opendc.experiments.serverless.trace.ServerlessTraceReader
+import org.opendc.faas.service.FaaSService
+import org.opendc.faas.service.autoscaler.FunctionTerminationPolicyFixed
+import org.opendc.faas.service.router.RandomRoutingPolicy
+import org.opendc.faas.simulator.SimFunctionDeployer
+import org.opendc.faas.simulator.delay.ColdStartModel
+import org.opendc.faas.simulator.delay.StochasticDelayInjector
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
-import org.opendc.serverless.service.ServerlessService
-import org.opendc.serverless.service.autoscaler.FunctionTerminationPolicyFixed
-import org.opendc.serverless.service.router.RandomRoutingPolicy
-import org.opendc.serverless.simulator.SimFunctionDeployer
-import org.opendc.serverless.simulator.delay.ColdStartModel
-import org.opendc.serverless.simulator.delay.StochasticDelayInjector
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
+import java.time.Duration
 import java.util.*
 import kotlin.math.max
 
@@ -85,7 +86,7 @@ public class ServerlessExperiment : Experiment("Serverless") {
         val delayInjector = StochasticDelayInjector(coldStartModel, Random())
         val deployer = SimFunctionDeployer(clock, this, createMachineModel(), delayInjector) { FunctionTraceWorkload(traceById.getValue(it.name)) }
         val service =
-            ServerlessService(coroutineContext, clock, meterProvider.get("opendc-serverless"), deployer, routingPolicy, FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = 10 * 60 * 1000))
+            FaaSService(coroutineContext, clock, meterProvider, deployer, routingPolicy, FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = Duration.ofMinutes(10)))
         val client = service.newClient()
 
         coroutineScope {
@@ -122,10 +123,10 @@ public class ServerlessExperiment : Experiment("Serverless") {
     /**
      * Construct the machine model to test with.
      */
-    private fun createMachineModel(): SimMachineModel {
+    private fun createMachineModel(): MachineModel {
         val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
 
-        return SimMachineModel(
+        return MachineModel(
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )

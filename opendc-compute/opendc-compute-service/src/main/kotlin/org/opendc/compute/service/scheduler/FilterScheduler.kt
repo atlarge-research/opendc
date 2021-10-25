@@ -26,6 +26,8 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.service.internal.HostView
 import org.opendc.compute.service.scheduler.filters.HostFilter
 import org.opendc.compute.service.scheduler.weights.HostWeigher
+import java.util.*
+import kotlin.math.min
 
 /**
  * A [ComputeScheduler] implementation that uses filtering and weighing passes to select
@@ -33,12 +35,26 @@ import org.opendc.compute.service.scheduler.weights.HostWeigher
  *
  * This implementation is based on the filter scheduler from OpenStack Nova.
  * See: https://docs.openstack.org/nova/latest/user/filter-scheduler.html
+ *
+ * @param filters The list of filters to apply when searching for an appropriate host.
+ * @param weighers The list of weighers to apply when searching for an appropriate host.
+ * @param subsetSize The size of the subset of best hosts from which a target is randomly chosen.
+ * @param random A [Random] instance for selecting
  */
-public class FilterScheduler(private val filters: List<HostFilter>, private val weighers: List<Pair<HostWeigher, Double>>) : ComputeScheduler {
+public class FilterScheduler(
+    private val filters: List<HostFilter>,
+    private val weighers: List<HostWeigher>,
+    private val subsetSize: Int = 1,
+    private val random: Random = Random(0)
+) : ComputeScheduler {
     /**
      * The pool of hosts available to the scheduler.
      */
     private val hosts = mutableListOf<HostView>()
+
+    init {
+        require(subsetSize >= 1) { "Subset size must be one or greater" }
+    }
 
     override fun addHost(host: HostView) {
         hosts.add(host)
@@ -49,18 +65,44 @@ public class FilterScheduler(private val filters: List<HostFilter>, private val 
     }
 
     override fun select(server: Server): HostView? {
-        return hosts.asSequence()
-            .filter { host ->
-                for (filter in filters) {
-                    if (!filter.test(host, server))
-                        return@filter false
+        val hosts = hosts
+        val filteredHosts = hosts.filter { host -> filters.all { filter -> filter.test(host, server) } }
+
+        val subset = if (weighers.isNotEmpty()) {
+            val results = weighers.map { it.getWeights(filteredHosts, server) }
+            val weights = DoubleArray(filteredHosts.size)
+
+            for (result in results) {
+                val min = result.min
+                val range = (result.max - min)
+
+                // Skip result if all weights are the same
+                if (range == 0.0) {
+                    continue
                 }
 
-                true
+                val multiplier = result.multiplier
+                val factor = multiplier / range
+
+                for ((i, weight) in result.weights.withIndex()) {
+                    weights[i] += factor * (weight - min)
+                }
             }
-            .sortedByDescending { host ->
-                weighers.sumByDouble { (weigher, factor) -> weigher.getWeight(host, server) * factor }
-            }
-            .firstOrNull()
+
+            weights.indices
+                .asSequence()
+                .sortedByDescending { weights[it] }
+                .map { filteredHosts[it] }
+                .take(subsetSize)
+                .toList()
+        } else {
+            filteredHosts
+        }
+
+        return when (val maxSize = min(subsetSize, subset.size)) {
+            0 -> null
+            1 -> subset[0]
+            else -> subset[random.nextInt(maxSize)]
+        }
     }
 }

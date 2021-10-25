@@ -22,7 +22,7 @@
 
 package org.opendc.workflow.service
 
-import io.opentelemetry.api.metrics.Meter
+import io.opentelemetry.api.metrics.MeterProvider
 import org.opendc.compute.api.ComputeClient
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
@@ -62,7 +62,7 @@ public interface WorkflowService : AutoCloseable {
          * @param context The [CoroutineContext] to use in the service.
          * @param clock The clock instance to use.
          * @param tracer The event tracer to use.
-         * @param meter The meter to use.
+         * @param meterProvider The meter provider to use.
          * @param compute The compute client to use.
          * @param mode The scheduling mode to use.
          * @param jobAdmissionPolicy The job admission policy to use.
@@ -73,7 +73,7 @@ public interface WorkflowService : AutoCloseable {
         public operator fun invoke(
             context: CoroutineContext,
             clock: Clock,
-            meter: Meter,
+            meterProvider: MeterProvider,
             compute: ComputeClient,
             mode: WorkflowSchedulerMode,
             jobAdmissionPolicy: JobAdmissionPolicy,
@@ -84,7 +84,7 @@ public interface WorkflowService : AutoCloseable {
             return WorkflowServiceImpl(
                 context,
                 clock,
-                meter,
+                meterProvider,
                 compute,
                 mode,
                 jobAdmissionPolicy,

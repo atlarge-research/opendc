@@ -25,9 +25,7 @@ package org.opendc.experiments.tf20.util
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.opendc.format.environment.EnvironmentReader
-import org.opendc.format.environment.MachineDef
-import org.opendc.simulator.compute.SimMachineModel
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
@@ -36,13 +34,16 @@ import java.io.InputStream
 import java.util.*
 
 /**
- * An [EnvironmentReader] for the TensorFlow experiments.
+ * An environment reader for the TensorFlow experiments.
  */
-public class MLEnvironmentReader(input: InputStream, mapper: ObjectMapper = jacksonObjectMapper()) : EnvironmentReader {
+public class MLEnvironmentReader {
+    /**
+     * The [ObjectMapper] to convert the format.
+     */
+    private val mapper = jacksonObjectMapper()
 
-    private val setup: Setup = mapper.readValue(input)
-
-    override fun read(): List<MachineDef> {
+    public fun readEnvironment(input: InputStream): List<MachineDef> {
+        val setup: Setup = mapper.readValue(input)
         var counter = 0
         return setup.rooms.flatMap { room ->
             room.objects.flatMap { roomObject ->
@@ -100,7 +101,7 @@ public class MLEnvironmentReader(input: InputStream, mapper: ObjectMapper = jack
                                 UUID(0, counter.toLong()),
                                 "node-${counter++}",
                                 mapOf("gpu" to isGpuFlag),
-                                SimMachineModel(cores, memories),
+                                MachineModel(cores, memories),
                                 LinearPowerModel(maxPower, minPower)
                             )
                         }
@@ -109,6 +110,4 @@ public class MLEnvironmentReader(input: InputStream, mapper: ObjectMapper = jack
             }
         }
     }
-
-    override fun close() {}
 }

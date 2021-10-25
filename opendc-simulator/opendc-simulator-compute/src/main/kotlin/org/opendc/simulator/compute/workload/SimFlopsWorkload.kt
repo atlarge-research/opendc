@@ -23,9 +23,7 @@
 package org.opendc.simulator.compute.workload
 
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.consumer.SimWorkConsumer
+import org.opendc.simulator.flow.source.FixedFlowSource
 
 /**
  * A [SimWorkload] that models applications as a static number of floating point operations ([flops]) executed on
@@ -43,10 +41,11 @@ public class SimFlopsWorkload(
         require(utilization > 0.0 && utilization <= 1.0) { "Utilization must be in (0, 1]" }
     }
 
-    override fun onStart(ctx: SimMachineContext) {}
-
-    override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer {
-        return SimWorkConsumer(flops.toDouble() / ctx.cpus.size, utilization)
+    override fun onStart(ctx: SimMachineContext) {
+        val lifecycle = SimWorkloadLifecycle(ctx)
+        for (cpu in ctx.cpus) {
+            cpu.startConsumer(lifecycle.waitFor(FixedFlowSource(flops.toDouble() / ctx.cpus.size, utilization)))
+        }
     }
 
     override fun toString(): String = "SimFlopsWorkload(FLOPs=$flops,utilization=$utilization)"

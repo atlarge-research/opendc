@@ -39,8 +39,8 @@ dependencies {
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcCompute.opendcComputeSimulator)
-    testImplementation(projects.opendcFormat)
+    testImplementation(projects.opendcTrace.opendcTraceApi)
     testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testImplementation(libs.jackson.module.kotlin)
+    testRuntimeOnly(projects.opendcTrace.opendcTraceGwf)
     testRuntimeOnly(libs.log4j.slf4j)
 }

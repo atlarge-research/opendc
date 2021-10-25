@@ -26,26 +26,29 @@ description = "Experiments for the Capelin work"
 plugins {
     `experiment-conventions`
     `testing-conventions`
+    `benchmark-conventions`
 }
 
 dependencies {
     api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcFormat)
+    api(projects.opendcCompute.opendcComputeWorkload)
+
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcSimulator.opendcSimulatorFailures)
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
 
-    implementation(libs.kotlin.logging)
     implementation(libs.config)
-    implementation(libs.progressbar)
-    implementation(libs.clikt)
+    implementation(libs.kotlin.logging)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.dataformat.csv)
+    implementation(kotlin("reflect"))
+    implementation(libs.opentelemetry.semconv)
 
-    implementation(libs.parquet)
-    implementation(libs.hadoop.client) {
-        exclude(group = "org.slf4j", module = "slf4j-log4j12")
-        exclude(group = "log4j")
-    }
+    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
+
+    testImplementation(libs.log4j.slf4j)
 }

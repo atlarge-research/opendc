@@ -25,26 +25,34 @@ description = "Experiment runner for OpenDC"
 /* Build configuration */
 plugins {
     `kotlin-conventions`
+    `testing-conventions`
     application
 }
 
 application {
-    mainClass.set("org.opendc.runner.web.MainKt")
+    mainClass.set("org.opendc.web.runner.MainKt")
 }
 
 dependencies {
     api(platform(projects.opendcPlatform))
     implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcFormat)
-    implementation(projects.opendcExperiments.opendcExperimentsCapelin)
+    implementation(projects.opendcCompute.opendcComputeWorkload)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
+    implementation(projects.opendcTrace.opendcTraceApi)
 
     implementation(libs.kotlin.logging)
     implementation(libs.clikt)
-    implementation(libs.jackson.module.kotlin)
     implementation(libs.sentry.log4j2)
-    implementation(libs.mongodb)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.auth)
+    implementation(libs.ktor.client.jackson)
+    implementation(libs.jackson.datatype.jsr310)
+    implementation(kotlin("reflect"))
 
+    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
     runtimeOnly(libs.log4j.slf4j)
+
+    testImplementation(libs.ktor.client.mock)
 }

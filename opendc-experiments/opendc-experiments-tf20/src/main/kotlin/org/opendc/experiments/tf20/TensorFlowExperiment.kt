@@ -55,7 +55,8 @@ public class TensorFlowExperiment : Experiment(name = "tf20") {
             .build()
         val meter = meterProvider.get("opendc-tf20")
 
-        val def = MLEnvironmentReader(TensorFlowExperiment::class.java.getResourceAsStream(environmentFile)).read().first()
+        val envInput = checkNotNull(TensorFlowExperiment::class.java.getResourceAsStream(environmentFile))
+        val def = MLEnvironmentReader().readEnvironment(envInput).first()
         val device = SimTFDevice(
             def.uid, def.meta["gpu"] as Boolean, coroutineContext, clock, meter, def.model.cpus[0],
             def.model.memory[0], LinearPowerModel(250.0, 60.0)

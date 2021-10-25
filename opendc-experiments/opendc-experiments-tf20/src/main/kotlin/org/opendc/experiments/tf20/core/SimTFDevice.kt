@@ -22,28 +22,26 @@
 
 package org.opendc.experiments.tf20.core
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
-import io.opentelemetry.api.metrics.common.Labels
 import kotlinx.coroutines.*
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
-import org.opendc.simulator.compute.SimMachineModel
-import org.opendc.simulator.compute.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.cpufreq.SimpleScalingDriver
+import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.simulator.resources.SimResourceCommand
-import org.opendc.simulator.resources.SimResourceConsumer
-import org.opendc.simulator.resources.SimResourceContext
-import org.opendc.simulator.resources.SimResourceEvent
+import org.opendc.simulator.flow.*
 import java.time.Clock
 import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
+import kotlin.math.roundToLong
 
 /**
  * A [TFDevice] implementation using simulated components.
@@ -67,36 +65,41 @@ public class SimTFDevice(
      * The [SimMachine] representing the device.
      */
     private val machine = SimBareMetalMachine(
-        scope.coroutineContext, clock, SimMachineModel(listOf(pu), listOf(memory)),
-        PerformanceScalingGovernor(), SimpleScalingDriver(powerModel)
+        FlowEngine(scope.coroutineContext, clock), MachineModel(listOf(pu), listOf(memory)),
+        SimplePowerDriver(powerModel)
     )
+
+    /**
+     * The identifier of a device.
+     */
+    private val deviceId = AttributeKey.stringKey("device.id")
 
     /**
      * The usage of the device.
      */
-    private val _usage = meter.doubleValueRecorderBuilder("device.usage")
+    private val _usage = meter.histogramBuilder("device.usage")
         .setDescription("The amount of device resources used")
         .setUnit("MHz")
         .build()
-        .bind(Labels.of("device", uid.toString()))
+        .bind(Attributes.of(deviceId, uid.toString()))
 
     /**
      * The power draw of the device.
      */
-    private val _power = meter.doubleValueRecorderBuilder("device.power")
+    private val _power = meter.histogramBuilder("device.power")
         .setDescription("The power draw of the device")
         .setUnit("W")
         .build()
-        .bind(Labels.of("device", uid.toString()))
+        .bind(Attributes.of(deviceId, uid.toString()))
 
     /**
      * The workload that will be run by the device.
      */
-    private val workload = object : SimWorkload, SimResourceConsumer {
+    private val workload = object : SimWorkload, FlowSource {
         /**
          * The resource context to interrupt the workload with.
          */
-        var ctx: SimResourceContext? = null
+        var ctx: FlowConnection? = null
 
         /**
          * The capacity of the device.
@@ -119,17 +122,32 @@ public class SimTFDevice(
          */
         private var activeWork: Work? = null
 
-        override fun onStart(ctx: SimMachineContext) {}
+        override fun onStart(ctx: SimMachineContext) {
+            for (cpu in ctx.cpus) {
+                cpu.startConsumer(this)
+            }
+        }
 
-        override fun getConsumer(ctx: SimMachineContext, cpu: ProcessingUnit): SimResourceConsumer = this
+        override fun onStart(conn: FlowConnection, now: Long) {
+            ctx = conn
+            capacity = conn.capacity
 
-        override fun onNext(ctx: SimResourceContext): SimResourceCommand {
+            conn.shouldSourceConverge = true
+        }
+
+        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            val consumedWork = conn.rate * delta / 1000.0
+
+            capacity = conn.capacity
+
             val activeWork = activeWork
             if (activeWork != null) {
-                if (activeWork.consume(activeWork.flops - ctx.remainingWork)) {
+                if (activeWork.consume(consumedWork)) {
                     this.activeWork = null
                 } else {
-                    return SimResourceCommand.Consume(activeWork.flops, ctx.capacity)
+                    val duration = (activeWork.flops / conn.capacity * 1000).roundToLong()
+                    conn.push(conn.capacity)
+                    return duration
                 }
             }
 
@@ -137,28 +155,18 @@ public class SimTFDevice(
             val head = queue.poll()
             return if (head != null) {
                 this.activeWork = head
-                SimResourceCommand.Consume(head.flops, ctx.capacity)
+                val duration = (head.flops / conn.capacity * 1000).roundToLong()
+                conn.push(conn.capacity)
+                duration
             } else {
-                SimResourceCommand.Idle()
+                conn.push(0.0)
+                Long.MAX_VALUE
             }
         }
 
-        override fun onEvent(ctx: SimResourceContext, event: SimResourceEvent) {
-            when (event) {
-                SimResourceEvent.Start -> {
-                    this.ctx = ctx
-                    this.capacity = ctx.capacity
-                }
-                SimResourceEvent.Capacity -> {
-                    this.capacity = ctx.capacity
-                    ctx.interrupt()
-                }
-                SimResourceEvent.Run -> {
-                    _usage.record(ctx.speed)
-                    _power.record(machine.powerDraw)
-                }
-                else -> {}
-            }
+        override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+            _usage.record(conn.rate)
+            _power.record(machine.psu.powerDraw)
         }
     }
 
@@ -176,7 +184,7 @@ public class SimTFDevice(
     override suspend fun compute(flops: Double) = suspendCancellableCoroutine<Unit> { cont ->
         workload.queue.add(Work(flops, cont))
         if (workload.isIdle) {
-            workload.ctx?.interrupt()
+            workload.ctx?.pull()
         }
     }
 

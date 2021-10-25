@@ -1,13 +1,26 @@
 import React from 'react'
-import FilterLink from '../../containers/projects/FilterLink'
-import './FilterPanel.sass'
+import PropTypes from 'prop-types'
+import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import { filterPanel } from './FilterPanel.module.scss'
 
-const FilterPanel = () => (
-    <div className="btn-group filter-panel mb-2">
-        <FilterLink filter="SHOW_ALL">All Projects</FilterLink>
-        <FilterLink filter="SHOW_OWN">My Projects</FilterLink>
-        <FilterLink filter="SHOW_SHARED">Shared with me</FilterLink>
-    </div>
+export const FILTERS = { SHOW_ALL: 'All Projects', SHOW_OWN: 'My Projects', SHOW_SHARED: 'Shared with me' }
+
+const FilterPanel = ({ onSelect, activeFilter = 'SHOW_ALL' }) => (
+    <ToggleGroup className={`${filterPanel} mb-2`}>
+        {Object.keys(FILTERS).map((filter) => (
+            <ToggleGroupItem
+                key={filter}
+                onChange={() => activeFilter === filter || onSelect(filter)}
+                isSelected={activeFilter === filter}
+                text={FILTERS[filter]}
+            />
+        ))}
+    </ToggleGroup>
 )
+
+FilterPanel.propTypes = {
+    onSelect: PropTypes.func.isRequired,
+    activeFilter: PropTypes.string,
+}
 
 export default FilterPanel

@@ -37,11 +37,6 @@ import kotlin.coroutines.CoroutineContext
 @OptIn(InternalCoroutinesApi::class)
 public class SimulationCoroutineDispatcher : CoroutineDispatcher(), SimulationController, Delay {
     /**
-     * The virtual clock of this dispatcher.
-     */
-    override val clock: Clock = VirtualClock()
-
-    /**
      * Queue of ordered tasks to run.
      */
     private val queue = PriorityQueue<TimedRunnable>()
@@ -54,7 +49,12 @@ public class SimulationCoroutineDispatcher : CoroutineDispatcher(), SimulationCo
     /**
      * The current virtual time of simulation
      */
-    private var _time = 0L
+    private var _clock = SimClock()
+
+    /**
+     * The virtual clock of this dispatcher.
+     */
+    override val clock: Clock = ClockAdapter(_clock)
 
     override fun dispatch(context: CoroutineContext, block: Runnable) {
         block.run()
@@ -79,14 +79,14 @@ public class SimulationCoroutineDispatcher : CoroutineDispatcher(), SimulationCo
     }
 
     override fun toString(): String {
-        return "SimulationCoroutineDispatcher[time=${_time}ms, queued=${queue.size}]"
+        return "SimulationCoroutineDispatcher[time=${_clock.time}ms, queued=${queue.size}]"
     }
 
     private fun post(block: Runnable) =
         queue.add(TimedRunnable(block, _counter++))
 
     private fun postDelayed(block: Runnable, delayTime: Long) =
-        TimedRunnable(block, _counter++, safePlus(_time, delayTime))
+        TimedRunnable(block, _counter++, safePlus(_clock.time, delayTime))
             .also {
                 queue.add(it)
             }
@@ -100,31 +100,41 @@ public class SimulationCoroutineDispatcher : CoroutineDispatcher(), SimulationCo
 
     override fun advanceUntilIdle(): Long {
         val queue = queue
-        val oldTime = _time
-        while (queue.isNotEmpty()) {
-            val current = queue.poll()
+        val clock = _clock
+        val oldTime = clock.time
+
+        while (true) {
+            val current = queue.poll() ?: break
 
             // If the scheduled time is 0 (immediate) use current virtual time
             if (current.time != 0L) {
-                _time = current.time
+                clock.time = current.time
             }
 
             current.run()
         }
 
-        return _time - oldTime
+        return clock.time - oldTime
     }
 
-    private inner class VirtualClock(private val zone: ZoneId = ZoneId.systemDefault()) : Clock() {
+    /**
+     * A helper class that holds the time of the simulation.
+     */
+    private class SimClock(@JvmField var time: Long = 0)
+
+    /**
+     * A helper class to expose a [Clock] instance for this dispatcher.
+     */
+    private class ClockAdapter(private val clock: SimClock, private val zone: ZoneId = ZoneId.systemDefault()) : Clock() {
         override fun getZone(): ZoneId = zone
 
-        override fun withZone(zone: ZoneId): Clock = VirtualClock(zone)
+        override fun withZone(zone: ZoneId): Clock = ClockAdapter(clock, zone)
 
         override fun instant(): Instant = Instant.ofEpochMilli(millis())
 
-        override fun millis(): Long = _time
+        override fun millis(): Long = clock.time
 
-        override fun toString(): String = "SimulationCoroutineDispatcher.VirtualClock[time=$_time]"
+        override fun toString(): String = "SimulationCoroutineDispatcher.ClockAdapter[time=${clock.time}]"
     }
 
     /**

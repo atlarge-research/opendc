@@ -1,0 +1,1342 @@
+{
+    "name": "eager-nextflow-chameleon",
+    "description": "Instance generated with WfCommons - https://wfcommons.org",
+    "createdAt": "2021-09-06T03:43:31.762479",
+    "schemaVersion": "1.2",
+    "author": {
+        "name": "cc",
+        "email": "support@wfcommons.org"
+    },
+    "wms": {
+        "name": "Nextflow",
+        "version": "21.04.3",
+        "url": "https://www.nextflow.io"
+    },
+    "workflow": {
+        "executedAt": "20210906T034331+0000",
+        "makespan": 275,
+        "jobs": [
+            {
+                "name": "makebwaindex_mammoth_mt_krause.fasta",
+                "type": "compute",
+                "runtime": 172.182,
+                "command": {
+                    "program": "makebwaindex",
+                    "arguments": [
+                        "bwa",
+                        "index",
+                        "Mammoth_MT_Krause.fasta",
+                        "mkdir",
+                        "BWAIndex",
+                        "&&",
+                        "mv",
+                        "Mammoth_MT_Krause.fasta*",
+                        "BWAIndex"
+                    ]
+                },
+                "parents": [],
+                "children": [
+                    "makeseqdict_mammoth_mt_krause.fasta"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000001",
+                "category": "makebwaindex",
+                "avgCPU": 5.8,
+                "bytesRead": 124,
+                "bytesWritten": 126,
+                "memory": 4248
+            },
+            {
+                "name": "makeseqdict_mammoth_mt_krause.fasta",
+                "type": "compute",
+                "runtime": 175.427,
+                "command": {
+                    "program": "makeseqdict",
+                    "arguments": [
+                        "picard",
+                        "-Xmx6144M",
+                        "CreateSequenceDictionary",
+                        "R=Mammoth_MT_Krause.fasta",
+                        "O=\"Mammoth_MT_Krause.dict\""
+                    ]
+                },
+                "parents": [
+                    "makebwaindex_mammoth_mt_krause.fasta"
+                ],
+                "children": [
+                    "makefastaindex_mammoth_mt_krause.fasta"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000003",
+                "category": "makeseqdict",
+                "avgCPU": 83.5,
+                "bytesRead": 22728,
+                "bytesWritten": 1300,
+                "memory": 104416
+            },
+            {
+                "name": "makefastaindex_mammoth_mt_krause.fasta",
+                "type": "compute",
+                "runtime": 170.797,
+                "command": {
+                    "program": "makefastaindex",
+                    "arguments": [
+                        "samtools",
+                        "faidx",
+                        "Mammoth_MT_Krause.fasta"
+                    ]
+                },
+                "parents": [
+                    "makeseqdict_mammoth_mt_krause.fasta"
+                ],
+                "children": [
+                    "output_documentation"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000002",
+                "category": "makefastaindex",
+                "avgCPU": 23.8,
+                "bytesRead": 66,
+                "bytesWritten": 4,
+                "memory": 6096
+            },
+            {
+                "name": "output_documentation",
+                "type": "compute",
+                "runtime": 173.479,
+                "command": {
+                    "program": "output_documentation",
+                    "arguments": [
+                        "markdown_to_html.py",
+                        "output.md",
+                        "-o",
+                        "results_description.html"
+                    ]
+                },
+                "parents": [
+                    "makefastaindex_mammoth_mt_krause.fasta"
+                ],
+                "children": [
+                    "get_software_versions"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000005",
+                "category": "output_documentation",
+                "avgCPU": 84.0,
+                "bytesRead": 8222,
+                "bytesWritten": 15165,
+                "memory": 11488
+            },
+            {
+                "name": "get_software_versions",
+                "type": "compute",
+                "runtime": 183.445,
+                "command": {
+                    "program": "get_software_versions",
+                    "arguments": [
+                        "echo",
+                        "2.3.5",
+                        "&>",
+                        "v_pipeline.txt",
+                        "echo",
+                        "21.04.3",
+                        "&>",
+                        "v_nextflow.txt",
+                        "fastqc",
+                        "--version",
+                        "&>",
+                        "v_fastqc.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "AdapterRemoval",
+                        "--version",
+                        "&>",
+                        "v_adapterremoval.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "fastp",
+                        "--version",
+                        "&>",
+                        "v_fastp.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "bwa",
+                        "&>",
+                        "v_bwa.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "circulargenerator",
+                        "--help",
+                        "|",
+                        "head",
+                        "-n",
+                        "1",
+                        "&>",
+                        "v_circulargenerator.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "samtools",
+                        "--version",
+                        "&>",
+                        "v_samtools.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "dedup",
+                        "-v",
+                        "&>",
+                        "v_dedup.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "##",
+                        "bioconda",
+                        "recipe",
+                        "of",
+                        "picard",
+                        "is",
+                        "incorrectly",
+                        "set",
+                        "up",
+                        "and",
+                        "extra",
+                        "warning",
+                        "made",
+                        "with",
+                        "stderr,",
+                        "this",
+                        "ugly",
+                        "command",
+                        "ensures",
+                        "only",
+                        "version",
+                        "exported",
+                        "(",
+                        "exec",
+                        "7>&1",
+                        "picard",
+                        "MarkDuplicates",
+                        "--version",
+                        "2>&1",
+                        ">&7",
+                        "|",
+                        "grep",
+                        "-v",
+                        "/",
+                        ">&2",
+                        ")",
+                        "2>",
+                        "v_markduplicates.txt",
+                        "||",
+                        "true",
+                        "qualimap",
+                        "--version",
+                        "&>",
+                        "v_qualimap.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "preseq",
+                        "&>",
+                        "v_preseq.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "gatk",
+                        "--version",
+                        "2>&1",
+                        "|",
+                        "head",
+                        "-n",
+                        "1",
+                        ">",
+                        "v_gatk.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "gatk3",
+                        "--version",
+                        "2>&1",
+                        ">",
+                        "v_gatk3.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "freebayes",
+                        "--version",
+                        "&>",
+                        "v_freebayes.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "bedtools",
+                        "--version",
+                        "&>",
+                        "v_bedtools.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "damageprofiler",
+                        "--version",
+                        "&>",
+                        "v_damageprofiler.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "bam",
+                        "--version",
+                        "&>",
+                        "v_bamutil.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "pmdtools",
+                        "--version",
+                        "&>",
+                        "v_pmdtools.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "angsd",
+                        "-h",
+                        "|&",
+                        "head",
+                        "-n",
+                        "1",
+                        "|",
+                        "cut",
+                        "-d",
+                        "-f3-4",
+                        "&>",
+                        "v_angsd.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "multivcfanalyzer",
+                        "--help",
+                        "|",
+                        "head",
+                        "-n",
+                        "1",
+                        "&>",
+                        "v_multivcfanalyzer.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "malt-run",
+                        "--help",
+                        "|&",
+                        "tail",
+                        "-n",
+                        "3",
+                        "|",
+                        "head",
+                        "-n",
+                        "1",
+                        "|",
+                        "cut",
+                        "-f",
+                        "2",
+                        "-d(",
+                        "|",
+                        "cut",
+                        "-f",
+                        "1",
+                        "-d",
+                        ",",
+                        "&>",
+                        "v_malt.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "MaltExtract",
+                        "--help",
+                        "|",
+                        "head",
+                        "-n",
+                        "2",
+                        "|",
+                        "tail",
+                        "-n",
+                        "1",
+                        "&>",
+                        "v_maltextract.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "multiqc",
+                        "--version",
+                        "&>",
+                        "v_multiqc.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "vcf2genome",
+                        "-h",
+                        "|&",
+                        "head",
+                        "-n",
+                        "1",
+                        "&>",
+                        "v_vcf2genome.txt",
+                        "||",
+                        "true",
+                        "mtnucratio",
+                        "--help",
+                        "&>",
+                        "v_mtnucratiocalculator.txt",
+                        "||",
+                        "true",
+                        "sexdeterrmine",
+                        "--version",
+                        "&>",
+                        "v_sexdeterrmine.txt",
+                        "||",
+                        "true",
+                        "kraken2",
+                        "--version",
+                        "|",
+                        "head",
+                        "-n",
+                        "1",
+                        "&>",
+                        "v_kraken.txt",
+                        "||",
+                        "true",
+                        "endorS.py",
+                        "--version",
+                        "&>",
+                        "v_endorSpy.txt",
+                        "||",
+                        "true",
+                        "pileupCaller",
+                        "--version",
+                        "&>",
+                        "v_sequencetools.txt",
+                        "2>&1",
+                        "||",
+                        "true",
+                        "bowtie2",
+                        "--version",
+                        "|",
+                        "grep",
+                        "-a",
+                        "bowtie2-.*",
+                        "-fdebug",
+                        ">",
+                        "v_bowtie2.txt",
+                        "||",
+                        "true",
+                        "eigenstrat_snp_coverage",
+                        "--version",
+                        "|",
+                        "cut",
+                        "-d",
+                        "-f2",
+                        ">v_eigenstrat_snp_coverage.txt",
+                        "||",
+                        "true",
+                        "mapDamage",
+                        "--version",
+                        ">",
+                        "v_mapdamage.txt",
+                        "||",
+                        "true",
+                        "bbduk.sh",
+                        "|",
+                        "grep",
+                        "Last",
+                        "modified",
+                        "|",
+                        "cut",
+                        "-d",
+                        "-f",
+                        "3-99",
+                        ">",
+                        "v_bbduk.txt",
+                        "||",
+                        "true",
+                        "scrape_software_versions.py",
+                        "&>",
+                        "software_versions_mqc.yaml"
+                    ]
+                },
+                "parents": [
+                    "output_documentation"
+                ],
+                "children": [
+                    "fastqc_jk2782_l1",
+                    "fastqc_jk2802_l2"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000006",
+                "category": "get_software_versions",
+                "avgCPU": 147.8,
+                "bytesRead": 172760,
+                "bytesWritten": 1048,
+                "memory": 387324
+            },
+            {
+                "name": "fastqc_jk2782_l1",
+                "type": "compute",
+                "runtime": 175.205,
+                "command": {
+                    "program": "fastqc",
+                    "arguments": [
+                        "fastqc",
+                        "-t",
+                        "2",
+                        "-q",
+                        "JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq.gz",
+                        "JK2782_TGGCCGATCAACGA_L008_R2_001.fastq.gz.tengrand.fq.gz",
+                        "rename",
+                        "s/_fastqc.zip$/_raw_fastqc.zip/",
+                        "*_fastqc.zip",
+                        "rename",
+                        "s/_fastqc.html$/_raw_fastqc.html/",
+                        "*_fastqc.html"
+                    ]
+                },
+                "parents": [
+                    "get_software_versions"
+                ],
+                "children": [
+                    "adapter_removal_jk2782_l1",
+                    "adapter_removal_jk2802_l2"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000007",
+                "category": "fastqc",
+                "avgCPU": 161.8,
+                "bytesRead": 35981,
+                "bytesWritten": 3967,
+                "memory": 270124
+            },
+            {
+                "name": "adapter_removal_jk2782_l1",
+                "type": "compute",
+                "runtime": 172.643,
+                "command": {
+                    "program": "adapter_removal",
+                    "arguments": [
+                        "mkdir",
+                        "-p",
+                        "output",
+                        "AdapterRemoval",
+                        "--file1",
+                        "JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq.gz",
+                        "--file2",
+                        "JK2782_TGGCCGATCAACGA_L008_R2_001.fastq.gz.tengrand.fq.gz",
+                        "--basename",
+                        "JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq_L1.pe",
+                        "--gzip",
+                        "--threads",
+                        "2",
+                        "--qualitymax",
+                        "41",
+                        "--collapse",
+                        "--trimns",
+                        "--trimqualities",
+                        "--adapter1",
+                        "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
+                        "--adapter2",
+                        "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA",
+                        "--minlength",
+                        "30",
+                        "--minquality",
+                        "20",
+                        "--minadapteroverlap",
+                        "1",
+                        "cat",
+                        "*.collapsed.gz",
+                        "*.collapsed.truncated.gz",
+                        "*.singleton.truncated.gz",
+                        "*.pair1.truncated.gz",
+                        "*.pair2.truncated.gz",
+                        ">",
+                        "output/JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq_L1.pe.combined.tmp.fq.gz",
+                        "mv",
+                        "*.settings",
+                        "output/",
+                        "##",
+                        "Add",
+                        "R_",
+                        "and",
+                        "L_",
+                        "for",
+                        "unmerged",
+                        "reads",
+                        "for",
+                        "DeDup",
+                        "compatibility",
+                        "AdapterRemovalFixPrefix",
+                        "-Xmx4g",
+                        "output/JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq_L1.pe.combined.tmp.fq.gz",
+                        "|",
+                        "pigz",
+                        "-p",
+                        "1",
+                        ">",
+                        "output/JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq_L1.pe.combined.fq.gz"
+                    ]
+                },
+                "parents": [
+                    "fastqc_jk2782_l1",
+                    "fastqc_jk2802_l2"
+                ],
+                "children": [
+                    "fastqc_after_clipping_jk2782_l1",
+                    "fastqc_after_clipping_jk2802_l2"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000008",
+                "category": "adapter_removal",
+                "avgCPU": 160.9,
+                "bytesRead": 17357,
+                "bytesWritten": 4405,
+                "memory": 79308
+            },
+            {
+                "name": "fastqc_jk2802_l2",
+                "type": "compute",
+                "runtime": 177.338,
+                "command": {
+                    "program": "fastqc",
+                    "arguments": [
+                        "fastqc",
+                        "-q",
+                        "JK2802_AGAATAACCTACCA_L008_R1_001.fastq.gz.tengrand.fq.gz",
+                        "rename",
+                        "s/_fastqc.zip$/_raw_fastqc.zip/",
+                        "*_fastqc.zip",
+                        "rename",
+                        "s/_fastqc.html$/_raw_fastqc.html/",
+                        "*_fastqc.html"
+                    ]
+                },
+                "parents": [
+                    "get_software_versions"
+                ],
+                "children": [
+                    "adapter_removal_jk2782_l1",
+                    "adapter_removal_jk2802_l2"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000009",
+                "category": "fastqc",
+                "avgCPU": 120.1,
+                "bytesRead": 24457,
+                "bytesWritten": 2181,
+                "memory": 181060
+            },
+            {
+                "name": "adapter_removal_jk2802_l2",
+                "type": "compute",
+                "runtime": 174.313,
+                "command": {
+                    "program": "adapter_removal",
+                    "arguments": [
+                        "mkdir",
+                        "-p",
+                        "output",
+                        "AdapterRemoval",
+                        "--file1",
+                        "JK2802_AGAATAACCTACCA_L008_R1_001.fastq.gz.tengrand.fq.gz",
+                        "--basename",
+                        "JK2802_AGAATAACCTACCA_L008_R1_001.fastq.gz.tengrand.fq_L2.se",
+                        "--gzip",
+                        "--threads",
+                        "2",
+                        "--qualitymax",
+                        "41",
+                        "--trimns",
+                        "--trimqualities",
+                        "--adapter1",
+                        "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
+                        "--adapter2",
+                        "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA",
+                        "--minlength",
+                        "30",
+                        "--minquality",
+                        "20",
+                        "--minadapteroverlap",
+                        "1",
+                        "mv",
+                        "*.settings",
+                        "*.se.truncated.gz",
+                        "output/"
+                    ]
+                },
+                "parents": [
+                    "fastqc_jk2782_l1",
+                    "fastqc_jk2802_l2"
+                ],
+                "children": [
+                    "fastqc_after_clipping_jk2782_l1",
+                    "fastqc_after_clipping_jk2802_l2"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000010",
+                "category": "adapter_removal",
+                "avgCPU": 106.5,
+                "bytesRead": 683,
+                "bytesWritten": 897,
+                "memory": 12136
+            },
+            {
+                "name": "fastqc_after_clipping_jk2782_l1",
+                "type": "compute",
+                "runtime": 15.371,
+                "command": {
+                    "program": "fastqc_after_clipping",
+                    "arguments": [
+                        "fastqc",
+                        "-t",
+                        "2",
+                        "-q",
+                        "JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq_L1.pe.combined.fq.gz"
+                    ]
+                },
+                "parents": [
+                    "adapter_removal_jk2782_l1",
+                    "adapter_removal_jk2802_l2"
+                ],
+                "children": [
+                    "bwa_jk2802",
+                    "bwa_jk2782"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000013",
+                "category": "fastqc_after_clipping",
+                "avgCPU": 133.3,
+                "bytesRead": 23788,
+                "bytesWritten": 1998,
+                "memory": 215020
+            },
+            {
+                "name": "fastqc_after_clipping_jk2802_l2",
+                "type": "compute",
+                "runtime": 15.272,
+                "command": {
+                    "program": "fastqc_after_clipping",
+                    "arguments": [
+                        "fastqc",
+                        "-t",
+                        "2",
+                        "-q",
+                        "JK2802_AGAATAACCTACCA_L008_R1_001.fastq.gz.tengrand.fq_L2.se.truncated.gz"
+                    ]
+                },
+                "parents": [
+                    "adapter_removal_jk2782_l1",
+                    "adapter_removal_jk2802_l2"
+                ],
+                "children": [
+                    "bwa_jk2802",
+                    "bwa_jk2782"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000014",
+                "category": "fastqc_after_clipping",
+                "avgCPU": 124.1,
+                "bytesRead": 23882,
+                "bytesWritten": 2143,
+                "memory": 213064
+            },
+            {
+                "name": "bwa_jk2802",
+                "type": "compute",
+                "runtime": 9.566,
+                "command": {
+                    "program": "bwa",
+                    "arguments": [
+                        "bwa",
+                        "aln",
+                        "-t",
+                        "2",
+                        "BWAIndex/Mammoth_MT_Krause.fasta",
+                        "JK2802_AGAATAACCTACCA_L008_R1_001.fastq.gz.tengrand.fq_L2.se.truncated.gz",
+                        "-n",
+                        "0.04",
+                        "-l",
+                        "1024",
+                        "-k",
+                        "2",
+                        "-o",
+                        "1",
+                        "-f",
+                        "JK2802.sai",
+                        "bwa",
+                        "samse",
+                        "-r",
+                        "\"@RGtID:ILLUMINA-JK2802tSM:JK2802tPL:illuminatPU:ILLUMINA-JK2802-SE\"",
+                        "BWAIndex/Mammoth_MT_Krause.fasta",
+                        "JK2802.sai",
+                        "JK2802_AGAATAACCTACCA_L008_R1_001.fastq.gz.tengrand.fq_L2.se.truncated.gz",
+                        "|",
+                        "samtools",
+                        "sort",
+                        "-@",
+                        "1",
+                        "-O",
+                        "bam",
+                        "-",
+                        ">",
+                        "\"JK2802\"_\"SE\".mapped.bam",
+                        "samtools",
+                        "index",
+                        "\"JK2802\"_\"SE\".mapped.bam"
+                    ]
+                },
+                "parents": [
+                    "fastqc_after_clipping_jk2782_l1",
+                    "fastqc_after_clipping_jk2802_l2"
+                ],
+                "children": [
+                    "samtools_flagstat_jk2782",
+                    "samtools_flagstat_jk2802"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000016",
+                "category": "bwa",
+                "avgCPU": 15.7,
+                "bytesRead": 3774,
+                "bytesWritten": 3367,
+                "memory": 10628
+            },
+            {
+                "name": "bwa_jk2782",
+                "type": "compute",
+                "runtime": 9.652,
+                "command": {
+                    "program": "bwa",
+                    "arguments": [
+                        "bwa",
+                        "aln",
+                        "-t",
+                        "2",
+                        "BWAIndex/Mammoth_MT_Krause.fasta",
+                        "JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq_L1.pe.combined.fq.gz",
+                        "-n",
+                        "0.04",
+                        "-l",
+                        "1024",
+                        "-k",
+                        "2",
+                        "-o",
+                        "1",
+                        "-f",
+                        "JK2782.sai",
+                        "bwa",
+                        "samse",
+                        "-r",
+                        "\"@RGtID:ILLUMINA-JK2782tSM:JK2782tPL:illuminatPU:ILLUMINA-JK2782-PE\"",
+                        "BWAIndex/Mammoth_MT_Krause.fasta",
+                        "JK2782.sai",
+                        "JK2782_TGGCCGATCAACGA_L008_R1_001.fastq.gz.tengrand.fq_L1.pe.combined.fq.gz",
+                        "|",
+                        "samtools",
+                        "sort",
+                        "-@",
+                        "1",
+                        "-O",
+                        "bam",
+                        "-",
+                        ">",
+                        "\"JK2782\"_\"PE\".mapped.bam",
+                        "samtools",
+                        "index",
+                        "\"JK2782\"_\"PE\".mapped.bam"
+                    ]
+                },
+                "parents": [
+                    "fastqc_after_clipping_jk2782_l1",
+                    "fastqc_after_clipping_jk2802_l2"
+                ],
+                "children": [
+                    "samtools_flagstat_jk2782",
+                    "samtools_flagstat_jk2802"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000015",
+                "category": "bwa",
+                "avgCPU": 69.8,
+                "bytesRead": 3705,
+                "bytesWritten": 3355,
+                "memory": 12876
+            },
+            {
+                "name": "samtools_flagstat_jk2782",
+                "type": "compute",
+                "runtime": 13.011,
+                "command": {
+                    "program": "samtools_flagstat",
+                    "arguments": [
+                        "samtools",
+                        "flagstat",
+                        "JK2782_PE.mapped.bam",
+                        ">",
+                        "JK2782_flagstat.stats"
+                    ]
+                },
+                "parents": [
+                    "bwa_jk2802",
+                    "bwa_jk2782"
+                ],
+                "children": [
+                    "markduplicates_jk2782",
+                    "markduplicates_jk2802"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000026",
+                "category": "samtools_flagstat",
+                "avgCPU": 30.1,
+                "bytesRead": 478,
+                "bytesWritten": 5,
+                "memory": 6468
+            },
+            {
+                "name": "samtools_flagstat_jk2802",
+                "type": "compute",
+                "runtime": 13.129,
+                "command": {
+                    "program": "samtools_flagstat",
+                    "arguments": [
+                        "samtools",
+                        "flagstat",
+                        "JK2802_SE.mapped.bam",
+                        ">",
+                        "JK2802_flagstat.stats"
+                    ]
+                },
+                "parents": [
+                    "bwa_jk2802",
+                    "bwa_jk2782"
+                ],
+                "children": [
+                    "markduplicates_jk2782",
+                    "markduplicates_jk2802"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000024",
+                "category": "samtools_flagstat",
+                "avgCPU": 118.5,
+                "bytesRead": 551,
+                "bytesWritten": 5
+            },
+            {
+                "name": "markduplicates_jk2782",
+                "type": "compute",
+                "runtime": 22.655,
+                "command": {
+                    "program": "markduplicates",
+                    "arguments": [
+                        "mv",
+                        "JK2782_PE.mapped.bam",
+                        "JK2782.bam",
+                        "picard",
+                        "-Xmx4096M",
+                        "MarkDuplicates",
+                        "INPUT=JK2782.bam",
+                        "OUTPUT=JK2782_rmdup.bam",
+                        "REMOVE_DUPLICATES=TRUE",
+                        "AS=TRUE",
+                        "METRICS_FILE=\"JK2782_rmdup.metrics\"",
+                        "VALIDATION_STRINGENCY=SILENT",
+                        "samtools",
+                        "index",
+                        "JK2782_rmdup.bam"
+                    ]
+                },
+                "parents": [
+                    "samtools_flagstat_jk2782",
+                    "samtools_flagstat_jk2802"
+                ],
+                "children": [
+                    "preseq_jk2782",
+                    "preseq_jk2802"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000021",
+                "category": "markduplicates",
+                "avgCPU": 173.6,
+                "bytesRead": 24055,
+                "bytesWritten": 2319,
+                "memory": 1400048
+            },
+            {
+                "name": "markduplicates_jk2802",
+                "type": "compute",
+                "runtime": 21.545,
+                "command": {
+                    "program": "markduplicates",
+                    "arguments": [
+                        "mv",
+                        "JK2802_SE.mapped.bam",
+                        "JK2802.bam",
+                        "picard",
+                        "-Xmx4096M",
+                        "MarkDuplicates",
+                        "INPUT=JK2802.bam",
+                        "OUTPUT=JK2802_rmdup.bam",
+                        "REMOVE_DUPLICATES=TRUE",
+                        "AS=TRUE",
+                        "METRICS_FILE=\"JK2802_rmdup.metrics\"",
+                        "VALIDATION_STRINGENCY=SILENT",
+                        "samtools",
+                        "index",
+                        "JK2802_rmdup.bam"
+                    ]
+                },
+                "parents": [
+                    "samtools_flagstat_jk2782",
+                    "samtools_flagstat_jk2802"
+                ],
+                "children": [
+                    "preseq_jk2782",
+                    "preseq_jk2802"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000020",
+                "category": "markduplicates",
+                "avgCPU": 182.6,
+                "bytesRead": 24242,
+                "bytesWritten": 2466,
+                "memory": 1404624
+            },
+            {
+                "name": "preseq_jk2782",
+                "type": "compute",
+                "runtime": 12.299,
+                "command": {
+                    "program": "preseq",
+                    "arguments": [
+                        "preseq",
+                        "c_curve",
+                        "-s",
+                        "1000",
+                        "-o",
+                        "JK2782_PE.mapped.ccurve",
+                        "-B",
+                        "JK2782_PE.mapped.bam"
+                    ]
+                },
+                "parents": [
+                    "markduplicates_jk2782",
+                    "markduplicates_jk2802"
+                ],
+                "children": [
+                    "endorspy_jk2782",
+                    "endorspy_jk2802"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000030",
+                "category": "preseq",
+                "avgCPU": 81.9,
+                "bytesRead": 473,
+                "bytesWritten": 4,
+                "memory": 12032
+            },
+            {
+                "name": "preseq_jk2802",
+                "type": "compute",
+                "runtime": 10.188,
+                "command": {
+                    "program": "preseq",
+                    "arguments": [
+                        "preseq",
+                        "c_curve",
+                        "-s",
+                        "1000",
+                        "-o",
+                        "JK2802_SE.mapped.ccurve",
+                        "-B",
+                        "JK2802_SE.mapped.bam"
+                    ]
+                },
+                "parents": [
+                    "markduplicates_jk2782",
+                    "markduplicates_jk2802"
+                ],
+                "children": [
+                    "endorspy_jk2782",
+                    "endorspy_jk2802"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000027",
+                "category": "preseq",
+                "avgCPU": 77.6,
+                "bytesRead": 548,
+                "bytesWritten": 4,
+                "memory": 11972
+            },
+            {
+                "name": "endorspy_jk2782",
+                "type": "compute",
+                "runtime": 7.537,
+                "command": {
+                    "program": "endorspy",
+                    "arguments": [
+                        "endorS.py",
+                        "-o",
+                        "json",
+                        "-n",
+                        "JK2782",
+                        "JK2782_flagstat.stats"
+                    ]
+                },
+                "parents": [
+                    "preseq_jk2782",
+                    "preseq_jk2802"
+                ],
+                "children": [
+                    "damageprofiler_jk2802",
+                    "damageprofiler_jk2782"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000031",
+                "category": "endorspy",
+                "avgCPU": 44.7,
+                "bytesRead": 623,
+                "bytesWritten": 4,
+                "memory": 12264
+            },
+            {
+                "name": "endorspy_jk2802",
+                "type": "compute",
+                "runtime": 8.0,
+                "command": {
+                    "program": "endorspy",
+                    "arguments": [
+                        "endorS.py",
+                        "-o",
+                        "json",
+                        "-n",
+                        "JK2802",
+                        "JK2802_flagstat.stats"
+                    ]
+                },
+                "parents": [
+                    "preseq_jk2782",
+                    "preseq_jk2802"
+                ],
+                "children": [
+                    "damageprofiler_jk2802",
+                    "damageprofiler_jk2782"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000032",
+                "category": "endorspy",
+                "avgCPU": 54.0,
+                "bytesRead": 623,
+                "bytesWritten": 4,
+                "memory": 12224
+            },
+            {
+                "name": "damageprofiler_jk2802",
+                "type": "compute",
+                "runtime": 18.596,
+                "command": {
+                    "program": "damageprofiler",
+                    "arguments": [
+                        "damageprofiler",
+                        "-Xmx4g",
+                        "-i",
+                        "JK2802_rmdup.bam",
+                        "-r",
+                        "Mammoth_MT_Krause.fasta",
+                        "-l",
+                        "100",
+                        "-t",
+                        "15",
+                        "-o",
+                        ".",
+                        "-yaxis_damageplot",
+                        "0.30"
+                    ]
+                },
+                "parents": [
+                    "endorspy_jk2782",
+                    "endorspy_jk2802"
+                ],
+                "children": [
+                    "qualimap_jk2802",
+                    "qualimap_jk2782"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000033",
+                "category": "damageprofiler",
+                "avgCPU": 88.6,
+                "bytesRead": 25744,
+                "bytesWritten": 391,
+                "memory": 242940
+            },
+            {
+                "name": "damageprofiler_jk2782",
+                "type": "compute",
+                "runtime": 16.736,
+                "command": {
+                    "program": "damageprofiler",
+                    "arguments": [
+                        "damageprofiler",
+                        "-Xmx4g",
+                        "-i",
+                        "JK2782_rmdup.bam",
+                        "-r",
+                        "Mammoth_MT_Krause.fasta",
+                        "-l",
+                        "100",
+                        "-t",
+                        "15",
+                        "-o",
+                        ".",
+                        "-yaxis_damageplot",
+                        "0.30"
+                    ]
+                },
+                "parents": [
+                    "endorspy_jk2782",
+                    "endorspy_jk2802"
+                ],
+                "children": [
+                    "qualimap_jk2802",
+                    "qualimap_jk2782"
+                ],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000036",
+                "category": "damageprofiler",
+                "avgCPU": 88.3,
+                "bytesRead": 25661,
+                "bytesWritten": 327,
+                "memory": 198276
+            },
+            {
+                "name": "qualimap_jk2802",
+                "type": "compute",
+                "runtime": 15.368,
+                "command": {
+                    "program": "qualimap",
+                    "arguments": [
+                        "qualimap",
+                        "bamqc",
+                        "-bam",
+                        "JK2802_rmdup.bam",
+                        "-nt",
+                        "2",
+                        "-outdir",
+                        ".",
+                        "-outformat",
+                        "\"HTML\"",
+                        "--java-mem-size=4G"
+                    ]
+                },
+                "parents": [
+                    "damageprofiler_jk2802",
+                    "damageprofiler_jk2782"
+                ],
+                "children": [
+                    "multiqc_1"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000053",
+                "category": "qualimap",
+                "avgCPU": 177.7,
+                "bytesRead": 35038,
+                "bytesWritten": 1712,
+                "memory": 209440
+            },
+            {
+                "name": "qualimap_jk2782",
+                "type": "compute",
+                "runtime": 14.223,
+                "command": {
+                    "program": "qualimap",
+                    "arguments": [
+                        "qualimap",
+                        "bamqc",
+                        "-bam",
+                        "JK2782_rmdup.bam",
+                        "-nt",
+                        "2",
+                        "-outdir",
+                        ".",
+                        "-outformat",
+                        "\"HTML\"",
+                        "--java-mem-size=4G"
+                    ]
+                },
+                "parents": [
+                    "damageprofiler_jk2802",
+                    "damageprofiler_jk2782"
+                ],
+                "children": [
+                    "multiqc_1"
+                ],
+                "files": [],
+                "cores": 2.0,
+                "id": "ID000054",
+                "category": "qualimap",
+                "avgCPU": 181.9,
+                "bytesRead": 34954,
+                "bytesWritten": 1937,
+                "memory": 232196
+            },
+            {
+                "name": "multiqc_1",
+                "type": "compute",
+                "runtime": 46.376,
+                "command": {
+                    "program": "multiqc",
+                    "arguments": [
+                        "multiqc",
+                        "-f",
+                        "multiqc_config.yaml",
+                        "."
+                    ]
+                },
+                "parents": [
+                    "qualimap_jk2802",
+                    "qualimap_jk2782"
+                ],
+                "children": [],
+                "files": [],
+                "cores": 1.0,
+                "id": "ID000056",
+                "category": "multiqc",
+                "avgCPU": 93.0,
+                "bytesRead": 1215169,
+                "bytesWritten": 22599,
+                "memory": 139496
+            }
+        ]
+    }
+}

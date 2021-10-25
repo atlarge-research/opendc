@@ -1,5 +1,3 @@
-import gradle.kotlin.dsl.accessors._9bf86420fccbde1948375f641de89b70.sourceSets
-
 /*
  * Copyright (c) 2021 AtLarge Research
  *

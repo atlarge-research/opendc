@@ -12,13 +12,13 @@ Follow the steps below to get it all set up!
 ## Contents
 
 1. [Installing Java](#1-installing-java)
-1. [Building and Developing](#2-building-and-developing)  
-    1. [Setup with IntelliJ IDEA](#21-setup-with-intellij-idea)
-    1. [Setup with Command Line](#22-setup-with-command-line)
+2. [Building and Developing](#2-building-and-developing)  
+3. [Setup with IntelliJ IDEA](#21-setup-with-intellij-idea)
+4. [Setup with Command Line](#22-setup-with-command-line)
 
 ## 1. Installing Java
 
-Kotlin requires a Java installation of version 8 or higher. Make sure to install
+OpenDC requires a Java installation of version 11 or higher. Make sure to install
 the [JDK](https://www.oracle.com/technetwork/java/javase/downloads/index.html), not only the JRE (the JDK also includes
 a JRE).
 

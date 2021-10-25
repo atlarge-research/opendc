@@ -22,6 +22,7 @@
 
 package org.opendc.experiments.capelin
 
+import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
@@ -36,7 +37,7 @@ public class TestPortfolio : Portfolio("test") {
     )
 
     override val workload: Workload by anyOf(
-        Workload("solvinity", 1.0)
+        Workload("solvinity", trace("solvinity"))
     )
 
     override val operationalPhenomena: OperationalPhenomena by anyOf(

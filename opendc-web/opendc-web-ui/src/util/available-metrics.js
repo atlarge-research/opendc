@@ -1,12 +1,28 @@
+export const METRIC_GROUPS = {
+    'Host Metrics': [
+        'total_overcommitted_burst',
+        'total_power_draw',
+        'total_failure_vm_slices',
+        'total_granted_burst',
+        'total_interfered_burst',
+        'total_requested_burst',
+        'mean_cpu_usage',
+        'mean_cpu_demand',
+        'mean_num_deployed_images',
+        'max_num_deployed_images',
+    ],
+    'Compute Service Metrics': ['total_vms_submitted', 'total_vms_queued', 'total_vms_finished', 'total_vms_failed'],
+}
+
 export const AVAILABLE_METRICS = [
-    'total_overcommitted_burst',
-    'total_power_draw',
-    'total_failure_vm_slices',
-    'total_granted_burst',
-    'total_interfered_burst',
-    'total_requested_burst',
     'mean_cpu_usage',
     'mean_cpu_demand',
+    'total_requested_burst',
+    'total_granted_burst',
+    'total_overcommitted_burst',
+    'total_interfered_burst',
+    'total_power_draw',
+    'total_failure_vm_slices',
     'mean_num_deployed_images',
     'max_num_deployed_images',
     'total_vms_submitted',
@@ -64,4 +80,23 @@ export const METRIC_UNITS = {
     total_vms_queued: 'VMs',
     total_vms_finished: 'VMs',
     total_vms_failed: 'VMs',
+}
+
+export const METRIC_DESCRIPTIONS = {
+    total_overcommitted_burst:
+        'The total CPU clock cycles lost due to overcommitting of resources. This metric is an indicator for resource overload.',
+    total_requested_burst: 'The total CPU clock cycles that were requested by all virtual machines.',
+    total_granted_burst: 'The total CPU clock cycles executed by the hosts.',
+    total_interfered_burst: 'The total CPU clock cycles lost due to resource interference between virtual machines.',
+    total_power_draw: 'The average power usage in watts.',
+    mean_cpu_usage: 'The average amount of CPU clock cycles consumed by all virtual machines on a host.',
+    mean_cpu_demand: 'The average amount of CPU clock cycles requested by all powered on virtual machines on a host.',
+    mean_num_deployed_images: 'The average number of virtual machines deployed on a host.',
+    max_num_deployed_images: 'The maximum number of virtual machines deployed at any time.',
+    total_failure_vm_slices: 'The total amount of CPU clock cycles lost due to failure.',
+    total_vms_submitted: 'The total number of virtual machines scheduled by the compute service.',
+    total_vms_queued:
+        'The maximum number of virtual machines waiting to be scheduled by the compute service at any point.',
+    total_vms_finished: 'The total number of virtual machines that completed successfully.',
+    total_vms_failed: 'The total number of virtual machines that failed during execution.',
 }
