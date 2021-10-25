@@ -24,6 +24,8 @@ package org.opendc.telemetry.compute
 
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import org.opendc.telemetry.compute.table.ServiceData
+import org.opendc.telemetry.compute.table.ServiceTableReader
+import org.opendc.telemetry.compute.table.toServiceData
 
 /**
  * Collect the metrics of the compute service.
@@ -32,8 +34,8 @@ public fun collectServiceMetrics(metricProducer: MetricProducer): ServiceData {
     lateinit var serviceData: ServiceData
     val agg = ComputeMetricAggregator()
     val monitor = object : ComputeMonitor {
-        override fun record(data: ServiceData) {
-            serviceData = data
+        override fun record(reader: ServiceTableReader) {
+            serviceData = reader.toServiceData()
         }
     }
 

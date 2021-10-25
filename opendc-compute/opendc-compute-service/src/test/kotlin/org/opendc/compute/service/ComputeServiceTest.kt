@@ -125,7 +125,7 @@ internal class ComputeServiceTest {
     fun testAddHost() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
 
-        every { host.model } returns HostModel(4, 2048)
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.state } returns HostState.UP
 
         assertEquals(0, service.hostCount)
@@ -147,7 +147,7 @@ internal class ComputeServiceTest {
     fun testAddHostDouble() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
 
-        every { host.model } returns HostModel(4, 2048)
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.state } returns HostState.DOWN
 
         assertEquals(0, service.hostCount)
@@ -216,7 +216,7 @@ internal class ComputeServiceTest {
     fun testServerCannotFitOnHost() = scope.runBlockingSimulation {
         val host = mockk<Host>(relaxUnitFun = true)
 
-        every { host.model } returns HostModel(4, 2048)
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.state } returns HostState.UP
         every { host.canFit(any()) } returns false
 
@@ -241,7 +241,7 @@ internal class ComputeServiceTest {
         val listeners = mutableListOf<HostListener>()
 
         every { host.uid } returns UUID.randomUUID()
-        every { host.model } returns HostModel(4, 2048)
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.state } returns HostState.DOWN
         every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
         every { host.canFit(any()) } returns false
@@ -272,7 +272,7 @@ internal class ComputeServiceTest {
         val listeners = mutableListOf<HostListener>()
 
         every { host.uid } returns UUID.randomUUID()
-        every { host.model } returns HostModel(4, 2048)
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.state } returns HostState.UP
         every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
         every { host.canFit(any()) } returns false
@@ -303,7 +303,7 @@ internal class ComputeServiceTest {
         val listeners = mutableListOf<HostListener>()
 
         every { host.uid } returns UUID.randomUUID()
-        every { host.model } returns HostModel(4, 2048)
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.state } returns HostState.UP
         every { host.canFit(any()) } returns true
         every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
@@ -326,7 +326,7 @@ internal class ComputeServiceTest {
         val listeners = mutableListOf<HostListener>()
 
         every { host.uid } returns UUID.randomUUID()
-        every { host.model } returns HostModel(4, 2048)
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.state } returns HostState.UP
         every { host.canFit(any()) } returns true
         every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }
@@ -369,7 +369,7 @@ internal class ComputeServiceTest {
         val listeners = mutableListOf<HostListener>()
 
         every { host.uid } returns UUID.randomUUID()
-        every { host.model } returns HostModel(4, 2048)
+        every { host.model } returns HostModel(4 * 2600.0, 4, 2048)
         every { host.state } returns HostState.UP
         every { host.canFit(any()) } returns true
         every { host.addListener(any()) } answers { listeners.add(it.invocation.args[0] as HostListener) }

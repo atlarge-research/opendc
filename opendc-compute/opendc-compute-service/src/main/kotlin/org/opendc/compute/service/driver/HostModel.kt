@@ -25,7 +25,12 @@ package org.opendc.compute.service.driver
 /**
  * Describes the static machine properties of the host.
  *
+ * @property cpuCapacity The total CPU capacity of the host in MHz.
  * @property cpuCount The number of logical processing cores available for this host.
- * @property memorySize The amount of memory available for this host in MB.
+ * @property memoryCapacity The amount of memory available for this host in MB.
  */
-public data class HostModel(public val cpuCount: Int, public val memorySize: Long)
+public data class HostModel(
+    public val cpuCapacity: Double,
+    public val cpuCount: Int,
+    public val memoryCapacity: Long
+)

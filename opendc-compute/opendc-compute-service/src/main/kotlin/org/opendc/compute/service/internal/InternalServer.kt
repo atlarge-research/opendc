@@ -55,7 +55,7 @@ internal class InternalServer(
     /**
      * The attributes of a server.
      */
-    internal val attributes: Attributes = Attributes.builder()
+    @JvmField internal val attributes: Attributes = Attributes.builder()
         .put(ResourceAttributes.HOST_NAME, name)
         .put(ResourceAttributes.HOST_ID, uid.toString())
         .put(ResourceAttributes.HOST_TYPE, flavor.name)
@@ -70,7 +70,12 @@ internal class InternalServer(
     /**
      * The [Host] that has been assigned to host the server.
      */
-    internal var host: Host? = null
+    @JvmField internal var host: Host? = null
+
+    /**
+     * The most recent timestamp when the server entered a provisioning state.
+     */
+    @JvmField internal var lastProvisioningTimestamp: Long = Long.MIN_VALUE
 
     /**
      * The current scheduling request.

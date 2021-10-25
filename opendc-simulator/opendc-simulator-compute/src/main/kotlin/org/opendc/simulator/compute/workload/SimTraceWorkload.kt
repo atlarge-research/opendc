@@ -40,5 +40,7 @@ public class SimTraceWorkload(private val trace: SimTrace, private val offset: L
         }
     }
 
+    override fun onStop(ctx: SimMachineContext) {}
+
     override fun toString(): String = "SimTraceWorkload"
 }

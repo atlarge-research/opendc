@@ -50,9 +50,9 @@ public abstract class ParquetDataWriter<in T>(
     private val logger = KotlinLogging.logger {}
 
     /**
-     * The queue of commands to process.
+     * The queue of records to process.
      */
-    private val queue: BlockingQueue<T> = ArrayBlockingQueue(bufferSize)
+    private val queue: BlockingQueue<GenericData.Record> = ArrayBlockingQueue(bufferSize)
 
     /**
      * An exception to be propagated to the actual writer.
@@ -72,20 +72,20 @@ public abstract class ParquetDataWriter<in T>(
         }
 
         val queue = queue
-        val buf = mutableListOf<T>()
+        val buf = mutableListOf<GenericData.Record>()
         var shouldStop = false
 
         try {
             while (!shouldStop) {
                 try {
-                    process(writer, queue.take())
+                    writer.write(queue.take())
                 } catch (e: InterruptedException) {
                     shouldStop = true
                 }
 
                 if (queue.drainTo(buf) > 0) {
                     for (data in buf) {
-                        process(writer, data)
+                        writer.write(data)
                     }
                     buf.clear()
                 }
@@ -119,7 +119,9 @@ public abstract class ParquetDataWriter<in T>(
             throw IllegalStateException("Writer thread failed", exception)
         }
 
-        queue.put(data)
+        val builder = GenericRecordBuilder(schema)
+        convert(builder, data)
+        queue.put(builder.build())
     }
 
     /**
@@ -132,14 +134,5 @@ public abstract class ParquetDataWriter<in T>(
 
     init {
         writerThread.start()
-    }
-
-    /**
-     * Process the specified [data] to be written to the Parquet file.
-     */
-    private fun process(writer: ParquetWriter<GenericData.Record>, data: T) {
-        val builder = GenericRecordBuilder(schema)
-        convert(builder, data)
-        writer.write(builder.build())
     }
 }

@@ -37,3 +37,10 @@ public data class ServiceData(
     val attemptsFailure: Int,
     val attemptsError: Int
 )
+
+/**
+ * Convert a [ServiceTableReader] into a persistent object.
+ */
+public fun ServiceTableReader.toServiceData(): ServiceData {
+    return ServiceData(timestamp, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
+}

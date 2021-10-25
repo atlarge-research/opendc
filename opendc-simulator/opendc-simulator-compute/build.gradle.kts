@@ -35,7 +35,7 @@ dependencies {
     api(projects.opendcSimulator.opendcSimulatorPower)
     api(projects.opendcSimulator.opendcSimulatorNetwork)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcUtils)
+    implementation(libs.kotlin.logging)
 
     testImplementation(libs.slf4j.simple)
 }

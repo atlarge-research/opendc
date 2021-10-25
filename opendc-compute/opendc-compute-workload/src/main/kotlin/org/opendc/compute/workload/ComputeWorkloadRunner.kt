@@ -128,7 +128,8 @@ public class ComputeWorkloadRunner(
                             client.newFlavor(
                                 entry.name,
                                 entry.cpuCount,
-                                entry.memCapacity
+                                entry.memCapacity,
+                                meta = if (entry.cpuCapacity > 0.0) mapOf("cpu-capacity" to entry.cpuCapacity) else emptyMap()
                             ),
                             meta = mapOf("workload" to workload)
                         )

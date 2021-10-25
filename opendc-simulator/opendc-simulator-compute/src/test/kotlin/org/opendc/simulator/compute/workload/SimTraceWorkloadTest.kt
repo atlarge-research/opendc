@@ -30,6 +30,7 @@ import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.model.*
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 
@@ -67,13 +68,9 @@ class SimTraceWorkloadTest {
             offset = 0
         )
 
-        try {
-            machine.run(workload)
+        machine.runWorkload(workload)
 
-            assertEquals(4000, clock.millis())
-        } finally {
-            machine.close()
-        }
+        assertEquals(4000, clock.millis())
     }
 
     @Test
@@ -94,13 +91,9 @@ class SimTraceWorkloadTest {
             offset = 1000
         )
 
-        try {
-            machine.run(workload)
+        machine.runWorkload(workload)
 
-            assertEquals(5000, clock.millis())
-        } finally {
-            machine.close()
-        }
+        assertEquals(5000, clock.millis())
     }
 
     @Test
@@ -121,14 +114,10 @@ class SimTraceWorkloadTest {
             offset = 0
         )
 
-        try {
-            delay(1000L)
-            machine.run(workload)
+        delay(1000L)
+        machine.runWorkload(workload)
 
-            assertEquals(4000, clock.millis())
-        } finally {
-            machine.close()
-        }
+        assertEquals(4000, clock.millis())
     }
 
     @Test
@@ -149,12 +138,8 @@ class SimTraceWorkloadTest {
             offset = 0
         )
 
-        try {
-            machine.run(workload)
+        machine.runWorkload(workload)
 
-            assertEquals(4000, clock.millis())
-        } finally {
-            machine.close()
-        }
+        assertEquals(4000, clock.millis())
     }
 }

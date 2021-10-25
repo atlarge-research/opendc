@@ -29,7 +29,7 @@ import org.opendc.simulator.compute.workload.SimWorkload
 /**
  * A generic machine that is able to run a [SimWorkload].
  */
-public interface SimMachine : AutoCloseable {
+public interface SimMachine {
     /**
      * The model of the machine containing its specifications.
      */
@@ -41,12 +41,19 @@ public interface SimMachine : AutoCloseable {
     public val peripherals: List<SimPeripheral>
 
     /**
-     * Converge the specified [SimWorkload] on this machine and suspend execution util the workload has finished.
+     * Start the specified [SimWorkload] on this machine.
+     *
+     * @param workload The workload to start on the machine.
+     * @param meta The metadata to pass to the workload.
+     * @return A [SimMachineContext] that represents the execution context for the workload.
+     * @throws IllegalStateException if a workload is already active on the machine or if the machine is closed.
      */
-    public suspend fun run(workload: SimWorkload, meta: Map<String, Any> = emptyMap())
+    public fun startWorkload(workload: SimWorkload, meta: Map<String, Any> = emptyMap()): SimMachineContext
 
     /**
-     * Terminate this machine.
+     * Cancel the workload that is currently running on this machine.
+     *
+     * If no workload is active, this operation is a no-op.
      */
-    public override fun close()
+    public fun cancel()
 }

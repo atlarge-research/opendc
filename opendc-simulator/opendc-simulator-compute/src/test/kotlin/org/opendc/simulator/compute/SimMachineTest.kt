@@ -65,14 +65,10 @@ class SimMachineTest {
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
-        try {
-            machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
+        machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0))
 
-            // Two cores execute 1000 MFlOps per second (1000 ms)
-            assertEquals(1000, clock.millis())
-        } finally {
-            machine.close()
-        }
+        // Two cores execute 1000 MFlOps per second (1000 ms)
+        assertEquals(1000, clock.millis())
     }
 
     @Test
@@ -88,14 +84,10 @@ class SimMachineTest {
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
-        try {
-            machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
+        machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0))
 
-            // Two sockets with two cores execute 2000 MFlOps per second (500 ms)
-            assertEquals(500, clock.millis())
-        } finally {
-            machine.close()
-        }
+        // Two sockets with two cores execute 2000 MFlOps per second (500 ms)
+        assertEquals(500, clock.millis())
     }
 
     @Test
@@ -109,16 +101,12 @@ class SimMachineTest {
         val source = SimPowerSource(engine, capacity = 1000.0)
         source.connect(machine.psu)
 
-        try {
-            coroutineScope {
-                launch { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
-                assertAll(
-                    { assertEquals(100.0, machine.psu.powerDraw) },
-                    { assertEquals(100.0, source.powerDraw) }
-                )
-            }
-        } finally {
-            machine.close()
+        coroutineScope {
+            launch { machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0)) }
+            assertAll(
+                { assertEquals(100.0, machine.psu.powerDraw) },
+                { assertEquals(100.0, source.powerDraw) }
+            )
         }
     }
 
@@ -130,22 +118,20 @@ class SimMachineTest {
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
-        try {
-            machine.run(object : SimWorkload {
-                override fun onStart(ctx: SimMachineContext) {
-                    val cpu = ctx.cpus[0]
+        machine.runWorkload(object : SimWorkload {
+            override fun onStart(ctx: SimMachineContext) {
+                val cpu = ctx.cpus[0]
 
-                    cpu.capacity = cpu.model.frequency + 1000.0
-                    assertEquals(cpu.model.frequency, cpu.capacity)
-                    cpu.capacity = -1.0
-                    assertEquals(0.0, cpu.capacity)
+                cpu.capacity = cpu.model.frequency + 1000.0
+                assertEquals(cpu.model.frequency, cpu.capacity)
+                cpu.capacity = -1.0
+                assertEquals(0.0, cpu.capacity)
 
-                    ctx.close()
-                }
-            })
-        } finally {
-            machine.close()
-        }
+                ctx.close()
+            }
+
+            override fun onStop(ctx: SimMachineContext) {}
+        })
     }
 
     @Test
@@ -156,16 +142,14 @@ class SimMachineTest {
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
-        try {
-            machine.run(object : SimWorkload {
-                override fun onStart(ctx: SimMachineContext) {
-                    assertEquals(32_000 * 4.0, ctx.memory.capacity)
-                    ctx.close()
-                }
-            })
-        } finally {
-            machine.close()
-        }
+        machine.runWorkload(object : SimWorkload {
+            override fun onStart(ctx: SimMachineContext) {
+                assertEquals(32_000 * 4.0, ctx.memory.capacity)
+                ctx.close()
+            }
+
+            override fun onStop(ctx: SimMachineContext) {}
+        })
     }
 
     @Test
@@ -176,18 +160,16 @@ class SimMachineTest {
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
-        try {
-            machine.run(object : SimWorkload {
-                override fun onStart(ctx: SimMachineContext) {
-                    val lifecycle = SimWorkloadLifecycle(ctx)
-                    ctx.memory.startConsumer(lifecycle.waitFor(FixedFlowSource(ctx.memory.capacity, utilization = 0.8)))
-                }
-            })
+        machine.runWorkload(object : SimWorkload {
+            override fun onStart(ctx: SimMachineContext) {
+                val lifecycle = SimWorkloadLifecycle(ctx)
+                ctx.memory.startConsumer(lifecycle.waitFor(FixedFlowSource(ctx.memory.capacity, utilization = 0.8)))
+            }
 
-            assertEquals(1250, clock.millis())
-        } finally {
-            machine.close()
-        }
+            override fun onStop(ctx: SimMachineContext) {}
+        })
+
+        assertEquals(1250, clock.millis())
     }
 
     @Test
@@ -202,19 +184,17 @@ class SimMachineTest {
         val adapter = (machine.peripherals[0] as SimNetworkAdapter)
         adapter.connect(SimNetworkSink(engine, adapter.bandwidth))
 
-        try {
-            machine.run(object : SimWorkload {
-                override fun onStart(ctx: SimMachineContext) {
-                    val lifecycle = SimWorkloadLifecycle(ctx)
-                    val iface = ctx.net[0]
-                    iface.tx.startConsumer(lifecycle.waitFor(FixedFlowSource(iface.bandwidth, utilization = 0.8)))
-                }
-            })
+        machine.runWorkload(object : SimWorkload {
+            override fun onStart(ctx: SimMachineContext) {
+                val lifecycle = SimWorkloadLifecycle(ctx)
+                val iface = ctx.net[0]
+                iface.tx.startConsumer(lifecycle.waitFor(FixedFlowSource(iface.bandwidth, utilization = 0.8)))
+            }
 
-            assertEquals(1250, clock.millis())
-        } finally {
-            machine.close()
-        }
+            override fun onStop(ctx: SimMachineContext) {}
+        })
+
+        assertEquals(1250, clock.millis())
     }
 
     @Test
@@ -226,19 +206,17 @@ class SimMachineTest {
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
-        try {
-            machine.run(object : SimWorkload {
-                override fun onStart(ctx: SimMachineContext) {
-                    val lifecycle = SimWorkloadLifecycle(ctx)
-                    val disk = ctx.storage[0]
-                    disk.read.startConsumer(lifecycle.waitFor(FixedFlowSource(disk.read.capacity, utilization = 0.8)))
-                }
-            })
+        machine.runWorkload(object : SimWorkload {
+            override fun onStart(ctx: SimMachineContext) {
+                val lifecycle = SimWorkloadLifecycle(ctx)
+                val disk = ctx.storage[0]
+                disk.read.startConsumer(lifecycle.waitFor(FixedFlowSource(disk.read.capacity, utilization = 0.8)))
+            }
 
-            assertEquals(1250, clock.millis())
-        } finally {
-            machine.close()
-        }
+            override fun onStop(ctx: SimMachineContext) {}
+        })
+
+        assertEquals(1250, clock.millis())
     }
 
     @Test
@@ -250,19 +228,17 @@ class SimMachineTest {
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
-        try {
-            machine.run(object : SimWorkload {
-                override fun onStart(ctx: SimMachineContext) {
-                    val lifecycle = SimWorkloadLifecycle(ctx)
-                    val disk = ctx.storage[0]
-                    disk.write.startConsumer(lifecycle.waitFor(FixedFlowSource(disk.write.capacity, utilization = 0.8)))
-                }
-            })
+        machine.runWorkload(object : SimWorkload {
+            override fun onStart(ctx: SimMachineContext) {
+                val lifecycle = SimWorkloadLifecycle(ctx)
+                val disk = ctx.storage[0]
+                disk.write.startConsumer(lifecycle.waitFor(FixedFlowSource(disk.write.capacity, utilization = 0.8)))
+            }
 
-            assertEquals(1250, clock.millis())
-        } finally {
-            machine.close()
-        }
+            override fun onStop(ctx: SimMachineContext) {}
+        })
+
+        assertEquals(1250, clock.millis())
     }
 
     @Test
@@ -275,13 +251,11 @@ class SimMachineTest {
 
         try {
             coroutineScope {
-                launch { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
+                launch { machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0)) }
                 cancel()
             }
         } catch (_: CancellationException) {
             // Ignore
-        } finally {
-            machine.close()
         }
 
         assertEquals(0, clock.millis())
@@ -295,31 +269,14 @@ class SimMachineTest {
             SimplePowerDriver(ConstantPowerModel(0.0))
         )
 
-        try {
-            coroutineScope {
-                launch {
-                    machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
-                }
-
-                assertThrows<IllegalStateException> {
-                    machine.run(SimFlopsWorkload(2_000, utilization = 1.0))
-                }
+        coroutineScope {
+            launch {
+                machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0))
             }
-        } finally {
-            machine.close()
+
+            assertThrows<IllegalStateException> {
+                machine.runWorkload(SimFlopsWorkload(2_000, utilization = 1.0))
+            }
         }
-    }
-
-    @Test
-    fun testClose() = runBlockingSimulation {
-        val machine = SimBareMetalMachine(
-            FlowEngine(coroutineContext, clock),
-            machineModel,
-            SimplePowerDriver(ConstantPowerModel(0.0))
-        )
-
-        machine.close()
-        assertDoesNotThrow { machine.close() }
-        assertThrows<IllegalStateException> { machine.run(SimFlopsWorkload(2_000, utilization = 1.0)) }
     }
 }

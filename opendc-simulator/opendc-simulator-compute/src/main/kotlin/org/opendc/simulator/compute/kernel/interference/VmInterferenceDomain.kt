@@ -30,14 +30,30 @@ import org.opendc.simulator.flow.interference.InterferenceKey
  */
 public interface VmInterferenceDomain : InterferenceDomain {
     /**
-     * Join this interference domain.
+     * Construct an [InterferenceKey] for the specified [id].
      *
      * @param id The identifier of the virtual machine.
+     * @return A key identifying the virtual machine as part of the interference domain. `null` if the virtual machine
+     * does not participate in the domain.
      */
-    public fun join(id: String): InterferenceKey
+    public fun createKey(id: String): InterferenceKey?
 
     /**
-     * Leave this interference domain.
+     * Remove the specified [key] from this domain.
+     */
+    public fun removeKey(key: InterferenceKey)
+
+    /**
+     * Mark the specified [key] as active in this interference domain.
+     *
+     * @param key The key to join the interference domain with.
+     */
+    public fun join(key: InterferenceKey)
+
+    /**
+     * Mark the specified [key] as inactive in this interference domain.
+     *
+     * @param key The key of the virtual machine that wants to leave the domain.
      */
     public fun leave(key: InterferenceKey)
 }

@@ -34,6 +34,7 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.PowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.*
 import java.time.Clock
@@ -128,6 +129,8 @@ public class SimTFDevice(
             }
         }
 
+        override fun onStop(ctx: SimMachineContext) {}
+
         override fun onStart(conn: FlowConnection, now: Long) {
             ctx = conn
             capacity = conn.capacity
@@ -172,7 +175,7 @@ public class SimTFDevice(
 
     init {
         scope.launch {
-            machine.run(workload)
+            machine.runWorkload(workload)
         }
     }
 
@@ -189,7 +192,7 @@ public class SimTFDevice(
     }
 
     override fun close() {
-        machine.close()
+        machine.cancel()
         scope.cancel()
     }
 

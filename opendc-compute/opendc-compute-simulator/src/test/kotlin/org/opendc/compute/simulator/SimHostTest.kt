@@ -46,8 +46,8 @@ import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.HOST_ID
-import org.opendc.telemetry.compute.table.HostData
-import org.opendc.telemetry.compute.table.ServerData
+import org.opendc.telemetry.compute.table.HostTableReader
+import org.opendc.telemetry.compute.table.ServerTableReader
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
 import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Duration
@@ -140,10 +140,10 @@ internal class SimHostTest {
         val reader = CoroutineMetricReader(
             this, listOf(meterProvider as MetricProducer),
             object : ComputeMetricExporter() {
-                override fun record(data: HostData) {
-                    activeTime += data.cpuActiveTime
-                    idleTime += data.cpuIdleTime
-                    stealTime += data.cpuStealTime
+                override fun record(reader: HostTableReader) {
+                    activeTime += reader.cpuActiveTime
+                    idleTime += reader.cpuIdleTime
+                    stealTime += reader.cpuStealTime
                 }
             },
             exportInterval = Duration.ofSeconds(duration)
@@ -236,16 +236,16 @@ internal class SimHostTest {
         val reader = CoroutineMetricReader(
             this, listOf(meterProvider as MetricProducer),
             object : ComputeMetricExporter() {
-                override fun record(data: HostData) {
-                    activeTime += data.cpuActiveTime
-                    idleTime += data.cpuIdleTime
-                    uptime += data.uptime
-                    downtime += data.downtime
+                override fun record(reader: HostTableReader) {
+                    activeTime += reader.cpuActiveTime
+                    idleTime += reader.cpuIdleTime
+                    uptime += reader.uptime
+                    downtime += reader.downtime
                 }
 
-                override fun record(data: ServerData) {
-                    guestUptime += data.uptime
-                    guestDowntime += data.downtime
+                override fun record(reader: ServerTableReader) {
+                    guestUptime += reader.uptime
+                    guestDowntime += reader.downtime
                 }
             },
             exportInterval = Duration.ofSeconds(duration)

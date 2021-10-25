@@ -30,7 +30,6 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.kernel.cpufreq.PerformanceScalingGovernor
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceGroup
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -38,6 +37,7 @@ import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
@@ -81,16 +81,16 @@ internal class SimFairShareHypervisorTest {
         val hypervisor = SimFairShareHypervisor(platform, null, PerformanceScalingGovernor(), null)
 
         launch {
-            machine.run(hypervisor)
+            machine.runWorkload(hypervisor)
             println("Hypervisor finished")
         }
         yield()
 
-        val vm = hypervisor.createMachine(model)
-        vm.run(workloadA)
+        val vm = hypervisor.newMachine(model)
+        vm.runWorkload(workloadA)
 
         yield()
-        machine.close()
+        machine.cancel()
 
         assertAll(
             { assertEquals(319781, hypervisor.counters.cpuActiveTime, "Active time does not match") },
@@ -132,22 +132,22 @@ internal class SimFairShareHypervisorTest {
         val hypervisor = SimFairShareHypervisor(platform, null, null, null)
 
         launch {
-            machine.run(hypervisor)
+            machine.runWorkload(hypervisor)
         }
 
         yield()
         coroutineScope {
             launch {
-                val vm = hypervisor.createMachine(model)
-                vm.run(workloadA)
-                vm.close()
+                val vm = hypervisor.newMachine(model)
+                vm.runWorkload(workloadA)
+                hypervisor.removeMachine(vm)
             }
-            val vm = hypervisor.createMachine(model)
-            vm.run(workloadB)
-            vm.close()
+            val vm = hypervisor.newMachine(model)
+            vm.runWorkload(workloadB)
+            hypervisor.removeMachine(vm)
         }
         yield()
-        machine.close()
+        machine.cancel()
         yield()
 
         assertAll(
@@ -172,11 +172,11 @@ internal class SimFairShareHypervisorTest {
 
         assertDoesNotThrow {
             launch {
-                machine.run(hypervisor)
+                machine.runWorkload(hypervisor)
             }
         }
 
-        machine.close()
+        machine.cancel()
     }
 
     @Test
@@ -187,12 +187,11 @@ internal class SimFairShareHypervisorTest {
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
 
-        val groups = listOf(
-            VmInterferenceGroup(targetLoad = 0.0, score = 0.9, members = setOf("a", "b")),
-            VmInterferenceGroup(targetLoad = 0.0, score = 0.6, members = setOf("a", "c")),
-            VmInterferenceGroup(targetLoad = 0.1, score = 0.8, members = setOf("a", "n"))
-        )
-        val interferenceModel = VmInterferenceModel(groups)
+        val interferenceModel = VmInterferenceModel.builder()
+            .addGroup(targetLoad = 0.0, score = 0.9, members = setOf("a", "b"))
+            .addGroup(targetLoad = 0.0, score = 0.6, members = setOf("a", "c"))
+            .addGroup(targetLoad = 0.1, score = 0.8, members = setOf("a", "n"))
+            .build()
 
         val platform = FlowEngine(coroutineContext, clock)
         val machine = SimBareMetalMachine(
@@ -221,20 +220,20 @@ internal class SimFairShareHypervisorTest {
             )
 
         launch {
-            machine.run(hypervisor)
+            machine.runWorkload(hypervisor)
         }
 
         coroutineScope {
             launch {
-                val vm = hypervisor.createMachine(model, "a")
-                vm.run(workloadA)
-                vm.close()
+                val vm = hypervisor.newMachine(model, "a")
+                vm.runWorkload(workloadA)
+                hypervisor.removeMachine(vm)
             }
-            val vm = hypervisor.createMachine(model, "b")
-            vm.run(workloadB)
-            vm.close()
+            val vm = hypervisor.newMachine(model, "b")
+            vm.runWorkload(workloadB)
+            hypervisor.removeMachine(vm)
         }
 
-        machine.close()
+        machine.cancel()
     }
 }

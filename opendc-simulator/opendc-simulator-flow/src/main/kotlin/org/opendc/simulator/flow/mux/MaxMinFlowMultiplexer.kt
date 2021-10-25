@@ -86,7 +86,15 @@ public class MaxMinFlowMultiplexer(
     private val scheduler = Scheduler(engine, parent)
 
     override fun newInput(key: InterferenceKey?): FlowConsumer {
-        val provider = Input(engine, scheduler, interferenceDomain, key, scheduler.capacity)
+        return newInput(isCoupled = true, Double.POSITIVE_INFINITY, key)
+    }
+
+    override fun newInput(capacity: Double, key: InterferenceKey?): FlowConsumer {
+        return newInput(isCoupled = false, capacity, key)
+    }
+
+    private fun newInput(isCoupled: Boolean, initialCapacity: Double, key: InterferenceKey?): FlowConsumer {
+        val provider = Input(engine, scheduler, interferenceDomain, key, isCoupled, initialCapacity)
         _inputs.add(provider)
         return provider
     }
@@ -206,7 +214,10 @@ public class MaxMinFlowMultiplexer(
             // Disable timers and convergence of the source if one of the output manages it
             input.shouldConsumerConverge = !hasActivationOutput
             input.enableTimers = !hasActivationOutput
-            input.capacity = capacity
+
+            if (input.isCoupled) {
+                input.capacity = capacity
+            }
 
             trigger(_clock.millis())
         }
@@ -340,7 +351,9 @@ public class MaxMinFlowMultiplexer(
             capacity = newCapacity
 
             for (input in _activeInputs) {
-                input.capacity = newCapacity
+                if (input.isCoupled) {
+                    input.capacity = newCapacity
+                }
             }
 
             // Sort outputs by their capacity
@@ -495,6 +508,7 @@ public class MaxMinFlowMultiplexer(
         private val scheduler: Scheduler,
         private val interferenceDomain: InterferenceDomain?,
         @JvmField val key: InterferenceKey?,
+        @JvmField val isCoupled: Boolean,
         initialCapacity: Double,
     ) : FlowConsumer, FlowConsumerLogic, Comparable<Input> {
         /**

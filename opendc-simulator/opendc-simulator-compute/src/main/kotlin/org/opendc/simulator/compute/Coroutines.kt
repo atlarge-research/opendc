@@ -1,0 +1,69 @@
+/*
+ * Copyright (c) 2021 AtLarge Research
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package org.opendc.simulator.compute
+
+import kotlinx.coroutines.suspendCancellableCoroutine
+import org.opendc.simulator.compute.workload.SimWorkload
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+
+/**
+ * Run the specified [SimWorkload] on this machine and suspend execution util [workload] has finished.
+ *
+ * @param workload The workload to start on the machine.
+ * @param meta The metadata to pass to the workload.
+ * @return A [SimMachineContext] that represents the execution context for the workload.
+ * @throws IllegalStateException if a workload is already active on the machine or if the machine is closed.
+ */
+public suspend fun SimMachine.runWorkload(workload: SimWorkload, meta: Map<String, Any> = emptyMap()) {
+    return suspendCancellableCoroutine { cont ->
+        cont.invokeOnCancellation { this@runWorkload.cancel() }
+
+        startWorkload(
+            object : SimWorkload {
+                override fun onStart(ctx: SimMachineContext) {
+                    try {
+                        workload.onStart(ctx)
+                    } catch (cause: Throwable) {
+                        cont.resumeWithException(cause)
+                        throw cause
+                    }
+                }
+
+                override fun onStop(ctx: SimMachineContext) {
+                    try {
+                        workload.onStop(ctx)
+
+                        if (!cont.isCompleted) {
+                            cont.resume(Unit)
+                        }
+                    } catch (cause: Throwable) {
+                        cont.resumeWithException(cause)
+                        throw cause
+                    }
+                }
+            },
+            meta
+        )
+    }
+}

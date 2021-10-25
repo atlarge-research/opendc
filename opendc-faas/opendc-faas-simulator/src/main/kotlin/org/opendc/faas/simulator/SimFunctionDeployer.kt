@@ -36,6 +36,7 @@ import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
 import java.util.ArrayDeque
@@ -114,7 +115,7 @@ public class SimFunctionDeployer(
         override fun close() {
             state = FunctionInstanceState.Deleted
             stop()
-            machine.close()
+            machine.cancel()
         }
 
         override fun toString(): String = "FunctionInstance[state=$state]"
@@ -130,7 +131,7 @@ public class SimFunctionDeployer(
 
                 launch {
                     try {
-                        machine.run(workload)
+                        machine.runWorkload(workload)
                     } finally {
                         state = FunctionInstanceState.Deleted
                     }

@@ -20,26 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.util
+package org.opendc.compute.service.scheduler.weights
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.internal.HostView
 
 /**
- * Test suite for the [PerformanceInterferenceReader] class.
+ * A [HostWeigher] that weighs the hosts based on the difference required vCPU capacity and the available CPU capacity.
  */
-class PerformanceInterferenceReaderTest {
-    @Test
-    fun testSmoke() {
-        val input = checkNotNull(PerformanceInterferenceReader::class.java.getResourceAsStream("/perf-interference.json"))
-        val result = PerformanceInterferenceReader().read(input)
+public class VCpuCapacityWeigher(override val multiplier: Double = 1.0) : HostWeigher {
 
-        assertAll(
-            { assertEquals(2, result.size) },
-            { assertEquals(setOf("vm_a", "vm_c", "vm_x", "vm_y"), result[0].members) },
-            { assertEquals(0.0, result[0].targetLoad, 0.001) },
-            { assertEquals(0.8830158730158756, result[0].score, 0.001) }
-        )
+    override fun getWeight(host: HostView, server: Server): Double {
+        val model = host.host.model
+        val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double ?: 0.0
+        return model.cpuCapacity / model.cpuCount - requiredCapacity / server.flavor.cpuCount
     }
+
+    override fun toString(): String = "VCpuWeigher"
 }

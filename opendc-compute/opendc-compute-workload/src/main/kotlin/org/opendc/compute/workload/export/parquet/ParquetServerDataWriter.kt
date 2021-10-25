@@ -28,17 +28,17 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
-import org.opendc.telemetry.compute.table.ServerData
+import org.opendc.telemetry.compute.table.ServerTableReader
 import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
 import org.opendc.trace.util.parquet.UUID_SCHEMA
 import org.opendc.trace.util.parquet.optional
 import java.io.File
 
 /**
- * A Parquet event writer for [ServerData]s.
+ * A Parquet event writer for [ServerTableReader]s.
  */
 public class ParquetServerDataWriter(path: File, bufferSize: Int) :
-    ParquetDataWriter<ServerData>(path, SCHEMA, bufferSize) {
+    ParquetDataWriter<ServerTableReader>(path, SCHEMA, bufferSize) {
 
     override fun buildWriter(builder: AvroParquetWriter.Builder<GenericData.Record>): ParquetWriter<GenericData.Record> {
         return builder
@@ -47,7 +47,7 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             .build()
     }
 
-    override fun convert(builder: GenericRecordBuilder, data: ServerData) {
+    override fun convert(builder: GenericRecordBuilder, data: ServerTableReader) {
         builder["timestamp"] = data.timestamp.toEpochMilli()
 
         builder["server_id"] = data.server.id
@@ -55,9 +55,8 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
 
         builder["uptime"] = data.uptime
         builder["downtime"] = data.downtime
-        val bootTime = data.bootTime
-        builder["boot_time"] = bootTime?.toEpochMilli()
-        builder["scheduling_latency"] = data.schedulingLatency
+        builder["boot_time"] = data.bootTime?.toEpochMilli()
+        builder["provision_time"] = data.provisionTime?.toEpochMilli()
 
         builder["cpu_count"] = data.server.cpuCount
         builder["cpu_limit"] = data.cpuLimit
@@ -81,8 +80,8 @@ public class ParquetServerDataWriter(path: File, bufferSize: Int) :
             .name("host_id").type(UUID_SCHEMA.optional()).noDefault()
             .requiredLong("uptime")
             .requiredLong("downtime")
+            .name("provision_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
             .name("boot_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
-            .requiredLong("scheduling_latency")
             .requiredInt("cpu_count")
             .requiredDouble("cpu_limit")
             .requiredLong("cpu_time_active")

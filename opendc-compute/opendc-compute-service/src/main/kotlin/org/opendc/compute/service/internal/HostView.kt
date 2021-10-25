@@ -37,7 +37,7 @@ public class HostView(public val host: Host) {
         get() = host.uid
 
     public var instanceCount: Int = 0
-    public var availableMemory: Long = host.model.memorySize
+    public var availableMemory: Long = host.model.memoryCapacity
     public var provisionedCores: Int = 0
 
     override fun toString(): String = "HostView[host=$host]"

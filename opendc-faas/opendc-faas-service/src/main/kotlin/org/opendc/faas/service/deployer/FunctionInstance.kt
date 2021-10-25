@@ -25,9 +25,9 @@ package org.opendc.faas.service.deployer
 import org.opendc.faas.service.FunctionObject
 
 /**
- * A [FunctionInstance] is a a self-contained worker—typically a container—capable of handling function executions.
+ * A [FunctionInstance] is a self-contained worker—typically a container—capable of handling function executions.
  *
- * Multiple, concurrent function instances can exists for a single function, for scalability purposes.
+ * Multiple, concurrent function instances can exist for a single function, for scalability purposes.
  */
 public interface FunctionInstance : AutoCloseable {
     /**

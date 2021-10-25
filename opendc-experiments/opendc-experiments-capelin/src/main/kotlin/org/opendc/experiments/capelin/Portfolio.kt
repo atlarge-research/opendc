@@ -30,14 +30,13 @@ import org.opendc.compute.workload.createComputeScheduler
 import org.opendc.compute.workload.export.parquet.ParquetComputeMetricExporter
 import org.opendc.compute.workload.grid5000
 import org.opendc.compute.workload.topology.apply
-import org.opendc.compute.workload.util.PerformanceInterferenceReader
+import org.opendc.compute.workload.util.VmInterferenceModelReader
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
 import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.compute.collectServiceMetrics
 import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
@@ -99,9 +98,8 @@ abstract class Portfolio(name: String) : Experiment(name) {
         val seeder = Random(repeat.toLong())
 
         val performanceInterferenceModel = if (operationalPhenomena.hasInterference)
-            PerformanceInterferenceReader()
+            VmInterferenceModelReader()
                 .read(File(config.getString("interference-model")))
-                .let { VmInterferenceModel(it, Random(seeder.nextLong())) }
         else
             null
 
@@ -116,7 +114,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
             clock,
             computeScheduler,
             failureModel,
-            performanceInterferenceModel
+            performanceInterferenceModel?.withSeed(repeat.toLong())
         )
 
         val exporter = ParquetComputeMetricExporter(

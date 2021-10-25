@@ -62,11 +62,19 @@ public interface FlowMultiplexer {
     public val counters: FlowCounters
 
     /**
-     * Create a new input on this multiplexer.
+     * Create a new input on this multiplexer with a coupled capacity.
      *
      * @param key The key of the interference member to which the input belongs.
      */
     public fun newInput(key: InterferenceKey? = null): FlowConsumer
+
+    /**
+     * Create a new input on this multiplexer with the specified [capacity].
+     *
+     * @param capacity The capacity of the input.
+     * @param key The key of the interference member to which the input belongs.
+     */
+    public fun newInput(capacity: Double, key: InterferenceKey? = null): FlowConsumer
 
     /**
      * Remove [input] from this multiplexer.

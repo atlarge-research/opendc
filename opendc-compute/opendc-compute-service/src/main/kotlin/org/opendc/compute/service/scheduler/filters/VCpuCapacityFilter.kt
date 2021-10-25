@@ -20,31 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute.table
+package org.opendc.compute.service.scheduler.filters
 
-import java.time.Instant
+import org.opendc.compute.api.Server
+import org.opendc.compute.service.internal.HostView
 
 /**
- * A trace entry for a particular host.
+ * A [HostFilter] that filters hosts based on the vCPU speed requirements of a [Server] and the available
+ * capacity on the host.
  */
-public data class HostData(
-    val timestamp: Instant,
-    val host: HostInfo,
-    val guestsTerminated: Int,
-    val guestsRunning: Int,
-    val guestsError: Int,
-    val guestsInvalid: Int,
-    val cpuLimit: Double,
-    val cpuUsage: Double,
-    val cpuDemand: Double,
-    val cpuUtilization: Double,
-    val cpuActiveTime: Long,
-    val cpuIdleTime: Long,
-    val cpuStealTime: Long,
-    val cpuLostTime: Long,
-    val powerUsage: Double,
-    val powerTotal: Double,
-    val uptime: Long,
-    val downtime: Long,
-    val bootTime: Instant?
-)
+public class VCpuCapacityFilter : HostFilter {
+    override fun test(host: HostView, server: Server): Boolean {
+        val requiredCapacity = server.flavor.meta["cpu-capacity"] as? Double
+        val hostModel = host.host.model
+        val availableCapacity = hostModel.cpuCapacity / hostModel.cpuCount
+
+        return requiredCapacity == null || availableCapacity >= (requiredCapacity / server.flavor.cpuCount)
+    }
+}

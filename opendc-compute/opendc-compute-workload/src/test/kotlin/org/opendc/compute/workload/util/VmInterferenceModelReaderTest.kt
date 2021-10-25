@@ -20,25 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.simulator.compute.kernel.interference
+package org.opendc.compute.workload.util
+
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 /**
- * A group of virtual machines that together can interfere when operating on the same resources, causing performance
- * variability.
+ * Test suite for the [VmInterferenceModelReader] class.
  */
-public data class VmInterferenceGroup(
-    /**
-     * The minimum load of the host before the interference occurs.
-     */
-    public val targetLoad: Double,
-
-    /**
-     * A score in [0, 1] representing the performance variability as a result of resource interference.
-     */
-    public val score: Double,
-
-    /**
-     * The members of this interference group.
-     */
-    public val members: Set<String>
-)
+class VmInterferenceModelReaderTest {
+    @Test
+    fun testSmoke() {
+        val input = checkNotNull(VmInterferenceModelReader::class.java.getResourceAsStream("/perf-interference.json"))
+        assertDoesNotThrow { VmInterferenceModelReader().read(input) }
+    }
+}

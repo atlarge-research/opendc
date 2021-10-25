@@ -25,9 +25,9 @@ package org.opendc.compute.workload.export.parquet
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.ComputeMonitor
-import org.opendc.telemetry.compute.table.HostData
-import org.opendc.telemetry.compute.table.ServerData
-import org.opendc.telemetry.compute.table.ServiceData
+import org.opendc.telemetry.compute.table.HostTableReader
+import org.opendc.telemetry.compute.table.ServerTableReader
+import org.opendc.telemetry.compute.table.ServiceTableReader
 import java.io.File
 
 /**
@@ -49,16 +49,16 @@ public class ParquetComputeMetricExporter(base: File, partition: String, bufferS
         bufferSize
     )
 
-    override fun record(data: ServerData) {
-        serverWriter.write(data)
+    override fun record(reader: ServerTableReader) {
+        serverWriter.write(reader)
     }
 
-    override fun record(data: HostData) {
-        hostWriter.write(data)
+    override fun record(reader: HostTableReader) {
+        hostWriter.write(reader)
     }
 
-    override fun record(data: ServiceData) {
-        serviceWriter.write(data)
+    override fun record(reader: ServiceTableReader) {
+        serviceWriter.write(reader)
     }
 
     override fun shutdown(): CompletableResultCode {

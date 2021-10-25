@@ -67,5 +67,12 @@ public interface SimHypervisor : SimWorkload {
      * @param model The machine to create.
      * @param interferenceId An identifier for the interference model.
      */
-    public fun createMachine(model: MachineModel, interferenceId: String? = null): SimVirtualMachine
+    public fun newMachine(model: MachineModel, interferenceId: String? = null): SimVirtualMachine
+
+    /**
+     * Remove the specified [machine] from the hypervisor.
+     *
+     * @param machine The machine to remove.
+     */
+    public fun removeMachine(machine: SimVirtualMachine)
 }

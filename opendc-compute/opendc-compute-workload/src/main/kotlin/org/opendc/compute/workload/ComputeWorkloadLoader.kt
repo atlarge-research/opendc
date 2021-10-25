@@ -92,7 +92,8 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
         val idCol = reader.resolve(RESOURCE_ID)
         val startTimeCol = reader.resolve(RESOURCE_START_TIME)
         val stopTimeCol = reader.resolve(RESOURCE_STOP_TIME)
-        val coresCol = reader.resolve(RESOURCE_CPU_COUNT)
+        val cpuCountCol = reader.resolve(RESOURCE_CPU_COUNT)
+        val cpuCapacityCol = reader.resolve(RESOURCE_CPU_CAPACITY)
         val memCol = reader.resolve(RESOURCE_MEM_CAPACITY)
 
         var counter = 0
@@ -108,8 +109,9 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
 
                 val submissionTime = reader.get(startTimeCol) as Instant
                 val endTime = reader.get(stopTimeCol) as Instant
-                val maxCores = reader.getInt(coresCol)
-                val requiredMemory = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
+                val cpuCount = reader.getInt(cpuCountCol)
+                val cpuCapacity = reader.getDouble(cpuCapacityCol)
+                val memCapacity = reader.getDouble(memCol) / 1000.0 // Convert from KB to MB
                 val uid = UUID.nameUUIDFromBytes("$id-${counter++}".toByteArray())
 
                 val builder = fragments.getValue(id)
@@ -119,8 +121,9 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                     VirtualMachine(
                         uid,
                         id,
-                        maxCores,
-                        requiredMemory.roundToLong(),
+                        cpuCount,
+                        cpuCapacity,
+                        memCapacity.roundToLong(),
                         totalLoad,
                         submissionTime,
                         endTime,
