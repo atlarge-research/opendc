@@ -46,11 +46,7 @@ public abstract class CompositeTableReader : TableReader {
     protected abstract fun nextReader(): TableReader?
 
     override fun nextRow(): Boolean {
-        if (!hasStarted) {
-            assert(delegate == null) { "Duplicate initialization" }
-            delegate = nextReader()
-            hasStarted = true
-        }
+        tryStart()
 
         var delegate = delegate
 
@@ -68,6 +64,8 @@ public abstract class CompositeTableReader : TableReader {
     }
 
     override fun resolve(column: TableColumn<*>): Int {
+        tryStart()
+
         val delegate = delegate
         return delegate?.resolve(column) ?: -1
     }
@@ -107,4 +105,15 @@ public abstract class CompositeTableReader : TableReader {
     }
 
     override fun toString(): String = "CompositeTableReader"
+
+    /**
+     * Try to obtain the initial delegate.
+     */
+    private fun tryStart() {
+        if (!hasStarted) {
+            assert(delegate == null) { "Duplicate initialization" }
+            delegate = nextReader()
+            hasStarted = true
+        }
+    }
 }

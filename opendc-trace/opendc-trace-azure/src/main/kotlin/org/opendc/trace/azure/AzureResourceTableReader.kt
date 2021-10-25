@@ -52,8 +52,8 @@ internal class AzureResourceTableReader(private val parser: CsvParser) : TableRe
 
             when (parser.currentName) {
                 "vm id" -> id = parser.text
-                "vm created" -> startTime = Instant.ofEpochSecond(parser.longValue)
-                "vm deleted" -> stopTime = Instant.ofEpochSecond(parser.longValue)
+                "timestamp vm created" -> startTime = Instant.ofEpochSecond(parser.longValue)
+                "timestamp vm deleted" -> stopTime = Instant.ofEpochSecond(parser.longValue)
                 "vm virtual core count" -> cpuCores = parser.intValue
                 "vm memory" -> memCapacity = parser.doubleValue * 1e6 // GB to KB
             }

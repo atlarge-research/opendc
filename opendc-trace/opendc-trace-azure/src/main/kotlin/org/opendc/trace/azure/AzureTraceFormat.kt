@@ -31,8 +31,9 @@ import org.opendc.trace.util.CompositeTableReader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
-import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
+import java.util.zip.GZIPInputStream
+import kotlin.io.path.inputStream
+import kotlin.io.path.name
 
 /**
  * A format implementation for the Azure v1 format.
@@ -81,7 +82,10 @@ public class AzureTraceFormat : TraceFormat {
 
     override fun newReader(path: Path, table: String): TableReader {
         return when (table) {
-            TABLE_RESOURCES -> AzureResourceTableReader(factory.createParser(path.resolve("vmtable/vmtable.csv").toFile()))
+            TABLE_RESOURCES -> {
+                val stream = GZIPInputStream(path.resolve("vmtable/vmtable.csv.gz").inputStream())
+                AzureResourceTableReader(factory.createParser(stream))
+            }
             TABLE_RESOURCE_STATES -> newResourceStateReader(path)
             else -> throw IllegalArgumentException("Table $table not supported")
         }
@@ -96,8 +100,8 @@ public class AzureTraceFormat : TraceFormat {
      */
     private fun newResourceStateReader(path: Path): TableReader {
         val partitions = Files.walk(path.resolve("vm_cpu_readings"), 1)
-            .filter { !Files.isDirectory(it) && it.extension == "csv" }
-            .collect(Collectors.toMap({ it.nameWithoutExtension }, { it }))
+            .filter { !Files.isDirectory(it) && it.name.endsWith(".csv.gz") }
+            .collect(Collectors.toMap({ it.name.removeSuffix(".csv.gz") }, { it }))
             .toSortedMap()
         val it = partitions.iterator()
 
@@ -105,7 +109,8 @@ public class AzureTraceFormat : TraceFormat {
             override fun nextReader(): TableReader? {
                 return if (it.hasNext()) {
                     val (_, partPath) = it.next()
-                    return AzureResourceStateTableReader(factory.createParser(partPath.toFile()))
+                    val stream = GZIPInputStream(partPath.inputStream())
+                    return AzureResourceStateTableReader(factory.createParser(stream))
                 } else {
                     null
                 }

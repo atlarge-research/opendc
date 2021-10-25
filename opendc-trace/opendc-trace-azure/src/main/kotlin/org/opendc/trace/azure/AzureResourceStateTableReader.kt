@@ -53,7 +53,7 @@ internal class AzureResourceStateTableReader(private val parser: CsvParser) : Ta
             when (parser.currentName) {
                 "timestamp" -> timestamp = Instant.ofEpochSecond(parser.longValue)
                 "vm id" -> id = parser.text
-                "CPU avg cpu" -> cpuUsagePct = parser.doubleValue
+                "CPU avg cpu" -> cpuUsagePct = (parser.doubleValue / 100.0) // Convert from % to [0, 1]
             }
         }
 
