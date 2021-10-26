@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,21 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.service
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.opendc.web.proto.user.ProjectRole
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+/**
+ * Flag to indicate that the user can edit a project.
+ */
+internal val ProjectRole.canEdit: Boolean
+    get() = when (this) {
+        ProjectRole.OWNER, ProjectRole.EDITOR -> true
+        ProjectRole.VIEWER -> false
+    }
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
-}
+/**
+ * Flag to indicate that the user can delete a project.
+ */
+internal val ProjectRole.canDelete: Boolean
+    get() = this == ProjectRole.OWNER

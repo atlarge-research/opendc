@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,39 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.model
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.opendc.web.proto.user.ProjectRole
+import javax.persistence.*
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+/**
+ * An authorization for some user to participate in a project.
+ */
+@Entity
+@Table(name = "project_authorizations")
+class ProjectAuthorization(
+    /**
+     * The user identifier of the authorization.
+     */
+    @EmbeddedId
+    val key: ProjectAuthorizationKey,
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+    /**
+     * The project that the user is authorized to participate in.
+     */
+    @ManyToOne(optional = false)
+    @MapsId("projectId")
+    @JoinColumn(name = "project_id", updatable = false, insertable = false, nullable = false)
+    val project: Project,
+
+    /**
+     * The role of the user in the project.
+     */
+    @Column(nullable = false)
+    val role: ProjectRole
+) {
+    /**
+     * Return a string representation of this project authorization.
+     */
+    override fun toString(): String = "ProjectAuthorization[project=${key.projectId},user=${key.userId},role=$role]"
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,19 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.util
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.quarkus.jackson.ObjectMapperCustomizer
+import javax.inject.Singleton
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
-
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+/**
+ * Helper class to register the Kotlin Jackson module.
+ */
+@Singleton
+class KotlinModuleCustomizer : ObjectMapperCustomizer {
+    override fun customize(objectMapper: ObjectMapper) {
+        objectMapper.registerModule(KotlinModule.Builder().build())
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,29 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.rest
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import javax.ws.rs.GET
+import javax.ws.rs.Path
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
-
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+/**
+ * A resource representing the available schedulers that can be used during experiments.
+ */
+@Path("/schedulers")
+class SchedulerResource {
+    /**
+     * Obtain all available schedulers.
+     */
+    @GET
+    fun getAll() = listOf(
+        "mem",
+        "mem-inv",
+        "core-mem",
+        "core-mem-inv",
+        "active-servers",
+        "active-servers-inv",
+        "provisioned-cores",
+        "provisioned-cores-inv",
+        "random"
+    )
 }

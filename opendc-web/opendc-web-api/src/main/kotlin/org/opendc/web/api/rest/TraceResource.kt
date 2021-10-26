@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,32 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.rest
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.opendc.web.api.service.TraceService
+import org.opendc.web.proto.Trace
+import javax.inject.Inject
+import javax.ws.rs.*
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+/**
+ * A resource representing the workload traces available in the OpenDC instance.
+ */
+@Path("/traces")
+class TraceResource @Inject constructor(private val traceService: TraceService) {
+    /**
+     * Obtain all available traces.
+     */
+    @GET
+    fun getAll(): List<Trace> {
+        return traceService.findAll()
+    }
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+    /**
+     * Obtain trace information by identifier.
+     */
+    @GET
+    @Path("{id}")
+    fun get(@PathParam("id") id: String): Trace {
+        return traceService.findById(id) ?: throw WebApplicationException("Trace not found", 404)
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,20 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.model
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import javax.persistence.Column
+import javax.persistence.Embeddable
+import javax.persistence.ManyToOne
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+/**
+ * Specification of the workload for a [Scenario].
+ */
+@Embeddable
+class Workload(
+    @ManyToOne(optional = false)
+    val trace: Trace,
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
-}
+    @Column(name = "sampling_fraction", nullable = false, updatable = false)
+    val samplingFraction: Double
+)

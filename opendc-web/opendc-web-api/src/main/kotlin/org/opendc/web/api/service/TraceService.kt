@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,29 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.service
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.opendc.web.api.repository.TraceRepository
+import org.opendc.web.proto.Trace
+import javax.enterprise.context.ApplicationScoped
+import javax.inject.Inject
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+/**
+ * Service for managing [Trace]s.
+ */
+@ApplicationScoped
+class TraceService @Inject constructor(private val repository: TraceRepository) {
+    /**
+     * Obtain all available workload traces.
+     */
+    fun findAll(): List<Trace> {
+        return repository.findAll().map { it.toUserDto() }
+    }
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+    /**
+     * Obtain a workload trace by identifier.
+     */
+    fun findById(id: String): Trace? {
+        return repository.findOne(id)?.toUserDto()
+    }
 }

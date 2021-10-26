@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,39 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.model
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import javax.persistence.*
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+/**
+ * A workload trace available for simulation.
+ *
+ * @param id The unique identifier of the trace.
+ * @param name The name of the trace.
+ * @param type The type of trace.
+ */
+@Entity
+@Table(name = "traces")
+@NamedQueries(
+    value = [
+        NamedQuery(
+            name = "Trace.findAll",
+            query = "SELECT t FROM Trace t"
+        ),
+    ]
+)
+class Trace(
+    @Id
+    val id: String,
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+    @Column(nullable = false, updatable = false)
+    val name: String,
+
+    @Column(nullable = false, updatable = false)
+    val type: String,
+) {
+    /**
+     * Return a string representation of this trace.
+     */
+    override fun toString(): String = "Trace[id=$id,name=$name,type=$type]"
 }

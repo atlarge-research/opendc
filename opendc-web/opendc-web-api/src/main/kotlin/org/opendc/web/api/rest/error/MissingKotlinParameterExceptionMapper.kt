@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,24 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.rest.error
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
+import org.opendc.web.proto.ProtocolError
+import javax.ws.rs.core.MediaType
+import javax.ws.rs.core.Response
+import javax.ws.rs.ext.ExceptionMapper
+import javax.ws.rs.ext.Provider
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
-
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+/**
+ * An [ExceptionMapper] for [MissingKotlinParameterException] thrown by Jackson.
+ */
+@Provider
+class MissingKotlinParameterExceptionMapper : ExceptionMapper<MissingKotlinParameterException> {
+    override fun toResponse(exception: MissingKotlinParameterException): Response {
+        return Response.status(Response.Status.BAD_REQUEST)
+            .entity(ProtocolError(Response.Status.BAD_REQUEST.statusCode, "Field '${exception.parameter.name}' is missing from body."))
+            .type(MediaType.APPLICATION_JSON)
+            .build()
+    }
 }

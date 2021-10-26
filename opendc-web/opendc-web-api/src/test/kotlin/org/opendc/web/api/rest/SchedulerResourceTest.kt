@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,29 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.rest
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import io.quarkus.test.junit.QuarkusTest
+import io.restassured.http.ContentType
+import io.restassured.module.kotlin.extensions.Then
+import io.restassured.module.kotlin.extensions.When
+import org.junit.jupiter.api.Test
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
-
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+/**
+ * Test suite for [SchedulerResource]
+ */
+@QuarkusTest
+class SchedulerResourceTest {
+    /**
+     * Test to verify whether we can obtain all schedulers.
+     */
+    @Test
+    fun testGetSchedulers() {
+        When {
+            get("/schedulers")
+        } Then {
+            statusCode(200)
+            contentType(ContentType.JSON)
+        }
+    }
 }

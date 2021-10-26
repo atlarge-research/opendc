@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,26 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.rest.error
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.opendc.web.proto.ProtocolError
+import javax.ws.rs.WebApplicationException
+import javax.ws.rs.core.MediaType
+import javax.ws.rs.core.Response
+import javax.ws.rs.ext.ExceptionMapper
+import javax.ws.rs.ext.Provider
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+/**
+ * Helper class to transform an exception into an JSON error response.
+ */
+@Provider
+class GenericExceptionMapper : ExceptionMapper<Exception> {
+    override fun toResponse(exception: Exception): Response {
+        val code = if (exception is WebApplicationException) exception.response.status else 500
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+        return Response.status(code)
+            .entity(ProtocolError(code, exception.message ?: "Unknown error"))
+            .type(MediaType.APPLICATION_JSON)
+            .build()
+    }
 }

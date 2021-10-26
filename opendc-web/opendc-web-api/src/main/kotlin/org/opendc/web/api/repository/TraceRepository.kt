@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,34 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.api.repository
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.opendc.web.api.model.Trace
+import javax.enterprise.context.ApplicationScoped
+import javax.inject.Inject
+import javax.persistence.EntityManager
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+/**
+ * A repository to manage [Trace] entities.
+ */
+@ApplicationScoped
+class TraceRepository @Inject constructor(private val em: EntityManager) {
+    /**
+     * Find all workload traces in the database.
+     *
+     * @return The list of available workload traces.
+     */
+    fun findAll(): List<Trace> {
+        return em.createNamedQuery("Trace.findAll", Trace::class.java).resultList
+    }
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+    /**
+     * Find the [Trace] with the specified [id].
+     *
+     * @param id The unique identifier of the trace.
+     * @return The trace or `null` if it does not exist.
+     */
+    fun findOne(id: String): Trace? {
+        return em.find(Trace::class.java, id)
+    }
 }
