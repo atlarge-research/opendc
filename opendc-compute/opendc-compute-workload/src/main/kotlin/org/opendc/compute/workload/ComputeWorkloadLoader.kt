@@ -71,8 +71,8 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
                 val cores = reader.getInt(coresCol)
                 val cpuUsage = reader.getDouble(usageCol)
 
-                val timeMs = time.toEpochMilli()
-                val deadlineMs = timeMs + duration.toMillis()
+                val deadlineMs = time.toEpochMilli()
+                val timeMs = (time - duration).toEpochMilli()
                 val builder = fragments.computeIfAbsent(id) { Builder() }
                 builder.add(timeMs, deadlineMs, cpuUsage, cores)
             }

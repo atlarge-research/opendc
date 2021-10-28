@@ -27,7 +27,7 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * Timestamp for the state.
+ * The timestamp at which the state was recorded.
  */
 @JvmField
 public val RESOURCE_STATE_TIMESTAMP: TableColumn<Instant> = column("resource_state:timestamp")

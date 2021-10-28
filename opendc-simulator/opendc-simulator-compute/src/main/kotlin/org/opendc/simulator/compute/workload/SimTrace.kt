@@ -104,9 +104,28 @@ public class SimTrace(
 
     /**
      * Construct a new [FlowSource] for the specified [cpu].
+     *
+     * @param cpu The [ProcessingUnit] for which to create the source.
+     * @param offset The time offset to use for the trace.
+     * @param fillMode The [FillMode] for filling missing data.
      */
-    public fun newSource(cpu: ProcessingUnit, offset: Long): FlowSource {
-        return CpuConsumer(cpu, offset, usageCol, timestampCol, deadlineCol, coresCol, size)
+    public fun newSource(cpu: ProcessingUnit, offset: Long, fillMode: FillMode = FillMode.None): FlowSource {
+        return CpuConsumer(cpu, offset, fillMode, usageCol, timestampCol, deadlineCol, coresCol, size)
+    }
+
+    /**
+     * An enumeration describing the modes for filling missing data.
+     */
+    public enum class FillMode {
+        /**
+         * When a gap in the trace data occurs, the CPU usage will be set to zero.
+         */
+        None,
+
+        /**
+         * When a gap in the trace data occurs, the previous CPU usage will be used.
+         */
+        Previous
     }
 
     /**
@@ -183,6 +202,7 @@ public class SimTrace(
     private class CpuConsumer(
         cpu: ProcessingUnit,
         private val offset: Long,
+        private val fillMode: FillMode,
         private val usageCol: DoubleArray,
         private val timestampCol: LongArray,
         private val deadlineCol: LongArray,
@@ -217,9 +237,12 @@ public class SimTrace(
             _idx = idx
             val timestamp = timestampCol[idx]
 
-            // Fragment is in the future
+            // There is a gap in the trace, since the next fragment starts in the future.
             if (timestamp > nowOffset) {
-                conn.push(0.0)
+                when (fillMode) {
+                    FillMode.None -> conn.push(0.0) // Reset rate to zero
+                    FillMode.Previous -> {} // Keep previous rate
+                }
                 return timestamp - nowOffset
             }
 
