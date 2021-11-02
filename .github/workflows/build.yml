@@ -7,8 +7,8 @@ on:
     branches: [master]
 
 jobs:
-  build-simulator:
-    name: Build Simulator (Java ${{ matrix.java }})
+  build:
+    name: Build (Java ${{ matrix.java }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -23,30 +23,17 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
+          distribution: 'zulu'
           java-version: ${{ matrix.java }}
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-${{ matrix.java }}-gradle-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.java }}-gradle-
       - name: Build with Gradle
-        run: ./gradlew classes
-      - name: Check with Gradle
-        run: ./gradlew check codeCoverageReport
-      - name: Cleanup Gradle Daemons
-        run: ./gradlew --stop
-      - name: Cleanup Gradle Cache
-        run: |
-          rm -f ~/.gradle/caches/modules-2/modules-2.lock
-          rm -f ~/.gradle/caches/modules-2/gc.properties
-        shell: bash
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build codeCoverageReport
+          # Only write to the cache for builds on the 'main' branch.
+          # Builds on other branches will only read existing entries from the cache.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
       - name: Publish report
         if: always()
         uses: mikepenz/action-junit-report@v2
@@ -64,7 +51,7 @@ jobs:
             ./**/build/test-results/**/*
           retention-days: 5
       - name: Upload code coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/report.xml
@@ -101,7 +88,7 @@ jobs:
           report_paths: '**/junit-report.xml'
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload code coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: opendc-web/opendc-web-api/coverage.xml
