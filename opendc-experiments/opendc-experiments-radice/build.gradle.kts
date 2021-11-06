@@ -116,6 +116,7 @@ distributions {
             from("03-regret.ipynb")
             from("04-scheduler.ipynb")
             from("05-performance.ipynb")
+            from("06-validation.ipynb")
             from("electricity-price.csv")
             from("co2-price.csv")
 
