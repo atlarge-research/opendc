@@ -3,6 +3,7 @@ Data-driven Risk Analysis in Cloud Datacenters using Simulation.
 
 ## Generating the Experimental Data
 This section describes how you can replicate the experimental results yourself.
+If you are only interested in generating the plots or exploring the data, refer to [Plotting the Results](#Plotting-the-Results).
 
 ### Prerequisites
 In order to run the experiments, make sure you have the following software installed on your machine:
@@ -13,7 +14,7 @@ In order to run the experiments, make sure you have the following software insta
 You may run a portfolio as follows:
 
 ```BASH
-bin/radice run -O output --repeats 4096 --parallelism 80 portfolios/PORTFOLIO.yml
+bin/radice run -O output --repeats 4096 --parallelism 80 portfolios/PORTFOLIO.yml 
 ```
 
 This run all scenarios in the specified portfolio file 4096 times using 80 thread, 
@@ -30,6 +31,15 @@ bin/radice generate -O portfolios/01-baseline.yml --portfolio baseline
 bin/radice generate -O portfolios/04-workload.yml --portfolio workload
 bin/radice generate -O portfolios/05-scheduler.yml --portfolio scheduler
 ```
+
+### Plotting the Results
+
+Make sure you have the following software installed on your machine:
+
+- Python 3
+- Python packages: `numpy`, `scipy`, `pandas`, `pyarrow`, `jupyter`, `seaborn`
+
+To plot the results, see the associated Jupyter notebooks.
 
 ## License
 

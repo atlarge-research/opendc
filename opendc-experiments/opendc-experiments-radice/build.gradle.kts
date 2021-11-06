@@ -74,6 +74,14 @@ distributions {
                 rename { "LICENSE-OpenDC.txt" }
             }
 
+            from("radice.py")
+            from("01-sustainability.ipynb")
+            from("02-phenomena.ipynb")
+            from("03-regret.ipynb")
+            from("04-scheduler.ipynb")
+            from("electricity-price.csv")
+            from("co2-price.csv")
+
             into("bin") {
                 from(createRadiceApp)
             }
