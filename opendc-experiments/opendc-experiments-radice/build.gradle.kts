@@ -29,6 +29,26 @@ plugins {
     distribution
 }
 
+/* Create sourceSet for CloudSim comparison experiments */
+val cmp: SourceSet by sourceSets.creating {
+    compileClasspath += sourceSets["main"].output
+    runtimeClasspath += sourceSets["main"].output
+}
+
+val cmpImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations["implementation"])
+}
+
+val cmpRuntimeClasspath: Configuration by configurations.getting {
+    extendsFrom(configurations["runtimeClasspath"])
+}
+
+val cmpJar by tasks.creating(Jar::class) {
+    from(cmp.output)
+
+    archiveBaseName.set("${project.name}-perf")
+}
+
 dependencies {
     api(projects.opendcHarness.opendcHarnessApi)
     api(projects.opendcCompute.opendcComputeWorkload)
@@ -44,15 +64,19 @@ dependencies {
     implementation(libs.progressbar)
     implementation(libs.kotlin.logging)
     implementation(libs.opentelemetry.semconv)
+    implementation(libs.jenetics.main)
+    implementation(libs.jenetics.ext)
     implementation(libs.jackson.core)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.dataformat.yaml)
-    implementation(libs.jenetics.main)
-    implementation(libs.jenetics.ext)
 
     runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
     runtimeOnly(libs.log4j.slf4j)
+
+    cmpImplementation("org.cloudsimplus:cloudsim-plus:7.1.1") {
+        exclude(group = "ch.qos.logback")
+    }
 }
 
 val createRadiceApp by tasks.creating(CreateStartScripts::class) {
@@ -61,6 +85,16 @@ val createRadiceApp by tasks.creating(CreateStartScripts::class) {
     applicationName = "radice"
     mainClass.set("org.opendc.experiments.radice.RadiceCli")
     classpath = tasks.jar.get().outputs.files + configurations["runtimeClasspath"]
+    outputDir = project.buildDir.resolve("scripts")
+}
+
+val createRadicePerfApp by tasks.creating(CreateStartScripts::class) {
+    dependsOn(cmpJar)
+    dependsOn(tasks.jar)
+
+    applicationName = "radice-perf"
+    mainClass.set("org.opendc.experiments.radice.comparison.RadicePerfCli")
+    classpath = tasks.jar.get().outputs.files + cmpJar.outputs.files + cmpRuntimeClasspath
     outputDir = project.buildDir.resolve("scripts")
 }
 
@@ -81,15 +115,19 @@ distributions {
             from("02-phenomena.ipynb")
             from("03-regret.ipynb")
             from("04-scheduler.ipynb")
+            from("05-performance.ipynb")
             from("electricity-price.csv")
             from("co2-price.csv")
 
             into("bin") {
                 from(createRadiceApp)
+                from(createRadicePerfApp)
             }
 
             into("lib") {
                 from(tasks.jar)
+                from(cmpJar)
+                from(cmpRuntimeClasspath) // Also includes main classpath
             }
 
             into("traces") {

@@ -37,11 +37,11 @@ import kotlin.math.min
  * @param size The number of fragments in the trace.
  */
 public class SimTrace(
-    private val usageCol: DoubleArray,
-    private val timestampCol: LongArray,
-    private val deadlineCol: LongArray,
-    private val coresCol: IntArray,
-    private val size: Int,
+    public val usageCol: DoubleArray,
+    public val timestampCol: LongArray,
+    public val deadlineCol: LongArray,
+    public val coresCol: IntArray,
+    public val size: Int,
 ) {
     init {
         require(size >= 0) { "Invalid trace size" }
