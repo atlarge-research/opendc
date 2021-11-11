@@ -23,9 +23,11 @@
 @file:JvmName("ComputeWorkloads")
 package org.opendc.compute.workload
 
+import org.opendc.compute.workload.internal.*
 import org.opendc.compute.workload.internal.CompositeComputeWorkload
 import org.opendc.compute.workload.internal.HpcSampledComputeWorkload
 import org.opendc.compute.workload.internal.LoadSampledComputeWorkload
+import org.opendc.compute.workload.internal.SizeSampledComputeWorkload
 import org.opendc.compute.workload.internal.TraceComputeWorkload
 
 /**
@@ -45,6 +47,13 @@ public fun composite(vararg pairs: Pair<ComputeWorkload, Double>): ComputeWorklo
  */
 public fun ComputeWorkload.sampleByLoad(fraction: Double): ComputeWorkload {
     return LoadSampledComputeWorkload(this, fraction)
+}
+
+/**
+ * Sample a workload by a [fraction] of the total size.
+ */
+public fun ComputeWorkload.sampleBySize(fraction: Double): ComputeWorkload {
+    return SizeSampledComputeWorkload(this, fraction)
 }
 
 /**
