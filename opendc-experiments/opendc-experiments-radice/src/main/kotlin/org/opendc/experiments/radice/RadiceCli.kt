@@ -45,6 +45,7 @@ internal class RadiceCommand : CliktCommand(name = "radice") {
         subcommands(RadiceGenerateCommand(config))
         subcommands(RadiceRunCommand(config))
         subcommands(RadiceOptimizeCommand(config))
+        subcommands(RadiceQtCommand())
     }
 
     override fun run() {}
