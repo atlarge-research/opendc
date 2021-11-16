@@ -185,7 +185,7 @@ class RunnerCli : CliktCommand(name = "runner") {
                     else
                         null
 
-                val simulator = ComputeWorkloadRunner(
+                val simulator = ComputeServiceHelper(
                     coroutineContext,
                     clock,
                     computeScheduler,

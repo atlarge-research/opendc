@@ -40,25 +40,28 @@ import org.opendc.simulator.flow.FlowEngine
 import org.opendc.telemetry.compute.*
 import org.opendc.telemetry.sdk.toOtelClock
 import java.time.Clock
+import java.time.Duration
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 
 /**
- * Helper class to simulated VM-based workloads in OpenDC.
+ * Helper class to simulate VM-based workloads in OpenDC.
  *
  * @param context [CoroutineContext] to run the simulation in.
  * @param clock [Clock] instance tracking simulation time.
  * @param scheduler [ComputeScheduler] implementation to use for the service.
  * @param failureModel A failure model to use for injecting failures.
  * @param interferenceModel The model to use for performance interference.
+ * @param schedulingQuantum The scheduling quantum of the scheduler.
  */
-public class ComputeWorkloadRunner(
+public class ComputeServiceHelper(
     private val context: CoroutineContext,
     private val clock: Clock,
     scheduler: ComputeScheduler,
     private val failureModel: FailureModel? = null,
     private val interferenceModel: VmInterferenceModel? = null,
+    schedulingQuantum: Duration = Duration.ofMinutes(5)
 ) : AutoCloseable {
     /**
      * The [ComputeService] that has been configured by the manager.
@@ -83,7 +86,7 @@ public class ComputeWorkloadRunner(
     private val hosts = mutableSetOf<SimHost>()
 
     init {
-        val (service, serviceMeterProvider) = createService(scheduler)
+        val (service, serviceMeterProvider) = createService(scheduler, schedulingQuantum)
         this._metricProducers.add(serviceMeterProvider)
         this.service = service
     }
@@ -91,7 +94,7 @@ public class ComputeWorkloadRunner(
     /**
      * Converge a simulation of the [ComputeService] by replaying the workload trace given by [trace].
      */
-    public suspend fun run(trace: List<VirtualMachine>, seed: Long) {
+    public suspend fun run(trace: List<VirtualMachine>, seed: Long, submitImmediately: Boolean = false) {
         val random = Random(seed)
         val injector = failureModel?.createInjector(context, clock, service, random)
         val client = service.newClient()
@@ -116,7 +119,10 @@ public class ComputeWorkloadRunner(
 
                     // Make sure the trace entries are ordered by submission time
                     assert(start - offset >= 0) { "Invalid trace order" }
-                    delay(max(0, (start - offset) - now))
+
+                    if (!submitImmediately) {
+                        delay(max(0, (start - offset) - now))
+                    }
 
                     launch {
                         val workloadOffset = -offset + 300001
@@ -206,7 +212,7 @@ public class ComputeWorkloadRunner(
     /**
      * Construct a [ComputeService] instance.
      */
-    private fun createService(scheduler: ComputeScheduler): Pair<ComputeService, SdkMeterProvider> {
+    private fun createService(scheduler: ComputeScheduler, schedulingQuantum: Duration): Pair<ComputeService, SdkMeterProvider> {
         val resource = Resource.builder()
             .put(ResourceAttributes.SERVICE_NAME, "opendc-compute")
             .build()
@@ -216,7 +222,7 @@ public class ComputeWorkloadRunner(
             .setResource(resource)
             .build()
 
-        val service = ComputeService(context, clock, meterProvider, scheduler)
+        val service = ComputeService(context, clock, meterProvider, scheduler, schedulingQuantum)
         return service to meterProvider
     }
 }

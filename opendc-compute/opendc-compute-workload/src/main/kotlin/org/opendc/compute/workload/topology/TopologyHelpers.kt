@@ -23,12 +23,12 @@
 @file:JvmName("TopologyHelpers")
 package org.opendc.compute.workload.topology
 
-import org.opendc.compute.workload.ComputeWorkloadRunner
+import org.opendc.compute.workload.ComputeServiceHelper
 
 /**
- * Apply the specified [topology] to the given [ComputeWorkloadRunner].
+ * Apply the specified [topology] to the given [ComputeServiceHelper].
  */
-public fun ComputeWorkloadRunner.apply(topology: Topology, optimize: Boolean = false) {
+public fun ComputeServiceHelper.apply(topology: Topology, optimize: Boolean = false) {
     val hosts = topology.resolve()
     for (spec in hosts) {
         registerHost(spec, optimize)

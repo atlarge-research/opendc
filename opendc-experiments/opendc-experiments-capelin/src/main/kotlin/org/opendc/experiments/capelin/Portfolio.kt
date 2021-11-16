@@ -24,8 +24,8 @@ package org.opendc.experiments.capelin
 
 import com.typesafe.config.ConfigFactory
 import mu.KotlinLogging
+import org.opendc.compute.workload.ComputeServiceHelper
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.ComputeWorkloadRunner
 import org.opendc.compute.workload.createComputeScheduler
 import org.opendc.compute.workload.export.parquet.ParquetComputeMetricExporter
 import org.opendc.compute.workload.grid5000
@@ -109,7 +109,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
                 grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
             else
                 null
-        val runner = ComputeWorkloadRunner(
+        val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler,

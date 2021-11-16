@@ -22,41 +22,41 @@
 
 package org.opendc.workflow.service
 
-import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.export.MetricProducer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
-import org.opendc.compute.simulator.SimHost
+import org.opendc.compute.workload.ComputeServiceHelper
+import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.compute.power.ConstantPowerModel
+import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.simulator.flow.FlowEngine
-import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.trace.Trace
-import org.opendc.workflow.service.internal.WorkflowServiceImpl
 import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.NullTaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.SubmissionTimeTaskOrderPolicy
+import org.opendc.workflow.workload.WorkflowSchedulerSpec
+import org.opendc.workflow.workload.WorkflowServiceHelper
+import org.opendc.workflow.workload.toJobs
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
 
 /**
- * Integration test suite for the [WorkflowServiceImpl].
+ * Integration test suite for the [WorkflowService].
  */
 @DisplayName("WorkflowService")
 internal class WorkflowServiceTest {
@@ -65,60 +65,39 @@ internal class WorkflowServiceTest {
      */
     @Test
     fun testTrace() = runBlockingSimulation {
-        val meterProvider: MeterProvider = SdkMeterProvider
-            .builder()
-            .setClock(clock.toOtelClock())
-            .build()
-
-        val interpreter = FlowEngine(coroutineContext, clock)
-        val machineModel = createMachineModel()
-        val hvProvider = SimSpaceSharedHypervisorProvider()
-        val hosts = List(4) { id ->
-            SimHost(
-                UUID(0, id.toLong()),
-                "node-$id",
-                machineModel,
-                emptyMap(),
-                coroutineContext,
-                interpreter,
-                MeterProvider.noop(),
-                hvProvider,
-            )
-        }
-
+        // Configure the ComputeService that is responsible for mapping virtual machines onto physical hosts
+        val HOST_COUNT = 4
         val computeScheduler = FilterScheduler(
             filters = listOf(ComputeFilter(), VCpuFilter(1.0), RamFilter(1.0)),
             weighers = listOf(VCpuWeigher(1.0, multiplier = 1.0))
         )
-        val compute = ComputeService(coroutineContext, clock, MeterProvider.noop(), computeScheduler, schedulingQuantum = Duration.ofSeconds(1))
+        val computeHelper = ComputeServiceHelper(coroutineContext, clock, computeScheduler, schedulingQuantum = Duration.ofSeconds(1))
 
-        hosts.forEach { compute.addHost(it) }
+        repeat(HOST_COUNT) { computeHelper.registerHost(createHostSpec(it)) }
 
-        val scheduler = WorkflowService(
-            coroutineContext,
-            clock,
-            meterProvider,
-            compute.newClient(),
-            mode = WorkflowSchedulerMode.Batch(100),
+        // Configure the WorkflowService that is responsible for scheduling the workflow tasks onto machines
+        val workflowScheduler = WorkflowSchedulerSpec(
+            batchMode = WorkflowSchedulerMode.Batch(100),
             jobAdmissionPolicy = NullJobAdmissionPolicy,
             jobOrderPolicy = SubmissionTimeJobOrderPolicy(),
             taskEligibilityPolicy = NullTaskEligibilityPolicy,
             taskOrderPolicy = SubmissionTimeTaskOrderPolicy(),
         )
+        val workflowHelper = WorkflowServiceHelper(coroutineContext, clock, computeHelper.service.newClient(), workflowScheduler)
 
-        val trace = Trace.open(
-            Paths.get(checkNotNull(WorkflowServiceTest::class.java.getResource("/trace.gwf")).toURI()),
-            format = "gwf"
-        )
-        val replayer = TraceReplayer(trace)
+        try {
+            val trace = Trace.open(
+                Paths.get(checkNotNull(WorkflowServiceTest::class.java.getResource("/trace.gwf")).toURI()),
+                format = "gwf"
+            )
 
-        replayer.replay(clock, scheduler)
+            workflowHelper.replay(trace.toJobs())
+        } finally {
+            workflowHelper.close()
+            computeHelper.close()
+        }
 
-        hosts.forEach(SimHost::close)
-        scheduler.close()
-        compute.close()
-
-        val metrics = collectMetrics(meterProvider as MetricProducer)
+        val metrics = collectMetrics(workflowHelper.metricProducer)
 
         assertAll(
             { assertEquals(758, metrics.jobsSubmitted, "No jobs submitted") },
@@ -126,19 +105,29 @@ internal class WorkflowServiceTest {
             { assertEquals(metrics.jobsSubmitted, metrics.jobsFinished, "Not all started jobs finished") },
             { assertEquals(0, metrics.tasksActive, "Not all started tasks finished") },
             { assertEquals(metrics.tasksSubmitted, metrics.tasksFinished, "Not all started tasks finished") },
-            { assertEquals(33213236L, clock.millis()) }
+            { assertEquals(33214236L, clock.millis()) { "Total duration incorrect" } }
         )
     }
 
     /**
-     * The machine model based on: https://www.spec.org/power_ssj2008/results/res2020q1/power_ssj2008-20191125-01012.html
+     * Construct a [HostSpec] for a simulated host.
      */
-    private fun createMachineModel(): MachineModel {
+    private fun createHostSpec(uid: Int): HostSpec {
+        // Machine model based on: https://www.spec.org/power_ssj2008/results/res2020q1/power_ssj2008-20191125-01012.html
         val node = ProcessingNode("AMD", "am64", "EPYC 7742", 32)
-        val cpus = List(node.coreCount) { id -> ProcessingUnit(node, id, 3400.0) }
+        val cpus = List(node.coreCount) { ProcessingUnit(node, it, 3400.0) }
         val memory = List(8) { MemoryUnit("Samsung", "Unknown", 2933.0, 16_000) }
 
-        return MachineModel(cpus, memory)
+        val machineModel = MachineModel(cpus, memory)
+
+        return HostSpec(
+            UUID(0, uid.toLong()),
+            "host-$uid",
+            emptyMap(),
+            machineModel,
+            SimplePowerDriver(ConstantPowerModel(0.0)),
+            SimSpaceSharedHypervisorProvider()
+        )
     }
 
     class WorkflowMetrics {
