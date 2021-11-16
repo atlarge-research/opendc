@@ -49,7 +49,7 @@ public class WorkflowServiceHelper(
     private val clock: Clock,
     private val computeClient: ComputeClient,
     private val schedulerSpec: WorkflowSchedulerSpec
-    ) : AutoCloseable {
+) : AutoCloseable {
     /**
      * The [WorkflowService] that is constructed by this runner.
      */
@@ -76,7 +76,7 @@ public class WorkflowServiceHelper(
             clock,
             meterProvider,
             computeClient,
-            mode = schedulerSpec.batchMode,
+            schedulerSpec.schedulingQuantum,
             jobAdmissionPolicy = schedulerSpec.jobAdmissionPolicy,
             jobOrderPolicy = schedulerSpec.jobOrderPolicy,
             taskEligibilityPolicy = schedulerSpec.taskEligibilityPolicy,
@@ -111,7 +111,7 @@ public class WorkflowServiceHelper(
                     delay(((submitTime - offset) - clock.millis()).coerceAtLeast(0))
                 }
 
-                launch { service.run(job) }
+                launch { service.invoke(job) }
             }
         }
     }

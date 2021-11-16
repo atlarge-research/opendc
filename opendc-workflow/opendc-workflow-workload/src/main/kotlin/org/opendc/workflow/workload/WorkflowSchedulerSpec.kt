@@ -22,17 +22,17 @@
 
 package org.opendc.workflow.workload
 
-import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
+import java.time.Duration
 
 /**
  * Specification of the scheduling policies of the workflow scheduler.
  */
 public data class WorkflowSchedulerSpec(
-    val batchMode: WorkflowSchedulerMode,
+    val schedulingQuantum: Duration,
     val jobAdmissionPolicy: JobAdmissionPolicy,
     val jobOrderPolicy: JobOrderPolicy,
     val taskEligibilityPolicy: TaskEligibilityPolicy,

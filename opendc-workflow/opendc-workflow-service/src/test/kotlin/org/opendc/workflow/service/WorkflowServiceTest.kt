@@ -43,7 +43,6 @@ import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.trace.Trace
-import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.NullJobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.SubmissionTimeJobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.NullTaskEligibilityPolicy
@@ -77,7 +76,7 @@ internal class WorkflowServiceTest {
 
         // Configure the WorkflowService that is responsible for scheduling the workflow tasks onto machines
         val workflowScheduler = WorkflowSchedulerSpec(
-            batchMode = WorkflowSchedulerMode.Batch(100),
+            schedulingQuantum = Duration.ofMillis(100),
             jobAdmissionPolicy = NullJobAdmissionPolicy,
             jobOrderPolicy = SubmissionTimeJobOrderPolicy(),
             taskEligibilityPolicy = NullTaskEligibilityPolicy,
