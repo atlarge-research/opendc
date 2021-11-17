@@ -83,7 +83,7 @@ class CapelinIntegrationTest {
     @Test
     fun testLarge() = runBlockingSimulation {
         val workload = createTestWorkload(1.0)
-        val runner = ComputeWorkloadRunner(
+        val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler
@@ -131,7 +131,7 @@ class CapelinIntegrationTest {
         val seed = 1
         val workload = createTestWorkload(0.25, seed)
 
-        val simulator = ComputeWorkloadRunner(
+        val simulator = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler
@@ -180,7 +180,7 @@ class CapelinIntegrationTest {
                 .read(perfInterferenceInput)
                 .withSeed(seed.toLong())
 
-        val simulator = ComputeWorkloadRunner(
+        val simulator = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler,
@@ -222,7 +222,7 @@ class CapelinIntegrationTest {
     @Test
     fun testFailures() = runBlockingSimulation {
         val seed = 1
-        val simulator = ComputeWorkloadRunner(
+        val simulator = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler,

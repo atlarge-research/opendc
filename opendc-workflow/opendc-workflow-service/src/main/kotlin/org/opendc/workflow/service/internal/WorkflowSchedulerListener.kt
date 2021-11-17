@@ -22,16 +22,44 @@
 
 package org.opendc.workflow.service.internal
 
-public interface WorkflowSchedulerListener {
-    public fun cycleStarted(scheduler: WorkflowServiceImpl) {}
-    public fun cycleFinished(scheduler: WorkflowServiceImpl) {}
+import org.opendc.workflow.service.WorkflowService
 
+/**
+ * Interface for listening to events emitted by the [WorkflowService].
+ */
+public interface WorkflowSchedulerListener {
+    /**
+     * This method is invoked when [job] is submitted to the service.
+     */
     public fun jobSubmitted(job: JobState) {}
+
+    /**
+     * This method is invoked when [job] is started by the service.
+     */
     public fun jobStarted(job: JobState) {}
+
+    /**
+     * This method is invoked when [job] finishes.
+     */
     public fun jobFinished(job: JobState) {}
 
+    /**
+     * This method is invoked when [task] becomes ready to be scheduled.
+     */
     public fun taskReady(task: TaskState) {}
+
+    /**
+     * This method is invoked when [task] is assigned to a machine.
+     */
     public fun taskAssigned(task: TaskState) {}
+
+    /**
+     * This method is invoked when [task] is started.
+     */
     public fun taskStarted(task: TaskState) {}
+
+    /**
+     * This method is invoked when [task] finishes.
+     */
     public fun taskFinished(task: TaskState) {}
 }

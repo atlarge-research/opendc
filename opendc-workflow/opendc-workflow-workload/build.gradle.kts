@@ -20,28 +20,20 @@
  * SOFTWARE.
  */
 
-description = "Workflow orchestration service for OpenDC"
+description = "Support library for simulating workflows with OpenDC"
 
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
-    `jacoco-conventions`
 }
 
 dependencies {
     api(platform(projects.opendcPlatform))
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
+    api(projects.opendcWorkflow.opendcWorkflowService)
 
-    testImplementation(projects.opendcWorkflow.opendcWorkflowWorkload)
-    testImplementation(projects.opendcCompute.opendcComputeWorkload)
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcTrace.opendcTraceApi)
-    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testRuntimeOnly(projects.opendcTrace.opendcTraceGwf)
-    testRuntimeOnly(libs.log4j.slf4j)
+    implementation(projects.opendcSimulator.opendcSimulatorCompute)
+    implementation(projects.opendcTrace.opendcTraceApi)
+    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(libs.opentelemetry.semconv)
 }

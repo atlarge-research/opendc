@@ -23,8 +23,9 @@
 package org.opendc.workflow.service.internal
 
 import org.opendc.workflow.api.Job
+import kotlin.coroutines.Continuation
 
-public class JobState(public val job: Job, public val submittedAt: Long) {
+public class JobState(public val job: Job, public val submittedAt: Long, internal val cont: Continuation<Unit>) {
     /**
      * A flag to indicate whether this job is finished.
      */

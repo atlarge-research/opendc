@@ -26,29 +26,24 @@ import io.opentelemetry.api.metrics.MeterProvider
 import org.opendc.compute.api.ComputeClient
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.service.internal.WorkflowServiceImpl
-import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
 import java.time.Clock
+import java.time.Duration
 import kotlin.coroutines.CoroutineContext
 
 /**
- * A service for cloud workflow management.
+ * A service for cloud workflow execution.
  *
  * The workflow scheduler is modelled after the Reference Architecture for Topology Scheduling by Andreadis et al.
  */
 public interface WorkflowService : AutoCloseable {
     /**
-     * Submit the specified [Job] to the workflow service for scheduling.
+     * Submit the specified [Job] and suspend execution until the job is finished.
      */
-    public suspend fun submit(job: Job)
-
-    /**
-     * Run the specified [Job] and suspend execution until the job is finished.
-     */
-    public suspend fun run(job: Job)
+    public suspend fun invoke(job: Job)
 
     /**
      * Terminate the lifecycle of the workflow service, stopping all running workflows.
@@ -61,10 +56,9 @@ public interface WorkflowService : AutoCloseable {
          *
          * @param context The [CoroutineContext] to use in the service.
          * @param clock The clock instance to use.
-         * @param tracer The event tracer to use.
          * @param meterProvider The meter provider to use.
          * @param compute The compute client to use.
-         * @param mode The scheduling mode to use.
+         * @param schedulingQuantum The scheduling quantum to use (minimum duration between scheduling cycles).
          * @param jobAdmissionPolicy The job admission policy to use.
          * @param jobOrderPolicy The job order policy to use.
          * @param taskEligibilityPolicy The task eligibility policy to use.
@@ -75,7 +69,7 @@ public interface WorkflowService : AutoCloseable {
             clock: Clock,
             meterProvider: MeterProvider,
             compute: ComputeClient,
-            mode: WorkflowSchedulerMode,
+            schedulingQuantum: Duration,
             jobAdmissionPolicy: JobAdmissionPolicy,
             jobOrderPolicy: JobOrderPolicy,
             taskEligibilityPolicy: TaskEligibilityPolicy,
@@ -86,7 +80,7 @@ public interface WorkflowService : AutoCloseable {
                 clock,
                 meterProvider,
                 compute,
-                mode,
+                schedulingQuantum,
                 jobAdmissionPolicy,
                 jobOrderPolicy,
                 taskEligibilityPolicy,

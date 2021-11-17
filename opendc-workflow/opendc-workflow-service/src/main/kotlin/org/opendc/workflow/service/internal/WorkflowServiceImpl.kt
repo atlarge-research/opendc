@@ -25,20 +25,18 @@ package org.opendc.workflow.service.internal
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.map
-import mu.KotlinLogging
 import org.opendc.compute.api.*
+import org.opendc.utils.TimerScheduler
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES
 import org.opendc.workflow.service.*
-import org.opendc.workflow.service.scheduler.WorkflowSchedulerMode
 import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
 import java.time.Clock
+import java.time.Duration
 import java.util.*
-import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
@@ -48,10 +46,10 @@ import kotlin.coroutines.resume
  */
 public class WorkflowServiceImpl(
     context: CoroutineContext,
-    internal val clock: Clock,
+    private val clock: Clock,
     meterProvider: MeterProvider,
     private val computeClient: ComputeClient,
-    mode: WorkflowSchedulerMode,
+    private val schedulingQuantum: Duration,
     jobAdmissionPolicy: JobAdmissionPolicy,
     jobOrderPolicy: JobOrderPolicy,
     taskEligibilityPolicy: TaskEligibilityPolicy,
@@ -60,12 +58,7 @@ public class WorkflowServiceImpl(
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
      */
-    internal val scope = CoroutineScope(context + Job())
-
-    /**
-     * The logger instance to use.
-     */
-    private val logger = KotlinLogging.logger {}
+    private val scope = CoroutineScope(context + Job())
 
     /**
      * The [Meter] to collect metrics of this service.
@@ -75,22 +68,22 @@ public class WorkflowServiceImpl(
     /**
      * The incoming jobs ready to be processed by the scheduler.
      */
-    internal val incomingJobs: MutableSet<JobState> = linkedSetOf()
+    private val incomingJobs: MutableSet<JobState> = linkedSetOf()
 
     /**
      * The incoming tasks ready to be processed by the scheduler.
      */
-    internal val incomingTasks: MutableSet<TaskState> = linkedSetOf()
+    private val incomingTasks: MutableSet<TaskState> = linkedSetOf()
 
     /**
      * The job queue.
      */
-    internal val jobQueue: Queue<JobState>
+    private val jobQueue: Queue<JobState>
 
     /**
      * The task queue.
      */
-    internal val taskQueue: Queue<TaskState>
+    private val taskQueue: Queue<TaskState>
 
     /**
      * The active jobs in the system.
@@ -105,12 +98,7 @@ public class WorkflowServiceImpl(
     /**
      * The running tasks by [Server].
      */
-    internal val taskByServer = mutableMapOf<Server, TaskState>()
-
-    /**
-     * The continuation of the jobs.
-     */
-    private val conts = mutableMapOf<Job, Continuation<Unit>>()
+    private val taskByServer = mutableMapOf<Server, TaskState>()
 
     /**
      * The root listener of this scheduler.
@@ -119,15 +107,7 @@ public class WorkflowServiceImpl(
         /**
          * The listeners to delegate to.
          */
-        val listeners = mutableSetOf<WorkflowSchedulerListener>()
-
-        override fun cycleStarted(scheduler: WorkflowServiceImpl) {
-            listeners.forEach { it.cycleStarted(scheduler) }
-        }
-
-        override fun cycleFinished(scheduler: WorkflowServiceImpl) {
-            listeners.forEach { it.cycleFinished(scheduler) }
-        }
+        val listeners = mutableListOf<WorkflowSchedulerListener>()
 
         override fun jobSubmitted(job: JobState) {
             listeners.forEach { it.jobSubmitted(job) }
@@ -206,25 +186,27 @@ public class WorkflowServiceImpl(
         .setUnit("1")
         .build()
 
-    private val mode: WorkflowSchedulerMode.Logic
+    /**
+     * The [TimerScheduler] to use for scheduling the scheduler cycles.
+     */
+    private val timerScheduler: TimerScheduler<Unit> = TimerScheduler(scope.coroutineContext, clock)
+
     private val jobAdmissionPolicy: JobAdmissionPolicy.Logic
     private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic
     private lateinit var image: Image
 
     init {
-        this.mode = mode(this)
         this.jobAdmissionPolicy = jobAdmissionPolicy(this)
         this.jobQueue = PriorityQueue(100, jobOrderPolicy(this).thenBy { it.job.uid })
         this.taskEligibilityPolicy = taskEligibilityPolicy(this)
         this.taskQueue = PriorityQueue(1000, taskOrderPolicy(this).thenBy { it.task.uid })
-        scope.launch {
-            image = computeClient.newImage("workflow-runner")
-        }
+
+        scope.launch { image = computeClient.newImage("workflow-runner") }
     }
 
-    override suspend fun run(job: Job) {
+    override suspend fun invoke(job: Job): Unit = suspendCancellableCoroutine { cont ->
         // J1 Incoming Jobs
-        val jobInstance = JobState(job, clock.millis())
+        val jobInstance = JobState(job, clock.millis(), cont)
         val instances = job.tasks.associateWith {
             TaskState(jobInstance, it)
         }
@@ -243,20 +225,12 @@ public class WorkflowServiceImpl(
             submittedTasks.add(1)
         }
 
-        return suspendCancellableCoroutine { cont ->
-            instances.values.toCollection(jobInstance.tasks)
-            incomingJobs += jobInstance
-            rootListener.jobSubmitted(jobInstance)
-            conts[job] = cont
+        instances.values.toCollection(jobInstance.tasks)
+        incomingJobs += jobInstance
+        rootListener.jobSubmitted(jobInstance)
+        submittedJobs.add(1)
 
-            submittedJobs.add(1)
-
-            requestCycle()
-        }
-    }
-
-    override suspend fun submit(job: Job) {
-        scope.launch { run(job) }
+        requestSchedulingCycle()
     }
 
     override fun close() {
@@ -264,15 +238,48 @@ public class WorkflowServiceImpl(
     }
 
     /**
-     * Indicate to the scheduler that a scheduling cycle is needed.
+     * Register a [WorkflowSchedulerListener].
      */
-    private fun requestCycle() = mode.requestCycle()
+    public fun addListener(listener: WorkflowSchedulerListener) {
+        rootListener.listeners += listener
+    }
+
+    /**
+     * Unregister a [WorkflowSchedulerListener].
+     */
+    public fun removeListener(listener: WorkflowSchedulerListener) {
+        rootListener.listeners -= listener
+    }
+
+    /**
+     * Indicate that a new scheduling cycle is needed due to a change to the service's state.
+     */
+    private fun requestSchedulingCycle() {
+        // Bail out in case we have already requested a new cycle or the queue is empty.
+        if (timerScheduler.isTimerActive(Unit) || incomingJobs.isEmpty()) {
+            return
+        }
+
+        val quantum = schedulingQuantum.toMillis()
+        if (quantum == 0L) {
+            doSchedule()
+            return
+        }
+
+        // We assume that the provisioner runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
+        // This is important because the slices of the VMs need to be aligned.
+        // We calculate here the delay until the next scheduling slot.
+        val delay = quantum - (clock.millis() % quantum)
+
+        timerScheduler.startSingleTimer(Unit, delay) {
+            doSchedule()
+        }
+    }
 
     /**
      * Perform a scheduling cycle immediately.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    internal suspend fun schedule() {
+    private fun doSchedule() {
         // J2 Create list of eligible jobs
         val iterator = incomingJobs.iterator()
         while (iterator.hasNext()) {
@@ -293,8 +300,8 @@ public class WorkflowServiceImpl(
         }
 
         // J4 Per job
-        while (jobQueue.isNotEmpty()) {
-            val jobInstance = jobQueue.poll()
+        while (true) {
+            val jobInstance = jobQueue.poll() ?: break
 
             // Edge-case: job has no tasks
             if (jobInstance.isFinished) {
@@ -361,7 +368,7 @@ public class WorkflowServiceImpl(
         }
     }
 
-    public override fun onStateChanged(server: Server, newState: ServerState) {
+    override fun onStateChanged(server: Server, newState: ServerState) {
         when (newState) {
             ServerState.PROVISIONING -> {}
             ServerState.RUNNING -> {
@@ -402,7 +409,7 @@ public class WorkflowServiceImpl(
                     finishJob(job)
                 }
 
-                requestCycle()
+                requestSchedulingCycle()
             }
             ServerState.DELETED -> {
             }
@@ -416,14 +423,6 @@ public class WorkflowServiceImpl(
         finishedJobs.add(1)
         rootListener.jobFinished(job)
 
-        conts.remove(job.job)?.resume(Unit)
-    }
-
-    public fun addListener(listener: WorkflowSchedulerListener) {
-        rootListener.listeners += listener
-    }
-
-    public fun removeListener(listener: WorkflowSchedulerListener) {
-        rootListener.listeners -= listener
+        job.cont.resume(Unit)
     }
 }

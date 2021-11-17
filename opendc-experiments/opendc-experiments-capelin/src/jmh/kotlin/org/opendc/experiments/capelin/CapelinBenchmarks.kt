@@ -67,7 +67,7 @@ class CapelinBenchmarks {
             filters = listOf(ComputeFilter(), VCpuFilter(16.0), RamFilter(1.0)),
             weighers = listOf(CoreRamWeigher(multiplier = 1.0))
         )
-        val runner = ComputeWorkloadRunner(
+        val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
             computeScheduler

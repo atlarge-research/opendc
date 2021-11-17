@@ -20,28 +20,21 @@
  * SOFTWARE.
  */
 
-description = "Workflow orchestration service for OpenDC"
+package org.opendc.workflow.workload
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
-}
+import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
+import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
+import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
+import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
+import java.time.Duration
 
-dependencies {
-    api(platform(projects.opendcPlatform))
-    api(projects.opendcWorkflow.opendcWorkflowApi)
-    api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
-    implementation(libs.kotlin.logging)
-
-    testImplementation(projects.opendcWorkflow.opendcWorkflowWorkload)
-    testImplementation(projects.opendcCompute.opendcComputeWorkload)
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testImplementation(projects.opendcTrace.opendcTraceApi)
-    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    testRuntimeOnly(projects.opendcTrace.opendcTraceGwf)
-    testRuntimeOnly(libs.log4j.slf4j)
-}
+/**
+ * Specification of the scheduling policies of the workflow scheduler.
+ */
+public data class WorkflowSchedulerSpec(
+    val schedulingQuantum: Duration,
+    val jobAdmissionPolicy: JobAdmissionPolicy,
+    val jobOrderPolicy: JobOrderPolicy,
+    val taskEligibilityPolicy: TaskEligibilityPolicy,
+    val taskOrderPolicy: TaskOrderPolicy,
+)
