@@ -35,6 +35,7 @@ repositories {
 
 java {
     sourceCompatibility = Libs.jvmTarget
+    targetCompatibility = Libs.jvmTarget
 }
 
 tasks.withType<KotlinCompile>().configureEach {
