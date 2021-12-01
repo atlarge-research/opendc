@@ -256,7 +256,7 @@ public class WorkflowServiceImpl(
      */
     private fun requestSchedulingCycle() {
         // Bail out in case we have already requested a new cycle or the queue is empty.
-        if (timerScheduler.isTimerActive(Unit) || incomingJobs.isEmpty()) {
+        if (timerScheduler.isTimerActive(Unit)) {
             return
         }
 
