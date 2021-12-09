@@ -31,9 +31,14 @@ import kotlin.math.max
  * A class that acts as a [FlowSource] and [FlowConsumer] at the same time.
  *
  * @param engine The [FlowEngine] the forwarder runs in.
+ * @param listener The convergence lister to use.
  * @param isCoupled A flag to indicate that the transformer will exit when the resource consumer exits.
  */
-public class FlowForwarder(private val engine: FlowEngine, private val isCoupled: Boolean = false) : FlowSource, FlowConsumer, AutoCloseable {
+public class FlowForwarder(
+    private val engine: FlowEngine,
+    private val listener: FlowConvergenceListener? = null,
+    private val isCoupled: Boolean = false
+) : FlowSource, FlowConsumer, AutoCloseable {
     /**
      * The logging instance of this connection.
      */
@@ -153,7 +158,7 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
     override fun onStart(conn: FlowConnection, now: Long) {
         _innerCtx = conn
 
-        if (_ctx.shouldSourceConverge) {
+        if (listener != null || _ctx.shouldSourceConverge) {
             conn.shouldSourceConverge = true
         }
     }
@@ -196,6 +201,7 @@ public class FlowForwarder(private val engine: FlowEngine, private val isCoupled
     override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
         try {
             delegate?.onConverge(this._ctx, now, delta)
+            listener?.onConverge(now, delta)
         } catch (cause: Throwable) {
             logger.error(cause) { "Uncaught exception" }
 

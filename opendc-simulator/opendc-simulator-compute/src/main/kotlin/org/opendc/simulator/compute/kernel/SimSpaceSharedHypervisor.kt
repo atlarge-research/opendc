@@ -37,7 +37,7 @@ public class SimSpaceSharedHypervisor(
     listener: FlowConvergenceListener?,
     scalingGovernor: ScalingGovernor?,
 ) : SimAbstractHypervisor(engine, listener, scalingGovernor) {
-    override val mux: FlowMultiplexer = ForwardingFlowMultiplexer(engine)
+    override val mux: FlowMultiplexer = ForwardingFlowMultiplexer(engine, this)
 
     override fun canFit(model: MachineModel): Boolean {
         return mux.outputs.size - mux.inputs.size >= model.cpus.size
