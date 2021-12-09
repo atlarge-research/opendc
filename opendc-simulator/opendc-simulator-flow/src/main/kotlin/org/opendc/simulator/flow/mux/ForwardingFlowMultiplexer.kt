@@ -25,6 +25,7 @@ package org.opendc.simulator.flow.mux
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.interference.InterferenceKey
 import java.util.ArrayDeque
+import kotlin.math.max
 
 /**
  * A [FlowMultiplexer] implementation that allocates inputs to the outputs of the multiplexer exclusively. This means
@@ -32,8 +33,12 @@ import java.util.ArrayDeque
  * inputs as outputs.
  *
  * @param engine The [FlowEngine] driving the simulation.
+ * @param listener The convergence listener of the multiplexer.
  */
-public class ForwardingFlowMultiplexer(private val engine: FlowEngine) : FlowMultiplexer {
+public class ForwardingFlowMultiplexer(
+    private val engine: FlowEngine,
+    private val listener: FlowConvergenceListener? = null
+) : FlowMultiplexer, FlowConvergenceListener {
     override val inputs: Set<FlowConsumer>
         get() = _inputs
     private val _inputs = mutableSetOf<Input>()
@@ -91,7 +96,7 @@ public class ForwardingFlowMultiplexer(private val engine: FlowEngine) : FlowMul
     }
 
     override fun newOutput(): FlowSource {
-        val forwarder = FlowForwarder(engine)
+        val forwarder = FlowForwarder(engine, this)
         val output = Output(forwarder)
 
         _outputs += output
@@ -128,6 +133,18 @@ public class ForwardingFlowMultiplexer(private val engine: FlowEngine) : FlowMul
     override fun clear() {
         clearOutputs()
         clearInputs()
+    }
+
+    private var _lastConverge = Long.MAX_VALUE
+
+    override fun onConverge(now: Long, delta: Long) {
+        val listener = listener
+        if (listener != null) {
+            val lastConverge = _lastConverge
+            _lastConverge = now
+            val duration = max(0, now - lastConverge)
+            listener.onConverge(now, duration)
+        }
     }
 
     /**

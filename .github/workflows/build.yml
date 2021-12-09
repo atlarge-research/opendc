@@ -43,6 +43,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload artifacts
         if: always()
+        continue-on-error: true # See https://github.com/actions/upload-artifact/issues/270
         uses: actions/upload-artifact@v2
         with:
           name: reports-${{ matrix.os }}-jdk${{ matrix.java }}
