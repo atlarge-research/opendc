@@ -69,4 +69,23 @@ internal class GwfTraceFormatTest {
             { assertEquals(emptySet<String>(), reader.get(TASK_PARENTS)) },
         )
     }
+
+    @Test
+    fun testReadingRowWithDependencies() {
+        val path = Paths.get(checkNotNull(GwfTraceFormatTest::class.java.getResource("/trace.gwf")).toURI())
+        val reader = format.newReader(path, TABLE_TASKS)
+
+        // Move to row 7
+        for (x in 1..6)
+            reader.nextRow()
+
+        assertAll(
+            { assertTrue(reader.nextRow()) },
+            { assertEquals("0", reader.get(TASK_WORKFLOW_ID)) },
+            { assertEquals("7", reader.get(TASK_ID)) },
+            { assertEquals(Instant.ofEpochSecond(87), reader.get(TASK_SUBMIT_TIME)) },
+            { assertEquals(Duration.ofSeconds(11), reader.get(TASK_RUNTIME)) },
+            { assertEquals(setOf<String>("4", "5", "6"), reader.get(TASK_PARENTS)) },
+        )
+    }
 }
