@@ -60,7 +60,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
                 "RunTime" -> runtime = Duration.ofSeconds(parser.longValue)
                 "NProcs" -> nProcs = parser.intValue
                 "ReqNProcs" -> reqNProcs = parser.intValue
-                "Dependencies" -> parseParents(parser.valueAsString)
+                "Dependencies" -> dependencies = parseParents(parser.valueAsString)
             }
         }
 
@@ -119,8 +119,8 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     /**
      * Parse the parents into a set of longs.
      */
-    private fun parseParents(value: String): Set<Long> {
-        val result = mutableSetOf<Long>()
+    private fun parseParents(value: String): Set<String> {
+        val result = mutableSetOf<String>()
         val deps = value.split(pattern)
 
         for (dep in deps) {
@@ -128,7 +128,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
                 continue
             }
 
-            result.add(dep.toLong(10))
+            result.add(dep)
         }
 
         return result
@@ -156,7 +156,7 @@ internal class GwfTaskTableReader(private val parser: CsvParser) : TableReader {
     private var runtime: Duration? = null
     private var nProcs = -1
     private var reqNProcs = -1
-    private var dependencies = emptySet<Long>()
+    private var dependencies = emptySet<String>()
 
     /**
      * Reset the state.
