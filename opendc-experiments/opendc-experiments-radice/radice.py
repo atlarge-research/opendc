@@ -34,31 +34,41 @@ def figsize(height=None):
 def set(font_scale=0.8):
     """
     Configure the Matplotlib and Seaborn styling for the figures.
-    """
+    """        
     theme = {
         'legend.fancybox': False,
         'legend.edgecolor': 'black',
         'xtick.major.pad': 0,
         'ytick.major.pad': 0,
     }
-
+    
     rc = {
         'pdf.fonttype': 42,
         'figure.figsize': figsize(3),  # Derived from thesis dimensions
         'figure.autolayout': False,
         'figure.constrained_layout.use': True,
         'figure.dpi': 300,
+        # PGF
+        'pgf.rcfonts': False,
+        'pgf.texsystem': 'pdflatex',
+        'pgf.preamble': '\n'.join([
+            r"\usepackage[utf8]{inputenc}",
+            r"\usepackage[T1]{fontenc}",
+            r"\usepackage[binary-units]{siunitx}",
+            r"\usepackage{eurosym}",
+            r"\usepackage{chemformula}",
+        ])
     }
-
+    
     sns.set_theme(style="darkgrid", rc=theme | rc, font_scale=font_scale)
 
-
+    
 def align_labels(ax, va=None, ha=None, ma=None, offset=0.8, axis='x'):
     if axis == 'x':
         x = ax.xaxis
     else:
         x = ax.yaxis
-
+    
     for lab in x.get_ticklabels():
         if ha:
             lab.set_horizontalalignment(ha)
@@ -104,7 +114,7 @@ def plot_risk_factors(data, height=3):
 
     sns.boxplot(x="cost", y="id", data=soc_data, ax=ax[2], showfliers=False, showmeans=True, order=soc_order)
 
-    ax[2].set_xlabel("Risk per Month (€)", usetex=False)
+    ax[2].set_xlabel("Risk per Month (\euro{})", usetex=False)
     ax[2].set_yticklabels(soc_labels)
     ax[2].set_ylabel("Society")
 
@@ -122,12 +132,12 @@ def plot_risk_factors_horizontal(data, hue=None, hue_order=None, height=2.1, bar
 
     co_data = data[data['id'].str.startswith('company')]
     co_order = ['company:power', 'company:co2', 'company:host_saturation', 'company:host_imbalance']
-    co_labels = ['Electricity\nDemand', 'CO2\nEmissions', 'Resource\nSaturation', 'Resource\nImbalance']
+    co_labels = ['Electricity\nDemand', '\ch{CO2}\nEmissions', 'Resource\nSaturation', 'Resource\nImbalance']
 
     soc_data = data[data['id'].str.startswith('society')]
     soc_order = ['society:co2']
-    soc_labels = ['CO2\nEmissions']
-
+    soc_labels = ['\ch{CO2}\nEmissions']
+    
     color = 'C0' if not hue else None
     fmt = mtick.StrMethodFormatter('{x:,.0f}')
 
@@ -136,7 +146,7 @@ def plot_risk_factors_horizontal(data, hue=None, hue_order=None, height=2.1, bar
     else:
         sns.boxplot(x="id", y="cost", data=cx_data, ax=ax[0], order=cx_order, hue=hue, hue_order=hue_order, showfliers=False, showmeans=True, width=0.5, linewidth=0.9, color=color)
 
-    ax[0].set_ylabel("Risk per Month (€)")
+    ax[0].set_ylabel("Risk per Month (\euro{})")
     ax[0].set_xticklabels(cx_labels)
     ax[0].set_xlabel("")
     ax[0].set_title("Customer")
@@ -166,12 +176,12 @@ def plot_risk_factors_horizontal(data, hue=None, hue_order=None, height=2.1, bar
     ax[2].set_title("Society")
     ax[2].yaxis.set_major_formatter(fmt)
     ax[2].legend([],[], frameon=False)
-
+    
     fig.align_xlabels(ax)
-
+    
     for x in ax:
         align_labels(x, va='center')
-
+    
     return fig, ax
 
 def compute_periodic_risk(risk, freq='M', keys=['id']):
@@ -196,15 +206,15 @@ def compute_monthly_risk(risk, keys=['id'], observed=False):
     """
     group = keys + ['seed']
     as_index = True
-
+    
     if 'month' in risk.columns:
         group.append('month')
         as_index = False
     else:
         group.append(risk['timestamp'].dt.month.rename('month'))
-
+    
     res = risk.groupby(group, sort=False, as_index=as_index, observed=observed)['cost'].sum()
-
+    
     if as_index:
         return res.reset_index()
     return res
@@ -269,7 +279,7 @@ def adjust_penalty(risk, penalties, vcpu_cost = 0.040):
     :return: The adjusted risk values.
     """
     av = risk['id'] == 'customer:availability'
-
+    
     def m(av):
         for (bound, p) in penalties:
             if av < bound:
