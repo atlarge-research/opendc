@@ -173,7 +173,7 @@ internal class SimHostTest {
 
         assertAll(
             { assertEquals(658, activeTime, "Active time does not match") },
-            { assertEquals(1741, idleTime, "Idle time does not match") },
+            { assertEquals(2341, idleTime, "Idle time does not match") },
             { assertEquals(637, stealTime, "Steal time does not match") },
             { assertEquals(1500001, clock.millis()) }
         )
@@ -278,7 +278,7 @@ internal class SimHostTest {
         meterProvider.close()
 
         assertAll(
-            { assertEquals(1175, idleTime, "Idle time does not match") },
+            { assertEquals(1775, idleTime, "Idle time does not match") },
             { assertEquals(624, activeTime, "Active time does not match") },
             { assertEquals(900001, uptime, "Uptime does not match") },
             { assertEquals(300000, downtime, "Downtime does not match") },

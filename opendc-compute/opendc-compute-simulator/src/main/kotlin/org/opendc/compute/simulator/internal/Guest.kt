@@ -272,6 +272,7 @@ internal class Guest(
      */
     fun collectCpuTime(result: ObservableLongMeasurement) {
         val counters = machine.counters
+        counters.flush()
 
         result.record(counters.cpuActiveTime / 1000, _activeState)
         result.record(counters.cpuIdleTime / 1000, _idleState)

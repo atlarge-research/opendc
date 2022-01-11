@@ -137,7 +137,9 @@ public abstract class SimAbstractHypervisor(
 
     /* FlowConvergenceListener */
     override fun onConverge(now: Long, delta: Long) {
-        _counters.record()
+        if (delta > 0) {
+            _counters.record()
+        }
 
         val load = cpuDemand / cpuCapacity
         for (governor in governors) {
@@ -274,6 +276,10 @@ public abstract class SimAbstractHypervisor(
         fun close() {
             switch.removeInput(source)
         }
+
+        fun flush() {
+            switch.flushCounters(source)
+        }
     }
 
     /**
@@ -337,6 +343,11 @@ public abstract class SimAbstractHypervisor(
             cpuTime[2] += ((demandDelta - actualDelta) * d).roundToLong()
             cpuTime[3] += (interferenceDelta * d).roundToLong()
         }
+
+        override fun flush() {
+            hv.mux.flushCounters()
+            record()
+        }
     }
 
     /**
@@ -348,10 +359,16 @@ public abstract class SimAbstractHypervisor(
         override val cpuActiveTime: Long
             get() = (cpus.sumOf { it.counters.actual } * d).roundToLong()
         override val cpuIdleTime: Long
-            get() = (cpus.sumOf { it.counters.actual + it.counters.remaining } * d).roundToLong()
+            get() = (cpus.sumOf { it.counters.remaining } * d).roundToLong()
         override val cpuStealTime: Long
             get() = (cpus.sumOf { it.counters.demand - it.counters.actual } * d).roundToLong()
         override val cpuLostTime: Long
             get() = (cpus.sumOf { it.counters.interference } * d).roundToLong()
+
+        override fun flush() {
+            for (cpu in cpus) {
+                cpu.flush()
+            }
+        }
     }
 }

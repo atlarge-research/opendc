@@ -135,6 +135,10 @@ public class ForwardingFlowMultiplexer(
         clearInputs()
     }
 
+    override fun flushCounters() {}
+
+    override fun flushCounters(input: FlowConsumer) {}
+
     private var _lastConverge = Long.MAX_VALUE
 
     override fun onConverge(now: Long, delta: Long) {
