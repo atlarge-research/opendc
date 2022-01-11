@@ -29,6 +29,11 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
+ * The logging instance of this connection.
+ */
+private val logger = KotlinLogging.logger {}
+
+/**
  * Implementation of a [FlowConnection] managing the communication between flow sources and consumers.
  */
 internal class FlowConsumerContextImpl(
@@ -36,11 +41,6 @@ internal class FlowConsumerContextImpl(
     private val source: FlowSource,
     private val logic: FlowConsumerLogic
 ) : FlowConsumerContext {
-    /**
-     * The logging instance of this connection.
-     */
-    private val logger = KotlinLogging.logger {}
-
     /**
      * The capacity of the connection.
      */
