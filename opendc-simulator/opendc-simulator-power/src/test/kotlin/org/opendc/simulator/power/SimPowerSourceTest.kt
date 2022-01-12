@@ -85,7 +85,7 @@ internal class SimPowerSourceTest {
         source.connect(inlet)
         source.disconnect()
 
-        verify { consumer.onStop(any(), any(), any()) }
+        verify { consumer.onStop(any(), any()) }
     }
 
     @Test

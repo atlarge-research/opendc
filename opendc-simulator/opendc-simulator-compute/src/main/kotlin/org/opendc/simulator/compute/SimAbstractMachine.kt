@@ -22,7 +22,6 @@
 
 package org.opendc.simulator.compute
 
-import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.simulator.compute.device.SimNetworkAdapter
 import org.opendc.simulator.compute.device.SimPeripheral
@@ -87,8 +86,8 @@ public abstract class SimAbstractMachine(
         _ctx?.close()
     }
 
-    override fun onConverge(now: Long, delta: Long) {
-        parent?.onConverge(now, delta)
+    override fun onConverge(now: Long) {
+        parent?.onConverge(now)
     }
 
     /**

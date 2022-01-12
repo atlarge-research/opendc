@@ -31,10 +31,9 @@ public interface FlowConsumerLogic {
      *
      * @param ctx The context in which the provider runs.
      * @param now The virtual timestamp in milliseconds at which the update is occurring.
-     * @param delta The virtual duration between this call and the last call to [onPush] in milliseconds.
      * @param rate The requested processing rate of the source.
      */
-    public fun onPush(ctx: FlowConsumerContext, now: Long, delta: Long, rate: Double) {}
+    public fun onPush(ctx: FlowConsumerContext, now: Long, rate: Double) {}
 
     /**
      * This method is invoked when the flow graph has converged into a steady-state system.
@@ -44,17 +43,15 @@ public interface FlowConsumerLogic {
      *
      * @param ctx The context in which the provider runs.
      * @param now The virtual timestamp in milliseconds at which the system converged.
-     * @param delta The virtual duration between this call and the last call to [onConverge] in milliseconds.
      */
-    public fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {}
+    public fun onConverge(ctx: FlowConsumerContext, now: Long) {}
 
     /**
      * This method is invoked when the [FlowSource] completed or failed.
      *
      * @param ctx The context in which the provider runs.
      * @param now The virtual timestamp in milliseconds at which the provider finished.
-     * @param delta The virtual duration between this call and the last call to [onPush] in milliseconds.
      * @param cause The cause of the failure or `null` if the source completed.
      */
-    public fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {}
+    public fun onFinish(ctx: FlowConsumerContext, now: Long, cause: Throwable?) {}
 }

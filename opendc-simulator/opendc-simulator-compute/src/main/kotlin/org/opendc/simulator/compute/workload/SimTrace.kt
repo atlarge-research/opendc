@@ -217,7 +217,7 @@ public class SimTrace(
          */
         private var _idx = 0
 
-        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+        override fun onPull(conn: FlowConnection, now: Long): Long {
             val size = size
             val nowOffset = now - offset
 

@@ -36,7 +36,7 @@ class FlowConsumerContextTest {
     fun testFlushWithoutCommand() = runBlockingSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val consumer = object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return if (now == 0L) {
                     conn.push(1.0)
                     1000
@@ -57,7 +57,7 @@ class FlowConsumerContextTest {
     fun testDoubleStart() = runBlockingSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val consumer = object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return if (now == 0L) {
                     conn.push(0.0)
                     1000
@@ -82,7 +82,7 @@ class FlowConsumerContextTest {
     fun testIdempotentCapacityChange() = runBlockingSimulation {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val consumer = spyk(object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return if (now == 0L) {
                     conn.push(1.0)
                     1000
@@ -99,6 +99,6 @@ class FlowConsumerContextTest {
         context.start()
         context.capacity = 4200.0
 
-        verify(exactly = 1) { consumer.onPull(any(), any(), any()) }
+        verify(exactly = 1) { consumer.onPull(any(), any()) }
     }
 }

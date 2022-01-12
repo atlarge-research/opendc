@@ -85,7 +85,7 @@ internal class SimPduTest {
         outlet.connect(inlet)
         outlet.disconnect()
 
-        verify { consumer.onStop(any(), any(), any()) }
+        verify { consumer.onStop(any(), any()) }
     }
 
     @Test

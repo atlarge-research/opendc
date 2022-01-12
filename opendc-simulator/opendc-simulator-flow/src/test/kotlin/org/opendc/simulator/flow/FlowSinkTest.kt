@@ -65,7 +65,7 @@ internal class FlowSinkTest {
             provider.capacity = 0.5
         }
         assertEquals(3000, clock.millis())
-        verify(exactly = 3) { consumer.onPull(any(), any(), any()) }
+        verify(exactly = 3) { consumer.onPull(any(), any()) }
     }
 
     @Test
@@ -95,7 +95,7 @@ internal class FlowSinkTest {
         val provider = FlowSink(engine, capacity)
 
         val consumer = object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 conn.close()
                 return Long.MAX_VALUE
             }
@@ -122,7 +122,7 @@ internal class FlowSinkTest {
                 resCtx = conn
             }
 
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return if (isFirst) {
                     isFirst = false
                     conn.push(1.0)
@@ -154,7 +154,7 @@ internal class FlowSinkTest {
                 throw IllegalStateException("Hi")
             }
 
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return Long.MAX_VALUE
             }
         }
@@ -173,7 +173,7 @@ internal class FlowSinkTest {
         val consumer = object : FlowSource {
             var isFirst = true
 
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return if (isFirst) {
                     isFirst = false
                     conn.push(1.0)
@@ -231,7 +231,7 @@ internal class FlowSinkTest {
                 val provider = FlowSink(engine, capacity)
 
                 val consumer = object : FlowSource {
-                    override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long = Long.MAX_VALUE
+                    override fun onPull(conn: FlowConnection, now: Long): Long = Long.MAX_VALUE
                 }
 
                 provider.consume(consumer)

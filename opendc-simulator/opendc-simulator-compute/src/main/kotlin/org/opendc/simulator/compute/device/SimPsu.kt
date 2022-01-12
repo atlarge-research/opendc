@@ -86,17 +86,17 @@ public class SimPsu(
             conn.shouldSourceConverge = true
         }
 
-        override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+        override fun onStop(conn: FlowConnection, now: Long) {
             _ctx = null
         }
 
-        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+        override fun onPull(conn: FlowConnection, now: Long): Long {
             val powerDraw = computePowerDraw(_driver?.computePower() ?: 0.0)
             conn.push(powerDraw)
             return Long.MAX_VALUE
         }
 
-        override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+        override fun onConverge(conn: FlowConnection, now: Long) {
             _powerDraw = conn.rate
         }
     }

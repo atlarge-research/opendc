@@ -112,7 +112,7 @@ internal class ForwardingFlowMultiplexerTest {
                 isFirst = true
             }
 
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return if (isFirst) {
                     isFirst = false
                     conn.push(1.0)

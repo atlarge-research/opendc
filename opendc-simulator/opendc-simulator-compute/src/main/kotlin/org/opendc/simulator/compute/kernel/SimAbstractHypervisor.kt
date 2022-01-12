@@ -134,9 +134,14 @@ public abstract class SimAbstractHypervisor(
 
     private var _cpuCount = 0
     private var _cpuCapacity = 0.0
+    private var _lastConverge = engine.clock.millis()
 
     /* FlowConvergenceListener */
-    override fun onConverge(now: Long, delta: Long) {
+    override fun onConverge(now: Long) {
+        val lastConverge = _lastConverge
+        _lastConverge = now
+        val delta = now - lastConverge
+
         if (delta > 0) {
             _counters.record()
         }
@@ -146,7 +151,7 @@ public abstract class SimAbstractHypervisor(
             governor.onLimit(load)
         }
 
-        listener?.onConverge(now, delta)
+        listener?.onConverge(now)
     }
 
     /**

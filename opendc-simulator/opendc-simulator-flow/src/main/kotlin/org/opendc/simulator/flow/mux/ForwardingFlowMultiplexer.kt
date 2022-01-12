@@ -25,7 +25,6 @@ package org.opendc.simulator.flow.mux
 import org.opendc.simulator.flow.*
 import org.opendc.simulator.flow.interference.InterferenceKey
 import java.util.ArrayDeque
-import kotlin.math.max
 
 /**
  * A [FlowMultiplexer] implementation that allocates inputs to the outputs of the multiplexer exclusively. This means
@@ -139,16 +138,8 @@ public class ForwardingFlowMultiplexer(
 
     override fun flushCounters(input: FlowConsumer) {}
 
-    private var _lastConverge = Long.MAX_VALUE
-
-    override fun onConverge(now: Long, delta: Long) {
-        val listener = listener
-        if (listener != null) {
-            val lastConverge = _lastConverge
-            _lastConverge = now
-            val duration = max(0, now - lastConverge)
-            listener.onConverge(now, duration)
-        }
+    override fun onConverge(now: Long) {
+        listener?.onConverge(now)
     }
 
     /**
@@ -167,9 +158,9 @@ public class ForwardingFlowMultiplexer(
             forwarder.onStart(conn, now)
         }
 
-        override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+        override fun onStop(conn: FlowConnection, now: Long) {
             forwarder.cancel()
-            forwarder.onStop(conn, now, delta)
+            forwarder.onStop(conn, now)
         }
 
         override fun toString(): String = "ForwardingFlowMultiplexer.Output"

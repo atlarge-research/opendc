@@ -104,34 +104,39 @@ public class FlowSink(
      * [FlowConsumerLogic] of a sink.
      */
     private inner class Logic(private val parent: FlowConvergenceListener?, private val counters: MutableFlowCounters) : FlowConsumerLogic {
+
         override fun onPush(
             ctx: FlowConsumerContext,
             now: Long,
-            delta: Long,
             rate: Double
         ) {
-            updateCounters(ctx, delta, rate, ctx.capacity)
+            updateCounters(ctx, now, rate, ctx.capacity)
         }
 
-        override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {
-            updateCounters(ctx, delta, 0.0, 0.0)
+        override fun onFinish(ctx: FlowConsumerContext, now: Long, cause: Throwable?) {
+            updateCounters(ctx, now, 0.0, 0.0)
 
             _ctx = null
         }
 
-        override fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {
-            parent?.onConverge(now, delta)
+        override fun onConverge(ctx: FlowConsumerContext, now: Long) {
+            parent?.onConverge(now)
         }
 
         /**
          * The previous demand and capacity for the consumer.
          */
         private val _previous = DoubleArray(2)
+        private var _previousUpdate = Long.MAX_VALUE
 
         /**
          * Update the counters of the flow consumer.
          */
-        private fun updateCounters(ctx: FlowConnection, delta: Long, nextDemand: Double, nextCapacity: Double) {
+        private fun updateCounters(ctx: FlowConnection, now: Long, nextDemand: Double, nextCapacity: Double) {
+            val previousUpdate = _previousUpdate
+            _previousUpdate = now
+            val delta = now - previousUpdate
+
             val counters = counters
             val previous = _previous
             val demand = previous[0]

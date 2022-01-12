@@ -92,9 +92,9 @@ public suspend fun FlowConsumer.consume(source: FlowSource) {
                 }
             }
 
-            override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+            override fun onStop(conn: FlowConnection, now: Long) {
                 try {
-                    source.onStop(conn, now, delta)
+                    source.onStop(conn, now)
 
                     if (!cont.isCompleted) {
                         cont.resume(Unit)
@@ -105,18 +105,18 @@ public suspend fun FlowConsumer.consume(source: FlowSource) {
                 }
             }
 
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return try {
-                    source.onPull(conn, now, delta)
+                    source.onPull(conn, now)
                 } catch (cause: Throwable) {
                     cont.resumeWithException(cause)
                     throw cause
                 }
             }
 
-            override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+            override fun onConverge(conn: FlowConnection, now: Long) {
                 try {
-                    source.onConverge(conn, now, delta)
+                    source.onConverge(conn, now)
                 } catch (cause: Throwable) {
                     cont.resumeWithException(cause)
                     throw cause

@@ -45,20 +45,20 @@ public class FlowMapper(
         source.onStart(delegate, now)
     }
 
-    override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+    override fun onStop(conn: FlowConnection, now: Long) {
         val delegate = checkNotNull(_conn) { "Invariant violation" }
         _conn = null
-        source.onStop(delegate, now, delta)
+        source.onStop(delegate, now)
     }
 
-    override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+    override fun onPull(conn: FlowConnection, now: Long): Long {
         val delegate = checkNotNull(_conn) { "Invariant violation" }
-        return source.onPull(delegate, now, delta)
+        return source.onPull(delegate, now)
     }
 
-    override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+    override fun onConverge(conn: FlowConnection, now: Long) {
         val delegate = _conn ?: return
-        source.onConverge(delegate, now, delta)
+        source.onConverge(delegate, now)
     }
 
     /**
