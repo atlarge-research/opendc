@@ -1,4 +1,4 @@
-FROM openjdk:16-slim
+FROM openjdk:17-slim
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
 # Obtain (cache) Gradle wrapper
@@ -11,7 +11,7 @@ RUN ./gradlew --version
 COPY ./ /app/
 RUN ./gradlew --no-daemon :installDist
 
-FROM openjdk:16-slim
+FROM openjdk:17-slim
 COPY --from=0 /app/build/install /opt/
 COPY --from=0 /app/traces /opt/opendc/traces
 WORKDIR /opt/opendc
