@@ -18,18 +18,25 @@ Identity Provider with good software support and a free tier for users to experi
 To deploy OpenDC yourself, you need to have an [Auth0 tenant](https://auth0.com/docs/get-started/learn-the-basics) and
 create:
 
-1. **A Single Page Application (SPA)**  
+1. **An API**  
+   You need to define the OpenDC API server in Auth0. Please refer to the [following guide](https://auth0.com/docs/quickstart/backend/python/01-authorization#create-an-api)
+   on how to define an API in Auth0.
+
+   Remember the identifier you created the API with, as we need it in the next steps (as `OPENDC_AUTH0_AUDIENCE`).
+2. **A Single Page Application (SPA)**  
    You need to define the OpenDC frontend application in Auth0. Please see the [following guide](https://auth0.com/docs/quickstart/spa/react#configure-auth0)
    on how you can define an SPA in Auth0. Make sure you have added the necessary URLs to the _Allowed Callback URLs_:
    for a local deployment, you should add at least `http://localhost:3000, http://localhost:8080`.
 
    Once your application has been created, you should have a _Domain_ and _Client ID_ which we need to pass to the
    frontend application (as `OPENDC_AUTH0_DOMAIN` and `OPENDC_AUTH0_CLIENT_ID` respectively).
-2. **An API**  
-   You need to define the OpenDC API server in Auth0. Please refer to the [following guide](https://auth0.com/docs/quickstart/backend/python/01-authorization#create-an-api)
-   on how to define an API in Auth0.
-   
-   Remember the identifier you created the API with, as we need it in the next steps (as `OPENDC_AUTH0_AUDIENCE`).
+3. **A Machine to Machine Application (M2M)**  
+   You need to define a Machine to Machine application in Auth0 so that the simulator can communicate with the OpenDC API.
+   Please refer to the [following guide](https://auth0.com/docs/get-started/auth0-overview/create-applications/machine-to-machine-apps)
+   on how to create such an application.
+
+   Once your application has been created, you should have a _Client ID_ and _Client Secret_ which we need to pass to the
+   simulator (as `OPENDC_AUTH0_CLIENT_ID_RUNNER` and `OPENDC_AUTH0_CLIENT_SECRET_RUNNER` respectively).
 
 
 ## Installing Docker
@@ -64,7 +71,9 @@ OPENDC_FLASK_SECRET="This is a secret flask key, please change"
 OPENDC_AUTH0_DOMAIN=your-auth0-domain
 OPENDC_AUTH0_CLIENT_ID=your-auth0-client-id
 OPENDC_AUTH0_AUDIENCE=your-auth0-api-identifier
-OPENDC_API_BASE_URL=http://localhost:8081
+OPENDC_AUTH0_CLIENT_ID_RUNNER=your-auth0-client-id-for-runner
+OPENDC_AUTH0_CLIENT_SECRET_RUNNER=your-auth0-client-secret-for-runner
+OPENDC_API_BASE_URL=http://web
 ```
 
 We provide a set of default traces for you to experiment with. If you want to add others, place them in the `traces`

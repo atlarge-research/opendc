@@ -1,5 +1,5 @@
-FROM mongo:4.2.8
-MAINTAINER Jacob Burley <j.burley@vu.nl>
+FROM mongo:5.0
+MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
 # Import init scripts
 ADD mongo-init-opendc-db.sh /docker-entrypoint-initdb.d
