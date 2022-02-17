@@ -82,6 +82,16 @@ class RunnerCli : CliktCommand(name = "runner") {
         .required()
 
     /**
+     * The auth domain to use.
+     */
+    private val authAudience by option(
+        "--auth-audience",
+        help = "auth audience of the OpenDC API",
+        envvar = "AUTH0_AUDIENCE"
+    )
+        .required()
+
+    /**
      * The auth client ID to use.
      */
     private val authClientId by option(
@@ -231,7 +241,7 @@ class RunnerCli : CliktCommand(name = "runner") {
     override fun run(): Unit = runBlocking(Dispatchers.Default) {
         logger.info { "Starting OpenDC web runner" }
 
-        val client = ApiClient(baseUrl = apiUrl, AuthConfiguration(authDomain, authClientId, authClientSecret))
+        val client = ApiClient(baseUrl = apiUrl, AuthConfiguration(authDomain, authClientId, authClientSecret), authAudience)
         val manager = ScenarioManager(client)
 
         logger.info { "Watching for queued scenarios" }
