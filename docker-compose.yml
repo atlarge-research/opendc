@@ -5,6 +5,8 @@ services:
     restart: on-failure
     networks:
       - backend
+    depends_on:
+      - api
     environment:
       NEXT_PUBLIC_AUTH0_DOMAIN: ${OPENDC_AUTH0_DOMAIN}
       NEXT_PUBLIC_AUTH0_CLIENT_ID: ${OPENDC_AUTH0_CLIENT_ID}
@@ -27,7 +29,9 @@ services:
       - OPENDC_DB_PASSWORD
       - OPENDC_DB_HOST=mongo
       - OPENDC_FLASK_SECRET
-      - OPENDC_OAUTH_CLIENT_ID
+      - AUTH0_DOMAIN=${OPENDC_AUTH0_DOMAIN}
+      - AUTH0_AUDIENCE=${OPENDC_AUTH0_AUDIENCE}
+      - AUTH0_DOCS_CLIENT_ID=${OPENDC_AUTH0_DOCS_CLIENT_ID}
       - SENTRY_DSN=${OPENDC_API_SENTRY_DSN-}
       - SENTRY_ENVIRONMENT
 
@@ -37,7 +41,7 @@ services:
     networks:
       - backend
     depends_on:
-      - mongo
+      - api
     volumes:
       - type: bind
         source: ./traces
