@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-description = "Utilities used across OpenDC modules"
+description = "Common functionality used across OpenDC modules"
 
 /* Build configuration */
 plugins {

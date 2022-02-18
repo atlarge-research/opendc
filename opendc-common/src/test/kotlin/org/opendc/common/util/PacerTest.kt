@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.utils
+package org.opendc.common.util
 
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Assertions.*

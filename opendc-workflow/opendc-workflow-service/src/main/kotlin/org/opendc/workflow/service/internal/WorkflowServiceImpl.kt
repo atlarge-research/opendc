@@ -25,8 +25,8 @@ package org.opendc.workflow.service.internal
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
+import org.opendc.common.util.Pacer
 import org.opendc.compute.api.*
-import org.opendc.utils.Pacer
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES
 import org.opendc.workflow.service.*

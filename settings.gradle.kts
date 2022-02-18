@@ -22,6 +22,7 @@
 rootProject.name = "opendc"
 
 include(":opendc-platform")
+include(":opendc-common")
 include(":opendc-compute:opendc-compute-api")
 include(":opendc-compute:opendc-compute-service")
 include(":opendc-compute:opendc-compute-simulator")
@@ -60,7 +61,6 @@ include(":opendc-harness:opendc-harness-api")
 include(":opendc-harness:opendc-harness-engine")
 include(":opendc-harness:opendc-harness-cli")
 include(":opendc-harness:opendc-harness-junit5")
-include(":opendc-utils")
 
 enableFeaturePreview("VERSION_CATALOGS")
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

@@ -29,13 +29,13 @@ import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import kotlinx.coroutines.*
 import mu.KotlinLogging
+import org.opendc.common.util.Pacer
 import org.opendc.compute.api.*
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.ComputeScheduler
-import org.opendc.utils.Pacer
 import java.time.Clock
 import java.time.Duration
 import java.util.*

@@ -22,9 +22,9 @@
 
 package org.opendc.faas.service.autoscaler
 
+import org.opendc.common.util.TimerScheduler
 import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceState
-import org.opendc.utils.TimerScheduler
 import java.time.Clock
 import java.time.Duration
 import kotlin.coroutines.CoroutineContext

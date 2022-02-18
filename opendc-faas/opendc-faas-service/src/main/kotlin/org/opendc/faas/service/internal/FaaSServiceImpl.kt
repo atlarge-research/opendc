@@ -27,6 +27,7 @@ import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import mu.KotlinLogging
+import org.opendc.common.util.Pacer
 import org.opendc.faas.api.FaaSClient
 import org.opendc.faas.api.FaaSFunction
 import org.opendc.faas.service.FaaSService
@@ -37,7 +38,6 @@ import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceListener
 import org.opendc.faas.service.deployer.FunctionInstanceState
 import org.opendc.faas.service.router.RoutingPolicy
-import org.opendc.utils.Pacer
 import java.lang.IllegalStateException
 import java.time.Clock
 import java.util.*
