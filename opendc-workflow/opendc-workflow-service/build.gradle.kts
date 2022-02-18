@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcWorkflow.opendcWorkflowApi)
     api(projects.opendcCompute.opendcComputeApi)
     api(projects.opendcTelemetry.opendcTelemetryApi)

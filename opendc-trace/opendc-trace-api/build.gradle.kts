@@ -26,7 +26,3 @@ description = "Workload trace library for OpenDC"
 plugins {
     `kotlin-library-conventions`
 }
-
-dependencies {
-    api(platform(projects.opendcPlatform))
-}

@@ -21,7 +21,6 @@
  */
 rootProject.name = "opendc"
 
-include(":opendc-platform")
 include(":opendc-common")
 include(":opendc-compute:opendc-compute-api")
 include(":opendc-compute:opendc-compute-service")

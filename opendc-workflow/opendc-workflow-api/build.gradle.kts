@@ -28,7 +28,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcCompute.opendcComputeApi)
     implementation(libs.kotlin.logging)
 }

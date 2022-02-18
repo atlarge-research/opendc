@@ -29,7 +29,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)

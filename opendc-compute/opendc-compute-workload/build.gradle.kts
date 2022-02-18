@@ -29,7 +29,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcCompute.opendcComputeSimulator)
 
     implementation(projects.opendcTrace.opendcTraceApi)

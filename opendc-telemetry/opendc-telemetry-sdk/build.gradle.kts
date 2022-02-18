@@ -28,7 +28,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcTelemetry.opendcTelemetryApi)
     api(libs.kotlinx.coroutines)
     api(libs.opentelemetry.sdk.main)

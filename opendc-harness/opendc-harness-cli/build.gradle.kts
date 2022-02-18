@@ -34,7 +34,6 @@ application {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessEngine)
 
     implementation(libs.kotlin.logging)

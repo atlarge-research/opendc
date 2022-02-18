@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(libs.kotlinx.coroutines)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)

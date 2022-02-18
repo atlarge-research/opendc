@@ -30,6 +30,5 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcTrace.opendcTraceApi)
 }
