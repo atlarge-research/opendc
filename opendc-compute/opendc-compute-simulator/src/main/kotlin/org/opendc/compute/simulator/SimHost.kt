@@ -249,6 +249,12 @@ public class SimHost(
         machine.cancel()
     }
 
+    override fun hashCode(): Int = uid.hashCode()
+
+    override fun equals(other: Any?): Boolean {
+        return other is SimHost && uid == other.uid
+    }
+
     override fun toString(): String = "SimHost[uid=$uid,name=$name,model=$model]"
 
     public suspend fun fail() {
