@@ -27,6 +27,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.opendc.simulator.core.runBlockingSimulation
+import java.time.Clock
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * A test suite for the [TimerScheduler] class.
@@ -34,14 +36,21 @@ import org.opendc.simulator.core.runBlockingSimulation
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TimerSchedulerTest {
     @Test
+    fun testEmptyContext() {
+        assertThrows<IllegalArgumentException> { TimerScheduler<Unit>(EmptyCoroutineContext, Clock.systemUTC()) }
+    }
+
+    @Test
     fun testBasicTimer() {
         runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
-                scheduler.close()
                 assertEquals(1000, clock.millis())
             }
+
+            assertTrue(scheduler.isTimerActive(0))
+            assertFalse(scheduler.isTimerActive(1))
         }
     }
 
@@ -51,7 +60,6 @@ internal class TimerSchedulerTest {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.cancel(1)
-            scheduler.close()
         }
     }
 
@@ -61,12 +69,11 @@ internal class TimerSchedulerTest {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
             scheduler.startSingleTimer(0, 1000) {
-                assertFalse(false)
+                fail()
             }
 
             scheduler.startSingleTimer(1, 100) {
                 scheduler.cancel(0)
-                scheduler.close()
 
                 assertEquals(100, clock.millis())
             }
@@ -78,15 +85,9 @@ internal class TimerSchedulerTest {
         runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
-            scheduler.startSingleTimer(0, 1000) {
-                assertFalse(false)
-            }
-
-            scheduler.startSingleTimer(1, 100) {
-                assertFalse(false)
-            }
-
-            scheduler.close()
+            scheduler.startSingleTimer(0, 1000) { fail() }
+            scheduler.startSingleTimer(1, 100) { fail() }
+            scheduler.cancelAll()
         }
     }
 
@@ -95,12 +96,9 @@ internal class TimerSchedulerTest {
         runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
-            scheduler.startSingleTimer(0, 1000) {
-                assertFalse(false)
-            }
+            scheduler.startSingleTimer(0, 1000) { fail() }
 
             scheduler.startSingleTimer(0, 200) {
-                scheduler.close()
 
                 assertEquals(200, clock.millis())
             }
@@ -108,16 +106,14 @@ internal class TimerSchedulerTest {
     }
 
     @Test
-    fun testStopped() {
+    fun testOverrideBlock() {
         runBlockingSimulation {
             val scheduler = TimerScheduler<Int>(coroutineContext, clock)
 
-            scheduler.close()
+            scheduler.startSingleTimer(0, 1000) { fail() }
 
-            assertThrows<IllegalStateException> {
-                scheduler.startSingleTimer(1, 100) {
-                    assertFalse(false)
-                }
+            scheduler.startSingleTimer(0, 1000) {
+                assertEquals(1000, clock.millis())
             }
         }
     }
@@ -129,11 +125,9 @@ internal class TimerSchedulerTest {
 
             assertThrows<IllegalArgumentException> {
                 scheduler.startSingleTimer(1, -1) {
-                    assertFalse(false)
+                    fail()
                 }
             }
-
-            scheduler.close()
         }
     }
 }

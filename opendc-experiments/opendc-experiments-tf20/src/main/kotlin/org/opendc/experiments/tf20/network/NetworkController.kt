@@ -23,7 +23,7 @@
 package org.opendc.experiments.tf20.network
 
 import kotlinx.coroutines.channels.Channel
-import org.opendc.utils.TimerScheduler
+import org.opendc.common.util.TimerScheduler
 import java.time.Clock
 import kotlin.coroutines.CoroutineContext
 
@@ -89,6 +89,6 @@ public class NetworkController(context: CoroutineContext, clock: Clock) : AutoCl
      * Stop the network controller.
      */
     override fun close() {
-        scheduler.close()
+        scheduler.cancelAll()
     }
 }
