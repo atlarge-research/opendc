@@ -35,7 +35,7 @@ import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.ComputeScheduler
-import org.opendc.utils.TimerScheduler
+import org.opendc.utils.Pacer
 import java.time.Clock
 import java.time.Duration
 import java.util.*
@@ -56,7 +56,7 @@ internal class ComputeServiceImpl(
     private val clock: Clock,
     meterProvider: MeterProvider,
     private val scheduler: ComputeScheduler,
-    private val schedulingQuantum: Duration
+    schedulingQuantum: Duration
 ) : ComputeService, HostListener {
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
@@ -147,9 +147,9 @@ internal class ComputeServiceImpl(
     private val _serversActiveAttr = Attributes.of(AttributeKey.stringKey("state"), "active")
 
     /**
-     * The [TimerScheduler] to use for scheduling the scheduler cycles.
+     * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private var timerScheduler: TimerScheduler<Unit> = TimerScheduler(scope.coroutineContext, clock)
+    private val pacer = Pacer(scope.coroutineContext, clock, schedulingQuantum.toMillis(), ::doSchedule)
 
     override val hosts: Set<Host>
         get() = hostToView.keys
@@ -354,28 +354,18 @@ internal class ComputeServiceImpl(
      * Indicate that a new scheduling cycle is needed due to a change to the service's state.
      */
     private fun requestSchedulingCycle() {
-        // Bail out in case we have already requested a new cycle or the queue is empty.
-        if (timerScheduler.isTimerActive(Unit) || queue.isEmpty()) {
+        // Bail out in case the queue is empty.
+        if (queue.isEmpty()) {
             return
         }
 
-        val quantum = schedulingQuantum.toMillis()
-
-        // We assume that the provisioner runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
-        // This is important because the slices of the VMs need to be aligned.
-        // We calculate here the delay until the next scheduling slot.
-        val delay = quantum - (clock.millis() % quantum)
-
-        timerScheduler.startSingleTimer(Unit, delay) {
-            doSchedule()
-        }
+        pacer.enqueue()
     }
 
     /**
      * Run a single scheduling iteration.
      */
-    private fun doSchedule() {
-        val now = clock.millis()
+    private fun doSchedule(now: Long) {
         while (queue.isNotEmpty()) {
             val request = queue.peek()
 

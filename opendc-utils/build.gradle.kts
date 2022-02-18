@@ -26,6 +26,7 @@ description = "Utilities used across OpenDC modules"
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {
