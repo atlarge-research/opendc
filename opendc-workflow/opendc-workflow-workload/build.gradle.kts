@@ -29,7 +29,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcWorkflow.opendcWorkflowService)
 
     implementation(projects.opendcSimulator.opendcSimulatorCompute)

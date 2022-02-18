@@ -28,7 +28,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcTelemetry.opendcTelemetrySdk)
 
     implementation(libs.opentelemetry.semconv)

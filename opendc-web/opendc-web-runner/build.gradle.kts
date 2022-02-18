@@ -34,7 +34,6 @@ application {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcCompute.opendcComputeWorkload)
     implementation(projects.opendcSimulator.opendcSimulatorCore)

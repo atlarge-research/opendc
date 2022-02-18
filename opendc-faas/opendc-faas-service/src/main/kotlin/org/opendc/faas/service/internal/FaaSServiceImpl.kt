@@ -27,6 +27,7 @@ import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import mu.KotlinLogging
+import org.opendc.common.util.Pacer
 import org.opendc.faas.api.FaaSClient
 import org.opendc.faas.api.FaaSFunction
 import org.opendc.faas.service.FaaSService
@@ -37,7 +38,6 @@ import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceListener
 import org.opendc.faas.service.deployer.FunctionInstanceState
 import org.opendc.faas.service.router.RoutingPolicy
-import org.opendc.utils.TimerScheduler
 import java.lang.IllegalStateException
 import java.time.Clock
 import java.util.*
@@ -55,7 +55,7 @@ import kotlin.coroutines.resumeWithException
 internal class FaaSServiceImpl(
     context: CoroutineContext,
     private val clock: Clock,
-    private val meterProvider: MeterProvider,
+    meterProvider: MeterProvider,
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy,
     private val terminationPolicy: FunctionTerminationPolicy
@@ -76,9 +76,9 @@ internal class FaaSServiceImpl(
     private val meter = meterProvider.get("org.opendc.faas.service")
 
     /**
-     * The [TimerScheduler] to use for scheduling the scheduler cycles.
+     * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val scheduler: TimerScheduler<Unit> = TimerScheduler(scope.coroutineContext, clock)
+    private val pacer = Pacer(scope.coroutineContext, clock, quantum = 100) { doSchedule() }
 
     /**
      * The [Random] instance used to generate unique identifiers for the objects.
@@ -191,19 +191,12 @@ internal class FaaSServiceImpl(
      * Indicate that a new scheduling cycle is needed due to a change to the service's state.
      */
     private fun schedule() {
-        // Bail out in case we have already requested a new cycle or the queue is empty.
-        if (scheduler.isTimerActive(Unit) || queue.isEmpty()) {
+        // Bail out in case the queue is empty.
+        if (queue.isEmpty()) {
             return
         }
 
-        val quantum = 100
-
-        // We assume that the provisioner runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
-        // This is important because the slices of the VMs need to be aligned.
-        // We calculate here the delay until the next scheduling slot.
-        val delay = quantum - (clock.millis() % quantum)
-
-        scheduler.startSingleTimer(Unit, delay, ::doSchedule)
+        pacer.enqueue()
     }
 
     /**

@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcSimulator.opendcSimulatorFlow)
     api(projects.opendcSimulator.opendcSimulatorPower)
     api(projects.opendcSimulator.opendcSimulatorNetwork)

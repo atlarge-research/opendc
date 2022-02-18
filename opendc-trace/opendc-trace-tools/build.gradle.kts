@@ -33,8 +33,6 @@ application {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
-
     implementation(projects.opendcTrace.opendcTraceApi)
     implementation(libs.kotlin.logging)
     implementation(libs.clikt)

@@ -28,7 +28,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(libs.junit.platform.commons)
 
     implementation(libs.kotlin.logging)

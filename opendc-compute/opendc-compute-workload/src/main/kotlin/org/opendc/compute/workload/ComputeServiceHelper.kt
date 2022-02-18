@@ -169,7 +169,7 @@ public class ComputeServiceHelper(
             optimize = optimize
         )
 
-        _hosts.add(host)
+        require(_hosts.add(host)) { "Host with uid ${spec.uid} already exists" }
         service.addHost(host)
 
         return host

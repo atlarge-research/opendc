@@ -28,6 +28,5 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(libs.opentelemetry.api)
 }

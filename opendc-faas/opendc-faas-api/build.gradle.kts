@@ -26,7 +26,3 @@ description = "API for the OpenDC FaaS platform"
 plugins {
     `kotlin-library-conventions`
 }
-
-dependencies {
-    api(platform(projects.opendcPlatform))
-}

@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(libs.kotlinx.coroutines)
     implementation(libs.kotlin.logging)
 

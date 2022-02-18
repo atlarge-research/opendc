@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
     api(libs.kotlinx.coroutines)
 

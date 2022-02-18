@@ -20,16 +20,16 @@
  * SOFTWARE.
  */
 
-description = "Utilities used across OpenDC modules"
+description = "Common functionality used across OpenDC modules"
 
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
     `testing-conventions`
+    `jacoco-conventions`
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(libs.kotlinx.coroutines)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)

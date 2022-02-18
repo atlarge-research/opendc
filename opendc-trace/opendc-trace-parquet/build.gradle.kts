@@ -30,8 +30,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
-
     /* This configuration is necessary for a slim dependency on Apache Parquet */
     api(libs.parquet) {
         exclude(group = "org.apache.hadoop")

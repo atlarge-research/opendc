@@ -30,7 +30,6 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcTrace.opendcTraceApi)
 
     implementation(libs.jackson.core)

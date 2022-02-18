@@ -30,10 +30,9 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcFaas.opendcFaasApi)
     api(projects.opendcTelemetry.opendcTelemetryApi)
-    implementation(projects.opendcUtils)
+    implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
     implementation(libs.opentelemetry.semconv)
 

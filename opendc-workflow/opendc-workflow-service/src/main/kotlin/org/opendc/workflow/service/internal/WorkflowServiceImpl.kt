@@ -25,8 +25,8 @@ package org.opendc.workflow.service.internal
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
+import org.opendc.common.util.Pacer
 import org.opendc.compute.api.*
-import org.opendc.utils.TimerScheduler
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES
 import org.opendc.workflow.service.*
@@ -187,9 +187,9 @@ public class WorkflowServiceImpl(
         .build()
 
     /**
-     * The [TimerScheduler] to use for scheduling the scheduler cycles.
+     * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val timerScheduler: TimerScheduler<Unit> = TimerScheduler(scope.coroutineContext, clock)
+    private val pacer = Pacer(scope.coroutineContext, clock, schedulingQuantum.toMillis()) { doSchedule() }
 
     private val jobAdmissionPolicy: JobAdmissionPolicy.Logic
     private val taskEligibilityPolicy: TaskEligibilityPolicy.Logic
@@ -230,7 +230,7 @@ public class WorkflowServiceImpl(
         rootListener.jobSubmitted(jobInstance)
         submittedJobs.add(1)
 
-        requestSchedulingCycle()
+        pacer.enqueue()
     }
 
     override fun close() {
@@ -249,31 +249,6 @@ public class WorkflowServiceImpl(
      */
     public fun removeListener(listener: WorkflowSchedulerListener) {
         rootListener.listeners -= listener
-    }
-
-    /**
-     * Indicate that a new scheduling cycle is needed due to a change to the service's state.
-     */
-    private fun requestSchedulingCycle() {
-        // Bail out in case we have already requested a new cycle or the queue is empty.
-        if (timerScheduler.isTimerActive(Unit)) {
-            return
-        }
-
-        val quantum = schedulingQuantum.toMillis()
-        if (quantum == 0L) {
-            doSchedule()
-            return
-        }
-
-        // We assume that the provisioner runs at a fixed slot every time quantum (e.g t=0, t=60, t=120).
-        // This is important because the slices of the VMs need to be aligned.
-        // We calculate here the delay until the next scheduling slot.
-        val delay = quantum - (clock.millis() % quantum)
-
-        timerScheduler.startSingleTimer(Unit, delay) {
-            doSchedule()
-        }
     }
 
     /**
@@ -409,10 +384,9 @@ public class WorkflowServiceImpl(
                     finishJob(job)
                 }
 
-                requestSchedulingCycle()
+                pacer.enqueue()
             }
-            ServerState.DELETED -> {
-            }
+            ServerState.DELETED -> {}
             else -> throw IllegalStateException()
         }
     }

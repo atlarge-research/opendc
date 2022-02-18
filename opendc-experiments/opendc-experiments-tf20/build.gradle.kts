@@ -29,16 +29,15 @@ plugins {
 }
 
 dependencies {
-    api(platform(projects.opendcPlatform))
     api(projects.opendcHarness.opendcHarnessApi)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcUtils)
+    implementation(projects.opendcCommon)
 
     implementation(libs.kotlin.logging)
     implementation(libs.jackson.module.kotlin) {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
     }
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
 }
