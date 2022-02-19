@@ -81,7 +81,7 @@ public class SimBareMetalMachine(
 
     private var _lastConverge = Long.MAX_VALUE
 
-    override fun onConverge(now: Long, delta: Long) {
+    override fun onConverge(now: Long) {
         // Update the PSU stage
         psu.update()
 

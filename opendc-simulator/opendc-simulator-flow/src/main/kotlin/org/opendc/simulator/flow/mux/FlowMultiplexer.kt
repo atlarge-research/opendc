@@ -105,4 +105,14 @@ public interface FlowMultiplexer {
      * Clear the outputs of the multiplexer.
      */
     public fun clearOutputs()
+
+    /**
+     * Flush the counters of the multiplexer.
+     */
+    public fun flushCounters()
+
+    /**
+     * Flush the counters of the specified [input].
+     */
+    public fun flushCounters(input: FlowConsumer)
 }

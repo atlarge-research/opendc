@@ -92,7 +92,7 @@ internal class SimUpsTest {
         ups.connect(inlet)
         ups.disconnect()
 
-        verify { consumer.onStop(any(), any(), any()) }
+        verify { consumer.onStop(any(), any()) }
     }
 
     class SimpleInlet : SimPowerInlet() {

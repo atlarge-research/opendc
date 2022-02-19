@@ -25,8 +25,12 @@ package org.opendc.simulator.flow.internal
 import mu.KotlinLogging
 import org.opendc.simulator.flow.*
 import java.util.*
-import kotlin.math.max
 import kotlin.math.min
+
+/**
+ * The logging instance of this connection.
+ */
+private val logger = KotlinLogging.logger {}
 
 /**
  * Implementation of a [FlowConnection] managing the communication between flow sources and consumers.
@@ -36,11 +40,6 @@ internal class FlowConsumerContextImpl(
     private val source: FlowSource,
     private val logic: FlowConsumerLogic
 ) : FlowConsumerContext {
-    /**
-     * The logging instance of this connection.
-     */
-    private val logger = KotlinLogging.logger {}
-
     /**
      * The capacity of the connection.
      */
@@ -122,14 +121,6 @@ internal class FlowConsumerContextImpl(
      * The flags of the flow connection, indicating certain actions.
      */
     private var _flags: Int = 0
-
-    /**
-     * The timestamp of calls to the callbacks.
-     */
-    private var _lastPull: Long = Long.MIN_VALUE // Last call to `onPull`
-    private var _lastPush: Long = Long.MIN_VALUE // Last call to `onPush`
-    private var _lastSourceConvergence: Long = Long.MAX_VALUE // Last call to source `onConvergence`
-    private var _lastConsumerConvergence: Long = Long.MAX_VALUE // Last call to consumer `onConvergence`
 
     /**
      * The timers at which the context is scheduled to be interrupted.
@@ -238,15 +229,11 @@ internal class FlowConsumerContextImpl(
         try {
             // Pull the source if (1) `pull` is called or (2) the timer of the source has expired
             newDeadline = if (flags and ConnPulled != 0 || reachedDeadline) {
-                val lastPull = _lastPull
-                val delta = max(0, now - lastPull)
-
                 // Update state before calling into the outside world, so it observes a consistent state
-                _lastPull = now
                 _flags = (flags and ConnPulled.inv()) or ConnUpdateActive
                 hasUpdated = true
 
-                val duration = source.onPull(this, now, delta)
+                val duration = source.onPull(this, now)
 
                 // IMPORTANT: Re-fetch the flags after the callback might have changed those
                 flags = _flags
@@ -266,15 +253,11 @@ internal class FlowConsumerContextImpl(
 
             // Push to the consumer if the rate of the source has changed (after a call to `push`)
             if (flags and ConnPushed != 0) {
-                val lastPush = _lastPush
-                val delta = max(0, now - lastPush)
-
                 // Update state before calling into the outside world, so it observes a consistent state
-                _lastPush = now
                 _flags = (flags and ConnPushed.inv()) or ConnUpdateActive
                 hasUpdated = true
 
-                logic.onPush(this, now, delta, _demand)
+                logic.onPush(this, now, _demand)
 
                 // IMPORTANT: Re-fetch the flags after the callback might have changed those
                 flags = _flags
@@ -372,18 +355,12 @@ internal class FlowConsumerContextImpl(
 
             // Call the source converge callback if it has enabled convergence
             if (flags and ConnConvergeSource != 0) {
-                val delta = max(0, now - _lastSourceConvergence)
-                _lastSourceConvergence = now
-
-                source.onConverge(this, now, delta)
+                source.onConverge(this, now)
             }
 
             // Call the consumer callback if it has enabled convergence
             if (flags and ConnConvergeConsumer != 0) {
-                val delta = max(0, now - _lastConsumerConvergence)
-                _lastConsumerConvergence = now
-
-                logic.onConverge(this, now, delta)
+                logic.onConverge(this, now)
             }
         } catch (cause: Throwable) {
             // Invoke the finish callbacks
@@ -403,7 +380,7 @@ internal class FlowConsumerContextImpl(
      */
     private fun doStopSource(now: Long) {
         try {
-            source.onStop(this, now, max(0, now - _lastPull))
+            source.onStop(this, now)
             doFinishConsumer(now, null)
         } catch (cause: Throwable) {
             doFinishConsumer(now, cause)
@@ -415,7 +392,7 @@ internal class FlowConsumerContextImpl(
      */
     private fun doFailSource(now: Long, cause: Throwable) {
         try {
-            source.onStop(this, now, max(0, now - _lastPull))
+            source.onStop(this, now)
         } catch (e: Throwable) {
             e.addSuppressed(cause)
             doFinishConsumer(now, e)
@@ -427,7 +404,7 @@ internal class FlowConsumerContextImpl(
      */
     private fun doFinishConsumer(now: Long, cause: Throwable?) {
         try {
-            logic.onFinish(this, now, max(0, now - _lastPush), cause)
+            logic.onFinish(this, now, cause)
         } catch (e: Throwable) {
             e.addSuppressed(cause)
             logger.error(e) { "Uncaught exception" }

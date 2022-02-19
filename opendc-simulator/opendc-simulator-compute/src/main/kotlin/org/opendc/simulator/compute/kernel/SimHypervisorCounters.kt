@@ -45,4 +45,9 @@ public interface SimHypervisorCounters {
      * The amount of CPU time (in milliseconds) that was lost due to interference between virtual machines.
      */
     public val cpuLostTime: Long
+
+    /**
+     * Flush the counter values.
+     */
+    public fun flush()
 }

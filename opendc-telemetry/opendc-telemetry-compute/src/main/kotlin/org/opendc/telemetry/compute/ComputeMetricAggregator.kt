@@ -493,10 +493,10 @@ public class ComputeMetricAggregator {
         fun reset() {
             previousUptime = _uptime
             previousDowntime = _downtime
-            previousCpuActiveTime = cpuActiveTime
-            previousCpuIdleTime = cpuIdleTime
-            previousCpuStealTime = cpuStealTime
-            previousCpuLostTime = cpuLostTime
+            previousCpuActiveTime = _cpuActiveTime
+            previousCpuIdleTime = _cpuIdleTime
+            previousCpuStealTime = _cpuStealTime
+            previousCpuLostTime = _cpuLostTime
 
             _host = null
             _cpuLimit = 0.0

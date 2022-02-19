@@ -141,6 +141,14 @@ public class MaxMinFlowMultiplexer(
         clearInputs()
     }
 
+    override fun flushCounters() {
+        scheduler.updateCounters(engine.clock.millis())
+    }
+
+    override fun flushCounters(input: FlowConsumer) {
+        (input as Input).doUpdateCounters(engine.clock.millis())
+    }
+
     /**
      * Helper class containing the scheduler state.
      */
@@ -189,7 +197,6 @@ public class MaxMinFlowMultiplexer(
          * Flag to indicate that the scheduler is active.
          */
         private var _schedulerActive = false
-        private var _lastSchedulerCycle = Long.MAX_VALUE
 
         /**
          * The last convergence timestamp and the input.
@@ -250,7 +257,7 @@ public class MaxMinFlowMultiplexer(
                 _lastConverge = now
                 _lastConvergeInput = input
 
-                parent.onConverge(now, max(0, now - lastConverge))
+                parent.onConverge(now)
             }
         }
 
@@ -278,13 +285,11 @@ public class MaxMinFlowMultiplexer(
          * This method is invoked when one of the outputs converges.
          */
         fun convergeOutput(output: Output, now: Long) {
-            val lastConverge = _lastConverge
             val parent = parent
 
             if (parent != null) {
                 _lastConverge = now
-
-                parent.onConverge(now, max(0, now - lastConverge))
+                parent.onConverge(now)
             }
 
             if (!output.isActive) {
@@ -324,14 +329,9 @@ public class MaxMinFlowMultiplexer(
          * Synchronously run the scheduler of the multiplexer.
          */
         fun runScheduler(now: Long): Long {
-            val lastSchedulerCycle = _lastSchedulerCycle
-            _lastSchedulerCycle = now
-
-            val delta = max(0, now - lastSchedulerCycle)
-
             return try {
                 _schedulerActive = true
-                doRunScheduler(now, delta)
+                doRunScheduler(now)
             } finally {
                 _schedulerActive = false
             }
@@ -384,14 +384,14 @@ public class MaxMinFlowMultiplexer(
          *
          * @return The deadline after which a new scheduling cycle should start.
          */
-        private fun doRunScheduler(now: Long, delta: Long): Long {
+        private fun doRunScheduler(now: Long): Long {
             val activeInputs = _activeInputs
             val activeOutputs = _activeOutputs
             var inputArray = _inputArray
             var inputSize = _inputArray.size
 
             // Update the counters of the scheduler
-            updateCounters(delta)
+            updateCounters(now)
 
             // If there is no work yet, mark the inputs as idle.
             if (inputSize == 0) {
@@ -475,14 +475,19 @@ public class MaxMinFlowMultiplexer(
          * The previous capacity of the multiplexer.
          */
         private var _previousCapacity = 0.0
+        private var _previousUpdate = Long.MIN_VALUE
 
         /**
          * Update the counters of the scheduler.
          */
-        private fun updateCounters(delta: Long) {
+        fun updateCounters(now: Long) {
             val previousCapacity = _previousCapacity
             _previousCapacity = capacity
 
+            val previousUpdate = _previousUpdate
+            _previousUpdate = now
+
+            val delta = now - previousUpdate
             if (delta <= 0) {
                 return
             }
@@ -640,10 +645,9 @@ public class MaxMinFlowMultiplexer(
         override fun onPush(
             ctx: FlowConsumerContext,
             now: Long,
-            delta: Long,
             rate: Double
         ) {
-            doUpdateCounters(delta)
+            doUpdateCounters(now)
 
             val allowed = min(rate, capacity)
             limit = rate
@@ -653,8 +657,8 @@ public class MaxMinFlowMultiplexer(
             scheduler.trigger(now)
         }
 
-        override fun onFinish(ctx: FlowConsumerContext, now: Long, delta: Long, cause: Throwable?) {
-            doUpdateCounters(delta)
+        override fun onFinish(ctx: FlowConsumerContext, now: Long, cause: Throwable?) {
+            doUpdateCounters(now)
 
             limit = 0.0
             actualRate = 0.0
@@ -665,7 +669,7 @@ public class MaxMinFlowMultiplexer(
             _ctx = null
         }
 
-        override fun onConverge(ctx: FlowConsumerContext, now: Long, delta: Long) {
+        override fun onConverge(ctx: FlowConsumerContext, now: Long) {
             scheduler.convergeInput(this, now)
         }
 
@@ -673,9 +677,18 @@ public class MaxMinFlowMultiplexer(
         override fun compareTo(other: Input): Int = allowedRate.compareTo(other.allowedRate)
 
         /**
+         * The timestamp that the counters where last updated.
+         */
+        private var _lastUpdate = Long.MIN_VALUE
+
+        /**
          * Helper method to update the flow counters of the multiplexer.
          */
-        private fun doUpdateCounters(delta: Long) {
+        fun doUpdateCounters(now: Long) {
+            val lastUpdate = _lastUpdate
+            _lastUpdate = now
+
+            val delta = (now - lastUpdate).coerceAtLeast(0)
             if (delta <= 0L) {
                 return
             }
@@ -761,7 +774,7 @@ public class MaxMinFlowMultiplexer(
             scheduler.registerOutput(this)
         }
 
-        override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+        override fun onStop(conn: FlowConnection, now: Long) {
             _conn = null
             capacity = 0.0
             isActive = false
@@ -769,7 +782,7 @@ public class MaxMinFlowMultiplexer(
             scheduler.deregisterOutput(this, now)
         }
 
-        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+        override fun onPull(conn: FlowConnection, now: Long): Long {
             val capacity = capacity
             if (capacity != conn.capacity) {
                 this.capacity = capacity
@@ -792,7 +805,7 @@ public class MaxMinFlowMultiplexer(
             }
         }
 
-        override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+        override fun onConverge(conn: FlowConnection, now: Long) {
             if (_isActivationOutput) {
                 scheduler.convergeOutput(this, now)
             }

@@ -32,7 +32,7 @@ public class SimNetworkSink(
     public val capacity: Double
 ) : SimNetworkPort() {
     override fun createConsumer(): FlowSource = object : FlowSource {
-        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long = Long.MAX_VALUE
+        override fun onPull(conn: FlowConnection, now: Long): Long = Long.MAX_VALUE
 
         override fun toString(): String = "SimNetworkSink.Consumer"
     }

@@ -53,21 +53,21 @@ public class FlowSourceRateAdapter(
         delegate.onStart(conn, now)
     }
 
-    override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+    override fun onStop(conn: FlowConnection, now: Long) {
         try {
-            delegate.onStop(conn, now, delta)
+            delegate.onStop(conn, now)
         } finally {
             rate = 0.0
         }
     }
 
-    override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
-        return delegate.onPull(conn, now, delta)
+    override fun onPull(conn: FlowConnection, now: Long): Long {
+        return delegate.onPull(conn, now)
     }
 
-    override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+    override fun onConverge(conn: FlowConnection, now: Long) {
         try {
-            delegate.onConverge(conn, now, delta)
+            delegate.onConverge(conn, now)
         } finally {
             rate = conn.rate
         }

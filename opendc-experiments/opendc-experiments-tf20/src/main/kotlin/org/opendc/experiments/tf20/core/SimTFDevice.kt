@@ -120,6 +120,11 @@ public class SimTFDevice(
          */
         private var activeWork: Work? = null
 
+        /**
+         * The timestamp of the last pull.
+         */
+        private var lastPull: Long = 0L
+
         override fun onStart(ctx: SimMachineContext) {
             for (cpu in ctx.cpus) {
                 cpu.startConsumer(this)
@@ -131,11 +136,15 @@ public class SimTFDevice(
         override fun onStart(conn: FlowConnection, now: Long) {
             ctx = conn
             capacity = conn.capacity
-
+            lastPull = now
             conn.shouldSourceConverge = true
         }
 
-        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+        override fun onPull(conn: FlowConnection, now: Long): Long {
+            val lastPull = lastPull
+            this.lastPull = now
+            val delta = (now - lastPull).coerceAtLeast(0)
+
             val consumedWork = conn.rate * delta / 1000.0
 
             capacity = conn.capacity
@@ -164,7 +173,7 @@ public class SimTFDevice(
             }
         }
 
-        override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+        override fun onConverge(conn: FlowConnection, now: Long) {
             _usage.record(conn.rate)
             _power.record(machine.psu.powerDraw)
         }

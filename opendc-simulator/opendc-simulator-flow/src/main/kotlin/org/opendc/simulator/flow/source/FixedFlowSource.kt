@@ -37,8 +37,17 @@ public class FixedFlowSource(private val amount: Double, private val utilization
     }
 
     private var remainingAmount = amount
+    private var lastPull: Long = 0L
 
-    override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+    override fun onStart(conn: FlowConnection, now: Long) {
+        lastPull = now
+    }
+
+    override fun onPull(conn: FlowConnection, now: Long): Long {
+        val lastPull = lastPull
+        this.lastPull = now
+        val delta = (now - lastPull).coerceAtLeast(0)
+
         val consumed = conn.rate * delta / 1000.0
         val limit = conn.capacity * utilization
 

@@ -37,11 +37,11 @@ public class TraceFlowSource(private val trace: Sequence<Fragment>) : FlowSource
         _iterator = trace.iterator()
     }
 
-    override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+    override fun onStop(conn: FlowConnection, now: Long) {
         _iterator = null
     }
 
-    override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+    override fun onPull(conn: FlowConnection, now: Long): Long {
         // Check whether the trace fragment was fully consumed, otherwise wait until we have done so
         val nextTarget = _nextTarget
         if (nextTarget > now) {

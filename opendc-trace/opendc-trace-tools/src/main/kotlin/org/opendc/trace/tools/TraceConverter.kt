@@ -426,7 +426,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
                 val id = reader.get(idCol) as String
                 val resource = selected[id] ?: continue
 
-                val cpuUsage = reader.getDouble(cpuUsageCol) * CPU_CAPACITY // MHz
+                val cpuUsage = reader.getDouble(cpuUsageCol) * resource.cpuCapacity // MHz
                 val state = states.computeIfAbsent(id) { State(resource, cpuUsage, sampleInterval) }
                 val timestamp = (reader.get(timestampCol) as Instant).toEpochMilli()
                 val delta = (timestamp - state.time)

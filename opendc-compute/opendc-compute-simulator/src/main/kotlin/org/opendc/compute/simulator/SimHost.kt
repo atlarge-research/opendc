@@ -418,6 +418,7 @@ public class SimHost(
      */
     private fun collectCpuTime(result: ObservableLongMeasurement) {
         val counters = hypervisor.counters
+        counters.flush()
 
         result.record(counters.cpuActiveTime / 1000L, _activeState)
         result.record(counters.cpuIdleTime / 1000L, _idleState)

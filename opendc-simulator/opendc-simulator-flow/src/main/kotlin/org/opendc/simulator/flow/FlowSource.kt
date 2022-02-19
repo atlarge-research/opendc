@@ -42,19 +42,17 @@ public interface FlowSource {
      *
      * @param conn The connection between the source and consumer.
      * @param now The virtual timestamp in milliseconds at which the source finished.
-     * @param delta The virtual duration between this call and the last call to [onPull] in milliseconds.
      */
-    public fun onStop(conn: FlowConnection, now: Long, delta: Long) {}
+    public fun onStop(conn: FlowConnection, now: Long) {}
 
     /**
      * This method is invoked when the source is pulled.
      *
      * @param conn The connection between the source and consumer.
      * @param now The virtual timestamp in milliseconds at which the pull is occurring.
-     * @param delta The virtual duration between this call and the last call to [onPull] in milliseconds.
      * @return The duration after which the resource consumer should be pulled again.
      */
-    public fun onPull(conn: FlowConnection, now: Long, delta: Long): Long
+    public fun onPull(conn: FlowConnection, now: Long): Long
 
     /**
      * This method is invoked when the flow graph has converged into a steady-state system.
@@ -64,7 +62,6 @@ public interface FlowSource {
      *
      * @param conn The connection between the source and consumer.
      * @param now The virtual timestamp in milliseconds at which the system converged.
-     * @param delta The virtual duration between this call and the last call to [onConverge] in milliseconds.
      */
-    public fun onConverge(conn: FlowConnection, now: Long, delta: Long) {}
+    public fun onConverge(conn: FlowConnection, now: Long) {}
 }

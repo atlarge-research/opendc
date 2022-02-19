@@ -61,17 +61,17 @@ public class SimWorkloadLifecycle(private val ctx: SimMachineContext) {
             delegate.onStart(conn, now)
         }
 
-        override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
-            return delegate.onPull(conn, now, delta)
+        override fun onPull(conn: FlowConnection, now: Long): Long {
+            return delegate.onPull(conn, now)
         }
 
-        override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
-            delegate.onConverge(conn, now, delta)
+        override fun onConverge(conn: FlowConnection, now: Long) {
+            delegate.onConverge(conn, now)
         }
 
-        override fun onStop(conn: FlowConnection, now: Long, delta: Long) {
+        override fun onStop(conn: FlowConnection, now: Long) {
             try {
-                delegate.onStop(conn, now, delta)
+                delegate.onStop(conn, now)
             } finally {
                 complete(this)
             }

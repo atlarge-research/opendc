@@ -45,7 +45,7 @@ internal class FlowForwarderTest {
         launch { source.consume(forwarder) }
 
         forwarder.consume(object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 conn.close()
                 return Long.MAX_VALUE
             }
@@ -66,7 +66,7 @@ internal class FlowForwarderTest {
         forwarder.consume(object : FlowSource {
             var isFirst = true
 
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 return if (isFirst) {
                     isFirst = false
                     conn.push(1.0)
@@ -87,7 +87,7 @@ internal class FlowForwarderTest {
         val engine = FlowEngineImpl(coroutineContext, clock)
         val forwarder = FlowForwarder(engine)
         val consumer = object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 conn.close()
                 return Long.MAX_VALUE
             }
@@ -113,7 +113,7 @@ internal class FlowForwarderTest {
         val forwarder = FlowForwarder(engine)
 
         val consumer = spyk(object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 conn.close()
                 return Long.MAX_VALUE
             }
@@ -122,7 +122,7 @@ internal class FlowForwarderTest {
         forwarder.startConsumer(consumer)
         forwarder.cancel()
 
-        verify(exactly = 0) { consumer.onStop(any(), any(), any()) }
+        verify(exactly = 0) { consumer.onStop(any(), any()) }
     }
 
     @Test
@@ -140,7 +140,7 @@ internal class FlowForwarderTest {
         forwarder.cancel()
 
         verify(exactly = 1) { consumer.onStart(any(), any()) }
-        verify(exactly = 1) { consumer.onStop(any(), any(), any()) }
+        verify(exactly = 1) { consumer.onStop(any(), any()) }
     }
 
     @Test
@@ -158,7 +158,7 @@ internal class FlowForwarderTest {
         source.cancel()
 
         verify(exactly = 1) { consumer.onStart(any(), any()) }
-        verify(exactly = 1) { consumer.onStop(any(), any(), any()) }
+        verify(exactly = 1) { consumer.onStop(any(), any()) }
     }
 
     @Test
@@ -168,7 +168,7 @@ internal class FlowForwarderTest {
         val source = FlowSink(engine, 2000.0)
 
         val consumer = object : FlowSource {
-            override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+            override fun onPull(conn: FlowConnection, now: Long): Long {
                 conn.close()
                 return Long.MAX_VALUE
             }
@@ -198,7 +198,7 @@ internal class FlowForwarderTest {
         }
 
         assertEquals(3000, clock.millis())
-        verify(exactly = 1) { source.onPull(any(), any(), any()) }
+        verify(exactly = 1) { source.onPull(any(), any()) }
     }
 
     @Test
@@ -214,11 +214,13 @@ internal class FlowForwarderTest {
 
         yield()
 
-        assertEquals(2.0, source.counters.actual)
-        assertEquals(source.counters.actual, forwarder.counters.actual) { "Actual work" }
-        assertEquals(source.counters.demand, forwarder.counters.demand) { "Work demand" }
-        assertEquals(source.counters.remaining, forwarder.counters.remaining) { "Overcommitted work" }
-        assertEquals(2000, clock.millis())
+        assertAll(
+            { assertEquals(2.0, source.counters.actual) },
+            { assertEquals(source.counters.actual, forwarder.counters.actual) { "Actual work" } },
+            { assertEquals(source.counters.demand, forwarder.counters.demand) { "Work demand" } },
+            { assertEquals(source.counters.remaining, forwarder.counters.remaining) { "Overcommitted work" } },
+            { assertEquals(2000, clock.millis()) }
+        )
     }
 
     @Test
@@ -246,7 +248,7 @@ internal class FlowForwarderTest {
 
         try {
             forwarder.consume(object : FlowSource {
-                override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                override fun onPull(conn: FlowConnection, now: Long): Long {
                     throw IllegalStateException("Test")
                 }
             })
@@ -269,7 +271,7 @@ internal class FlowForwarderTest {
 
         try {
             forwarder.consume(object : FlowSource {
-                override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                override fun onPull(conn: FlowConnection, now: Long): Long {
                     return Long.MAX_VALUE
                 }
 
@@ -301,11 +303,11 @@ internal class FlowForwarderTest {
                     conn.shouldSourceConverge = true
                 }
 
-                override fun onPull(conn: FlowConnection, now: Long, delta: Long): Long {
+                override fun onPull(conn: FlowConnection, now: Long): Long {
                     return Long.MAX_VALUE
                 }
 
-                override fun onConverge(conn: FlowConnection, now: Long, delta: Long) {
+                override fun onConverge(conn: FlowConnection, now: Long) {
                     throw IllegalStateException("Test")
                 }
             })

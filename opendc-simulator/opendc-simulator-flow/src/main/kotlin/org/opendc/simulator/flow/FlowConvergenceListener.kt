@@ -30,7 +30,6 @@ public interface FlowConvergenceListener {
      * This method is invoked when the system has converged to a steady-state.
      *
      * @param now The timestamp at which the system converged.
-     * @param delta The virtual duration between this call and the last call to [onConverge] in milliseconds.
      */
-    public fun onConverge(now: Long, delta: Long) {}
+    public fun onConverge(now: Long) {}
 }
