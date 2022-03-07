@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,24 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.proto.user
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+/**
+ * The role of a user in a project.
+ */
+public enum class ProjectRole {
+    /**
+     * The user is allowed to view the project.
+     */
+    VIEWER,
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+    /**
+     * The user is allowed to edit the project.
+     */
+    EDITOR,
 
-    implementation(libs.jandex.gradle)
+    /**
+     * The user owns the project (so he can delete it).
+     */
+    OWNER,
 }

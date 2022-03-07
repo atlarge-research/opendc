@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,34 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.proto
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+/**
+ * State of a scenario for the simulator runner.
+ */
+public enum class JobState {
+    /**
+     * The job is pending to be claimed by a runner.
+     */
+    PENDING,
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+    /**
+     * The job is claimed by a runner.
+     */
+    CLAIMED,
 
-    implementation(libs.jandex.gradle)
+    /**
+     * The job is currently running.
+     */
+    RUNNING,
+
+    /**
+     * The job has finished.
+     */
+    FINISHED,
+
+    /**
+     * The job has failed.
+     */
+    FAILED;
 }

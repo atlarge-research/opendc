@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,22 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.proto.runner
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.eclipse.microprofile.openapi.annotations.media.Schema
+import org.opendc.web.proto.*
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
-
-    implementation(libs.jandex.gradle)
-}
+/**
+ * A [Scenario] that is exposed to an OpenDC runner.
+ */
+@Schema(name = "Runner.Scenario")
+public data class Scenario(
+    val id: Long,
+    val number: Int,
+    val portfolio: Portfolio,
+    val name: String,
+    val workload: Workload,
+    val topology: Topology,
+    val phenomena: OperationalPhenomena,
+    val schedulerName: String
+)

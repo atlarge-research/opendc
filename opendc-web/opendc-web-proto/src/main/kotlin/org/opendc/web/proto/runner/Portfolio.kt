@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,24 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.proto.runner
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.eclipse.microprofile.openapi.annotations.media.Schema
+import org.opendc.web.proto.Targets
+import org.opendc.web.proto.user.Portfolio
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
-
-    implementation(libs.jandex.gradle)
-}
+/**
+ * A [Portfolio] as seen from the runner's perspective.
+ *
+ * @param id The unique identifier of the portfolio.
+ * @param number The number of the portfolio for the project.
+ * @param name The name of the portfolio.
+ * @param targets The targets of the portfolio.
+ */
+@Schema(name = "Runner.Portfolio")
+public data class Portfolio(
+    val id: Long,
+    val number: Int,
+    val name: String,
+    val targets: Targets,
+)

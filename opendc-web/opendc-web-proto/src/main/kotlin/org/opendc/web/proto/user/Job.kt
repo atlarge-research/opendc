@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,21 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.proto.user
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.opendc.web.proto.JobState
+import org.opendc.web.proto.runner.Job
+import java.time.Instant
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
-
-    implementation(libs.jandex.gradle)
-}
+/**
+ * A simulation job that is associated with a [Scenario].
+ *
+ * This entity is exposed in the runner-facing API via [Job].
+ */
+public data class Job(
+    val id: Long,
+    val state: JobState,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+    val results: Map<String, Any>? = null
+)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,21 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.web.proto
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import com.fasterxml.jackson.annotation.JsonProperty
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
-
-    implementation(libs.jandex.gradle)
-}
+/**
+ * A machine in a rack.
+ */
+public data class Machine(
+    val id: String,
+    val position: Int,
+    val cpus: List<ProcessingUnit> = emptyList(),
+    val gpus: List<ProcessingUnit> = emptyList(),
+    @JsonProperty("memories")
+    val memory: List<MemoryUnit> = emptyList(),
+    @JsonProperty("storages")
+    val storage: List<MemoryUnit> = emptyList(),
+    val rackId: String? = null
+)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2020 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,20 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+description = "Web communication protocol for OpenDC"
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+    id("org.kordamp.gradle.jandex") // Necessary for Quarkus to process annotations
 }
 
 dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-    implementation(libs.shadow)
+    implementation(libs.jackson.annotations)
+    implementation(libs.jakarta.validation)
+    implementation(libs.microprofile.openapi.api)
+}
 
-    implementation(libs.jandex.gradle)
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.javaParameters = true
 }
