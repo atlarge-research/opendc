@@ -19,7 +19,7 @@ jobs:
             java: 17
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
@@ -68,7 +68,7 @@ jobs:
       run:
         working-directory: opendc-web/opendc-web-api
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
@@ -105,7 +105,7 @@ jobs:
       run:
         working-directory: opendc-web/opendc-web-ui
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
