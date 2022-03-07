@@ -25,12 +25,11 @@ import Link from 'next/link'
 import { Table, TableBody, TableHeader } from '@patternfly/react-table'
 import React from 'react'
 import TableEmptyState from '../util/TableEmptyState'
-import { useProjectPortfolios } from '../../data/project'
-import { useMutation } from 'react-query'
+import { usePortfolios, useDeletePortfolio } from '../../data/project'
 
 const PortfolioTable = ({ projectId }) => {
-    const { status, data: portfolios = [] } = useProjectPortfolios(projectId)
-    const { mutate: deletePortfolio } = useMutation('deletePortfolio')
+    const { status, data: portfolios = [] } = usePortfolios(projectId)
+    const { mutate: deletePortfolio } = useDeletePortfolio()
 
     const columns = ['Name', 'Scenarios', 'Metrics', 'Repeats']
     const rows =
@@ -38,20 +37,12 @@ const PortfolioTable = ({ projectId }) => {
             ? portfolios.map((portfolio) => [
                   {
                       title: (
-                          <Link href={`/projects/${portfolio.projectId}/portfolios/${portfolio._id}`}>
-                              {portfolio.name}
-                          </Link>
+                          <Link href={`/projects/${projectId}/portfolios/${portfolio.number}`}>{portfolio.name}</Link>
                       ),
                   },
-
-                  portfolio.scenarioIds.length === 1 ? '1 scenario' : `${portfolio.scenarioIds.length} scenarios`,
-
-                  portfolio.targets.enabledMetrics.length === 1
-                      ? '1 metric'
-                      : `${portfolio.targets.enabledMetrics.length} metrics`,
-                  portfolio.targets.repeatsPerScenario === 1
-                      ? '1 repeat'
-                      : `${portfolio.targets.repeatsPerScenario} repeats`,
+                  portfolio.scenarios.length === 1 ? '1 scenario' : `${portfolio.scenarios.length} scenarios`,
+                  portfolio.targets.metrics.length === 1 ? '1 metric' : `${portfolio.targets.metrics.length} metrics`,
+                  portfolio.targets.repeats === 1 ? '1 repeat' : `${portfolio.targets.repeats} repeats`,
               ])
             : [
                   {
@@ -77,7 +68,7 @@ const PortfolioTable = ({ projectId }) => {
             ? [
                   {
                       title: 'Delete Portfolio',
-                      onClick: (_, rowId) => deletePortfolio(portfolios[rowId]._id),
+                      onClick: (_, rowId) => deletePortfolio({ projectId, number: portfolios[rowId].number }),
                   },
               ]
             : []
@@ -91,7 +82,7 @@ const PortfolioTable = ({ projectId }) => {
 }
 
 PortfolioTable.propTypes = {
-    projectId: PropTypes.string,
+    projectId: PropTypes.number,
 }
 
 export default PortfolioTable

@@ -20,10 +20,11 @@
  * SOFTWARE.
  */
 
+import produce from 'immer'
 import PropTypes from 'prop-types'
 import React, { useRef, useState } from 'react'
 import { Form, FormGroup, FormSelect, FormSelectOption, TextInput } from '@patternfly/react-core'
-import { useProjectTopologies } from '../../data/topology'
+import { useTopologies } from '../../data/topology'
 import Modal from '../util/modals/Modal'
 
 const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCancel: onCancelUpstream }) => {
@@ -32,10 +33,12 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
     const [originTopology, setOriginTopology] = useState(-1)
     const [errors, setErrors] = useState({})
 
-    const { data: topologies = [] } = useProjectTopologies(projectId)
+    const { data: topologies = [] } = useTopologies(projectId, { enabled: isOpen })
 
     const clearState = () => {
-        nameInput.current.value = ''
+        if (nameInput.current) {
+            nameInput.current.value = ''
+        }
         setSubmitted(false)
         setOriginTopology(-1)
         setErrors({})
@@ -53,10 +56,13 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
         if (!name) {
             setErrors({ name: true })
             return false
-        } else if (originTopology === -1) {
-            onSubmitUpstream(name)
         } else {
-            onSubmitUpstream(name, originTopology)
+            const candidate = topologies.find((topology) => topology.id === originTopology) || { projectId, rooms: [] }
+            const topology = produce(candidate, (draft) => {
+                delete draft.id
+                draft.name = name
+            })
+            onSubmitUpstream(topology)
         }
 
         clearState()
@@ -84,7 +90,7 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
                     <FormSelect id="origin" name="origin" value={originTopology} onChange={setOriginTopology}>
                         <FormSelectOption value={-1} key={-1} label="None - start from scratch" />
                         {topologies.map((topology) => (
-                            <FormSelectOption value={topology._id} key={topology._id} label={topology.name} />
+                            <FormSelectOption value={topology.id} key={topology.id} label={topology.name} />
                         ))}
                     </FormSelect>
                 </FormGroup>
@@ -94,7 +100,7 @@ const NewTopologyModal = ({ projectId, isOpen, onSubmit: onSubmitUpstream, onCan
 }
 
 NewTopologyModal.propTypes = {
-    projectId: PropTypes.string,
+    projectId: PropTypes.number,
     isOpen: PropTypes.bool.isRequired,
     onSubmit: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,

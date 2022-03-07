@@ -33,7 +33,7 @@ function UnitListContainer({ machineId, unitType }) {
         return machine[unitType].map((id) => state.topology[unitType][id])
     })
 
-    const onDelete = (unit) => dispatch(deleteUnit(machineId, unitType, unit._id))
+    const onDelete = (unit) => dispatch(deleteUnit(machineId, unitType, unit.id))
 
     return <UnitListComponent units={units} unitType={unitType} onDelete={onDelete} />
 }

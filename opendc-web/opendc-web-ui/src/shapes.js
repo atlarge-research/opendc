@@ -22,26 +22,18 @@
 
 import PropTypes from 'prop-types'
 
-export const User = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    googleId: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
-    givenName: PropTypes.string.isRequired,
-    familyName: PropTypes.string.isRequired,
-    authorizations: PropTypes.array.isRequired,
-})
+export const ProjectRole = PropTypes.oneOf(['VIEWER', 'EDITOR', 'OWNER'])
 
 export const Project = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    datetimeCreated: PropTypes.string.isRequired,
-    datetimeLastEdited: PropTypes.string.isRequired,
-    topologyIds: PropTypes.array.isRequired,
-    portfolioIds: PropTypes.array.isRequired,
+    createdAt: PropTypes.string.isRequired,
+    updatedAt: PropTypes.string.isRequired,
+    role: ProjectRole,
 })
 
 export const ProcessingUnit = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     clockRateMhz: PropTypes.number.isRequired,
     numberOfCores: PropTypes.number.isRequired,
@@ -49,7 +41,7 @@ export const ProcessingUnit = PropTypes.shape({
 })
 
 export const StorageUnit = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     speedMbPerS: PropTypes.number.isRequired,
     sizeMb: PropTypes.number.isRequired,
@@ -57,38 +49,45 @@ export const StorageUnit = PropTypes.shape({
 })
 
 export const Machine = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     position: PropTypes.number.isRequired,
-    cpus: PropTypes.arrayOf(PropTypes.string),
-    gpus: PropTypes.arrayOf(PropTypes.string),
-    memories: PropTypes.arrayOf(PropTypes.string),
-    storages: PropTypes.arrayOf(PropTypes.string),
+    cpus: PropTypes.arrayOf(PropTypes.oneOfType([ProcessingUnit, PropTypes.string])),
+    gpus: PropTypes.arrayOf(PropTypes.oneOfType([ProcessingUnit, PropTypes.string])),
+    memories: PropTypes.arrayOf(PropTypes.oneOfType([StorageUnit, PropTypes.string])),
+    storages: PropTypes.arrayOf(PropTypes.oneOfType([StorageUnit, PropTypes.string])),
 })
 
 export const Rack = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     capacity: PropTypes.number.isRequired,
     powerCapacityW: PropTypes.number.isRequired,
-    machines: PropTypes.arrayOf(PropTypes.string),
+    machines: PropTypes.arrayOf(PropTypes.oneOfType([Machine, PropTypes.string])),
 })
 
 export const Tile = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     positionX: PropTypes.number.isRequired,
     positionY: PropTypes.number.isRequired,
-    rack: PropTypes.string,
+    rack: PropTypes.oneOfType([Rack, PropTypes.string]),
 })
 
 export const Room = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    tiles: PropTypes.arrayOf(PropTypes.string),
+    tiles: PropTypes.arrayOf(PropTypes.oneOfType([Tile, PropTypes.string])),
 })
 
 export const Topology = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
+    number: PropTypes.number.isRequired,
+    project: Project.isRequired,
     name: PropTypes.string.isRequired,
-    rooms: PropTypes.arrayOf(PropTypes.string),
+    rooms: PropTypes.arrayOf(PropTypes.oneOfType([Room, PropTypes.string])),
+})
+
+export const Phenomena = PropTypes.shape({
+    failures: PropTypes.bool.isRequired,
+    interference: PropTypes.bool.isRequired,
 })
 
 export const Scheduler = PropTypes.shape({
@@ -96,45 +95,80 @@ export const Scheduler = PropTypes.shape({
 })
 
 export const Trace = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
 })
 
-export const Portfolio = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    projectId: PropTypes.string.isRequired,
+export const Workload = PropTypes.shape({
+    trace: Trace.isRequired,
+    samplingFraction: PropTypes.number.isRequired,
+})
+
+export const Targets = PropTypes.shape({
+    repeats: PropTypes.number.isRequired,
+    metrics: PropTypes.arrayOf(PropTypes.string).isRequired,
+})
+
+export const TopologySummary = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    number: PropTypes.number.isRequired,
+    project: Project.isRequired,
     name: PropTypes.string.isRequired,
-    scenarioIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+})
+
+export const PortfolioSummary = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    number: PropTypes.number.isRequired,
+    project: Project.isRequired,
+    name: PropTypes.string.isRequired,
     targets: PropTypes.shape({
-        enabledMetrics: PropTypes.arrayOf(PropTypes.string).isRequired,
-        repeatsPerScenario: PropTypes.number.isRequired,
+        repeats: PropTypes.number.isRequired,
+        metrics: PropTypes.arrayOf(PropTypes.string).isRequired,
     }).isRequired,
 })
 
-export const Scenario = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    portfolioId: PropTypes.string.isRequired,
+export const ScenarioSummary = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    number: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    simulation: PropTypes.shape({
-        state: PropTypes.string.isRequired,
-    }).isRequired,
-    trace: PropTypes.shape({
-        traceId: PropTypes.string.isRequired,
-        trace: Trace,
-        loadSamplingFraction: PropTypes.number.isRequired,
-    }).isRequired,
-    topology: PropTypes.shape({
-        topologyId: PropTypes.string.isRequired,
-        topology: Topology,
-    }).isRequired,
-    operational: PropTypes.shape({
-        failuresEnabled: PropTypes.bool.isRequired,
-        performanceInterferenceEnabled: PropTypes.bool.isRequired,
-        schedulerName: PropTypes.string.isRequired,
-        scheduler: Scheduler,
-    }).isRequired,
+    workload: Workload.isRequired,
+    topology: TopologySummary.isRequired,
+    phenomena: Phenomena.isRequired,
+    schedulerName: PropTypes.string.isRequired,
     results: PropTypes.object,
+})
+
+export const JobState = PropTypes.oneOf(['PENDING', 'CLAIMED', 'RUNNING', 'FAILED', 'FINISHED'])
+
+export const Job = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    state: JobState.isRequired,
+    createdAt: PropTypes.string.isRequired,
+    updatedAt: PropTypes.string.isRequired,
+    results: PropTypes.object,
+})
+
+export const Scenario = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    number: PropTypes.number.isRequired,
+    project: Project.isRequired,
+    portfolio: PortfolioSummary.isRequired,
+    name: PropTypes.string.isRequired,
+    workload: Workload.isRequired,
+    topology: TopologySummary.isRequired,
+    phenomena: Phenomena.isRequired,
+    schedulerName: PropTypes.string.isRequired,
+    job: Job.isRequired,
+})
+
+export const Portfolio = PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    number: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    project: Project.isRequired,
+    targets: Targets.isRequired,
+    scenarios: PropTypes.arrayOf(ScenarioSummary).isRequired,
 })
 
 export const WallSegment = PropTypes.shape({

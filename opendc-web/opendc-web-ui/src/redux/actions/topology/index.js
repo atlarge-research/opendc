@@ -23,9 +23,10 @@
 export const OPEN_TOPOLOGY = 'OPEN_TOPOLOGY'
 export const STORE_TOPOLOGY = 'STORE_TOPOLOGY'
 
-export function openTopology(id) {
+export function openTopology(projectId, id) {
     return {
         type: OPEN_TOPOLOGY,
+        projectId,
         id,
     }
 }

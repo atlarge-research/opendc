@@ -20,33 +20,32 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
 import { useRouter } from 'next/router'
-import { useMemo } from 'react'
-import { useProjectTopologies } from '../../data/topology'
+import { useState } from 'react'
+import { useTopologies } from '../../data/topology'
+import { Topology } from '../../shapes'
 import ContextSelector from './ContextSelector'
 
-function TopologySelector({ projectId, topologyId }) {
+function TopologySelector({ activeTopology }) {
     const router = useRouter()
-    const { data: topologies = [] } = useProjectTopologies(projectId)
-    const activeTopology = useMemo(() => topologies.find((topology) => topology._id === topologyId), [
-        topologyId,
-        topologies,
-    ])
+
+    const [isOpen, setOpen] = useState(false)
+    const { data: topologies = [] } = useTopologies(activeTopology?.project?.id, { enabled: isOpen })
 
     return (
         <ContextSelector
             label="Topology"
             activeItem={activeTopology}
             items={topologies}
-            onSelect={(topology) => router.push(`/projects/${topology.projectId}/topologies/${topology._id}`)}
+            onSelect={(topology) => router.push(`/projects/${topology.project.id}/topologies/${topology.number}`)}
+            onToggle={setOpen}
+            isOpen={isOpen}
         />
     )
 }
 
 TopologySelector.propTypes = {
-    projectId: PropTypes.string,
-    topologyId: PropTypes.string,
+    activeTopology: Topology,
 }
 
 export default TopologySelector

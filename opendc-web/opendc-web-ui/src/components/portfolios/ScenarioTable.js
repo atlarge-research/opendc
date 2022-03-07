@@ -20,44 +20,38 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
 import Link from 'next/link'
 import { Table, TableBody, TableHeader } from '@patternfly/react-table'
 import React from 'react'
+import { Portfolio, Status } from '../../shapes'
 import TableEmptyState from '../util/TableEmptyState'
 import ScenarioState from './ScenarioState'
-import { usePortfolio, usePortfolioScenarios } from '../../data/project'
-import { useProjectTopologies } from '../../data/topology'
-import { useMutation } from 'react-query'
+import { useDeleteScenario } from '../../data/project'
 
-const ScenarioTable = ({ portfolioId }) => {
-    const { data: portfolio } = usePortfolio(portfolioId)
-    const { status, data: scenarios = [] } = usePortfolioScenarios(portfolioId)
-    const { data: topologies } = useProjectTopologies(portfolio?.projectId, {
-        select: (topologies) => new Map(topologies.map((topology) => [topology._id, topology])),
-    })
-
-    const { mutate: deleteScenario } = useMutation('deleteScenario')
+function ScenarioTable({ portfolio, status }) {
+    const { mutate: deleteScenario } = useDeleteScenario()
+    const projectId = portfolio?.project?.id
+    const scenarios = portfolio?.scenarios ?? []
 
     const columns = ['Name', 'Topology', 'Trace', 'State']
     const rows =
         scenarios.length > 0
             ? scenarios.map((scenario) => {
-                  const topology = topologies?.get(scenario.topology.topologyId)
+                  const topology = scenario.topology
 
                   return [
                       scenario.name,
                       {
                           title: topology ? (
-                              <Link href={`/projects/${topology.projectId}/topologies/${topology._id}`}>
+                              <Link href={`/projects/${projectId}/topologies/${topology.number}`}>
                                   <a>{topology.name}</a>
                               </Link>
                           ) : (
                               'Unknown Topology'
                           ),
                       },
-                      scenario.trace.traceId,
-                      { title: <ScenarioState state={scenario.simulation.state} /> },
+                      `${scenario.workload.trace.name} (${scenario.workload.samplingFraction * 100}%)`,
+                      { title: <ScenarioState state={scenario.job.state} /> },
                   ]
               })
             : [
@@ -82,7 +76,7 @@ const ScenarioTable = ({ portfolioId }) => {
     const actionResolver = (_, { rowIndex }) => [
         {
             title: 'Delete Scenario',
-            onClick: (_, rowId) => deleteScenario(scenarios[rowId]._id),
+            onClick: (_, rowId) => deleteScenario({ projectId: projectId, number: scenarios[rowId].number }),
             isDisabled: rowIndex === 0,
         },
     ]
@@ -102,7 +96,8 @@ const ScenarioTable = ({ portfolioId }) => {
 }
 
 ScenarioTable.propTypes = {
-    portfolioId: PropTypes.string,
+    portfolio: Portfolio,
+    status: Status.isRequired,
 }
 
 export default ScenarioTable

@@ -32,7 +32,7 @@ function room(state = {}, action, { tiles }) {
         case ADD_ROOM:
             return produce(state, (draft) => {
                 const { room } = action
-                draft[room._id] = room
+                draft[room.id] = room
             })
         case DELETE_ROOM:
             return produce(state, (draft) => {
@@ -47,7 +47,7 @@ function room(state = {}, action, { tiles }) {
         case ADD_TILE:
             return produce(state, (draft) => {
                 const { tile } = action
-                draft[tile.roomId].tiles.push(tile._id)
+                draft[tile.roomId].tiles.push(tile.id)
             })
         case DELETE_TILE:
             return produce(state, (draft) => {

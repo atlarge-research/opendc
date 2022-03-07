@@ -20,13 +20,13 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
 import { ClockIcon, CheckCircleIcon, ErrorCircleOIcon } from '@patternfly/react-icons'
+import { JobState } from '../../shapes'
 
 function ScenarioState({ state }) {
     switch (state) {
+        case 'PENDING':
         case 'CLAIMED':
-        case 'QUEUED':
             return (
                 <span>
                     <ClockIcon color="blue" /> Queued
@@ -56,7 +56,7 @@ function ScenarioState({ state }) {
 }
 
 ScenarioState.propTypes = {
-    state: PropTypes.oneOf(['QUEUED', 'CLAIMED', 'RUNNING', 'FINISHED', 'FAILED']),
+    state: JobState.isRequired,
 }
 
 export default ScenarioState

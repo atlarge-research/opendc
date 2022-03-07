@@ -33,7 +33,7 @@ function TileContainer({ tileId, ...props }) {
     const dispatch = useDispatch()
     const onClick = (tile) => {
         if (tile.rack) {
-            dispatch(goFromRoomToRack(tile._id))
+            dispatch(goFromRoomToRack(tile.id))
         }
     }
     return <TileGroup {...props} onClick={onClick} tile={tile} interactionLevel={interactionLevel} />

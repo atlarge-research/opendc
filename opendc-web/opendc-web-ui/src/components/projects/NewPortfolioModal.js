@@ -67,7 +67,7 @@ const NewPortfolioModal = ({ isOpen, onSubmit: onSubmitUpstream, onCancel: onUps
             setErrors({ name: true })
             return false
         } else {
-            onSubmitUpstream(name, { enabledMetrics: selectedMetrics, repeatsPerScenario: repeats })
+            onSubmitUpstream(name, { metrics: selectedMetrics, repeats })
         }
 
         clearState()

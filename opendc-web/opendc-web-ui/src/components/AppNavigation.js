@@ -23,15 +23,9 @@
 import { Nav, NavItem, NavList } from '@patternfly/react-core'
 import { useRouter } from 'next/router'
 import NavItemLink from './util/NavItemLink'
-import { useProject } from '../data/project'
 
 export function AppNavigation() {
-    const { pathname, query } = useRouter()
-    const { project: projectId } = query
-    const { data: project } = useProject(projectId)
-
-    const nextTopologyId = project?.topologyIds?.[0]
-    const nextPortfolioId = project?.portfolioIds?.[0]
+    const { pathname } = useRouter()
 
     return (
         <Nav variant="horizontal">
@@ -45,28 +39,6 @@ export function AppNavigation() {
                 >
                     Projects
                 </NavItem>
-                {pathname.startsWith('/projects/[project]') && (
-                    <>
-                        <NavItem
-                            id="topologies"
-                            to={nextTopologyId ? `/projects/${projectId}/topologies/${nextTopologyId}` : '/projects'}
-                            itemId={1}
-                            component={NavItemLink}
-                            isActive={pathname === '/projects/[project]/topologies/[topology]'}
-                        >
-                            Topologies
-                        </NavItem>
-                        <NavItem
-                            id="portfolios"
-                            to={nextPortfolioId ? `/projects/${projectId}/portfolios/${nextPortfolioId}` : '/projects'}
-                            itemId={2}
-                            component={NavItemLink}
-                            isActive={pathname === '/projects/[project]/portfolios/[portfolio]'}
-                        >
-                            Portfolios
-                        </NavItem>
-                    </>
-                )}
             </NavList>
         </Nav>
     )

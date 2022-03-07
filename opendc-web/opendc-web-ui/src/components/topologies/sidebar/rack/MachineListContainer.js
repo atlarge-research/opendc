@@ -43,7 +43,7 @@ function MachineListContainer({ tileId, ...props }) {
         <MachineListComponent
             {...props}
             machines={machinesNull}
-            onAdd={(index) => dispatch(addMachine(rack._id, index))}
+            onAdd={(index) => dispatch(addMachine(rack.id, index))}
             onSelect={(index) => dispatch(goFromRackToMachine(index))}
         />
     )

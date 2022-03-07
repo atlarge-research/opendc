@@ -43,8 +43,8 @@ import { METRIC_NAMES } from '../../util/available-metrics'
 import NewScenario from './NewScenario'
 import ScenarioTable from './ScenarioTable'
 
-function PortfolioOverview({ portfolioId }) {
-    const { data: portfolio } = usePortfolio(portfolioId)
+function PortfolioOverview({ projectId, portfolioId }) {
+    const { status, data: portfolio } = usePortfolio(projectId, portfolioId)
 
     return (
         <Grid hasGutter>
@@ -62,16 +62,16 @@ function PortfolioOverview({ portfolioId }) {
                             <DescriptionListGroup>
                                 <DescriptionListTerm>Scenarios</DescriptionListTerm>
                                 <DescriptionListDescription>
-                                    {portfolio?.scenarioIds.length ?? <Skeleton screenreaderText="Loading portfolio" />}
+                                    {portfolio?.scenarios?.length ?? <Skeleton screenreaderText="Loading portfolio" />}
                                 </DescriptionListDescription>
                             </DescriptionListGroup>
                             <DescriptionListGroup>
                                 <DescriptionListTerm>Metrics</DescriptionListTerm>
                                 <DescriptionListDescription>
-                                    {portfolio?.targets?.enabledMetrics ? (
-                                        portfolio.targets.enabledMetrics.length > 0 ? (
+                                    {portfolio ? (
+                                        portfolio.targets.metrics.length > 0 ? (
                                             <ChipGroup>
-                                                {portfolio.targets.enabledMetrics.map((metric) => (
+                                                {portfolio.targets.metrics.map((metric) => (
                                                     <Chip isReadOnly key={metric}>
                                                         {METRIC_NAMES[metric]}
                                                     </Chip>
@@ -88,9 +88,7 @@ function PortfolioOverview({ portfolioId }) {
                             <DescriptionListGroup>
                                 <DescriptionListTerm>Repeats per Scenario</DescriptionListTerm>
                                 <DescriptionListDescription>
-                                    {portfolio?.targets?.repeatsPerScenario ?? (
-                                        <Skeleton screenreaderText="Loading portfolio" />
-                                    )}
+                                    {portfolio?.targets?.repeats ?? <Skeleton screenreaderText="Loading portfolio" />}
                                 </DescriptionListDescription>
                             </DescriptionListGroup>
                         </DescriptionList>
@@ -101,12 +99,12 @@ function PortfolioOverview({ portfolioId }) {
                 <Card>
                     <CardHeader>
                         <CardActions>
-                            <NewScenario portfolioId={portfolioId} />
+                            <NewScenario projectId={projectId} portfolioId={portfolioId} />
                         </CardActions>
                         <CardTitle>Scenarios</CardTitle>
                     </CardHeader>
                     <CardBody>
-                        <ScenarioTable portfolioId={portfolioId} />
+                        <ScenarioTable portfolio={portfolio} status={status} />
                     </CardBody>
                 </Card>
             </GridItem>
@@ -115,7 +113,8 @@ function PortfolioOverview({ portfolioId }) {
 }
 
 PortfolioOverview.propTypes = {
-    portfolioId: PropTypes.string,
+    projectId: PropTypes.number,
+    portfolioId: PropTypes.number,
 }
 
 export default PortfolioOverview

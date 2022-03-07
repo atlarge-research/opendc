@@ -21,7 +21,7 @@
  */
 
 import produce from 'immer'
-import { STORE_TOPOLOGY } from "../../actions/topology";
+import { STORE_TOPOLOGY } from '../../actions/topology'
 import { ADD_ROOM, DELETE_ROOM } from '../../actions/topology/room'
 
 function topology(state = undefined, action) {
@@ -31,7 +31,7 @@ function topology(state = undefined, action) {
         case ADD_ROOM:
             return produce(state, (draft) => {
                 const { room } = action
-                draft.rooms.push(room._id)
+                draft.rooms.push(room.id)
             })
         case DELETE_ROOM:
             return produce(state, (draft) => {

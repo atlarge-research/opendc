@@ -14,16 +14,16 @@ export const DELETE_TILE = 'DELETE_TILE'
 export function startNewRoomConstruction() {
     return (dispatch, getState) => {
         const { topology } = getState()
-        const topologyId = topology.root._id
+        const topologyId = topology.root.id
         const room = {
-            _id: uuid(),
+            id: uuid(),
             name: 'Room',
             topologyId,
             tiles: [],
         }
 
         dispatch(addRoom(topologyId, room))
-        dispatch(startNewRoomConstructionSucceeded(room._id))
+        dispatch(startNewRoomConstructionSucceeded(room.id))
     }
 }
 
@@ -97,7 +97,7 @@ export function addTile(roomId, positionX, positionY) {
     return {
         type: ADD_TILE,
         tile: {
-            _id: uuid(),
+            id: uuid(),
             roomId,
             positionX,
             positionY,

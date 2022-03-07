@@ -7,11 +7,11 @@ import { Table, TableBody, TableHeader } from '@patternfly/react-table'
 import { deleteRoom } from '../../redux/actions/topology/room'
 import TableEmptyState from '../util/TableEmptyState'
 
-function RoomTable({ topologyId, onSelect }) {
+function RoomTable({ projectId, topologyId, onSelect }) {
     const dispatch = useDispatch()
-    const { status, data: topology } = useTopology(topologyId)
+    const { status, data: topology } = useTopology(projectId, topologyId)
 
-    const onDelete = (room) => dispatch(deleteRoom(room._id))
+    const onDelete = (room) => dispatch(deleteRoom(room.id))
 
     const columns = ['Name', 'Tiles', 'Racks']
     const rows =
@@ -62,7 +62,8 @@ function RoomTable({ topologyId, onSelect }) {
 }
 
 RoomTable.propTypes = {
-    topologyId: PropTypes.string,
+    projectId: PropTypes.number,
+    topologyId: PropTypes.number,
     onSelect: PropTypes.func,
 }
 

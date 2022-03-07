@@ -24,12 +24,12 @@ import PropTypes from 'prop-types'
 import { PlusIcon } from '@patternfly/react-icons'
 import { Button } from '@patternfly/react-core'
 import { useState } from 'react'
-import { useMutation } from 'react-query'
+import { useNewPortfolio } from '../../data/project'
 import NewPortfolioModal from './NewPortfolioModal'
 
 function NewPortfolio({ projectId }) {
     const [isVisible, setVisible] = useState(false)
-    const { mutate: addPortfolio } = useMutation('addPortfolio')
+    const { mutate: addPortfolio } = useNewPortfolio()
 
     const onSubmit = (name, targets) => {
         addPortfolio({ projectId, name, targets })
@@ -47,7 +47,7 @@ function NewPortfolio({ projectId }) {
 }
 
 NewPortfolio.propTypes = {
-    projectId: PropTypes.string,
+    projectId: PropTypes.number,
 }
 
 export default NewPortfolio

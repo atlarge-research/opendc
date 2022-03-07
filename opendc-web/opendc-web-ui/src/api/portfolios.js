@@ -22,22 +22,18 @@
 
 import { request } from './index'
 
-export function fetchPortfolio(auth, portfolioId) {
-    return request(auth, `portfolios/${portfolioId}`)
+export function fetchPortfolio(auth, projectId, number) {
+    return request(auth, `projects/${projectId}/portfolios/${number}`)
 }
 
-export function fetchPortfoliosOfProject(auth, projectId) {
+export function fetchPortfolios(auth, projectId) {
     return request(auth, `projects/${projectId}/portfolios`)
 }
 
-export function addPortfolio(auth, portfolio) {
-    return request(auth, `projects/${portfolio.projectId}/portfolios`, 'POST', { portfolio })
+export function addPortfolio(auth, projectId, portfolio) {
+    return request(auth, `projects/${projectId}/portfolios`, 'POST', portfolio)
 }
 
-export function updatePortfolio(auth, portfolioId, portfolio) {
-    return request(auth, `portfolios/${portfolioId}`, 'PUT', { portfolio })
-}
-
-export function deletePortfolio(auth, portfolioId) {
-    return request(auth, `portfolios/${portfolioId}`, 'DELETE')
+export function deletePortfolio(auth, projectId, number) {
+    return request(auth, `projects/${projectId}/portfolios/${number}`, 'DELETE')
 }

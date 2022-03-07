@@ -24,21 +24,15 @@ import PropTypes from 'prop-types'
 import { PlusIcon } from '@patternfly/react-icons'
 import { Button } from '@patternfly/react-core'
 import { useState } from 'react'
-import { useMutation } from 'react-query'
+import { useNewScenario } from '../../data/project'
 import NewScenarioModal from './NewScenarioModal'
 
-function NewScenario({ portfolioId }) {
+function NewScenario({ projectId, portfolioId }) {
     const [isVisible, setVisible] = useState(false)
-    const { mutate: addScenario } = useMutation('addScenario')
+    const { mutate: addScenario } = useNewScenario()
 
-    const onSubmit = (name, portfolioId, trace, topology, operational) => {
-        addScenario({
-            portfolioId,
-            name,
-            trace,
-            topology,
-            operational,
-        })
+    const onSubmit = (projectId, portfolioNumber, data) => {
+        addScenario({ projectId, portfolioNumber, data })
         setVisible(false)
     }
 
@@ -48,6 +42,7 @@ function NewScenario({ portfolioId }) {
                 New Scenario
             </Button>
             <NewScenarioModal
+                projectId={projectId}
                 portfolioId={portfolioId}
                 isOpen={isVisible}
                 onSubmit={onSubmit}
@@ -58,7 +53,8 @@ function NewScenario({ portfolioId }) {
 }
 
 NewScenario.propTypes = {
-    portfolioId: PropTypes.string,
+    projectId: PropTypes.number,
+    portfolioId: PropTypes.number,
 }
 
 export default NewScenario

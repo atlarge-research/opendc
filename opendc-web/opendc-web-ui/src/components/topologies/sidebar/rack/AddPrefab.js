@@ -22,14 +22,11 @@
 
 import PropTypes from 'prop-types'
 import React from 'react'
-import { useDispatch } from 'react-redux'
 import { Button } from '@patternfly/react-core'
 import { SaveIcon } from '@patternfly/react-icons'
-import { addPrefab } from '../../../../api/prefabs'
 
-function AddPrefab({ tileId }) {
-    const dispatch = useDispatch()
-    const onClick = () => dispatch(addPrefab('name', tileId))
+function AddPrefab() {
+    const onClick = () => {} // TODO
     return (
         <Button variant="primary" icon={<SaveIcon />} isBlock onClick={onClick} className="pf-u-mb-sm">
             Save this rack to a prefab

@@ -69,19 +69,6 @@ class OpenDCDocument extends Document {
                         href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
                         rel="stylesheet"
                     />
-
-                    {/* Google Analytics */}
-                    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-84285092-3" />
-                    <script
-                        dangerouslySetInnerHTML={{
-                            __html: `
-                            window.dataLayer = window.dataLayer || [];
-                            function gtag(){dataLayer.push(arguments);}
-                            gtag('js', new Date());
-                            gtag('config', 'UA-84285092-3');
-                        `,
-                        }}
-                    />
                 </Head>
                 <body>
                     <Main />

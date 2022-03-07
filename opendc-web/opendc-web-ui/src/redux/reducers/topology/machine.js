@@ -10,7 +10,7 @@ function machine(state = {}, action, { racks }) {
         case ADD_MACHINE:
             return produce(state, (draft) => {
                 const { machine } = action
-                draft[machine._id] = machine
+                draft[machine.id] = machine
             })
         case DELETE_MACHINE:
             return produce(state, (draft) => {

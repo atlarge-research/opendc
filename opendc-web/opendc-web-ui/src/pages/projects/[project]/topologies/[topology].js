@@ -26,7 +26,6 @@ import ContextSelectionSection from '../../../../components/context/ContextSelec
 import ProjectSelector from '../../../../components/context/ProjectSelector'
 import TopologySelector from '../../../../components/context/TopologySelector'
 import TopologyOverview from '../../../../components/topologies/TopologyOverview'
-import { useProject } from '../../../../data/project'
 import { useDispatch } from 'react-redux'
 import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
@@ -45,6 +44,7 @@ import {
     TextContent,
 } from '@patternfly/react-core'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
+import { useTopology } from '../../../../data/topology'
 import { goToRoom } from '../../../../redux/actions/interaction-level'
 import { openTopology } from '../../../../redux/actions/topology'
 
@@ -55,16 +55,18 @@ const TopologyMap = dynamic(() => import('../../../../components/topologies/Topo
  */
 function Topology() {
     const router = useRouter()
-    const { project: projectId, topology: topologyId } = router.query
+    const projectId = +router.query['project']
+    const topologyNumber = +router.query['topology']
 
-    const { data: project } = useProject(projectId)
+    const { data: topology } = useTopology(projectId, topologyNumber)
+    const project = topology?.project
 
     const dispatch = useDispatch()
     useEffect(() => {
-        if (topologyId) {
-            dispatch(openTopology(topologyId))
+        if (topologyNumber) {
+            dispatch(openTopology(projectId, topologyNumber))
         }
-    }, [topologyId, dispatch])
+    }, [projectId, topologyNumber, dispatch])
 
     const [activeTab, setActiveTab] = useState('overview')
 
@@ -76,7 +78,11 @@ function Topology() {
             <BreadcrumbItem to={`/projects/${projectId}`} component={BreadcrumbLink}>
                 Project details
             </BreadcrumbItem>
-            <BreadcrumbItem to={`/projects/${projectId}/topologies/${topologyId}`} component={BreadcrumbLink} isActive>
+            <BreadcrumbItem
+                to={`/projects/${projectId}/topologies/${topologyNumber}`}
+                component={BreadcrumbLink}
+                isActive
+            >
                 Topology
             </BreadcrumbItem>
         </Breadcrumb>
@@ -84,8 +90,8 @@ function Topology() {
 
     const contextSelectors = (
         <ContextSelectionSection>
-            <ProjectSelector projectId={projectId} />
-            <TopologySelector projectId={projectId} topologyId={topologyId} />
+            <ProjectSelector activeProject={project} />
+            <TopologySelector activeTopology={topology} />
         </ContextSelectionSection>
     )
 
@@ -117,16 +123,22 @@ function Topology() {
             <PageSection padding={activeTab === 'floor-plan' && { default: 'noPadding' }} isFilled>
                 <TabContent id="overview" aria-label="Overview tab" hidden={activeTab !== 'overview'}>
                     <TopologyOverview
-                        topologyId={topologyId}
+                        projectId={projectId}
+                        topologyNumber={topologyNumber}
                         onSelect={(type, obj) => {
                             if (type === 'room') {
-                                dispatch(goToRoom(obj._id))
+                                dispatch(goToRoom(obj.id))
                                 setActiveTab('floor-plan')
                             }
                         }}
                     />
                 </TabContent>
-                <TabContent id="floor-plan" aria-label="Floor Plan tab" className="pf-u-h-100" hidden={activeTab !== 'floor-plan'}>
+                <TabContent
+                    id="floor-plan"
+                    aria-label="Floor Plan tab"
+                    className="pf-u-h-100"
+                    hidden={activeTab !== 'floor-plan'}
+                >
                     <TopologyMap />
                 </TabContent>
             </PageSection>

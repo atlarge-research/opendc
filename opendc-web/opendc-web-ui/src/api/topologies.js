@@ -22,24 +22,23 @@
 
 import { request } from './index'
 
-export function fetchTopology(auth, topologyId) {
-    return request(auth, `topologies/${topologyId}`)
+export function fetchTopology(auth, projectId, number) {
+    return request(auth, `projects/${projectId}/topologies/${number}`)
 }
 
-export function fetchTopologiesOfProject(auth, projectId) {
+export function fetchTopologies(auth, projectId) {
     return request(auth, `projects/${projectId}/topologies`)
 }
 
-export function addTopology(auth, topology) {
-    return request(auth, `projects/${topology.projectId}/topologies`, 'POST', { topology })
+export function addTopology(auth, projectId, topology) {
+    return request(auth, `projects/${projectId}/topologies`, 'POST', topology)
 }
 
 export function updateTopology(auth, topology) {
-    // eslint-disable-next-line no-unused-vars
-    const { _id, ...data } = topology
-    return request(auth, `topologies/${topology._id}`, 'PUT', { topology: data })
+    const { project, number, rooms } = topology
+    return request(auth, `projects/${project.id}/topologies/${number}`, 'PUT', { rooms })
 }
 
-export function deleteTopology(auth, topologyId) {
-    return request(auth, `topologies/${topologyId}`, 'DELETE')
+export function deleteTopology(auth, projectId, number) {
+    return request(auth, `projects/${projectId}/topologies/${number}`, 'DELETE')
 }

@@ -38,8 +38,8 @@ import { useTopology } from '../../data/topology'
 import { parseAndFormatDateTime } from '../../util/date-time'
 import RoomTable from './RoomTable'
 
-function TopologyOverview({ topologyId, onSelect }) {
-    const { data: topology } = useTopology(topologyId)
+function TopologyOverview({ projectId, topologyNumber, onSelect }) {
+    const { data: topology } = useTopology(projectId, topologyNumber)
     return (
         <Grid hasGutter>
             <GridItem md={2}>
@@ -57,7 +57,7 @@ function TopologyOverview({ topologyId, onSelect }) {
                                 <DescriptionListTerm>Last edited</DescriptionListTerm>
                                 <DescriptionListDescription>
                                     {topology ? (
-                                        parseAndFormatDateTime(topology.datetimeLastEdited)
+                                        parseAndFormatDateTime(topology.updatedAt)
                                     ) : (
                                         <Skeleton screenreaderText="Loading topology" />
                                     )}
@@ -71,7 +71,11 @@ function TopologyOverview({ topologyId, onSelect }) {
                 <Card>
                     <CardTitle>Rooms</CardTitle>
                     <CardBody>
-                        <RoomTable topologyId={topologyId} onSelect={(room) => onSelect('room', room)} />
+                        <RoomTable
+                            projectId={projectId}
+                            topologyId={topologyNumber}
+                            onSelect={(room) => onSelect('room', room)}
+                        />
                     </CardBody>
                 </Card>
             </GridItem>
@@ -80,7 +84,8 @@ function TopologyOverview({ topologyId, onSelect }) {
 }
 
 TopologyOverview.propTypes = {
-    topologyId: PropTypes.string,
+    projectId: PropTypes.number,
+    topologyNumber: PropTypes.number,
     onSelect: PropTypes.func,
 }
 

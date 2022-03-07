@@ -40,8 +40,8 @@ function RoomHoverLayer() {
             .map((id) => ({ ...state.topology.rooms[id] }))
             .filter(
                 (room) =>
-                    state.topology.root.rooms.indexOf(room._id) !== -1 &&
-                    room._id !== state.construction.currentRoomInConstruction
+                    state.topology.root.rooms.indexOf(room.id) !== -1 &&
+                    room.id !== state.construction.currentRoomInConstruction
             )
 
         ;[...oldRooms, newRoom].forEach((room) => {

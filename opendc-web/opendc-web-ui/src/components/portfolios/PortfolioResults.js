@@ -42,12 +42,14 @@ import {
     Title,
 } from '@patternfly/react-core'
 import { ErrorCircleOIcon, CubesIcon } from '@patternfly/react-icons'
-import { usePortfolioScenarios } from '../../data/project'
+import { usePortfolio } from '../../data/project'
 import PortfolioResultInfo from './PortfolioResultInfo'
 import NewScenario from './NewScenario'
 
-const PortfolioResults = ({ portfolioId }) => {
-    const { status, data: scenarios = [] } = usePortfolioScenarios(portfolioId)
+const PortfolioResults = ({ projectId, portfolioId }) => {
+    const { status, data: scenarios = [] } = usePortfolio(projectId, portfolioId, {
+        select: (portfolio) => portfolio.scenarios,
+    })
 
     if (status === 'loading') {
         return (
@@ -86,7 +88,7 @@ const PortfolioResults = ({ portfolioId }) => {
                         No results are currently available for this portfolio. Run a scenario to obtain simulation
                         results.
                     </EmptyStateBody>
-                    <NewScenario portfolioId={portfolioId} />
+                    <NewScenario projectId={projectId} portfolioId={portfolioId} />
                 </EmptyState>
             </Bullseye>
         )
@@ -96,11 +98,11 @@ const PortfolioResults = ({ portfolioId }) => {
 
     AVAILABLE_METRICS.forEach((metric) => {
         dataPerMetric[metric] = scenarios
-            .filter((scenario) => scenario.results)
+            .filter((scenario) => scenario.job?.results)
             .map((scenario) => ({
                 name: scenario.name,
-                value: mean(scenario.results[metric]),
-                errorX: std(scenario.results[metric]),
+                value: mean(scenario.job.results[metric]),
+                errorX: std(scenario.job.results[metric]),
             }))
     })
 
@@ -150,7 +152,8 @@ const PortfolioResults = ({ portfolioId }) => {
 }
 
 PortfolioResults.propTypes = {
-    portfolioId: PropTypes.string,
+    projectId: PropTypes.number,
+    portfolioId: PropTypes.number,
 }
 
 export default PortfolioResults

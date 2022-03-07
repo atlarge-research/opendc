@@ -22,7 +22,7 @@ function UnitAddComponent({ units, onAdd }) {
                 selections={selected}
             >
                 {units.map((unit) => (
-                    <SelectOption value={unit._id} key={unit._id}>
+                    <SelectOption value={unit.id} key={unit.id}>
                         {unit.name}
                     </SelectOption>
                 ))}

@@ -40,9 +40,9 @@ import BreadcrumbLink from '../../../components/util/BreadcrumbLink'
 
 function Project() {
     const router = useRouter()
-    const { project: projectId } = router.query
+    const projectId = +router.query['project']
 
-    const { data: project } = useProject(projectId)
+    const { data: project } = useProject(+projectId)
 
     const breadcrumb = (
         <Breadcrumb>
@@ -57,7 +57,7 @@ function Project() {
 
     const contextSelectors = (
         <ContextSelectionSection>
-            <ProjectSelector projectId={projectId} />
+            <ProjectSelector activeProject={project} />
         </ContextSelectionSection>
     )
 

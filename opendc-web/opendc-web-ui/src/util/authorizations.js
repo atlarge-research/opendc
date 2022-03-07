@@ -3,13 +3,13 @@ import EditIcon from '@patternfly/react-icons/dist/js/icons/edit-icon'
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 
 export const AUTH_ICON_MAP = {
-    OWN: HomeIcon,
-    EDIT: EditIcon,
-    VIEW: EyeIcon,
+    OWNER: HomeIcon,
+    EDITOR: EditIcon,
+    VIEWER: EyeIcon,
 }
 
 export const AUTH_DESCRIPTION_MAP = {
-    OWN: 'Own',
-    EDIT: 'Can Edit',
-    VIEW: 'Can View',
+    OWNER: 'Own',
+    EDITOR: 'Can Edit',
+    VIEWER: 'Can View',
 }

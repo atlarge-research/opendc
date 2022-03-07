@@ -26,9 +26,8 @@ import ProjectFilterPanel from '../../components/projects/FilterPanel'
 import { useAuth } from '../../auth'
 import { AppPage } from '../../components/AppPage'
 import { PageSection, PageSectionVariants, Text, TextContent } from '@patternfly/react-core'
-import { useProjects } from '../../data/project'
+import { useProjects, useDeleteProject } from '../../data/project'
 import ProjectTable from '../../components/projects/ProjectTable'
-import { useMutation } from 'react-query'
 import NewProject from '../../components/projects/NewProject'
 
 const getVisibleProjects = (projects, filter, userId) => {
@@ -52,13 +51,12 @@ function Projects() {
     const { user } = useAuth()
     const { status, data: projects } = useProjects()
     const [filter, setFilter] = useState('SHOW_ALL')
-    const visibleProjects = useMemo(() => getVisibleProjects(projects ?? [], filter, user?.sub), [
-        projects,
-        filter,
-        user?.sub,
-    ])
+    const visibleProjects = useMemo(
+        () => getVisibleProjects(projects ?? [], filter, user?.sub),
+        [projects, filter, user?.sub]
+    )
 
-    const { mutate: deleteProject } = useMutation('deleteProject')
+    const { mutate: deleteProject } = useDeleteProject()
 
     return (
         <AppPage>
@@ -76,7 +74,7 @@ function Projects() {
                     status={status}
                     isFiltering={filter !== 'SHOW_ALL'}
                     projects={visibleProjects}
-                    onDelete={(project) => deleteProject(project._id)}
+                    onDelete={(project) => deleteProject(project.id)}
                 />
                 <NewProject />
             </PageSection>

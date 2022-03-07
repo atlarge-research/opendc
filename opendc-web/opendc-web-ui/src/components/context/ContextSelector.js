@@ -22,13 +22,11 @@
 
 import PropTypes from 'prop-types'
 import { ContextSelector as PFContextSelector, ContextSelectorItem } from '@patternfly/react-core'
-import { useMemo, useState, useReducer } from 'react'
+import { useMemo, useState } from 'react'
 import { contextSelector } from './ContextSelector.module.scss'
 
-function ContextSelector({ activeItem, items, onSelect, label }) {
-    const [isOpen, toggle] = useReducer((isOpen) => !isOpen, false)
+function ContextSelector({ activeItem, items, onSelect, onToggle, isOpen, label }) {
     const [searchValue, setSearchValue] = useState('')
-
     const filteredItems = useMemo(
         () => items.filter(({ name }) => name.toLowerCase().indexOf(searchValue.toLowerCase()) !== -1) || items,
         [items, searchValue]
@@ -36,23 +34,22 @@ function ContextSelector({ activeItem, items, onSelect, label }) {
 
     return (
         <PFContextSelector
-            menuAppendTo={global.document?.body}
             className={contextSelector}
             toggleText={activeItem ? `${label}: ${activeItem.name}` : label}
             onSearchInputChange={(value) => setSearchValue(value)}
             searchInputValue={searchValue}
             isOpen={isOpen}
-            onToggle={toggle}
+            onToggle={(_, isOpen) => onToggle(isOpen)}
             onSelect={(event) => {
-                const targetId = event.target.value
-                const target = items.find((item) => item._id === targetId)
+                const targetId = +event.target.value
+                const target = items.find((item) => item.id === targetId)
 
-                toggle()
                 onSelect(target)
+                onToggle(!isOpen)
             }}
         >
             {filteredItems.map((item) => (
-                <ContextSelectorItem key={item._id} value={item._id}>
+                <ContextSelectorItem key={item.id} value={item.id}>
                     {item.name}
                 </ContextSelectorItem>
             ))}
@@ -61,7 +58,7 @@ function ContextSelector({ activeItem, items, onSelect, label }) {
 }
 
 const Item = PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.any.isRequired,
     name: PropTypes.string.isRequired,
 })
 
@@ -69,6 +66,8 @@ ContextSelector.propTypes = {
     activeItem: Item,
     items: PropTypes.arrayOf(Item).isRequired,
     onSelect: PropTypes.func.isRequired,
+    onToggle: PropTypes.func.isRequired,
+    isOpen: PropTypes.bool,
     label: PropTypes.string,
 }
 
