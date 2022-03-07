@@ -40,18 +40,13 @@ dependencies {
     implementation(projects.opendcTelemetry.opendcTelemetrySdk)
     implementation(projects.opendcTelemetry.opendcTelemetryCompute)
     implementation(projects.opendcTrace.opendcTraceApi)
+    implementation(projects.opendcWeb.opendcWebClient)
 
     implementation(libs.kotlin.logging)
     implementation(libs.clikt)
     implementation(libs.sentry.log4j2)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.auth)
-    implementation(libs.ktor.client.jackson)
-    implementation(libs.jackson.datatype.jsr310)
     implementation(kotlin("reflect"))
 
     runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
     runtimeOnly(libs.log4j.slf4j)
-
-    testImplementation(libs.ktor.client.mock)
 }
