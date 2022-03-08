@@ -29,7 +29,6 @@ import com.github.ajalt.clikt.parameters.types.long
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.compute.workload.*
-import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
@@ -196,36 +195,34 @@ class RunnerCli : CliktCommand(name = "runner") {
                     else
                         null
 
-                val telemetry = SdkTelemetryManager(clock)
                 val simulator = ComputeServiceHelper(
                     coroutineContext,
                     clock,
-                    telemetry,
                     computeScheduler,
                     failureModel,
                     interferenceModel.takeIf { operational.performanceInterferenceEnabled }
                 )
 
-                telemetry.registerMetricReader(CoroutineMetricReader(this, exporter, exportInterval = Duration.ofHours(1)))
+                val metricReader = CoroutineMetricReader(this, simulator.producers, exporter, exportInterval = Duration.ofHours(1))
 
                 try {
                     // Instantiate the topology onto the simulator
                     simulator.apply(topology)
-                    // Run workload trace
+                    // Converge workload trace
                     simulator.run(workload.resolve(workloadLoader, seeder), seeder.nextLong())
-
-                    val serviceMetrics = collectServiceMetrics(telemetry.metricProducer)
-                    logger.debug {
-                        "Scheduler " +
-                            "Success=${serviceMetrics.attemptsSuccess} " +
-                            "Failure=${serviceMetrics.attemptsFailure} " +
-                            "Error=${serviceMetrics.attemptsError} " +
-                            "Pending=${serviceMetrics.serversPending} " +
-                            "Active=${serviceMetrics.serversActive}"
-                    }
                 } finally {
                     simulator.close()
-                    telemetry.close()
+                    metricReader.close()
+                }
+
+                val serviceMetrics = collectServiceMetrics(simulator.producers[0])
+                logger.debug {
+                    "Scheduler " +
+                        "Success=${serviceMetrics.attemptsSuccess} " +
+                        "Failure=${serviceMetrics.attemptsFailure} " +
+                        "Error=${serviceMetrics.attemptsError} " +
+                        "Pending=${serviceMetrics.serversPending} " +
+                        "Active=${serviceMetrics.serversActive}"
                 }
             }
         } catch (cause: Throwable) {

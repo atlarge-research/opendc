@@ -22,7 +22,9 @@
 
 package org.opendc.compute.simulator
 
+import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
+import io.opentelemetry.sdk.metrics.export.MetricProducer
 import io.opentelemetry.sdk.resources.Resource
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -81,26 +83,10 @@ internal class SimHostTest {
         val hostResource = Resource.builder()
             .put(HOST_ID, hostId.toString())
             .build()
-
-        // Setup metric reader
-        val duration = 5 * 60L
-        val reader = CoroutineMetricReader(
-            this,
-            object : ComputeMetricExporter() {
-                override fun record(reader: HostTableReader) {
-                    activeTime += reader.cpuActiveTime
-                    idleTime += reader.cpuIdleTime
-                    stealTime += reader.cpuStealTime
-                }
-            },
-            exportInterval = Duration.ofSeconds(duration)
-        )
-
-        val meterProvider = SdkMeterProvider
+        val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
             .setResource(hostResource)
             .setClock(clock.toOtelClock())
-            .registerMetricReader(reader)
             .build()
 
         val engine = FlowEngine(coroutineContext, clock)
@@ -114,6 +100,7 @@ internal class SimHostTest {
             meterProvider,
             SimFairShareHypervisorProvider()
         )
+        val duration = 5 * 60L
         val vmImageA = MockImage(
             UUID.randomUUID(),
             "<unnamed>",
@@ -149,6 +136,19 @@ internal class SimHostTest {
 
         val flavor = MockFlavor(2, 0)
 
+        // Setup metric reader
+        val reader = CoroutineMetricReader(
+            this, listOf(meterProvider as MetricProducer),
+            object : ComputeMetricExporter() {
+                override fun record(reader: HostTableReader) {
+                    activeTime += reader.cpuActiveTime
+                    idleTime += reader.cpuIdleTime
+                    stealTime += reader.cpuStealTime
+                }
+            },
+            exportInterval = Duration.ofSeconds(duration)
+        )
+
         coroutineScope {
             launch { virtDriver.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImageA)) }
             launch { virtDriver.spawn(MockServer(UUID.randomUUID(), "b", flavor, vmImageB)) }
@@ -169,7 +169,7 @@ internal class SimHostTest {
         // Ensure last cycle is collected
         delay(1000L * duration)
         virtDriver.close()
-        meterProvider.close()
+        reader.close()
 
         assertAll(
             { assertEquals(658, activeTime, "Active time does not match") },
@@ -195,32 +195,10 @@ internal class SimHostTest {
         val hostResource = Resource.builder()
             .put(HOST_ID, hostId.toString())
             .build()
-
-        // Setup metric reader
-        val duration = 5 * 60L
-        val reader = CoroutineMetricReader(
-            this,
-            object : ComputeMetricExporter() {
-                override fun record(reader: HostTableReader) {
-                    activeTime += reader.cpuActiveTime
-                    idleTime += reader.cpuIdleTime
-                    uptime += reader.uptime
-                    downtime += reader.downtime
-                }
-
-                override fun record(reader: ServerTableReader) {
-                    guestUptime += reader.uptime
-                    guestDowntime += reader.downtime
-                }
-            },
-            exportInterval = Duration.ofSeconds(duration)
-        )
-
-        val meterProvider = SdkMeterProvider
+        val meterProvider: MeterProvider = SdkMeterProvider
             .builder()
             .setResource(hostResource)
             .setClock(clock.toOtelClock())
-            .registerMetricReader(reader)
             .build()
 
         val engine = FlowEngine(coroutineContext, clock)
@@ -234,6 +212,7 @@ internal class SimHostTest {
             meterProvider,
             SimFairShareHypervisorProvider()
         )
+        val duration = 5 * 60L
         val image = MockImage(
             UUID.randomUUID(),
             "<unnamed>",
@@ -252,6 +231,25 @@ internal class SimHostTest {
         )
         val flavor = MockFlavor(2, 0)
         val server = MockServer(UUID.randomUUID(), "a", flavor, image)
+
+        // Setup metric reader
+        val reader = CoroutineMetricReader(
+            this, listOf(meterProvider as MetricProducer),
+            object : ComputeMetricExporter() {
+                override fun record(reader: HostTableReader) {
+                    activeTime += reader.cpuActiveTime
+                    idleTime += reader.cpuIdleTime
+                    uptime += reader.uptime
+                    downtime += reader.downtime
+                }
+
+                override fun record(reader: ServerTableReader) {
+                    guestUptime += reader.uptime
+                    guestDowntime += reader.downtime
+                }
+            },
+            exportInterval = Duration.ofSeconds(duration)
+        )
 
         coroutineScope {
             host.spawn(server)
@@ -275,7 +273,7 @@ internal class SimHostTest {
         // Ensure last cycle is collected
         delay(1000L * duration)
 
-        meterProvider.close()
+        reader.close()
 
         assertAll(
             { assertEquals(1775, idleTime, "Idle time does not match") },

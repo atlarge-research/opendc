@@ -150,15 +150,15 @@ public class SimHost(
         meter.gaugeBuilder("system.cpu.demand")
             .setDescription("Amount of CPU resources the guests would use if there were no CPU contention or CPU limits")
             .setUnit("MHz")
-            .buildWithCallback { result -> result.record(hypervisor.cpuDemand) }
+            .buildWithCallback { result -> result.observe(hypervisor.cpuDemand) }
         meter.gaugeBuilder("system.cpu.usage")
             .setDescription("Amount of CPU resources used by the host")
             .setUnit("MHz")
-            .buildWithCallback { result -> result.record(hypervisor.cpuUsage) }
+            .buildWithCallback { result -> result.observe(hypervisor.cpuUsage) }
         meter.gaugeBuilder("system.cpu.utilization")
             .setDescription("Utilization of the CPU resources of the host")
             .setUnit("%")
-            .buildWithCallback { result -> result.record(hypervisor.cpuUsage / _cpuLimit) }
+            .buildWithCallback { result -> result.observe(hypervisor.cpuUsage / _cpuLimit) }
         meter.counterBuilder("system.cpu.time")
             .setDescription("Amount of CPU time spent by the host")
             .setUnit("s")
@@ -166,12 +166,12 @@ public class SimHost(
         meter.gaugeBuilder("system.power.usage")
             .setDescription("Power usage of the host ")
             .setUnit("W")
-            .buildWithCallback { result -> result.record(machine.powerUsage) }
+            .buildWithCallback { result -> result.observe(machine.powerUsage) }
         meter.counterBuilder("system.power.total")
             .setDescription("Amount of energy used by the CPU")
             .setUnit("J")
             .ofDoubles()
-            .buildWithCallback { result -> result.record(machine.energyUsage) }
+            .buildWithCallback { result -> result.observe(machine.energyUsage) }
         meter.counterBuilder("system.time")
             .setDescription("The uptime of the host")
             .setUnit("s")
@@ -388,10 +388,10 @@ public class SimHost(
             }
         }
 
-        result.record(terminated, terminatedState)
-        result.record(running, runningState)
-        result.record(error, errorState)
-        result.record(invalid, invalidState)
+        result.observe(terminated, terminatedState)
+        result.observe(running, runningState)
+        result.observe(error, errorState)
+        result.observe(invalid, invalidState)
     }
 
     private val _cpuLimit = machine.model.cpus.sumOf { it.frequency }
@@ -400,7 +400,7 @@ public class SimHost(
      * Helper function to collect the CPU limits of a machine.
      */
     private fun collectCpuLimit(result: ObservableDoubleMeasurement) {
-        result.record(_cpuLimit)
+        result.observe(_cpuLimit)
 
         val guests = _guests
         for (i in guests.indices) {
@@ -420,10 +420,10 @@ public class SimHost(
         val counters = hypervisor.counters
         counters.flush()
 
-        result.record(counters.cpuActiveTime / 1000L, _activeState)
-        result.record(counters.cpuIdleTime / 1000L, _idleState)
-        result.record(counters.cpuStealTime / 1000L, _stealState)
-        result.record(counters.cpuLostTime / 1000L, _lostState)
+        result.observe(counters.cpuActiveTime / 1000L, _activeState)
+        result.observe(counters.cpuIdleTime / 1000L, _idleState)
+        result.observe(counters.cpuStealTime / 1000L, _stealState)
+        result.observe(counters.cpuLostTime / 1000L, _lostState)
 
         val guests = _guests
         for (i in guests.indices) {
@@ -465,8 +465,8 @@ public class SimHost(
     private fun collectUptime(result: ObservableLongMeasurement) {
         updateUptime()
 
-        result.record(_uptime, _upState)
-        result.record(_downtime, _downState)
+        result.observe(_uptime, _upState)
+        result.observe(_downtime, _downState)
 
         val guests = _guests
         for (i in guests.indices) {
@@ -481,7 +481,7 @@ public class SimHost(
      */
     private fun collectBootTime(result: ObservableLongMeasurement) {
         if (_bootTime != Long.MIN_VALUE) {
-            result.record(_bootTime)
+            result.observe(_bootTime)
         }
 
         val guests = _guests

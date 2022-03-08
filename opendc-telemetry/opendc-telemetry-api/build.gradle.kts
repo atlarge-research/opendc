@@ -28,5 +28,6 @@ plugins {
 }
 
 dependencies {
-    api(libs.opentelemetry.api)
+    api(libs.opentelemetry.api.main)
+    api(libs.opentelemetry.api.metrics)
 }

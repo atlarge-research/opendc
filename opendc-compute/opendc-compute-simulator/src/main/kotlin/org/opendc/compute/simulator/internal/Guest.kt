@@ -239,8 +239,8 @@ internal class Guest(
      * Helper function to track the uptime of the guest.
      */
     fun collectUptime(result: ObservableLongMeasurement) {
-        result.record(_uptime, _upState)
-        result.record(_downtime, _downState)
+        result.observe(_uptime, _upState)
+        result.observe(_downtime, _downState)
     }
 
     private var _bootTime = Long.MIN_VALUE
@@ -250,7 +250,7 @@ internal class Guest(
      */
     fun collectBootTime(result: ObservableLongMeasurement) {
         if (_bootTime != Long.MIN_VALUE) {
-            result.record(_bootTime, attributes)
+            result.observe(_bootTime, attributes)
         }
     }
 
@@ -274,10 +274,10 @@ internal class Guest(
         val counters = machine.counters
         counters.flush()
 
-        result.record(counters.cpuActiveTime / 1000, _activeState)
-        result.record(counters.cpuIdleTime / 1000, _idleState)
-        result.record(counters.cpuStealTime / 1000, _stealState)
-        result.record(counters.cpuLostTime / 1000, _lostState)
+        result.observe(counters.cpuActiveTime / 1000, _activeState)
+        result.observe(counters.cpuIdleTime / 1000, _idleState)
+        result.observe(counters.cpuStealTime / 1000, _stealState)
+        result.observe(counters.cpuLostTime / 1000, _lostState)
     }
 
     private val _cpuLimit = machine.model.cpus.sumOf { it.frequency }
@@ -286,7 +286,7 @@ internal class Guest(
      * Helper function to collect the CPU limits of a machine.
      */
     fun collectCpuLimit(result: ObservableDoubleMeasurement) {
-        result.record(_cpuLimit, attributes)
+        result.observe(_cpuLimit, attributes)
     }
 
     /**
