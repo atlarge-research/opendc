@@ -111,6 +111,7 @@ distributions {
             }
 
             from("packages.txt")
+            from("Dockerfile")
 
             from("radice.py")
             from("01-sustainability.ipynb")
