@@ -110,6 +110,8 @@ distributions {
                 rename { "LICENSE-OpenDC.txt" }
             }
 
+            from("packages.txt")
+
             from("radice.py")
             from("01-sustainability.ipynb")
             from("02-phenomena.ipynb")
