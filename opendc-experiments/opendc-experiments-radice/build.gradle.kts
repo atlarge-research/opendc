@@ -134,6 +134,10 @@ distributions {
                 from(cmpRuntimeClasspath) // Also includes main classpath
             }
 
+            into("scripts") {
+                from("scripts")
+            }
+
             into("traces") {
                 from("traces")
             }
