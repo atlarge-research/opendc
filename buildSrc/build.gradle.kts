@@ -41,4 +41,6 @@ dependencies {
 
     implementation(libs.jandex.gradle)
     implementation(libs.quarkus.gradle)
+
+    implementation(libs.gradle.node)
 }

@@ -4,6 +4,7 @@ clikt = "3.4.0"
 config = "1.4.2"
 commons-math3 = "3.6.1"
 dokka = "1.6.10"
+gradle-node = "3.2.1"
 hadoop = "3.3.1"
 jackson = "2.13.2"
 jandex-gradle = "0.11.0"
@@ -103,6 +104,7 @@ microprofile-openapi-api = { module = "org.eclipse.microprofile.openapi:micropro
 
 # Other (Build)
 dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+gradle-node = { module = "com.github.node-gradle:gradle-node-plugin", version.ref = "gradle-node" }
 jandex-gradle = { module = "org.kordamp.gradle:jandex-gradle-plugin", version.ref = "jandex-gradle" }
 ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint-gradle" }
 jmh-gradle = { module = "me.champeau.jmh:jmh-gradle-plugin", version.ref = "jmh-gradle" }

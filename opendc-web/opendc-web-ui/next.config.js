@@ -30,6 +30,7 @@ module.exports = withConfig({
     experimental: {
         eslint: true
     },
+    distDir: 'build/next',
     async redirects() {
         return [
             {
