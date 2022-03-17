@@ -1,7 +1,5 @@
-Dockerfile
-
 .git
-
+.env
 .idea/
 **/out
 *.iml
@@ -10,3 +8,5 @@ Dockerfile
 .gradle
 **/build
 **/node_modules
+
+**/Dockerfile
