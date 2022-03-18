@@ -22,13 +22,13 @@
 
 import { PageHeader } from '@patternfly/react-core'
 import React from 'react'
-import Image from 'next/image'
 import AppHeaderTools from './AppHeaderTools'
 import { AppNavigation } from './AppNavigation'
 import AppLogo from './AppLogo'
 
 export function AppHeader() {
-    const logo = <Image src="/img/logo.png" layout="fixed" width={30} height={30} alt="OpenDC" />
+    // eslint-disable-next-line @next/next/no-img-element
+    const logo = <img src="/img/logo.png" width={30} height={30} alt="OpenDC" />
 
     return (
         <PageHeader
