@@ -40,7 +40,8 @@ dependencies {
     implementation(libs.shadow)
 
     implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle)
+    implementation(libs.quarkus.gradle.application)
+    implementation(libs.quarkus.gradle.extension)
 
     implementation(libs.gradle.node)
 }

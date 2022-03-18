@@ -20,11 +20,44 @@
  * SOFTWARE.
  */
 
-plugins {
-    id("java-conventions")
-    id("publishing-conventions")
-}
+package org.opendc.web.ui.deployment;
 
-java {
-    withSourcesJar()
+import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.runtime.annotations.ConfigRoot;
+
+import java.util.Optional;
+
+/**
+ * Build-time configuration for the OpenDC UI extension.
+ */
+@ConfigRoot(name = "opendc-ui")
+public class OpenDCUiConfig {
+    /**
+     * A flag to include the OpenDC UI extension into the build.
+     */
+    @ConfigItem(defaultValue = "true")
+    boolean include;
+
+    /**
+     * The path where the OpenDC UI is available.
+     */
+    @ConfigItem(defaultValue = "/")
+    String path;
+
+    /**
+     * The base URL of the OpenDC API.
+     */
+    @ConfigItem(defaultValue = "/api")
+    String apiBaseUrl;
+
+    /**
+     * Configuration properties for web UI authentication.
+     */
+    AuthConfiguration auth;
+
+    /**
+     * Sentry DSN.
+     */
+    @ConfigItem
+    Optional<String> sentryDsn;
 }

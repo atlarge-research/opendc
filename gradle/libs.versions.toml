@@ -72,9 +72,16 @@ parquet = { module = "org.apache.parquet:parquet-avro", version.ref = "parquet" 
 config = { module = "com.typesafe:config", version.ref = "config" }
 
 # Quarkus
-quarkus-gradle = { module = "io.quarkus:gradle-application-plugin", version.ref = "quarkus" }
+quarkus-gradle-application = { module = "io.quarkus:gradle-application-plugin", version.ref = "quarkus" }
+quarkus-gradle-extension = { module = "io.quarkus.extension:gradle-extension-plugin", version.ref = "quarkus" }
 quarkus-bom = { module = "io.quarkus:quarkus-bom", version.ref = "quarkus" }
 quarkus-kotlin = { module = "io.quarkus:quarkus-kotlin" }
+quarkus-core-runtime = { module = "io.quarkus:quarkus-core", version.ref = "quarkus" }
+quarkus-core-deployment = { module = "io.quarkus:quarkus-core-deployment" }
+quarkus-vertx-http-runtime = { module = "io.quarkus:quarkus-vertx-http" }
+quarkus-vertx-http-deployment = { module = "io.quarkus:quarkus-vertx-http-deployment" }
+quarkus-arc-runtime = { module = "io.quarkus:quarkus-arc" }
+quarkus-arc-deployment = { module = "io.quarkus:quarkus-arc-deployment" }
 quarkus-resteasy-core = { module = "io.quarkus:quarkus-resteasy" }
 quarkus-resteasy-jackson = { module = "io.quarkus:quarkus-resteasy-jackson" }
 quarkus-smallrye-openapi = { module = "io.quarkus:quarkus-smallrye-openapi" }

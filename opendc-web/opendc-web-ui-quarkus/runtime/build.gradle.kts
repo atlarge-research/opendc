@@ -20,11 +20,17 @@
  * SOFTWARE.
  */
 
+description = "Quarkus extension for serving OpenDC web interface"
+
 plugins {
-    id("java-conventions")
-    id("publishing-conventions")
+    `java-library-conventions`
+    id("io.quarkus.extension")
 }
 
-java {
-    withSourcesJar()
+dependencies {
+    implementation(enforcedPlatform(libs.quarkus.bom))
+
+    implementation(libs.quarkus.core.runtime)
+    implementation(libs.quarkus.vertx.http.runtime)
+    implementation(libs.quarkus.arc.runtime)
 }

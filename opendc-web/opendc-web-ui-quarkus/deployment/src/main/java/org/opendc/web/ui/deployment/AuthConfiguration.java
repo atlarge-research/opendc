@@ -20,11 +20,33 @@
  * SOFTWARE.
  */
 
-plugins {
-    id("java-conventions")
-    id("publishing-conventions")
-}
+package org.opendc.web.ui.deployment;
 
-java {
-    withSourcesJar()
+import io.quarkus.runtime.annotations.ConfigGroup;
+import io.quarkus.runtime.annotations.ConfigItem;
+
+import java.util.Optional;
+
+/**
+ * Auth configuration for the OpenDC UI extension.
+ */
+@ConfigGroup
+public class AuthConfiguration {
+    /**
+     * The authentication domain.
+     */
+    @ConfigItem
+    Optional<String> domain;
+
+    /**
+     * The client identifier used by the OpenDC web ui.
+     */
+    @ConfigItem
+    Optional<String> clientId;
+
+    /**
+     * The audience of the OpenDC API.
+     */
+    @ConfigItem
+    Optional<String> audience;
 }

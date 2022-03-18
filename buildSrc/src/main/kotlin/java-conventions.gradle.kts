@@ -21,10 +21,15 @@
  */
 
 plugins {
-    id("java-conventions")
-    id("publishing-conventions")
+    `java-library`
+}
+
+/* Project configuration */
+repositories {
+    mavenCentral()
 }
 
 java {
-    withSourcesJar()
+    sourceCompatibility = Libs.jvmTarget
+    targetCompatibility = Libs.jvmTarget
 }

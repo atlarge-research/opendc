@@ -20,11 +20,20 @@
  * SOFTWARE.
  */
 
-plugins {
-    id("java-conventions")
-    id("publishing-conventions")
-}
+package org.opendc.web.ui.runtime;
 
-java {
-    withSourcesJar()
+import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.runtime.annotations.ConfigPhase;
+import io.quarkus.runtime.annotations.ConfigRoot;
+
+/**
+ * Configuration for the OpenDC web UI.
+ */
+@ConfigRoot(phase = ConfigPhase.RUN_TIME, name = "opendc-ui")
+public class OpenDCUiRuntimeConfig {
+    /**
+     * Flag to indicate whether the web interface should be served by the OpenDC API server.
+     */
+    @ConfigItem(defaultValue = "true")
+    public boolean enable;
 }

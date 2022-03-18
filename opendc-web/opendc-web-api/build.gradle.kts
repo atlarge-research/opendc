@@ -36,6 +36,7 @@ dependencies {
     implementation(enforcedPlatform(libs.quarkus.bom))
 
     implementation(projects.opendcWeb.opendcWebProto)
+    implementation(projects.opendcWeb.opendcWebUiQuarkus.runtime)
 
     implementation(libs.quarkus.kotlin)
     implementation(libs.quarkus.resteasy.core)

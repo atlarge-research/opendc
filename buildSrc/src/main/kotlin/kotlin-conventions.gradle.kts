@@ -23,7 +23,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("java-library-conventions")
+    id("java-conventions")
     kotlin("jvm")
     id("org.jlleitschuh.gradle.ktlint")
 }

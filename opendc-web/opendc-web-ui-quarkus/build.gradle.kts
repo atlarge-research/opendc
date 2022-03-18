@@ -20,11 +20,4 @@
  * SOFTWARE.
  */
 
-plugins {
-    id("java-conventions")
-    id("publishing-conventions")
-}
-
-java {
-    withSourcesJar()
-}
+description = "Quarkus extension for serving OpenDC web interface"
