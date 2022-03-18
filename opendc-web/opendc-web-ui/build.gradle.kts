@@ -25,8 +25,17 @@ import com.github.gradle.node.yarn.task.YarnTask
 description = "Web interface for OpenDC"
 
 plugins {
-    java
+    `java-library-conventions`
     id("com.github.node-gradle.node")
+}
+
+sourceSets {
+    main {
+        java.srcDir("src")
+    }
+    test {
+        java.srcDir("test")
+    }
 }
 
 val lintTask = tasks.register<YarnTask>("lintNext") {
@@ -35,15 +44,6 @@ val lintTask = tasks.register<YarnTask>("lintNext") {
     inputs.dir("src")
     inputs.files("package.json", "next.config.js", ".eslintrc")
     outputs.upToDateWhen { true }
-}
-
-val buildTask = tasks.register<YarnTask>("buildNext") {
-    args.set(listOf("build"))
-    dependsOn(tasks.yarn)
-    inputs.dir(project.fileTree("src"))
-    inputs.dir("node_modules")
-    inputs.files("package.json", "next.config.js")
-    outputs.dir("${project.buildDir}/build")
 }
 
 tasks.register<YarnTask>("dev") {
@@ -55,6 +55,28 @@ tasks.register<YarnTask>("dev") {
     outputs.upToDateWhen { true }
 }
 
+val buildTask = tasks.register<YarnTask>("buildNext") {
+    args.set(listOf("build"))
+
+    val env = listOf(
+        "NEXT_BASE_PATH",
+        "NEXT_PUBLIC_API_BASE_URL",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NEXT_PUBLIC_AUTH0_DOMAIN",
+        "NEXT_PUBLIC_AUTH0_CLIENT_ID",
+        "NEXT_PUBLIC_AUTH0_AUDIENCE",
+    )
+    for (envvar in env) {
+        environment.put(envvar, "%%${envvar}%%")
+    }
+
+    dependsOn(tasks.yarn)
+    inputs.dir(project.fileTree("src"))
+    inputs.dir("node_modules")
+    inputs.files("package.json", "next.config.js")
+    outputs.dir(layout.buildDirectory.dir("next"))
+}
+
 tasks.register<YarnTask>("start") {
     args.set(listOf("start"))
     dependsOn(buildTask)
@@ -64,19 +86,25 @@ tasks.register<YarnTask>("start") {
     outputs.upToDateWhen { true }
 }
 
-sourceSets {
-    java {
-        main {
-            java.srcDir("src")
-            resources.srcDir("public")
-        }
+tasks.processResources {
+    dependsOn(buildTask)
+    inputs.dir(project.fileTree("public"))
 
-        test {
-            java.srcDir("test")
-        }
+    from(layout.buildDirectory.dir("next")) {
+        include("routes-manifest.json")
+        into("META-INF/resources/${project.name}")
     }
-}
 
-tasks.test {
-    dependsOn(lintTask)
+    from(layout.buildDirectory.dir("next/static")) {
+        into("META-INF/resources/${project.name}/static/_next/static")
+    }
+
+    from(layout.buildDirectory.dir("next/server/pages")) {
+        include("**/*.html")
+        into("META-INF/resources/${project.name}/pages")
+    }
+
+    from(project.fileTree("public")) {
+        into("META-INF/resources/${project.name}/static")
+    }
 }
