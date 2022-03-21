@@ -36,7 +36,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
       - name: Publish report
         if: always()
-        uses: mikepenz/action-junit-report@v2
+        uses: mikepenz/action-junit-report@v3.0.1
         with:
           check_name: test (Java ${{ matrix.java }})
           report_paths: '**/build/test-results/test/TEST-*.xml'
@@ -83,7 +83,7 @@ jobs:
         run: pytest --cov --cov-report=xml --junitxml=junit-report.xml
       - name: Publish report
         if: always()
-        uses: mikepenz/action-junit-report@v2
+        uses: mikepenz/action-junit-report@v3.0.1
         with:
           check_name: test (Python ${{ matrix.python }})
           report_paths: '**/junit-report.xml'
