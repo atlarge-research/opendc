@@ -9,8 +9,6 @@ jobs:
     name: Push Simulator
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
       - name: Prepare
         id: prep
         run: |
@@ -30,14 +28,13 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          file: opendc-web/opendc-web-runner/Dockerfile
           repository: atlargeresearch/opendc
           tags: ${{ steps.prep.outputs.tags }}
   push-api:
     name: Push API
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
       - name: Prepare
         id: prep
         run: |
@@ -57,15 +54,13 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          context: opendc-web/opendc-web-api
+          file: opendc-web/opendc-web-api/Dockerfile
           repository: atlargeresearch/opendc-web-api
           tags: ${{ steps.prep.outputs.tags }}
   push-ui:
     name: Push UI
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
       - name: Prepare
         id: prep
         run: |
