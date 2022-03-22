@@ -22,10 +22,9 @@
 
 package org.opendc.web.api.model
 
-import io.quarkiverse.hibernate.types.json.JsonBinaryType
-import io.quarkiverse.hibernate.types.json.JsonTypes
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.TypeDef
+import org.opendc.web.api.util.hibernate.json.JsonType
 import org.opendc.web.proto.JobState
 import java.time.Instant
 import javax.persistence.*
@@ -33,7 +32,7 @@ import javax.persistence.*
 /**
  * A simulation job to be run by the simulator.
  */
-@TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType::class)
+@TypeDef(name = "json", typeClass = JsonType::class)
 @Entity
 @Table(name = "jobs")
 @NamedQueries(
@@ -85,8 +84,8 @@ class Job(
     /**
      * Experiment results in JSON
      */
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = JsonTypes.JSON_BIN)
+    @Type(type = "json")
+    @Column(columnDefinition = "jsonb")
     var results: Map<String, Any>? = null
 
     /**

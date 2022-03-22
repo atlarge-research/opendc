@@ -22,10 +22,9 @@
 
 package org.opendc.web.api.model
 
-import io.quarkiverse.hibernate.types.json.JsonBinaryType
-import io.quarkiverse.hibernate.types.json.JsonTypes
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.TypeDef
+import org.opendc.web.api.util.hibernate.json.JsonType
 import org.opendc.web.proto.Room
 import java.time.Instant
 import javax.persistence.*
@@ -33,7 +32,7 @@ import javax.persistence.*
 /**
  * A datacenter design in OpenDC.
  */
-@TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType::class)
+@TypeDef(name = "json", typeClass = JsonType::class)
 @Entity
 @Table(
     name = "topologies",
@@ -76,8 +75,8 @@ class Topology(
     /**
      * Datacenter design in JSON
      */
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = JsonTypes.JSON_BIN, nullable = false)
+    @Type(type = "json")
+    @Column(columnDefinition = "jsonb", nullable = false)
     var rooms: List<Room> = emptyList()
 ) {
     /**

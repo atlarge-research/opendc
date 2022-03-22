@@ -25,7 +25,6 @@ opentelemetry-semconv = "1.11.0-alpha"
 parquet = "1.12.2"
 progressbar = "0.9.2"
 quarkus = "2.7.5.Final"
-quarkus-hibernate-types = "0.2.0"
 quarkus-junit5-mockk = "0.3.0"
 sentry = "5.5.2"
 shadow = "7.1.2"
@@ -83,7 +82,6 @@ quarkus-security = { module = "io.quarkus:quarkus-security" }
 quarkus-oidc = { module = "io.quarkus:quarkus-oidc" }
 quarkus-hibernate-orm = { module = "io.quarkus:quarkus-hibernate-orm" }
 quarkus-hibernate-validator = { module = "io.quarkus:quarkus-hibernate-validator" }
-quarkus-hibernate-types = { module = "io.quarkiverse.hibernatetypes:quarkus-hibernate-types", version.ref = "quarkus-hibernate-types" }
 quarkus-jdbc-h2 = { module = "io.quarkus:quarkus-jdbc-h2" }
 quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
 quarkus-flyway = { module = "io.quarkus:quarkus-flyway" }

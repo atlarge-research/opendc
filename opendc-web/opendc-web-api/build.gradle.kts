@@ -48,7 +48,6 @@ dependencies {
 
     implementation(libs.quarkus.hibernate.orm)
     implementation(libs.quarkus.hibernate.validator)
-    implementation(libs.quarkus.hibernate.types)
     implementation(libs.quarkus.jdbc.postgresql)
     quarkusDev(libs.quarkus.jdbc.h2)
 

@@ -22,17 +22,16 @@
 
 package org.opendc.web.api.model
 
-import io.quarkiverse.hibernate.types.json.JsonBinaryType
-import io.quarkiverse.hibernate.types.json.JsonTypes
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.TypeDef
+import org.opendc.web.api.util.hibernate.json.JsonType
 import org.opendc.web.proto.OperationalPhenomena
 import javax.persistence.*
 
 /**
  * A single scenario to be explored by the simulator.
  */
-@TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType::class)
+@TypeDef(name = "json", typeClass = JsonType::class)
 @Entity
 @Table(
     name = "scenarios",
@@ -88,8 +87,8 @@ class Scenario(
     @ManyToOne(optional = false)
     val topology: Topology,
 
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = JsonTypes.JSON_BIN, nullable = false, updatable = false)
+    @Type(type = "json")
+    @Column(columnDefinition = "jsonb", nullable = false, updatable = false)
     val phenomena: OperationalPhenomena,
 
     @Column(name = "scheduler_name", nullable = false, updatable = false)
