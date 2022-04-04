@@ -1,8 +1,1 @@
-flags:
-  simulator:
-    ignore:
-      - opendc-web/opendc-web-ui
-      - opendc-web/opendc-web-api
-  api:
-    paths:
-      - opendc-web/opendc-web-api
+
