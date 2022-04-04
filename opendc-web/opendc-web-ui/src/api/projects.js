@@ -31,11 +31,7 @@ export function fetchProject(auth, projectId) {
 }
 
 export function addProject(auth, project) {
-    return request(auth, 'projects/', 'POST', { project })
-}
-
-export function updateProject(auth, project) {
-    return request(auth, `projects/${project._id}`, 'PUT', { project })
+    return request(auth, 'projects/', 'POST', project)
 }
 
 export function deleteProject(auth, projectId) {

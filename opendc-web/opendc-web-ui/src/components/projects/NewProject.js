@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '@patternfly/react-core'
-import { useMutation } from 'react-query'
 import { PlusIcon } from '@patternfly/react-icons'
+import { useNewProject } from '../../data/project'
 import { buttonContainer } from './NewProject.module.scss'
 import TextInputModal from '../util/modals/TextInputModal'
 
@@ -10,7 +10,7 @@ import TextInputModal from '../util/modals/TextInputModal'
  */
 const NewProject = () => {
     const [isVisible, setVisible] = useState(false)
-    const { mutate: addProject } = useMutation('addProject')
+    const { mutate: addProject } = useNewProject()
 
     const onSubmit = (name) => {
         if (name) {

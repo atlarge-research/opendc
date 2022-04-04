@@ -24,7 +24,7 @@ export function addMachine(rackId, position) {
     return {
         type: ADD_MACHINE,
         machine: {
-            _id: uuid(),
+            id: uuid(),
             rackId,
             position,
             cpus: [],

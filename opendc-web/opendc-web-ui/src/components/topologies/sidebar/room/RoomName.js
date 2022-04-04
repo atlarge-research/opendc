@@ -27,11 +27,11 @@ import NameComponent from '../NameComponent'
 import { editRoomName } from '../../../../redux/actions/topology/room'
 
 function RoomName({ roomId }) {
-    const { name: roomName, _id } = useSelector((state) => state.topology.rooms[roomId])
+    const { name: roomName, id } = useSelector((state) => state.topology.rooms[roomId])
     const dispatch = useDispatch()
     const callback = (name) => {
         if (name) {
-            dispatch(editRoomName(_id, name))
+            dispatch(editRoomName(id, name))
         }
     }
     return <NameComponent name={roomName} onEdit={callback} />

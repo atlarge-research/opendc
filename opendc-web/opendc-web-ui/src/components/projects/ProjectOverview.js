@@ -92,7 +92,7 @@ function ProjectOverview({ projectId }) {
 }
 
 ProjectOverview.propTypes = {
-    projectId: PropTypes.string,
+    projectId: PropTypes.number,
 }
 
 export default ProjectOverview

@@ -22,10 +22,10 @@
 
 import { schema } from 'normalizr'
 
-const Cpu = new schema.Entity('cpus', {}, { idAttribute: '_id' })
-const Gpu = new schema.Entity('gpus', {}, { idAttribute: '_id' })
-const Memory = new schema.Entity('memories', {}, { idAttribute: '_id' })
-const Storage = new schema.Entity('storages', {}, { idAttribute: '_id' })
+const Cpu = new schema.Entity('cpus', {}, { idAttribute: 'id' })
+const Gpu = new schema.Entity('gpus', {}, { idAttribute: 'id' })
+const Memory = new schema.Entity('memories', {}, { idAttribute: 'id' })
+const Storage = new schema.Entity('storages', {}, { idAttribute: 'id' })
 
 export const Machine = new schema.Entity(
     'machines',
@@ -35,13 +35,13 @@ export const Machine = new schema.Entity(
         memories: [Memory],
         storages: [Storage],
     },
-    { idAttribute: '_id' }
+    { idAttribute: 'id' }
 )
 
-export const Rack = new schema.Entity('racks', { machines: [Machine] }, { idAttribute: '_id' })
+export const Rack = new schema.Entity('racks', { machines: [Machine] }, { idAttribute: 'id' })
 
-export const Tile = new schema.Entity('tiles', { rack: Rack }, { idAttribute: '_id' })
+export const Tile = new schema.Entity('tiles', { rack: Rack }, { idAttribute: 'id' })
 
-export const Room = new schema.Entity('rooms', { tiles: [Tile] }, { idAttribute: '_id' })
+export const Room = new schema.Entity('rooms', { tiles: [Tile] }, { idAttribute: 'id' })
 
-export const Topology = new schema.Entity('topologies', { rooms: [Room] }, { idAttribute: '_id' })
+export const Topology = new schema.Entity('topologies', { rooms: [Room] }, { idAttribute: 'id' })

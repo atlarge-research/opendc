@@ -21,25 +21,17 @@
  */
 
 import PropTypes from 'prop-types'
-import produce from 'immer'
 import { PlusIcon } from '@patternfly/react-icons'
 import { Button } from '@patternfly/react-core'
 import { useState } from 'react'
-import { useMutation } from "react-query";
-import { useProjectTopologies } from "../../data/topology";
+import { useNewTopology } from '../../data/topology'
 import NewTopologyModal from './NewTopologyModal'
 
 function NewTopology({ projectId }) {
     const [isVisible, setVisible] = useState(false)
-    const { data: topologies = [] } = useProjectTopologies(projectId)
-    const { mutate: addTopology } = useMutation('addTopology')
+    const { mutate: addTopology } = useNewTopology()
 
-    const onSubmit = (name, duplicateId) => {
-        const candidate = topologies.find((topology) => topology._id === duplicateId) || { projectId, rooms: [] }
-        const topology = produce(candidate, (draft) => {
-            delete draft._id
-            draft.name = name
-        })
+    const onSubmit = (topology) => {
         addTopology(topology)
         setVisible(false)
     }
@@ -59,7 +51,7 @@ function NewTopology({ projectId }) {
 }
 
 NewTopology.propTypes = {
-    projectId: PropTypes.string,
+    projectId: PropTypes.number,
 }
 
 export default NewTopology

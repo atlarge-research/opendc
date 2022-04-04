@@ -20,29 +20,32 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
 import { useRouter } from 'next/router'
-import { useMemo } from 'react'
+import { useState } from 'react'
 import { useProjects } from '../../data/project'
+import { Project } from '../../shapes'
 import ContextSelector from './ContextSelector'
 
-function ProjectSelector({ projectId }) {
+function ProjectSelector({ activeProject }) {
     const router = useRouter()
-    const { data: projects = [] } = useProjects()
-    const activeProject = useMemo(() => projects.find((project) => project._id === projectId), [projectId, projects])
+
+    const [isOpen, setOpen] = useState(false)
+    const { data: projects = [] } = useProjects({ enabled: isOpen })
 
     return (
         <ContextSelector
             label="Project"
             activeItem={activeProject}
             items={projects}
-            onSelect={(project) => router.push(`/projects/${project._id}`)}
+            onSelect={(project) => router.push(`/projects/${project.id}`)}
+            onToggle={setOpen}
+            isOpen={isOpen}
         />
     )
 }
 
 ProjectSelector.propTypes = {
-    projectId: PropTypes.string,
+    activeProject: Project,
 }
 
 export default ProjectSelector

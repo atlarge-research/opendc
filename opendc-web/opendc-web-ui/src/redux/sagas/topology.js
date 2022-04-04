@@ -32,14 +32,15 @@ export function* updateServer() {
  * Watch the topology on the server for changes.
  */
 export function* watchServer() {
-    let { id } = yield take(OPEN_TOPOLOGY)
+    let { projectId, id } = yield take(OPEN_TOPOLOGY)
     while (true) {
-        const channel = yield queryObserver(id)
+        const channel = yield queryObserver(projectId, id)
 
         while (true) {
             const [action, response] = yield race([take(OPEN_TOPOLOGY), take(channel)])
 
             if (action) {
+                projectId = action.projectId
                 id = action.id
                 break
             }
@@ -57,9 +58,9 @@ export function* watchServer() {
 /**
  * Observe changes for the topology with the specified identifier.
  */
-function* queryObserver(id) {
+function* queryObserver(projectId, id) {
     const queryClient = yield getContext('queryClient')
-    const observer = new QueryObserver(queryClient, { queryKey: ['topologies', id] })
+    const observer = new QueryObserver(queryClient, { queryKey: ['topologies', projectId, id] })
 
     return eventChannel((emitter) => {
         const unsubscribe = observer.subscribe((result) => {

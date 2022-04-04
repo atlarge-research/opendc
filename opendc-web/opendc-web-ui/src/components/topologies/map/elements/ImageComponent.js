@@ -21,6 +21,7 @@ function ImageComponent({ src, x, y, width, height, opacity }) {
         }
     }, [src])
 
+    // eslint-disable-next-line jsx-a11y/alt-text
     return <Image image={image} x={x} y={y} width={width} height={height} opacity={opacity} />
 }
 

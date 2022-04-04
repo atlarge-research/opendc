@@ -33,7 +33,7 @@ function rack(state = {}, action, { machines }) {
         case ADD_RACK_TO_TILE:
             return produce(state, (draft) => {
                 const { rack } = action
-                draft[rack._id] = rack
+                draft[rack.id] = rack
             })
         case EDIT_RACK_NAME:
             return produce(state, (draft) => {
@@ -48,7 +48,7 @@ function rack(state = {}, action, { machines }) {
         case ADD_MACHINE:
             return produce(state, (draft) => {
                 const { machine } = action
-                draft[machine.rackId].machines.push(machine._id)
+                draft[machine.rackId].machines.push(machine.id)
             })
         case DELETE_MACHINE:
             return produce(state, (draft) => {

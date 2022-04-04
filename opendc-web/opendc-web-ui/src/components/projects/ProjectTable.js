@@ -5,26 +5,23 @@ import { Project, Status } from '../../shapes'
 import { Table, TableBody, TableHeader } from '@patternfly/react-table'
 import { parseAndFormatDateTime } from '../../util/date-time'
 import { AUTH_DESCRIPTION_MAP, AUTH_ICON_MAP } from '../../util/authorizations'
-import { useAuth } from '../../auth'
 import TableEmptyState from '../util/TableEmptyState'
 
 const ProjectTable = ({ status, projects, onDelete, isFiltering }) => {
-    const { user } = useAuth()
     const columns = ['Project name', 'Last edited', 'Access Rights']
     const rows =
         projects.length > 0
             ? projects.map((project) => {
-                  const { level } = project.authorizations.find((auth) => auth.userId === user.sub)
-                  const Icon = AUTH_ICON_MAP[level]
+                  const Icon = AUTH_ICON_MAP[project.role]
                   return [
                       {
-                          title: <Link href={`/projects/${project._id}`}>{project.name}</Link>,
+                          title: <Link href={`/projects/${project.id}`}>{project.name}</Link>,
                       },
-                      parseAndFormatDateTime(project.datetimeLastEdited),
+                      parseAndFormatDateTime(project.updatedAt),
                       {
                           title: (
                               <>
-                                  <Icon className="pf-u-mr-md" key="auth" /> {AUTH_DESCRIPTION_MAP[level]}
+                                  <Icon className="pf-u-mr-md" key="auth" /> {AUTH_DESCRIPTION_MAP[project.role]}
                               </>
                           ),
                       },

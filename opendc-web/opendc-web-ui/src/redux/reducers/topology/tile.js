@@ -33,7 +33,7 @@ function tile(state = {}, action, { racks }) {
         case ADD_TILE:
             return produce(state, (draft) => {
                 const { tile } = action
-                draft[tile._id] = tile
+                draft[tile.id] = tile
             })
         case DELETE_TILE:
             return produce(state, (draft) => {
@@ -43,7 +43,7 @@ function tile(state = {}, action, { racks }) {
         case ADD_RACK_TO_TILE:
             return produce(state, (draft) => {
                 const { rack } = action
-                draft[rack.tileId].rack = rack._id
+                draft[rack.tileId].rack = rack.id
             })
         case DELETE_RACK:
             return produce(state, (draft) => {

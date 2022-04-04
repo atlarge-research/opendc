@@ -31,10 +31,14 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("gradle-plugin", version = "1.6.10"))
-    implementation("org.jlleitschuh.gradle:ktlint-gradle:10.2.1")
-    implementation("org.jetbrains.kotlin:kotlin-allopen:1.6.10")
-    implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.6")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.6.10")
-    implementation("gradle.plugin.com.github.johnrengelman:shadow:7.1.2")
+    implementation(libs.kotlin.gradle)
+    implementation(libs.kotlin.allopen)
+    implementation(libs.kotlin.noarg)
+    implementation(libs.ktlint.gradle)
+    implementation(libs.jmh.gradle)
+    implementation(libs.dokka.gradle)
+    implementation(libs.shadow)
+
+    implementation(libs.jandex.gradle)
+    implementation(libs.quarkus.gradle)
 }

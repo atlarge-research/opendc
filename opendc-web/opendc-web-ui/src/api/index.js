@@ -47,5 +47,5 @@ export async function request(auth, path, method = 'GET', body) {
         throw response.message
     }
 
-    return json.data
+    return json
 }

@@ -1,23 +1,17 @@
-FROM python:3.9-slim
+FROM openjdk:17-slim
 MAINTAINER OpenDC Maintainers <opendc@atlarge-research.com>
 
-# Ensure the STDOUT is not buffered by Python so that our logs become visible
-# See https://stackoverflow.com/q/29663459/10213073
-ENV PYTHONUNBUFFERED 1
+# Obtain (cache) Gradle wrapper
+COPY gradlew /app/
+COPY gradle /app/gradle
+WORKDIR /app
+RUN ./gradlew --version
 
-# Copy OpenDC directory
-COPY ./ /opendc
+# Build project
+COPY ./ /app/
+RUN ./gradlew --no-daemon :opendc-web:opendc-web-api:build
 
-# Fetch web server dependencies
-RUN pip install -r /opendc/requirements.txt && pip install pyuwsgi
-
-# Create opendc user
-RUN groupadd --gid 1000 opendc \
-  && useradd --uid 1000 --gid opendc --shell /bin/bash --create-home opendc
-RUN chown -R opendc:opendc /opendc
-USER opendc
-
-# Set working directory
-WORKDIR /opendc
-
-CMD uwsgi -M --socket 0.0.0.0:80 --protocol=http --wsgi-file app.py --enable-threads --processes 2 --lazy-app
+FROM openjdk:17-slim
+COPY --from=0 /app/opendc-web/opendc-web-api/build/quarkus-app /opt/opendc
+WORKDIR /opt/opendc
+CMD java -jar quarkus-run.jar

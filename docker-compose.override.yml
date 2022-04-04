@@ -10,29 +10,38 @@ services:
       NEXT_PUBLIC_API_BASE_URL: http://localhost:8081
 
   api:
-    build: opendc-web/opendc-web-api
+    build:
+      context: .
+      dockerfile: opendc-web/opendc-web-api/Dockerfile
     ports:
       - "8081:80"
     environment:
       SENTRY_ENVIRONMENT: "development"
 
-  simulator:
-    build: .
+  runner:
+    build:
+      context: .
+      dockerfile: opendc-web/opendc-web-runner/Dockerfile
     environment:
       SENTRY_ENVIRONMENT: "development"
 
-  mongo:
+  postgres:
     ports:
-      - "27017:27017"
+      - "5432:5432"
 
-  mongo-express:
-    image: mongo-express
+  pgadmin:
+    image: dpage/pgadmin4
     restart: on-failure
     networks:
       - backend
     depends_on:
-      - mongo
+      - postgres
     ports:
-      - "8082:8081"
+      - "5050:80"
     environment:
-      ME_CONFIG_MONGODB_URL: "mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/"
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+
+volumes:
+  pgadmin:

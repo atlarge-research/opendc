@@ -14,6 +14,6 @@ services:
     environment:
       SENTRY_ENVIRONMENT: "production"
 
-  simulator:
+  runner:
     environment:
       SENTRY_ENVIRONMENT: "production"

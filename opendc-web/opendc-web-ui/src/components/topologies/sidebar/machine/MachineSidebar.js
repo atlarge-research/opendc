@@ -17,7 +17,7 @@ function MachineSidebar({ tileId, position }) {
         const rack = topology.racks[topology.tiles[tileId].rack]
         return topology.machines[rack.machines[position - 1]]
     })
-    const machineId = machine._id
+    const machineId = machine.id
     return (
         <div>
             <TextContent>

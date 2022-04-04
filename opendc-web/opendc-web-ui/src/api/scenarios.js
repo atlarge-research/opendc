@@ -22,22 +22,18 @@
 
 import { request } from './index'
 
-export function fetchScenario(auth, scenarioId) {
-    return request(auth, `scenarios/${scenarioId}`)
+export function fetchScenario(auth, projectId, scenarioId) {
+    return request(auth, `projects/${projectId}/scenarios/${scenarioId}`)
 }
 
-export function fetchScenariosOfPortfolio(auth, portfolioId) {
-    return request(auth, `portfolios/${portfolioId}/scenarios`)
+export function fetchScenariosOfPortfolio(auth, projectId, portfolioId) {
+    return request(auth, `projects/${projectId}/portfolios/${portfolioId}/scenarios`)
 }
 
-export function addScenario(auth, scenario) {
-    return request(auth, `portfolios/${scenario.portfolioId}/scenarios`, 'POST', { scenario })
+export function addScenario(auth, projectId, portfolioId, scenario) {
+    return request(auth, `projects/${projectId}/portfolios/${portfolioId}/scenarios`, 'POST', scenario)
 }
 
-export function updateScenario(auth, scenarioId, scenario) {
-    return request(auth, `scenarios/${scenarioId}`, 'PUT', { scenario })
-}
-
-export function deleteScenario(auth, scenarioId) {
-    return request(auth, `scenarios/${scenarioId}`, 'DELETE')
+export function deleteScenario(auth, projectId, scenarioId) {
+    return request(auth, `projects/${projectId}/scenarios/${scenarioId}`, 'DELETE')
 }

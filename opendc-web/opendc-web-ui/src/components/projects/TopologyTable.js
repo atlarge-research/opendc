@@ -26,26 +26,21 @@ import { Table, TableBody, TableHeader } from '@patternfly/react-table'
 import React from 'react'
 import TableEmptyState from '../util/TableEmptyState'
 import { parseAndFormatDateTime } from '../../util/date-time'
-import { useMutation } from 'react-query'
-import { useProjectTopologies } from '../../data/topology'
+import { useTopologies, useDeleteTopology } from '../../data/topology'
 
 const TopologyTable = ({ projectId }) => {
-    const { status, data: topologies = [] } = useProjectTopologies(projectId)
-    const { mutate: deleteTopology } = useMutation('deleteTopology')
+    const { status, data: topologies = [] } = useTopologies(projectId)
+    const { mutate: deleteTopology } = useDeleteTopology()
 
     const columns = ['Name', 'Rooms', 'Last Edited']
     const rows =
         topologies.length > 0
             ? topologies.map((topology) => [
                   {
-                      title: (
-                          <Link href={`/projects/${topology.projectId}/topologies/${topology._id}`}>
-                              {topology.name}
-                          </Link>
-                      ),
+                      title: <Link href={`/projects/${projectId}/topologies/${topology.number}`}>{topology.name}</Link>,
                   },
                   topology.rooms.length === 1 ? '1 room' : `${topology.rooms.length} rooms`,
-                  parseAndFormatDateTime(topology.datetimeLastEdited),
+                  parseAndFormatDateTime(topology.updatedAt),
               ])
             : [
                   {
@@ -69,7 +64,7 @@ const TopologyTable = ({ projectId }) => {
     const actionResolver = (_, { rowIndex }) => [
         {
             title: 'Delete Topology',
-            onClick: (_, rowId) => deleteTopology(topologies[rowId]._id),
+            onClick: (_, rowId) => deleteTopology({ projectId, number: topologies[rowId].number }),
             isDisabled: rowIndex === 0,
         },
     ]
@@ -89,7 +84,7 @@ const TopologyTable = ({ projectId }) => {
 }
 
 TopologyTable.propTypes = {
-    projectId: PropTypes.string,
+    projectId: PropTypes.number,
 }
 
 export default TopologyTable

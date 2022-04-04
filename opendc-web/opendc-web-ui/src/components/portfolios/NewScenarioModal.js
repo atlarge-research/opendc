@@ -12,14 +12,14 @@ import {
     TextInput,
 } from '@patternfly/react-core'
 import { useSchedulers, useTraces } from '../../data/experiments'
-import { useProjectTopologies } from '../../data/topology'
+import { useTopologies } from '../../data/topology'
 import { usePortfolio } from '../../data/project'
 
-const NewScenarioModal = ({ portfolioId, isOpen, onSubmit: onSubmitUpstream, onCancel: onCancelUpstream }) => {
-    const { data: portfolio } = usePortfolio(portfolioId)
-    const { data: topologies = [] } = useProjectTopologies(portfolio?.projectId)
-    const { data: traces = [] } = useTraces()
-    const { data: schedulers = [] } = useSchedulers()
+function NewScenarioModal({ projectId, portfolioId, isOpen, onSubmit: onSubmitUpstream, onCancel: onCancelUpstream }) {
+    const { data: portfolio } = usePortfolio(projectId, portfolioId)
+    const { data: topologies = [] } = useTopologies(projectId, { enabled: isOpen })
+    const { data: traces = [] } = useTraces({ enabled: isOpen })
+    const { data: schedulers = [] } = useSchedulers({ enabled: isOpen })
 
     // eslint-disable-next-line no-unused-vars
     const [isSubmitted, setSubmitted] = useState(false)
@@ -51,22 +51,19 @@ const NewScenarioModal = ({ portfolioId, isOpen, onSubmit: onSubmitUpstream, onC
 
         const name = nameInput.current.value
 
-        onSubmitUpstream(
+        onSubmitUpstream(portfolio.project.id, portfolio.number, {
             name,
-            portfolio._id,
-            {
-                traceId: trace || traces[0]._id,
-                loadSamplingFraction: traceLoad / 100,
+            workload: {
+                trace: trace || traces[0].id,
+                samplingFraction: traceLoad / 100,
             },
-            {
-                topologyId: topology || topologies[0]._id,
+            topology: topology || topologies[0].number,
+            phenomena: {
+                failures: failuresEnabled,
+                interference: opPhenEnabled,
             },
-            {
-                failuresEnabled,
-                performanceInterferenceEnabled: opPhenEnabled,
-                schedulerName: scheduler || schedulers[0].name,
-            }
-        )
+            schedulerName: scheduler || schedulers[0],
+        })
 
         resetState()
         return true
@@ -84,8 +81,8 @@ const NewScenarioModal = ({ portfolioId, isOpen, onSubmit: onSubmitUpstream, onC
                         id="name"
                         name="name"
                         type="text"
-                        isDisabled={portfolio?.scenarioIds?.length === 0}
-                        defaultValue={portfolio?.scenarioIds?.length === 0 ? 'Base scenario' : ''}
+                        isDisabled={portfolio?.scenarios?.length === 0}
+                        defaultValue={portfolio?.scenarios?.length === 0 ? 'Base scenario' : ''}
                         ref={nameInput}
                     />
                 </FormGroup>
@@ -93,7 +90,7 @@ const NewScenarioModal = ({ portfolioId, isOpen, onSubmit: onSubmitUpstream, onC
                     <FormGroup label="Trace" fieldId="trace" isRequired>
                         <FormSelect id="trace" name="trace" value={trace} onChange={setTrace}>
                             {traces.map((trace) => (
-                                <FormSelectOption value={trace._id} key={trace._id} label={trace.name} />
+                                <FormSelectOption value={trace.id} key={trace.id} label={trace.name} />
                             ))}
                         </FormSelect>
                     </FormGroup>
@@ -115,7 +112,7 @@ const NewScenarioModal = ({ portfolioId, isOpen, onSubmit: onSubmitUpstream, onC
                     <FormGroup label="Topology" fieldId="topology" isRequired>
                         <FormSelect id="topology" name="topology" value={topology} onChange={setTopology}>
                             {topologies.map((topology) => (
-                                <FormSelectOption value={topology._id} key={topology._id} label={topology.name} />
+                                <FormSelectOption value={topology.number} key={topology.number} label={topology.name} />
                             ))}
                         </FormSelect>
                     </FormGroup>
@@ -123,7 +120,7 @@ const NewScenarioModal = ({ portfolioId, isOpen, onSubmit: onSubmitUpstream, onC
                     <FormGroup label="Scheduler" fieldId="scheduler" isRequired>
                         <FormSelect id="scheduler" name="scheduler" value={scheduler} onChange={setScheduler}>
                             {schedulers.map((scheduler) => (
-                                <FormSelectOption value={scheduler.name} key={scheduler.name} label={scheduler.name} />
+                                <FormSelectOption value={scheduler} key={scheduler} label={scheduler} />
                             ))}
                         </FormSelect>
                     </FormGroup>
@@ -150,7 +147,8 @@ const NewScenarioModal = ({ portfolioId, isOpen, onSubmit: onSubmitUpstream, onC
 }
 
 NewScenarioModal.propTypes = {
-    portfolioId: PropTypes.string,
+    projectId: PropTypes.number,
+    portfolioId: PropTypes.number,
     isOpen: PropTypes.bool.isRequired,
     onSubmit: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,

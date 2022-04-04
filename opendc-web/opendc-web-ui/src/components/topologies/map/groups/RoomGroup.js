@@ -7,7 +7,7 @@ import TileContainer from '../TileContainer'
 import WallContainer from '../WallContainer'
 
 function RoomGroup({ room, interactionLevel, currentRoomInConstruction, onClick }) {
-    if (currentRoomInConstruction === room._id) {
+    if (currentRoomInConstruction === room.id) {
         return (
             <Group onClick={onClick}>
                 {room.tiles.map((tileId) => (
@@ -22,7 +22,7 @@ function RoomGroup({ room, interactionLevel, currentRoomInConstruction, onClick 
             {(() => {
                 if (
                     (interactionLevel.mode === 'RACK' || interactionLevel.mode === 'MACHINE') &&
-                    interactionLevel.roomId === room._id
+                    interactionLevel.roomId === room.id
                 ) {
                     return [
                         room.tiles
@@ -37,7 +37,7 @@ function RoomGroup({ room, interactionLevel, currentRoomInConstruction, onClick 
                     return room.tiles.map((tileId) => <TileContainer key={tileId} tileId={tileId} />)
                 }
             })()}
-            <WallContainer roomId={room._id} />
+            <WallContainer roomId={room.id} />
         </Group>
     )
 }

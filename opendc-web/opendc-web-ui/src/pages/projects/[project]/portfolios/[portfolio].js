@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import React, { useRef } from 'react'
@@ -42,17 +43,23 @@ import PortfolioSelector from '../../../../components/context/PortfolioSelector'
 import ProjectSelector from '../../../../components/context/ProjectSelector'
 import BreadcrumbLink from '../../../../components/util/BreadcrumbLink'
 import PortfolioOverview from '../../../../components/portfolios/PortfolioOverview'
-import PortfolioResults from '../../../../components/portfolios/PortfolioResults'
+import { usePortfolio } from '../../../../data/project'
+
+const PortfolioResults = dynamic(() => import('../../../../components/portfolios/PortfolioResults'))
 
 /**
  * Page that displays the results in a portfolio.
  */
 function Portfolio() {
     const router = useRouter()
-    const { project: projectId, portfolio: portfolioId } = router.query
+    const projectId = +router.query['project']
+    const portfolioNumber = +router.query['portfolio']
 
     const overviewRef = useRef(null)
     const resultsRef = useRef(null)
+
+    const { data: portfolio } = usePortfolio(projectId, portfolioNumber)
+    const project = portfolio?.project
 
     const breadcrumb = (
         <Breadcrumb>
@@ -62,7 +69,11 @@ function Portfolio() {
             <BreadcrumbItem to={`/projects/${projectId}`} component={BreadcrumbLink}>
                 Project details
             </BreadcrumbItem>
-            <BreadcrumbItem to={`/projects/${projectId}/portfolios/${portfolioId}`} component={BreadcrumbLink} isActive>
+            <BreadcrumbItem
+                to={`/projects/${projectId}/portfolios/${portfolioNumber}`}
+                component={BreadcrumbLink}
+                isActive
+            >
                 Portfolio
             </BreadcrumbItem>
         </Breadcrumb>
@@ -70,8 +81,8 @@ function Portfolio() {
 
     const contextSelectors = (
         <ContextSelectionSection>
-            <ProjectSelector projectId={projectId} />
-            <PortfolioSelector projectId={projectId} portfolioId={portfolioId} />
+            <ProjectSelector activeProject={project} />
+            <PortfolioSelector activePortfolio={portfolio} />
         </ContextSelectionSection>
     )
 
@@ -104,10 +115,10 @@ function Portfolio() {
             </PageSection>
             <PageSection isFilled>
                 <TabContent eventKey={0} id="overview" ref={overviewRef} aria-label="Overview tab">
-                    <PortfolioOverview portfolioId={portfolioId} />
+                    <PortfolioOverview projectId={projectId} portfolioId={portfolioNumber} />
                 </TabContent>
                 <TabContent eventKey={1} id="results" ref={resultsRef} aria-label="Results tab" hidden>
-                    <PortfolioResults portfolioId={portfolioId} />
+                    <PortfolioResults projectId={projectId} portfolioId={portfolioNumber} />
                 </TabContent>
             </PageSection>
         </AppPage>

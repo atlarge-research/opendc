@@ -3,25 +3,37 @@ classgraph = "4.8.138"
 clikt = "3.3.0"
 config = "1.4.1"
 commons-math3 = "3.6.1"
+dokka = "1.6.10"
 hadoop = "3.3.1"
 jackson = "2.13.1"
+jandex-gradle = "0.11.0"
+jmh-gradle = "0.6.6"
+jakarta-validation = "2.0.2"
 junit-jupiter = "5.8.2"
 junit-platform = "1.8.2"
+kotlin = "1.6.10"
 kotlin-logging = "2.1.21"
 kotlinx-coroutines = "1.6.0"
-ktor = "1.6.7"
+ktlint-gradle = "10.2.1"
 log4j = "2.17.1"
+microprofile-openapi = "3.0"
 mockk = "1.12.2"
 opentelemetry-main = "1.11.0"
-opentelemetry-metrics = "1.10.1-alpha"
-opentelemetry-semconv = "1.10.1-alpha"
+opentelemetry-metrics = "1.11.0-alpha"
+opentelemetry-semconv = "1.11.0-alpha"
 parquet = "1.12.2"
 progressbar = "0.9.2"
+quarkus = "2.7.5.Final"
+quarkus-junit5-mockk = "0.3.0"
 sentry = "5.5.2"
+shadow = "7.1.2"
 slf4j = "1.7.32"
 
 [libraries]
 # Kotlin
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
+kotlin-noarg = { module = "org.jetbrains.kotlin:kotlin-noarg", version.ref = "kotlin" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 # Logging
@@ -50,6 +62,7 @@ progressbar = { module = "me.tongfei:progressbar", version.ref = "progressbar" }
 
 # Format
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
@@ -57,14 +70,40 @@ jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-da
 parquet = { module = "org.apache.parquet:parquet-avro", version.ref = "parquet" }
 config = { module = "com.typesafe:config", version.ref = "config" }
 
-# HTTP client
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
-ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
-ktor-client-jackson = { module = "io.ktor:ktor-client-jackson", version.ref = "ktor" }
-ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+# Quarkus
+quarkus-gradle = { module = "io.quarkus:gradle-application-plugin", version.ref = "quarkus" }
+quarkus-bom = { module = "io.quarkus:quarkus-bom", version.ref = "quarkus" }
+quarkus-kotlin = { module = "io.quarkus:quarkus-kotlin" }
+quarkus-resteasy-core = { module = "io.quarkus:quarkus-resteasy" }
+quarkus-resteasy-jackson = { module = "io.quarkus:quarkus-resteasy-jackson" }
+quarkus-smallrye-openapi = { module = "io.quarkus:quarkus-smallrye-openapi" }
+quarkus-security = { module = "io.quarkus:quarkus-security" }
+quarkus-oidc = { module = "io.quarkus:quarkus-oidc" }
+quarkus-hibernate-orm = { module = "io.quarkus:quarkus-hibernate-orm" }
+quarkus-hibernate-validator = { module = "io.quarkus:quarkus-hibernate-validator" }
+quarkus-jdbc-h2 = { module = "io.quarkus:quarkus-jdbc-h2" }
+quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
+quarkus-flyway = { module = "io.quarkus:quarkus-flyway" }
+
+# Quarkus (Testing)
+quarkus-junit5-core = { module = "io.quarkus:quarkus-junit5" }
+quarkus-junit5-mockk = { module = "io.quarkiverse.mockk:quarkus-junit5-mockk", version.ref = "quarkus-junit5-mockk" }
+quarkus-jacoco = { module = "io.quarkus:quarkus-jacoco" }
+quarkus-test-security = { module = "io.quarkus:quarkus-test-security" }
+restassured-core = { module = "io.rest-assured:rest-assured" }
+restassured-kotlin = { module = "io.rest-assured:kotlin-extensions" }
 
 # Other
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
+jakarta-validation = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation" }
 hadoop-common = { module = "org.apache.hadoop:hadoop-common", version.ref = "hadoop" }
 hadoop-mapreduce-client-core = { module = "org.apache.hadoop:hadoop-mapreduce-client-core", version.ref = "hadoop" }
 commons-math3 = { module = "org.apache.commons:commons-math3", version.ref = "commons-math3" }
+microprofile-openapi-api = { module = "org.eclipse.microprofile.openapi:microprofile-openapi-api", version.ref = "microprofile-openapi" }
+
+# Other (Build)
+dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+jandex-gradle = { module = "org.kordamp.gradle:jandex-gradle-plugin", version.ref = "jandex-gradle" }
+ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint-gradle" }
+jmh-gradle = { module = "me.champeau.jmh:jmh-gradle-plugin", version.ref = "jmh-gradle" }
+shadow = { module = "gradle.plugin.com.github.johnrengelman:shadow", version.ref = "shadow" }

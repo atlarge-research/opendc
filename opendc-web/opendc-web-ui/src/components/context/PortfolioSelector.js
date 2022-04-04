@@ -21,27 +21,31 @@
  */
 
 import { useRouter } from 'next/router'
-import { useMemo } from 'react'
-import { useProjectPortfolios } from '../../data/project'
+import { useState } from 'react'
+import { usePortfolios } from '../../data/project'
+import { Portfolio } from '../../shapes'
 import ContextSelector from './ContextSelector'
 
-function PortfolioSelector() {
+function PortfolioSelector({ activePortfolio }) {
     const router = useRouter()
-    const { project, portfolio: activePortfolioId } = router.query
-    const { data: portfolios = [] } = useProjectPortfolios(project)
-    const activePortfolio = useMemo(() => portfolios.find((portfolio) => portfolio._id === activePortfolioId), [
-        activePortfolioId,
-        portfolios,
-    ])
+
+    const [isOpen, setOpen] = useState(false)
+    const { data: portfolios = [] } = usePortfolios(activePortfolio?.project?.id, { enabled: isOpen })
 
     return (
         <ContextSelector
             label="Portfolio"
             activeItem={activePortfolio}
             items={portfolios}
-            onSelect={(portfolio) => router.push(`/projects/${portfolio.projectId}/portfolios/${portfolio._id}`)}
+            onSelect={(portfolio) => router.push(`/projects/${portfolio.project.id}/portfolios/${portfolio.number}`)}
+            onToggle={setOpen}
+            isOpen={isOpen}
         />
     )
+}
+
+PortfolioSelector.propTypes = {
+    activePortfolio: Portfolio,
 }
 
 export default PortfolioSelector

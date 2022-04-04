@@ -26,14 +26,12 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.getByType
-import kotlin.properties.ReadOnlyProperty
 
 /**
  * This class makes the version catalog accessible for the build scripts until Gradle adds support for it.
  *
  * See https://github.com/gradle/gradle/issues/15383
  */
-@Suppress("UnstableApiUsage")
 public class Libs(project: Project) {
     /**
      * The version catalog of the project.
@@ -41,16 +39,10 @@ public class Libs(project: Project) {
     private val versionCatalog = project.extensions.getByType(VersionCatalogsExtension::class).named("libs")
 
     /**
-     * A delegate for obtaining configuration values from a [Project] instance.
-     */
-    private fun lib(name: String? = null): ReadOnlyProperty<Libs, String> =
-        ReadOnlyProperty { _, property -> get(name ?: property.name) }
-
-    /**
      * Obtain the version for the specified [dependency][name].
      */
     operator fun get(name: String): String {
-        val dep = versionCatalog.findDependency(name).get().get()
+        val dep = versionCatalog.findLibrary(name).get().get()
         return "${dep.module.group}:${dep.module.name}:${dep.versionConstraint.displayName}"
     }
 

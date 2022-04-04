@@ -22,6 +22,7 @@
 
 import PropTypes from 'prop-types'
 import Head from 'next/head'
+import Script from 'next/script'
 import { Provider } from 'react-redux'
 import { useNewQueryClient } from '../data/query'
 import { useStore } from '../redux'
@@ -91,6 +92,19 @@ export default function App(props) {
                     <Inner {...props} />
                 </AuthProvider>
             </Sentry.ErrorBoundary>
+            {/* Google Analytics */}
+            <Script async src="https://www.googletagmanager.com/gtag/js?id=UA-84285092-3" />
+            <Script
+                id="gtag"
+                dangerouslySetInnerHTML={{
+                    __html: `
+                            window.dataLayer = window.dataLayer || [];
+                            function gtag(){dataLayer.push(arguments);}
+                            gtag('js', new Date());
+                            gtag('config', 'UA-84285092-3');
+                        `,
+                }}
+            />
         </>
     )
 }

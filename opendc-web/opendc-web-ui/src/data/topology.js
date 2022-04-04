@@ -20,58 +20,69 @@
  * SOFTWARE.
  */
 
-import { useQuery } from 'react-query'
-import { addTopology, deleteTopology, fetchTopologiesOfProject, fetchTopology, updateTopology } from '../api/topologies'
+import { useQuery, useMutation } from 'react-query'
+import { addTopology, deleteTopology, fetchTopologies, fetchTopology, updateTopology } from '../api/topologies'
 
 /**
  * Configure the query defaults for the topology endpoints.
  */
 export function configureTopologyClient(queryClient, auth) {
-    queryClient.setQueryDefaults('topologies', { queryFn: ({ queryKey }) => fetchTopology(auth, queryKey[1]) })
-    queryClient.setQueryDefaults('project-topologies', {
-        queryFn: ({ queryKey }) => fetchTopologiesOfProject(auth, queryKey[1]),
+    queryClient.setQueryDefaults('topologies', {
+        queryFn: ({ queryKey }) =>
+            queryKey.length === 2 ? fetchTopologies(auth, queryKey[1]) : fetchTopology(auth, queryKey[1], queryKey[2]),
     })
 
     queryClient.setMutationDefaults('addTopology', {
-        mutationFn: (data) => addTopology(auth, data),
-        onSuccess: async (result) => {
-            queryClient.setQueryData(['projects', result.projectId], (old) => ({
-                ...old,
-                topologyIds: [...old.topologyIds, result._id],
-            }))
-            queryClient.setQueryData(['project-topologies', result.projectId], (old = []) => [...old, result])
-            queryClient.setQueryData(['topologies', result._id], result)
+        mutationFn: ({ projectId, ...data }) => addTopology(auth, projectId, data),
+        onSuccess: (result) => {
+            queryClient.setQueryData(['topologies', result.project.id], (old = []) => [...old, result])
+            queryClient.setQueryData(['topologies', result.project.id, result.number], result)
         },
     })
     queryClient.setMutationDefaults('updateTopology', {
         mutationFn: (data) => updateTopology(auth, data),
-        onSuccess: (result) => queryClient.setQueryData(['topologies', result._id], result),
+        onSuccess: (result) => {
+            queryClient.setQueryData(['topologies', result.project.id], (old = []) =>
+                old.map((topology) => (topology.id === result.id ? result : topology))
+            )
+            queryClient.setQueryData(['topologies', result.project.id, result.number], result)
+        },
     })
     queryClient.setMutationDefaults('deleteTopology', {
-        mutationFn: (id) => deleteTopology(auth, id),
-        onSuccess: async (result) => {
-            queryClient.setQueryData(['projects', result.projectId], (old) => ({
-                ...old,
-                topologyIds: old.topologyIds.filter((id) => id !== result._id),
-            }))
-            queryClient.setQueryData(['project-topologies', result.projectId], (old = []) =>
-                old.filter((topology) => topology._id !== result._id)
+        mutationFn: ({ projectId, id }) => deleteTopology(auth, projectId, id),
+        onSuccess: (result) => {
+            queryClient.setQueryData(['topologies', result.project.id], (old = []) =>
+                old.filter((topology) => topology.id !== result.id)
             )
-            queryClient.removeQueries(['topologies', result._id])
+            queryClient.removeQueries(['topologies', result.project.id, result.number])
         },
     })
 }
 
 /**
- * Return the current active topology.
+ * Fetch the topology with the specified identifier for the specified project.
  */
-export function useTopology(topologyId, options = {}) {
-    return useQuery(['topologies', topologyId], { enabled: !!topologyId, ...options })
+export function useTopology(projectId, topologyId, options = {}) {
+    return useQuery(['topologies', projectId, topologyId], { enabled: !!(projectId && topologyId), ...options })
 }
 
 /**
- * Return the topologies of the specified project.
+ * Fetch all topologies of the specified project.
  */
-export function useProjectTopologies(projectId, options = {}) {
-    return useQuery(['project-topologies', projectId], { enabled: !!projectId, ...options })
+export function useTopologies(projectId, options = {}) {
+    return useQuery(['topologies', projectId], { enabled: !!projectId, ...options })
+}
+
+/**
+ * Create a mutation for a new topology.
+ */
+export function useNewTopology() {
+    return useMutation('addTopology')
+}
+
+/**
+ * Create a mutation for deleting a topology.
+ */
+export function useDeleteTopology() {
+    return useMutation('deleteTopology')
 }

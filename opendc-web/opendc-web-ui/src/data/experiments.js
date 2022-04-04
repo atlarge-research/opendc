@@ -35,13 +35,13 @@ export function configureExperimentClient(queryClient, auth) {
 /**
  * Return the available traces to experiment with.
  */
-export function useTraces() {
-    return useQuery('traces')
+export function useTraces(options) {
+    return useQuery('traces', options)
 }
 
 /**
  * Return the available schedulers to experiment with.
  */
-export function useSchedulers() {
-    return useQuery('schedulers')
+export function useSchedulers(options) {
+    return useQuery('schedulers', options)
 }
