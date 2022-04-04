@@ -53,6 +53,7 @@ dependencies {
 
     testImplementation(libs.quarkus.junit5.core)
     testImplementation(libs.quarkus.junit5.mockk)
+    testImplementation(libs.quarkus.jacoco)
     testImplementation(libs.restassured.core)
     testImplementation(libs.restassured.kotlin)
     testImplementation(libs.quarkus.test.security)
@@ -77,7 +78,7 @@ tasks.quarkusDev {
 tasks.test {
     extensions.configure(JacocoTaskExtension::class) {
         excludeClassLoaders = listOf("*QuarkusClassLoader")
-        destinationFile = layout.buildDirectory.file("jacoco-quarkus.exec").get().asFile
+        // destinationFile = layout.buildDirectory.file("jacoco-quarkus.exec").get().asFile
     }
 }
 

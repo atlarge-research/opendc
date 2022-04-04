@@ -55,7 +55,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./build/reports/jacoco/report.xml
+          files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
   build-ui:
     name: Build UI (Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
