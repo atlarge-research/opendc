@@ -5,12 +5,7 @@ import { Machine } from '../../../../shapes'
 
 const UnitIcon = ({ id, type }) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
-        src={'/img/topology/' + id + '-icon.png'}
-        alt={'Machine contains ' + type + ' units'}
-        height={24}
-        width={24}
-    />
+    <img src={'/img/topology/' + id + '-icon.png'} alt={'Machine contains ' + type + ' units'} height={24} width={24} />
 )
 
 UnitIcon.propTypes = {

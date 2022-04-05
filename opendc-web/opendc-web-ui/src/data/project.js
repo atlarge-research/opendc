@@ -23,7 +23,7 @@
 import { useQuery, useMutation } from 'react-query'
 import { addProject, deleteProject, fetchProject, fetchProjects } from '../api/projects'
 import { addPortfolio, deletePortfolio, fetchPortfolio, fetchPortfolios } from '../api/portfolios'
-import { addScenario, deleteScenario, fetchScenario, fetchScenariosOfPortfolio } from '../api/scenarios'
+import { addScenario, deleteScenario, fetchScenario } from '../api/scenarios'
 
 /**
  * Configure the query defaults for the project endpoints.

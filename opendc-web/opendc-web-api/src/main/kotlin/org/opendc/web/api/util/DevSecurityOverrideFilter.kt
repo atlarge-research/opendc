@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,32 @@
  * SOFTWARE.
  */
 
-import { apiUrl } from '../config'
+package org.opendc.web.api.util
+
+import io.quarkus.arc.properties.IfBuildProperty
+import java.security.Principal
+import javax.ws.rs.container.ContainerRequestContext
+import javax.ws.rs.container.ContainerRequestFilter
+import javax.ws.rs.container.PreMatching
+import javax.ws.rs.core.SecurityContext
+import javax.ws.rs.ext.Provider
 
 /**
- * Send the specified request to the OpenDC API.
- *
- * @param auth The authentication context.
- * @param path Relative path for the API.
- * @param method The method to use for the request.
- * @param body The body of the request.
+ * Helper class to disable security for the OpenDC web API when in development mode.
  */
-export async function request(auth, path, method = 'GET', body) {
-    const headers = {
-        'Content-Type': 'application/json',
+@Provider
+@PreMatching
+@IfBuildProperty(name = "opendc.security.enabled", stringValue = "false")
+class DevSecurityOverrideFilter : ContainerRequestFilter {
+    override fun filter(requestContext: ContainerRequestContext) {
+        requestContext.securityContext = object : SecurityContext {
+            override fun getUserPrincipal(): Principal = Principal { "anon" }
+
+            override fun isSecure(): Boolean = false
+
+            override fun isUserInRole(role: String): Boolean = true
+
+            override fun getAuthenticationScheme(): String = "basic"
+        }
     }
-
-    const { getAccessTokenSilently } = auth
-    if (getAccessTokenSilently) {
-        const token = await getAccessTokenSilently()
-        headers['Authorization'] = `Bearer ${token}`
-    }
-
-    const response = await fetch(`${apiUrl}/${path}`, {
-        method: method,
-        headers: headers,
-        body: body && JSON.stringify(body),
-    })
-    const json = await response.json()
-
-    if (!response.ok) {
-        throw response.message
-    }
-
-    return json
 }

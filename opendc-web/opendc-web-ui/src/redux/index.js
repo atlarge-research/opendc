@@ -6,6 +6,7 @@ import thunk from 'redux-thunk'
 import rootReducer from './reducers'
 import rootSaga from './sagas'
 import { createReduxEnhancer } from '@sentry/react'
+import { sentryDsn } from '../config'
 
 let store
 
@@ -20,7 +21,7 @@ function initStore(initialState, ctx) {
 
     let middleware = applyMiddleware(...middlewares)
 
-    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    if (sentryDsn) {
         middleware = compose(middleware, createReduxEnhancer())
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,22 @@
  * SOFTWARE.
  */
 
-import { apiUrl } from '../config'
+/**
+ * URL to OpenDC API.
+ */
+export const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
 /**
- * Send the specified request to the OpenDC API.
- *
- * @param auth The authentication context.
- * @param path Relative path for the API.
- * @param method The method to use for the request.
- * @param body The body of the request.
+ * Authentication configuration.
  */
-export async function request(auth, path, method = 'GET', body) {
-    const headers = {
-        'Content-Type': 'application/json',
-    }
-
-    const { getAccessTokenSilently } = auth
-    if (getAccessTokenSilently) {
-        const token = await getAccessTokenSilently()
-        headers['Authorization'] = `Bearer ${token}`
-    }
-
-    const response = await fetch(`${apiUrl}/${path}`, {
-        method: method,
-        headers: headers,
-        body: body && JSON.stringify(body),
-    })
-    const json = await response.json()
-
-    if (!response.ok) {
-        throw response.message
-    }
-
-    return json
+export const auth = {
+    domain: process.env.NEXT_PUBLIC_AUTH0_DOMAIN,
+    clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
+    audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+    redirectUri: global.window && global.window.location.origin,
 }
+
+/**
+ * Sentry DSN for web frontend.
+ */
+export const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN
