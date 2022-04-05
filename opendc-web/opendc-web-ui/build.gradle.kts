@@ -107,4 +107,6 @@ tasks.processResources {
     from(project.fileTree("public")) {
         into("META-INF/resources/${project.name}/static")
     }
+
+    mkdir("${project.buildDir}/classes/java/main")
 }
