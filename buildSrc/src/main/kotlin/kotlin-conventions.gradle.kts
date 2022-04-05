@@ -40,6 +40,6 @@ java {
 
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 }
