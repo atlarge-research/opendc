@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,20 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package org.opendc.web.ui.runtime;
 
-plugins {
-    id("java-conventions")
-    kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
-}
+import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.runtime.annotations.ConfigPhase;
+import io.quarkus.runtime.annotations.ConfigRoot;
 
-/* Project configuration */
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+/**
+ * Configuration for the OpenDC web UI.
+ */
+@ConfigRoot(phase = ConfigPhase.RUN_TIME, name = "opendc-ui")
+public class OpenDCUiRuntimeConfig {
+    /**
+     * Flag to indicate whether the web interface should be served by the OpenDC API server.
+     */
+    @ConfigItem(defaultValue = "true")
+    public boolean enable;
 }

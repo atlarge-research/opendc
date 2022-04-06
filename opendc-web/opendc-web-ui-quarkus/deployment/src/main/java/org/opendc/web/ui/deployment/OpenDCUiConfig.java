@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,44 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package org.opendc.web.ui.deployment;
 
-plugins {
-    id("java-conventions")
-    kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
-}
+import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.runtime.annotations.ConfigRoot;
 
-/* Project configuration */
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+import java.util.Optional;
+
+/**
+ * Build-time configuration for the OpenDC UI extension.
+ */
+@ConfigRoot(name = "opendc-ui")
+public class OpenDCUiConfig {
+    /**
+     * A flag to include the OpenDC UI extension into the build.
+     */
+    @ConfigItem(defaultValue = "true")
+    boolean include;
+
+    /**
+     * The path where the OpenDC UI is available.
+     */
+    @ConfigItem(defaultValue = "/")
+    String path;
+
+    /**
+     * The base URL of the OpenDC API.
+     */
+    @ConfigItem(defaultValue = "/api")
+    String apiBaseUrl;
+
+    /**
+     * Configuration properties for web UI authentication.
+     */
+    AuthConfiguration auth;
+
+    /**
+     * Sentry DSN.
+     */
+    @ConfigItem
+    Optional<String> sentryDsn;
 }

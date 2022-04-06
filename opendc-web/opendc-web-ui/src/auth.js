@@ -23,13 +23,25 @@
 import PropTypes from 'prop-types'
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react'
 import { useEffect } from 'react'
+import { auth } from './config'
+
+/**
+ * Helper function to provide the authentication context in case Auth0 is not
+ * configured.
+ */
+function useAuthDev() {
+    return {
+        isAuthenticated: false,
+        isLoading: false,
+        logout: () => {},
+        loginWithRedirect: () => {},
+    }
+}
 
 /**
  * Obtain the authentication context.
  */
-export function useAuth() {
-    return useAuth0()
-}
+export const useAuth = auth.domain ? useAuth0 : useAuthDev
 
 /**
  * Force the user to be authenticated or redirect to the homepage.
@@ -51,16 +63,20 @@ export function useRequireAuth() {
  * AuthProvider which provides an authentication context.
  */
 export function AuthProvider({ children }) {
-    return (
-        <Auth0Provider
-            domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN}
-            clientId={process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID}
-            redirectUri={global.window && global.window.location.origin}
-            audience={process.env.NEXT_PUBLIC_AUTH0_AUDIENCE}
-        >
-            {children}
-        </Auth0Provider>
-    )
+    if (auth.domain) {
+        return (
+            <Auth0Provider
+                domain={auth.domain}
+                clientId={auth.clientId}
+                redirectUri={auth.redirectUri}
+                audience={auth.audience}
+            >
+                {children}
+            </Auth0Provider>
+        )
+    }
+
+    return children
 }
 
 AuthProvider.propTypes = {

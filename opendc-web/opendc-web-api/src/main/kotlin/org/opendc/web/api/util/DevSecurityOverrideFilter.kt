@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,32 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package org.opendc.web.api.util
 
-plugins {
-    id("java-conventions")
-    kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
-}
+import io.quarkus.arc.properties.IfBuildProperty
+import java.security.Principal
+import javax.ws.rs.container.ContainerRequestContext
+import javax.ws.rs.container.ContainerRequestFilter
+import javax.ws.rs.container.PreMatching
+import javax.ws.rs.core.SecurityContext
+import javax.ws.rs.ext.Provider
 
-/* Project configuration */
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+/**
+ * Helper class to disable security for the OpenDC web API when in development mode.
+ */
+@Provider
+@PreMatching
+@IfBuildProperty(name = "opendc.security.enabled", stringValue = "false")
+class DevSecurityOverrideFilter : ContainerRequestFilter {
+    override fun filter(requestContext: ContainerRequestContext) {
+        requestContext.securityContext = object : SecurityContext {
+            override fun getUserPrincipal(): Principal = Principal { "anon" }
+
+            override fun isSecure(): Boolean = false
+
+            override fun isUserInRole(role: String): Boolean = true
+
+            override fun getAuthenticationScheme(): String = "basic"
+        }
+    }
 }

@@ -1,17 +1,11 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import Image from 'next/image'
 import { Flex, Label } from '@patternfly/react-core'
 import { Machine } from '../../../../shapes'
 
 const UnitIcon = ({ id, type }) => (
-    <Image
-        src={'/img/topology/' + id + '-icon.png'}
-        alt={'Machine contains ' + type + ' units'}
-        layout="intrinsic"
-        height={24}
-        width={24}
-    />
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={'/img/topology/' + id + '-icon.png'} alt={'Machine contains ' + type + ' units'} height={24} width={24} />
 )
 
 UnitIcon.propTypes = {

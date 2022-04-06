@@ -56,26 +56,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
-  build-ui:
-    name: Build UI (Node ${{ matrix.node }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [16]
-    defaults:
-      run:
-        working-directory: opendc-web/opendc-web-ui
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node }}
-      - run: yarn install --frozen-lockfile
-      - run: yarn build
-        env:
-          CI: true
-      - run: yarn next lint
-        env:
-          CI: true

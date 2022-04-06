@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,33 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package org.opendc.web.ui.deployment;
 
-plugins {
-    id("java-conventions")
-    kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
-}
+import io.quarkus.runtime.annotations.ConfigGroup;
+import io.quarkus.runtime.annotations.ConfigItem;
 
-/* Project configuration */
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+import java.util.Optional;
+
+/**
+ * Auth configuration for the OpenDC UI extension.
+ */
+@ConfigGroup
+public class AuthConfiguration {
+    /**
+     * The authentication domain.
+     */
+    @ConfigItem
+    Optional<String> domain;
+
+    /**
+     * The client identifier used by the OpenDC web ui.
+     */
+    @ConfigItem
+    Optional<String> clientId;
+
+    /**
+     * The audience of the OpenDC API.
+     */
+    @ConfigItem
+    Optional<String> audience;
 }

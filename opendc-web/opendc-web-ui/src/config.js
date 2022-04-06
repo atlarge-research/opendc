@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,22 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+/**
+ * URL to OpenDC API.
+ */
+export const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
-plugins {
-    id("java-conventions")
-    kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
+/**
+ * Authentication configuration.
+ */
+export const auth = {
+    domain: process.env.NEXT_PUBLIC_AUTH0_DOMAIN,
+    clientId: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
+    audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+    redirectUri: global.window && global.window.location.origin,
 }
 
-/* Project configuration */
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
-}
+/**
+ * Sentry DSN for web frontend.
+ */
+export const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN

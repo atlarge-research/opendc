@@ -39,7 +39,9 @@ import { useAuth } from '../auth'
 import { GithubIcon, HelpIcon } from '@patternfly/react-icons'
 
 function AppHeaderTools() {
-    const auth = useAuth()
+    const { logout, user, isAuthenticated, isLoading } = useAuth()
+    const username = isAuthenticated || isLoading ? user?.name : 'Anonymous'
+    const avatar = isAuthenticated || isLoading ? user?.picture : '/img/avatar.svg'
 
     const [isKebabDropdownOpen, setKebabDropdownOpen] = useState(false)
     const kebabDropdownItems = [
@@ -56,7 +58,11 @@ function AppHeaderTools() {
     const [isDropdownOpen, setDropdownOpen] = useState(false)
     const userDropdownItems = [
         <DropdownGroup key="group 2">
-            <DropdownItem key="group 2 logout" onClick={() => auth.logout({ returnTo: window.location.origin })}>
+            <DropdownItem
+                key="group 2 logout"
+                isDisabled={!isAuthenticated}
+                onClick={() => logout({ returnTo: window.location.origin })}
+            >
                 Logout
             </DropdownItem>
         </DropdownGroup>,
@@ -105,7 +111,7 @@ function AppHeaderTools() {
                         isOpen={isDropdownOpen}
                         toggle={
                             <DropdownToggle onToggle={() => setDropdownOpen(!isDropdownOpen)}>
-                                {auth?.user?.name ?? (
+                                {username ?? (
                                     <Skeleton
                                         fontSize="xs"
                                         width="150px"
@@ -119,8 +125,8 @@ function AppHeaderTools() {
                     />
                 </PageHeaderToolsItem>
             </PageHeaderToolsGroup>
-            {auth?.user?.picture ? (
-                <Avatar src={auth.user.picture} alt="Avatar image" />
+            {avatar ? (
+                <Avatar src={avatar} alt="Avatar image" />
             ) : (
                 <Skeleton className="pf-c-avatar" shape="circle" width="2.25rem" screenreaderText="Loading avatar" />
             )}

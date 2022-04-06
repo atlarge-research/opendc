@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+import { apiUrl } from '../config'
 
 /**
  * Send the specified request to the OpenDC API.
@@ -31,14 +31,19 @@ const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL
  * @param body The body of the request.
  */
 export async function request(auth, path, method = 'GET', body) {
+    const headers = {
+        'Content-Type': 'application/json',
+    }
+
     const { getAccessTokenSilently } = auth
-    const token = await getAccessTokenSilently()
+    if (getAccessTokenSilently) {
+        const token = await getAccessTokenSilently()
+        headers['Authorization'] = `Bearer ${token}`
+    }
+
     const response = await fetch(`${apiUrl}/${path}`, {
         method: method,
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: body && JSON.stringify(body),
     })
     const json = await response.json()

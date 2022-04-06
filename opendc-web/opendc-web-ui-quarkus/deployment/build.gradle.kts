@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,20 @@
  * SOFTWARE.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+description = "Quarkus extension for serving OpenDC web interface"
 
+/* Build configuration */
 plugins {
-    id("java-conventions")
-    kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
+    `java-library-conventions`
 }
 
-/* Project configuration */
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = Libs.jvmTarget.toString()
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+dependencies {
+    implementation(enforcedPlatform(libs.quarkus.bom))
+
+    implementation(projects.opendcWeb.opendcWebUi)
+    implementation(projects.opendcWeb.opendcWebUiQuarkus.runtime)
+
+    implementation(libs.quarkus.core.deployment)
+    implementation(libs.quarkus.vertx.http.deployment)
+    implementation(libs.quarkus.arc.deployment)
 }
