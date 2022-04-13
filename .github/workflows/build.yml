@@ -8,15 +8,15 @@ on:
 
 jobs:
   build:
-    name: Build (Java ${{ matrix.java }})
+    name: Build (Java ${{ matrix.java }} - ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        java: [11, 17]
+        java: [11, 17, 18]
         include:
           - os: windows-latest
-            java: 17
+            java: 18
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
