@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.runner
+package org.opendc.web.runner.internal
 
 import org.opendc.web.client.runner.OpenDCRunnerClient
 import org.opendc.web.proto.JobState
 import org.opendc.web.proto.runner.Job
 
 /**
- * Manages the queue of scenarios that need to be processed.
+ * Helper class to manage the queue of jobs that need to be simulated.
  */
-class ScenarioManager(private val client: OpenDCRunnerClient) {
+internal class JobManager(private val client: OpenDCRunnerClient) {
     /**
      * Find the next job that the simulator needs to process.
      */
@@ -62,7 +62,7 @@ class ScenarioManager(private val client: OpenDCRunnerClient) {
     /**
      * Persist the specified results.
      */
-    public fun finish(id: Long, results: List<WebComputeMetricExporter.Result>) {
+    fun finish(id: Long, results: List<WebComputeMetricExporter.Results>) {
         client.jobs.update(
             id,
             Job.Update(

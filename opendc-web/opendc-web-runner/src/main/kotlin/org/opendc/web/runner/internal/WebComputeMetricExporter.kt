@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.web.runner
+package org.opendc.web.runner.internal
 
 import org.opendc.telemetry.compute.ComputeMetricExporter
 import org.opendc.telemetry.compute.ComputeMonitor
@@ -32,7 +32,7 @@ import kotlin.math.roundToLong
 /**
  * A [ComputeMonitor] that tracks the aggregate metrics for each repeat.
  */
-class WebComputeMetricExporter : ComputeMetricExporter() {
+internal class WebComputeMetricExporter : ComputeMetricExporter() {
     override fun record(reader: HostTableReader) {
         val slices = reader.downtime / SLICE_LENGTH
 
@@ -60,7 +60,7 @@ class WebComputeMetricExporter : ComputeMetricExporter() {
     private val hostMetrics: MutableMap<String, HostMetrics> = mutableMapOf()
     private val SLICE_LENGTH: Long = 5 * 60L
 
-    data class AggregateHostMetrics(
+    private data class AggregateHostMetrics(
         val totalActiveTime: Long = 0L,
         val totalIdleTime: Long = 0L,
         val totalStealTime: Long = 0L,
@@ -70,7 +70,7 @@ class WebComputeMetricExporter : ComputeMetricExporter() {
         val totalFailureVmSlices: Double = 0.0,
     )
 
-    data class HostMetrics(
+    private data class HostMetrics(
         val cpuUsage: Double,
         val cpuDemand: Double,
         val instanceCount: Long,
@@ -89,7 +89,7 @@ class WebComputeMetricExporter : ComputeMetricExporter() {
         )
     }
 
-    data class AggregateServiceMetrics(
+    private data class AggregateServiceMetrics(
         val vmTotalCount: Int = 0,
         val vmWaitingCount: Int = 0,
         val vmActiveCount: Int = 0,
@@ -97,8 +97,11 @@ class WebComputeMetricExporter : ComputeMetricExporter() {
         val vmFailedCount: Int = 0
     )
 
-    fun getResult(): Result {
-        return Result(
+    /**
+     * Collect the results of the simulation.
+     */
+    fun collectResults(): Results {
+        return Results(
             hostAggregateMetrics.totalActiveTime,
             hostAggregateMetrics.totalIdleTime,
             hostAggregateMetrics.totalStealTime,
@@ -117,7 +120,10 @@ class WebComputeMetricExporter : ComputeMetricExporter() {
         )
     }
 
-    data class Result(
+    /**
+     * Structure of the results of a single simulation.
+     */
+    data class Results(
         val totalActiveTime: Long,
         val totalIdleTime: Long,
         val totalStealTime: Long,
