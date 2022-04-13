@@ -36,6 +36,7 @@ dependencies {
     implementation(enforcedPlatform(libs.quarkus.bom))
 
     implementation(projects.opendcWeb.opendcWebProto)
+    compileOnly(projects.opendcWeb.opendcWebUiQuarkus.deployment) /* Temporary fix for Quarkus/Gradle issues */
     implementation(projects.opendcWeb.opendcWebUiQuarkus.runtime)
 
     implementation(libs.quarkus.kotlin)
@@ -90,19 +91,4 @@ tasks.named("runKtlintCheckOverMainSourceSet") {
 
 tasks.named("runKtlintCheckOverTestSourceSet") {
     mustRunAfter(tasks.quarkusGenerateCodeTests)
-}
-
-/* Fix for Quarkus/Gradle issues */
-tasks.quarkusGenerateCode {
-    mustRunAfter(projects.opendcWeb.opendcWebUiQuarkus.deployment)
-    mustRunAfter(projects.opendcWeb.opendcWebUi)
-
-    doFirst {
-        mkdir("${projects.opendcWeb.opendcWebUi.dependencyProject.buildDir}/classes/java/main")
-    }
-}
-
-tasks.quarkusGenerateCodeTests {
-    mustRunAfter(projects.opendcWeb.opendcWebUiQuarkus.deployment)
-    mustRunAfter(projects.opendcWeb.opendcWebUi)
 }
