@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,30 +20,23 @@
  * SOFTWARE.
  */
 
-@file:JvmName("Tables")
+@file:JvmName("InterferenceGroupColumns")
 package org.opendc.trace
 
 /**
- * A table containing all workflows in a workload.
+ * Members of the interference group.
  */
-public const val TABLE_WORKFLOWS: String = "workflows"
+@JvmField
+public val INTERFERENCE_GROUP_MEMBERS: TableColumn<Set<String>> = column("interference_group:members")
 
 /**
- * A table containing all tasks in a workload.
+ * Target load after which the interference occurs.
  */
-public const val TABLE_TASKS: String = "tasks"
+@JvmField
+public val INTERFERENCE_GROUP_TARGET: TableColumn<Double> = column("interference_group:target")
 
 /**
- * A table containing all resources in a workload.
+ * Performance score when the interference occurs.
  */
-public const val TABLE_RESOURCES: String = "resources"
-
-/**
- * A table containing all resource states in a workload.
- */
-public const val TABLE_RESOURCE_STATES: String = "resource_states"
-
-/**
- * A table containing the groups of resources that interfere when run on the same execution platform.
- */
-public const val TABLE_INTERFERENCE_GROUPS: String = "interference_groups"
+@JvmField
+public val INTERFERENCE_GROUP_SCORE: TableColumn<Double> = column("interference_group:score")

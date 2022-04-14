@@ -41,7 +41,7 @@ internal class OdcVmTraceFormatTest {
     fun testTables() {
         val path = Paths.get("src/test/resources/trace-v2.1")
 
-        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES), format.getTables(path))
+        assertEquals(listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES, TABLE_INTERFERENCE_GROUPS), format.getTables(path))
     }
 
     @Test
@@ -91,6 +91,35 @@ internal class OdcVmTraceFormatTest {
             { assertEquals(0.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
         )
 
+        reader.close()
+    }
+
+    @Test
+    fun testInterferenceGroups() {
+        val path = Paths.get("src/test/resources/trace-v2.1")
+        val reader = format.newReader(path, TABLE_INTERFERENCE_GROUPS)
+
+        assertAll(
+            { assertTrue(reader.nextRow()) },
+            { assertEquals(setOf("1019", "1023", "1052"), reader.get(INTERFERENCE_GROUP_MEMBERS)) },
+            { assertEquals(0.0, reader.get(INTERFERENCE_GROUP_TARGET)) },
+            { assertEquals(0.8830158730158756, reader.get(INTERFERENCE_GROUP_SCORE)) },
+            { assertTrue(reader.nextRow()) },
+            { assertEquals(setOf("1023", "1052", "1073"), reader.get(INTERFERENCE_GROUP_MEMBERS)) },
+            { assertEquals(0.0, reader.get(INTERFERENCE_GROUP_TARGET)) },
+            { assertEquals(0.7133055555552751, reader.get(INTERFERENCE_GROUP_SCORE)) },
+            { assertFalse(reader.nextRow()) }
+        )
+
+        reader.close()
+    }
+
+    @Test
+    fun testInterferenceGroupsEmpty() {
+        val path = Paths.get("src/test/resources/trace-v2.0")
+        val reader = format.newReader(path, TABLE_INTERFERENCE_GROUPS)
+
+        assertFalse(reader.nextRow())
         reader.close()
     }
 }
