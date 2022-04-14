@@ -24,14 +24,13 @@ package org.opendc.compute.workload.internal
 
 import org.opendc.compute.workload.ComputeWorkload
 import org.opendc.compute.workload.ComputeWorkloadLoader
-import org.opendc.compute.workload.VirtualMachine
 import java.util.*
 
 /**
  * A [ComputeWorkload] from a trace.
  */
 internal class TraceComputeWorkload(val name: String, val format: String) : ComputeWorkload {
-    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
+    override fun resolve(loader: ComputeWorkloadLoader, random: Random): ComputeWorkload.Resolved {
         return loader.get(name, format)
     }
 }

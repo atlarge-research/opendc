@@ -28,8 +28,6 @@ import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
-import org.opendc.compute.workload.util.VmInterferenceModelReader
-import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -145,21 +143,8 @@ public class OpenDCRunner(
             val heartbeat = scheduler.scheduleWithFixedDelay({ manager.heartbeat(id) }, 0, heartbeatInterval.toMillis(), TimeUnit.MILLISECONDS)
 
             try {
-                logger.debug { "Constructing performance interference model" }
-
-                val interferenceModel = let {
-                    val path = tracePath.resolve(scenario.workload.trace.id).resolve("performance-interference-model.json")
-                    val enabled = scenario.phenomena.interference
-
-                    if (!enabled || !path.exists()) {
-                        return@let null
-                    }
-
-                    VmInterferenceModelReader().read(path.inputStream())
-                }
-
                 val topology = convertTopology(scenario.topology)
-                val jobs = (0 until scenario.portfolio.targets.repeats).map { repeat -> SimulationTask(scenario, repeat, topology, interferenceModel) }
+                val jobs = (0 until scenario.portfolio.targets.repeats).map { repeat -> SimulationTask(scenario, repeat, topology) }
                 val results = invokeAll(jobs)
 
                 logger.info { "Finished simulation for job $id" }
@@ -190,13 +175,11 @@ public class OpenDCRunner(
      * @param scenario The scenario to simulate.
      * @param repeat The repeat number used to seed the simulation.
      * @param topology The topology to simulate.
-     * @param interferenceModel The [VmInterferenceModel] used in this scenario.
      */
     private inner class SimulationTask(
         private val scenario: Scenario,
         private val repeat: Int,
         private val topology: Topology,
-        private val interferenceModel: VmInterferenceModel?
     ) : RecursiveTask<WebComputeMetricExporter.Results>() {
         override fun compute(): WebComputeMetricExporter.Results {
             val exporter = WebComputeMetricExporter()
@@ -215,6 +198,7 @@ public class OpenDCRunner(
                     val phenomena = scenario.phenomena
                     val computeScheduler = createComputeScheduler(scenario.schedulerName, seeder)
                     val workload = trace(workloadName).sampleByLoad(workloadFraction)
+                    val (vms, interferenceModel) = workload.resolve(workloadLoader, seeder)
 
                     val failureModel =
                         if (phenomena.failures)
@@ -229,7 +213,7 @@ public class OpenDCRunner(
                         telemetry,
                         computeScheduler,
                         failureModel,
-                        interferenceModel
+                        interferenceModel.takeIf { phenomena.interference }
                     )
 
                     telemetry.registerMetricReader(CoroutineMetricReader(this, exporter, exportInterval = Duration.ofHours(1)))
@@ -238,7 +222,7 @@ public class OpenDCRunner(
                         // Instantiate the topology onto the simulator
                         simulator.apply(topology)
                         // Run workload trace
-                        simulator.run(workload.resolve(workloadLoader, seeder), seeder.nextLong())
+                        simulator.run(vms, seeder.nextLong())
 
                         val serviceMetrics = collectServiceMetrics(telemetry.metricProducer)
                         logger.debug {

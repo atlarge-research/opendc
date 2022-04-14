@@ -40,7 +40,4 @@ dependencies {
     implementation(libs.opentelemetry.semconv)
 
     implementation(libs.kotlin.logging)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.module.kotlin)
-    implementation(kotlin("reflect"))
 }

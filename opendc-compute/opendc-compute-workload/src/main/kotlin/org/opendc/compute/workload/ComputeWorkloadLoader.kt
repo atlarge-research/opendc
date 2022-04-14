@@ -23,9 +23,11 @@
 package org.opendc.compute.workload
 
 import mu.KotlinLogging
+import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.trace.*
 import java.io.File
+import java.lang.ref.SoftReference
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -47,7 +49,7 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     /**
      * The cache of workloads.
      */
-    private val cache = ConcurrentHashMap<String, List<VirtualMachine>>()
+    private val cache = ConcurrentHashMap<String, SoftReference<ComputeWorkload.Resolved>>()
 
     /**
      * Read the fragments into memory.
@@ -145,18 +147,59 @@ public class ComputeWorkloadLoader(private val baseDir: File) {
     }
 
     /**
+     * Read the interference model associated with the specified [trace].
+     */
+    private fun parseInterferenceModel(trace: Trace): VmInterferenceModel {
+        val reader = checkNotNull(trace.getTable(TABLE_INTERFERENCE_GROUPS)).newReader()
+
+        return try {
+            val membersCol = reader.resolve(INTERFERENCE_GROUP_MEMBERS)
+            val targetCol = reader.resolve(INTERFERENCE_GROUP_TARGET)
+            val scoreCol = reader.resolve(INTERFERENCE_GROUP_SCORE)
+
+            val modelBuilder = VmInterferenceModel.builder()
+
+            while (reader.nextRow()) {
+                @Suppress("UNCHECKED_CAST")
+                val members = reader.get(membersCol) as Set<String>
+                val target = reader.getDouble(targetCol)
+                val score = reader.getDouble(scoreCol)
+
+                modelBuilder
+                    .addGroup(members, target, score)
+            }
+
+            modelBuilder.build()
+        } finally {
+            reader.close()
+        }
+    }
+
+    /**
      * Load the trace with the specified [name] and [format].
      */
-    public fun get(name: String, format: String): List<VirtualMachine> {
-        return cache.computeIfAbsent(name) {
-            val path = baseDir.resolve(it)
+    public fun get(name: String, format: String): ComputeWorkload.Resolved {
+        val ref = cache.compute(name) { key, oldVal ->
+            val inst = oldVal?.get()
+            if (inst == null) {
 
-            logger.info { "Loading trace $it at $path" }
+                val path = baseDir.resolve(key)
 
-            val trace = Trace.open(path, format)
-            val fragments = parseFragments(trace)
-            parseMeta(trace, fragments)
+                logger.info { "Loading trace $key at $path" }
+
+                val trace = Trace.open(path, format)
+                val fragments = parseFragments(trace)
+                val vms = parseMeta(trace, fragments)
+                val interferenceModel = parseInterferenceModel(trace)
+                val instance = ComputeWorkload.Resolved(vms, interferenceModel)
+
+                SoftReference(instance)
+            } else {
+                oldVal
+            }
         }
+
+        return checkNotNull(ref?.get()) { "Memory pressure" }
     }
 
     /**

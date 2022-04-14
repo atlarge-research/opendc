@@ -35,7 +35,6 @@ import org.opendc.compute.workload.*
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
-import org.opendc.compute.workload.util.VmInterferenceModelReader
 import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.telemetry.compute.ComputeMetricExporter
@@ -85,7 +84,7 @@ class CapelinIntegrationTest {
      */
     @Test
     fun testLarge() = runBlockingSimulation {
-        val workload = createTestWorkload(1.0)
+        val (workload, _) = createTestWorkload(1.0)
         val telemetry = SdkTelemetryManager(clock)
         val runner = ComputeServiceHelper(
             coroutineContext,
@@ -135,7 +134,7 @@ class CapelinIntegrationTest {
     @Test
     fun testSmall() = runBlockingSimulation {
         val seed = 1
-        val workload = createTestWorkload(0.25, seed)
+        val (workload, _) = createTestWorkload(0.25, seed)
         val telemetry = SdkTelemetryManager(clock)
         val runner = ComputeServiceHelper(
             coroutineContext,
@@ -180,12 +179,7 @@ class CapelinIntegrationTest {
     @Test
     fun testInterference() = runBlockingSimulation {
         val seed = 0
-        val workload = createTestWorkload(1.0, seed)
-        val perfInterferenceInput = checkNotNull(CapelinIntegrationTest::class.java.getResourceAsStream("/bitbrains-perf-interference.json"))
-        val performanceInterferenceModel =
-            VmInterferenceModelReader()
-                .read(perfInterferenceInput)
-                .withSeed(seed.toLong())
+        val (workload, interferenceModel) = createTestWorkload(1.0, seed)
 
         val telemetry = SdkTelemetryManager(clock)
         val simulator = ComputeServiceHelper(
@@ -193,7 +187,7 @@ class CapelinIntegrationTest {
             clock,
             telemetry,
             computeScheduler,
-            interferenceModel = performanceInterferenceModel
+            interferenceModel = interferenceModel?.withSeed(seed.toLong())
         )
         val topology = createTopology("single")
 
@@ -240,7 +234,7 @@ class CapelinIntegrationTest {
             grid5000(Duration.ofDays(7))
         )
         val topology = createTopology("single")
-        val workload = createTestWorkload(0.25, seed)
+        val (workload, _) = createTestWorkload(0.25, seed)
 
         telemetry.registerMetricReader(CoroutineMetricReader(this, exporter))
 
@@ -274,7 +268,7 @@ class CapelinIntegrationTest {
     /**
      * Obtain the trace reader for the test.
      */
-    private fun createTestWorkload(fraction: Double, seed: Int = 0): List<VirtualMachine> {
+    private fun createTestWorkload(fraction: Double, seed: Int = 0): ComputeWorkload.Resolved {
         val source = trace("bitbrains-small").sampleByLoad(fraction)
         return source.resolve(workloadLoader, Random(seed.toLong()))
     }
