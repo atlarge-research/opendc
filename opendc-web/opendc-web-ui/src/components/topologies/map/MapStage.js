@@ -1,5 +1,6 @@
 import React, { useRef, useState, useContext } from 'react'
-import { HotKeys } from 'react-hotkeys'
+import PropTypes from 'prop-types'
+import { useHotkeys } from 'react-hotkeys-hook'
 import { Stage } from 'react-konva'
 import { MAP_MAX_SCALE, MAP_MIN_SCALE, MAP_MOVE_PIXELS_PER_EVENT, MAP_SCALE_PER_EVENT } from './MapConstants'
 import { ReactReduxContext } from 'react-redux'
@@ -11,10 +12,10 @@ import ObjectHoverLayer from './layers/ObjectHoverLayer'
 import ScaleIndicator from './controls/ScaleIndicator'
 import Toolbar from './controls/Toolbar'
 
-function MapStage() {
+function MapStage({ hotkeysRef }) {
     const reduxContext = useContext(ReactReduxContext)
-    const { ref, width = 100, height = 100 } = useResizeObserver()
     const stageRef = useRef(null)
+    const { width = 100, height = 100 } = useResizeObserver({ ref: stageRef.current?.attrs?.container })
     const [[x, y], setPos] = useState([0, 0])
     const [scale, setScale] = useState(1)
 
@@ -48,16 +49,15 @@ function MapStage() {
         download.click()
     }
 
-    const handlers = {
-        MOVE_LEFT: () => moveWithDelta(MAP_MOVE_PIXELS_PER_EVENT, 0),
-        MOVE_RIGHT: () => moveWithDelta(-MAP_MOVE_PIXELS_PER_EVENT, 0),
-        MOVE_UP: () => moveWithDelta(0, MAP_MOVE_PIXELS_PER_EVENT),
-        MOVE_DOWN: () => moveWithDelta(0, -MAP_MOVE_PIXELS_PER_EVENT),
-    }
+    useHotkeys('left, a', () => moveWithDelta(MAP_MOVE_PIXELS_PER_EVENT, 0), { element: hotkeysRef.current })
+    useHotkeys('right, d', () => moveWithDelta(-MAP_MOVE_PIXELS_PER_EVENT, 0), { element: hotkeysRef.current })
+    useHotkeys('up, w', () => moveWithDelta(0, MAP_MOVE_PIXELS_PER_EVENT), { element: hotkeysRef.current })
+    useHotkeys('down, s', () => moveWithDelta(0, -MAP_MOVE_PIXELS_PER_EVENT), { element: hotkeysRef.current })
 
     return (
-        <HotKeys handlers={handlers} allowChanges={true} innerRef={ref} className={mapContainer}>
+        <>
             <Stage
+                className={mapContainer}
                 ref={stageRef}
                 onWheel={onZoom}
                 onDragEnd={onDragEnd}
@@ -76,8 +76,12 @@ function MapStage() {
             </Stage>
             <ScaleIndicator scale={scale} />
             <Toolbar onZoom={onZoomButton} onExport={onExport} />
-        </HotKeys>
+        </>
     )
+}
+
+MapStage.propTypes = {
+    hotkeysRef: PropTypes.object.isRequired,
 }
 
 export default MapStage

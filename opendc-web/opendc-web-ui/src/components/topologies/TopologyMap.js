@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import {
     Bullseye,
     Drawer,
@@ -31,8 +31,6 @@ import {
     Spinner,
     Title,
 } from '@patternfly/react-core'
-import { configure, HotKeys } from 'react-hotkeys'
-import { KeymapConfiguration } from '../../hotkeys'
 import MapStage from './map/MapStage'
 import Collapse from './map/controls/Collapse'
 import { useSelector } from 'react-redux'
@@ -45,10 +43,7 @@ function TopologyMap() {
     const [isExpanded, setExpanded] = useState(true)
     const panelContent = <TopologySidebar interactionLevel={interactionLevel} onClose={() => setExpanded(false)} />
 
-    // Make sure that holding down a key will generate repeated events
-    configure({
-        ignoreRepeatedEventsWhenKeyHeldDown: false,
-    })
+    const hotkeysRef = useRef()
 
     return topologyIsLoading ? (
         <Bullseye>
@@ -60,16 +55,14 @@ function TopologyMap() {
             </EmptyState>
         </Bullseye>
     ) : (
-        <HotKeys keyMap={KeymapConfiguration} allowChanges={true} className="full-height">
-            <Drawer isExpanded={isExpanded}>
-                <DrawerContent panelContent={panelContent}>
-                    <DrawerContentBody>
-                        <MapStage />
-                        <Collapse onClick={() => setExpanded(true)} />
-                    </DrawerContentBody>
-                </DrawerContent>
-            </Drawer>
-        </HotKeys>
+        <Drawer isExpanded={isExpanded} className="full-height">
+            <DrawerContent panelContent={panelContent}>
+                <DrawerContentBody>
+                    <MapStage hotkeysRef={hotkeysRef} />
+                    <Collapse onClick={() => setExpanded(true)} />
+                </DrawerContentBody>
+            </DrawerContent>
+        </Drawer>
     )
 }
 
