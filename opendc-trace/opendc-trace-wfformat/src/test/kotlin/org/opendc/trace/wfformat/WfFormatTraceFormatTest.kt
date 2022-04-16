@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.nio.file.Paths
 
 /**

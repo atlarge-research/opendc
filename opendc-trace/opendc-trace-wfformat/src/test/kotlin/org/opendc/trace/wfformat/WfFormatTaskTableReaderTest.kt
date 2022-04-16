@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.opendc.trace.TASK_ID
-import org.opendc.trace.TASK_PARENTS
+import org.opendc.trace.conv.TASK_ID
+import org.opendc.trace.conv.TASK_PARENTS
 
 /**
  * Test suite for the [WfFormatTaskTableReader] class.

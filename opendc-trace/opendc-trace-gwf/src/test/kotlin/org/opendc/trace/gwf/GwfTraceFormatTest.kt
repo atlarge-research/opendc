@@ -24,7 +24,7 @@ package org.opendc.trace.gwf
 
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant

@@ -23,6 +23,9 @@
 package org.opendc.trace.opendc
 
 import org.opendc.trace.*
+import org.opendc.trace.conv.INTERFERENCE_GROUP_MEMBERS
+import org.opendc.trace.conv.INTERFERENCE_GROUP_SCORE
+import org.opendc.trace.conv.INTERFERENCE_GROUP_TARGET
 import shaded.parquet.com.fasterxml.jackson.core.JsonGenerator
 
 /**

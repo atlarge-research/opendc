@@ -24,9 +24,9 @@ package org.opendc.trace.swf
 
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.opendc.trace.TABLE_TASKS
-import org.opendc.trace.TASK_ALLOC_NCPUS
-import org.opendc.trace.TASK_ID
+import org.opendc.trace.conv.TABLE_TASKS
+import org.opendc.trace.conv.TASK_ALLOC_NCPUS
+import org.opendc.trace.conv.TASK_ID
 import java.nio.file.Paths
 
 /**

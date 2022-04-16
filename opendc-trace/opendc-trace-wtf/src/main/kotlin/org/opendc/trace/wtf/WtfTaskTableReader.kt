@@ -25,6 +25,7 @@ package org.opendc.trace.wtf
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import org.opendc.trace.util.parquet.LocalParquetReader
 import java.time.Duration
 import java.time.Instant

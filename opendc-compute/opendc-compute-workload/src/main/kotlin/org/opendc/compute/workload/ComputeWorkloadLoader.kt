@@ -26,6 +26,7 @@ import mu.KotlinLogging
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimTrace
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.io.File
 import java.lang.ref.SoftReference
 import java.time.Duration
