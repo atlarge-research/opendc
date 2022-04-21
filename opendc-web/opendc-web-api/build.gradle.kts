@@ -28,7 +28,6 @@ plugins {
     kotlin("plugin.allopen")
     kotlin("plugin.jpa")
     `testing-conventions`
-    `jacoco-conventions`
     id("io.quarkus")
 }
 
@@ -77,9 +76,26 @@ tasks.quarkusDev {
     workingDir = rootProject.projectDir.toString()
 }
 
-tasks.test {
-    extensions.configure(JacocoTaskExtension::class) {
-        excludeClassLoaders = listOf("*QuarkusClassLoader")
+/* Make sure the jacoco-report-aggregation plugin picks up the Quarkus coverage data */
+configurations.create("coverageDataElementsForQuarkus") {
+    isVisible = false
+    isCanBeResolved = false
+    isCanBeConsumed = true
+
+    extendsFrom(configurations["implementation"], configurations["runtimeOnly"])
+
+    @Suppress("UnstableApiUsage")
+    attributes {
+        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category::class.java, Category.VERIFICATION))
+        attribute(VerificationType.VERIFICATION_TYPE_ATTRIBUTE, objects.named(VerificationType::class.java, VerificationType.JACOCO_RESULTS))
+    }
+
+    artifacts {
+        add("coverageDataElementsForQuarkus", layout.buildDirectory.file("jacoco-quarkus.exec")) {
+            @Suppress("UnstableApiUsage")
+            type = ArtifactTypeDefinition.BINARY_DATA_TYPE
+            builtBy(tasks.test)
+        }
     }
 }
 
