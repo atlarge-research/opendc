@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-import com.github.gradle.node.yarn.task.YarnTask
+import com.github.gradle.node.npm.task.NpmTask
 
 description = "Web interface for OpenDC"
 
@@ -38,25 +38,33 @@ sourceSets {
     }
 }
 
-val lintTask = tasks.register<YarnTask>("lintNext") {
-    args.set(listOf("lint"))
-    dependsOn(tasks.yarn)
+val formatTask = tasks.register<NpmTask>("format") {
+    args.set(listOf("run", "format"))
+    dependsOn(tasks.npmInstall)
+    inputs.dir("src")
+    inputs.files("package.json", "next.config.js", ".prettierrc.yaml")
+    outputs.upToDateWhen { true }
+}
+
+val lintTask = tasks.register<NpmTask>("lint") {
+    args.set(listOf("run", "lint"))
+    dependsOn(tasks.npmInstall)
     inputs.dir("src")
     inputs.files("package.json", "next.config.js", ".eslintrc")
     outputs.upToDateWhen { true }
 }
 
-tasks.register<YarnTask>("dev") {
-    args.set(listOf("dev"))
-    dependsOn(tasks.yarn)
+tasks.register<NpmTask>("dev") {
+    args.set(listOf("run", "dev"))
+    dependsOn(tasks.npmInstall)
     inputs.dir(project.fileTree("src"))
     inputs.dir("node_modules")
     inputs.files("package.json", "next.config.js")
     outputs.upToDateWhen { true }
 }
 
-val buildTask = tasks.register<YarnTask>("buildNext") {
-    args.set(listOf("build"))
+val buildTask = tasks.register<NpmTask>("buildNext") {
+    args.set(listOf("run", "build"))
 
     val env = listOf(
         "NEXT_BASE_PATH",
@@ -70,16 +78,19 @@ val buildTask = tasks.register<YarnTask>("buildNext") {
         environment.put(envvar, "%%${envvar}%%")
     }
 
-    dependsOn(tasks.yarn)
+    dependsOn(tasks.npmInstall)
     inputs.dir(project.fileTree("src"))
     inputs.dir("node_modules")
     inputs.files("package.json", "next.config.js")
     outputs.dir(layout.buildDirectory.dir("next"))
 }
 
-tasks.register<YarnTask>("start") {
-    args.set(listOf("start"))
+tasks.register<NpmTask>("start") {
+    args.set(listOf("run", "start"))
+
     dependsOn(buildTask)
+    dependsOn(tasks.npmInstall)
+
     inputs.dir(project.fileTree("src"))
     inputs.dir("node_modules")
     inputs.files("package.json", "next.config.js")
@@ -107,6 +118,4 @@ tasks.processResources {
     from(project.fileTree("public")) {
         into("META-INF/resources/${project.name}/static")
     }
-
-    mkdir("${project.buildDir}/classes/java/main")
 }

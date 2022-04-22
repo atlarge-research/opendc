@@ -1,3 +1,5 @@
+import io.quarkus.gradle.QuarkusPlugin
+
 /*
  * Copyright (c) 2021 AtLarge Research
  *
@@ -37,6 +39,9 @@ dependencies {
             jacocoAggregation(this@subprojects)
         }
 
+        plugins.withType<QuarkusPlugin>().configureEach {
+            jacocoAggregation(this@subprojects)
+        }
     }
 }
 

@@ -24,18 +24,14 @@ description = "REST API for the OpenDC website"
 
 /* Build configuration */
 plugins {
-    `kotlin-conventions`
-    kotlin("plugin.allopen")
-    kotlin("plugin.jpa")
-    `testing-conventions`
-    `jacoco-conventions`
-    id("io.quarkus")
+    `quarkus-conventions`
 }
 
 dependencies {
     implementation(enforcedPlatform(libs.quarkus.bom))
 
     implementation(projects.opendcWeb.opendcWebProto)
+    compileOnly(projects.opendcWeb.opendcWebUiQuarkus.deployment) /* Temporary fix for Quarkus/Gradle issues */
     implementation(projects.opendcWeb.opendcWebUiQuarkus.runtime)
 
     implementation(libs.quarkus.kotlin)
@@ -59,50 +55,4 @@ dependencies {
     testImplementation(libs.restassured.kotlin)
     testImplementation(libs.quarkus.test.security)
     testImplementation(libs.quarkus.jdbc.h2)
-}
-
-allOpen {
-    annotation("javax.ws.rs.Path")
-    annotation("javax.enterprise.context.ApplicationScoped")
-    annotation("io.quarkus.test.junit.QuarkusTest")
-    annotation("javax.persistence.Entity")
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.javaParameters = true
-}
-
-tasks.quarkusDev {
-    workingDir = rootProject.projectDir.toString()
-}
-
-tasks.test {
-    extensions.configure(JacocoTaskExtension::class) {
-        excludeClassLoaders = listOf("*QuarkusClassLoader")
-    }
-}
-
-/* Fix for Quarkus/ktlint-gradle incompatibilities */
-tasks.named("runKtlintCheckOverMainSourceSet") {
-    mustRunAfter(tasks.quarkusGenerateCode)
-    mustRunAfter(tasks.quarkusGenerateCodeDev)
-}
-
-tasks.named("runKtlintCheckOverTestSourceSet") {
-    mustRunAfter(tasks.quarkusGenerateCodeTests)
-}
-
-/* Fix for Quarkus/Gradle issues */
-tasks.quarkusGenerateCode {
-    mustRunAfter(projects.opendcWeb.opendcWebUiQuarkus.deployment)
-    mustRunAfter(projects.opendcWeb.opendcWebUi)
-
-    doFirst {
-        mkdir("${projects.opendcWeb.opendcWebUi.dependencyProject.buildDir}/classes/java/main")
-    }
-}
-
-tasks.quarkusGenerateCodeTests {
-    mustRunAfter(projects.opendcWeb.opendcWebUiQuarkus.deployment)
-    mustRunAfter(projects.opendcWeb.opendcWebUi)
 }
