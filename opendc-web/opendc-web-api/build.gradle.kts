@@ -24,11 +24,7 @@ description = "REST API for the OpenDC website"
 
 /* Build configuration */
 plugins {
-    `kotlin-conventions`
-    kotlin("plugin.allopen")
-    kotlin("plugin.jpa")
-    `testing-conventions`
-    id("io.quarkus")
+    `quarkus-conventions`
 }
 
 dependencies {
@@ -59,52 +55,4 @@ dependencies {
     testImplementation(libs.restassured.kotlin)
     testImplementation(libs.quarkus.test.security)
     testImplementation(libs.quarkus.jdbc.h2)
-}
-
-allOpen {
-    annotation("javax.ws.rs.Path")
-    annotation("javax.enterprise.context.ApplicationScoped")
-    annotation("io.quarkus.test.junit.QuarkusTest")
-    annotation("javax.persistence.Entity")
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.javaParameters = true
-}
-
-tasks.quarkusDev {
-    workingDir = rootProject.projectDir.toString()
-}
-
-/* Make sure the jacoco-report-aggregation plugin picks up the Quarkus coverage data */
-configurations.create("coverageDataElementsForQuarkus") {
-    isVisible = false
-    isCanBeResolved = false
-    isCanBeConsumed = true
-
-    extendsFrom(configurations["implementation"], configurations["runtimeOnly"])
-
-    @Suppress("UnstableApiUsage")
-    attributes {
-        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category::class.java, Category.VERIFICATION))
-        attribute(VerificationType.VERIFICATION_TYPE_ATTRIBUTE, objects.named(VerificationType::class.java, VerificationType.JACOCO_RESULTS))
-    }
-
-    artifacts {
-        add("coverageDataElementsForQuarkus", layout.buildDirectory.file("jacoco-quarkus.exec")) {
-            @Suppress("UnstableApiUsage")
-            type = ArtifactTypeDefinition.BINARY_DATA_TYPE
-            builtBy(tasks.test)
-        }
-    }
-}
-
-/* Fix for Quarkus/ktlint-gradle incompatibilities */
-tasks.named("runKtlintCheckOverMainSourceSet") {
-    mustRunAfter(tasks.quarkusGenerateCode)
-    mustRunAfter(tasks.quarkusGenerateCodeDev)
-}
-
-tasks.named("runKtlintCheckOverTestSourceSet") {
-    mustRunAfter(tasks.quarkusGenerateCodeTests)
 }
