@@ -58,7 +58,7 @@ class CapelinBenchmarks {
     fun setUp() {
         val loader = ComputeWorkloadLoader(File("src/test/resources/trace"))
         val source = trace("bitbrains-small")
-        vms = source.resolve(loader, Random(1L))
+        vms = source.resolve(loader, Random(1L)).vms
         topology = checkNotNull(object {}.javaClass.getResourceAsStream("/env/topology.txt")).use { clusterTopology(it) }
     }
 

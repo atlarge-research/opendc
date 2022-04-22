@@ -25,6 +25,7 @@ package org.opendc.workflow.workload
 
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.api.Task
 import org.opendc.workflow.api.WORKFLOW_TASK_CORES

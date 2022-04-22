@@ -29,18 +29,27 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetFileWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalOutputFile
 import org.opendc.trace.util.parquet.LocalParquetReader
 import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
+import shaded.parquet.com.fasterxml.jackson.core.JsonEncoding
+import shaded.parquet.com.fasterxml.jackson.core.JsonFactory
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.exists
 
 /**
  * A [TraceFormat] implementation of the OpenDC virtual machine trace format.
  */
 public class OdcVmTraceFormat : TraceFormat {
+    /**
+     * A [JsonFactory] that is used to parse the JSON-based interference model.
+     */
+    private val jsonFactory = JsonFactory()
+
     /**
      * The name of this trace format.
      */
@@ -58,7 +67,7 @@ public class OdcVmTraceFormat : TraceFormat {
         }
     }
 
-    override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES)
+    override fun getTables(path: Path): List<String> = listOf(TABLE_RESOURCES, TABLE_RESOURCE_STATES, TABLE_INTERFERENCE_GROUPS)
 
     override fun getDetails(path: Path, table: String): TableDetails {
         return when (table) {
@@ -82,6 +91,13 @@ public class OdcVmTraceFormat : TraceFormat {
                 ),
                 listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP)
             )
+            TABLE_INTERFERENCE_GROUPS -> TableDetails(
+                listOf(
+                    INTERFERENCE_GROUP_MEMBERS,
+                    INTERFERENCE_GROUP_TARGET,
+                    INTERFERENCE_GROUP_SCORE,
+                )
+            )
             else -> throw IllegalArgumentException("Table $table not supported")
         }
     }
@@ -95,6 +111,15 @@ public class OdcVmTraceFormat : TraceFormat {
             TABLE_RESOURCE_STATES -> {
                 val reader = LocalParquetReader<GenericRecord>(path.resolve("trace.parquet"))
                 OdcVmResourceStateTableReader(reader)
+            }
+            TABLE_INTERFERENCE_GROUPS -> {
+                val modelPath = path.resolve("interference-model.json")
+                val parser = if (modelPath.exists())
+                    jsonFactory.createParser(modelPath.toFile())
+                else
+                    jsonFactory.createParser("[]") // If model does not exist, return empty model
+
+                OdcVmInterferenceJsonTableReader(parser)
             }
             else -> throw IllegalArgumentException("Table $table not supported")
         }
@@ -121,6 +146,10 @@ public class OdcVmTraceFormat : TraceFormat {
                     .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
                     .build()
                 OdcVmResourceStateTableWriter(writer, schema)
+            }
+            TABLE_INTERFERENCE_GROUPS -> {
+                val generator = jsonFactory.createGenerator(path.resolve("interference-model.json").toFile(), JsonEncoding.UTF8)
+                OdcVmInterferenceJsonTableWriter(generator)
             }
             else -> throw IllegalArgumentException("Table $table not supported")
         }

@@ -45,8 +45,8 @@ internal class HpcSampledComputeWorkload(val source: ComputeWorkload, val fracti
      */
     private val pattern = Regex("^(ComputeNode|cn).*")
 
-    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
-        val vms = source.resolve(loader, random)
+    override fun resolve(loader: ComputeWorkloadLoader, random: Random): ComputeWorkload.Resolved {
+        val (vms, interferenceModel) = source.resolve(loader, random)
 
         val (hpc, nonHpc) = vms.partition { entry ->
             val name = entry.name
@@ -130,7 +130,7 @@ internal class HpcSampledComputeWorkload(val source: ComputeWorkload, val fracti
         logger.debug { "Total sampled load: ${hpcLoad + nonHpcLoad}" }
         logger.info { "Sampled ${vms.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 
-        return res
+        return ComputeWorkload.Resolved(res, interferenceModel)
     }
 
     /**

@@ -24,6 +24,7 @@ package org.opendc.trace.bitbrains
 
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import org.opendc.trace.*
+import org.opendc.trace.conv.RESOURCE_ID
 import java.nio.file.Path
 
 /**

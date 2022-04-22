@@ -23,6 +23,7 @@
 package org.opendc.trace.swf
 
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.io.BufferedReader
 import java.time.Duration
 import java.time.Instant

@@ -25,6 +25,7 @@ package org.opendc.trace.bitbrains
 import com.fasterxml.jackson.dataformat.csv.CsvFactory
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.CompositeTableReader

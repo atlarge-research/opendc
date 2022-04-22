@@ -23,6 +23,7 @@
 package org.opendc.trace.swf
 
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import java.nio.file.Path

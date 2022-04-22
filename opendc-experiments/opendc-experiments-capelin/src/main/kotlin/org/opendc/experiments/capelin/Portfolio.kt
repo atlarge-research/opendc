@@ -23,7 +23,6 @@
 package org.opendc.experiments.capelin
 
 import com.typesafe.config.ConfigFactory
-import mu.KotlinLogging
 import org.opendc.compute.workload.ComputeServiceHelper
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.createComputeScheduler
@@ -31,7 +30,6 @@ import org.opendc.compute.workload.export.parquet.ParquetComputeMetricExporter
 import org.opendc.compute.workload.grid5000
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import org.opendc.compute.workload.topology.apply
-import org.opendc.compute.workload.util.VmInterferenceModelReader
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
@@ -51,11 +49,6 @@ import kotlin.math.roundToLong
  * @param name The name of the portfolio.
  */
 abstract class Portfolio(name: String) : Experiment(name) {
-    /**
-     * The logger for this portfolio instance.
-     */
-    private val logger = KotlinLogging.logger {}
-
     /**
      * The configuration to use.
      */
@@ -97,18 +90,13 @@ abstract class Portfolio(name: String) : Experiment(name) {
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
         val seeder = Random(repeat.toLong())
 
-        val performanceInterferenceModel = if (operationalPhenomena.hasInterference)
-            VmInterferenceModelReader()
-                .read(File(config.getString("interference-model")))
-        else
-            null
-
         val computeScheduler = createComputeScheduler(allocationPolicy, seeder, vmPlacements)
         val failureModel =
             if (operationalPhenomena.failureFrequency > 0)
                 grid5000(Duration.ofSeconds((operationalPhenomena.failureFrequency * 60).roundToLong()))
             else
                 null
+        val (vms, interferenceModel) = workload.source.resolve(workloadLoader, seeder)
         val telemetry = SdkTelemetryManager(clock)
         val runner = ComputeServiceHelper(
             coroutineContext,
@@ -116,7 +104,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
             telemetry,
             computeScheduler,
             failureModel,
-            performanceInterferenceModel?.withSeed(repeat.toLong())
+            interferenceModel?.withSeed(repeat.toLong())
         )
 
         val exporter = ParquetComputeMetricExporter(
@@ -132,8 +120,8 @@ abstract class Portfolio(name: String) : Experiment(name) {
             // Instantiate the desired topology
             runner.apply(topology)
 
-            // Converge the workload trace
-            runner.run(workload.source.resolve(workloadLoader, seeder), seeder.nextLong())
+            // Run the workload trace
+            runner.run(vms, seeder.nextLong())
         } finally {
             runner.close()
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 @file:JvmName("Tables")
-package org.opendc.trace
+package org.opendc.trace.conv
 
 /**
  * A table containing all workflows in a workload.
@@ -42,3 +42,8 @@ public const val TABLE_RESOURCES: String = "resources"
  * A table containing all resource states in a workload.
  */
 public const val TABLE_RESOURCE_STATES: String = "resource_states"
+
+/**
+ * A table containing the groups of resources that interfere when run on the same execution platform.
+ */
+public const val TABLE_INTERFERENCE_GROUPS: String = "interference_groups"

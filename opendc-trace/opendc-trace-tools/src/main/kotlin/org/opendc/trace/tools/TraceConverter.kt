@@ -33,6 +33,7 @@ import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.*
 import mu.KotlinLogging
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.io.File
 import java.time.Duration
 import java.time.Instant

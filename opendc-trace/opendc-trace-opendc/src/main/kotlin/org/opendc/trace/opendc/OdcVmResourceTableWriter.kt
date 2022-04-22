@@ -27,6 +27,7 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.time.Instant
 import kotlin.math.roundToLong
 

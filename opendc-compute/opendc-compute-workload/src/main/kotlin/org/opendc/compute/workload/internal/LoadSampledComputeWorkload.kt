@@ -37,8 +37,8 @@ internal class LoadSampledComputeWorkload(val source: ComputeWorkload, val fract
      */
     private val logger = KotlinLogging.logger {}
 
-    override fun resolve(loader: ComputeWorkloadLoader, random: Random): List<VirtualMachine> {
-        val vms = source.resolve(loader, random)
+    override fun resolve(loader: ComputeWorkloadLoader, random: Random): ComputeWorkload.Resolved {
+        val (vms, interferenceModel) = source.resolve(loader, random)
         val res = mutableListOf<VirtualMachine>()
 
         val totalLoad = vms.sumOf { it.totalLoad }
@@ -56,6 +56,6 @@ internal class LoadSampledComputeWorkload(val source: ComputeWorkload, val fract
 
         logger.info { "Sampled ${vms.size} VMs (fraction $fraction) into subset of ${res.size} VMs" }
 
-        return res
+        return ComputeWorkload.Resolved(res, interferenceModel)
     }
 }

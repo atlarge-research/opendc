@@ -25,7 +25,9 @@ package org.opendc.trace.bitbrains
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.trace.*
+import org.opendc.trace.conv.RESOURCE_STATE_CPU_USAGE
+import org.opendc.trace.conv.RESOURCE_STATE_TIMESTAMP
+import org.opendc.trace.conv.TABLE_RESOURCE_STATES
 import java.nio.file.Paths
 
 /**

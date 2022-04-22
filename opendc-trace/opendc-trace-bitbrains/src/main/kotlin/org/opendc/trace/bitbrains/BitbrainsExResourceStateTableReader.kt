@@ -23,6 +23,7 @@
 package org.opendc.trace.bitbrains
 
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.io.BufferedReader
 import java.time.Instant
 

@@ -23,6 +23,7 @@
 package org.opendc.trace.bitbrains
 
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.CompositeTableReader

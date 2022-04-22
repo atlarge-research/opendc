@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,10 @@
  */
 
 @file:JvmName("TaskColumns")
-package org.opendc.trace
+package org.opendc.trace.conv
 
+import org.opendc.trace.TableColumn
+import org.opendc.trace.column
 import java.time.Duration
 import java.time.Instant
 

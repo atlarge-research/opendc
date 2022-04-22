@@ -25,7 +25,7 @@ package org.opendc.trace.wtf
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
@@ -69,7 +69,14 @@ class WtfTraceFormatTest {
             { assertEquals("1078341553348591493", reader.get(TASK_WORKFLOW_ID)) },
             { assertEquals(Instant.ofEpochMilli(245604), reader.get(TASK_SUBMIT_TIME)) },
             { assertEquals(Duration.ofMillis(8163), reader.get(TASK_RUNTIME)) },
-            { assertEquals(setOf("584055316413447529", "133113685133695608", "1008582348422865408"), reader.get(TASK_PARENTS)) },
+            {
+                assertEquals(
+                    setOf("584055316413447529", "133113685133695608", "1008582348422865408"),
+                    reader.get(
+                        TASK_PARENTS
+                    )
+                )
+            },
         )
 
         assertAll(
@@ -78,7 +85,14 @@ class WtfTraceFormatTest {
             { assertEquals("1078341553348591493", reader.get(TASK_WORKFLOW_ID)) },
             { assertEquals(Instant.ofEpochMilli(251325), reader.get(TASK_SUBMIT_TIME)) },
             { assertEquals(Duration.ofMillis(8216), reader.get(TASK_RUNTIME)) },
-            { assertEquals(setOf("584055316413447529", "133113685133695608", "1008582348422865408"), reader.get(TASK_PARENTS)) },
+            {
+                assertEquals(
+                    setOf("584055316413447529", "133113685133695608", "1008582348422865408"),
+                    reader.get(
+                        TASK_PARENTS
+                    )
+                )
+            },
         )
 
         reader.close()

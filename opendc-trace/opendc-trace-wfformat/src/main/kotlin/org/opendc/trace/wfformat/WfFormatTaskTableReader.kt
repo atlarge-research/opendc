@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
 import org.opendc.trace.*
+import org.opendc.trace.conv.*
 import java.time.Duration
 import kotlin.math.roundToInt
 

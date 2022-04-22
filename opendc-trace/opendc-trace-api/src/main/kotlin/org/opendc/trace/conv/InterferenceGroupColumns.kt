@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.util
+@file:JvmName("InterferenceGroupColumns")
+package org.opendc.trace.conv
 
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
+import org.opendc.trace.TableColumn
+import org.opendc.trace.column
 
 /**
- * Test suite for the [VmInterferenceModelReader] class.
+ * Members of the interference group.
  */
-class VmInterferenceModelReaderTest {
-    @Test
-    fun testSmoke() {
-        val input = checkNotNull(VmInterferenceModelReader::class.java.getResourceAsStream("/perf-interference.json"))
-        assertDoesNotThrow { VmInterferenceModelReader().read(input) }
-    }
-}
+@JvmField
+public val INTERFERENCE_GROUP_MEMBERS: TableColumn<Set<String>> = column("interference_group:members")
+
+/**
+ * Target load after which the interference occurs.
+ */
+@JvmField
+public val INTERFERENCE_GROUP_TARGET: TableColumn<Double> = column("interference_group:target")
+
+/**
+ * Performance score when the interference occurs.
+ */
+@JvmField
+public val INTERFERENCE_GROUP_SCORE: TableColumn<Double> = column("interference_group:score")
