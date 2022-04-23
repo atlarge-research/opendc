@@ -21,3 +21,7 @@
  */
 
 description = "Workflow orchestration for OpenDC"
+
+subprojects {
+    group = "org.opendc.workflow"
+}
