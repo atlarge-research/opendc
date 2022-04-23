@@ -24,8 +24,6 @@ description = "Library for simulating computing workloads"
 
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
     `benchmark-conventions`
 }
 

@@ -25,8 +25,6 @@ description = "Simulator for the OpenDC FaaS platform"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
 }
 
 dependencies {

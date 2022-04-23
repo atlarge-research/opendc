@@ -25,8 +25,6 @@ description = "Support for Standard Workload Format (SWF) traces in OpenDC"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
 }
 
 dependencies {

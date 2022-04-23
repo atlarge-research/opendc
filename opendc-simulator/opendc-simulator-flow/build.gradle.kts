@@ -24,8 +24,6 @@ description = "High-performance flow simulator"
 
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
     `benchmark-conventions`
 }
 

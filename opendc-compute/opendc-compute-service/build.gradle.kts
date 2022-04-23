@@ -25,8 +25,6 @@ description = "OpenDC Compute Service implementation"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
 }
 
 dependencies {
