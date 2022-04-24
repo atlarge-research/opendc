@@ -21,3 +21,7 @@
  */
 
 description = "Function-as-a-Service (FaaS) platform for OpenDC"
+
+subprojects {
+    group = "org.opendc.faas"
+}

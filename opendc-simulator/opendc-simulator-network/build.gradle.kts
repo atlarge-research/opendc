@@ -24,8 +24,6 @@ description = "Library for simulating datacenter network components"
 
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
 }
 
 dependencies {

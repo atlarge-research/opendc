@@ -25,7 +25,6 @@ description = "Support library for simulating VM-based workloads with OpenDC"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
 }
 
 dependencies {

@@ -19,3 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+description = "Workload trace processing in OpenDC"
+
+subprojects {
+    group = "org.opendc.trace"
+}

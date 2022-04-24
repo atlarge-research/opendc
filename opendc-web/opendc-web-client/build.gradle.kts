@@ -25,8 +25,6 @@ description = "Client for the OpenDC web API"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
 }
 
 dependencies {

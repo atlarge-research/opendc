@@ -25,8 +25,6 @@ description = "Engine for running experiments using the OpenDC Harness"
 /* Build configuration */
 plugins {
     `kotlin-library-conventions`
-    `testing-conventions`
-    `jacoco-conventions`
 }
 
 dependencies {

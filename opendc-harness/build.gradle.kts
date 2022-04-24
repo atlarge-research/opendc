@@ -21,3 +21,7 @@
  */
 
 description = "Harness for defining repeatable experiments using OpenDC"
+
+subprojects {
+    group = "org.opendc.harness"
+}
