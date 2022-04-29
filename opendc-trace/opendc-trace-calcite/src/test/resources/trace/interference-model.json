@@ -1,0 +1,20 @@
+[
+    {
+        "vms": [
+            "1019",
+            "1023",
+            "1052"
+        ],
+        "minServerLoad": 0.0,
+        "performanceScore": 0.8830158730158756
+    },
+    {
+        "vms": [
+            "1023",
+            "1052",
+            "1073"
+        ],
+        "minServerLoad": 0.0,
+        "performanceScore": 0.7133055555552751
+    }
+]

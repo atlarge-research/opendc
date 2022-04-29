@@ -20,25 +20,26 @@
  * SOFTWARE.
  */
 
-@file:JvmName("InterferenceGroupColumns")
-package org.opendc.trace.conv
+package org.opendc.trace.calcite
 
-import org.opendc.trace.TableColumn
-
-/**
- * Members of the interference group.
- */
-@JvmField
-public val INTERFERENCE_GROUP_MEMBERS: TableColumn<Set<String>> = column("members")
+import org.apache.calcite.schema.Schema
+import org.apache.calcite.schema.Table
+import org.apache.calcite.schema.impl.AbstractSchema
+import org.opendc.trace.Trace
 
 /**
- * Target load after which the interference occurs.
+ * A Calcite [Schema] that exposes an OpenDC [Trace] into multiple SQL tables.
+ *
+ * @param trace The [Trace] to create a schema for.
  */
-@JvmField
-public val INTERFERENCE_GROUP_TARGET: TableColumn<Double> = column("target")
+public class TraceSchema(private val trace: Trace) : AbstractSchema() {
 
-/**
- * Performance score when the interference occurs.
- */
-@JvmField
-public val INTERFERENCE_GROUP_SCORE: TableColumn<Double> = column("score")
+    private val tables: Map<String, TraceTable> by lazy {
+        trace.tables.associateWith {
+            val table = checkNotNull(trace.getTable(it)) { "Unexpected null table" }
+            TraceTable(table)
+        }
+    }
+
+    override fun getTableMap(): Map<String, Table> = tables
+}

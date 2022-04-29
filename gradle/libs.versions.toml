@@ -1,4 +1,5 @@
 [versions]
+calcite = "1.30.0"
 classgraph = "4.8.143"
 clikt = "3.4.1"
 config = "1.4.2"
@@ -100,6 +101,9 @@ quarkus-jacoco = { module = "io.quarkus:quarkus-jacoco" }
 quarkus-test-security = { module = "io.quarkus:quarkus-test-security" }
 restassured-core = { module = "io.rest-assured:rest-assured" }
 restassured-kotlin = { module = "io.rest-assured:kotlin-extensions" }
+
+# Calcite (SQL)
+calcite-core = { module = "org.apache.calcite:calcite-core", version.ref = "calcite" }
 
 # Other
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }

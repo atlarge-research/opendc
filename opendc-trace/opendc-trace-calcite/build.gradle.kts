@@ -20,25 +20,18 @@
  * SOFTWARE.
  */
 
-@file:JvmName("InterferenceGroupColumns")
-package org.opendc.trace.conv
+description = "Apache Calcite (SQL) integration for the OpenDC trace library"
 
-import org.opendc.trace.TableColumn
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+}
 
-/**
- * Members of the interference group.
- */
-@JvmField
-public val INTERFERENCE_GROUP_MEMBERS: TableColumn<Set<String>> = column("members")
+dependencies {
+    api(projects.opendcTrace.opendcTraceApi)
 
-/**
- * Target load after which the interference occurs.
- */
-@JvmField
-public val INTERFERENCE_GROUP_TARGET: TableColumn<Double> = column("target")
+    api(libs.calcite.core)
 
-/**
- * Performance score when the interference occurs.
- */
-@JvmField
-public val INTERFERENCE_GROUP_SCORE: TableColumn<Double> = column("score")
+    testRuntimeOnly(projects.opendcTrace.opendcTraceOpendc)
+    testRuntimeOnly(libs.slf4j.simple)
+}

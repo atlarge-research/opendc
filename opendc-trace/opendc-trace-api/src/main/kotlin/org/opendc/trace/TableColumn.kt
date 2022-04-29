@@ -33,7 +33,7 @@ public class TableColumn<out T>(public val name: String, type: Class<T>) {
     /**
      * The type of the column.
      */
-    private val type: Class<*> = type
+    public val type: Class<*> = type
 
     /**
      * Determine whether the type of the column is a subtype of [column].
