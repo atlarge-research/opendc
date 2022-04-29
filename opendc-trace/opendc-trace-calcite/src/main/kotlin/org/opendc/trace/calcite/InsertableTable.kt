@@ -22,26 +22,18 @@
 
 package org.opendc.trace.calcite
 
-import org.apache.calcite.schema.Schema
+import org.apache.calcite.linq4j.Enumerable
 import org.apache.calcite.schema.Table
-import org.apache.calcite.schema.impl.AbstractSchema
-import org.opendc.trace.Trace
 
 /**
- * A Calcite [Schema] that exposes an OpenDC [Trace] into multiple SQL tables.
- *
- * @param trace The [Trace] to create a schema for.
+ * A Calcite [Table] to which rows can be inserted.
  */
-public class TraceSchema(private val trace: Trace) : AbstractSchema() {
+internal interface InsertableTable : Table {
     /**
-     * The [Table]s that belong to this schema.
+     * Insert [rows] into this table.
+     *
+     * @param rows The rows to insert into the table.
+     * @return The number of rows inserted.
      */
-    private val tables: Map<String, TraceTable> by lazy {
-        trace.tables.associateWith {
-            val table = checkNotNull(trace.getTable(it)) { "Unexpected null table" }
-            TraceTable(table)
-        }
-    }
-
-    override fun getTableMap(): Map<String, Table> = tables
+    fun insert(rows: Enumerable<Array<Any?>>): Long
 }

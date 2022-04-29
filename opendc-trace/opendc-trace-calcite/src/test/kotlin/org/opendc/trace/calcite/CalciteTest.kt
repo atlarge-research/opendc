@@ -26,9 +26,11 @@ import org.apache.calcite.jdbc.CalciteConnection
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.opendc.trace.Trace
+import java.nio.file.Files
 import java.nio.file.Paths
 import java.sql.DriverManager
 import java.sql.ResultSet
+import java.sql.Statement
 import java.sql.Timestamp
 import java.util.*
 
@@ -99,21 +101,56 @@ class CalciteTest {
         }
     }
 
+    @Test
+    fun testInsert() {
+        val tmp = Files.createTempDirectory("opendc")
+        val newTrace = Trace.create(tmp, "opendc-vm")
+
+        runStatement(newTrace) { stmt ->
+            val count = stmt.executeUpdate(
+                """
+                INSERT INTO trace.resources (id, start_time, stop_time, cpu_count, cpu_capacity, mem_capacity)
+                VALUES (1234, '2013-08-12 13:35:46.0', '2013-09-11 13:39:58.0', 1, 2926.0, 1024.0)
+                """.trimIndent()
+            )
+            assertEquals(1, count)
+        }
+
+        runQuery(newTrace, "SELECT * FROM trace.resources") { rs ->
+            assertAll(
+                { assertTrue(rs.next()) },
+                { assertEquals("1234", rs.getString("id")) },
+                { assertEquals(1, rs.getInt("cpu_count")) },
+                { assertEquals(Timestamp.valueOf("2013-08-12 13:35:46.0"), rs.getTimestamp("start_time")) },
+                { assertEquals(2926.0, rs.getDouble("cpu_capacity")) },
+                { assertEquals(1024.0, rs.getDouble("mem_capacity")) }
+            )
+        }
+    }
+
     /**
      * Helper function to run statement for the specified trace.
      */
     private fun runQuery(trace: Trace, query: String, block: (ResultSet) -> Unit) {
+        runStatement(trace) { stmt ->
+            val rs = stmt.executeQuery(query)
+            rs.use { block(rs) }
+        }
+    }
+
+    /**
+     * Helper function to run statement for the specified trace.
+     */
+    private fun runStatement(trace: Trace, block: (Statement) -> Unit) {
         val info = Properties()
         info.setProperty("lex", "JAVA")
         val connection = DriverManager.getConnection("jdbc:calcite:", info).unwrap(CalciteConnection::class.java)
         connection.rootSchema.add("trace", TraceSchema(trace))
 
         val stmt = connection.createStatement()
-        val results = stmt.executeQuery(query)
         try {
-            block(results)
+            block(stmt)
         } finally {
-            results.close()
             stmt.close()
             connection.close()
         }
