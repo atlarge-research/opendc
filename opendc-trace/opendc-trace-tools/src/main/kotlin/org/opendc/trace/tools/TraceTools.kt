@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,25 @@
  * SOFTWARE.
  */
 
-description = "Tools for working with workload traces"
+@file:JvmName("TraceTools")
+package org.opendc.trace.tools
 
-/* Build configuration */
-plugins {
-    `kotlin-conventions`
-    application
-}
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.subcommands
 
-application {
-    mainClass.set("org.opendc.trace.tools.TraceTools")
-}
+/**
+ * A script for querying and manipulating workload traces supported by OpenDC.
+ */
+fun main(args: Array<String>): Unit = TraceToolsCli().main(args)
 
-dependencies {
-    implementation(projects.opendcTrace.opendcTraceApi)
-    implementation(projects.opendcTrace.opendcTraceCalcite)
-    implementation(libs.kotlin.logging)
-    implementation(libs.clikt)
-    implementation(libs.jline)
+/**
+ * The primary [CliktCommand] for the trace tools offered by OpenDC.
+ */
+class TraceToolsCli : CliktCommand(name = "trace-tools") {
+    init {
+        subcommands(QueryCommand())
+        subcommands(ConvertCommand())
+    }
 
-    runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
-    runtimeOnly(projects.opendcTrace.opendcTraceBitbrains)
-    runtimeOnly(projects.opendcTrace.opendcTraceAzure)
-    runtimeOnly(projects.opendcTrace.opendcTraceGwf)
-    runtimeOnly(projects.opendcTrace.opendcTraceSwf)
-    runtimeOnly(projects.opendcTrace.opendcTraceWfformat)
-    runtimeOnly(projects.opendcTrace.opendcTraceWtf)
-    runtimeOnly(libs.log4j.slf4j)
+    override fun run() {}
 }

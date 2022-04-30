@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-@file:JvmName("TraceConverter")
 package org.opendc.trace.tools
 
 import com.github.ajalt.clikt.core.CliktCommand
@@ -44,14 +43,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * A script to convert a trace in text format into a Parquet trace.
+ * A [CliktCommand] that can convert between workload trace formats.
  */
-fun main(args: Array<String>): Unit = TraceConverterCli().main(args)
-
-/**
- * Represents the command for converting traces
- */
-internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
+internal class ConvertCommand : CliktCommand(name = "convert", help = "Convert between workload trace formats") {
     /**
      * The logger instance for the converter.
      */
@@ -73,7 +67,7 @@ internal class TraceConverterCli : CliktCommand(name = "trace-converter") {
     /**
      * The input format of the trace.
      */
-    private val inputFormat by option("-f", "--input-format", help = "format of output trace")
+    private val inputFormat by option("-f", "--input-format", help = "format of input trace")
         .required()
 
     /**
