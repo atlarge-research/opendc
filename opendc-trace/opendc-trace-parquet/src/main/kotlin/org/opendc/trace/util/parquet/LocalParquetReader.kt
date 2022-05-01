@@ -24,6 +24,7 @@ package org.opendc.trace.util.parquet
 
 import org.apache.parquet.avro.AvroParquetReader
 import org.apache.parquet.hadoop.ParquetReader
+import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.InputFile
 import java.io.File
 import java.io.IOException
@@ -32,11 +33,15 @@ import java.nio.file.Path
 import kotlin.io.path.isDirectory
 
 /**
- * A helper class to read Parquet files.
+ * A helper class to read Parquet files from the filesystem.
+ *
+ * This class wraps a [ParquetReader] in order to support reading partitioned Parquet datasets.
  *
  * @param path The path to the Parquet file or directory to read.
+ * @param factory Function to construct a [ParquetReader] for a local [InputFile].
  */
-public class LocalParquetReader<out T>(path: Path) : AutoCloseable {
+public class LocalParquetReader<out T>(path: Path,
+                                       private val factory: (InputFile) -> ParquetReader<T> = avro()) : AutoCloseable {
     /**
      * The input files to process.
      */
@@ -93,20 +98,40 @@ public class LocalParquetReader<out T>(path: Path) : AutoCloseable {
     private fun initReader() {
         reader?.close()
 
-        this.reader = if (filesIterator.hasNext()) {
-            createReader(filesIterator.next())
-        } else {
-            null
+        try {
+            this.reader = if (filesIterator.hasNext()) {
+                factory(filesIterator.next())
+            } else {
+                null
+            }
+        } catch (e: Throwable) {
+            this.reader = null
+            throw e
         }
     }
 
-    /**
-     * Create a Parquet reader for the specified file.
-     */
-    private fun createReader(input: InputFile): ParquetReader<T> {
-        return AvroParquetReader
-            .builder<T>(input)
-            .disableCompatibility()
-            .build()
+    public companion object {
+        /**
+         * A factory for reading Avro Parquet files.
+         */
+        public fun <T> avro(): (InputFile) -> ParquetReader<T> {
+            return { input ->
+                AvroParquetReader
+                    .builder<T>(input)
+                    .disableCompatibility()
+                    .build()
+            }
+        }
+
+        /**
+         * A factory for reading Parquet files with custom [ReadSupport].
+         */
+        public fun <T> custom(readSupport: ReadSupport<T>): (InputFile) -> ParquetReader<T> {
+            return { input ->
+                object : ParquetReader.Builder<T>(input) {
+                    override fun getReadSupport(): ReadSupport<T> = readSupport
+                }.build()
+            }
+        }
     }
 }

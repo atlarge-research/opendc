@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 
 @file:JvmName("AvroUtils")
-package org.opendc.trace.util.parquet
+package org.opendc.trace.util.avro
 
 import org.apache.avro.LogicalTypes
 import org.apache.avro.Schema

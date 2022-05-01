@@ -29,9 +29,9 @@ import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.telemetry.compute.table.ServerTableReader
-import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
-import org.opendc.trace.util.parquet.UUID_SCHEMA
-import org.opendc.trace.util.parquet.optional
+import org.opendc.trace.util.avro.TIMESTAMP_SCHEMA
+import org.opendc.trace.util.avro.UUID_SCHEMA
+import org.opendc.trace.util.avro.optional
 import java.io.File
 
 /**

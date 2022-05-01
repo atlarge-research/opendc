@@ -26,7 +26,7 @@ import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericRecordBuilder
 import org.opendc.telemetry.compute.table.ServiceTableReader
-import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
+import org.opendc.trace.util.avro.TIMESTAMP_SCHEMA
 import java.io.File
 
 /**

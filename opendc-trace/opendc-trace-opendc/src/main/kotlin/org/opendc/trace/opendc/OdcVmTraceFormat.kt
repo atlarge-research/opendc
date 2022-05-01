@@ -34,7 +34,7 @@ import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalOutputFile
 import org.opendc.trace.util.parquet.LocalParquetReader
-import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
+import org.opendc.trace.util.avro.TIMESTAMP_SCHEMA
 import shaded.parquet.com.fasterxml.jackson.core.JsonEncoding
 import shaded.parquet.com.fasterxml.jackson.core.JsonFactory
 import java.nio.file.Files
