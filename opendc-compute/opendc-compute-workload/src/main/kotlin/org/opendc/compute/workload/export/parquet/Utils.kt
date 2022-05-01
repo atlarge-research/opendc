@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,19 @@
  * SOFTWARE.
  */
 
-description = "Support library for simulating VM-based workloads with OpenDC"
+package org.opendc.compute.workload.export.parquet
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import org.apache.parquet.io.api.Binary
+import java.nio.ByteBuffer
+import java.util.UUID
 
-dependencies {
-    api(projects.opendcCompute.opendcComputeSimulator)
-
-    implementation(projects.opendcTrace.opendcTraceApi)
-    implementation(projects.opendcTrace.opendcTraceParquet)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
-    implementation(libs.opentelemetry.semconv)
-
-    implementation(libs.kotlin.logging)
-
-    testImplementation(libs.slf4j.simple)
+/**
+ *
+ * @author Fabian Mastenbroek (f.s.mastenbroek@student.tudelft.nl)
+ */
+internal fun UUID.toBinary(): Binary {
+    val bb = ByteBuffer.wrap(ByteArray(16))
+    bb.putLong(mostSignificantBits)
+    bb.putLong(leastSignificantBits)
+    return Binary.fromConstantByteBuffer(bb)
 }

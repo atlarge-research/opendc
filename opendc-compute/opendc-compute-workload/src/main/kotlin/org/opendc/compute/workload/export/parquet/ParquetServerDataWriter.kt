@@ -22,73 +22,177 @@
 
 package org.opendc.compute.workload.export.parquet
 
-import org.apache.avro.Schema
-import org.apache.avro.SchemaBuilder
-import org.apache.avro.generic.GenericData
-import org.apache.avro.generic.GenericRecordBuilder
-import org.apache.parquet.avro.AvroParquetWriter
+import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.ParquetWriter
+import org.apache.parquet.hadoop.api.WriteSupport
+import org.apache.parquet.io.api.RecordConsumer
+import org.apache.parquet.schema.*
 import org.opendc.telemetry.compute.table.ServerTableReader
-import org.opendc.trace.util.avro.TIMESTAMP_SCHEMA
-import org.opendc.trace.util.avro.UUID_SCHEMA
-import org.opendc.trace.util.avro.optional
+import org.opendc.trace.util.parquet.LocalParquetWriter
 import java.io.File
+import java.util.*
 
 /**
  * A Parquet event writer for [ServerTableReader]s.
  */
 public class ParquetServerDataWriter(path: File, bufferSize: Int) :
-    ParquetDataWriter<ServerTableReader>(path, SCHEMA, bufferSize) {
+    ParquetDataWriter<ServerTableReader>(path, ServerDataWriteSupport(), bufferSize) {
 
-    override fun buildWriter(builder: AvroParquetWriter.Builder<GenericData.Record>): ParquetWriter<GenericData.Record> {
+    override fun buildWriter(builder: LocalParquetWriter.Builder<ServerTableReader>): ParquetWriter<ServerTableReader> {
         return builder
             .withDictionaryEncoding("server_id", true)
             .withDictionaryEncoding("host_id", true)
             .build()
     }
 
-    override fun convert(builder: GenericRecordBuilder, data: ServerTableReader) {
-        builder["timestamp"] = data.timestamp.toEpochMilli()
-
-        builder["server_id"] = data.server.id
-        builder["host_id"] = data.host?.id
-
-        builder["uptime"] = data.uptime
-        builder["downtime"] = data.downtime
-        builder["boot_time"] = data.bootTime?.toEpochMilli()
-        builder["provision_time"] = data.provisionTime?.toEpochMilli()
-
-        builder["cpu_count"] = data.server.cpuCount
-        builder["cpu_limit"] = data.cpuLimit
-        builder["cpu_time_active"] = data.cpuActiveTime
-        builder["cpu_time_idle"] = data.cpuIdleTime
-        builder["cpu_time_steal"] = data.cpuStealTime
-        builder["cpu_time_lost"] = data.cpuLostTime
-
-        builder["mem_limit"] = data.server.memCapacity
-    }
-
     override fun toString(): String = "server-writer"
 
+    /**
+     * A [WriteSupport] implementation for a [ServerTableReader].
+     */
+    private class ServerDataWriteSupport : WriteSupport<ServerTableReader>() {
+        lateinit var recordConsumer: RecordConsumer
+
+        override fun init(configuration: Configuration): WriteContext {
+            return WriteContext(SCHEMA, emptyMap())
+        }
+
+        override fun prepareForWrite(recordConsumer: RecordConsumer) {
+            this.recordConsumer = recordConsumer
+        }
+
+        override fun write(record: ServerTableReader) {
+            write(recordConsumer, record)
+        }
+
+        private fun write(consumer: RecordConsumer, data: ServerTableReader) {
+            consumer.startMessage()
+
+            consumer.startField("timestamp", 0)
+            consumer.addLong(data.timestamp.toEpochMilli())
+            consumer.endField("timestamp", 0)
+
+            consumer.startField("server_id", 1)
+            consumer.addBinary(UUID.fromString(data.server.id).toBinary())
+            consumer.endField("server_id", 1)
+
+            val hostId = data.host?.id
+            if (hostId != null) {
+                consumer.startField("host_id", 2)
+                consumer.addBinary(UUID.fromString(hostId).toBinary())
+                consumer.endField("host_id", 2)
+            }
+
+            consumer.startField("uptime", 3)
+            consumer.addLong(data.uptime)
+            consumer.endField("uptime", 3)
+
+            consumer.startField("downtime", 4)
+            consumer.addLong(data.downtime)
+            consumer.endField("downtime", 4)
+
+            val bootTime = data.bootTime
+            if (bootTime != null) {
+                consumer.startField("boot_time", 5)
+                consumer.addLong(bootTime.toEpochMilli())
+                consumer.endField("boot_time", 5)
+            }
+
+            val provisionTime = data.provisionTime
+            if (provisionTime != null) {
+                consumer.startField("provision_time", 6)
+                consumer.addLong(provisionTime.toEpochMilli())
+                consumer.endField("provision_time", 6)
+            }
+
+            consumer.startField("cpu_count", 7)
+            consumer.addInteger(data.server.cpuCount)
+            consumer.endField("cpu_count", 7)
+
+            consumer.startField("cpu_limit", 8)
+            consumer.addDouble(data.cpuLimit)
+            consumer.endField("cpu_limit", 8)
+
+            consumer.startField("cpu_time_active", 9)
+            consumer.addLong(data.cpuActiveTime)
+            consumer.endField("cpu_time_active", 9)
+
+            consumer.startField("cpu_time_idle", 10)
+            consumer.addLong(data.cpuIdleTime)
+            consumer.endField("cpu_time_idle", 10)
+
+            consumer.startField("cpu_time_steal", 11)
+            consumer.addLong(data.cpuStealTime)
+            consumer.endField("cpu_time_steal", 11)
+
+            consumer.startField("cpu_time_lost", 12)
+            consumer.addLong(data.cpuLostTime)
+            consumer.endField("cpu_time_lost", 12)
+
+            consumer.startField("mem_limit", 13)
+            consumer.addLong(data.server.memCapacity)
+            consumer.endField("mem_limit", 13)
+
+            consumer.endMessage()
+        }
+    }
+
     private companion object {
-        private val SCHEMA: Schema = SchemaBuilder
-            .record("server")
-            .namespace("org.opendc.telemetry.compute")
-            .fields()
-            .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
-            .name("server_id").type(UUID_SCHEMA).noDefault()
-            .name("host_id").type(UUID_SCHEMA.optional()).noDefault()
-            .requiredLong("uptime")
-            .requiredLong("downtime")
-            .name("provision_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
-            .name("boot_time").type(TIMESTAMP_SCHEMA.optional()).noDefault()
-            .requiredInt("cpu_count")
-            .requiredDouble("cpu_limit")
-            .requiredLong("cpu_time_active")
-            .requiredLong("cpu_time_idle")
-            .requiredLong("cpu_time_steal")
-            .requiredLong("cpu_time_lost")
-            .requiredLong("mem_limit")
-            .endRecord()
+        /**
+         * The schema of the server data.
+         */
+        val SCHEMA: MessageType = Types.buildMessage()
+            .addFields(
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                    .named("timestamp"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY)
+                    .length(16)
+                    .`as`(LogicalTypeAnnotation.uuidType())
+                    .named("server_id"),
+                Types
+                    .optional(PrimitiveType.PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY)
+                    .length(16)
+                    .`as`(LogicalTypeAnnotation.uuidType())
+                    .named("host_id"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("uptime"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("downtime"),
+                Types
+                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                    .named("provision_time"),
+                Types
+                    .optional(PrimitiveType.PrimitiveTypeName.INT64)
+                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                    .named("boot_time"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("cpu_count"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.DOUBLE)
+                    .named("cpu_limit"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("cpu_time_active"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("cpu_time_idle"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("cpu_time_steal"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("cpu_time_lost"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .named("mem_limit")
+            )
+            .named("server")
     }
 }
