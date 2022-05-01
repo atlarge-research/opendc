@@ -22,19 +22,19 @@
 
 package org.opendc.trace.opendc
 
-import org.apache.avro.Schema
-import org.apache.avro.SchemaBuilder
-import org.apache.avro.generic.GenericRecord
-import org.apache.parquet.avro.AvroParquetWriter
+import org.apache.parquet.column.ParquetProperties
 import org.apache.parquet.hadoop.ParquetFileWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
+import org.opendc.trace.opendc.parquet.ResourceReadSupport
+import org.opendc.trace.opendc.parquet.ResourceStateReadSupport
+import org.opendc.trace.opendc.parquet.ResourceStateWriteSupport
+import org.opendc.trace.opendc.parquet.ResourceWriteSupport
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
-import org.opendc.trace.util.parquet.LocalOutputFile
 import org.opendc.trace.util.parquet.LocalParquetReader
-import org.opendc.trace.util.avro.TIMESTAMP_SCHEMA
+import org.opendc.trace.util.parquet.LocalParquetWriter
 import shaded.parquet.com.fasterxml.jackson.core.JsonEncoding
 import shaded.parquet.com.fasterxml.jackson.core.JsonFactory
 import java.nio.file.Files
@@ -105,11 +105,11 @@ public class OdcVmTraceFormat : TraceFormat {
     override fun newReader(path: Path, table: String): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
-                val reader = LocalParquetReader<GenericRecord>(path.resolve("meta.parquet"))
+                val reader = LocalParquetReader(path.resolve("meta.parquet"), LocalParquetReader.custom(ResourceReadSupport()))
                 OdcVmResourceTableReader(reader)
             }
             TABLE_RESOURCE_STATES -> {
-                val reader = LocalParquetReader<GenericRecord>(path.resolve("trace.parquet"))
+                val reader = LocalParquetReader(path.resolve("trace.parquet"), LocalParquetReader.custom(ResourceStateReadSupport()))
                 OdcVmResourceStateTableReader(reader)
             }
             TABLE_INTERFERENCE_GROUPS -> {
@@ -128,24 +128,24 @@ public class OdcVmTraceFormat : TraceFormat {
     override fun newWriter(path: Path, table: String): TableWriter {
         return when (table) {
             TABLE_RESOURCES -> {
-                val schema = RESOURCES_SCHEMA
-                val writer = AvroParquetWriter.builder<GenericRecord>(LocalOutputFile(path.resolve("meta.parquet")))
-                    .withSchema(schema)
+                val writer = LocalParquetWriter.builder(path.resolve("meta.parquet"), ResourceWriteSupport())
                     .withCompressionCodec(CompressionCodecName.ZSTD)
+                    .withPageWriteChecksumEnabled(true)
+                    .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
                     .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
                     .build()
-                OdcVmResourceTableWriter(writer, schema)
+                OdcVmResourceTableWriter(writer)
             }
             TABLE_RESOURCE_STATES -> {
-                val schema = RESOURCE_STATES_SCHEMA
-                val writer = AvroParquetWriter.builder<GenericRecord>(LocalOutputFile(path.resolve("trace.parquet")))
-                    .withSchema(schema)
+                val writer = LocalParquetWriter.builder(path.resolve("trace.parquet"), ResourceStateWriteSupport())
                     .withCompressionCodec(CompressionCodecName.ZSTD)
                     .withDictionaryEncoding("id", true)
                     .withBloomFilterEnabled("id", true)
+                    .withPageWriteChecksumEnabled(true)
+                    .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
                     .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
                     .build()
-                OdcVmResourceStateTableWriter(writer, schema)
+                OdcVmResourceStateTableWriter(writer)
             }
             TABLE_INTERFERENCE_GROUPS -> {
                 val generator = jsonFactory.createGenerator(path.resolve("interference-model.json").toFile(), JsonEncoding.UTF8)
@@ -153,38 +153,5 @@ public class OdcVmTraceFormat : TraceFormat {
             }
             else -> throw IllegalArgumentException("Table $table not supported")
         }
-    }
-
-    public companion object {
-        /**
-         * Schema for the resources table in the trace.
-         */
-        @JvmStatic
-        public val RESOURCES_SCHEMA: Schema = SchemaBuilder
-            .record("resource")
-            .namespace("org.opendc.trace.opendc")
-            .fields()
-            .requiredString("id")
-            .name("start_time").type(TIMESTAMP_SCHEMA).noDefault()
-            .name("stop_time").type(TIMESTAMP_SCHEMA).noDefault()
-            .requiredInt("cpu_count")
-            .requiredDouble("cpu_capacity")
-            .requiredLong("mem_capacity")
-            .endRecord()
-
-        /**
-         * Schema for the resource states table in the trace.
-         */
-        @JvmStatic
-        public val RESOURCE_STATES_SCHEMA: Schema = SchemaBuilder
-            .record("resource_state")
-            .namespace("org.opendc.trace.opendc")
-            .fields()
-            .requiredString("id")
-            .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
-            .requiredLong("duration")
-            .requiredInt("cpu_count")
-            .requiredDouble("cpu_usage")
-            .endRecord()
     }
 }

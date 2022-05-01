@@ -29,7 +29,9 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.opendc.trace.conv.*
+import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.Instant
 
 /**
  * Test suite for the [OdcVmTraceFormat] implementation.
@@ -78,6 +80,37 @@ internal class OdcVmTraceFormatTest {
         reader.close()
     }
 
+    @Test
+    fun testResourcesWrite() {
+        val path = Files.createTempDirectory("opendc")
+        val writer = format.newWriter(path, TABLE_RESOURCES)
+
+        writer.startRow()
+        writer.set(RESOURCE_ID, "1019")
+        writer.set(RESOURCE_START_TIME, Instant.EPOCH)
+        writer.set(RESOURCE_STOP_TIME, Instant.EPOCH)
+        writer.setInt(RESOURCE_CPU_COUNT, 1)
+        writer.setDouble(RESOURCE_CPU_CAPACITY, 1024.0)
+        writer.setDouble(RESOURCE_MEM_CAPACITY, 1024.0)
+        writer.endRow()
+        writer.close()
+
+        val reader = format.newReader(path, TABLE_RESOURCES)
+
+        assertAll(
+            { assertTrue(reader.nextRow()) },
+            { assertEquals("1019", reader.get(RESOURCE_ID)) },
+            { assertEquals(Instant.EPOCH, reader.get(RESOURCE_START_TIME)) },
+            { assertEquals(Instant.EPOCH, reader.get(RESOURCE_STOP_TIME)) },
+            { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
+            { assertEquals(1024.0, reader.getDouble(RESOURCE_CPU_CAPACITY)) },
+            { assertEquals(1024.0, reader.getDouble(RESOURCE_MEM_CAPACITY)) },
+            { assertFalse(reader.nextRow()) },
+        )
+
+        reader.close()
+    }
+
     @ParameterizedTest
     @ValueSource(strings = ["trace-v2.0", "trace-v2.1"])
     fun testSmoke(name: String) {
@@ -89,6 +122,33 @@ internal class OdcVmTraceFormatTest {
             { assertEquals("1019", reader.get(RESOURCE_ID)) },
             { assertEquals(1376314846, reader.get(RESOURCE_STATE_TIMESTAMP).epochSecond) },
             { assertEquals(0.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE), 0.01) }
+        )
+
+        reader.close()
+    }
+
+    @Test
+    fun testResourceStatesWrite() {
+        val path = Files.createTempDirectory("opendc")
+        val writer = format.newWriter(path, TABLE_RESOURCE_STATES)
+
+        writer.startRow()
+        writer.set(RESOURCE_ID, "1019")
+        writer.set(RESOURCE_STATE_TIMESTAMP, Instant.EPOCH)
+        writer.setDouble(RESOURCE_STATE_CPU_USAGE, 23.0)
+        writer.setInt(RESOURCE_CPU_COUNT, 1)
+        writer.endRow()
+        writer.close()
+
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
+
+        assertAll(
+            { assertTrue(reader.nextRow()) },
+            { assertEquals("1019", reader.get(RESOURCE_ID)) },
+            { assertEquals(Instant.EPOCH, reader.get(RESOURCE_STATE_TIMESTAMP)) },
+            { assertEquals(1, reader.getInt(RESOURCE_CPU_COUNT)) },
+            { assertEquals(23.0, reader.getDouble(RESOURCE_STATE_CPU_USAGE)) },
+            { assertFalse(reader.nextRow()) },
         )
 
         reader.close()

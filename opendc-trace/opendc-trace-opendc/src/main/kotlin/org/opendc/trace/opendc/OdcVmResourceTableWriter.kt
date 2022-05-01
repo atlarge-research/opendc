@@ -22,74 +22,82 @@
 
 package org.opendc.trace.opendc
 
-import org.apache.avro.Schema
-import org.apache.avro.generic.GenericRecord
-import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.parquet.hadoop.ParquetWriter
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
+import org.opendc.trace.opendc.parquet.Resource
 import java.time.Instant
-import kotlin.math.roundToLong
 
 /**
  * A [TableWriter] implementation for the OpenDC virtual machine trace format.
  */
-internal class OdcVmResourceTableWriter(
-    private val writer: ParquetWriter<GenericRecord>,
-    private val schema: Schema
-) : TableWriter {
+internal class OdcVmResourceTableWriter(private val writer: ParquetWriter<Resource>) : TableWriter {
     /**
-     * The current builder for the record that is being written.
+     * The current state for the record that is being written.
      */
-    private var builder: GenericRecordBuilder? = null
-
-    /**
-     * The fields belonging to the resource schema.
-     */
-    private val fields = schema.fields
+    private var _isActive = false
+    private var _id: String = ""
+    private var _startTime: Instant = Instant.MIN
+    private var _stopTime: Instant = Instant.MIN
+    private var _cpuCount: Int = 0
+    private var _cpuCapacity: Double = Double.NaN
+    private var _memCapacity: Double = Double.NaN
 
     override fun startRow() {
-        builder = GenericRecordBuilder(schema)
+        _isActive = true
+        _id = ""
+        _startTime = Instant.MIN
+        _stopTime = Instant.MIN
+        _cpuCount = 0
+        _cpuCapacity = Double.NaN
+        _memCapacity = Double.NaN
     }
 
     override fun endRow() {
-        val builder = checkNotNull(builder) { "No active row" }
-        this.builder = null
-        writer.write(builder.build())
+        check(_isActive) { "No active row" }
+        _isActive = false
+        writer.write(Resource(_id, _startTime, _stopTime, _cpuCount, _cpuCapacity, _memCapacity))
     }
 
-    override fun resolve(column: TableColumn<*>): Int {
-        val schema = schema
-        return when (column) {
-            RESOURCE_ID -> schema.getField("id").pos()
-            RESOURCE_START_TIME -> (schema.getField("start_time") ?: schema.getField("submissionTime")).pos()
-            RESOURCE_STOP_TIME -> (schema.getField("stop_time") ?: schema.getField("endTime")).pos()
-            RESOURCE_CPU_COUNT -> (schema.getField("cpu_count") ?: schema.getField("maxCores")).pos()
-            RESOURCE_CPU_CAPACITY -> schema.getField("cpu_capacity").pos()
-            RESOURCE_MEM_CAPACITY -> (schema.getField("mem_capacity") ?: schema.getField("requiredMemory")).pos()
-            else -> -1
+    override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
+
+    override fun set(index: Int, value: Any) {
+        check(_isActive) { "No active row" }
+        when (index) {
+            COL_ID -> _id = value as String
+            COL_START_TIME -> _startTime = value as Instant
+            COL_STOP_TIME -> _stopTime = value as Instant
+            COL_CPU_COUNT -> _cpuCount = value as Int
+            COL_CPU_CAPACITY -> _cpuCapacity = value as Double
+            COL_MEM_CAPACITY -> _memCapacity = value as Double
+            else -> throw IllegalArgumentException("Invalid column index $index")
         }
     }
 
-    override fun set(index: Int, value: Any) {
-        val builder = checkNotNull(builder) { "No active row" }
-        builder.set(
-            fields[index],
-            when (index) {
-                COL_START_TIME, COL_STOP_TIME -> (value as Instant).toEpochMilli()
-                COL_MEM_CAPACITY -> (value as Double).roundToLong()
-                else -> value
-            }
-        )
+    override fun setBoolean(index: Int, value: Boolean) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
     }
 
-    override fun setBoolean(index: Int, value: Boolean) = set(index, value)
+    override fun setInt(index: Int, value: Int) {
+        check(_isActive) { "No active row" }
+        when (index) {
+            COL_CPU_COUNT -> _cpuCount = value
+            else -> throw IllegalArgumentException("Invalid column or type [index $index]")
+        }
+    }
 
-    override fun setInt(index: Int, value: Int) = set(index, value)
+    override fun setLong(index: Int, value: Long) {
+        throw IllegalArgumentException("Invalid column or type [index $index]")
+    }
 
-    override fun setLong(index: Int, value: Long) = set(index, value)
-
-    override fun setDouble(index: Int, value: Double) = set(index, value)
+    override fun setDouble(index: Int, value: Double) {
+        check(_isActive) { "No active row" }
+        when (index) {
+            COL_CPU_CAPACITY -> _cpuCapacity = value
+            COL_MEM_CAPACITY -> _memCapacity = value
+            else -> throw IllegalArgumentException("Invalid column or type [index $index]")
+        }
+    }
 
     override fun flush() {
         // Not available
@@ -99,10 +107,19 @@ internal class OdcVmResourceTableWriter(
         writer.close()
     }
 
-    /**
-     * Columns with special behavior.
-     */
-    private val COL_START_TIME = resolve(RESOURCE_START_TIME)
-    private val COL_STOP_TIME = resolve(RESOURCE_STOP_TIME)
-    private val COL_MEM_CAPACITY = resolve(RESOURCE_MEM_CAPACITY)
+    private val COL_ID = 0
+    private val COL_START_TIME = 1
+    private val COL_STOP_TIME = 2
+    private val COL_CPU_COUNT = 3
+    private val COL_CPU_CAPACITY = 4
+    private val COL_MEM_CAPACITY = 5
+
+    private val columns = mapOf(
+        RESOURCE_ID to COL_ID,
+        RESOURCE_START_TIME to COL_START_TIME,
+        RESOURCE_STOP_TIME to COL_STOP_TIME,
+        RESOURCE_CPU_COUNT to COL_CPU_COUNT,
+        RESOURCE_CPU_CAPACITY to COL_CPU_CAPACITY,
+        RESOURCE_MEM_CAPACITY to COL_MEM_CAPACITY,
+    )
 }

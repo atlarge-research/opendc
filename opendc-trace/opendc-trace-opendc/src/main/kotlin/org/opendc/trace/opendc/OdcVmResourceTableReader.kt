@@ -22,37 +22,30 @@
 
 package org.opendc.trace.opendc
 
-import org.apache.avro.Schema
-import org.apache.avro.generic.GenericRecord
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
+import org.opendc.trace.opendc.parquet.Resource
 import org.opendc.trace.util.parquet.LocalParquetReader
-import java.time.Instant
 
 /**
- * A [TableReader] implementation for the resources table in the OpenDC virtual machine trace format.
+ * A [TableReader] implementation for the "resources table" in the OpenDC virtual machine trace format.
  */
-internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<GenericRecord>) : TableReader {
+internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<Resource>) : TableReader {
     /**
      * The current record.
      */
-    private var record: GenericRecord? = null
-
-    /**
-     * A flag to indicate that the columns have been initialized.
-     */
-    private var hasInitializedColumns = false
+    private var record: Resource? = null
 
     override fun nextRow(): Boolean {
-        val record = reader.read()
-        this.record = record
+        try {
+            val record = reader.read()
+            this.record = record
 
-        if (!hasInitializedColumns && record != null) {
-            initColumns(record.schema)
-            hasInitializedColumns = true
+            return record != null
+        } catch (e: Throwable) {
+            this.record = null
+            throw e
         }
-
-        return record != null
     }
 
     override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
@@ -66,9 +59,9 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            COL_ID -> record[AVRO_COL_ID].toString()
-            COL_START_TIME -> Instant.ofEpochMilli(record[AVRO_COL_START_TIME] as Long)
-            COL_STOP_TIME -> Instant.ofEpochMilli(record[AVRO_COL_STOP_TIME] as Long)
+            COL_ID -> record.id
+            COL_START_TIME -> record.startTime
+            COL_STOP_TIME -> record.stopTime
             COL_CPU_COUNT -> getInt(index)
             COL_CPU_CAPACITY -> getDouble(index)
             COL_MEM_CAPACITY -> getDouble(index)
@@ -84,7 +77,7 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            COL_CPU_COUNT -> record[AVRO_COL_CPU_COUNT] as Int
+            COL_CPU_COUNT -> record.cpuCount
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -97,8 +90,8 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            COL_CPU_CAPACITY -> if (AVRO_COL_CPU_CAPACITY >= 0) (record[AVRO_COL_CPU_CAPACITY] as Number).toDouble() else 0.0
-            COL_MEM_CAPACITY -> (record[AVRO_COL_MEM_CAPACITY] as Number).toDouble()
+            COL_CPU_CAPACITY -> record.cpuCapacity
+            COL_MEM_CAPACITY -> record.memCapacity
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -108,30 +101,6 @@ internal class OdcVmResourceTableReader(private val reader: LocalParquetReader<G
     }
 
     override fun toString(): String = "OdcVmResourceTableReader"
-
-    /**
-     * Initialize the columns for the reader based on [schema].
-     */
-    private fun initColumns(schema: Schema) {
-        try {
-            AVRO_COL_ID = schema.getField("id").pos()
-            AVRO_COL_START_TIME = (schema.getField("start_time") ?: schema.getField("submissionTime")).pos()
-            AVRO_COL_STOP_TIME = (schema.getField("stop_time") ?: schema.getField("endTime")).pos()
-            AVRO_COL_CPU_COUNT = (schema.getField("cpu_count") ?: schema.getField("maxCores")).pos()
-            AVRO_COL_CPU_CAPACITY = schema.getField("cpu_capacity")?.pos() ?: -1
-            AVRO_COL_MEM_CAPACITY = (schema.getField("mem_capacity") ?: schema.getField("requiredMemory")).pos()
-        } catch (e: NullPointerException) {
-            // This happens when the field we are trying to access does not exist
-            throw IllegalArgumentException("Invalid schema")
-        }
-    }
-
-    private var AVRO_COL_ID = -1
-    private var AVRO_COL_START_TIME = -1
-    private var AVRO_COL_STOP_TIME = -1
-    private var AVRO_COL_CPU_COUNT = -1
-    private var AVRO_COL_CPU_CAPACITY = -1
-    private var AVRO_COL_MEM_CAPACITY = -1
 
     private val COL_ID = 0
     private val COL_START_TIME = 1

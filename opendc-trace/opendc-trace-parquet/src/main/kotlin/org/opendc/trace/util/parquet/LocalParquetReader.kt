@@ -40,8 +40,10 @@ import kotlin.io.path.isDirectory
  * @param path The path to the Parquet file or directory to read.
  * @param factory Function to construct a [ParquetReader] for a local [InputFile].
  */
-public class LocalParquetReader<out T>(path: Path,
-                                       private val factory: (InputFile) -> ParquetReader<T> = avro()) : AutoCloseable {
+public class LocalParquetReader<out T>(
+    path: Path,
+    private val factory: (InputFile) -> ParquetReader<T> = avro()
+) : AutoCloseable {
     /**
      * The input files to process.
      */
