@@ -35,10 +35,7 @@ import org.apache.calcite.rel.logical.LogicalTableModify
 import org.apache.calcite.rel.type.RelDataType
 import org.apache.calcite.rel.type.RelDataTypeFactory
 import org.apache.calcite.rex.RexNode
-import org.apache.calcite.schema.ModifiableTable
-import org.apache.calcite.schema.ScannableTable
-import org.apache.calcite.schema.SchemaPlus
-import org.apache.calcite.schema.Table
+import org.apache.calcite.schema.*
 import org.apache.calcite.schema.impl.AbstractTableQueryable
 import org.apache.calcite.sql.type.SqlTypeName
 import java.time.Duration
@@ -50,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 internal class TraceTable(private val table: org.opendc.trace.Table) :
     AbstractQueryableTable(Array<Any?>::class.java),
-    ScannableTable,
+    ProjectableFilterableTable,
     ModifiableTable,
     InsertableTable {
     private var rowType: RelDataType? = null
@@ -65,11 +62,15 @@ internal class TraceTable(private val table: org.opendc.trace.Table) :
         return rowType
     }
 
-    override fun scan(root: DataContext): Enumerable<Array<Any?>> {
+    override fun scan(root: DataContext, filters: MutableList<RexNode>, projects: IntArray?): Enumerable<Array<Any?>> {
+        // Filters are currently not supported by the OpenDC trace API. By keeping the filters in the list, Calcite
+        // assumes that they are declined and will perform the filters itself.
+
+        val projection = projects?.map { table.columns[it] }
         val cancelFlag = DataContext.Variable.CANCEL_FLAG.get<AtomicBoolean>(root)
         return object : AbstractEnumerable<Array<Any?>>() {
             override fun enumerator(): Enumerator<Array<Any?>> =
-                TraceReaderEnumerator(table.newReader(), table.columns, cancelFlag)
+                TraceReaderEnumerator(table.newReader(projection), projection ?: table.columns, cancelFlag)
         }
     }
 
