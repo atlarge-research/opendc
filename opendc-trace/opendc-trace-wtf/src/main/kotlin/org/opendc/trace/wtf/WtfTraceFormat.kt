@@ -66,8 +66,7 @@ public class WtfTraceFormat : TraceFormat {
     override fun newReader(path: Path, table: String): TableReader {
         return when (table) {
             TABLE_TASKS -> {
-                val factory = LocalParquetReader.custom(TaskReadSupport())
-                val reader = LocalParquetReader(path.resolve("tasks/schema-1.0"), factory)
+                val reader = LocalParquetReader(path.resolve("tasks/schema-1.0"), TaskReadSupport())
                 WtfTaskTableReader(reader)
             }
             else -> throw IllegalArgumentException("Table $table not supported")
