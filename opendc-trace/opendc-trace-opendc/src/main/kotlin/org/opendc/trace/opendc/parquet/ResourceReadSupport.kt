@@ -27,13 +27,49 @@ import org.apache.parquet.hadoop.api.InitContext
 import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.api.RecordMaterializer
 import org.apache.parquet.schema.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.conv.*
 
 /**
  * A [ReadSupport] instance for [Resource] objects.
  */
-internal class ResourceReadSupport : ReadSupport<Resource>() {
+internal class ResourceReadSupport(private val projection: List<TableColumn<*>>?) : ReadSupport<Resource>() {
+    /**
+     * Mapping from field names to [TableColumn]s.
+     */
+    private val fieldMap = mapOf<String, TableColumn<*>>(
+        "id" to RESOURCE_ID,
+        "submissionTime" to RESOURCE_START_TIME,
+        "start_time" to RESOURCE_START_TIME,
+        "endTime" to RESOURCE_STOP_TIME,
+        "stop_time" to RESOURCE_STOP_TIME,
+        "maxCores" to RESOURCE_CPU_COUNT,
+        "cpu_count" to RESOURCE_CPU_COUNT,
+        "cpu_capacity" to RESOURCE_CPU_CAPACITY,
+        "requiredMemory" to RESOURCE_MEM_CAPACITY,
+        "mem_capacity" to RESOURCE_MEM_CAPACITY,
+    )
+
     override fun init(context: InitContext): ReadContext {
-        return ReadContext(READ_SCHEMA)
+        val projectedSchema =
+            if (projection != null) {
+                Types.buildMessage()
+                    .apply {
+                        val projectionSet = projection.toSet()
+
+                        for (field in READ_SCHEMA.fields) {
+                            val col = fieldMap[field.name] ?: continue
+                            if (col in projectionSet) {
+                                addField(field)
+                            }
+                        }
+                    }
+                    .named(READ_SCHEMA.name)
+            } else {
+                READ_SCHEMA
+            }
+
+        return ReadContext(projectedSchema)
     }
 
     override fun prepareForRead(

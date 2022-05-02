@@ -61,7 +61,7 @@ class WtfTraceFormatTest {
     @Test
     fun testTableReader() {
         val path = Paths.get("src/test/resources/wtf-trace")
-        val reader = format.newReader(path, TABLE_TASKS)
+        val reader = format.newReader(path, TABLE_TASKS, listOf(TASK_ID, TASK_WORKFLOW_ID, TASK_SUBMIT_TIME, TASK_RUNTIME, TASK_PARENTS))
 
         assertAll(
             { assertTrue(reader.nextRow()) },

@@ -63,7 +63,7 @@ public class WfFormatTraceFormat : TraceFormat {
         }
     }
 
-    override fun newReader(path: Path, table: String): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
         return when (table) {
             TABLE_TASKS -> WfFormatTaskTableReader(factory.createParser(path.toFile()))
             else -> throw IllegalArgumentException("Table $table not supported")

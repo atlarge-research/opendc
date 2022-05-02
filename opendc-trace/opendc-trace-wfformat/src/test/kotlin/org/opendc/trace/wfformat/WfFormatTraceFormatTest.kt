@@ -62,7 +62,7 @@ class WfFormatTraceFormatTest {
     @Test
     fun testTableReader() {
         val path = Paths.get("src/test/resources/trace.json")
-        val reader = format.newReader(path, TABLE_TASKS)
+        val reader = format.newReader(path, TABLE_TASKS, null)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -89,7 +89,7 @@ class WfFormatTraceFormatTest {
     @Test
     fun testTableReaderFull() {
         val path = Paths.get("src/test/resources/trace.json")
-        val reader = format.newReader(path, TABLE_TASKS)
+        val reader = format.newReader(path, TABLE_TASKS, null)
 
         assertDoesNotThrow {
             while (reader.nextRow()) {

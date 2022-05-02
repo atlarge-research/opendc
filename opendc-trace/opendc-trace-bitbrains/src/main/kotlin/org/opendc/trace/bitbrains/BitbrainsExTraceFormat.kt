@@ -72,7 +72,7 @@ public class BitbrainsExTraceFormat : TraceFormat {
         }
     }
 
-    override fun newReader(path: Path, table: String): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
         return when (table) {
             TABLE_RESOURCE_STATES -> newResourceStateReader(path)
             else -> throw IllegalArgumentException("Table $table not supported")

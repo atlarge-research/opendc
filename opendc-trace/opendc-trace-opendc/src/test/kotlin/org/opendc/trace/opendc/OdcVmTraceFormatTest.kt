@@ -63,11 +63,12 @@ internal class OdcVmTraceFormatTest {
     @ValueSource(strings = ["trace-v2.0", "trace-v2.1"])
     fun testResources(name: String) {
         val path = Paths.get("src/test/resources/$name")
-        val reader = format.newReader(path, TABLE_RESOURCES)
+        val reader = format.newReader(path, TABLE_RESOURCES, listOf(RESOURCE_ID, RESOURCE_START_TIME))
 
         assertAll(
             { assertTrue(reader.nextRow()) },
             { assertEquals("1019", reader.get(RESOURCE_ID)) },
+            { assertEquals(Instant.ofEpochMilli(1376314846000), reader.get(RESOURCE_START_TIME)) },
             { assertTrue(reader.nextRow()) },
             { assertEquals("1023", reader.get(RESOURCE_ID)) },
             { assertTrue(reader.nextRow()) },
@@ -95,7 +96,7 @@ internal class OdcVmTraceFormatTest {
         writer.endRow()
         writer.close()
 
-        val reader = format.newReader(path, TABLE_RESOURCES)
+        val reader = format.newReader(path, TABLE_RESOURCES, null)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -115,7 +116,11 @@ internal class OdcVmTraceFormatTest {
     @ValueSource(strings = ["trace-v2.0", "trace-v2.1"])
     fun testSmoke(name: String) {
         val path = Paths.get("src/test/resources/$name")
-        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
+        val reader = format.newReader(
+            path,
+            TABLE_RESOURCE_STATES,
+            listOf(RESOURCE_ID, RESOURCE_STATE_TIMESTAMP, RESOURCE_STATE_CPU_USAGE)
+        )
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -140,7 +145,7 @@ internal class OdcVmTraceFormatTest {
         writer.endRow()
         writer.close()
 
-        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -157,7 +162,11 @@ internal class OdcVmTraceFormatTest {
     @Test
     fun testInterferenceGroups() {
         val path = Paths.get("src/test/resources/trace-v2.1")
-        val reader = format.newReader(path, TABLE_INTERFERENCE_GROUPS)
+        val reader = format.newReader(
+            path,
+            TABLE_INTERFERENCE_GROUPS,
+            listOf(INTERFERENCE_GROUP_MEMBERS, INTERFERENCE_GROUP_TARGET, INTERFERENCE_GROUP_SCORE)
+        )
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -177,7 +186,7 @@ internal class OdcVmTraceFormatTest {
     @Test
     fun testInterferenceGroupsEmpty() {
         val path = Paths.get("src/test/resources/trace-v2.0")
-        val reader = format.newReader(path, TABLE_INTERFERENCE_GROUPS)
+        val reader = format.newReader(path, TABLE_INTERFERENCE_GROUPS, listOf(INTERFERENCE_GROUP_MEMBERS))
 
         assertFalse(reader.nextRow())
         reader.close()

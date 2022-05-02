@@ -43,7 +43,9 @@ internal class TableImpl(val trace: TraceImpl, override val name: String) : Tabl
     override val partitionKeys: List<TableColumn<*>>
         get() = details.partitionKeys
 
-    override fun newReader(): TableReader = trace.format.newReader(trace.path, name)
+    override fun newReader(projection: List<TableColumn<*>>?): TableReader {
+        return trace.format.newReader(trace.path, name, projection)
+    }
 
     override fun newWriter(): TableWriter = trace.format.newWriter(trace.path, name)
 

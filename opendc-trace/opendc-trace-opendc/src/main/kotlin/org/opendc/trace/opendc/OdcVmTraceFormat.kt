@@ -102,14 +102,14 @@ public class OdcVmTraceFormat : TraceFormat {
         }
     }
 
-    override fun newReader(path: Path, table: String): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
-                val reader = LocalParquetReader(path.resolve("meta.parquet"), ResourceReadSupport())
+                val reader = LocalParquetReader(path.resolve("meta.parquet"), ResourceReadSupport(projection))
                 OdcVmResourceTableReader(reader)
             }
             TABLE_RESOURCE_STATES -> {
-                val reader = LocalParquetReader(path.resolve("trace.parquet"), ResourceStateReadSupport())
+                val reader = LocalParquetReader(path.resolve("trace.parquet"), ResourceStateReadSupport(projection))
                 OdcVmResourceStateTableReader(reader)
             }
             TABLE_INTERFERENCE_GROUPS -> {

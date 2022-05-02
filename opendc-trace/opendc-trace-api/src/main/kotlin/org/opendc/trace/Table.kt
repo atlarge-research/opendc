@@ -42,9 +42,11 @@ public interface Table {
     public val partitionKeys: List<TableColumn<*>>
 
     /**
-     * Open a [TableReader] for this table.
+     * Open a [TableReader] for a projection of this table.
+     *
+     * @param projection The list of columns to fetch from the table or `null` if no projection is performed.
      */
-    public fun newReader(): TableReader
+    public fun newReader(projection: List<TableColumn<*>>? = null): TableReader
 
     /**
      * Open a [TableWriter] for this table.

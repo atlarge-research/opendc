@@ -27,13 +27,48 @@ import org.apache.parquet.hadoop.api.InitContext
 import org.apache.parquet.hadoop.api.ReadSupport
 import org.apache.parquet.io.api.RecordMaterializer
 import org.apache.parquet.schema.*
+import org.opendc.trace.TableColumn
+import org.opendc.trace.conv.*
 
 /**
  * A [ReadSupport] instance for [Task] objects.
+ *
+ * @param projection The projection of the table to read.
  */
-internal class TaskReadSupport : ReadSupport<Task>() {
+internal class TaskReadSupport(private val projection: List<TableColumn<*>>?) : ReadSupport<Task>() {
+    /**
+     * Mapping of table columns to their Parquet column names.
+     */
+    private val colMap = mapOf<TableColumn<*>, String>(
+        TASK_ID to "id",
+        TASK_WORKFLOW_ID to "workflow_id",
+        TASK_SUBMIT_TIME to "ts_submit",
+        TASK_WAIT_TIME to "wait_time",
+        TASK_RUNTIME to "runtime",
+        TASK_REQ_NCPUS to "resource_amount_requested",
+        TASK_PARENTS to "parents",
+        TASK_CHILDREN to "children",
+        TASK_GROUP_ID to "group_id",
+        TASK_USER_ID to "user_id"
+    )
+
     override fun init(context: InitContext): ReadContext {
-        return ReadContext(READ_SCHEMA)
+        val projectedSchema =
+            if (projection != null) {
+                Types.buildMessage()
+                    .apply {
+                        val fieldByName = READ_SCHEMA.fields.associateBy { it.name }
+
+                        for (col in projection) {
+                            val fieldName = colMap[col] ?: continue
+                            addField(fieldByName.getValue(fieldName))
+                        }
+                    }
+                    .named(READ_SCHEMA.name)
+            } else {
+                READ_SCHEMA
+            }
+        return ReadContext(projectedSchema)
     }
 
     override fun prepareForRead(

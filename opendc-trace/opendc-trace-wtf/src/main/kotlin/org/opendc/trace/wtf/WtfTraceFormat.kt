@@ -63,10 +63,10 @@ public class WtfTraceFormat : TraceFormat {
         }
     }
 
-    override fun newReader(path: Path, table: String): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
         return when (table) {
             TABLE_TASKS -> {
-                val reader = LocalParquetReader(path.resolve("tasks/schema-1.0"), TaskReadSupport())
+                val reader = LocalParquetReader(path.resolve("tasks/schema-1.0"), TaskReadSupport(projection))
                 WtfTaskTableReader(reader)
             }
             else -> throw IllegalArgumentException("Table $table not supported")
