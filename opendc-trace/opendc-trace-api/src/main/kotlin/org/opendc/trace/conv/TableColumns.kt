@@ -21,7 +21,9 @@
  */
 
 @file:JvmName("TableColumns")
-package org.opendc.trace
+package org.opendc.trace.conv
+
+import org.opendc.trace.TableColumn
 
 /**
  * Construct a [TableColumn] with the specified [name] and type [T].

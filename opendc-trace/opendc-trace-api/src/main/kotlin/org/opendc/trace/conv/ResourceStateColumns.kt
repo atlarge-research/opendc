@@ -24,7 +24,6 @@
 package org.opendc.trace.conv
 
 import org.opendc.trace.TableColumn
-import org.opendc.trace.column
 import java.time.Duration
 import java.time.Instant
 
@@ -32,70 +31,70 @@ import java.time.Instant
  * The timestamp at which the state was recorded.
  */
 @JvmField
-public val RESOURCE_STATE_TIMESTAMP: TableColumn<Instant> = column("resource_state:timestamp")
+public val RESOURCE_STATE_TIMESTAMP: TableColumn<Instant> = column("timestamp")
 
 /**
  * Duration for the state.
  */
 @JvmField
-public val RESOURCE_STATE_DURATION: TableColumn<Duration> = column("resource_state:duration")
+public val RESOURCE_STATE_DURATION: TableColumn<Duration> = column("duration")
 
 /**
  * A flag to indicate that the resource is powered on.
  */
 @JvmField
-public val RESOURCE_STATE_POWERED_ON: TableColumn<Boolean> = column("resource_state:powered_on")
+public val RESOURCE_STATE_POWERED_ON: TableColumn<Boolean> = column("powered_on")
 
 /**
  * Total CPU usage of the resource in MHz.
  */
 @JvmField
-public val RESOURCE_STATE_CPU_USAGE: TableColumn<Double> = column("resource_state:cpu_usage")
+public val RESOURCE_STATE_CPU_USAGE: TableColumn<Double> = column("cpu_usage")
 
 /**
  * Total CPU usage of the resource in percentage.
  */
 @JvmField
-public val RESOURCE_STATE_CPU_USAGE_PCT: TableColumn<Double> = column("resource_state:cpu_usage_pct")
+public val RESOURCE_STATE_CPU_USAGE_PCT: TableColumn<Double> = column("cpu_usage_pct")
 
 /**
  * Total CPU demand of the resource in MHz.
  */
 @JvmField
-public val RESOURCE_STATE_CPU_DEMAND: TableColumn<Double> = column("resource_state:cpu_demand")
+public val RESOURCE_STATE_CPU_DEMAND: TableColumn<Double> = column("cpu_demand")
 
 /**
  * CPU ready percentage.
  */
 @JvmField
-public val RESOURCE_STATE_CPU_READY_PCT: TableColumn<Double> = column("resource_state:cpu_ready_pct")
+public val RESOURCE_STATE_CPU_READY_PCT: TableColumn<Double> = column("cpu_ready_pct")
 
 /**
  * Memory usage of the resource in KB.
  */
 @JvmField
-public val RESOURCE_STATE_MEM_USAGE: TableColumn<Double> = column("resource_state:mem_usage")
+public val RESOURCE_STATE_MEM_USAGE: TableColumn<Double> = column("mem_usage")
 
 /**
  * Disk read throughput of the resource in KB/s.
  */
 @JvmField
-public val RESOURCE_STATE_DISK_READ: TableColumn<Double> = column("resource_state:disk_read")
+public val RESOURCE_STATE_DISK_READ: TableColumn<Double> = column("disk_read")
 
 /**
  * Disk write throughput of the resource in KB/s.
  */
 @JvmField
-public val RESOURCE_STATE_DISK_WRITE: TableColumn<Double> = column("resource_state:disk_write")
+public val RESOURCE_STATE_DISK_WRITE: TableColumn<Double> = column("disk_write")
 
 /**
  * Network receive throughput of the resource in KB/s.
  */
 @JvmField
-public val RESOURCE_STATE_NET_RX: TableColumn<Double> = column("resource_state:net_rx")
+public val RESOURCE_STATE_NET_RX: TableColumn<Double> = column("net_rx")
 
 /**
  * Network transmit throughput of the resource in KB/s.
  */
 @JvmField
-public val RESOURCE_STATE_NET_TX: TableColumn<Double> = column("resource_state:net_tx")
+public val RESOURCE_STATE_NET_TX: TableColumn<Double> = column("net_tx")

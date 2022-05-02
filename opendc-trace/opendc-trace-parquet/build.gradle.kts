@@ -32,7 +32,7 @@ dependencies {
     api(libs.parquet) {
         exclude(group = "org.apache.hadoop")
     }
-    runtimeOnly(libs.hadoop.common) {
+    api(libs.hadoop.common) {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j")
         exclude(group = "org.apache.hadoop")

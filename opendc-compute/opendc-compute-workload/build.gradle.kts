@@ -39,4 +39,6 @@ dependencies {
     implementation(libs.opentelemetry.semconv)
 
     implementation(libs.kotlin.logging)
+
+    testImplementation(libs.slf4j.simple)
 }

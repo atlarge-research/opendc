@@ -1,4 +1,5 @@
 [versions]
+calcite = "1.30.0"
 classgraph = "4.8.143"
 clikt = "3.4.1"
 config = "1.4.2"
@@ -8,6 +9,7 @@ gradle-node = "3.2.1"
 hadoop = "3.3.1"
 jackson = "2.13.2"
 jandex-gradle = "0.12.0"
+jline = "3.21.0"
 jmh-gradle = "0.6.6"
 jakarta-validation = "2.0.2"
 junit-jupiter = "5.8.2"
@@ -68,7 +70,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }
-parquet = { module = "org.apache.parquet:parquet-avro", version.ref = "parquet" }
+parquet = { module = "org.apache.parquet:parquet-hadoop", version.ref = "parquet" }
 config = { module = "com.typesafe:config", version.ref = "config" }
 
 # Quarkus
@@ -100,6 +102,10 @@ quarkus-jacoco = { module = "io.quarkus:quarkus-jacoco" }
 quarkus-test-security = { module = "io.quarkus:quarkus-test-security" }
 restassured-core = { module = "io.rest-assured:rest-assured" }
 restassured-kotlin = { module = "io.rest-assured:kotlin-extensions" }
+
+# Calcite (SQL)
+calcite-core = { module = "org.apache.calcite:calcite-core", version.ref = "calcite" }
+jline = { module = "org.jline:jline", version.ref = "jline" }
 
 # Other
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }

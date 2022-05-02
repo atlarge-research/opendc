@@ -57,7 +57,7 @@ class AzureTraceFormatTest {
     @Test
     fun testResources() {
         val path = Paths.get("src/test/resources/trace")
-        val reader = format.newReader(path, TABLE_RESOURCES)
+        val reader = format.newReader(path, TABLE_RESOURCES, null)
         assertAll(
             { assertTrue(reader.nextRow()) },
             { assertEquals("x/XsOfHO4ocsV99i4NluqKDuxctW2MMVmwqOPAlg4wp8mqbBOe3wxBlQo0+Qx+uf", reader.get(RESOURCE_ID)) },
@@ -71,7 +71,7 @@ class AzureTraceFormatTest {
     @Test
     fun testSmoke() {
         val path = Paths.get("src/test/resources/trace")
-        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
 
         assertAll(
             { assertTrue(reader.nextRow()) },

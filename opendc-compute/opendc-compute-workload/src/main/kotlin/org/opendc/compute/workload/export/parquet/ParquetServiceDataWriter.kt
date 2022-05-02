@@ -22,45 +22,108 @@
 
 package org.opendc.compute.workload.export.parquet
 
-import org.apache.avro.Schema
-import org.apache.avro.SchemaBuilder
-import org.apache.avro.generic.GenericRecordBuilder
+import io.opentelemetry.context.ContextKey.named
+import org.apache.hadoop.conf.Configuration
+import org.apache.parquet.hadoop.api.WriteSupport
+import org.apache.parquet.io.api.RecordConsumer
+import org.apache.parquet.schema.*
 import org.opendc.telemetry.compute.table.ServiceTableReader
-import org.opendc.trace.util.parquet.TIMESTAMP_SCHEMA
 import java.io.File
 
 /**
  * A Parquet event writer for [ServiceTableReader]s.
  */
 public class ParquetServiceDataWriter(path: File, bufferSize: Int) :
-    ParquetDataWriter<ServiceTableReader>(path, SCHEMA, bufferSize) {
-
-    override fun convert(builder: GenericRecordBuilder, data: ServiceTableReader) {
-        builder["timestamp"] = data.timestamp.toEpochMilli()
-        builder["hosts_up"] = data.hostsUp
-        builder["hosts_down"] = data.hostsDown
-        builder["servers_pending"] = data.serversPending
-        builder["servers_active"] = data.serversActive
-        builder["attempts_success"] = data.attemptsSuccess
-        builder["attempts_failure"] = data.attemptsFailure
-        builder["attempts_error"] = data.attemptsError
-    }
+    ParquetDataWriter<ServiceTableReader>(path, ServiceDataWriteSupport(), bufferSize) {
 
     override fun toString(): String = "service-writer"
 
+    /**
+     * A [WriteSupport] implementation for a [ServiceTableReader].
+     */
+    private class ServiceDataWriteSupport : WriteSupport<ServiceTableReader>() {
+        lateinit var recordConsumer: RecordConsumer
+
+        override fun init(configuration: Configuration): WriteContext {
+            return WriteContext(SCHEMA, emptyMap())
+        }
+
+        override fun prepareForWrite(recordConsumer: RecordConsumer) {
+            this.recordConsumer = recordConsumer
+        }
+
+        override fun write(record: ServiceTableReader) {
+            write(recordConsumer, record)
+        }
+
+        private fun write(consumer: RecordConsumer, data: ServiceTableReader) {
+            consumer.startMessage()
+
+            consumer.startField("timestamp", 0)
+            consumer.addLong(data.timestamp.toEpochMilli())
+            consumer.endField("timestamp", 0)
+
+            consumer.startField("hosts_up", 1)
+            consumer.addInteger(data.hostsUp)
+            consumer.endField("hosts_up", 1)
+
+            consumer.startField("hosts_down", 2)
+            consumer.addInteger(data.hostsDown)
+            consumer.endField("hosts_down", 2)
+
+            consumer.startField("servers_pending", 3)
+            consumer.addInteger(data.serversPending)
+            consumer.endField("servers_pending", 3)
+
+            consumer.startField("servers_active", 4)
+            consumer.addInteger(data.serversActive)
+            consumer.endField("servers_active", 4)
+
+            consumer.startField("attempts_success", 5)
+            consumer.addInteger(data.attemptsSuccess)
+            consumer.endField("attempts_pending", 5)
+
+            consumer.startField("attempts_failure", 6)
+            consumer.addInteger(data.attemptsFailure)
+            consumer.endField("attempts_failure", 6)
+
+            consumer.startField("attempts_error", 7)
+            consumer.addInteger(data.attemptsError)
+            consumer.endField("attempts_error", 7)
+
+            consumer.endMessage()
+        }
+    }
+
     private companion object {
-        private val SCHEMA: Schema = SchemaBuilder
-            .record("service")
-            .namespace("org.opendc.telemetry.compute")
-            .fields()
-            .name("timestamp").type(TIMESTAMP_SCHEMA).noDefault()
-            .requiredInt("hosts_up")
-            .requiredInt("hosts_down")
-            .requiredInt("servers_pending")
-            .requiredInt("servers_active")
-            .requiredInt("attempts_success")
-            .requiredInt("attempts_failure")
-            .requiredInt("attempts_error")
-            .endRecord()
+        private val SCHEMA: MessageType = Types.buildMessage()
+            .addFields(
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT64)
+                    .`as`(LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS))
+                    .named("timestamp"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("hosts_up"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("hosts_down"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("servers_pending"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("servers_active"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("attempts_success"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("attempts_failure"),
+                Types
+                    .required(PrimitiveType.PrimitiveTypeName.INT32)
+                    .named("attempts_error"),
+            )
+            .named("service")
     }
 }

@@ -58,7 +58,7 @@ internal class SwfTraceFormatTest {
     @Test
     fun testReader() {
         val path = Paths.get(checkNotNull(SwfTraceFormatTest::class.java.getResource("/trace.swf")).toURI())
-        val reader = format.newReader(path, TABLE_TASKS)
+        val reader = format.newReader(path, TABLE_TASKS, null)
 
         assertAll(
             { assertTrue(reader.nextRow()) },

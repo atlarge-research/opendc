@@ -24,22 +24,21 @@
 package org.opendc.trace.conv
 
 import org.opendc.trace.TableColumn
-import org.opendc.trace.column
 
 /**
  * Members of the interference group.
  */
 @JvmField
-public val INTERFERENCE_GROUP_MEMBERS: TableColumn<Set<String>> = column("interference_group:members")
+public val INTERFERENCE_GROUP_MEMBERS: TableColumn<Set<String>> = column("members")
 
 /**
  * Target load after which the interference occurs.
  */
 @JvmField
-public val INTERFERENCE_GROUP_TARGET: TableColumn<Double> = column("interference_group:target")
+public val INTERFERENCE_GROUP_TARGET: TableColumn<Double> = column("target")
 
 /**
  * Performance score when the interference occurs.
  */
 @JvmField
-public val INTERFERENCE_GROUP_SCORE: TableColumn<Double> = column("interference_group:score")
+public val INTERFERENCE_GROUP_SCORE: TableColumn<Double> = column("score")

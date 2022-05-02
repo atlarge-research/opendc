@@ -59,7 +59,7 @@ internal class BitbrainsExTraceFormatTest {
     @Test
     fun testSmoke() {
         val path = Paths.get("src/test/resources/vm.txt")
-        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
 
         assertAll(
             { assertTrue(reader.nextRow()) },

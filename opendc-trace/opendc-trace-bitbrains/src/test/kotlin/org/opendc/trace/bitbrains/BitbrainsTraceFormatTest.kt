@@ -57,7 +57,7 @@ class BitbrainsTraceFormatTest {
     @Test
     fun testResources() {
         val path = Paths.get("src/test/resources/bitbrains.csv")
-        val reader = format.newReader(path, TABLE_RESOURCES)
+        val reader = format.newReader(path, TABLE_RESOURCES, null)
 
         assertAll(
             { assertTrue(reader.nextRow()) },
@@ -71,7 +71,7 @@ class BitbrainsTraceFormatTest {
     @Test
     fun testSmoke() {
         val path = Paths.get("src/test/resources/bitbrains.csv")
-        val reader = format.newReader(path, TABLE_RESOURCE_STATES)
+        val reader = format.newReader(path, TABLE_RESOURCE_STATES, null)
 
         assertAll(
             { assertTrue(reader.nextRow()) },

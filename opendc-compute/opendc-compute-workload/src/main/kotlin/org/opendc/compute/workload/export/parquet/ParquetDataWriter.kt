@@ -23,14 +23,12 @@
 package org.opendc.compute.workload.export.parquet
 
 import mu.KotlinLogging
-import org.apache.avro.Schema
-import org.apache.avro.generic.GenericData
-import org.apache.avro.generic.GenericRecordBuilder
-import org.apache.parquet.avro.AvroParquetWriter
+import org.apache.parquet.column.ParquetProperties
 import org.apache.parquet.hadoop.ParquetFileWriter
 import org.apache.parquet.hadoop.ParquetWriter
+import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.opendc.trace.util.parquet.LocalOutputFile
+import org.opendc.trace.util.parquet.LocalParquetWriter
 import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
@@ -38,10 +36,13 @@ import kotlin.concurrent.thread
 
 /**
  * A writer that writes data in Parquet format.
+ *
+ * @param path The path to the file to write the data to.
+ * @param writeSupport The [WriteSupport] implementation for converting the records to Parquet format.
  */
 public abstract class ParquetDataWriter<in T>(
     path: File,
-    private val schema: Schema,
+    private val writeSupport: WriteSupport<T>,
     bufferSize: Int = 4096
 ) : AutoCloseable {
     /**
@@ -52,7 +53,7 @@ public abstract class ParquetDataWriter<in T>(
     /**
      * The queue of records to process.
      */
-    private val queue: BlockingQueue<GenericData.Record> = ArrayBlockingQueue(bufferSize)
+    private val queue: BlockingQueue<T> = ArrayBlockingQueue(bufferSize)
 
     /**
      * An exception to be propagated to the actual writer.
@@ -64,15 +65,15 @@ public abstract class ParquetDataWriter<in T>(
      */
     private val writerThread = thread(start = false, name = this.toString()) {
         val writer = let {
-            val builder = AvroParquetWriter.builder<GenericData.Record>(LocalOutputFile(path))
-                .withSchema(schema)
+            val builder = LocalParquetWriter.builder(path.toPath(), writeSupport)
+                .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_2_0)
                 .withCompressionCodec(CompressionCodecName.ZSTD)
                 .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
             buildWriter(builder)
         }
 
         val queue = queue
-        val buf = mutableListOf<GenericData.Record>()
+        val buf = mutableListOf<T>()
         var shouldStop = false
 
         try {
@@ -101,14 +102,9 @@ public abstract class ParquetDataWriter<in T>(
     /**
      * Build the [ParquetWriter] used to write the Parquet files.
      */
-    protected open fun buildWriter(builder: AvroParquetWriter.Builder<GenericData.Record>): ParquetWriter<GenericData.Record> {
+    protected open fun buildWriter(builder: LocalParquetWriter.Builder<@UnsafeVariance T>): ParquetWriter<@UnsafeVariance T> {
         return builder.build()
     }
-
-    /**
-     * Convert the specified [data] into a Parquet record.
-     */
-    protected abstract fun convert(builder: GenericRecordBuilder, data: T)
 
     /**
      * Write the specified metrics to the database.
@@ -119,9 +115,7 @@ public abstract class ParquetDataWriter<in T>(
             throw IllegalStateException("Writer thread failed", exception)
         }
 
-        val builder = GenericRecordBuilder(schema)
-        convert(builder, data)
-        queue.put(builder.build())
+        queue.put(data)
     }
 
     /**

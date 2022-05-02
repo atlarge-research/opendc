@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,18 @@
  * SOFTWARE.
  */
 
-@file:JvmName("AvroUtils")
-package org.opendc.trace.util.parquet
+description = "Apache Calcite (SQL) integration for the OpenDC trace library"
 
-import org.apache.avro.LogicalTypes
-import org.apache.avro.Schema
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
+}
 
-/**
- * Schema for UUID type.
- */
-public val UUID_SCHEMA: Schema = LogicalTypes.uuid().addToSchema(Schema.create(Schema.Type.STRING))
+dependencies {
+    api(projects.opendcTrace.opendcTraceApi)
 
-/**
- * Schema for timestamp type.
- */
-public val TIMESTAMP_SCHEMA: Schema = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG))
+    api(libs.calcite.core)
 
-/**
- * Helper function to make a [Schema] field optional.
- */
-public fun Schema.optional(): Schema {
-    return Schema.createUnion(Schema.create(Schema.Type.NULL), this)
+    testRuntimeOnly(projects.opendcTrace.opendcTraceOpendc)
+    testRuntimeOnly(libs.slf4j.simple)
 }

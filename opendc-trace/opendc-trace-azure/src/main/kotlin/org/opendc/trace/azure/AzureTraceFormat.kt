@@ -81,7 +81,7 @@ public class AzureTraceFormat : TraceFormat {
         }
     }
 
-    override fun newReader(path: Path, table: String): TableReader {
+    override fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader {
         return when (table) {
             TABLE_RESOURCES -> {
                 val stream = GZIPInputStream(path.resolve("vmtable/vmtable.csv.gz").inputStream())

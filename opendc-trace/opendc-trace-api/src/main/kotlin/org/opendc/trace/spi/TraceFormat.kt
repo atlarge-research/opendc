@@ -22,6 +22,7 @@
 
 package org.opendc.trace.spi
 
+import org.opendc.trace.TableColumn
 import org.opendc.trace.TableReader
 import org.opendc.trace.TableWriter
 import java.nio.file.Path
@@ -68,10 +69,11 @@ public interface TraceFormat {
      *
      * @param path The path to the trace to open.
      * @param table The name of the table to open a [TableReader] for.
+     * @param projection The list of [TableColumn]s to project or `null` if no projection is performed.
      * @throws IllegalArgumentException If [table] does not exist.
      * @return A [TableReader] instance for the table.
      */
-    public fun newReader(path: Path, table: String): TableReader
+    public fun newReader(path: Path, table: String, projection: List<TableColumn<*>>?): TableReader
 
     /**
      * Open a [TableWriter] for the specified [table].
