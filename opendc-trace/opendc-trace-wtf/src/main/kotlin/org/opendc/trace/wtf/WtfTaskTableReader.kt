@@ -22,38 +22,30 @@
 
 package org.opendc.trace.wtf
 
-import org.apache.avro.Schema
-import org.apache.avro.generic.GenericRecord
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
 import org.opendc.trace.util.parquet.LocalParquetReader
-import java.time.Duration
-import java.time.Instant
+import org.opendc.trace.wtf.parquet.Task
 
 /**
  * A [TableReader] implementation for the WTF format.
  */
-internal class WtfTaskTableReader(private val reader: LocalParquetReader<GenericRecord>) : TableReader {
+internal class WtfTaskTableReader(private val reader: LocalParquetReader<Task>) : TableReader {
     /**
      * The current record.
      */
-    private var record: GenericRecord? = null
-
-    /**
-     * A flag to indicate that the columns have been initialized.
-     */
-    private var hasInitializedColumns = false
+    private var record: Task? = null
 
     override fun nextRow(): Boolean {
-        val record = reader.read()
-        this.record = record
+        try {
+            val record = reader.read()
+            this.record = record
 
-        if (!hasInitializedColumns && record != null) {
-            initColumns(record.schema)
-            hasInitializedColumns = true
+            return record != null
+        } catch (e: Throwable) {
+            this.record = null
+            throw e
         }
-
-        return record != null
     }
 
     override fun resolve(column: TableColumn<*>): Int = columns[column] ?: -1
@@ -65,16 +57,15 @@ internal class WtfTaskTableReader(private val reader: LocalParquetReader<Generic
 
     override fun get(index: Int): Any? {
         val record = checkNotNull(record) { "Reader in invalid state" }
-        @Suppress("UNCHECKED_CAST")
         return when (index) {
-            COL_ID -> (record[AVRO_COL_ID] as Long).toString()
-            COL_WORKFLOW_ID -> (record[AVRO_COL_WORKFLOW_ID] as Long).toString()
-            COL_SUBMIT_TIME -> Instant.ofEpochMilli(record[AVRO_COL_SUBMIT_TIME] as Long)
-            COL_WAIT_TIME -> Duration.ofMillis(record[AVRO_COL_WAIT_TIME] as Long)
-            COL_RUNTIME -> Duration.ofMillis(record[AVRO_COL_RUNTIME] as Long)
+            COL_ID -> record.id
+            COL_WORKFLOW_ID -> record.workflowId
+            COL_SUBMIT_TIME -> record.submitTime
+            COL_WAIT_TIME -> record.waitTime
+            COL_RUNTIME -> record.runtime
             COL_REQ_NCPUS, COL_GROUP_ID, COL_USER_ID -> getInt(index)
-            COL_PARENTS -> (record[AVRO_COL_PARENTS] as ArrayList<GenericRecord>).map { it["item"].toString() }.toSet()
-            COL_CHILDREN -> (record[AVRO_COL_CHILDREN] as ArrayList<GenericRecord>).map { it["item"].toString() }.toSet()
+            COL_PARENTS -> record.parents
+            COL_CHILDREN -> record.children
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -87,9 +78,9 @@ internal class WtfTaskTableReader(private val reader: LocalParquetReader<Generic
         val record = checkNotNull(record) { "Reader in invalid state" }
 
         return when (index) {
-            COL_REQ_NCPUS -> (record[AVRO_COL_REQ_NCPUS] as Double).toInt()
-            COL_GROUP_ID -> record[AVRO_COL_GROUP_ID] as Int
-            COL_USER_ID -> record[AVRO_COL_USER_ID] as Int
+            COL_REQ_NCPUS -> record.requestedCpus
+            COL_GROUP_ID -> record.groupId
+            COL_USER_ID -> record.userId
             else -> throw IllegalArgumentException("Invalid column")
         }
     }
@@ -105,38 +96,6 @@ internal class WtfTaskTableReader(private val reader: LocalParquetReader<Generic
     override fun close() {
         reader.close()
     }
-
-    /**
-     * Initialize the columns for the reader based on [schema].
-     */
-    private fun initColumns(schema: Schema) {
-        try {
-            AVRO_COL_ID = schema.getField("id").pos()
-            AVRO_COL_WORKFLOW_ID = schema.getField("workflow_id").pos()
-            AVRO_COL_SUBMIT_TIME = schema.getField("ts_submit").pos()
-            AVRO_COL_WAIT_TIME = schema.getField("wait_time").pos()
-            AVRO_COL_RUNTIME = schema.getField("runtime").pos()
-            AVRO_COL_REQ_NCPUS = schema.getField("resource_amount_requested").pos()
-            AVRO_COL_PARENTS = schema.getField("parents").pos()
-            AVRO_COL_CHILDREN = schema.getField("children").pos()
-            AVRO_COL_GROUP_ID = schema.getField("group_id").pos()
-            AVRO_COL_USER_ID = schema.getField("user_id").pos()
-        } catch (e: NullPointerException) {
-            // This happens when the field we are trying to access does not exist
-            throw IllegalArgumentException("Invalid schema", e)
-        }
-    }
-
-    private var AVRO_COL_ID = -1
-    private var AVRO_COL_WORKFLOW_ID = -1
-    private var AVRO_COL_SUBMIT_TIME = -1
-    private var AVRO_COL_WAIT_TIME = -1
-    private var AVRO_COL_RUNTIME = -1
-    private var AVRO_COL_REQ_NCPUS = -1
-    private var AVRO_COL_PARENTS = -1
-    private var AVRO_COL_CHILDREN = -1
-    private var AVRO_COL_GROUP_ID = -1
-    private var AVRO_COL_USER_ID = -1
 
     private val COL_ID = 0
     private val COL_WORKFLOW_ID = 1

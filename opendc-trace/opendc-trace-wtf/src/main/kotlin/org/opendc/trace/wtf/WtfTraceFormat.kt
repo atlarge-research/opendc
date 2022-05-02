@@ -22,12 +22,12 @@
 
 package org.opendc.trace.wtf
 
-import org.apache.avro.generic.GenericRecord
 import org.opendc.trace.*
 import org.opendc.trace.conv.*
 import org.opendc.trace.spi.TableDetails
 import org.opendc.trace.spi.TraceFormat
 import org.opendc.trace.util.parquet.LocalParquetReader
+import org.opendc.trace.wtf.parquet.TaskReadSupport
 import java.nio.file.Path
 
 /**
@@ -66,7 +66,8 @@ public class WtfTraceFormat : TraceFormat {
     override fun newReader(path: Path, table: String): TableReader {
         return when (table) {
             TABLE_TASKS -> {
-                val reader = LocalParquetReader<GenericRecord>(path.resolve("tasks/schema-1.0"))
+                val factory = LocalParquetReader.custom(TaskReadSupport())
+                val reader = LocalParquetReader(path.resolve("tasks/schema-1.0"), factory)
                 WtfTaskTableReader(reader)
             }
             else -> throw IllegalArgumentException("Table $table not supported")
