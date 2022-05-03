@@ -32,6 +32,8 @@ import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
+import org.opendc.compute.service.driver.telemetry.GuestCpuStats
+import org.opendc.compute.service.driver.telemetry.GuestSystemStats
 import org.opendc.compute.simulator.SimHost
 import org.opendc.compute.simulator.SimWorkloadMapper
 import org.opendc.simulator.compute.kernel.SimHypervisor
@@ -39,6 +41,8 @@ import org.opendc.simulator.compute.kernel.SimVirtualMachine
 import org.opendc.simulator.compute.runWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.time.Clock
+import java.time.Duration
+import java.time.Instant
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -146,6 +150,37 @@ internal class Guest(
     }
 
     /**
+     * Obtain the system statistics of this guest.
+     */
+    fun getSystemStats(): GuestSystemStats {
+        updateUptime()
+
+        return GuestSystemStats(
+            Duration.ofMillis(_uptime),
+            Duration.ofMillis(_downtime),
+            Instant.ofEpochMilli(_bootTime)
+        )
+    }
+
+    /**
+     * Obtain the CPU statistics of this guest.
+     */
+    fun getCpuStats(): GuestCpuStats {
+        val counters = machine.counters
+        counters.flush()
+
+        return GuestCpuStats(
+            counters.cpuActiveTime / 1000L,
+            counters.cpuIdleTime / 1000L,
+            counters.cpuStealTime / 1000L,
+            counters.cpuLostTime / 1000L,
+            machine.cpuCapacity,
+            machine.cpuUsage,
+            machine.cpuUsage / _cpuLimit
+        )
+    }
+
+    /**
      * The [Job] representing the current active virtual machine instance or `null` if no virtual machine is active.
      */
     private var job: Job? = null
@@ -209,6 +244,8 @@ internal class Guest(
      * This method is invoked when the guest stopped.
      */
     private fun onStop(target: ServerState) {
+        updateUptime()
+
         state = target
         listener.onStop(this)
     }
@@ -224,10 +261,16 @@ internal class Guest(
         .put(STATE_KEY, "down")
         .build()
 
+    private var _lastReport = clock.millis()
+
     /**
      * Helper function to track the uptime and downtime of the guest.
      */
-    fun updateUptime(duration: Long) {
+    fun updateUptime() {
+        val now = clock.millis()
+        val duration = now - _lastReport
+        _lastReport = now
+
         if (state == ServerState.RUNNING) {
             _uptime += duration
         } else if (state == ServerState.ERROR) {
@@ -239,6 +282,8 @@ internal class Guest(
      * Helper function to track the uptime of the guest.
      */
     fun collectUptime(result: ObservableLongMeasurement) {
+        updateUptime()
+
         result.record(_uptime, _upState)
         result.record(_downtime, _downState)
     }

@@ -22,8 +22,7 @@
 
 package org.opendc.compute.simulator
 
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import io.opentelemetry.sdk.resources.Resource
+import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -42,13 +41,6 @@ import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
-import org.opendc.telemetry.compute.ComputeMetricExporter
-import org.opendc.telemetry.compute.HOST_ID
-import org.opendc.telemetry.compute.table.HostTableReader
-import org.opendc.telemetry.compute.table.ServerTableReader
-import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
-import org.opendc.telemetry.sdk.toOtelClock
-import java.time.Duration
 import java.util.*
 import kotlin.coroutines.resume
 
@@ -73,45 +65,16 @@ internal class SimHostTest {
      */
     @Test
     fun testOvercommitted() = runBlockingSimulation {
-        var idleTime = 0L
-        var activeTime = 0L
-        var stealTime = 0L
-
-        val hostId = UUID.randomUUID()
-        val hostResource = Resource.builder()
-            .put(HOST_ID, hostId.toString())
-            .build()
-
-        // Setup metric reader
         val duration = 5 * 60L
-        val reader = CoroutineMetricReader(
-            this,
-            object : ComputeMetricExporter() {
-                override fun record(reader: HostTableReader) {
-                    activeTime += reader.cpuActiveTime
-                    idleTime += reader.cpuIdleTime
-                    stealTime += reader.cpuStealTime
-                }
-            },
-            exportInterval = Duration.ofSeconds(duration)
-        )
-
-        val meterProvider = SdkMeterProvider
-            .builder()
-            .setResource(hostResource)
-            .setClock(clock.toOtelClock())
-            .registerMetricReader(reader)
-            .build()
-
         val engine = FlowEngine(coroutineContext, clock)
-        val virtDriver = SimHost(
-            uid = hostId,
+        val host = SimHost(
+            uid = UUID.randomUUID(),
             name = "test",
             model = machineModel,
             meta = emptyMap(),
             coroutineContext,
             engine,
-            meterProvider,
+            MeterProvider.noop(),
             SimFairShareHypervisorProvider()
         )
         val vmImageA = MockImage(
@@ -150,11 +113,11 @@ internal class SimHostTest {
         val flavor = MockFlavor(2, 0)
 
         coroutineScope {
-            launch { virtDriver.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImageA)) }
-            launch { virtDriver.spawn(MockServer(UUID.randomUUID(), "b", flavor, vmImageB)) }
+            launch { host.spawn(MockServer(UUID.randomUUID(), "a", flavor, vmImageA)) }
+            launch { host.spawn(MockServer(UUID.randomUUID(), "b", flavor, vmImageB)) }
 
             suspendCancellableCoroutine<Unit> { cont ->
-                virtDriver.addListener(object : HostListener {
+                host.addListener(object : HostListener {
                     private var finished = 0
 
                     override fun onStateChanged(host: Host, server: Server, newState: ServerState) {
@@ -168,13 +131,14 @@ internal class SimHostTest {
 
         // Ensure last cycle is collected
         delay(1000L * duration)
-        virtDriver.close()
-        meterProvider.close()
+        host.close()
+
+        val cpuStats = host.getCpuStats()
 
         assertAll(
-            { assertEquals(658, activeTime, "Active time does not match") },
-            { assertEquals(2341, idleTime, "Idle time does not match") },
-            { assertEquals(637, stealTime, "Steal time does not match") },
+            { assertEquals(658, cpuStats.activeTime, "Active time does not match") },
+            { assertEquals(2341, cpuStats.idleTime, "Idle time does not match") },
+            { assertEquals(637, cpuStats.stealTime, "Steal time does not match") },
             { assertEquals(1500001, clock.millis()) }
         )
     }
@@ -184,54 +148,16 @@ internal class SimHostTest {
      */
     @Test
     fun testFailure() = runBlockingSimulation {
-        var activeTime = 0L
-        var idleTime = 0L
-        var uptime = 0L
-        var downtime = 0L
-        var guestUptime = 0L
-        var guestDowntime = 0L
-
-        val hostId = UUID.randomUUID()
-        val hostResource = Resource.builder()
-            .put(HOST_ID, hostId.toString())
-            .build()
-
-        // Setup metric reader
         val duration = 5 * 60L
-        val reader = CoroutineMetricReader(
-            this,
-            object : ComputeMetricExporter() {
-                override fun record(reader: HostTableReader) {
-                    activeTime += reader.cpuActiveTime
-                    idleTime += reader.cpuIdleTime
-                    uptime += reader.uptime
-                    downtime += reader.downtime
-                }
-
-                override fun record(reader: ServerTableReader) {
-                    guestUptime += reader.uptime
-                    guestDowntime += reader.downtime
-                }
-            },
-            exportInterval = Duration.ofSeconds(duration)
-        )
-
-        val meterProvider = SdkMeterProvider
-            .builder()
-            .setResource(hostResource)
-            .setClock(clock.toOtelClock())
-            .registerMetricReader(reader)
-            .build()
-
         val engine = FlowEngine(coroutineContext, clock)
         val host = SimHost(
-            uid = hostId,
+            uid = UUID.randomUUID(),
             name = "test",
             model = machineModel,
             meta = emptyMap(),
             coroutineContext,
             engine,
-            meterProvider,
+            MeterProvider.noop(),
             SimFairShareHypervisorProvider()
         )
         val image = MockImage(
@@ -275,15 +201,17 @@ internal class SimHostTest {
         // Ensure last cycle is collected
         delay(1000L * duration)
 
-        meterProvider.close()
+        val cpuStats = host.getCpuStats()
+        val sysStats = host.getSystemStats()
+        val guestSysStats = host.getSystemStats(server)
 
         assertAll(
-            { assertEquals(1775, idleTime, "Idle time does not match") },
-            { assertEquals(624, activeTime, "Active time does not match") },
-            { assertEquals(900001, uptime, "Uptime does not match") },
-            { assertEquals(300000, downtime, "Downtime does not match") },
-            { assertEquals(900000, guestUptime, "Guest uptime does not match") },
-            { assertEquals(300000, guestDowntime, "Guest downtime does not match") },
+            { assertEquals(1775, cpuStats.idleTime, "Idle time does not match") },
+            { assertEquals(624, cpuStats.activeTime, "Active time does not match") },
+            { assertEquals(900001, sysStats.uptime.toMillis(), "Uptime does not match") },
+            { assertEquals(300000, sysStats.downtime.toMillis(), "Downtime does not match") },
+            { assertEquals(900001, guestSysStats.uptime.toMillis(), "Guest uptime does not match") },
+            { assertEquals(300000, guestSysStats.downtime.toMillis(), "Guest downtime does not match") },
         )
     }
 

@@ -23,6 +23,10 @@
 package org.opendc.compute.service.driver
 
 import org.opendc.compute.api.Server
+import org.opendc.compute.service.driver.telemetry.GuestCpuStats
+import org.opendc.compute.service.driver.telemetry.GuestSystemStats
+import org.opendc.compute.service.driver.telemetry.HostCpuStats
+import org.opendc.compute.service.driver.telemetry.HostSystemStats
 import java.util.*
 
 /**
@@ -53,6 +57,11 @@ public interface Host {
      * Meta-data associated with the host.
      */
     public val meta: Map<String, Any>
+
+    /**
+     * The [Server] instances known to the host.
+     */
+    public val instances: Set<Server>
 
     /**
      * Determine whether the specified [instance][server] can still fit on this host.
@@ -100,4 +109,30 @@ public interface Host {
      * Remove a [HostListener] from this host.
      */
     public fun removeListener(listener: HostListener)
+
+    /**
+     * Query the system statistics of the host.
+     */
+    public fun getSystemStats(): HostSystemStats
+
+    /**
+     * Query the system statistics of a [Server] that is located on this host.
+     *
+     * @param server The [Server] to obtain the system statistics of.
+     * @throws IllegalArgumentException if the server is not present on the host.
+     */
+    public fun getSystemStats(server: Server): GuestSystemStats
+
+    /**
+     * Query the CPU statistics of the host.
+     */
+    public fun getCpuStats(): HostCpuStats
+
+    /**
+     * Query the CPU statistics of a [Server] that is located on this host.
+     *
+     * @param server The [Server] to obtain the CPU statistics of.
+     * @throws IllegalArgumentException if the server is not present on the host.
+     */
+    public fun getCpuStats(server: Server): GuestCpuStats
 }

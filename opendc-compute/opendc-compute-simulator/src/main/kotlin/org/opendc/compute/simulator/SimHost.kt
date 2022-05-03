@@ -29,11 +29,14 @@ import io.opentelemetry.api.metrics.MeterProvider
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
 import kotlinx.coroutines.*
-import mu.KotlinLogging
 import org.opendc.compute.api.Flavor
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.service.driver.*
+import org.opendc.compute.service.driver.telemetry.GuestCpuStats
+import org.opendc.compute.service.driver.telemetry.GuestSystemStats
+import org.opendc.compute.service.driver.telemetry.HostCpuStats
+import org.opendc.compute.service.driver.telemetry.HostSystemStats
 import org.opendc.compute.simulator.internal.Guest
 import org.opendc.compute.simulator.internal.GuestListener
 import org.opendc.simulator.compute.*
@@ -49,6 +52,8 @@ import org.opendc.simulator.compute.power.PowerDriver
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.FlowEngine
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
@@ -81,11 +86,6 @@ public class SimHost(
     private val clock = engine.clock
 
     /**
-     * The logger instance of this server.
-     */
-    private val logger = KotlinLogging.logger {}
-
-    /**
      * The [Meter] to track metrics of the simulated host.
      */
     private val meter = meterProvider.get("org.opendc.compute.simulator")
@@ -111,6 +111,9 @@ public class SimHost(
      */
     private val guests = HashMap<Server, Guest>()
     private val _guests = mutableListOf<Guest>()
+
+    override val instances: Set<Server>
+        get() = guests.keys
 
     override val state: HostState
         get() = _state
@@ -247,6 +250,68 @@ public class SimHost(
         reset()
         scope.cancel()
         machine.cancel()
+    }
+
+    override fun getSystemStats(): HostSystemStats {
+        updateUptime()
+
+        var terminated = 0
+        var running = 0
+        var error = 0
+        var invalid = 0
+
+        val guests = _guests.listIterator()
+        for (guest in guests) {
+            when (guest.state) {
+                ServerState.TERMINATED -> terminated++
+                ServerState.RUNNING -> running++
+                ServerState.ERROR -> error++
+                ServerState.DELETED -> {
+                    // Remove guests that have been deleted
+                    this.guests.remove(guest.server)
+                    guests.remove()
+                }
+                else -> invalid++
+            }
+        }
+
+        return HostSystemStats(
+            Duration.ofMillis(_uptime),
+            Duration.ofMillis(_downtime),
+            Instant.ofEpochMilli(_bootTime),
+            machine.powerUsage,
+            machine.energyUsage,
+            terminated,
+            running,
+            error,
+            invalid
+        )
+    }
+
+    override fun getSystemStats(server: Server): GuestSystemStats {
+        val guest = requireNotNull(guests[server]) { "Unknown server ${server.uid} at host $uid" }
+        return guest.getSystemStats()
+    }
+
+    override fun getCpuStats(): HostCpuStats {
+        val counters = hypervisor.counters
+        counters.flush()
+
+        return HostCpuStats(
+            counters.cpuActiveTime / 1000L,
+            counters.cpuIdleTime / 1000L,
+            counters.cpuStealTime / 1000L,
+            counters.cpuLostTime / 1000L,
+            hypervisor.cpuCapacity,
+            hypervisor.cpuDemand,
+            hypervisor.cpuUsage,
+            hypervisor.cpuUsage / _cpuLimit
+        )
+    }
+
+    override fun getCpuStats(server: Server): GuestCpuStats {
+        val guest = requireNotNull(guests[server]) { "Unknown server ${server.uid} at host $uid" }
+        return guest.getCpuStats()
     }
 
     override fun hashCode(): Int = uid.hashCode()
@@ -417,13 +482,12 @@ public class SimHost(
      * Helper function to track the CPU time of a machine.
      */
     private fun collectCpuTime(result: ObservableLongMeasurement) {
-        val counters = hypervisor.counters
-        counters.flush()
+        val stats = getCpuStats()
 
-        result.record(counters.cpuActiveTime / 1000L, _activeState)
-        result.record(counters.cpuIdleTime / 1000L, _idleState)
-        result.record(counters.cpuStealTime / 1000L, _stealState)
-        result.record(counters.cpuLostTime / 1000L, _lostState)
+        result.record(stats.activeTime, _activeState)
+        result.record(stats.idleTime, _idleState)
+        result.record(stats.stealTime, _stealState)
+        result.record(stats.lostTime, _lostState)
 
         val guests = _guests
         for (i in guests.indices) {
@@ -450,7 +514,7 @@ public class SimHost(
 
         val guests = _guests
         for (i in guests.indices) {
-            guests[i].updateUptime(duration)
+            guests[i].updateUptime()
         }
     }
 
