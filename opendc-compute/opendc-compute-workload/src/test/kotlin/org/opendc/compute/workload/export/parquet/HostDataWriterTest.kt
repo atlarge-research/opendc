@@ -25,8 +25,8 @@ package org.opendc.compute.workload.export.parquet
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.opendc.telemetry.compute.table.HostInfo
-import org.opendc.telemetry.compute.table.HostTableReader
+import org.opendc.compute.workload.telemetry.table.HostInfo
+import org.opendc.compute.workload.telemetry.table.HostTableReader
 import java.nio.file.Files
 import java.time.Instant
 

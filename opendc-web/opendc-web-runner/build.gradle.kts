@@ -37,8 +37,6 @@ dependencies {
     implementation(projects.opendcCompute.opendcComputeSimulator)
     implementation(projects.opendcCompute.opendcComputeWorkload)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
     implementation(projects.opendcTrace.opendcTraceApi)
     implementation(projects.opendcWeb.opendcWebClient)
 

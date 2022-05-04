@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,26 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute
+package org.opendc.compute.workload.telemetry
 
-import io.opentelemetry.sdk.metrics.export.MetricProducer
-import org.opendc.telemetry.compute.table.ServiceData
-import org.opendc.telemetry.compute.table.ServiceTableReader
-import org.opendc.telemetry.compute.table.toServiceData
+import org.opendc.compute.workload.telemetry.table.HostTableReader
+import org.opendc.compute.workload.telemetry.table.ServerTableReader
+import org.opendc.compute.workload.telemetry.table.ServiceTableReader
 
 /**
- * Collect the metrics of the compute service.
+ * A monitor that tracks the metrics and events of the OpenDC Compute service.
  */
-public fun collectServiceMetrics(metricProducer: MetricProducer): ServiceData {
-    lateinit var serviceData: ServiceData
-    val agg = ComputeMetricAggregator()
-    val monitor = object : ComputeMonitor {
-        override fun record(reader: ServiceTableReader) {
-            serviceData = reader.toServiceData()
-        }
-    }
+public interface ComputeMonitor {
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: ServerTableReader) {}
 
-    agg.process(metricProducer.collectAllMetrics())
-    agg.collect(monitor)
-    return serviceData
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: HostTableReader) {}
+
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: ServiceTableReader) {}
 }

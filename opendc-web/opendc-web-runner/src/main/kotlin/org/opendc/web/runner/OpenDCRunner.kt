@@ -25,7 +25,7 @@ package org.opendc.web.runner
 import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.workload.*
-import org.opendc.compute.workload.telemetry.NoopTelemetryManager
+import org.opendc.compute.workload.telemetry.ComputeMetricReader
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
@@ -36,7 +36,6 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.compute.ComputeMetricReader
 import org.opendc.web.client.runner.OpenDCRunnerClient
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
@@ -209,7 +208,6 @@ public class OpenDCRunner(
                     val simulator = ComputeServiceHelper(
                         coroutineContext,
                         clock,
-                        NoopTelemetryManager(),
                         computeScheduler,
                         failureModel,
                         interferenceModel.takeIf { phenomena.interference }

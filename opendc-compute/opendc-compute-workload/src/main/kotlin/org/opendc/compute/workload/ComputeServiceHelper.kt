@@ -30,7 +30,6 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
-import org.opendc.compute.workload.telemetry.TelemetryManager
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.simulator.compute.kernel.interference.VmInterferenceModel
 import org.opendc.simulator.compute.workload.SimTraceWorkload
@@ -46,7 +45,6 @@ import kotlin.math.max
  *
  * @param context [CoroutineContext] to run the simulation in.
  * @param clock [Clock] instance tracking simulation time.
- * @param telemetry Helper class for managing telemetry.
  * @param scheduler [ComputeScheduler] implementation to use for the service.
  * @param failureModel A failure model to use for injecting failures.
  * @param interferenceModel The model to use for performance interference.
@@ -55,7 +53,6 @@ import kotlin.math.max
 public class ComputeServiceHelper(
     private val context: CoroutineContext,
     private val clock: Clock,
-    private val telemetry: TelemetryManager,
     scheduler: ComputeScheduler,
     private val failureModel: FailureModel? = null,
     private val interferenceModel: VmInterferenceModel? = null,
@@ -167,7 +164,6 @@ public class ComputeServiceHelper(
      * @return The [SimHost] that has been constructed by the runner.
      */
     public fun registerHost(spec: HostSpec, optimize: Boolean = false): SimHost {
-        val meterProvider = telemetry.createMeterProvider(spec)
         val host = SimHost(
             spec.uid,
             spec.name,
@@ -175,7 +171,6 @@ public class ComputeServiceHelper(
             spec.meta,
             context,
             _engine,
-            meterProvider,
             spec.hypervisor,
             powerDriver = spec.powerDriver,
             interferenceDomain = interferenceModel?.newDomain(),
@@ -202,7 +197,6 @@ public class ComputeServiceHelper(
      * Construct a [ComputeService] instance.
      */
     private fun createService(scheduler: ComputeScheduler, schedulingQuantum: Duration): ComputeService {
-        val meterProvider = telemetry.createMeterProvider(scheduler)
-        return ComputeService(context, clock, meterProvider, scheduler, schedulingQuantum)
+        return ComputeService(context, clock, scheduler, schedulingQuantum)
     }
 }

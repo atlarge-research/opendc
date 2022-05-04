@@ -30,7 +30,7 @@ import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.createComputeScheduler
 import org.opendc.compute.workload.export.parquet.ParquetComputeMonitor
 import org.opendc.compute.workload.grid5000
-import org.opendc.compute.workload.telemetry.NoopTelemetryManager
+import org.opendc.compute.workload.telemetry.ComputeMetricReader
 import org.opendc.compute.workload.topology.apply
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
@@ -39,7 +39,6 @@ import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.compute.ComputeMetricReader
 import java.io.File
 import java.time.Duration
 import java.util.*
@@ -99,11 +98,9 @@ abstract class Portfolio(name: String) : Experiment(name) {
             else
                 null
         val (vms, interferenceModel) = workload.source.resolve(workloadLoader, seeder)
-        val telemetry = NoopTelemetryManager()
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
-            telemetry,
             computeScheduler,
             failureModel,
             interferenceModel?.withSeed(repeat.toLong())

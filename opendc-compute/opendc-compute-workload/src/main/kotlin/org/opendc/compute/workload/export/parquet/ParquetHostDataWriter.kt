@@ -27,7 +27,7 @@ import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.RecordConsumer
 import org.apache.parquet.schema.*
-import org.opendc.telemetry.compute.table.HostTableReader
+import org.opendc.compute.workload.telemetry.table.HostTableReader
 import org.opendc.trace.util.parquet.LocalParquetWriter
 import java.io.File
 import java.util.*

@@ -20,27 +20,18 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute.table
-
-import java.time.Instant
+package org.opendc.compute.workload.telemetry.table
 
 /**
- * A trace entry for the compute service.
+ * Static information about a server exposed to the telemetry service.
  */
-public data class ServiceData(
-    val timestamp: Instant,
-    val hostsUp: Int,
-    val hostsDown: Int,
-    val serversPending: Int,
-    val serversActive: Int,
-    val attemptsSuccess: Int,
-    val attemptsFailure: Int,
-    val attemptsError: Int
+public data class ServerInfo(
+    val id: String,
+    val name: String,
+    val type: String,
+    val arch: String,
+    val imageId: String,
+    val imageName: String,
+    val cpuCount: Int,
+    val memCapacity: Long
 )
-
-/**
- * Convert a [ServiceTableReader] into a persistent object.
- */
-public fun ServiceTableReader.toServiceData(): ServiceData {
-    return ServiceData(timestamp, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
-}

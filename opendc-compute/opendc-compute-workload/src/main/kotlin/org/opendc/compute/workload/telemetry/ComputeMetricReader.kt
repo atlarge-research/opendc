@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute
+package org.opendc.compute.workload.telemetry
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -30,7 +30,7 @@ import mu.KotlinLogging
 import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.driver.Host
-import org.opendc.telemetry.compute.table.*
+import org.opendc.compute.workload.telemetry.table.*
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant

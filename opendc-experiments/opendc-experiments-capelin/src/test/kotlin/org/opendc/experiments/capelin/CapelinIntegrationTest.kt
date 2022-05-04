@@ -33,14 +33,13 @@ import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.workload.*
-import org.opendc.compute.workload.telemetry.NoopTelemetryManager
+import org.opendc.compute.workload.telemetry.ComputeMetricReader
+import org.opendc.compute.workload.telemetry.ComputeMonitor
+import org.opendc.compute.workload.telemetry.table.HostTableReader
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
 import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.compute.ComputeMetricReader
-import org.opendc.telemetry.compute.ComputeMonitor
-import org.opendc.telemetry.compute.table.HostTableReader
 import java.io.File
 import java.time.Duration
 import java.util.*
@@ -86,7 +85,6 @@ class CapelinIntegrationTest {
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
-            NoopTelemetryManager(),
             computeScheduler
         )
         val topology = createTopology()
@@ -136,7 +134,6 @@ class CapelinIntegrationTest {
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
-            NoopTelemetryManager(),
             computeScheduler
         )
         val topology = createTopology("single")
@@ -182,7 +179,6 @@ class CapelinIntegrationTest {
         val simulator = ComputeServiceHelper(
             coroutineContext,
             clock,
-            NoopTelemetryManager(),
             computeScheduler,
             interferenceModel = interferenceModel?.withSeed(seed.toLong())
         )
@@ -226,7 +222,6 @@ class CapelinIntegrationTest {
         val simulator = ComputeServiceHelper(
             coroutineContext,
             clock,
-            NoopTelemetryManager(),
             computeScheduler,
             grid5000(Duration.ofDays(7))
         )

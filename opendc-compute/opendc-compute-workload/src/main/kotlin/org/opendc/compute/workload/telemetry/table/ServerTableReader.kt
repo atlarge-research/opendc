@@ -20,51 +20,71 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute.table
+package org.opendc.compute.workload.telemetry.table
 
 import java.time.Instant
 
 /**
- * An interface that is used to read a row of a service trace entry.
+ * An interface that is used to read a row of a server trace entry.
  */
-public interface ServiceTableReader {
+public interface ServerTableReader {
     /**
      * The timestamp of the current entry of the reader.
      */
     public val timestamp: Instant
 
     /**
-     * The number of hosts that are up at this instant.
+     * The [ServerInfo] of the server to which the row belongs to.
      */
-    public val hostsUp: Int
+    public val server: ServerInfo
 
     /**
-     * The number of hosts that are down at this instant.
+     * The [HostInfo] of the host on which the server is hosted or `null` if it has no host.
      */
-    public val hostsDown: Int
+    public val host: HostInfo?
 
     /**
-     * The number of servers that are pending to be scheduled.
+     * The uptime of the host since last time in ms.
      */
-    public val serversPending: Int
+    public val uptime: Long
 
     /**
-     * The number of servers that are currently active.
+     * The downtime of the host since last time in ms.
      */
-    public val serversActive: Int
+    public val downtime: Long
 
     /**
-     * The scheduling attempts that were successful.
+     * The [Instant] at which the server was enqueued for the scheduler.
      */
-    public val attemptsSuccess: Int
+    public val provisionTime: Instant?
 
     /**
-     * The scheduling attempts that were unsuccessful due to client error.
+     * The [Instant] at which the server booted.
      */
-    public val attemptsFailure: Int
+    public val bootTime: Instant?
 
     /**
-     * The scheduling attempts that were unsuccessful due to scheduler error.
+     * The capacity of the CPUs of the servers (in MHz).
      */
-    public val attemptsError: Int
+    public val cpuLimit: Double
+
+    /**
+     * The duration (in seconds) that a CPU was active in the server.
+     */
+    public val cpuActiveTime: Long
+
+    /**
+     * The duration (in seconds) that a CPU was idle in the server.
+     */
+    public val cpuIdleTime: Long
+
+    /**
+     * The duration (in seconds) that a vCPU wanted to run, but no capacity was available.
+     */
+    public val cpuStealTime: Long
+
+    /**
+     * The duration (in seconds) of CPU time that was lost due to interference.
+     */
+    public val cpuLostTime: Long
 }

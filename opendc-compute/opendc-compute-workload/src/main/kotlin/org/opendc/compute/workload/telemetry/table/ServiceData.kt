@@ -20,28 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute
+package org.opendc.compute.workload.telemetry.table
 
-import org.opendc.telemetry.compute.table.HostTableReader
-import org.opendc.telemetry.compute.table.ServerTableReader
-import org.opendc.telemetry.compute.table.ServiceTableReader
+import java.time.Instant
 
 /**
- * A monitor that tracks the metrics and events of the OpenDC Compute service.
+ * A trace entry for the compute service.
  */
-public interface ComputeMonitor {
-    /**
-     * Record an entry with the specified [reader].
-     */
-    public fun record(reader: ServerTableReader) {}
+public data class ServiceData(
+    val timestamp: Instant,
+    val hostsUp: Int,
+    val hostsDown: Int,
+    val serversPending: Int,
+    val serversActive: Int,
+    val attemptsSuccess: Int,
+    val attemptsFailure: Int,
+    val attemptsError: Int
+)
 
-    /**
-     * Record an entry with the specified [reader].
-     */
-    public fun record(reader: HostTableReader) {}
-
-    /**
-     * Record an entry with the specified [reader].
-     */
-    public fun record(reader: ServiceTableReader) {}
+/**
+ * Convert a [ServiceTableReader] into a persistent object.
+ */
+public fun ServiceTableReader.toServiceData(): ServiceData {
+    return ServiceData(timestamp, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
 }

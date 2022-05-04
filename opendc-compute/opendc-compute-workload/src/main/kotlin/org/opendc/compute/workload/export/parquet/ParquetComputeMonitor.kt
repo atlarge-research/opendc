@@ -22,10 +22,10 @@
 
 package org.opendc.compute.workload.export.parquet
 
-import org.opendc.telemetry.compute.ComputeMonitor
-import org.opendc.telemetry.compute.table.HostTableReader
-import org.opendc.telemetry.compute.table.ServerTableReader
-import org.opendc.telemetry.compute.table.ServiceTableReader
+import org.opendc.compute.workload.telemetry.ComputeMonitor
+import org.opendc.compute.workload.telemetry.table.HostTableReader
+import org.opendc.compute.workload.telemetry.table.ServerTableReader
+import org.opendc.compute.workload.telemetry.table.ServiceTableReader
 import java.io.File
 
 /**

@@ -41,7 +41,7 @@ import java.time.Instant
 public data class HostSystemStats(
     val uptime: Duration,
     val downtime: Duration,
-    val bootTime: Instant,
+    val bootTime: Instant?,
     val powerUsage: Double,
     val energyUsage: Double,
     val guestsTerminated: Int,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,9 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.telemetry
-
-import io.opentelemetry.api.metrics.MeterProvider
-import org.opendc.compute.service.scheduler.ComputeScheduler
-import org.opendc.compute.workload.topology.HostSpec
+package org.opendc.compute.workload.telemetry.table
 
 /**
- * A [TelemetryManager] that does nothing.
+ * Information about a host exposed to the telemetry service.
  */
-public class NoopTelemetryManager : TelemetryManager {
-    override fun createMeterProvider(host: HostSpec): MeterProvider = MeterProvider.noop()
-
-    override fun createMeterProvider(scheduler: ComputeScheduler): MeterProvider = MeterProvider.noop()
-}
+public data class HostInfo(val id: String, val name: String, val arch: String, val cpuCount: Int, val memCapacity: Long)
