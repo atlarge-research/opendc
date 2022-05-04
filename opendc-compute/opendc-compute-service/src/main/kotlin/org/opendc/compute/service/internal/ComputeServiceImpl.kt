@@ -154,9 +154,6 @@ internal class ComputeServiceImpl(
     override val hosts: Set<Host>
         get() = hostToView.keys
 
-    override val hostCount: Int
-        get() = hostToView.size
-
     init {
         val upState = Attributes.of(AttributeKey.stringKey("state"), "up")
         val downState = Attributes.of(AttributeKey.stringKey("state"), "down")
@@ -165,7 +162,7 @@ internal class ComputeServiceImpl(
             .setDescription("Number of hosts registered with the scheduler")
             .setUnit("1")
             .buildWithCallback { result ->
-                val total = hostCount
+                val total = hosts.size
                 val available = availableHosts.size.toLong()
 
                 result.record(available, upState)
@@ -320,6 +317,11 @@ internal class ComputeServiceImpl(
             scheduler.removeHost(view)
             host.removeListener(this)
         }
+    }
+
+    override fun lookupHost(server: Server): Host? {
+        val internal = requireNotNull(servers[server.uid]) { "Invalid server passed to lookupHost" }
+        return internal.host
     }
 
     override fun close() {

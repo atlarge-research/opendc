@@ -25,6 +25,7 @@ package org.opendc.compute.service
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.api.metrics.MeterProvider
 import org.opendc.compute.api.ComputeClient
+import org.opendc.compute.api.Server
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.ComputeScheduler
@@ -37,14 +38,9 @@ import kotlin.coroutines.CoroutineContext
  */
 public interface ComputeService : AutoCloseable {
     /**
-     * The hosts that are used by the compute service.
+     * The hosts that are registered with the "compute" service.
      */
     public val hosts: Set<Host>
-
-    /**
-     * The number of hosts available in the system.
-     */
-    public val hostCount: Int
 
     /**
      * Create a new [ComputeClient] to control the compute service.
@@ -65,6 +61,11 @@ public interface ComputeService : AutoCloseable {
      * Terminate the lifecycle of the compute service, stopping all running instances.
      */
     public override fun close()
+
+    /**
+     * Lookup the [Host] that currently hosts the specified [server].
+     */
+    public fun lookupHost(server: Server): Host?
 
     public companion object {
         /**
