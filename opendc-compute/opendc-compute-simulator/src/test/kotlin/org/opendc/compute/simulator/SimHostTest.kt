@@ -41,6 +41,7 @@ import org.opendc.simulator.compute.workload.SimTraceFragment
 import org.opendc.simulator.compute.workload.SimTraceWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import org.opendc.simulator.flow.FlowEngine
+import java.time.Instant
 import java.util.*
 import kotlin.coroutines.resume
 
@@ -259,6 +260,8 @@ internal class SimHostTest {
         override val meta: Map<String, Any> = emptyMap()
 
         override val state: ServerState = ServerState.TERMINATED
+
+        override val launchedAt: Instant? = null
 
         override suspend fun start() {}
 

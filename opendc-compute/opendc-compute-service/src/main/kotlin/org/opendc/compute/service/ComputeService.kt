@@ -29,6 +29,7 @@ import org.opendc.compute.api.Server
 import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.internal.ComputeServiceImpl
 import org.opendc.compute.service.scheduler.ComputeScheduler
+import org.opendc.compute.service.telemetry.SchedulerStats
 import java.time.Clock
 import java.time.Duration
 import kotlin.coroutines.CoroutineContext
@@ -66,6 +67,11 @@ public interface ComputeService : AutoCloseable {
      * Lookup the [Host] that currently hosts the specified [server].
      */
     public fun lookupHost(server: Server): Host?
+
+    /**
+     * Collect the statistics about the scheduler component of this service.
+     */
+    public fun getSchedulerStats(): SchedulerStats
 
     public companion object {
         /**

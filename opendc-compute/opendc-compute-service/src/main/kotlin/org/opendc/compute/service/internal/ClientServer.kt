@@ -27,6 +27,7 @@ import org.opendc.compute.api.Image
 import org.opendc.compute.api.Server
 import org.opendc.compute.api.ServerState
 import org.opendc.compute.api.ServerWatcher
+import java.time.Instant
 import java.util.*
 
 /**
@@ -53,6 +54,9 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
         private set
 
     override var state: ServerState = delegate.state
+        private set
+
+    override var launchedAt: Instant? = null
         private set
 
     override suspend fun start() {
@@ -95,6 +99,7 @@ internal class ClientServer(private val delegate: Server) : Server, ServerWatche
         labels = delegate.labels
         meta = delegate.meta
         state = delegate.state
+        launchedAt = delegate.launchedAt
     }
 
     override fun onStateChanged(server: Server, newState: ServerState) {
