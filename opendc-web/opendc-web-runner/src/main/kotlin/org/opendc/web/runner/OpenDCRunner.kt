@@ -23,8 +23,9 @@
 package org.opendc.web.runner
 
 import mu.KotlinLogging
+import org.opendc.compute.api.Server
 import org.opendc.compute.workload.*
-import org.opendc.compute.workload.telemetry.SdkTelemetryManager
+import org.opendc.compute.workload.telemetry.NoopTelemetryManager
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
@@ -35,13 +36,12 @@ import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.compute.collectServiceMetrics
-import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
+import org.opendc.telemetry.compute.ComputeMetricReader
 import org.opendc.web.client.runner.OpenDCRunnerClient
 import org.opendc.web.proto.runner.Job
 import org.opendc.web.proto.runner.Scenario
 import org.opendc.web.runner.internal.JobManager
-import org.opendc.web.runner.internal.WebComputeMetricExporter
+import org.opendc.web.runner.internal.WebComputeMonitor
 import java.io.File
 import java.time.Duration
 import java.util.*
@@ -180,9 +180,9 @@ public class OpenDCRunner(
         private val scenario: Scenario,
         private val repeat: Int,
         private val topology: Topology,
-    ) : RecursiveTask<WebComputeMetricExporter.Results>() {
-        override fun compute(): WebComputeMetricExporter.Results {
-            val exporter = WebComputeMetricExporter()
+    ) : RecursiveTask<WebComputeMonitor.Results>() {
+        override fun compute(): WebComputeMonitor.Results {
+            val monitor = WebComputeMonitor()
 
             // Schedule task that interrupts the simulation if it runs for too long.
             val currentThread = Thread.currentThread()
@@ -206,25 +206,24 @@ public class OpenDCRunner(
                         else
                             null
 
-                    val telemetry = SdkTelemetryManager(clock)
                     val simulator = ComputeServiceHelper(
                         coroutineContext,
                         clock,
-                        telemetry,
+                        NoopTelemetryManager(),
                         computeScheduler,
                         failureModel,
                         interferenceModel.takeIf { phenomena.interference }
                     )
-
-                    telemetry.registerMetricReader(CoroutineMetricReader(this, exporter, exportInterval = Duration.ofHours(1)))
+                    val servers = mutableListOf<Server>()
+                    val reader = ComputeMetricReader(this, clock, simulator.service, servers, monitor)
 
                     try {
                         // Instantiate the topology onto the simulator
                         simulator.apply(topology)
                         // Run workload trace
-                        simulator.run(vms, seeder.nextLong())
+                        simulator.run(vms, seeder.nextLong(), servers)
 
-                        val serviceMetrics = collectServiceMetrics(telemetry.metricProducer)
+                        val serviceMetrics = simulator.service.getSchedulerStats()
                         logger.debug {
                             "Scheduler " +
                                 "Success=${serviceMetrics.attemptsSuccess} " +
@@ -235,14 +234,14 @@ public class OpenDCRunner(
                         }
                     } finally {
                         simulator.close()
-                        telemetry.close()
+                        reader.close()
                     }
                 }
             } finally {
                 interruptTask.cancel(false)
             }
 
-            return exporter.collectResults()
+            return monitor.collectResults()
         }
     }
 
