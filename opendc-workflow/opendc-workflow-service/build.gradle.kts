@@ -30,7 +30,6 @@ plugins {
 dependencies {
     api(projects.opendcWorkflow.opendcWorkflowApi)
     api(projects.opendcCompute.opendcComputeApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
     implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
 
@@ -38,7 +37,6 @@ dependencies {
     testImplementation(projects.opendcCompute.opendcComputeWorkload)
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testImplementation(projects.opendcTrace.opendcTraceApi)
-    testImplementation(projects.opendcTelemetry.opendcTelemetrySdk)
     testRuntimeOnly(projects.opendcTrace.opendcTraceGwf)
     testRuntimeOnly(libs.log4j.slf4j)
 }

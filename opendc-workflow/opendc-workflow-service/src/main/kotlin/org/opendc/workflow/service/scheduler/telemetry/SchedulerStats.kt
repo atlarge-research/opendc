@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.workflow.service.telemetry
+package org.opendc.workflow.service.scheduler.telemetry
 
 /**
  * Statistics about the workflow scheduler.

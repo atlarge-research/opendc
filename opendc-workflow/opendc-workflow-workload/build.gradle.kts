@@ -32,6 +32,4 @@ dependencies {
 
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcTrace.opendcTraceApi)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(libs.opentelemetry.semconv)
 }
