@@ -29,7 +29,9 @@ import io.opentelemetry.api.metrics.LongHistogram
 import io.opentelemetry.api.metrics.LongUpDownCounter
 import io.opentelemetry.api.metrics.Meter
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.faas.service.deployer.FunctionInstance
+import org.opendc.faas.service.telemetry.FunctionStats
 import java.util.*
 
 /**
@@ -46,7 +48,7 @@ public class FunctionObject(
     /**
      * The attributes of this function.
      */
-    public val attributes: Attributes = Attributes.builder()
+    private val attributes: Attributes = Attributes.builder()
         .put(ResourceAttributes.FAAS_ID, uid.toString())
         .put(ResourceAttributes.FAAS_NAME, name)
         .put(ResourceAttributes.FAAS_MAX_MEMORY, allocatedMemory)
@@ -56,68 +58,78 @@ public class FunctionObject(
     /**
      * The total amount of function invocations received by the function.
      */
-    public val invocations: LongCounter = meter.counterBuilder("function.invocations.total")
+    private val invocations: LongCounter = meter.counterBuilder("function.invocations.total")
         .setDescription("Number of function invocations")
         .setUnit("1")
         .build()
+    private var _invocations = 0L
 
     /**
      * The amount of function invocations that could be handled directly.
      */
-    public val timelyInvocations: LongCounter = meter.counterBuilder("function.invocations.warm")
+    private val timelyInvocations: LongCounter = meter.counterBuilder("function.invocations.warm")
         .setDescription("Number of function invocations handled directly")
         .setUnit("1")
         .build()
+    private var _timelyInvocations = 0L
 
     /**
      * The amount of function invocations that were delayed due to function deployment.
      */
-    public val delayedInvocations: LongCounter = meter.counterBuilder("function.invocations.cold")
+    private val delayedInvocations: LongCounter = meter.counterBuilder("function.invocations.cold")
         .setDescription("Number of function invocations that are delayed")
         .setUnit("1")
         .build()
+    private var _delayedInvocations = 0L
 
     /**
      * The amount of function invocations that failed.
      */
-    public val failedInvocations: LongCounter = meter.counterBuilder("function.invocations.failed")
+    private val failedInvocations: LongCounter = meter.counterBuilder("function.invocations.failed")
         .setDescription("Number of function invocations that failed")
         .setUnit("1")
         .build()
+    private var _failedInvocations = 0L
 
     /**
      * The amount of instances for this function.
      */
-    public val activeInstances: LongUpDownCounter = meter.upDownCounterBuilder("function.instances.active")
+    private val activeInstances: LongUpDownCounter = meter.upDownCounterBuilder("function.instances.active")
         .setDescription("Number of active function instances")
         .setUnit("1")
         .build()
+    private var _activeInstances = 0
 
     /**
      * The amount of idle instances for this function.
      */
-    public val idleInstances: LongUpDownCounter = meter.upDownCounterBuilder("function.instances.idle")
+    private val idleInstances: LongUpDownCounter = meter.upDownCounterBuilder("function.instances.idle")
         .setDescription("Number of idle function instances")
         .setUnit("1")
         .build()
+    private var _idleInstances = 0
 
     /**
      * The time that the function waited.
      */
-    public val waitTime: LongHistogram = meter.histogramBuilder("function.time.wait")
+    private val waitTime: LongHistogram = meter.histogramBuilder("function.time.wait")
         .ofLongs()
         .setDescription("Time the function has to wait before being started")
         .setUnit("ms")
         .build()
+    private val _waitTime = DescriptiveStatistics()
+        .apply { windowSize = 100 }
 
     /**
      * The time that the function was running.
      */
-    public val activeTime: LongHistogram = meter.histogramBuilder("function.time.active")
+    private val activeTime: LongHistogram = meter.histogramBuilder("function.time.active")
         .ofLongs()
         .setDescription("Time the function was running")
         .setUnit("ms")
         .build()
+    private val _activeTime = DescriptiveStatistics()
+        .apply { windowSize = 100 }
 
     /**
      * The instances associated with this function.
@@ -133,6 +145,80 @@ public class FunctionObject(
     public val labels: MutableMap<String, String> = labels.toMutableMap()
 
     public val meta: MutableMap<String, Any> = meta.toMutableMap()
+
+    /**
+     * Report a scheduled invocation.
+     */
+    internal fun reportSubmission() {
+        invocations.add(1, attributes)
+        _invocations++
+    }
+
+    /**
+     * Report the deployment of an invocation.
+     */
+    internal fun reportDeployment(isDelayed: Boolean) {
+        if (isDelayed) {
+            delayedInvocations.add(1, attributes)
+            _delayedInvocations++
+
+            idleInstances.add(1, attributes)
+            _idleInstances++
+        } else {
+            timelyInvocations.add(1, attributes)
+            _timelyInvocations++
+        }
+    }
+
+    /**
+     * Report the start of a function invocation.
+     */
+    internal fun reportStart(start: Long, submitTime: Long) {
+        val wait = start - submitTime
+        waitTime.record(wait, attributes)
+        _waitTime.addValue(wait.toDouble())
+
+        idleInstances.add(-1, attributes)
+        _idleInstances--
+        activeInstances.add(1, attributes)
+        _activeInstances++
+    }
+
+    /**
+     * Report the failure of a function invocation.
+     */
+    internal fun reportFailure() {
+        failedInvocations.add(1, attributes)
+        _failedInvocations++
+    }
+
+    /**
+     * Report the end of a function invocation.
+     */
+    internal fun reportEnd(duration: Long) {
+        activeTime.record(duration, attributes)
+        _activeTime.addValue(duration.toDouble())
+        idleInstances.add(1, attributes)
+        _idleInstances++
+        activeInstances.add(-1, attributes)
+        _activeInstances--
+    }
+
+    /**
+     * Collect the statistics of this function.
+     */
+    internal fun getStats(): FunctionStats {
+        return FunctionStats(
+            _invocations,
+            _timelyInvocations,
+            _delayedInvocations,
+            _failedInvocations,
+            _activeInstances,
+            _idleInstances,
+            _waitTime.copy(),
+            _activeTime.copy()
+        )
+    }
 
     override fun close() {
         instances.forEach(FunctionInstance::close)
