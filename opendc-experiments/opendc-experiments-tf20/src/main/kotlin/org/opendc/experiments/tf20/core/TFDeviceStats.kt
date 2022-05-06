@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,17 @@
  * SOFTWARE.
  */
 
-description = "Experiments with the OpenDC TensorFlow model"
+package org.opendc.experiments.tf20.core
 
-/* Build configuration */
-plugins {
-    `experiment-conventions`
-    `testing-conventions`
-}
-
-dependencies {
-    api(projects.opendcHarness.opendcHarnessApi)
-    implementation(projects.opendcSimulator.opendcSimulatorCore)
-    implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcCommon)
-
-    implementation(libs.kotlin.logging)
-    implementation(libs.jackson.module.kotlin)
-
-    testImplementation(libs.slf4j.simple)
-}
+/**
+ * Statistics about a TensorFlow [TFDevice].
+ *
+ * @property resourceUsage The resource usage of the device (in MHz).
+ * @property powerUsage The instantaneous power draw of the device (in W).
+ * @property energyUsage Cumulative energy usage of the device since boot (in J).
+ */
+data class TFDeviceStats(
+    val resourceUsage: Double,
+    val powerUsage: Double,
+    val energyUsage: Double
+)

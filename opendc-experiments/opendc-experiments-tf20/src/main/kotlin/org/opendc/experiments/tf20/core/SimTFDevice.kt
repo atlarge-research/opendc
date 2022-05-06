@@ -22,7 +22,6 @@
 
 package org.opendc.experiments.tf20.core
 
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.*
 import org.opendc.simulator.compute.SimBareMetalMachine
@@ -52,7 +51,7 @@ public class SimTFDevice(
     context: CoroutineContext,
     clock: Clock,
     meter: Meter,
-    private val pu: ProcessingUnit,
+    pu: ProcessingUnit,
     private val memory: MemoryUnit,
     powerModel: PowerModel
 ) : TFDevice {
@@ -70,17 +69,13 @@ public class SimTFDevice(
     )
 
     /**
-     * The identifier of a device.
-     */
-    private val deviceId = AttributeKey.stringKey("device.id")
-
-    /**
      * The usage of the device.
      */
     private val _usage = meter.histogramBuilder("device.usage")
         .setDescription("The amount of device resources used")
         .setUnit("MHz")
         .build()
+    private var _resourceUsage = 0.0
 
     /**
      * The power draw of the device.
@@ -89,6 +84,8 @@ public class SimTFDevice(
         .setDescription("The power draw of the device")
         .setUnit("W")
         .build()
+    private var _powerUsage = 0.0
+    private var _energyUsage = 0.0
 
     /**
      * The workload that will be run by the device.
@@ -175,7 +172,10 @@ public class SimTFDevice(
 
         override fun onConverge(conn: FlowConnection, now: Long) {
             _usage.record(conn.rate)
+            _resourceUsage = conn.rate
             _power.record(machine.psu.powerDraw)
+            _powerUsage = machine.powerUsage
+            _energyUsage = machine.energyUsage
         }
     }
 
@@ -195,6 +195,10 @@ public class SimTFDevice(
         if (workload.isIdle) {
             workload.ctx?.pull()
         }
+    }
+
+    override fun getDeviceStats(): TFDeviceStats {
+        return TFDeviceStats(_resourceUsage, _powerUsage, _energyUsage)
     }
 
     override fun close() {
