@@ -22,7 +22,6 @@
 
 package org.opendc.experiments.tf20.core
 
-import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.junit.jupiter.api.Assertions.assertAll
@@ -41,14 +40,19 @@ import java.util.*
 internal class SimTFDeviceTest {
     @Test
     fun testSmoke() = runBlockingSimulation {
-        val meterProvider: MeterProvider = MeterProvider.noop()
-        val meter = meterProvider.get("opendc-tf20")
-
         val puNode = ProcessingNode("NVIDIA", "Tesla V100", "unknown", 1)
         val pu = ProcessingUnit(puNode, 0, 960 * 1230.0)
         val memory = MemoryUnit("NVIDIA", "Tesla V100", 877.0, 32_000)
 
-        val device = SimTFDevice(UUID.randomUUID(), isGpu = true, coroutineContext, clock, meter, pu, memory, LinearPowerModel(250.0, 100.0))
+        val device = SimTFDevice(
+            UUID.randomUUID(),
+            isGpu = true,
+            coroutineContext,
+            clock,
+            pu,
+            memory,
+            LinearPowerModel(250.0, 100.0)
+        )
 
         // Load 1 GiB into GPU memory
         device.load(1000)

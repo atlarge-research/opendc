@@ -32,7 +32,6 @@ dependencies {
     api(projects.opendcHarness.opendcHarnessApi)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
     implementation(projects.opendcCommon)
 
     implementation(libs.kotlin.logging)
