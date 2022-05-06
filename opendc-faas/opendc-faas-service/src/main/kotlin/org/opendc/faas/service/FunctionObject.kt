@@ -129,7 +129,8 @@ public class FunctionObject(
     }
 
     override fun close() {
-        instances.forEach(FunctionInstance::close)
+        val copy = instances.toList() // Make copy to prevent concurrent modification
+        copy.forEach(FunctionInstance::close)
         instances.clear()
     }
 

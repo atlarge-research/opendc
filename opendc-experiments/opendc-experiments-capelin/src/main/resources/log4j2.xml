@@ -30,13 +30,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="org.opendc" level="debug" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="org.opendc.experiments.capelin" level="info" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="org.opendc.experiments.vm.trace" level="debug" additivity="false">
+        <Logger name="org.opendc" level="warn" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="org.apache.hadoop" level="warn" additivity="false">

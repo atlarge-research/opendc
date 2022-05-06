@@ -47,6 +47,8 @@ dependencies {
         exclude(group = "com.sun.jersey")
         exclude(group = "com.jcraft")
         exclude(group = "dnsjava")
+        exclude(group = "org.apache.avro")
+        exclude(group = "com.google.code.gson")
     }
     runtimeOnly(libs.hadoop.mapreduce.client.core) {
         isTransitive = false

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,19 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+description = "Support library for simulating FaaS workloads with OpenDC"
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
+/* Build configuration */
+plugins {
+    `kotlin-library-conventions`
 }
 
 dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
+    api(projects.opendcFaas.opendcFaasSimulator)
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle.application)
-    implementation(libs.quarkus.gradle.extension)
+    implementation(libs.kotlin.logging)
+    implementation(libs.jackson.dataformat.csv)
 
-    implementation(libs.gradle.node)
+    testImplementation(libs.slf4j.simple)
+    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,21 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.experiments.capelin.model
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
-
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle.application)
-    implementation(libs.quarkus.gradle.extension)
-
-    implementation(libs.gradle.node)
-}
+/**
+ * A single scenario of a portfolio.
+ *
+ * @property topology The topology to test.
+ * @property workload The workload to test.
+ * @property operationalPhenomena The [OperationalPhenomena] to model.
+ * @property allocationPolicy The allocation policy of the scheduler.
+ * @property partitions The partition of the scenario.
+ */
+public data class Scenario(
+    val topology: Topology,
+    val workload: Workload,
+    val operationalPhenomena: OperationalPhenomena,
+    val allocationPolicy: String,
+    val partitions: Map<String, String> = emptyMap()
+)

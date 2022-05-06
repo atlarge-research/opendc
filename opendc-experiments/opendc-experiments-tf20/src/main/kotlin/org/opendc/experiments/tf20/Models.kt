@@ -20,8 +20,10 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.tf20.keras
+package org.opendc.experiments.tf20
 
+import org.opendc.experiments.tf20.keras.Sequential
+import org.opendc.experiments.tf20.keras.TrainableModel
 import org.opendc.experiments.tf20.keras.activations.Activation
 import org.opendc.experiments.tf20.keras.layer.conv.Conv2D
 import org.opendc.experiments.tf20.keras.layer.conv.ConvPadding

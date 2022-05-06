@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,9 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.faas.workload
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
-
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle.application)
-    implementation(libs.quarkus.gradle.extension)
-
-    implementation(libs.gradle.node)
-}
+/**
+ * A trace for a single function
+ */
+public data class FunctionTrace(val id: String, val maxMemory: Int, val samples: List<FunctionSample>)

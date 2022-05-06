@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,26 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.faas.workload
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
+import java.io.File
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
+/**
+ * Test suite for [ServerlessTraceReader].
+ */
+class ServerlessTraceReaderTest {
+    @Test
+    fun testSmoke() {
+        val path = File("src/test/resources/trace")
+        val trace = ServerlessTraceReader().parse(path)
 
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle.application)
-    implementation(libs.quarkus.gradle.extension)
-
-    implementation(libs.gradle.node)
+        assertAll(
+            { assertEquals(2, trace.size) },
+            { assertEquals("004c1ea5eb15978682b00ab659aed21e2835d5287668da8d5267f751fdfbdd78", trace[0].id) },
+            { assertEquals(256, trace[0].maxMemory) }
+        )
+    }
 }

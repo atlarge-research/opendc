@@ -20,16 +20,15 @@
  * SOFTWARE.
  */
 
-description = "Experiments with the OpenDC TensorFlow model"
+description = "TensorFlow application model in OpenDC"
 
 /* Build configuration */
 plugins {
-    `experiment-conventions`
+    `kotlin-conventions`
     `testing-conventions`
 }
 
 dependencies {
-    api(projects.opendcHarness.opendcHarnessApi)
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcCommon)

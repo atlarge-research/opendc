@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,24 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.experiments.capelin.portfolio
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import org.opendc.compute.workload.trace
+import org.opendc.experiments.capelin.model.OperationalPhenomena
+import org.opendc.experiments.capelin.model.Scenario
+import org.opendc.experiments.capelin.model.Topology
+import org.opendc.experiments.capelin.model.Workload
 
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle.application)
-    implementation(libs.quarkus.gradle.extension)
-
-    implementation(libs.gradle.node)
+/**
+ * A [Portfolio] to perform a simple test run.
+ */
+public class TestPortfolio : Portfolio {
+    override val scenarios: Iterable<Scenario> = listOf(
+        Scenario(
+            Topology("base"),
+            Workload("solvinity", trace("solvinity")),
+            OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+            "active-servers"
+        )
+    )
 }

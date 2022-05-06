@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,25 @@
  * SOFTWARE.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package org.opendc.faas.workload
 
-/* Project configuration */
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
-
-dependencies {
-    implementation(libs.kotlin.gradle)
-    implementation(libs.kotlin.allopen)
-    implementation(libs.kotlin.noarg)
-    implementation(libs.ktlint.gradle)
-    implementation(libs.jmh.gradle)
-    implementation(libs.dokka.gradle)
-
-    implementation(libs.jandex.gradle)
-    implementation(libs.quarkus.gradle.application)
-    implementation(libs.quarkus.gradle.extension)
-
-    implementation(libs.gradle.node)
-}
+/**
+ * A sample of a single function.
+ *
+ * @param timestamp The timestamp of the function.
+ * @param duration The average execution time of the function.
+ * @param invocations The number of invocations.
+ * @param provisionedCpu The provisioned CPU for this function in MHz.
+ * @param provisionedMem The amount of memory provisioned for this function in MB.
+ * @param cpuUsage The actual CPU usage in MHz.
+ * @param memUsage The actual memory usage in MB.
+ */
+public data class FunctionSample(
+    val timestamp: Long,
+    val duration: Long,
+    val invocations: Int,
+    val provisionedCpu: Int,
+    val provisionedMem: Int,
+    val cpuUsage: Double,
+    val memUsage: Double
+)

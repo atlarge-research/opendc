@@ -39,6 +39,7 @@ import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
+import kotlin.math.ceil
 import kotlin.math.roundToLong
 
 /**
@@ -137,7 +138,7 @@ public class SimTFDevice(
                 if (activeWork.consume(consumedWork)) {
                     this.activeWork = null
                 } else {
-                    val duration = (activeWork.flops / conn.capacity * 1000).roundToLong()
+                    val duration = ceil(activeWork.flops / conn.capacity * 1000).toLong()
                     conn.push(conn.capacity)
                     return duration
                 }
