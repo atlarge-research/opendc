@@ -63,6 +63,8 @@ internal class SimTFDeviceTest {
             launch { device.compute(2e6) }
         }
 
+        device.close()
+
         val stats = device.getDeviceStats()
 
         assertAll(
