@@ -23,12 +23,14 @@
 package org.opendc.experiments.capelin
 
 import com.typesafe.config.ConfigFactory
+import kotlinx.coroutines.*
+import org.opendc.compute.api.Server
 import org.opendc.compute.workload.ComputeServiceHelper
 import org.opendc.compute.workload.ComputeWorkloadLoader
 import org.opendc.compute.workload.createComputeScheduler
-import org.opendc.compute.workload.export.parquet.ParquetComputeMetricExporter
+import org.opendc.compute.workload.export.parquet.ParquetComputeMonitor
 import org.opendc.compute.workload.grid5000
-import org.opendc.compute.workload.telemetry.SdkTelemetryManager
+import org.opendc.compute.workload.telemetry.NoopTelemetryManager
 import org.opendc.compute.workload.topology.apply
 import org.opendc.experiments.capelin.model.OperationalPhenomena
 import org.opendc.experiments.capelin.model.Topology
@@ -37,7 +39,7 @@ import org.opendc.experiments.capelin.topology.clusterTopology
 import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.sdk.metrics.export.CoroutineMetricReader
+import org.opendc.telemetry.compute.ComputeMetricReader
 import java.io.File
 import java.time.Duration
 import java.util.*
@@ -97,7 +99,7 @@ abstract class Portfolio(name: String) : Experiment(name) {
             else
                 null
         val (vms, interferenceModel) = workload.source.resolve(workloadLoader, seeder)
-        val telemetry = SdkTelemetryManager(clock)
+        val telemetry = NoopTelemetryManager()
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
@@ -107,23 +109,35 @@ abstract class Portfolio(name: String) : Experiment(name) {
             interferenceModel?.withSeed(repeat.toLong())
         )
 
-        val exporter = ParquetComputeMetricExporter(
-            File(config.getString("output-path")),
-            "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
-            4096
-        )
-        telemetry.registerMetricReader(CoroutineMetricReader(this, exporter))
-
         val topology = clusterTopology(File(config.getString("env-path"), "${topology.name}.txt"))
+        val servers = mutableListOf<Server>()
+        val exporter = ComputeMetricReader(
+            this,
+            clock,
+            runner.service,
+            servers,
+            ParquetComputeMonitor(
+                File(config.getString("output-path")),
+                "portfolio_id=$name/scenario_id=$id/run_id=$repeat",
+                bufferSize = 4096
+            ),
+            exportInterval = Duration.ofMinutes(5)
+        )
 
         try {
             // Instantiate the desired topology
             runner.apply(topology)
 
-            // Run the workload trace
-            runner.run(vms, seeder.nextLong())
+            coroutineScope {
+                // Run the workload trace
+                runner.run(vms, seeder.nextLong(), servers)
+
+                // Stop the metric collection
+                exporter.close()
+            }
         } finally {
             runner.close()
+            exporter.close()
         }
     }
 }

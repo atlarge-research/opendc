@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,25 @@
  * SOFTWARE.
  */
 
-description = "FaaS service for OpenDC"
+package org.opendc.compute.service.driver.telemetry
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
-
-dependencies {
-    api(projects.opendcFaas.opendcFaasApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    api(libs.commons.math3)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-    implementation(libs.opentelemetry.semconv)
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.log4j.slf4j)
-}
+/**
+ * Statistics about the CPUs of a guest.
+ *
+ * @property activeTime The cumulative time (in seconds) that the CPUs of the guest were actively running.
+ * @property idleTime The cumulative time (in seconds) the CPUs of the guest were idle.
+ * @property stealTime The cumulative CPU time (in seconds) that the guest was ready to run, but not granted time by the host.
+ * @property lostTime The cumulative CPU time (in seconds) that was lost due to interference with other machines.
+ * @property capacity The available CPU capacity of the guest (in MHz).
+ * @property usage Amount of CPU resources (in MHz) actually used by the guest.
+ * @property utilization Utilization of the CPU resources (in %) relative to the total CPU capacity.
+ */
+public data class GuestCpuStats(
+    val activeTime: Long,
+    val idleTime: Long,
+    val stealTime: Long,
+    val lostTime: Long,
+    val capacity: Double,
+    val usage: Double,
+    val utilization: Double
+)

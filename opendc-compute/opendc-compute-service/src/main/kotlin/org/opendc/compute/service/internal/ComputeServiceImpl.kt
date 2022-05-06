@@ -36,8 +36,10 @@ import org.opendc.compute.service.driver.Host
 import org.opendc.compute.service.driver.HostListener
 import org.opendc.compute.service.driver.HostState
 import org.opendc.compute.service.scheduler.ComputeScheduler
+import org.opendc.compute.service.telemetry.SchedulerStats
 import java.time.Clock
 import java.time.Duration
+import java.time.Instant
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
@@ -126,6 +128,9 @@ internal class ComputeServiceImpl(
     private val _schedulingAttemptsSuccessAttr = Attributes.of(AttributeKey.stringKey("result"), "success")
     private val _schedulingAttemptsFailureAttr = Attributes.of(AttributeKey.stringKey("result"), "failure")
     private val _schedulingAttemptsErrorAttr = Attributes.of(AttributeKey.stringKey("result"), "error")
+    private var _attemptsSuccess = 0L
+    private var _attemptsFailure = 0L
+    private var _attemptsError = 0L
 
     /**
      * The response time of the service.
@@ -145,6 +150,8 @@ internal class ComputeServiceImpl(
         .build()
     private val _serversPendingAttr = Attributes.of(AttributeKey.stringKey("state"), "pending")
     private val _serversActiveAttr = Attributes.of(AttributeKey.stringKey("state"), "active")
+    private var _serversPending = 0
+    private var _serversActive = 0
 
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
@@ -154,9 +161,6 @@ internal class ComputeServiceImpl(
     override val hosts: Set<Host>
         get() = hostToView.keys
 
-    override val hostCount: Int
-        get() = hostToView.size
-
     init {
         val upState = Attributes.of(AttributeKey.stringKey("state"), "up")
         val downState = Attributes.of(AttributeKey.stringKey("state"), "down")
@@ -165,7 +169,7 @@ internal class ComputeServiceImpl(
             .setDescription("Number of hosts registered with the scheduler")
             .setUnit("1")
             .buildWithCallback { result ->
-                val total = hostCount
+                val total = hosts.size
                 val available = availableHosts.size.toLong()
 
                 result.record(available, upState)
@@ -322,8 +326,25 @@ internal class ComputeServiceImpl(
         }
     }
 
+    override fun lookupHost(server: Server): Host? {
+        val internal = requireNotNull(servers[server.uid]) { "Invalid server passed to lookupHost" }
+        return internal.host
+    }
+
     override fun close() {
         scope.cancel()
+    }
+
+    override fun getSchedulerStats(): SchedulerStats {
+        return SchedulerStats(
+            availableHosts.size,
+            hostToView.size - availableHosts.size,
+            _attemptsSuccess,
+            _attemptsFailure,
+            _attemptsError,
+            _serversPending,
+            _serversActive
+        )
     }
 
     internal fun schedule(server: InternalServer): SchedulingRequest {
@@ -331,8 +352,9 @@ internal class ComputeServiceImpl(
         val now = clock.millis()
         val request = SchedulingRequest(server, now)
 
-        server.lastProvisioningTimestamp = now
+        server.launchedAt = Instant.ofEpochMilli(now)
         queue.add(request)
+        _serversPending++
         _servers.add(1, _serversPendingAttr)
         requestSchedulingCycle()
         return request
@@ -371,6 +393,7 @@ internal class ComputeServiceImpl(
 
             if (request.isCancelled) {
                 queue.poll()
+                _serversPending--
                 _servers.add(-1, _serversPendingAttr)
                 continue
             }
@@ -383,7 +406,9 @@ internal class ComputeServiceImpl(
                 if (server.flavor.memorySize > maxMemory || server.flavor.cpuCount > maxCores) {
                     // Remove the incoming image
                     queue.poll()
+                    _serversPending--
                     _servers.add(-1, _serversPendingAttr)
+                    _attemptsFailure++
                     _schedulingAttempts.add(1, _schedulingAttemptsFailureAttr)
 
                     logger.warn { "Failed to spawn $server: does not fit [${clock.instant()}]" }
@@ -399,6 +424,7 @@ internal class ComputeServiceImpl(
 
             // Remove request from queue
             queue.poll()
+            _serversPending--
             _servers.add(-1, _serversPendingAttr)
             _schedulingLatency.record(now - request.submitTime, server.attributes)
 
@@ -417,6 +443,8 @@ internal class ComputeServiceImpl(
                     activeServers[server] = host
 
                     _servers.add(1, _serversActiveAttr)
+                    _serversActive++
+                    _attemptsSuccess++
                     _schedulingAttempts.add(1, _schedulingAttemptsSuccessAttr)
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to deploy VM" }
@@ -425,6 +453,7 @@ internal class ComputeServiceImpl(
                     hv.provisionedCores -= server.flavor.cpuCount
                     hv.availableMemory += server.flavor.memorySize
 
+                    _attemptsError++
                     _schedulingAttempts.add(1, _schedulingAttemptsErrorAttr)
                 }
             }
@@ -481,6 +510,7 @@ internal class ComputeServiceImpl(
             logger.info { "[${clock.instant()}] Server ${server.uid} ${server.name} ${server.flavor} finished." }
 
             if (activeServers.remove(server) != null) {
+                _serversActive--
                 _servers.add(-1, _serversActiveAttr)
             }
 
@@ -503,7 +533,8 @@ internal class ComputeServiceImpl(
      */
     private fun collectProvisionTime(result: ObservableLongMeasurement) {
         for ((_, server) in servers) {
-            result.record(server.lastProvisioningTimestamp, server.attributes)
+            val launchedAt = server.launchedAt ?: continue
+            result.record(launchedAt.toEpochMilli(), server.attributes)
         }
     }
 }

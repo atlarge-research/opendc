@@ -36,8 +36,7 @@ dependencies {
     implementation(projects.opendcCommon)
 
     implementation(libs.kotlin.logging)
-    implementation(libs.jackson.module.kotlin) {
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
-    }
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
+    implementation(libs.jackson.module.kotlin)
+
+    testImplementation(libs.slf4j.simple)
 }

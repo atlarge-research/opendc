@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,20 @@
  * SOFTWARE.
  */
 
-description = "FaaS service for OpenDC"
+package org.opendc.compute.service.driver.telemetry
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
+import java.time.Duration
+import java.time.Instant
 
-dependencies {
-    api(projects.opendcFaas.opendcFaasApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    api(libs.commons.math3)
-    implementation(projects.opendcCommon)
-    implementation(libs.kotlin.logging)
-    implementation(libs.opentelemetry.semconv)
-
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.log4j.slf4j)
-}
+/**
+ * System-level statistics of a guest.
+ *
+ * @property uptime The cumulative uptime of the guest since last boot (in ms).
+ * @property downtime The cumulative downtime of the guest since last boot (in ms).
+ * @property bootTime The time at which the guest booted.
+ */
+public data class GuestSystemStats(
+    val uptime: Duration,
+    val downtime: Duration,
+    val bootTime: Instant
+)

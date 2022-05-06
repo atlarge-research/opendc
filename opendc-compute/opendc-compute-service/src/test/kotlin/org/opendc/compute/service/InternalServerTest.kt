@@ -23,7 +23,6 @@
 package org.opendc.compute.service
 
 import io.mockk.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -41,7 +40,6 @@ import java.util.*
 /**
  * Test suite for the [InternalServer] implementation.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class InternalServerTest {
     @Test
     fun testEquality() {

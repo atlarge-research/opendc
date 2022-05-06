@@ -31,7 +31,6 @@ import io.opentelemetry.sdk.metrics.export.MetricReaderFactory
 import kotlinx.coroutines.*
 import mu.KotlinLogging
 import java.time.Duration
-import java.util.*
 
 /**
  * A helper class to read the metrics from a list of [MetricProducer]s and automatically export the metrics every

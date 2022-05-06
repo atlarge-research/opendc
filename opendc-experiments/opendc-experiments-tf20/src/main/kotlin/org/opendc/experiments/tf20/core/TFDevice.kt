@@ -47,4 +47,9 @@ public interface TFDevice : AutoCloseable {
      * Perform [flops] amount of computation on the device.
      */
     public suspend fun compute(flops: Double)
+
+    /**
+     * Collect device statistics.
+     */
+    public fun getDeviceStats(): TFDeviceStats
 }

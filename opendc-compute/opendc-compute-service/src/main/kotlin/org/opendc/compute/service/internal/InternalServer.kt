@@ -28,6 +28,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import mu.KotlinLogging
 import org.opendc.compute.api.*
 import org.opendc.compute.service.driver.Host
+import java.time.Instant
 import java.util.UUID
 
 /**
@@ -75,7 +76,7 @@ internal class InternalServer(
     /**
      * The most recent timestamp when the server entered a provisioning state.
      */
-    @JvmField internal var lastProvisioningTimestamp: Long = Long.MIN_VALUE
+    override var launchedAt: Instant? = null
 
     /**
      * The current scheduling request.

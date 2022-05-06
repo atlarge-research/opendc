@@ -22,6 +22,8 @@
 
 package org.opendc.compute.api
 
+import java.time.Instant
+
 /**
  * A stateful object representing a server instance that is running on some physical or virtual machine.
  */
@@ -40,6 +42,11 @@ public interface Server : Resource {
      * The last known state of the server.
      */
     public val state: ServerState
+
+    /**
+     * The most recent moment in time when the server was launched.
+     */
+    public val launchedAt: Instant?
 
     /**
      * Request the server to be started.

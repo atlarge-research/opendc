@@ -30,6 +30,7 @@ import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
+import org.opendc.workflow.service.telemetry.SchedulerStats
 import java.time.Clock
 import java.time.Duration
 import kotlin.coroutines.CoroutineContext
@@ -44,6 +45,11 @@ public interface WorkflowService : AutoCloseable {
      * Submit the specified [Job] and suspend execution until the job is finished.
      */
     public suspend fun invoke(job: Job)
+
+    /**
+     * Collect statistics about the workflow scheduler.
+     */
+    public fun getSchedulerStats(): SchedulerStats
 
     /**
      * Terminate the lifecycle of the workflow service, stopping all running workflows.

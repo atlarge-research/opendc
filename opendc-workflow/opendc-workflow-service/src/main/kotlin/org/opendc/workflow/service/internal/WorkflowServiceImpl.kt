@@ -34,6 +34,7 @@ import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
+import org.opendc.workflow.service.telemetry.SchedulerStats
 import java.time.Clock
 import java.time.Duration
 import java.util.*
@@ -145,6 +146,7 @@ public class WorkflowServiceImpl(
         .setDescription("Number of submitted jobs")
         .setUnit("1")
         .build()
+    private var _workflowsSubmitted: Int = 0
 
     /**
      * The number of jobs that are running.
@@ -153,6 +155,7 @@ public class WorkflowServiceImpl(
         .setDescription("Number of jobs running")
         .setUnit("1")
         .build()
+    private var _workflowsRunning: Int = 0
 
     /**
      * The number of jobs that have finished running.
@@ -161,6 +164,7 @@ public class WorkflowServiceImpl(
         .setDescription("Number of jobs that finished running")
         .setUnit("1")
         .build()
+    private var _workflowsFinished: Int = 0
 
     /**
      * The number of tasks that have been submitted to the service.
@@ -169,6 +173,7 @@ public class WorkflowServiceImpl(
         .setDescription("Number of submitted tasks")
         .setUnit("1")
         .build()
+    private var _tasksSubmitted: Int = 0
 
     /**
      * The number of jobs that are running.
@@ -177,6 +182,7 @@ public class WorkflowServiceImpl(
         .setDescription("Number of tasks running")
         .setUnit("1")
         .build()
+    private var _tasksRunning: Int = 0
 
     /**
      * The number of jobs that have finished running.
@@ -185,6 +191,7 @@ public class WorkflowServiceImpl(
         .setDescription("Number of tasks that finished running")
         .setUnit("1")
         .build()
+    private var _tasksFinished: Int = 0
 
     /**
      * The [Pacer] to use for scheduling the scheduler cycles.
@@ -223,14 +230,20 @@ public class WorkflowServiceImpl(
             }
 
             submittedTasks.add(1)
+            _tasksSubmitted++
         }
 
         instances.values.toCollection(jobInstance.tasks)
         incomingJobs += jobInstance
         rootListener.jobSubmitted(jobInstance)
         submittedJobs.add(1)
+        _workflowsSubmitted++
 
         pacer.enqueue()
+    }
+
+    override fun getSchedulerStats(): SchedulerStats {
+        return SchedulerStats(_workflowsSubmitted, _workflowsRunning, _workflowsFinished, _tasksSubmitted, _tasksRunning, _tasksFinished)
     }
 
     override fun close() {
@@ -271,6 +284,7 @@ public class WorkflowServiceImpl(
             activeJobs += jobInstance
 
             runningJobs.add(1)
+            _workflowsRunning++
             rootListener.jobStarted(jobInstance)
         }
 
@@ -350,6 +364,7 @@ public class WorkflowServiceImpl(
                 val task = taskByServer.getValue(server)
                 task.startedAt = clock.millis()
                 runningTasks.add(1)
+                _tasksRunning++
                 rootListener.taskStarted(task)
             }
             ServerState.TERMINATED, ServerState.ERROR -> {
@@ -368,6 +383,8 @@ public class WorkflowServiceImpl(
 
                 runningTasks.add(-1)
                 finishedTasks.add(1)
+                _tasksRunning--
+                _tasksFinished++
                 rootListener.taskFinished(task)
 
                 // Add job roots to the scheduling queue
@@ -395,6 +412,8 @@ public class WorkflowServiceImpl(
         activeJobs -= job
         runningJobs.add(-1)
         finishedJobs.add(1)
+        _workflowsRunning--
+        _workflowsFinished++
         rootListener.jobFinished(job)
 
         job.cont.resume(Unit)
