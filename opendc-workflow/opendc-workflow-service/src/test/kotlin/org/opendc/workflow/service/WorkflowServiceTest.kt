@@ -32,7 +32,6 @@ import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.VCpuWeigher
 import org.opendc.compute.workload.ComputeServiceHelper
-import org.opendc.compute.workload.telemetry.NoopTelemetryManager
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.compute.model.MachineModel
@@ -70,7 +69,12 @@ internal class WorkflowServiceTest {
             weighers = listOf(VCpuWeigher(1.0, multiplier = 1.0))
         )
 
-        val computeHelper = ComputeServiceHelper(coroutineContext, clock, NoopTelemetryManager(), computeScheduler, schedulingQuantum = Duration.ofSeconds(1))
+        val computeHelper = ComputeServiceHelper(
+            coroutineContext,
+            clock,
+            computeScheduler,
+            schedulingQuantum = Duration.ofSeconds(1)
+        )
 
         val hostCount = 4
         repeat(hostCount) { computeHelper.registerHost(createHostSpec(it)) }

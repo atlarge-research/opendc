@@ -22,14 +22,12 @@
 
 package org.opendc.experiments.capelin
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.opendc.compute.service.scheduler.FilterScheduler
 import org.opendc.compute.service.scheduler.filters.ComputeFilter
 import org.opendc.compute.service.scheduler.filters.RamFilter
 import org.opendc.compute.service.scheduler.filters.VCpuFilter
 import org.opendc.compute.service.scheduler.weights.CoreRamWeigher
 import org.opendc.compute.workload.*
-import org.opendc.compute.workload.telemetry.NoopTelemetryManager
 import org.opendc.compute.workload.topology.Topology
 import org.opendc.compute.workload.topology.apply
 import org.opendc.experiments.capelin.topology.clusterTopology
@@ -46,7 +44,6 @@ import java.util.concurrent.TimeUnit
 @Fork(1)
 @Warmup(iterations = 2, time = 5, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
-@OptIn(ExperimentalCoroutinesApi::class)
 class CapelinBenchmarks {
     private lateinit var vms: List<VirtualMachine>
     private lateinit var topology: Topology
@@ -59,7 +56,7 @@ class CapelinBenchmarks {
         val loader = ComputeWorkloadLoader(File("src/test/resources/trace"))
         val source = trace("bitbrains-small")
         vms = source.resolve(loader, Random(1L)).vms
-        topology = checkNotNull(object {}.javaClass.getResourceAsStream("/env/topology.txt")).use { clusterTopology(it) }
+        topology = checkNotNull(object {}.javaClass.getResourceAsStream("/topology.txt")).use { clusterTopology(it) }
     }
 
     @Benchmark
@@ -71,7 +68,6 @@ class CapelinBenchmarks {
         val runner = ComputeServiceHelper(
             coroutineContext,
             clock,
-            NoopTelemetryManager(),
             computeScheduler
         )
 

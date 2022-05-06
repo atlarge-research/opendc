@@ -29,11 +29,9 @@ plugins {
 
 dependencies {
     api(projects.opendcFaas.opendcFaasApi)
-    api(projects.opendcTelemetry.opendcTelemetryApi)
     api(libs.commons.math3)
     implementation(projects.opendcCommon)
     implementation(libs.kotlin.logging)
-    implementation(libs.opentelemetry.semconv)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly(libs.log4j.slf4j)

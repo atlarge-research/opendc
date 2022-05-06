@@ -22,24 +22,13 @@
 
 package org.opendc.workflow.workload
 
-import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.common.CompletableResultCode
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality
-import io.opentelemetry.sdk.metrics.export.MetricProducer
-import io.opentelemetry.sdk.metrics.export.MetricReader
-import io.opentelemetry.sdk.metrics.export.MetricReaderFactory
-import io.opentelemetry.sdk.resources.Resource
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.opendc.compute.api.ComputeClient
-import org.opendc.telemetry.sdk.toOtelClock
 import org.opendc.workflow.api.Job
 import org.opendc.workflow.service.WorkflowService
 import java.time.Clock
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -59,60 +48,16 @@ public class WorkflowServiceHelper(
     /**
      * The [WorkflowService] that is constructed by this runner.
      */
-    public val service: WorkflowService
-
-    /**
-     * The [MetricProducer] exposed by the [WorkflowService].
-     */
-    public lateinit var metricProducer: MetricProducer
-        private set
-
-    /**
-     * The [MeterProvider] used for the service.
-     */
-    private val _meterProvider: SdkMeterProvider
-
-    /**
-     * The list of [MetricReader]s that have been registered with the runner.
-     */
-    private val _metricReaders = mutableListOf<MetricReader>()
-
-    init {
-        val resource = Resource.builder()
-            .put(ResourceAttributes.SERVICE_NAME, "opendc-workflow")
-            .build()
-
-        _meterProvider = SdkMeterProvider.builder()
-            .setClock(clock.toOtelClock())
-            .setResource(resource)
-            .registerMetricReader { producer ->
-                metricProducer = producer
-
-                val metricReaders = _metricReaders
-                object : MetricReader {
-                    override fun getPreferredTemporality(): AggregationTemporality = AggregationTemporality.CUMULATIVE
-                    override fun flush(): CompletableResultCode {
-                        return CompletableResultCode.ofAll(metricReaders.map { it.flush() })
-                    }
-                    override fun shutdown(): CompletableResultCode {
-                        return CompletableResultCode.ofAll(metricReaders.map { it.shutdown() })
-                    }
-                }
-            }
-            .build()
-
-        service = WorkflowService(
-            context,
-            clock,
-            _meterProvider,
-            computeClient,
-            schedulerSpec.schedulingQuantum,
-            jobAdmissionPolicy = schedulerSpec.jobAdmissionPolicy,
-            jobOrderPolicy = schedulerSpec.jobOrderPolicy,
-            taskEligibilityPolicy = schedulerSpec.taskEligibilityPolicy,
-            taskOrderPolicy = schedulerSpec.taskOrderPolicy,
-        )
-    }
+    public val service: WorkflowService = WorkflowService(
+        context,
+        clock,
+        computeClient,
+        schedulerSpec.schedulingQuantum,
+        jobAdmissionPolicy = schedulerSpec.jobAdmissionPolicy,
+        jobOrderPolicy = schedulerSpec.jobOrderPolicy,
+        taskEligibilityPolicy = schedulerSpec.taskEligibilityPolicy,
+        taskOrderPolicy = schedulerSpec.taskOrderPolicy,
+    )
 
     /**
      * Run the specified list of [jobs] using the workflow service and suspend execution until all jobs have
@@ -146,19 +91,8 @@ public class WorkflowServiceHelper(
         }
     }
 
-    /**
-     * Register a [MetricReader] for this helper.
-     *
-     * @param factory The factory for the reader to register.
-     */
-    public fun registerMetricReader(factory: MetricReaderFactory) {
-        val reader = factory.apply(metricProducer)
-        _metricReaders.add(reader)
-    }
-
     override fun close() {
         computeClient.close()
         service.close()
-        _meterProvider.close()
     }
 }

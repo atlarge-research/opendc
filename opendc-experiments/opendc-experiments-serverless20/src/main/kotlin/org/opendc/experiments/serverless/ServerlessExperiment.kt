@@ -23,8 +23,6 @@
 package org.opendc.experiments.serverless
 
 import com.typesafe.config.ConfigFactory
-import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -44,7 +42,6 @@ import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 import java.time.Duration
 import java.util.*
@@ -76,17 +73,18 @@ public class ServerlessExperiment : Experiment("Serverless") {
     private val coldStartModel by anyOf(ColdStartModel.LAMBDA, ColdStartModel.AZURE, ColdStartModel.GOOGLE)
 
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
-        val meterProvider: MeterProvider = SdkMeterProvider
-            .builder()
-            .setClock(clock.toOtelClock())
-            .build()
-
         val trace = ServerlessTraceReader().parse(File(config.getString("trace-path")))
         val traceById = trace.associateBy { it.id }
         val delayInjector = StochasticDelayInjector(coldStartModel, Random())
         val deployer = SimFunctionDeployer(clock, this, createMachineModel(), delayInjector) { FunctionTraceWorkload(traceById.getValue(it.name)) }
         val service =
-            FaaSService(coroutineContext, clock, meterProvider, deployer, routingPolicy, FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = Duration.ofMinutes(10)))
+            FaaSService(
+                coroutineContext,
+                clock,
+                deployer,
+                routingPolicy,
+                FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = Duration.ofMinutes(10))
+            )
         val client = service.newClient()
 
         coroutineScope {

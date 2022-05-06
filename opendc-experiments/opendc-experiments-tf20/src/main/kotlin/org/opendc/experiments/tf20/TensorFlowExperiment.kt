@@ -22,8 +22,6 @@
 
 package org.opendc.experiments.tf20
 
-import io.opentelemetry.api.metrics.MeterProvider
-import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import org.opendc.experiments.tf20.core.SimTFDevice
 import org.opendc.experiments.tf20.distribute.*
 import org.opendc.experiments.tf20.keras.AlexNet
@@ -32,7 +30,6 @@ import org.opendc.harness.dsl.Experiment
 import org.opendc.harness.dsl.anyOf
 import org.opendc.simulator.compute.power.LinearPowerModel
 import org.opendc.simulator.core.runBlockingSimulation
-import org.opendc.telemetry.sdk.toOtelClock
 
 /**
  * Experiments with the TensorFlow simulation model.
@@ -49,17 +46,11 @@ public class TensorFlowExperiment : Experiment(name = "tf20") {
     private val batchSize by anyOf(16, 32, 64, 128)
 
     override fun doRun(repeat: Int): Unit = runBlockingSimulation {
-        val meterProvider: MeterProvider = SdkMeterProvider
-            .builder()
-            .setClock(clock.toOtelClock())
-            .build()
-        val meter = meterProvider.get("opendc-tf20")
-
         val envInput = checkNotNull(TensorFlowExperiment::class.java.getResourceAsStream(environmentFile))
         val def = MLEnvironmentReader().readEnvironment(envInput).first()
         val device = SimTFDevice(
-            def.uid, def.meta["gpu"] as Boolean, coroutineContext, clock, meter, def.model.cpus[0],
-            def.model.memory[0], LinearPowerModel(250.0, 60.0)
+            def.uid, def.meta["gpu"] as Boolean, coroutineContext, clock, def.model.cpus[0], def.model.memory[0],
+            LinearPowerModel(250.0, 60.0)
         )
         val strategy = OneDeviceStrategy(device)
 

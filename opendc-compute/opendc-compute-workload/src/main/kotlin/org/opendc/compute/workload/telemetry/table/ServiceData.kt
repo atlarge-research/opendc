@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 AtLarge Research
+ * Copyright (c) 2021 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,27 @@
  * SOFTWARE.
  */
 
-package org.opendc.compute.workload.telemetry
+package org.opendc.compute.workload.telemetry.table
 
-import io.opentelemetry.api.metrics.MeterProvider
-import org.opendc.compute.service.scheduler.ComputeScheduler
-import org.opendc.compute.workload.topology.HostSpec
+import java.time.Instant
 
 /**
- * A [TelemetryManager] that does nothing.
+ * A trace entry for the compute service.
  */
-public class NoopTelemetryManager : TelemetryManager {
-    override fun createMeterProvider(host: HostSpec): MeterProvider = MeterProvider.noop()
+public data class ServiceData(
+    val timestamp: Instant,
+    val hostsUp: Int,
+    val hostsDown: Int,
+    val serversPending: Int,
+    val serversActive: Int,
+    val attemptsSuccess: Int,
+    val attemptsFailure: Int,
+    val attemptsError: Int
+)
 
-    override fun createMeterProvider(scheduler: ComputeScheduler): MeterProvider = MeterProvider.noop()
+/**
+ * Convert a [ServiceTableReader] into a persistent object.
+ */
+public fun ServiceTableReader.toServiceData(): ServiceData {
+    return ServiceData(timestamp, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
 }

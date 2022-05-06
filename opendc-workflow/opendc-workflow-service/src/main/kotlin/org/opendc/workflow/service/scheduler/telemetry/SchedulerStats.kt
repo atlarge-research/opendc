@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,23 @@
  * SOFTWARE.
  */
 
-description = "Telemetry SDK for OpenDC"
+package org.opendc.workflow.service.scheduler.telemetry
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
-
-dependencies {
-    api(projects.opendcTelemetry.opendcTelemetryApi)
-    api(libs.kotlinx.coroutines)
-    api(libs.opentelemetry.sdk.main)
-    api(libs.opentelemetry.sdk.metrics)
-
-    implementation(libs.kotlin.logging)
-}
+/**
+ * Statistics about the workflow scheduler.
+ *
+ * @property workflowsSubmitted The number of workflows submitted to the scheduler.
+ * @property workflowsRunning The number of workflows that are currently running.
+ * @property workflowsFinished The number of workflows that have completed since the scheduler started.
+ * @property tasksSubmitted The number of tasks submitted to the scheduler.
+ * @property tasksRunning The number of tasks that are currently running.
+ * @property tasksFinished The number of tasks that have completed.
+ */
+public data class SchedulerStats(
+    val workflowsSubmitted: Int,
+    val workflowsRunning: Int,
+    val workflowsFinished: Int,
+    val tasksSubmitted: Int,
+    val tasksRunning: Int,
+    val tasksFinished: Int
+)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,28 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute.table
+package org.opendc.compute.workload.telemetry
 
-import java.time.Instant
-
-/**
- * A trace entry for the compute service.
- */
-public data class ServiceData(
-    val timestamp: Instant,
-    val hostsUp: Int,
-    val hostsDown: Int,
-    val serversPending: Int,
-    val serversActive: Int,
-    val attemptsSuccess: Int,
-    val attemptsFailure: Int,
-    val attemptsError: Int
-)
+import org.opendc.compute.workload.telemetry.table.HostTableReader
+import org.opendc.compute.workload.telemetry.table.ServerTableReader
+import org.opendc.compute.workload.telemetry.table.ServiceTableReader
 
 /**
- * Convert a [ServiceTableReader] into a persistent object.
+ * A monitor that tracks the metrics and events of the OpenDC Compute service.
  */
-public fun ServiceTableReader.toServiceData(): ServiceData {
-    return ServiceData(timestamp, hostsUp, hostsDown, serversPending, serversActive, attemptsSuccess, attemptsFailure, attemptsError)
+public interface ComputeMonitor {
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: ServerTableReader) {}
+
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: HostTableReader) {}
+
+    /**
+     * Record an entry with the specified [reader].
+     */
+    public fun record(reader: ServiceTableReader) {}
 }

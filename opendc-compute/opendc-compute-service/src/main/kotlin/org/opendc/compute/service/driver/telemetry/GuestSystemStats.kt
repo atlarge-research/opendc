@@ -35,5 +35,5 @@ import java.time.Instant
 public data class GuestSystemStats(
     val uptime: Duration,
     val downtime: Duration,
-    val bootTime: Instant
+    val bootTime: Instant?
 )

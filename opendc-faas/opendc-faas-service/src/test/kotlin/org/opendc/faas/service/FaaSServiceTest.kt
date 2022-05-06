@@ -23,8 +23,6 @@
 package org.opendc.faas.service
 
 import io.mockk.*
-import io.opentelemetry.api.metrics.MeterProvider
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -39,12 +37,11 @@ import java.util.*
 /**
  * Test suite for the [FaaSService] implementation.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class FaaSServiceTest {
 
     @Test
     fun testClientState() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = assertDoesNotThrow { service.newClient() }
         assertDoesNotThrow { client.close() }
@@ -58,7 +55,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientInvokeUnknown() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -67,7 +64,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionCreation() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -78,7 +75,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionQuery() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -91,7 +88,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionFindById() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -104,7 +101,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionFindByName() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -117,7 +114,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionDuplicateName() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
 
@@ -128,7 +125,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionDelete() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
         val function = client.newFunction("test", 128)
@@ -142,7 +139,7 @@ internal class FaaSServiceTest {
 
     @Test
     fun testClientFunctionCannotInvokeDeleted() = runBlockingSimulation {
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), mockk(), mockk(), mockk())
+        val service = FaaSService(coroutineContext, clock, mockk(), mockk(), mockk())
 
         val client = service.newClient()
         val function = client.newFunction("test", 128)
@@ -155,7 +152,7 @@ internal class FaaSServiceTest {
     @Test
     fun testClientFunctionInvoke() = runBlockingSimulation {
         val deployer = mockk<FunctionDeployer>()
-        val service = FaaSService(coroutineContext, clock, MeterProvider.noop(), deployer, mockk(), mockk(relaxUnitFun = true))
+        val service = FaaSService(coroutineContext, clock, deployer, mockk(), mockk(relaxUnitFun = true))
 
         every { deployer.deploy(any(), any()) } answers {
             object : FunctionInstance {

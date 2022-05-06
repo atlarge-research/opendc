@@ -22,7 +22,6 @@
 
 package org.opendc.compute.simulator
 
-import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -75,7 +74,6 @@ internal class SimHostTest {
             meta = emptyMap(),
             coroutineContext,
             engine,
-            MeterProvider.noop(),
             SimFairShareHypervisorProvider()
         )
         val vmImageA = MockImage(
@@ -158,7 +156,6 @@ internal class SimHostTest {
             meta = emptyMap(),
             coroutineContext,
             engine,
-            MeterProvider.noop(),
             SimFairShareHypervisorProvider()
         )
         val image = MockImage(

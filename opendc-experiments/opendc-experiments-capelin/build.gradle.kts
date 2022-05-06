@@ -37,8 +37,6 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcSimulator.opendcSimulatorCompute)
     implementation(projects.opendcCompute.opendcComputeSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
-    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
 
     implementation(libs.config)
     implementation(libs.kotlin.logging)
@@ -46,7 +44,6 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.dataformat.csv)
     implementation(kotlin("reflect"))
-    implementation(libs.opentelemetry.semconv)
 
     runtimeOnly(projects.opendcTrace.opendcTraceOpendc)
 

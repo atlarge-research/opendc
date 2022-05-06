@@ -20,13 +20,18 @@
  * SOFTWARE.
  */
 
-description = "Telemetry API for OpenDC"
+package org.opendc.compute.workload.telemetry.table
 
-/* Build configuration */
-plugins {
-    `kotlin-library-conventions`
-}
-
-dependencies {
-    api(libs.opentelemetry.api)
-}
+/**
+ * Static information about a server exposed to the telemetry service.
+ */
+public data class ServerInfo(
+    val id: String,
+    val name: String,
+    val type: String,
+    val arch: String,
+    val imageId: String,
+    val imageName: String,
+    val cpuCount: Int,
+    val memCapacity: Long
+)

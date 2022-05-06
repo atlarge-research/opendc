@@ -21,9 +21,6 @@ ktlint-gradle = "10.2.1"
 log4j = "2.17.2"
 microprofile-openapi = "3.0"
 mockk = "1.12.3"
-opentelemetry-main = "1.12.0"
-opentelemetry-metrics = "1.12.0-alpha"
-opentelemetry-semconv = "1.12.0-alpha"
 parquet = "1.12.2"
 progressbar = "0.9.2"
 quarkus = "2.8.1.Final"
@@ -44,12 +41,6 @@ kotlin-logging = { module = "io.github.microutils:kotlin-logging", version.ref =
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
 sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version.ref = "sentry" }
-
-# Telemetry
-opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api", version.ref = "opentelemetry-main" }
-opentelemetry-sdk-main = { module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry-main" }
-opentelemetry-sdk-metrics = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version.ref = "opentelemetry-metrics" }
-opentelemetry-semconv = { module = "io.opentelemetry:opentelemetry-semconv", version.ref = "opentelemetry-semconv" }
 
 # Testing
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }

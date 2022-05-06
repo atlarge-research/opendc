@@ -22,7 +22,6 @@
 
 package org.opendc.experiments.tf20.core
 
-import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.*
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
@@ -50,7 +49,6 @@ public class SimTFDevice(
     override val isGpu: Boolean,
     context: CoroutineContext,
     clock: Clock,
-    meter: Meter,
     pu: ProcessingUnit,
     private val memory: MemoryUnit,
     powerModel: PowerModel
@@ -69,21 +67,9 @@ public class SimTFDevice(
     )
 
     /**
-     * The usage of the device.
+     * Metrics collected by the device.
      */
-    private val _usage = meter.histogramBuilder("device.usage")
-        .setDescription("The amount of device resources used")
-        .setUnit("MHz")
-        .build()
     private var _resourceUsage = 0.0
-
-    /**
-     * The power draw of the device.
-     */
-    private val _power = meter.histogramBuilder("device.power")
-        .setDescription("The power draw of the device")
-        .setUnit("W")
-        .build()
     private var _powerUsage = 0.0
     private var _energyUsage = 0.0
 
@@ -171,9 +157,7 @@ public class SimTFDevice(
         }
 
         override fun onConverge(conn: FlowConnection, now: Long) {
-            _usage.record(conn.rate)
             _resourceUsage = conn.rate
-            _power.record(machine.psu.powerDraw)
             _powerUsage = machine.powerUsage
             _energyUsage = machine.energyUsage
         }

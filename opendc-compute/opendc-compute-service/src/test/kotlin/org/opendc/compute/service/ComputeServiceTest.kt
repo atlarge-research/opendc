@@ -23,7 +23,6 @@
 package org.opendc.compute.service
 
 import io.mockk.*
-import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -59,7 +58,7 @@ internal class ComputeServiceTest {
             filters = listOf(ComputeFilter(), VCpuFilter(allocationRatio = 1.0), RamFilter(allocationRatio = 1.0)),
             weighers = listOf(RamWeigher())
         )
-        service = ComputeService(scope.coroutineContext, clock, MeterProvider.noop(), computeScheduler)
+        service = ComputeService(scope.coroutineContext, clock, computeScheduler)
     }
 
     @Test

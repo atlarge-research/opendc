@@ -22,8 +22,6 @@
 
 package org.opendc.workflow.service.internal
 
-import io.opentelemetry.api.metrics.Meter
-import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import org.opendc.common.util.Pacer
 import org.opendc.compute.api.*
@@ -34,7 +32,7 @@ import org.opendc.workflow.service.scheduler.job.JobAdmissionPolicy
 import org.opendc.workflow.service.scheduler.job.JobOrderPolicy
 import org.opendc.workflow.service.scheduler.task.TaskEligibilityPolicy
 import org.opendc.workflow.service.scheduler.task.TaskOrderPolicy
-import org.opendc.workflow.service.telemetry.SchedulerStats
+import org.opendc.workflow.service.scheduler.telemetry.SchedulerStats
 import java.time.Clock
 import java.time.Duration
 import java.util.*
@@ -48,9 +46,8 @@ import kotlin.coroutines.resume
 public class WorkflowServiceImpl(
     context: CoroutineContext,
     private val clock: Clock,
-    meterProvider: MeterProvider,
     private val computeClient: ComputeClient,
-    private val schedulingQuantum: Duration,
+    schedulingQuantum: Duration,
     jobAdmissionPolicy: JobAdmissionPolicy,
     jobOrderPolicy: JobOrderPolicy,
     taskEligibilityPolicy: TaskEligibilityPolicy,
@@ -60,11 +57,6 @@ public class WorkflowServiceImpl(
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
      */
     private val scope = CoroutineScope(context + Job())
-
-    /**
-     * The [Meter] to collect metrics of this service.
-     */
-    private val meter = meterProvider.get("org.opendc.workflow.service")
 
     /**
      * The incoming jobs ready to be processed by the scheduler.
@@ -139,58 +131,11 @@ public class WorkflowServiceImpl(
         }
     }
 
-    /**
-     * The number of jobs that have been submitted to the service.
-     */
-    private val submittedJobs = meter.counterBuilder("jobs.submitted")
-        .setDescription("Number of submitted jobs")
-        .setUnit("1")
-        .build()
     private var _workflowsSubmitted: Int = 0
-
-    /**
-     * The number of jobs that are running.
-     */
-    private val runningJobs = meter.upDownCounterBuilder("jobs.active")
-        .setDescription("Number of jobs running")
-        .setUnit("1")
-        .build()
     private var _workflowsRunning: Int = 0
-
-    /**
-     * The number of jobs that have finished running.
-     */
-    private val finishedJobs = meter.counterBuilder("jobs.finished")
-        .setDescription("Number of jobs that finished running")
-        .setUnit("1")
-        .build()
     private var _workflowsFinished: Int = 0
-
-    /**
-     * The number of tasks that have been submitted to the service.
-     */
-    private val submittedTasks = meter.counterBuilder("tasks.submitted")
-        .setDescription("Number of submitted tasks")
-        .setUnit("1")
-        .build()
     private var _tasksSubmitted: Int = 0
-
-    /**
-     * The number of jobs that are running.
-     */
-    private val runningTasks = meter.upDownCounterBuilder("tasks.active")
-        .setDescription("Number of tasks running")
-        .setUnit("1")
-        .build()
     private var _tasksRunning: Int = 0
-
-    /**
-     * The number of jobs that have finished running.
-     */
-    private val finishedTasks = meter.counterBuilder("tasks.finished")
-        .setDescription("Number of tasks that finished running")
-        .setUnit("1")
-        .build()
     private var _tasksFinished: Int = 0
 
     /**
@@ -229,14 +174,12 @@ public class WorkflowServiceImpl(
                 instance.state = TaskStatus.READY
             }
 
-            submittedTasks.add(1)
             _tasksSubmitted++
         }
 
         instances.values.toCollection(jobInstance.tasks)
         incomingJobs += jobInstance
         rootListener.jobSubmitted(jobInstance)
-        submittedJobs.add(1)
         _workflowsSubmitted++
 
         pacer.enqueue()
@@ -283,7 +226,6 @@ public class WorkflowServiceImpl(
             jobQueue.add(jobInstance)
             activeJobs += jobInstance
 
-            runningJobs.add(1)
             _workflowsRunning++
             rootListener.jobStarted(jobInstance)
         }
@@ -363,7 +305,6 @@ public class WorkflowServiceImpl(
             ServerState.RUNNING -> {
                 val task = taskByServer.getValue(server)
                 task.startedAt = clock.millis()
-                runningTasks.add(1)
                 _tasksRunning++
                 rootListener.taskStarted(task)
             }
@@ -381,8 +322,6 @@ public class WorkflowServiceImpl(
                 job.tasks.remove(task)
                 activeTasks -= task
 
-                runningTasks.add(-1)
-                finishedTasks.add(1)
                 _tasksRunning--
                 _tasksFinished++
                 rootListener.taskFinished(task)
@@ -410,8 +349,6 @@ public class WorkflowServiceImpl(
 
     private fun finishJob(job: JobState) {
         activeJobs -= job
-        runningJobs.add(-1)
-        finishedJobs.add(1)
         _workflowsRunning--
         _workflowsFinished++
         rootListener.jobFinished(job)

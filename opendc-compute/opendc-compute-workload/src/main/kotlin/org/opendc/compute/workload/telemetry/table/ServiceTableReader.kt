@@ -20,40 +20,51 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute
+package org.opendc.compute.workload.telemetry.table
 
-import io.opentelemetry.sdk.common.CompletableResultCode
-import io.opentelemetry.sdk.metrics.data.*
-import io.opentelemetry.sdk.metrics.export.MetricExporter
-import mu.KotlinLogging
+import java.time.Instant
 
 /**
- * A [MetricExporter] that redirects data to a [ComputeMonitor] implementation.
+ * An interface that is used to read a row of a service trace entry.
  */
-public abstract class ComputeMetricExporter : MetricExporter, ComputeMonitor {
+public interface ServiceTableReader {
     /**
-     * The logging instance for this exporter.
+     * The timestamp of the current entry of the reader.
      */
-    private val logger = KotlinLogging.logger {}
+    public val timestamp: Instant
 
     /**
-     * A [ComputeMetricAggregator] that actually performs the aggregation.
+     * The number of hosts that are up at this instant.
      */
-    private val agg = ComputeMetricAggregator()
+    public val hostsUp: Int
 
-    override fun export(metrics: Collection<MetricData>): CompletableResultCode {
-        return try {
-            agg.process(metrics)
-            agg.collect(this)
+    /**
+     * The number of hosts that are down at this instant.
+     */
+    public val hostsDown: Int
 
-            CompletableResultCode.ofSuccess()
-        } catch (e: Throwable) {
-            logger.warn(e) { "Failed to export results" }
-            CompletableResultCode.ofFailure()
-        }
-    }
+    /**
+     * The number of servers that are pending to be scheduled.
+     */
+    public val serversPending: Int
 
-    override fun flush(): CompletableResultCode = CompletableResultCode.ofSuccess()
+    /**
+     * The number of servers that are currently active.
+     */
+    public val serversActive: Int
 
-    override fun shutdown(): CompletableResultCode = CompletableResultCode.ofSuccess()
+    /**
+     * The scheduling attempts that were successful.
+     */
+    public val attemptsSuccess: Int
+
+    /**
+     * The scheduling attempts that were unsuccessful due to client error.
+     */
+    public val attemptsFailure: Int
+
+    /**
+     * The scheduling attempts that were unsuccessful due to scheduler error.
+     */
+    public val attemptsError: Int
 }

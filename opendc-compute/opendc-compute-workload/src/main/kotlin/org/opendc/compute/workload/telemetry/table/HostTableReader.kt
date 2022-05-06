@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.opendc.telemetry.compute.table
+package org.opendc.compute.workload.telemetry.table
 
 import java.time.Instant
 

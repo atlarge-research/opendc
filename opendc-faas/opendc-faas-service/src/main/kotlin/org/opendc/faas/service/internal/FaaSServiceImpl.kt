@@ -22,8 +22,6 @@
 
 package org.opendc.faas.service.internal
 
-import io.opentelemetry.api.metrics.Meter
-import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.intrinsics.startCoroutineCancellable
 import mu.KotlinLogging
@@ -42,6 +40,7 @@ import org.opendc.faas.service.telemetry.FunctionStats
 import org.opendc.faas.service.telemetry.SchedulerStats
 import java.lang.IllegalStateException
 import java.time.Clock
+import java.time.Duration
 import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -57,10 +56,10 @@ import kotlin.coroutines.resumeWithException
 internal class FaaSServiceImpl(
     context: CoroutineContext,
     private val clock: Clock,
-    meterProvider: MeterProvider,
     private val deployer: FunctionDeployer,
     private val routingPolicy: RoutingPolicy,
-    private val terminationPolicy: FunctionTerminationPolicy
+    private val terminationPolicy: FunctionTerminationPolicy,
+    quantum: Duration
 ) : FaaSService, FunctionInstanceListener {
     /**
      * The [CoroutineScope] of the service bounded by the lifecycle of the service.
@@ -73,14 +72,9 @@ internal class FaaSServiceImpl(
     private val logger = KotlinLogging.logger {}
 
     /**
-     * The [Meter] that collects the metrics of this service.
-     */
-    private val meter = meterProvider.get("org.opendc.faas.service")
-
-    /**
      * The [Pacer] to use for scheduling the scheduler cycles.
      */
-    private val pacer = Pacer(scope.coroutineContext, clock, quantum = 100) { doSchedule() }
+    private val pacer = Pacer(scope.coroutineContext, clock, quantum = quantum.toMillis()) { doSchedule() }
 
     /**
      * The [Random] instance used to generate unique identifiers for the objects.
@@ -99,30 +93,10 @@ internal class FaaSServiceImpl(
     private val queue = ArrayDeque<InvocationRequest>()
 
     /**
-     * The total amount of function invocations received by the service.
+     * Metrics tracked by the service.
      */
-    private val _invocations = meter.counterBuilder("service.invocations.total")
-        .setDescription("Number of function invocations")
-        .setUnit("1")
-        .build()
     private var totalInvocations = 0L
-
-    /**
-     * The amount of function invocations that could be handled directly.
-     */
-    private val _timelyInvocations = meter.counterBuilder("service.invocations.warm")
-        .setDescription("Number of function invocations handled directly")
-        .setUnit("1")
-        .build()
     private var timelyInvocations = 0L
-
-    /**
-     * The amount of function invocations that were delayed due to function deployment.
-     */
-    private val _delayedInvocations = meter.counterBuilder("service.invocations.cold")
-        .setDescription("Number of function invocations that are delayed")
-        .setUnit("1")
-        .build()
     private var delayedInvocations = 0L
 
     override fun newClient(): FaaSClient {
@@ -165,7 +139,6 @@ internal class FaaSServiceImpl(
 
                 val uid = UUID(clock.millis(), random.nextLong())
                 val function = FunctionObject(
-                    meter,
                     uid,
                     name,
                     memorySize,
@@ -232,7 +205,6 @@ internal class FaaSServiceImpl(
                 }
 
                 val instance = if (activeInstance != null) {
-                    _timelyInvocations.add(1)
                     timelyInvocations++
                     function.reportDeployment(isDelayed = false)
 
@@ -242,7 +214,6 @@ internal class FaaSServiceImpl(
                     instances.add(instance)
                     terminationPolicy.enqueue(instance)
 
-                    _delayedInvocations.add(1)
                     delayedInvocations++
                     function.reportDeployment(isDelayed = true)
 
@@ -271,7 +242,6 @@ internal class FaaSServiceImpl(
     suspend fun invoke(function: FunctionObject) {
         check(function.uid in functions) { "Function does not exist (anymore)" }
 
-        _invocations.add(1)
         totalInvocations++
         function.reportSubmission()
 

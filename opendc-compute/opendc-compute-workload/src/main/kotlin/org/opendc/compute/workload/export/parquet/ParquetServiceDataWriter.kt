@@ -22,12 +22,11 @@
 
 package org.opendc.compute.workload.export.parquet
 
-import io.opentelemetry.context.ContextKey.named
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.io.api.RecordConsumer
 import org.apache.parquet.schema.*
-import org.opendc.telemetry.compute.table.ServiceTableReader
+import org.opendc.compute.workload.telemetry.table.ServiceTableReader
 import java.io.File
 
 /**
