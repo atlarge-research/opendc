@@ -33,7 +33,6 @@ dependencies {
     implementation(projects.opendcSimulator.opendcSimulatorCore)
     implementation(projects.opendcFaas.opendcFaasService)
     implementation(projects.opendcFaas.opendcFaasSimulator)
-    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
     implementation(libs.kotlin.logging)
     implementation(libs.config)
 }

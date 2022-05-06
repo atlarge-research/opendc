@@ -24,7 +24,6 @@ package org.opendc.faas.simulator
 
 import io.mockk.coVerify
 import io.mockk.spyk
-import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
@@ -78,7 +77,10 @@ internal class SimFaaSServiceTest {
         val delayInjector = StochasticDelayInjector(ColdStartModel.GOOGLE, random)
         val deployer = SimFunctionDeployer(clock, this, machineModel, delayInjector) { workload }
         val service = FaaSService(
-            coroutineContext, clock, MeterProvider.noop(), deployer, RandomRoutingPolicy(),
+            coroutineContext,
+            clock,
+            deployer,
+            RandomRoutingPolicy(),
             FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = Duration.ofMillis(10000))
         )
 
