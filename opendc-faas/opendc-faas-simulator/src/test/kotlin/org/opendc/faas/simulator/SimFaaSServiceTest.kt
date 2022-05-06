@@ -28,22 +28,25 @@ import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.opendc.faas.service.FaaSService
 import org.opendc.faas.service.autoscaler.FunctionTerminationPolicyFixed
 import org.opendc.faas.service.router.RandomRoutingPolicy
-import org.opendc.faas.simulator.delay.ZeroDelayInjector
+import org.opendc.faas.simulator.delay.ColdStartModel
+import org.opendc.faas.simulator.delay.StochasticDelayInjector
 import org.opendc.faas.simulator.workload.SimFaaSWorkload
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
 import org.opendc.simulator.compute.model.ProcessingUnit
-import org.opendc.simulator.compute.workload.SimFlopsWorkload
+import org.opendc.simulator.compute.workload.SimRuntimeWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.core.runBlockingSimulation
 import java.time.Duration
+import java.util.*
 
 /**
  * A test suite for the [FaaSService] implementation under simulated conditions.
@@ -65,10 +68,15 @@ internal class SimFaaSServiceTest {
 
     @Test
     fun testSmoke() = runBlockingSimulation {
-        val workload = spyk(object : SimFaaSWorkload, SimWorkload by SimFlopsWorkload(1000) {
-            override suspend fun invoke() {}
+        val random = Random(0)
+        val workload = spyk(object : SimFaaSWorkload, SimWorkload by SimRuntimeWorkload(1000) {
+            override suspend fun invoke() {
+                delay(random.nextInt(1000).toLong())
+            }
         })
-        val deployer = SimFunctionDeployer(clock, this, machineModel, ZeroDelayInjector) { workload }
+
+        val delayInjector = StochasticDelayInjector(ColdStartModel.GOOGLE, random)
+        val deployer = SimFunctionDeployer(clock, this, machineModel, delayInjector) { workload }
         val service = FaaSService(
             coroutineContext, clock, MeterProvider.noop(), deployer, RandomRoutingPolicy(),
             FunctionTerminationPolicyFixed(coroutineContext, clock, timeout = Duration.ofMillis(10000))
@@ -84,8 +92,15 @@ internal class SimFaaSServiceTest {
 
         yield()
 
+        val funcStats = service.getFunctionStats(function)
+
         assertAll(
             { coVerify { workload.invoke() } },
+            { assertEquals(1, funcStats.totalInvocations) },
+            { assertEquals(1, funcStats.delayedInvocations) },
+            { assertEquals(0, funcStats.failedInvocations) },
+            { assertEquals(100.0, funcStats.waitTime.mean) },
+            { assertEquals(1285.0, funcStats.activeTime.mean) },
         )
     }
 }

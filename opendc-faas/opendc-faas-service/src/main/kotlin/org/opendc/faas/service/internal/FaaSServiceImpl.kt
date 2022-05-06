@@ -38,6 +38,8 @@ import org.opendc.faas.service.deployer.FunctionInstance
 import org.opendc.faas.service.deployer.FunctionInstanceListener
 import org.opendc.faas.service.deployer.FunctionInstanceState
 import org.opendc.faas.service.router.RoutingPolicy
+import org.opendc.faas.service.telemetry.FunctionStats
+import org.opendc.faas.service.telemetry.SchedulerStats
 import java.lang.IllegalStateException
 import java.time.Clock
 import java.util.*
@@ -103,6 +105,7 @@ internal class FaaSServiceImpl(
         .setDescription("Number of function invocations")
         .setUnit("1")
         .build()
+    private var totalInvocations = 0L
 
     /**
      * The amount of function invocations that could be handled directly.
@@ -111,6 +114,7 @@ internal class FaaSServiceImpl(
         .setDescription("Number of function invocations handled directly")
         .setUnit("1")
         .build()
+    private var timelyInvocations = 0L
 
     /**
      * The amount of function invocations that were delayed due to function deployment.
@@ -119,6 +123,7 @@ internal class FaaSServiceImpl(
         .setDescription("Number of function invocations that are delayed")
         .setUnit("1")
         .build()
+    private var delayedInvocations = 0L
 
     override fun newClient(): FaaSClient {
         return object : FaaSClient {
@@ -187,6 +192,15 @@ internal class FaaSServiceImpl(
         }
     }
 
+    override fun getSchedulerStats(): SchedulerStats {
+        return SchedulerStats(totalInvocations, timelyInvocations, delayedInvocations)
+    }
+
+    override fun getFunctionStats(function: FaaSFunction): FunctionStats {
+        val func = requireNotNull(functions[function.uid]) { "Unknown function" }
+        return func.getStats()
+    }
+
     /**
      * Indicate that a new scheduling cycle is needed due to a change to the service's state.
      */
@@ -219,7 +233,8 @@ internal class FaaSServiceImpl(
 
                 val instance = if (activeInstance != null) {
                     _timelyInvocations.add(1)
-                    function.timelyInvocations.add(1, function.attributes)
+                    timelyInvocations++
+                    function.reportDeployment(isDelayed = false)
 
                     activeInstance
                 } else {
@@ -227,29 +242,24 @@ internal class FaaSServiceImpl(
                     instances.add(instance)
                     terminationPolicy.enqueue(instance)
 
-                    function.idleInstances.add(1, function.attributes)
-
                     _delayedInvocations.add(1)
-                    function.delayedInvocations.add(1, function.attributes)
+                    delayedInvocations++
+                    function.reportDeployment(isDelayed = true)
 
                     instance
                 }
 
                 suspend {
                     val start = clock.millis()
-                    function.waitTime.record(start - submitTime, function.attributes)
-                    function.idleInstances.add(-1, function.attributes)
-                    function.activeInstances.add(1, function.attributes)
+                    function.reportStart(start, submitTime)
                     try {
                         instance.invoke()
                     } catch (e: Throwable) {
                         logger.debug(e) { "Function invocation failed" }
-                        function.failedInvocations.add(1, function.attributes)
+                        function.reportFailure()
                     } finally {
                         val end = clock.millis()
-                        function.activeTime.record(end - start, function.attributes)
-                        function.idleInstances.add(1, function.attributes)
-                        function.activeInstances.add(-1, function.attributes)
+                        function.reportEnd(end - start)
                     }
                 }.startCoroutineCancellable(cont)
             }
@@ -262,7 +272,8 @@ internal class FaaSServiceImpl(
         check(function.uid in functions) { "Function does not exist (anymore)" }
 
         _invocations.add(1)
-        function.invocations.add(1, function.attributes)
+        totalInvocations++
+        function.reportSubmission()
 
         return suspendCancellableCoroutine { cont ->
             if (!queue.add(InvocationRequest(clock.millis(), function, cont))) {

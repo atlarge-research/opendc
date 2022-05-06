@@ -123,7 +123,6 @@ public class SimFunctionDeployer(
         /**
          * Start the function instance.
          */
-        @OptIn(InternalCoroutinesApi::class)
         internal fun start() {
             check(state == FunctionInstanceState.Provisioning) { "Invalid state of function instance" }
             job = scope.launch {
