@@ -25,6 +25,7 @@ package org.opendc.experiments.tf20.core
 import io.opentelemetry.api.metrics.MeterProvider
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -57,6 +58,12 @@ internal class SimTFDeviceTest {
             launch { device.compute(1e6) }
             launch { device.compute(2e6) }
         }
-        assertEquals(3681, clock.millis())
+
+        val stats = device.getDeviceStats()
+
+        assertAll(
+            { assertEquals(3681, clock.millis()) },
+            { assertEquals(325.75, stats.energyUsage) }
+        )
     }
 }
