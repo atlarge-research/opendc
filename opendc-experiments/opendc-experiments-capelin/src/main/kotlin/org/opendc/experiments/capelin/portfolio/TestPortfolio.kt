@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,24 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin.util
+package org.opendc.experiments.capelin.portfolio
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import java.io.InputStream
+import org.opendc.compute.workload.trace
+import org.opendc.experiments.capelin.model.OperationalPhenomena
+import org.opendc.experiments.capelin.model.Scenario
+import org.opendc.experiments.capelin.model.Topology
+import org.opendc.experiments.capelin.model.Workload
 
 /**
- * A parser for the JSON VM placement data files used for the TPDS article on Capelin.
+ * A [Portfolio] to perform a simple test run.
  */
-class VmPlacementReader {
-    /**
-     * The [ObjectMapper] to parse the placement.
-     */
-    private val mapper = jacksonObjectMapper()
-
-    /**
-     * Read the VM placements from the input.
-     */
-    fun read(input: InputStream): Map<String, String> {
-        return mapper.readValue<Map<String, String>>(input)
-            .mapKeys { "vm__workload__${it.key}.txt" }
-            .mapValues { it.value.split("/")[1] } // Clusters have format XX0 / X00
-    }
+public class TestPortfolio : Portfolio {
+    override val scenarios: Iterable<Scenario> = listOf(
+        Scenario(
+            Topology("base"),
+            Workload("solvinity", trace("solvinity")),
+            OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
+            "active-servers"
+        )
+    )
 }

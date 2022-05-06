@@ -20,29 +20,16 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.capelin.portfolio
 
-import org.opendc.compute.workload.trace
-import org.opendc.experiments.capelin.model.OperationalPhenomena
-import org.opendc.experiments.capelin.model.Topology
-import org.opendc.experiments.capelin.model.Workload
-import org.opendc.harness.dsl.anyOf
+import org.opendc.experiments.capelin.model.Scenario
 
 /**
- * A [Portfolio] to perform a simple test run.
+ * A portfolio represents a collection of scenarios are tested for the work.
  */
-public class TestPortfolio : Portfolio("test") {
-    override val topology: Topology by anyOf(
-        Topology("base")
-    )
-
-    override val workload: Workload by anyOf(
-        Workload("solvinity", trace("solvinity"))
-    )
-
-    override val operationalPhenomena: OperationalPhenomena by anyOf(
-        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
-    )
-
-    override val allocationPolicy: String by anyOf("active-servers")
+public interface Portfolio {
+    /**
+     * The scenarios that belong to this portfolio.
+     */
+    val scenarios: Iterable<Scenario>
 }

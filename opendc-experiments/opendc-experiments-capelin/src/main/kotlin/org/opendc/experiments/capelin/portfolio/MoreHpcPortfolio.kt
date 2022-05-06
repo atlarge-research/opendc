@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,42 +20,48 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.capelin.portfolio
 
 import org.opendc.compute.workload.sampleByHpc
 import org.opendc.compute.workload.sampleByHpcLoad
 import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
+import org.opendc.experiments.capelin.model.Scenario
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.harness.dsl.anyOf
 
 /**
  * A [Portfolio] to explore the effect of HPC workloads.
  */
-public class MoreHpcPortfolio : Portfolio("more_hpc") {
-    override val topology: Topology by anyOf(
+public class MoreHpcPortfolio : Portfolio {
+    private val topologies = listOf(
         Topology("base"),
         Topology("exp-vol-hor-hom"),
         Topology("exp-vol-ver-hom"),
         Topology("exp-vel-ver-hom")
     )
-
-    override val workload: Workload by anyOf(
-        Workload("solvinity", trace("solvinity").sampleByHpc(0.0)),
-        Workload("solvinity", trace("solvinity").sampleByHpc(0.25)),
-        Workload("solvinity", trace("solvinity").sampleByHpc(0.5)),
-        Workload("solvinity", trace("solvinity").sampleByHpc(1.0)),
-        Workload("solvinity", trace("solvinity").sampleByHpcLoad(0.25)),
-        Workload("solvinity", trace("solvinity").sampleByHpcLoad(0.5)),
-        Workload("solvinity", trace("solvinity").sampleByHpcLoad(1.0))
+    private val workloads = listOf(
+        Workload("hpc-0%", trace("solvinity").sampleByHpc(0.0)),
+        Workload("hpc-25%", trace("solvinity").sampleByHpc(0.25)),
+        Workload("hpc-50%", trace("solvinity").sampleByHpc(0.5)),
+        Workload("hpc-100%", trace("solvinity").sampleByHpc(1.0)),
+        Workload("hpc-load-25%", trace("solvinity").sampleByHpcLoad(0.25)),
+        Workload("hpc-load-50%", trace("solvinity").sampleByHpcLoad(0.5)),
+        Workload("hpc-load-100%", trace("solvinity").sampleByHpcLoad(1.0))
     )
 
-    override val operationalPhenomena: OperationalPhenomena by anyOf(
-        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
-    )
+    private val operationalPhenomena = OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true)
+    private val allocationPolicy: String = "active-servers"
 
-    override val allocationPolicy: String by anyOf(
-        "active-servers"
-    )
+    override val scenarios: Iterable<Scenario> = topologies.flatMap { topology ->
+        workloads.map { workload ->
+            Scenario(
+                topology,
+                workload,
+                operationalPhenomena,
+                allocationPolicy,
+                mapOf("topology" to topology.name, "workload" to workload.name)
+            )
+        }
+    }
 }

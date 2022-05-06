@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,21 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
-
-import org.opendc.compute.workload.trace
-import org.opendc.experiments.capelin.model.OperationalPhenomena
-import org.opendc.experiments.capelin.model.Topology
-import org.opendc.experiments.capelin.model.Workload
-import org.opendc.harness.dsl.anyOf
+package org.opendc.experiments.capelin.model
 
 /**
- * A [Portfolio] that compares the original VM placements against our policies.
+ * A single scenario of a portfolio.
+ *
+ * @property topology The topology to test.
+ * @property workload The workload to test.
+ * @property operationalPhenomena The [OperationalPhenomena] to model.
+ * @property allocationPolicy The allocation policy of the scheduler.
+ * @property partitions The partition of the scenario.
  */
-public class ReplayPortfolio : Portfolio("replay") {
-    override val topology: Topology by anyOf(
-        Topology("base")
-    )
-
-    override val workload: Workload by anyOf(
-        Workload("solvinity", trace("solvinity"))
-    )
-
-    override val operationalPhenomena: OperationalPhenomena by anyOf(
-        OperationalPhenomena(failureFrequency = 0.0, hasInterference = false)
-    )
-
-    override val allocationPolicy: String by anyOf(
-        "replay",
-        "active-servers"
-    )
-}
+public data class Scenario(
+    val topology: Topology,
+    val workload: Workload,
+    val operationalPhenomena: OperationalPhenomena,
+    val allocationPolicy: String,
+    val partitions: Map<String, String> = emptyMap()
+)

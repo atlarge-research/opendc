@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,26 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.capelin.portfolio
 
 import org.opendc.compute.workload.composite
 import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
+import org.opendc.experiments.capelin.model.Scenario
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.harness.dsl.anyOf
 
 /**
  * A [Portfolio] that explores the effect of a composite workload.
  */
-public class CompositeWorkloadPortfolio : Portfolio("composite-workload") {
-    private val totalSampleLoad = 1.3301733005049648E12
-
-    override val topology: Topology by anyOf(
+public class CompositeWorkloadPortfolio : Portfolio {
+    private val topologies = listOf(
         Topology("base"),
         Topology("exp-vol-hor-hom"),
         Topology("exp-vol-ver-hom"),
         Topology("exp-vel-ver-hom")
     )
-
-    override val workload: Workload by anyOf(
+    private val workloads = listOf(
         Workload(
             "all-azure",
             composite(trace("solvinity-short") to 0.0, trace("azure") to 1.0)
@@ -64,12 +61,18 @@ public class CompositeWorkloadPortfolio : Portfolio("composite-workload") {
             composite(trace("solvinity-short") to 1.0, trace("azure") to 0.0)
         )
     )
+    private val operationalPhenomena = OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = false)
+    private val allocationPolicy = "active-servers"
 
-    override val operationalPhenomena: OperationalPhenomena by anyOf(
-        OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = false)
-    )
-
-    override val allocationPolicy: String by anyOf(
-        "active-servers"
-    )
+    override val scenarios: Iterable<Scenario> = topologies.flatMap { topology ->
+        workloads.map { workload ->
+            Scenario(
+                topology,
+                workload,
+                operationalPhenomena,
+                allocationPolicy,
+                mapOf("topology" to topology.name, "workload" to workload.name)
+            )
+        }
+    }
 }

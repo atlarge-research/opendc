@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 AtLarge Research
+ * Copyright (c) 2022 AtLarge Research
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,38 +20,35 @@
  * SOFTWARE.
  */
 
-package org.opendc.experiments.capelin
+package org.opendc.experiments.capelin.portfolio
 
 import org.opendc.compute.workload.sampleByLoad
 import org.opendc.compute.workload.trace
 import org.opendc.experiments.capelin.model.OperationalPhenomena
+import org.opendc.experiments.capelin.model.Scenario
 import org.opendc.experiments.capelin.model.Topology
 import org.opendc.experiments.capelin.model.Workload
-import org.opendc.harness.dsl.anyOf
 
 /**
  * A [Portfolio] that explores the effect of operational phenomena on metrics.
  */
-public class OperationalPhenomenaPortfolio : Portfolio("operational_phenomena") {
-    override val topology: Topology by anyOf(
-        Topology("base")
+public class OperationalPhenomenaPortfolio : Portfolio {
+    private val topology = Topology("base")
+    private val workloads = listOf(
+        Workload("solvinity-10%", trace("solvinity").sampleByLoad(0.1)),
+        Workload("solvinity-25%", trace("solvinity").sampleByLoad(0.25)),
+        Workload("solvinity-50%", trace("solvinity").sampleByLoad(0.5)),
+        Workload("solvinity-100%", trace("solvinity").sampleByLoad(1.0))
     )
 
-    override val workload: Workload by anyOf(
-        Workload("solvinity", trace("solvinity").sampleByLoad(0.1)),
-        Workload("solvinity", trace("solvinity").sampleByLoad(0.25)),
-        Workload("solvinity", trace("solvinity").sampleByLoad(0.5)),
-        Workload("solvinity", trace("solvinity").sampleByLoad(1.0))
-    )
-
-    override val operationalPhenomena: OperationalPhenomena by anyOf(
+    private val phenomenas = listOf(
         OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = true),
         OperationalPhenomena(failureFrequency = 0.0, hasInterference = true),
         OperationalPhenomena(failureFrequency = 24.0 * 7, hasInterference = false),
         OperationalPhenomena(failureFrequency = 0.0, hasInterference = false)
     )
 
-    override val allocationPolicy: String by anyOf(
+    private val allocationPolicies = listOf(
         "mem",
         "mem-inv",
         "core-mem",
@@ -60,4 +57,19 @@ public class OperationalPhenomenaPortfolio : Portfolio("operational_phenomena") 
         "active-servers-inv",
         "random"
     )
+
+    override val scenarios: Iterable<Scenario> =
+        workloads.flatMap { workload ->
+            phenomenas.flatMapIndexed { index, operationalPhenomena ->
+                allocationPolicies.map { allocationPolicy ->
+                    Scenario(
+                        topology,
+                        workload,
+                        operationalPhenomena,
+                        allocationPolicy,
+                        mapOf("workload" to workload.name, "scheduler" to allocationPolicy, "phenomena" to index.toString())
+                    )
+                }
+            }
+        }
 }
