@@ -30,6 +30,7 @@ plugins {
 dependencies {
     api(projects.opendcTelemetry.opendcTelemetrySdk)
 
+    implementation(projects.opendcCompute.opendcComputeService)
     implementation(libs.opentelemetry.semconv)
     implementation(libs.kotlin.logging)
 }

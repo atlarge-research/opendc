@@ -26,6 +26,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import org.opendc.compute.api.Server
 import org.opendc.compute.service.ComputeService
 import org.opendc.compute.service.scheduler.ComputeScheduler
 import org.opendc.compute.simulator.SimHost
@@ -81,9 +82,19 @@ public class ComputeServiceHelper(
     }
 
     /**
-     * Converge a simulation of the [ComputeService] by replaying the workload trace given by [trace].
+     * Run a simulation of the [ComputeService] by replaying the workload trace given by [trace].
+     *
+     * @param trace The trace to simulate.
+     * @param seed The seed for the simulation.
+     * @param servers A list to which the created servers is added.
+     * @param submitImmediately A flag to indicate that the servers are scheduled immediately (so not at their start time).
      */
-    public suspend fun run(trace: List<VirtualMachine>, seed: Long, submitImmediately: Boolean = false) {
+    public suspend fun run(
+        trace: List<VirtualMachine>,
+        seed: Long,
+        servers: MutableList<Server>? = null,
+        submitImmediately: Boolean = false
+    ) {
         val random = Random(seed)
         val injector = failureModel?.createInjector(context, clock, service, random)
         val client = service.newClient()
@@ -129,12 +140,14 @@ public class ComputeServiceHelper(
                             meta = mapOf("workload" to workload)
                         )
 
+                        servers?.add(server)
+
                         // Wait for the server reach its end time
                         val endTime = entry.stopTime.toEpochMilli()
                         delay(endTime + workloadOffset - clock.millis() + 5 * 60 * 1000)
 
-                        // Delete the server after reaching the end-time of the virtual machine
-                        server.delete()
+                        // Stop the server after reaching the end-time of the virtual machine
+                        server.stop()
                     }
                 }
             }

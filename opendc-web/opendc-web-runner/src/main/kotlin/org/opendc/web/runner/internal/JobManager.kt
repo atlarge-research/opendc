@@ -62,7 +62,7 @@ internal class JobManager(private val client: OpenDCRunnerClient) {
     /**
      * Persist the specified results.
      */
-    fun finish(id: Long, results: List<WebComputeMetricExporter.Results>) {
+    fun finish(id: Long, results: List<WebComputeMonitor.Results>) {
         client.jobs.update(
             id,
             Job.Update(
